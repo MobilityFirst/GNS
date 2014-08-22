@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
+import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithLnsAddress;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,11 +14,10 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class DumpRequestPacket extends AdminPacket {
+public class DumpRequestPacket extends BasicPacketWithLnsAddress {
 
   public final static String ID = "id";
   public final static String PRIMARY_NAMESERVER = "primary";
-  public final static String LOCAL_NAMESERVER = "local";
   public final static String JSON = "json";
   private final static String ARGUMENT = "arg";
   private int id;
@@ -24,10 +25,11 @@ public class DumpRequestPacket extends AdminPacket {
    * Primary name server receiving the request *
    */
   private int primaryNameServer;
-  /**
-   * Local name server sending the request *
-   */
-  private int localNameServer;
+  
+//  /**
+//   * Local name server sending the request.
+//   */
+//  private InetSocketAddress lnsAddress = null;
   /**
    * JOSNObject where the results are kept *
    */
@@ -36,16 +38,19 @@ public class DumpRequestPacket extends AdminPacket {
 
   /**
    * Constructs a new DumpRequestPacket packet
-   * @param localNameServer
+   * @param id
    * @param primaryNameServer
+   * @param lnsAddress
    * @param jsonArray
    * @param argument 
    */
-  public DumpRequestPacket(int id, int localNameServer, int primaryNameServer, JSONArray jsonArray, String argument) {
+  public DumpRequestPacket(int id, InetSocketAddress lnsAddress, int primaryNameServer, JSONArray jsonArray, String argument) {
+    super(lnsAddress);
     this.type = Packet.PacketType.DUMP_REQUEST;
     this.id = id;
     this.primaryNameServer = primaryNameServer;
-    this.localNameServer = localNameServer;
+    //this.localNameServer = localNameServer;
+    //this.lnsAddress = lnsAddress;
     this.jsonArray = jsonArray;
     this.argument = argument;
   }
@@ -54,8 +59,8 @@ public class DumpRequestPacket extends AdminPacket {
    * Constructs a new DumpRequestPacket packet
    * @param localNameServer 
    */
-  public DumpRequestPacket(int id, int localNameServer) {
-    this(id, localNameServer, -1, new JSONArray(), null);
+  public DumpRequestPacket(int id, InetSocketAddress lnsAddress) {
+    this(id, lnsAddress, -1, new JSONArray(), null);
   }
 
   /**
@@ -63,8 +68,8 @@ public class DumpRequestPacket extends AdminPacket {
    * @param localNameServer
    * @param tagName 
    */
-  public DumpRequestPacket(int id, int localNameServer, String tagName) {
-    this(id, localNameServer, -1, new JSONArray(), tagName);
+  public DumpRequestPacket(int id, InetSocketAddress lnsAddress, String tagName) {
+    this(id, lnsAddress, -1, new JSONArray(), tagName);
   }
 
   /**
@@ -75,6 +80,7 @@ public class DumpRequestPacket extends AdminPacket {
    * @throws org.json.JSONException
    */
   public DumpRequestPacket(JSONObject json) throws JSONException {
+    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.DUMP_REQUEST) {
       Exception e = new Exception("DumpRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
@@ -84,7 +90,8 @@ public class DumpRequestPacket extends AdminPacket {
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
     this.primaryNameServer = json.getInt(PRIMARY_NAMESERVER);
-    this.localNameServer = json.getInt(LOCAL_NAMESERVER);
+    //this.lnsAddress = new InetSocketAddress(json.getString(LNS_ADDRESS), json.getInt(LNS_PORT));
+    //this.localNameServer = json.getInt(LOCAL_NAMESERVER);
     this.jsonArray = json.getJSONArray(JSON);
     this.argument = json.optString(ARGUMENT, null);
   }
@@ -100,9 +107,12 @@ public class DumpRequestPacket extends AdminPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    super.addToJSONObject(json);
     json.put(ID, id);
     json.put(PRIMARY_NAMESERVER, primaryNameServer);
-    json.put(LOCAL_NAMESERVER, localNameServer);
+    //json.put(LOCAL_NAMESERVER, localNameServer);
+//    json.put(LNS_ADDRESS, lnsAddress.getHostString());
+//    json.put(LNS_PORT, lnsAddress.getPort());
     json.put(JSON, jsonArray);
     if (this.argument != null) {
       json.put(ARGUMENT, argument);
@@ -126,13 +136,13 @@ public class DumpRequestPacket extends AdminPacket {
     this.jsonArray = jsonArray;
   }
 
-  public int getLocalNameServer() {
-    return localNameServer;
-  }
-
-  public void setLocalNameServer(int localNameServer) {
-    this.localNameServer = localNameServer;
-  }
+//  public InetSocketAddress getLnsAddress() {
+//    return lnsAddress;
+//  }
+//
+//  public void setLnsAddress(InetSocketAddress lnsAddress) {
+//    this.lnsAddress = lnsAddress;
+//  }
 
   public int getPrimaryNameServer() {
     return primaryNameServer;

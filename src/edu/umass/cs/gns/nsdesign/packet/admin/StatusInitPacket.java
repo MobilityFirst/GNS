@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,7 +11,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
  */
-public class StatusInitPacket extends AdminPacket {
+public class StatusInitPacket extends BasicPacket {
 
   /**
    * Constructs a new status init packet

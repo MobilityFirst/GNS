@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import edu.umass.cs.gns.util.ResultValue;
+import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -105,7 +106,7 @@ public class Select {
             GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica);
-          sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsID(), result.toStringSet(), replica);
+          sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsAddress(), result.toStringSet(), replica);
           return;
         }
       } else {
@@ -159,7 +160,7 @@ public class Select {
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, replica);
-      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsID(),
+      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsAddress(),
               request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
       if (Config.debuggingEnabled) {
         GNS.getLogger().fine("NS" + replica.getNodeID() + " sending back " + jsonRecords.length() + " records");
@@ -168,7 +169,7 @@ public class Select {
       replica.getNioServer().sendToID(request.getNsID(), response.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().severe("Exception while handling select request: " + e);
-      SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsID(),
+      SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsAddress(),
               request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), e.getMessage());
       try {
         replica.getNioServer().sendToID(request.getNsID(), failResponse.toJSONObject());
@@ -216,12 +217,12 @@ public class Select {
     }
   }
 
-  private static void sendReponsePacketToLNS(int id, int lnsQueryId, int lnsId, Set<String> guids, GnsReconfigurable replica) throws JSONException {
+  private static void sendReponsePacketToLNS(int id, int lnsQueryId, InetSocketAddress address, Set<String> guids, GnsReconfigurable replica) throws JSONException {
 
-    SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, -1, lnsQueryId,
+    SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
             -1, -1, new JSONArray(guids));
     try {
-      replica.getNioServer().sendToID(lnsId, response.toJSONObject());
+      replica.getNioServer().sendToAddress(address, response.toJSONObject());
     } catch (IOException f) {
       GNS.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
     }
@@ -231,7 +232,7 @@ public class Select {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     // Pull the records out of the info structure and send a response back to the LNS
-    sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsID(), guids, replica);
+    sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsAddress(), guids, replica);
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff

@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
 import edu.umass.cs.gns.main.GNS.PortType;
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.Format;
@@ -17,7 +18,7 @@ import java.util.Date;
  * @author Westy 
  * 
  */
-public class TrafficStatusPacket extends AdminPacket {
+public class TrafficStatusPacket extends BasicPacket {
 
   public final static String FROMID = "fromID";
   public final static String TOID = "toID";

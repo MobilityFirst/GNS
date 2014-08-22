@@ -17,6 +17,7 @@ import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -364,13 +365,13 @@ public class Packet {
       case NS_ADMIN_PORT:
         return gnsNodeConfig.getNSAdminRequestPort(nameServerId);
       case LNS_ADMIN_PORT:
-        return gnsNodeConfig.getLNSAdminRequestPort(nameServerId);
+        return GNS.DEFAULT_LNS_ADMIN_PORT; // return gnsNodeConfig.getLNSAdminRequestPort(nameServerId);
       case ADMIN_PORT:
         return gnsNodeConfig.getNSAdminRequestPort(nameServerId);
       case LNS_ADMIN_RESPONSE_PORT:
-        return gnsNodeConfig.getLNSAdminResponsePort(nameServerId);
+        return GNS.DEFAULT_LNS_ADMIN_RESPONSE_PORT; //return gnsNodeConfig.getLNSAdminResponsePort(nameServerId);
       case LNS_ADMIN_DUMP_RESPONSE_PORT:
-        return gnsNodeConfig.getLNSAdminDumpReponsePort(nameServerId);
+        return GNS.DEFAULT_LNS_ADMIN_DUMP_RESPONSE_PORT; //return gnsNodeConfig.getLNSAdminDumpReponsePort(nameServerId);
       case LNS_PING_PORT:
         return GNS.DEFAULT_LNS_PING_PORT;          //return gnsNodeConfig.getLNSPingPort(nameServerId);
       case NS_PING_PORT:
@@ -382,7 +383,7 @@ public class Packet {
   }
 
   /**
-   * Sends a PaxosPacket to a name server using TCP.
+   * Sends a packet to a name server using TCP.
    *
    * @param json JsonObject representing the packet
    * @param nameserverId Name server id
@@ -402,14 +403,18 @@ public class Packet {
       GNS.getLogger().warning("sendTCPPacket:: FAIL, BAD ADDRESS! to: " + nameserverId + " port: " + port + " json: " + json.toString());
       return null;
     }
-    GNS.getLogger().finer("sendTCPPacket:: to: " + nameserverId + " (" + addr.getHostName() + ":" + port + ")" + " json: " + json.toString());
-    Socket socket = new Socket(addr, port);
+    return sendTCPPacket(json, new InetSocketAddress(addr, port));
+  }
+  
+   public static Socket sendTCPPacket(JSONObject json, InetSocketAddress addr) throws IOException {
+    GNS.getLogger().finer("sendTCPPacket:: to " + addr.getHostString() + ":" + addr.getPort() + " json: " + json.toString());
+    Socket socket = new Socket(addr.getHostString(), addr.getPort());
     sendTCPPacket(json, socket);
     return socket;
   }
 
   /**
-   * Sends a PaxosPacket to a name server using TCP.
+   * Sends a packet to a name server using TCP.
    *
    * @param json JsonObject representing the packet //
    * @param socket Socket on which to send the packet

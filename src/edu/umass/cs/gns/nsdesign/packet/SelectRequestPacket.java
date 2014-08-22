@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,7 +15,7 @@ import org.json.JSONObject;
  * We also use this to do automatic group GUID maintenence.
  * @author westy
  */
-public class SelectRequestPacket extends BasicPacket {
+public class SelectRequestPacket extends BasicPacketWithLnsAddress {
 
   public enum SelectOperation {
 
@@ -36,7 +37,7 @@ public class SelectRequestPacket extends BasicPacket {
   private final static String VALUE = "value";
   private final static String OTHERVALUE = "otherValue";
   private final static String QUERY = "query";
-  private final static String LNSID = "lnsid";
+  //private final static String LNSID = "lnsid";
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSID = "nsid";
   private final static String NSQUERYID = "nsQueryId";
@@ -50,7 +51,7 @@ public class SelectRequestPacket extends BasicPacket {
   private Object value;
   private Object otherValue;
   private String query;
-  private int lnsID; // the local name server handling this request
+  //private int lnsID; // the local name server handling this request
   private int lnsQueryId = -1; // used by the local name server to maintain state
   private int nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
   private int nsQueryId = -1; // used by the name server to maintain state
@@ -64,17 +65,21 @@ public class SelectRequestPacket extends BasicPacket {
    * Constructs a new QueryResponsePacket
    * 
    * @param id
+   * @param lnsAddress
+   * @param selectOperation
    * @param key
+   * @param groupBehavior
    * @param value
-   * @param lns 
+   * @param otherValue 
    */
-  public SelectRequestPacket(int id, int lns, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
+  public SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
+    super(lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
     this.value = value;
     this.otherValue = otherValue;
-    this.lnsID = lns;
+    //this.lnsID = lns;
     this.nsID = -1;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupBehavior;
@@ -93,11 +98,12 @@ public class SelectRequestPacket extends BasicPacket {
    * @param guid
    * @param minRefreshInterval 
    */
-  private SelectRequestPacket(int id, int lns, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
+  private SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
+    super(lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
-    this.lnsID = lns;
+    //this.lnsID = lns;
     this.nsID = -1;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupOperation;
@@ -112,12 +118,12 @@ public class SelectRequestPacket extends BasicPacket {
    * Creates a request to search all name servers for GUIDs that match the given query.
    * 
    * @param id
-   * @param lns
+   * @param lnsAddress
    * @param query
    * @return 
    */
-  public static SelectRequestPacket MakeQueryRequest(int id, int lns, String query) {
-    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, GroupBehavior.NONE, query, null, -1);
+  public static SelectRequestPacket MakeQueryRequest(int id, InetSocketAddress lnsAddress, String query) {
+    return new SelectRequestPacket(id, lnsAddress, SelectOperation.QUERY, GroupBehavior.NONE, query, null, -1);
   }
 
   /**
@@ -125,13 +131,14 @@ public class SelectRequestPacket extends BasicPacket {
    * Creates a request to search all name servers for GUIDs that match the given query.
    * 
    * @param id
-   * @param lns
+   * @param lnsAddress
    * @param query
    * @param guid
+   * @param refreshInterval
    * @return 
    */
-  public static SelectRequestPacket MakeGroupSetupRequest(int id, int lns, String query, String guid, int refreshInterval) {
-    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, GroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
+  public static SelectRequestPacket MakeGroupSetupRequest(int id, InetSocketAddress lnsAddress, String query, String guid, int refreshInterval) {
+    return new SelectRequestPacket(id, lnsAddress, SelectOperation.QUERY, GroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
   }
   
   /**
@@ -139,12 +146,12 @@ public class SelectRequestPacket extends BasicPacket {
    * Creates a request to search all name servers for GUIDs that match the given query.
    * 
    * @param id
-   * @param lns
+   * @param lnsAddress
    * @param guid
    * @return 
    */
-  public static SelectRequestPacket MakeGroupLookupRequest(int id, int lns, String guid) {
-    return new SelectRequestPacket(id, lns, SelectOperation.QUERY, GroupBehavior.GROUP_LOOKUP, null, guid, -1);
+  public static SelectRequestPacket MakeGroupLookupRequest(int id, InetSocketAddress lnsAddress, String guid) {
+    return new SelectRequestPacket(id, lnsAddress, SelectOperation.QUERY, GroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
   /**
@@ -153,9 +160,9 @@ public class SelectRequestPacket extends BasicPacket {
    * @throws org.json.JSONException
    */
   public SelectRequestPacket(JSONObject json) throws JSONException {
+    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
-      Exception e = new Exception("QueryRequestPacket: wrong packet type " + Packet.getPacketType(json));
-      return;
+      throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
@@ -163,7 +170,7 @@ public class SelectRequestPacket extends BasicPacket {
     this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
     this.query = json.optString(QUERY, null);
-    this.lnsID = json.getInt(LNSID);
+    //this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.nsID = json.getInt(NSID);
     this.nsQueryId = json.getInt(NSQUERYID);
@@ -186,8 +193,10 @@ public class SelectRequestPacket extends BasicPacket {
     return json;
   }
 
-  private void addToJSONObject(JSONObject json) throws JSONException {
+  @Override
+  public void addToJSONObject(JSONObject json) throws JSONException {
     Packet.putPacketType(json, getType());
+    super.addToJSONObject(json);
     json.put(ID, id);
     if (key != null) {
       json.put(KEY, key);
@@ -201,7 +210,7 @@ public class SelectRequestPacket extends BasicPacket {
     if (query != null) {
       json.put(QUERY, query);
     }
-    json.put(LNSID, lnsID);
+    //json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
     json.put(NSID, nsID);
     json.put(NSQUERYID, nsQueryId);
@@ -239,9 +248,9 @@ public class SelectRequestPacket extends BasicPacket {
     return value;
   }
 
-  public int getLnsID() {
-    return lnsID;
-  }
+//  public int getLnsID() {
+//    return lnsID;
+//  }
 
   public int getLnsQueryId() {
     return lnsQueryId;

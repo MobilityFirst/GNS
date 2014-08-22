@@ -15,9 +15,14 @@ import java.util.logging.Logger;
 public class GNS {
 
   public static final int DEFAULT_TTL_SECONDS = 0;
+  
+  public static final int STARTINGPORT = 24400;
+  // FIXME: clean this up
   public static final int DEFAULT_LNS_TCP_PORT = 24398;
   public static final int DEFAULT_LNS_PING_PORT = 24397;
-  public static final int STARTINGPORT = 24400;
+  public static final int DEFAULT_LNS_ADMIN_PORT = 24396;
+  public static final int DEFAULT_LNS_ADMIN_RESPONSE_PORT = 24395;
+  public static final int DEFAULT_LNS_ADMIN_DUMP_RESPONSE_PORT = 24394;
   public static final int LOCAL_FIRST_NODE_PORT = 35000;
   public static final String GNS_URL_PATH = "GNS";
   

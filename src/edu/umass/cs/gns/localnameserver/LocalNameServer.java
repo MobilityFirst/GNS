@@ -122,7 +122,7 @@ public class LocalNameServer {
     if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeID() + " started Ping server on port " +
+      GNS.getLogger().info("LNS Node " + LocalNameServer.getAddress() + " started Ping server on port " +
               gnsNodeConfig.getPingPort(nodeID));
       pingManager = new PingManager(nodeID, gnsNodeConfig);
       pingManager.startPinging();

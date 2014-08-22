@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,7 +10,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
  **/
-public class SentinalPacket extends AdminPacket {
+public class SentinalPacket extends BasicPacket {
 
   public final static String ID = "id";
   private int id;

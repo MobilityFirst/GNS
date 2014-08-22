@@ -58,7 +58,7 @@ public class NameServerVoteThread extends Thread {
     int count = 0;
 
     try {
-      long x = voteIntervalMillis + new Random(LocalNameServer.getNodeID()*1000).nextInt((int) voteIntervalMillis);
+      long x = voteIntervalMillis + new Random(4000).nextInt((int) voteIntervalMillis);
       Thread.sleep(x);
       GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + x + "ms");
     } catch (InterruptedException e) {
@@ -86,7 +86,7 @@ public class NameServerVoteThread extends Thread {
       int update;
       NameServerSelectionPacket nsSelectionPacket;
       int nsToVoteFor = selectNSToVoteFor(); // name server selection does not depend on name
-      GNS.getLogger().info("LNS ID" + LocalNameServer.getNodeID() + " Closest NS " + nsToVoteFor);
+      GNS.getLogger().info("LNS ID" + LocalNameServer.getAddress() + " Closest NS " + nsToVoteFor);
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine(" NameRecordStats Key Set Size: " + LocalNameServer.getNameRecordStatsKeySet().size());
       }
@@ -113,7 +113,7 @@ public class NameServerVoteThread extends Thread {
           if (StartLocalNameServer.debugMode) {
             GNS.getLogger().fine("\tVoteSent\t" + name + "\t" + vote + "\t" + update + "\t");
           }
-          nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.getNodeID(), 0);
+          nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.getAddress());
 
           // send to all primaries.
           Set<Integer> primaryNameServers = LocalNameServer.getReplicaControllers(name);

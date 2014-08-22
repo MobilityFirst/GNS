@@ -1,37 +1,35 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
+import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithLnsAddress;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * 
+ *
  * This class implements the packet transmitted to send an admin request.
  *
  * @author Westy
  */
-public class AdminRequestPacket extends AdminPacket {
+public class AdminRequestPacket extends BasicPacketWithLnsAddress {
 
   public enum AdminOperation {
 
     DELETEALLRECORDS, // calls remove record on every record
     RESETDB, // clears the database and reinitializes all indices
     CLEARCACHE,
-    DUMPCACHE, 
+    DUMPCACHE,
     CHANGELOGLEVEL,
     PINGTABLE,
-    PINGVALUE
-    ;
+    PINGVALUE;
   };
   public final static String ID = "id";
-  public final static String LNSID = "lnsid";
   private final static String OPERATION = "operation";
   private final static String ARGUMENT = "arg";
   private final static String ARGUMENT2 = "arg2";
   //
   private int id;
-  private int localNameServerId; // is this is set it's the LNS handling this request
   private AdminOperation operation;
   private String argument;
   private String argument2;
@@ -40,35 +38,66 @@ public class AdminRequestPacket extends AdminPacket {
    *
    * Constructs new AdminRequestPacket with the given parameter.
    *
-   * @param primaryNameserver Primary name server
-   * @param localNameserver Local name server sending the request
-   * @param name Host/domain/device name
-   * @param activeNameserver Set containing ids of active name servers
+   * @param operation
    */
   public AdminRequestPacket(AdminOperation operation) {
     this(0, operation, null, null);
   }
 
+  /**
+   * Constructs new AdminRequestPacket.
+   *
+   * @param id
+   * @param operation
+   */
   public AdminRequestPacket(int id, AdminOperation operation) {
     this(id, operation, null, null);
   }
 
+  /**
+   * Constructs new AdminRequestPacket.
+   *
+   * @param id
+   * @param operation
+   * @param argument
+   */
   public AdminRequestPacket(int id, AdminOperation operation, String argument) {
     this(id, operation, argument, null);
   }
-  
+
+  /**
+   * Constructs new AdminRequestPacket.
+   *
+   * @param operation
+   * @param argument
+   */
   public AdminRequestPacket(AdminOperation operation, String argument) {
     this(0, operation, argument, null);
   }
-  
+
+  /**
+   * Constructs new AdminRequestPacket.
+   *
+   * @param operation
+   * @param argument
+   * @param argument2
+   */
   public AdminRequestPacket(AdminOperation operation, String argument, String argument2) {
     this(0, operation, argument, argument2);
   }
 
+  /**
+   * Constructs new AdminRequestPacket.
+   *
+   * @param id
+   * @param operation
+   * @param argument
+   * @param argument2
+   */
   public AdminRequestPacket(int id, AdminOperation operation, String argument, String argument2) {
+    super(null); // implies that it came from a client, not an NS or LNS
     this.type = PacketType.ADMIN_REQUEST;
     this.id = id;
-    this.localNameServerId = -1; // implies that it came from a client, not an NS or LNS
     this.operation = operation;
     this.argument = argument;
     this.argument2 = argument2;
@@ -82,6 +111,7 @@ public class AdminRequestPacket extends AdminPacket {
    * @throws org.json.JSONException
    */
   public AdminRequestPacket(JSONObject json) throws JSONException {
+    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != PacketType.ADMIN_REQUEST) {
       Exception e = new Exception("AdminRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
@@ -90,7 +120,10 @@ public class AdminRequestPacket extends AdminPacket {
 
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
-    this.localNameServerId = json.getInt(LNSID);
+//    this.lnsAddress = json.has(LNS_ADDRESS) && json.has(LNS_PORT)
+//            ? new InetSocketAddress(json.getString(LNS_ADDRESS), json.getInt(LNS_PORT))
+//            : null;
+    //this.localNameServerId = json.getInt(LNSID);
     this.operation = AdminOperation.valueOf(json.getString(OPERATION));
     this.argument = json.optString(ARGUMENT, null);
     this.argument2 = json.optString(ARGUMENT2, null);
@@ -107,13 +140,18 @@ public class AdminRequestPacket extends AdminPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
+    super.addToJSONObject(json);
     json.put(ID, id);
-    json.put(LNSID, localNameServerId);
+//    if (lnsAddress != null) {
+//      json.put(LNS_ADDRESS, lnsAddress.getHostString());
+//      json.put(LNS_PORT, lnsAddress.getPort());
+//    }
+    //json.put(LNSID, localNameServerId);
     json.put(OPERATION, getOperation().name());
     if (this.argument != null) {
       json.put(ARGUMENT, argument);
     }
-     if (this.argument2 != null) {
+    if (this.argument2 != null) {
       json.put(ARGUMENT2, argument2);
     }
     return json;
@@ -127,14 +165,26 @@ public class AdminRequestPacket extends AdminPacket {
     this.id = id;
   }
 
-  public int getLocalNameServerId() {
-    return localNameServerId;
-  }
-
-  public void setLocalNameServerId(int lnsid) {
-    this.localNameServerId = lnsid;
-  }
+//  public int getLocalNameServerId() {
+//    return localNameServerId;
+//  }
+//
+//  public void setLocalNameServerId(int lnsid) {
+//    this.localNameServerId = lnsid;
+//  }
   
+//  /** 
+//   * Gets the lns return address. If thi
+//   * @return 
+//   */
+//  public InetSocketAddress getLnsAddress() {
+//    return lnsAddress;
+//  }
+//
+//  public void setLnsAddress(InetSocketAddress lnsAddress) {
+//    this.lnsAddress = lnsAddress;
+//  }
+
   public AdminOperation getOperation() {
     return operation;
   }
@@ -146,5 +196,5 @@ public class AdminRequestPacket extends AdminPacket {
   public String getArgument2() {
     return argument2;
   }
- 
+
 }

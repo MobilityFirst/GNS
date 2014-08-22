@@ -28,6 +28,7 @@ import java.util.logging.Level;
 
 import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
+import java.net.InetSocketAddress;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -465,25 +466,14 @@ public class Admintercessor {
     }
   }
 
-  private static ServerSocket sendDumpGetInputSocket() {
-    GNS.getLogger().finer("Waiting for responses dump");
-    ServerSocket adminSocket;
-    try {
-      adminSocket = new ServerSocket(LocalNameServer.getGnsNodeConfig().getLNSAdminDumpReponsePort(localServerID));
-    } catch (Exception e) {
-      GNS.getLogger().severe("Error creating admin socket on port " + 
-              LocalNameServer.getGnsNodeConfig().getLNSAdminDumpReponsePort(localServerID) + " : " + e);
-      return null;
-    }
-    return adminSocket;
-  }
-
   private static int sendDumpOutputHelper(String tagName) {
     // send the request out to the local name server
     int id = nextDumpRequestID();
     GNS.getLogger().finer("Sending dump request id = " + id);
     try {
-      sendAdminPacket(new DumpRequestPacket(id, localServerID, tagName).toJSONObject());
+      sendAdminPacket(new DumpRequestPacket(id, 
+              new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT), 
+              tagName).toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring error sending DUMP request for id " + id + " : " + e);
       return -1;

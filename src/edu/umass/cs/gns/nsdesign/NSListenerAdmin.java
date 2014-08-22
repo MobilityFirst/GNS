@@ -163,8 +163,11 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
               GNS.getLogger().finer("NSListenrAdmin for " + gnsReconfigurable.getNodeID() + " is " + jsonArray.toString());
             }
             dumpRequestPacket.setJsonArray(jsonArray);
-            Packet.sendTCPPacket(gnsNodeConfig, dumpRequestPacket.toJSONObject(), dumpRequestPacket.getLocalNameServer(), GNS.PortType.LNS_ADMIN_PORT);
-            //Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), socket);
+            Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), 
+                    dumpRequestPacket.getLnsAddress());
+            //Packet.sendTCPPacket(gnsNodeConfig, dumpRequestPacket.toJSONObject(), dumpRequestPacket.getLocalNameServer(), GNS.PortType.LNS_ADMIN_PORT);
+           
+            
             GNS.getLogger().info("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             break;
           case ADMIN_REQUEST:
@@ -205,7 +208,8 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", gnsReconfigurable.getPingManager().tableToString(gnsReconfigurable.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(gnsNodeConfig, responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+                  //Packet.sendTCPPacket(gnsNodeConfig, responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
@@ -217,7 +221,8 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", gnsReconfigurable.getPingManager().nodeAverage(node2));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(gnsNodeConfig, responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+                  //Packet.sendTCPPacket(gnsNodeConfig, responsePacket.toJSONObject(), adminRequestPacket.getLocalNameServerId(), GNS.PortType.LNS_ADMIN_PORT);
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
                 }

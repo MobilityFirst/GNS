@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.Format;
 import org.json.JSONException;
@@ -13,7 +14,7 @@ import java.util.Date;
  * 
  * @author Westy
  */
-public class StatusPacket extends AdminPacket {
+public class StatusPacket extends BasicPacket {
 
   public final static String ID = "id";
   public final static String JSON = "json";

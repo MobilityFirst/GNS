@@ -331,7 +331,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * @param id Nameserver id
    * @return the stats port for a nameserver
    */
-  @Deprecated // replaced with GNS.DEFAULT_LNS_TCP_PORT
+  @Deprecated
   public int getLNSTcpPort(int id) {
     return GNS.DEFAULT_LNS_TCP_PORT;
   }       
@@ -370,8 +370,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * @return the port
    */
   public int getLNSAdminRequestPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_PORT.getOffset();
+    return GNS.DEFAULT_LNS_ADMIN_PORT;
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_PORT.getOffset();
   }
 
   /**
@@ -381,8 +382,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * @return the port
    */
   public int getLNSAdminResponsePort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_RESPONSE_PORT.getOffset();
+    return GNS.DEFAULT_LNS_ADMIN_RESPONSE_PORT;
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_RESPONSE_PORT.getOffset();
   }
 
   /**
@@ -392,8 +394,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * @return the port
    */
   public int getLNSAdminDumpReponsePort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_DUMP_RESPONSE_PORT.getOffset();
+    return GNS.DEFAULT_LNS_ADMIN_DUMP_RESPONSE_PORT;
+//    HostInfo nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_DUMP_RESPONSE_PORT.getOffset();
   }
 
   /**
