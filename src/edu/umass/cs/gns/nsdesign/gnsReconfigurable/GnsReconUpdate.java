@@ -41,7 +41,7 @@ public class GnsReconUpdate {
     if (noCoordinatonState) {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       if (!recovery) {
-        replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+        replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
       }
       return;
     }
@@ -61,7 +61,7 @@ public class GnsReconUpdate {
     if (errorCode.isAnError()) {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
       if (!recovery) {
-        replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+        replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
       }
       return;
@@ -83,7 +83,7 @@ public class GnsReconUpdate {
         e.printStackTrace();
         ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
         if (!recovery) {
-          replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failConfirmPacket.toJSONObject());
+          replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
         }
         return;
@@ -122,7 +122,7 @@ public class GnsReconUpdate {
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket);
           }
           if (!recovery) {
-            replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), failPacket.toJSONObject());
+            replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failPacket.toJSONObject());
           }
         }
 
@@ -131,7 +131,7 @@ public class GnsReconUpdate {
           GNS.getLogger().fine("Update applied" + updatePacket);
         }
 
-        // Abhigyan: commented this because we are using lns votes for this calculation.
+        // FIXME: Abhigyan: commented this because we are using lns votes for this calculation.
         // this should be uncommented once active replica starts to send read/write statistics for name.
 //        nameRecord.incrementUpdateRequest();
         if (updatePacket.getNameServerId() == replica.getNodeID()) {
@@ -142,7 +142,7 @@ public class GnsReconUpdate {
             GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
           }
           if (!recovery) {
-            replica.getNioServer().sendToID(updatePacket.getLocalNameServerId(), confirmPacket.toJSONObject());
+            replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
           }
         }
       }

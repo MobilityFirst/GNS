@@ -464,7 +464,7 @@ public class Intercessor implements IntercessorInterface {
             oldValue,
             argument,
             userJSON,
-            operation, localServerID, GNS.DEFAULT_TTL_SECONDS,
+            operation, LocalNameServer.getAddress(), GNS.DEFAULT_TTL_SECONDS,
             writer, signature, message);
     try {
       JSONObject json = packet.toJSONObject();

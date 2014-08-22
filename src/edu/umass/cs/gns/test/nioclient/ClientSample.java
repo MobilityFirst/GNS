@@ -108,7 +108,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         rv = new ResultValue();
         rv.add(secondValue);
         UpdatePacket updatePacket = new UpdatePacket(UpdatePacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv, null, 0, UpdateOperation.SINGLE_FIELD_REPLACE_ALL,
-                -1, 0, null, null, null);
+                null, 0, null, null, null);
         dbClient.sendRequest(updatePacket.toJSONObject());
         waitForResponse();
         confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);

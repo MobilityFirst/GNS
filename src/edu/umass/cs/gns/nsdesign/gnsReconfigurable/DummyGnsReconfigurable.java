@@ -164,7 +164,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
       }
     }
     if (returnJson!=null) {
-      nioServer.sendToID(updatePacket.getLocalNameServerId(), returnJson);
+      nioServer.sendToAddress(updatePacket.getLnsAddress(), returnJson);
     }
   }
 

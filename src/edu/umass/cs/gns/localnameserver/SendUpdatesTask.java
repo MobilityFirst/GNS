@@ -194,7 +194,7 @@ public class SendUpdatesTask extends TimerTask {
             updatePacket.getArgument(),
             updatePacket.getUserJSON(),
             updatePacket.getOperation(),
-            handler.getNodeID(),
+            handler.getNodeAddress(),
             nameServerID, updatePacket.getTTL(),
             //signature info
             updatePacket.getAccessor(),

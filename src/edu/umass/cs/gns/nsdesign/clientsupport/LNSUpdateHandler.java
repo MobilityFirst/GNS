@@ -82,7 +82,7 @@ public class LNSUpdateHandler {
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurableInterface activeReplica) {
     UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), updateId,
             name, key, newValue, oldValue, argument, operation,
-            -1, GNS.DEFAULT_TTL_SECONDS,
+            null, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
     try {
       GNS.getLogger().fine("########## Node " + activeReplica.getNodeID() + "; Sending update " + updateId + " to " + recipientId
