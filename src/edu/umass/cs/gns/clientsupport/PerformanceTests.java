@@ -7,6 +7,7 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stats;
 import edu.umass.cs.gns.util.Util;
@@ -128,7 +129,7 @@ public class PerformanceTests {
   }
 
   private static int getComparisonPingValue(int node) {
-    String result = Admintercessor.sendPingValue(LocalNameServer.getNodeID(), node);
+    String result = Admintercessor.sendPingValue(PingManager.LOCALNAMESERVERID, node);
     if (result.startsWith(Defs.BADRESPONSE)) {
       return 999;
     } else {

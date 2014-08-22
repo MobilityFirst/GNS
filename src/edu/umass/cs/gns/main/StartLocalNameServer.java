@@ -24,12 +24,10 @@ import java.util.Properties;
 public class StartLocalNameServer {
 
   public static final String HELP = "help";
-  public static final String HELP_HEADER = "NOTE: Options whose description starts with [EXP] are needed only during " +
-          "experiments and can be ignored otherwise.";
+  public static final String HELP_HEADER = "NOTE: Options whose description starts with [EXP] are needed only during "
+          + "experiments and can be ignored otherwise.";
   public static final String HELP_FOOTER = "";
   public static final String CONFIG_FILE = "configFile";
-  @Deprecated
-  public static final String ID = "id";
   public static final String ADDRESS = "address";
   public static final String PORT = "port";
   public static final String NS_FILE = "nsfile";
@@ -109,7 +107,6 @@ public class StartLocalNameServer {
 
 //  Abhigyan: parameters related to retransmissions.
 //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
-
   /**
    * Maximum time a local name server waits for a response from name server query is logged as failed after this.
    */
@@ -149,6 +146,7 @@ public class StartLocalNameServer {
   public static double variation = 0.1; // 10 % variation above latency in config file.
 
   private static Options commandLineOptions;
+
   static {
     Option help = new Option("help", "Prints usage");
 
@@ -183,17 +181,13 @@ public class StartLocalNameServer {
     Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "Verbosity level of log file for experiment related statistics");
     Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output for experiment related statistics");
 
-
     Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "[EXP] Emulate a packet delay equal to ping delay in between two servers");
     Option variation = new Option(VARIATION, true, "[EXP] During emulation, what fraction of random variation to add to delay");
 
-    Option nodeId = OptionBuilder.withArgName("nodeId").hasArg()
-            .withDescription("Node id")
-            .create(ID);
-     Option address = OptionBuilder.withArgName("address").hasArg()
+    Option address = OptionBuilder.withArgName("address").hasArg()
             .withDescription("Address")
             .create(ADDRESS);
-      Option port = OptionBuilder.withArgName("port").hasArg()
+    Option port = OptionBuilder.withArgName("port").hasArg()
             .withDescription("Port")
             .create(PORT);
 
@@ -256,7 +250,6 @@ public class StartLocalNameServer {
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
-    commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(address);
     commandLineOptions.addOption(port);
     commandLineOptions.addOption(nsFile);
@@ -338,12 +331,12 @@ public class StartLocalNameServer {
    */
   public static void main(String[] args) {
     // all parameters will be specified in the arg list
-    startLNS(0, null, -1, null, null, args);
+    startLNS(null, -1, null, null, args);
   }
 
   // supports old style single name-server-info style as nsFile with lnsFile being null
   // as well as new format where the NSs are in nsFile and the LNSs are in lnsFile
-  public static void startLNS(int id, String address, int port, String nsFile, String lnsFile, String... args) {
+  public static void startLNS(String address, int port, String nsFile, String lnsFile, String... args) {
     try {
       CommandLine parser = null;
       try {
@@ -364,7 +357,7 @@ public class StartLocalNameServer {
         configFile = parser.getOptionValue(CONFIG_FILE);
       }
 
-      startLNSConfigFile(id, address, port, nsFile, lnsFile, configFile, parser);
+      startLNSConfigFile(address, port, nsFile, lnsFile, configFile, parser);
     } catch (Exception e1) {
       e1.printStackTrace();
       printUsage();
@@ -385,7 +378,7 @@ public class StartLocalNameServer {
    * @param configFile config file with parameters (can be null)
    * @param parser command line arguments (can be null)
    */
-  public static void startLNSConfigFile(int id, String address, int port, String nsFile, String lnsFile, String configFile, CommandLine parser) {
+  public static void startLNSConfigFile(String address, int port, String nsFile, String lnsFile, String configFile, CommandLine parser) {
     try {
 
       // create a hash map with all options including options in config file and the command line arguments
@@ -424,17 +417,14 @@ public class StartLocalNameServer {
         }
       }
 
-      if (allValues.containsKey(ID)) {
-        id = Integer.parseInt(allValues.get(ID));
-      }
       if (allValues.containsKey(ADDRESS)) {
         address = allValues.get(ADDRESS);
       }
-      
+
       if (allValues.containsKey(PORT)) {
         port = Integer.parseInt(allValues.get(PORT));
       }
-      
+
       if (allValues.containsKey(NS_FILE)) {
         nsFile = allValues.get(NS_FILE);
       }
@@ -537,7 +527,6 @@ public class StartLocalNameServer {
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
     Date date = new Date();
     GNS.getLogger().info("Date: " + dateFormat.format(date));
-    GNS.getLogger().info("Id (DEPRECATED): " + id);
     GNS.getLogger().info("Address: " + address);
     GNS.getLogger().info("Port: " + port);
     GNS.getLogger().info("NS File: " + nsFile);
@@ -560,14 +549,16 @@ public class StartLocalNameServer {
     try {
       GNSNodeConfig gnsNodeConfig;
       if (lnsFile != null) {
-        gnsNodeConfig = new GNSNodeConfig(nsFile, lnsFile, id);
+        // New style with separate ns and lns files
+        gnsNodeConfig = new GNSNodeConfig(nsFile, lnsFile, -1);
       } else {
-        gnsNodeConfig = new GNSNodeConfig(nsFile, id);
+        // Old style with combined file
+        gnsNodeConfig = new GNSNodeConfig(nsFile, -1);
       }
       ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
 
       //Start local name server
-      new LocalNameServer(id, new InetSocketAddress(address, port), gnsNodeConfig);
+      new LocalNameServer(new InetSocketAddress(address, port), gnsNodeConfig);
     } catch (Exception e) {
       e.printStackTrace();
     }

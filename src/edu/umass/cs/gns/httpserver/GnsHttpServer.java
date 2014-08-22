@@ -47,15 +47,12 @@ public class GnsHttpServer {
   
   private static final String GNSPATH = GNS.GNS_URL_PATH;
   private static final int port = 8080;
-  private static int localNameServerID;
+  //private static int localNameServerID;
   
   // handles command processing
   private static final CommandModule commandModule = new CommandModule();
 
-  public static void runHttp(int localNameServerID) {
-    GnsHttpServer.localNameServerID = localNameServerID;
-    Intercessor.setLocalServerID(localNameServerID);
-    Admintercessor.setLocalServerID(localNameServerID);
+  public static void runHttp() {
     runServer();
   }
 
@@ -212,7 +209,7 @@ public class GnsHttpServer {
                 "NIO Version: "
                 + NioServer.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
-        String serverLocalNameServerID = "\nLocal Name Server ID: " + localNameServerID + "\n";
+        String serverLocalNameServerID = "\nLocal Name Server Address: " + LocalNameServer.getAddress() + "\n";
         String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNameServerIDs().size() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 

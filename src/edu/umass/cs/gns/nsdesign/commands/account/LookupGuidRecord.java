@@ -17,6 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import java.net.InetSocketAddress;
 
 /**
  *
@@ -40,10 +41,10 @@ public class LookupGuidRecord extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws JSONException, FailedDBOperationException {
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws JSONException, FailedDBOperationException {
     String guid = json.getString(GUID);
     GuidInfo guidInfo;
-    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica, lnsAddress)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (guidInfo != null) {

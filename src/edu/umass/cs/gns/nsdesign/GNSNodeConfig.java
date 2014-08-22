@@ -30,7 +30,7 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
 
-  private int nodeID = -1;
+  private int nodeID = -1; // this will be -1 for Local Name Servers
 
   public static final long INVALID_PING_LATENCY = -1L;
 
@@ -40,17 +40,17 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
-  private ConcurrentMap<Integer, HostInfo> hostInfoMapping
+  private final ConcurrentMap<Integer, HostInfo> hostInfoMapping
           = new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
   /**
    * A subset of hostInfoMapping with just the ids of the nameservers, not the LNSs
    */
-  private ConcurrentMap<Integer, Integer> nameServerMapping
+  private final ConcurrentMap<Integer, Integer> nameServerMapping
           = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
   /**
    * A subset hostInfoMapping with just the ids of the Local Name Server, not the NSs
    */
-  private ConcurrentMap<Integer, Integer> localNameServerMapping
+  private final ConcurrentMap<Integer, Integer> localNameServerMapping
           = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
 
   /**
@@ -61,7 +61,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   /**
-   * Creates a GNSNodeConfig and initializes it from a name-server-info file
+   * Creates a GNSNodeConfig and initializes it from a name-server-info file.
+   * This is the legacy format. 
    *
    * @param nodeInfoFile
    * @param nameServerID
@@ -71,7 +72,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   /**
-   * Creates a GNSNodeConfig and initializes it from a pair of host files
+   * Creates a GNSNodeConfig and initializes it from a pair of host files.
+   * This supports the new hosts.txt style format.
    *
    * @param nsHostsFile
    * @param lnsHostsFile
@@ -225,7 +227,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     try {
       String ipAddressString = InetAddress.getLocalHost().getHostAddress();
       for (int id = startId; id < count + startId; id++) {
-        int port = GNS.LOCAL_FIRST_NODE_PORT + id * 10;
+        int port = GNS.NS_LOCAL_FIRST_NODE_PORT + id * 10;
         addHostInfo(id, ipAddressString, port, 0, 0, 0);
         serverMap.put(id, id);
       }
@@ -264,7 +266,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
 
   /**
    * Returns the complete set of IDs for all servers (local and otherwise).
-   *
+   * THIS IS THE SAME AS getNameServerIDs NOW THAT LNSs DO NOT HAVE IDS.
+   * FIXME: Check uses of this an fix as necessary then maybe delete one or the other.
    * @return
    */
   @Override
@@ -279,15 +282,6 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    */
   public Set<Integer> getNameServerIDs() {
     return ImmutableSet.copyOf(nameServerMapping.keySet());
-  }
-
-  /**
-   * Returns the complete set of IDs for all local name servers.
-   *
-   * @return The set of IDs.
-   */
-  public Set<Integer> getLocalNameServerIDs() {
-    return ImmutableSet.copyOf(localNameServerMapping.keySet());
   }
 
   /**
@@ -323,30 +317,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   public int getNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
-  }
-
-  /**
-   * Returns the TCP port of a Local Nameserver. Deprecated.
-   *
-   * @param id Nameserver id
-   * @return the stats port for a nameserver
-   */
-  @Deprecated
-  public int getLNSTcpPort(int id) {
-    return GNS.DEFAULT_LNS_TCP_PORT;
   }       
   
-  /**
-   * Returns the UDP port of a Local Nameserver
-   *
-   * @param id
-   * @return
-   */
-  public int getLNSUdpPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_UDP_PORT.getOffset();
-  }
-
   public int getNSUdpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
@@ -361,53 +333,6 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   public int getNSAdminRequestPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
-  }
-
-  /**
-   * Returns the Admin port of a Local Nameserver
-   *
-   * @param id
-   * @return the port
-   */
-  public int getLNSAdminRequestPort(int id) {
-    return GNS.DEFAULT_LNS_ADMIN_PORT;
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_PORT.getOffset();
-  }
-
-  /**
-   * Returns the response port of a Local nameserver
-   *
-   * @param id
-   * @return the port
-   */
-  public int getLNSAdminResponsePort(int id) {
-    return GNS.DEFAULT_LNS_ADMIN_RESPONSE_PORT;
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_RESPONSE_PORT.getOffset();
-  }
-
-  /**
-   * Returns the dump response port of a Local nameserver
-   *
-   * @param id
-   * @return the port
-   */
-  public int getLNSAdminDumpReponsePort(int id) {
-    return GNS.DEFAULT_LNS_ADMIN_DUMP_RESPONSE_PORT;
-//    HostInfo nodeInfo = hostInfoMapping.get(id);
-//    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_ADMIN_DUMP_RESPONSE_PORT.getOffset();
-  }
-
-  /**
-   * Returns the LNS ping port
-   *
-   * @param id
-   * @return the port
-   */
-  @Deprecated
-  public int getLNSPingPort(int id) {
-    return GNS.DEFAULT_LNS_PING_PORT;
   }
 
   /**
@@ -435,15 +360,6 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     }
   }
 
-  public int getLnsDbClientPort(int id) {
-    if (isNameServer(id)) {
-      throw new IllegalArgumentException();
-    } else {
-      HostInfo nodeInfo = hostInfoMapping.get(id);
-      return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.LNS_DBCLIENT_PORT.getOffset();
-    }
-  }
-
   /**
    * Returns the IP address of a name server.
    *
@@ -460,6 +376,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * Returns the ping latency between two servers
    *
    * @param id Server id
+   * @return 
    */
   public long getPingLatency(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -483,7 +400,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     if (this.isNameServer(ID)) {
       return this.getNSTcpPort(ID);
     }
-    return GNS.DEFAULT_LNS_TCP_PORT;   }
+    return GNS.DEFAULT_LNS_TCP_PORT;  
+  }
 
   /**
    * Returns the Name Server (not including Local Name Servers) with lowest latency.
@@ -492,15 +410,6 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    */
   public int getClosestNameServer() {
     return getClosestServer(getNameServerIDs());
-  }
-
-  /**
-   * Returns the Local Name Server (not including Name Servers) with lowest latency.
-   *
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
-   */
-  public int getClosestLocalNameServer() {
-    return getClosestServer(getLocalNameServerIDs());
   }
 
   /**

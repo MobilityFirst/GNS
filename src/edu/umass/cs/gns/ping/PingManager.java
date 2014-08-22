@@ -24,17 +24,20 @@ import java.net.PortUnreachableException;
  * @author westy
  */
 public class PingManager implements Shutdownable{
+  
+  // Since we don't have ids for LNSs anymore this represents and the LNS in our table.
+  public static final int LOCALNAMESERVERID = Integer.MAX_VALUE;
 
   private final static int TIME_BETWEEN_PINGS = 30000;
   private final int nodeId;
-  private PingClient pingClient;
-  private PingServer pingServer;
+  private final PingClient pingClient;
+  private final PingServer pingServer;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
-  private SparseMatrix<Long> pingTable; // the place we store all the sampled rtt values
+  private final SparseMatrix<Long> pingTable; // the place we store all the sampled rtt values
   private final GNSNodeConfig gnsNodeConfig;
   private Thread managerThread;
 
-  private boolean debug = false;
+  private final boolean debug = false;
 
   public PingManager(int nodeId, GNSNodeConfig gnsNodeConfig) {
     this.nodeId = nodeId;
@@ -71,7 +74,8 @@ public class PingManager implements Shutdownable{
     while (true) {
       Thread.sleep(TIME_BETWEEN_PINGS);
       long t0 = System.currentTimeMillis();
-      for (int id : gnsNodeConfig.getNodeIDs()) {
+      // Note that we're only pinging other NameServers here, not LNSs (they don't have IDs anyway).
+      for (int id : gnsNodeConfig.getNameServerIDs()) {
         try {
           if (id != nodeId) {
             if (debug) GNS.getLogger().fine("Send from " + nodeId + " to " + id);
@@ -132,7 +136,7 @@ public class PingManager implements Shutdownable{
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    L/NS Hostname");
     result.append(NEWLINE);
-    for (int i : gnsNodeConfig.getNodeIDs()) {
+    for (int i : gnsNodeConfig.getNameServerIDs()) {
       result.append(String.format("%4d", i));
       if (i != node) {
         result.append(" = ");

@@ -11,6 +11,7 @@ import java.util.TimerTask;
  * @author abhigyan
  * @deprecated
  */
+// FIXME: I assume this is unused since it's deprecated?
 public class SendLoadMonitorPacketTask extends TimerTask {
 
   private int nameServerID;
@@ -18,7 +19,7 @@ public class SendLoadMonitorPacketTask extends TimerTask {
 
   public SendLoadMonitorPacketTask(int nsID) {
     nameServerID = nsID;
-    nsLoad = new NameServerLoadPacket(LocalNameServer.getNodeID(), nsID, 0);
+    nsLoad = new NameServerLoadPacket(-1, nsID, 0);
   }
 
   @Override

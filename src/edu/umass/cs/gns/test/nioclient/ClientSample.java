@@ -186,26 +186,27 @@ public class ClientSample extends AbstractPacketDemultiplexer {
     return true;
   }
 
-  public static void main(String[] args) throws IOException, JSONException, InterruptedException {
-    GNS.consoleOutputLevel = GNS.statConsoleOutputLevel = GNS.fileLoggingLevel = GNS.statFileLoggingLevel = "INFO";
-
-    // A client only needs to know IP/port of a local name server.
-    String nodeConfigFile = args[0];
-    // port on which client is listening for responses from a local name server.
-    int myPort = Integer.parseInt(args[1]);
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nodeConfigFile, 0);
-    int lnsID = -1;
-    for (int nodeID: gnsNodeConfig.getLocalNameServerIDs()) {
-      lnsID = nodeID;
-      break;
-    }
-
-    if (lnsID != -1) {
-      ClientSample cs = new ClientSample(gnsNodeConfig.getNodeAddress(lnsID), gnsNodeConfig.getLnsDbClientPort(lnsID),
-              myPort);
-      cs.startClient();
-    } else {
-      GNS.getLogger().fine(" No local name servers found in config file.");
-    }
-  }
+  // commented out when the LNSs lost their ids
+//  public static void main(String[] args) throws IOException, JSONException, InterruptedException {
+//    GNS.consoleOutputLevel = GNS.statConsoleOutputLevel = GNS.fileLoggingLevel = GNS.statFileLoggingLevel = "INFO";
+//
+//    // A client only needs to know IP/port of a local name server.
+//    String nodeConfigFile = args[0];
+//    // port on which client is listening for responses from a local name server.
+//    int myPort = Integer.parseInt(args[1]);
+//    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nodeConfigFile, 0);
+//    int lnsID = -1;
+//    for (int nodeID: gnsNodeConfig.getLocalNameServerIDs()) {
+//      lnsID = nodeID;
+//      break;
+//    }
+//
+//    if (lnsID != -1) {
+//      ClientSample cs = new ClientSample(gnsNodeConfig.getNodeAddress(lnsID), gnsNodeConfig.getLnsDbClientPort(lnsID),
+//              myPort);
+//      cs.startClient();
+//    } else {
+//      GNS.getLogger().fine(" No local name servers found in config file.");
+//    }
+//  }
 }

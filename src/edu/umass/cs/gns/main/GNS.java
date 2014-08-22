@@ -17,41 +17,28 @@ public class GNS {
   public static final int DEFAULT_TTL_SECONDS = 0;
   
   public static final int STARTINGPORT = 24400;
-  // FIXME: clean this up
+  // FIXME: clean this up and make config settable
   public static final int DEFAULT_LNS_TCP_PORT = 24398;
   public static final int DEFAULT_LNS_PING_PORT = 24397;
   public static final int DEFAULT_LNS_ADMIN_PORT = 24396;
   public static final int DEFAULT_LNS_ADMIN_RESPONSE_PORT = 24395;
   public static final int DEFAULT_LNS_ADMIN_DUMP_RESPONSE_PORT = 24394;
-  public static final int LOCAL_FIRST_NODE_PORT = 35000;
+  public static final int DEFAULT_LNS_DBCLIENT_PORT = 24393;
+  
+  public static final int NS_LOCAL_FIRST_NODE_PORT = 35000;
   public static final String GNS_URL_PATH = "GNS";
   
   public static final int CLIENTPORT = 24399;
   
 
-  // This is designed so we can run LNS and NS on the same host if needed
+  // This is designed so we can run multiple NSs on the same host if needed
   public enum PortType {
 
     NS_TCP_PORT(0), // TCP port at name servers
-    @Deprecated
-    LNS_TCP_PORT(1), // TCP port at local name servers
-    NS_UDP_PORT(2), // UDP port at local name servers
-    @Deprecated
-    LNS_UDP_PORT(3), // UDP port at local name servers
-    NS_ADMIN_PORT(4),
-    @Deprecated
-    LNS_ADMIN_PORT(5),
-    ADMIN_PORT(-1), // selects either NS_ADMIN_PORT or LNS_ADMIN_PORT
-    @Deprecated
-    LNS_ADMIN_RESPONSE_PORT(6),
-    @Deprecated
-    LNS_ADMIN_DUMP_RESPONSE_PORT(7),
-    NS_PING_PORT(8),
-    @Deprecated
-    LNS_PING_PORT(9),
-    @Deprecated
-    LNS_DBCLIENT_PORT(10),
-    PING_PORT(-1); // selects either NS_PING_PORT or DEFAULT_LNS_PING_PORT
+    NS_UDP_PORT(1), // UDP port at local name servers
+    NS_ADMIN_PORT(2),
+    NS_PING_PORT(3)
+    ;
     
     //
     int offset;

@@ -23,6 +23,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,7 +49,7 @@ public class RegisterAccount extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String name = json.getString(NAME);
     String guid = json.optString(GUID, null);
@@ -58,11 +59,12 @@ public class RegisterAccount extends NSCommand {
       guid = ClientUtils.createGuidFromPublicKey(publicKey);
     }
     String result = null;
-    result = NSAccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password, activeReplica);
+    result = NSAccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password, 
+            activeReplica, lnsAddress);
 
     if (OKRESPONSE.equals(result)) {
       // set up the default read access
-      NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, activeReplica);
+      NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, activeReplica, lnsAddress);
       return guid;
     } else {
       return result;

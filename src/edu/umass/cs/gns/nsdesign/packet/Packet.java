@@ -356,28 +356,12 @@ public class Packet {
     switch (portType) {
       case NS_TCP_PORT:
         return gnsNodeConfig.getNSTcpPort(nameServerId);
-      case LNS_TCP_PORT:
-        return GNS.DEFAULT_LNS_TCP_PORT;         //return gnsNodeConfig.getLNSTcpPort(nameServerId);
       case NS_UDP_PORT:
         return gnsNodeConfig.getNSUdpPort(nameServerId);
-      case LNS_UDP_PORT:
-        return gnsNodeConfig.getLNSUdpPort(nameServerId);
       case NS_ADMIN_PORT:
         return gnsNodeConfig.getNSAdminRequestPort(nameServerId);
-      case LNS_ADMIN_PORT:
-        return GNS.DEFAULT_LNS_ADMIN_PORT; // return gnsNodeConfig.getLNSAdminRequestPort(nameServerId);
-      case ADMIN_PORT:
-        return gnsNodeConfig.getNSAdminRequestPort(nameServerId);
-      case LNS_ADMIN_RESPONSE_PORT:
-        return GNS.DEFAULT_LNS_ADMIN_RESPONSE_PORT; //return gnsNodeConfig.getLNSAdminResponsePort(nameServerId);
-      case LNS_ADMIN_DUMP_RESPONSE_PORT:
-        return GNS.DEFAULT_LNS_ADMIN_DUMP_RESPONSE_PORT; //return gnsNodeConfig.getLNSAdminDumpReponsePort(nameServerId);
-      case LNS_PING_PORT:
-        return GNS.DEFAULT_LNS_PING_PORT;          //return gnsNodeConfig.getLNSPingPort(nameServerId);
       case NS_PING_PORT:
         return gnsNodeConfig.getNSPingPort(nameServerId);
-      case PING_PORT:
-        return gnsNodeConfig.getPingPort(nameServerId);
     }
     return -1;
   }

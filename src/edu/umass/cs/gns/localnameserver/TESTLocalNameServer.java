@@ -35,7 +35,7 @@ public class TESTLocalNameServer {
     GNS.fileLoggingLevel = GNS.consoleOutputLevel = "SEVERE";
     StartLocalNameServer.experimentMode = false;
     StartLocalNameServer.debugMode = false;
-    StartLocalNameServer.startLNSConfigFile(8, InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null, null);
+    StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null, null);
 
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, 0);
 

@@ -22,6 +22,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,7 +48,7 @@ public class RemoveGuid extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String guidToRemove = json.getString(GUID);
     String accountGuid = json.optString(ACCOUNT_GUID, null);
@@ -55,23 +56,23 @@ public class RemoveGuid extends NSCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo accountGuidInfo = null;
     GuidInfo guidInfoToRemove;
-    if ((guidInfoToRemove = NSAccountAccess.lookupGuidInfo(guidToRemove, activeReplica)) == null) {
+    if ((guidInfoToRemove = NSAccountAccess.lookupGuidInfo(guidToRemove, activeReplica, lnsAddress)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guidToRemove;
     }
     if (accountGuid != null) {
-      if ((accountGuidInfo = NSAccountAccess.lookupGuidInfo(accountGuid, activeReplica)) == null) {
+      if ((accountGuidInfo = NSAccountAccess.lookupGuidInfo(accountGuid, activeReplica, lnsAddress)) == null) {
         return BADRESPONSE + " " + BADGUID + " " + accountGuid;
       }
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
       AccountInfo accountInfo = null;
       if (accountGuid != null) {
-        accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(accountGuid, activeReplica);
+        accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(accountGuid, activeReplica, lnsAddress);
         if (accountInfo == null) {
           return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
         }
       }
-      return NSAccountAccess.removeGuid(guidInfoToRemove, accountInfo, activeReplica);
+      return NSAccountAccess.removeGuid(guidInfoToRemove, accountInfo, activeReplica, lnsAddress);
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;
     }

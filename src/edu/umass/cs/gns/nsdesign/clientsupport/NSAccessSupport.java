@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import java.net.InetSocketAddress;
 
 /**
  * Provides signing and ACL checks for commands.
@@ -75,17 +76,18 @@ public class NSAccessSupport {
    * @param accessorInfo
    * @return
    */
-  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo,
+          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
     }
     if (guidInfo.getGuid().equals(accessorInfo.getGuid())) {
       return true; // can always read your own stuff
-    } else if (hierarchicalAccessCheck(access, guidInfo, field, accessorInfo, activeReplica)) {
+    } else if (hierarchicalAccessCheck(access, guidInfo, field, accessorInfo, activeReplica, lnsAddress)) {
       return true; // accessor can see this field
 //    } else if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
 //      return true; // accessor can see this field
-    } else if (checkForAccess(access, guidInfo, ALLFIELDS, accessorInfo, activeReplica)) {
+    } else if (checkForAccess(access, guidInfo, ALLFIELDS, accessorInfo, activeReplica, lnsAddress)) {
       return true; // accessor can see all fields
     } else {
       if (debuggingEnabled) {
@@ -108,22 +110,23 @@ public class NSAccessSupport {
    * @throws FailedDBOperationException 
    */
   private static boolean hierarchicalAccessCheck(MetaDataTypeName access, GuidInfo guidInfo, String field,
-          GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+          GuidInfo accessorInfo, GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
-    if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
+    if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica, lnsAddress)) {
       return true;
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return hierarchicalAccessCheck(access, guidInfo, field.substring(0, field.lastIndexOf(".")), accessorInfo, activeReplica);
+      return hierarchicalAccessCheck(access, guidInfo, field.substring(0, field.lastIndexOf(".")), accessorInfo, activeReplica, lnsAddress);
     } else {
       return false;
     }
   }
 
-  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo,
+          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
       return true;
@@ -133,7 +136,7 @@ public class NSAccessSupport {
       if (debuggingEnabled) {
         GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       }
-      if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers, activeReplica)) {
+      if (checkAllowedUsers(accessorInfo.getGuid(), allowedusers, activeReplica, lnsAddress)) {
         if (debuggingEnabled) {
           GNS.getLogger().info("User " + accessorInfo.getName() + " allowed to access "
                   + (field != ALLFIELDS ? ("user " + guidInfo.getName() + "'s " + field + " field") : ("all of user " + guidInfo.getName() + "'s fields")));
@@ -151,7 +154,8 @@ public class NSAccessSupport {
 
   }
 
-  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedUsers, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedUsers, GnsReconfigurable activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (allowedUsers.contains(accesserGuid)) {
       return true;
     } else if (allowedUsers.contains(EVERYONE)) {
@@ -159,7 +163,7 @@ public class NSAccessSupport {
     } else {
       // see if allowed users (the list of guids and group guids that is in the ACL) intersects with the groups that this
       // guid is a member of (which is stored with this guid)
-      return !Sets.intersection(allowedUsers, NSGroupAccess.lookupGroups(accesserGuid, activeReplica)).isEmpty();
+      return !Sets.intersection(allowedUsers, NSGroupAccess.lookupGroups(accesserGuid, activeReplica, lnsAddress)).isEmpty();
     }
   }
 

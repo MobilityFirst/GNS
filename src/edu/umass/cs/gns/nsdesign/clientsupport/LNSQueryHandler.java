@@ -16,6 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -44,14 +45,15 @@ public class LNSQueryHandler {
    * @param activeReplica
    * @return the entire guid record in a QueryResult.
    */
-  public static QueryResult sendQuery(String name, String key, GnsReconfigurableInterface activeReplica) {
+  public static QueryResult sendQuery(String name, String key, GnsReconfigurableInterface activeReplica, 
+          InetSocketAddress lnsAddress) {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
     // activeReplica.getGNSNodeConfig() is a hack to getArray the first LNS
     // We need a means to find the closes LNS
-    sendQueryInternal(id, pickClosestLNServer(activeReplica), name, key, activeReplica);
+    sendQueryInternal(id, lnsAddress, name, key, activeReplica);
 //    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
 //      sendQueryInternal(id, server, name, key, activeReplica);
 //    }
@@ -62,23 +64,21 @@ public class LNSQueryHandler {
     return result;
   }
 
-  private static void sendQueryInternal(int queryId, int recipientId, String name, String key, GnsReconfigurableInterface activeReplica) {
+  private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key, GnsReconfigurableInterface activeReplica) {
     DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, null,
             ColumnFieldType.LIST_STRING,
             null, null, null);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + recipientId
-              + "(" + activeReplica.getGNSNodeConfig().getNodeAddress(recipientId)
-              + ":" + activeReplica.getGNSNodeConfig().getNodePort(recipientId) + ")"
+      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + lnsAddress
               + " for " + name + " / " + key + ": " + json);
-      activeReplica.getNioServer().sendToID(recipientId, json);
+      activeReplica.getNioServer().sendToAddress(lnsAddress, json);
       //Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), json, recipientId, GNS.PortType.LNS_TCP_PORT);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {
-      GNS.getLogger().severe("Problem sending packet to NS " + recipientId + ": " + e);
+      GNS.getLogger().severe("Problem sending packet to NS " + lnsAddress + ": " + e);
     }
   }
 
@@ -141,17 +141,5 @@ public class LNSQueryHandler {
     } while (queryResultMap.containsKey(id));
     return id;
   }
-  
-   public static int pickClosestLNServer(GnsReconfigurableInterface activeReplica) {
-    int result = activeReplica.getGNSNodeConfig().getClosestLocalNameServer();
-    if (result != GNSNodeConfig.INVALID_NAME_SERVER_ID) {
-      return result;
-    } else {
-      GNS.getLogger().warning("Using stupid mechanism for picking LNS.");
-      // this hack picks an element from the set
-      return activeReplica.getGNSNodeConfig().getLocalNameServerIDs().iterator().next();
-    }
-  }
 
-  public static String Version = "$Revision: 481 $";
 }

@@ -20,7 +20,7 @@ import java.util.Set;
 public interface InterfaceNodeConfig<NodeIDType> {
 
     public abstract boolean containsNodeInfo(NodeIDType id);
-
+    
     public abstract Set<NodeIDType> getNodeIDs();
 
     public abstract InetAddress getNodeAddress(NodeIDType id);

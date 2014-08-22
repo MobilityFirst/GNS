@@ -19,6 +19,7 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 
 import java.text.ParseException;
@@ -39,8 +40,9 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
-    return lookupAccountInfoFromGuid(guid, false, activeReplica);
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
+    return lookupAccountInfoFromGuid(guid, false, activeReplica, lnsAddress);
   }
 
   /**
@@ -53,8 +55,10 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
-    ResultValue accountResult = NSFieldAccess.lookupField(guid, AccountAccess.ACCOUNT_INFO, allowQueryToOtherNSs, activeReplica);
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs,
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+    ResultValue accountResult = NSFieldAccess.lookupField(guid, AccountAccess.ACCOUNT_INFO, allowQueryToOtherNSs, 
+            activeReplica, lnsAddress);
     if (!accountResult.isEmpty()) {
       try {
         return new AccountInfo(accountResult.toResultValueString());
@@ -78,14 +82,15 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuidOrParent(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica) throws FailedDBOperationException {
-    AccountInfo info = lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica);
+  public static AccountInfo lookupAccountInfoFromGuidOrParent(String guid, boolean allowQueryToOtherNSs, 
+          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+    AccountInfo info = lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica, lnsAddress);
     if (info != null) {
       return info;
     } else {
       guid = lookupPrimaryGuid(guid, activeReplica);
       if (guid != null) {
-        return lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica);
+        return lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica, lnsAddress);
       } else {
         return null;
       }
@@ -127,8 +132,9 @@ public class NSAccountAccess {
    * @param guid
    * @return an {@link edu.umass.cs.gns.clientsupport.GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
-    return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica);
+  public static GuidInfo lookupGuidInfo(String guid, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
+    return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, lnsAddress);
   }
 
   /**
@@ -140,8 +146,10 @@ public class NSAccountAccess {
    * @param allowQueryToOtherNSs
    * @return
    */
-  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
-    ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica);
+  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
+    ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
+            lnsAddress);
     if (!guidResult.isEmpty()) {
       try {
         return new GuidInfo(guidResult.toResultValueString());
@@ -162,10 +170,11 @@ public class NSAccountAccess {
    * @param name
    * @return an {@link edu.umass.cs.gns.clientsupport.AccountInfo} instance
    */
-  public static AccountInfo lookupAccountInfoFromName(String name, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+  public static AccountInfo lookupAccountInfoFromName(String name, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
     String guid = lookupGuid(name, activeReplica);
     if (guid != null) {
-      return lookupAccountInfoFromGuid(guid, activeReplica);
+      return lookupAccountInfoFromGuid(guid, activeReplica, lnsAddress);
     }
     return null;
   }
@@ -196,19 +205,21 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return 
    */
-  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+  public static String addAccountWithVerification(String host, String name, String guid, String publicKey, String password, 
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     String response;
-    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication, activeReplica)).equals(OKRESPONSE)) {
+    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication, activeReplica,
+            lnsAddress)).equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
         String verifyCode = createVerificationCode(name);
         // Make sure the addAccount above actually worked.
-        AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, activeReplica);
+        AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, activeReplica, lnsAddress);
         if (accountInfo == null) {
           return BADRESPONSE + " " + BADACCOUNT + " " + guid;
         }
         accountInfo.setVerificationCode(verifyCode);
         accountInfo.noteUpdate();
-        if (updateAccountInfo(accountInfo, activeReplica)) {
+        if (updateAccountInfo(accountInfo, activeReplica, lnsAddress)) {
           boolean emailOK = Email.email("GNS Account Verification", name,
                   String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
           boolean adminEmailOK = Email.email("GNS Account Notification",
@@ -218,13 +229,13 @@ public class NSAccountAccess {
             return OKRESPONSE;
           } else {
             // if we can't send the confirmation back out of the account creation
-            removeAccount(accountInfo, activeReplica);
+            removeAccount(accountInfo, activeReplica, lnsAddress);
             return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send email";
           }
         } else {
           // Account info could not be updated.
           // If we're here we're probably hosed anyway, but just in case try to remove the account
-          removeAccount(accountInfo, activeReplica);
+          removeAccount(accountInfo, activeReplica, lnsAddress);
           return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to update account info";
         }
       }
@@ -249,9 +260,10 @@ public class NSAccountAccess {
    * @param activeReplica
    * @return 
    */
-  public static String verifyAccount(String guid, String code, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+  public static String verifyAccount(String guid, String code, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
     AccountInfo accountInfo;
-    if ((accountInfo = lookupAccountInfoFromGuid(guid, activeReplica)) == null) {
+    if ((accountInfo = lookupAccountInfoFromGuid(guid, activeReplica, lnsAddress)) == null) {
       return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to read account info";
     }
     if (accountInfo.isVerified()) {
@@ -269,7 +281,7 @@ public class NSAccountAccess {
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo, activeReplica)) {
+    if (updateAccountInfo(accountInfo, activeReplica, lnsAddress)) {
       return OKRESPONSE + " " + "Your account has been verified."; // add a little something for the kids
     } else {
       return BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to update account info";
@@ -294,11 +306,13 @@ public class NSAccountAccess {
    * @param password
    * @return status result
    */
-  public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify, GnsReconfigurableInterface activeReplica) {
+  public static String addAccount(String name, String guid, String publicKey, String password, boolean emailVerify, 
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
-      if (!LNSUpdateHandler.sendAddRecord(name, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(guid)), activeReplica).isAnError()) {
+      if (!LNSUpdateHandler.sendAddRecord(name, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(guid)), 
+              activeReplica, lnsAddress).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -306,14 +320,16 @@ public class NSAccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (!LNSUpdateHandler.sendAddRecord(guid, AccountAccess.ACCOUNT_INFO, accountInfo.toDBFormat(), activeReplica).isAnError()) {
+        if (!LNSUpdateHandler.sendAddRecord(guid, AccountAccess.ACCOUNT_INFO, accountInfo.toDBFormat(), activeReplica,
+                lnsAddress).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          LNSUpdateHandler.sendUpdate(guid, AccountAccess.GUID_INFO, guidInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_CREATE, activeReplica);
+          LNSUpdateHandler.sendUpdate(guid, AccountAccess.GUID_INFO, guidInfo.toDBFormat(), 
+                  UpdateOperation.SINGLE_FIELD_CREATE, activeReplica, lnsAddress);
           return OKRESPONSE;
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
-          LNSUpdateHandler.sendRemoveRecord(name, activeReplica);
+          LNSUpdateHandler.sendRemoveRecord(name, activeReplica, lnsAddress);
           return BADRESPONSE + " " + DUPLICATEGUID + " " + guid;
         }
       } else {
@@ -330,21 +346,22 @@ public class NSAccountAccess {
    * @param accountInfo
    * @return status result
    */
-  public static String removeAccount(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+  public static String removeAccount(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica,
+           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // First remove any group links
-    NSGroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), activeReplica);
+    NSGroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), activeReplica, lnsAddress);
     // Then remove the HRN link
-    if (!LNSUpdateHandler.sendRemoveRecord(accountInfo.getPrimaryName(), activeReplica).isAnError()) {
-      LNSUpdateHandler.sendRemoveRecord(accountInfo.getPrimaryGuid(), activeReplica);
+    if (!LNSUpdateHandler.sendRemoveRecord(accountInfo.getPrimaryName(), activeReplica, lnsAddress).isAnError()) {
+      LNSUpdateHandler.sendRemoveRecord(accountInfo.getPrimaryGuid(), activeReplica, lnsAddress);
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
-        LNSUpdateHandler.sendRemoveRecord(alias, activeReplica);
+        LNSUpdateHandler.sendRemoveRecord(alias, activeReplica, lnsAddress);
       }
       // get rid of all subguids
       for (String guid : accountInfo.getGuids()) {
-        GuidInfo guidInfo = lookupGuidInfo(guid, activeReplica);
+        GuidInfo guidInfo = lookupGuidInfo(guid, activeReplica, lnsAddress);
         if (guidInfo != null) { // should not be null, ignore if it is
-          removeGuid(guidInfo, accountInfo, true, activeReplica);
+          removeGuid(guidInfo, accountInfo, true, activeReplica, lnsAddress);
         }
       }
 
@@ -369,10 +386,11 @@ public class NSAccountAccess {
    * @param publicKey - the public key to use with the new account
    * @return status result
    */
-  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+  public static String addGuid(AccountInfo accountInfo, String name, String guid, String publicKey, 
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     try {
       // insure that the guis doesn't exist already
-      if (lookupGuidInfo(guid, activeReplica) != null) {
+      if (lookupGuidInfo(guid, activeReplica, lnsAddress) != null) {
         return BADRESPONSE + " " + DUPLICATEGUID + " " + guid;
       }
       // do this first so if there is an execption we don't have to back out of anything
@@ -382,14 +400,16 @@ public class NSAccountAccess {
       accountInfo.noteUpdate();
 
       // First try to create the HRN to insure that that name does not already exist
-      if (!LNSUpdateHandler.sendAddRecord(name, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(guid)), activeReplica).isAnError()) {
+      if (!LNSUpdateHandler.sendAddRecord(name, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(guid)),
+              activeReplica, lnsAddress).isAnError()) {
         // update the account info
-        if (updateAccountInfo(accountInfo, activeReplica)) {
+        if (updateAccountInfo(accountInfo, activeReplica, lnsAddress)) {
           // add the GUID_INFO link
-          LNSUpdateHandler.sendAddRecord(guid, AccountAccess.GUID_INFO, guidInfoFormatted, activeReplica);
+          LNSUpdateHandler.sendAddRecord(guid, AccountAccess.GUID_INFO, guidInfoFormatted, 
+                  activeReplica, lnsAddress);
           // add a link the new GUID to primary GUID
           LNSUpdateHandler.sendUpdate(guid, AccountAccess.PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
-                  UpdateOperation.SINGLE_FIELD_CREATE, activeReplica);
+                  UpdateOperation.SINGLE_FIELD_CREATE, activeReplica, lnsAddress);
           return OKRESPONSE;
         }
       }
@@ -407,8 +427,9 @@ public class NSAccountAccess {
    * @param guid
    * @return
    */
-  public static String removeGuid(GuidInfo guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
-    return removeGuid(guid, null, false, activeReplica);
+  public static String removeGuid(GuidInfo guid, GnsReconfigurable activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
+    return removeGuid(guid, null, false, activeReplica, lnsAddress);
   }
 
   /**
@@ -418,8 +439,9 @@ public class NSAccountAccess {
    * @param guid
    * @return status result
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
-    return removeGuid(guid, accountInfo, false, activeReplica);
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, 
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+    return removeGuid(guid, accountInfo, false, activeReplica, lnsAddress);
   }
 
   /**
@@ -433,10 +455,11 @@ public class NSAccountAccess {
    * @param ignoreAccountGuid
    * @return
    */
-  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+  public static String removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid, 
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
-      if (lookupAccountInfoFromGuid(guid.getGuid(), activeReplica) != null) {
+      if (lookupAccountInfoFromGuid(guid.getGuid(), activeReplica, lnsAddress) != null) {
         return BADRESPONSE + " " + BADGUID + " " + guid.getGuid() + " is an account guid";
       }
     }
@@ -447,16 +470,16 @@ public class NSAccountAccess {
       if (accountGuid == null) {
         return BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " does not have a primary account guid";
       }
-      if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, activeReplica)) == null) {
+      if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, activeReplica, lnsAddress)) == null) {
         return BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid;
       }
     }
     // First remove any group links
-    NSGroupAccess.cleanupGroupsForDelete(guid.getGuid(), activeReplica);
+    NSGroupAccess.cleanupGroupsForDelete(guid.getGuid(), activeReplica, lnsAddress);
     // Then remove the guid record
-    if (!LNSUpdateHandler.sendRemoveRecord(guid.getGuid(), activeReplica).isAnError()) {
+    if (!LNSUpdateHandler.sendRemoveRecord(guid.getGuid(), activeReplica, lnsAddress).isAnError()) {
       // remove reverse record
-      LNSUpdateHandler.sendRemoveRecord(guid.getName(), activeReplica);
+      LNSUpdateHandler.sendRemoveRecord(guid.getName(), activeReplica, lnsAddress);
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
@@ -465,7 +488,7 @@ public class NSAccountAccess {
         // update the account guid to know that we deleted the guid
         accountInfo.removeGuid(guid.getGuid());
         accountInfo.noteUpdate();
-        if (updateAccountInfo(accountInfo, activeReplica)) {
+        if (updateAccountInfo(accountInfo, activeReplica, lnsAddress)) {
           return OKRESPONSE;
         } else {
           return BADRESPONSE + " " + UPDATEERROR;
@@ -486,16 +509,18 @@ public class NSAccountAccess {
    * @param alias
    * @return status result
    */
-  public static String addAlias(AccountInfo accountInfo, String alias, GnsReconfigurableInterface activeReplica) {
+  public static String addAlias(AccountInfo accountInfo, String alias, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) {
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
 
     // insure that that name does not already exist
-    if (!LNSUpdateHandler.sendAddRecord(alias, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())), activeReplica).isAnError()) {
-      if (updateAccountInfo(accountInfo, activeReplica)) {
+    if (!LNSUpdateHandler.sendAddRecord(alias, AccountAccess.HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
+            activeReplica, lnsAddress).isAnError()) {
+      if (updateAccountInfo(accountInfo, activeReplica, lnsAddress)) {
         return OKRESPONSE;
       } else { // back out if we got an error
-        LNSUpdateHandler.sendRemoveRecord(alias, activeReplica);
+        LNSUpdateHandler.sendRemoveRecord(alias, activeReplica, lnsAddress);
         accountInfo.removeAlias(alias);
         return BADRESPONSE + " " + BADALIAS;
       }
@@ -512,17 +537,18 @@ public class NSAccountAccess {
    * @param alias
    * @return status result
    */
-  public static String removeAlias(AccountInfo accountInfo, String alias, GnsReconfigurableInterface activeReplica) {
+  public static String removeAlias(AccountInfo accountInfo, String alias, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) {
 
     if (accountInfo.containsAlias(alias)) {
       // remove the NAME -> GUID record
       NSResponseCode responseCode;
-      if ((responseCode = LNSUpdateHandler.sendRemoveRecord(alias, activeReplica)).isAnError()) {
+      if ((responseCode = LNSUpdateHandler.sendRemoveRecord(alias, activeReplica, lnsAddress)).isAnError()) {
         return BADRESPONSE + " " + responseCode.getProtocolCode();
       }
       accountInfo.removeAlias(alias);
       accountInfo.noteUpdate();
-      if (updateAccountInfo(accountInfo, activeReplica)) {
+      if (updateAccountInfo(accountInfo, activeReplica, lnsAddress)) {
         return OKRESPONSE;
       }
     }
@@ -536,10 +562,11 @@ public class NSAccountAccess {
    * @param password
    * @return status result
    */
-  public static String setPassword(AccountInfo accountInfo, String password, GnsReconfigurableInterface activeReplica) {
+  public static String setPassword(AccountInfo accountInfo, String password, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo, activeReplica)) {
+    if (updateAccountInfo(accountInfo, activeReplica, lnsAddress)) {
       return OKRESPONSE;
     }
     return BADRESPONSE + " " + UPDATEERROR;
@@ -552,10 +579,11 @@ public class NSAccountAccess {
    * @param tag
    * @return status result
    */
-  public static String addTag(GuidInfo guidInfo, String tag, GnsReconfigurable activeReplica) {
+  public static String addTag(GuidInfo guidInfo, String tag, GnsReconfigurable activeReplica,
+          InetSocketAddress lnsAddress) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, activeReplica)) {
+    if (updateGuidInfo(guidInfo, activeReplica, lnsAddress)) {
       return OKRESPONSE;
     }
     guidInfo.removeTag(tag);
@@ -569,19 +597,22 @@ public class NSAccountAccess {
    * @param tag
    * @return status result
    */
-  public static String removeTag(GuidInfo guidInfo, String tag, GnsReconfigurable activeReplica) {
+  public static String removeTag(GuidInfo guidInfo, String tag, GnsReconfigurable activeReplica, 
+          InetSocketAddress lnsAddress) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, activeReplica)) {
+    if (updateGuidInfo(guidInfo, activeReplica, lnsAddress)) {
       return OKRESPONSE;
     }
     return BADRESPONSE + " " + UPDATEERROR;
   }
 
-  private static boolean updateAccountInfo(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica) {
+  private static boolean updateAccountInfo(AccountInfo accountInfo, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) {
     try {
       if (!LNSUpdateHandler.sendUpdate(accountInfo.getPrimaryGuid(), AccountAccess.ACCOUNT_INFO,
-              accountInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_REPLACE_ALL, activeReplica).isAnError()) {
+              accountInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_REPLACE_ALL, activeReplica,
+              lnsAddress).isAnError()) {
         return true;
       }
     } catch (JSONException e) {
@@ -590,10 +621,12 @@ public class NSAccountAccess {
     return false;
   }
 
-  private static boolean updateGuidInfo(GuidInfo guidInfo, GnsReconfigurable activeReplica) {
+  private static boolean updateGuidInfo(GuidInfo guidInfo, GnsReconfigurable activeReplica,
+          InetSocketAddress lnsAddress) {
     try {
       if (!LNSUpdateHandler.sendUpdate(guidInfo.getGuid(), AccountAccess.GUID_INFO,
-              guidInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_REPLACE_ALL, activeReplica).isAnError()) {
+              guidInfo.toDBFormat(), UpdateOperation.SINGLE_FIELD_REPLACE_ALL, activeReplica,
+              lnsAddress).isAnError()) {
         return true;
       }
     } catch (JSONException e) {

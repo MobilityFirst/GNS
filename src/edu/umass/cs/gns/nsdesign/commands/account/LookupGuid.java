@@ -15,6 +15,7 @@ import edu.umass.cs.gns.nsdesign.commands.NSCommand;
 import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -40,7 +41,7 @@ public class LookupGuid extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws JSONException, FailedDBOperationException {
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws JSONException, FailedDBOperationException {
     String name = json.getString(NAME);
     String result = NSAccountAccess.lookupGuid(name, activeReplica);
     if (result != null) {

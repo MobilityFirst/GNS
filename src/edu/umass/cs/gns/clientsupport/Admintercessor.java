@@ -68,28 +68,28 @@ public class Admintercessor {
     adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
   }
 
-  /**
-   * Returns the local server ID associate with the Admintercessor.
-   * 
-   * @return
-   */
-  public static int getLocalServerID() {
-    return localServerID;
-  }
+//  /**
+//   * Returns the local server ID associate with the Admintercessor.
+//   * 
+//   * @return
+//   */
+//  public static int getLocalServerID() {
+//    return localServerID;
+//  }
 
-  /**
-   * Sets the local server ID associate with the Admintercessor.
-   * 
-   * @param localServerID
-   */
-  public static void setLocalServerID(int localServerID) {
-    Admintercessor.localServerID = localServerID;
-
-    GNS.getLogger().info("Local server id: " + localServerID
-            + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
-            + " Port: " + GNS.DEFAULT_LNS_TCP_PORT);
-            //+ " Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
-  }
+//  /**
+//   * Sets the local server ID associate with the Admintercessor.
+//   * 
+//   * @param localServerID
+//   */
+//  public static void setLocalServerID(int localServerID) {
+//    Admintercessor.localServerID = localServerID;
+//
+//    GNS.getLogger().info("Local server id: " + localServerID
+//            + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
+//            + " Port: " + GNS.DEFAULT_LNS_TCP_PORT);
+//            //+ " Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
+//  }
 
   /**
    * Clears the database and reinitializes all indices.
@@ -285,18 +285,18 @@ public class Admintercessor {
     }
   }
 
-  private static ServerSocket getAdminResponseSocket() {
-    GNS.getLogger().finer("Waiting for responses dump");
-    ServerSocket adminSocket;
-    try {
-      adminSocket = new ServerSocket(LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID));
-    } catch (Exception e) {
-      GNS.getLogger().severe("Error creating admin response socket on port " + 
-              LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID) + " : " + e);
-      return null;
-    }
-    return adminSocket;
-  }
+//  private static ServerSocket getAdminResponseSocket() {
+//    GNS.getLogger().finer("Waiting for responses dump");
+//    ServerSocket adminSocket;
+//    try {
+//      adminSocket = new ServerSocket(LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID));
+//    } catch (Exception e) {
+//      GNS.getLogger().severe("Error creating admin response socket on port " + 
+//              LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID) + " : " + e);
+//      return null;
+//    }
+//    return adminSocket;
+//  }
 
   // DUMP
 

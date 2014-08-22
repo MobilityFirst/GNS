@@ -19,6 +19,7 @@ import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
@@ -97,8 +98,8 @@ public class GroupChange {
 	 * Hash map stores info about group changes that are requested by local name server.
 	 * This is used only for collecting statistics regarding group change.
 	 */
-	private final static ConcurrentHashMap<GroupChangeIdentifier, Integer> TESTTrackGroupChange =
-			new ConcurrentHashMap<GroupChangeIdentifier, Integer>();
+	private final static ConcurrentHashMap<GroupChangeIdentifier, InetSocketAddress> TESTTrackGroupChange =
+			new ConcurrentHashMap<GroupChangeIdentifier, InetSocketAddress>();
 
 	/**
 	 * After replica controllers agree on changing the set of active replicas, this method updates the database to
@@ -126,9 +127,9 @@ public class GroupChange {
 			if(recovery) return;
 
 			// for some kinda testing
-			if (activeProposalPacket.getProposingNode() == rcID && activeProposalPacket.getLnsId() != -1) {
+			if (activeProposalPacket.getProposingNode() == rcID && activeProposalPacket.getLnsAddress() != null) {
 				TESTTrackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), 
-						activeProposalPacket.getVersion()), activeProposalPacket.getLnsId());
+						activeProposalPacket.getVersion()), activeProposalPacket.getLnsAddress());
 			}
 
 			stopOldActives(activeProposalPacket, rcID, rcRecord, protocolTasks /*return value*/);
@@ -296,11 +297,11 @@ public class GroupChange {
 			
 			if (TESTTrackGroupChange.size() > 0) {
 				GroupChangeIdentifier gci = new GroupChangeIdentifier(packet.getName(), packet.getVersion());
-				Integer lnsID = TESTTrackGroupChange.remove(gci);
-				log.info("Node "+rcID+" after group change: Send confirmation to LNS  " + lnsID);
-				if (lnsID != null) {
-					log.info("Node "+rcID+ " after group change: Send confirmation to LNS  " + lnsID);
-					replyToLNS = new MessagingTask(lnsID, packet.toJSONObject());
+				InetSocketAddress lnsAddress = TESTTrackGroupChange.remove(gci);
+				log.info("Node "+rcID+" after group change: Send confirmation to LNS  " + lnsAddress);
+				if (lnsAddress != null) {
+					log.info("Node "+rcID+ " after group change: Send confirmation to LNS  " + lnsAddress);
+					replyToLNS = new MessagingTask(lnsAddress, packet.toJSONObject());
 				}
 			}
 		} catch (RecordNotFoundException e) {

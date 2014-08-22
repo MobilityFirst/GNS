@@ -55,7 +55,8 @@ public class GnsReconUpdate {
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     // FIXME : handle ACL checks for full JSON user updates
     if (writer != null && field != null) { // writer will be null for internal system reads
-      errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, replica);
+      errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, 
+              replica, updatePacket.getLnsAddress());
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {

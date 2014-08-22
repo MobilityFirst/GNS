@@ -79,12 +79,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   private final Random random;
 
   /**
-   * Name Server ID *
-   */
-  @Deprecated
-  private final int nodeID;
-  
-  /**
    * Host address of the local name server.
    */
   private final InetSocketAddress nodeAddress;
@@ -95,9 +89,8 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   long receivedRequests = 0;
   long lastRequestTime = -1;
 
-  public BasicClientRequestHandler(int nodeID, InetSocketAddress nodeAddress, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
+  public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
-    this.nodeID = nodeID;
     this.nodeAddress = nodeAddress;
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -110,16 +103,18 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
 
   private InterfaceJSONNIOTransport initTransport() throws IOException {
 
-    new LNSListenerUDP(gnsNodeConfig, this).start();
+    // IS THIS USED ANYWHERE?
+    //new LNSListenerUDP(gnsNodeConfig, this).start();
 
     GNS.getLogger().info("LNS listener started.");
-    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeID, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
     if (parameters.isEmulatePingLatencies()) {
       JSONDelayEmulator.emulateConfigFileDelays(getGnsNodeConfig(), parameters.getVariation());
     }
     new Thread(gnsNiot).start();
 
-    return new GnsMessenger(nodeID, gnsNiot, executorService);
+    // FIXME: This guy only takes ints for id
+    return new GnsMessenger(-1, gnsNiot, executorService);
   }
 
   /**
@@ -133,12 +128,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   @Override
   public GNSNodeConfig getGnsNodeConfig() {
     return gnsNodeConfig;
-  }
-
-  @Override
-  @Deprecated
-  public int getNodeID() {
-    return nodeID;
   }
 
   public InetSocketAddress getNodeAddress() {

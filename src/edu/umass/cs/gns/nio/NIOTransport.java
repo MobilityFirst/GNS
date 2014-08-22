@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.exceptions.GnsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
@@ -679,15 +680,21 @@ public class NIOTransport<NodeIDType> implements Runnable {
 		this.serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
 
+                InetSocketAddress isa;
+                
+                //FIXME: make this a little less hackish
+                if (myID instanceof Integer) {
 		// Bind the server socket to the specified address and port
-		log.info("Node " + myID + " listening on " +
-				this.nodeConfig.getNodeAddress(this.myID) + ":" +
-				this.nodeConfig.getNodePort(this.myID));
-		InetSocketAddress isa =
-				new InetSocketAddress(
-						this.nodeConfig.getNodeAddress(this.myID),
-						this.nodeConfig.getNodePort(this.myID));
-		serverChannel.socket().bind(isa);
+                  isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
+                                              this.nodeConfig.getNodePort(this.myID));
+                } else if (myID instanceof InetSocketAddress){
+		  isa = (InetSocketAddress) myID;
+                } else {
+                  throw new IOException("Unknown type for Node id " + myID.getClass());
+                }
+                
+                log.info("LNS listening on " + isa);
+                serverChannel.socket().bind(isa);
 
 		// Register the server socket channel, indicating an interest in
 		// accepting new connections

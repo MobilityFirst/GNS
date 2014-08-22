@@ -20,6 +20,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,11 +46,11 @@ public class VerifyAccount extends NSCommand {
   }
   
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String guid = json.getString(GUID);
     String code = json.getString(CODE);
-    return NSAccountAccess.verifyAccount(guid, code, activeReplica);
+    return NSAccountAccess.verifyAccount(guid, code, activeReplica, lnsAddress);
   }
   
   @Override

@@ -94,8 +94,8 @@ public class Select {
     // If sufficient time hasn't passed we just send the current value back
     if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // grab the timing parameters that we squirreled away from the SETUP
-      Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica);
-      int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica);
+      Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica, packet.getLnsAddress());
+      int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica, packet.getLnsAddress());
       if (lastUpdate != null) {
         if (Config.debuggingEnabled) {
           GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
@@ -105,7 +105,7 @@ public class Select {
           if (Config.debuggingEnabled) {
             GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
-          ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica);
+          ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica, packet.getLnsAddress());
           sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsAddress(), result.toStringSet(), replica);
           return;
         }
@@ -127,7 +127,7 @@ public class Select {
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
     if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
-      packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), replica));
+      packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), replica, packet.getLnsAddress()));
     }
     packet.setNsID(replica.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
@@ -238,14 +238,14 @@ public class Select {
     // Now we update any group guid stuff
     if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP)) {
       // for setup we need to squirrel away the query for later lookups
-      NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery(), replica);
-      NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval(), replica);
+      NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery(), replica, packet.getLnsAddress());
+      NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval(), replica, packet.getLnsAddress());
     }
     if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
-      NSGroupAccess.updateMembers(guid, guids, replica);
+      NSGroupAccess.updateMembers(guid, guids, replica, packet.getLnsAddress());
       //NSGroupAccess.updateRecords(guid, processResponsesIntoJSONArray(info.getResponsesAsMap()), replica); 
-      NSGroupAccess.updateLastUpdate(guid, new Date(), replica);
+      NSGroupAccess.updateLastUpdate(guid, new Date(), replica, packet.getLnsAddress());
     }
   }
 

@@ -23,6 +23,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -48,18 +49,18 @@ public class AddAlias extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String guid = json.getString(GUID);
     String name = json.getString(NAME);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica, lnsAddress)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (NSAccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(guid, activeReplica);
+      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(guid, activeReplica, lnsAddress);
       if (accountInfo == null) {
         return BADRESPONSE + " " + BADACCOUNT + " " + guid;
       }
@@ -68,7 +69,7 @@ public class AddAlias extends NSCommand {
       } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
         return BADRESPONSE + " " + TOMANYALIASES;
       } else {
-        return NSAccountAccess.addAlias(accountInfo, name, activeReplica);
+        return NSAccountAccess.addAlias(accountInfo, name, activeReplica, lnsAddress);
       }
     } else {
       return BADRESPONSE + " " + BADSIGNATURE;

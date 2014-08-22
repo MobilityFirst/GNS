@@ -17,6 +17,7 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
+import java.net.InetSocketAddress;
 
 /**
  * Methods for reading field information in guids on NameServers.
@@ -76,8 +77,9 @@ public class NSFieldAccess {
     }
   }
 
-  private static ResultValue lookupFieldQueryLNS(String guid, String field, GnsReconfigurableInterface activeReplica) {
-    QueryResult queryResult = LNSQueryHandler.sendQuery(guid, field, activeReplica);
+  private static ResultValue lookupFieldQueryLNS(String guid, String field, GnsReconfigurableInterface activeReplica,
+          InetSocketAddress lnsAddress) {
+    QueryResult queryResult = LNSQueryHandler.sendQuery(guid, field, activeReplica, lnsAddress);
     if (!queryResult.isError()) {
       return queryResult.getArray(field);
     } else {
@@ -97,11 +99,12 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    */
-  public static ResultValue lookupField(String guid, String field, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica) throws FailedDBOperationException {
+  public static ResultValue lookupField(String guid, String field, boolean allowQueryToOtherNSs, 
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     ResultValue result = lookupFieldOnThisServer(guid, field, activeReplica);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result.isEmpty() && !activeReplica.getDB().containsName(guid) && allowQueryToOtherNSs) {
-      result = lookupFieldQueryLNS(guid, field, activeReplica);
+      result = lookupFieldQueryLNS(guid, field, activeReplica, lnsAddress);
       if (!result.isEmpty()) {
         GNS.getLogger().info("@@@@@@ Field " + field + " in " + guid + " not found on this server but was found thru LNS query.");
       }

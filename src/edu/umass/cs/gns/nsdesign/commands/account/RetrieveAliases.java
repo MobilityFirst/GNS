@@ -26,6 +26,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import java.net.InetSocketAddress;
 
 /**
  *
@@ -49,17 +50,17 @@ public class RetrieveAliases extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String guid = json.getString(GUID);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     GuidInfo guidInfo;
-    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica)) == null) {
+    if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, activeReplica, lnsAddress)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + guid;
     }
     if (NSAccessSupport.verifySignature(guidInfo, signature, message)) {
-      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(guid, activeReplica);
+      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(guid, activeReplica, lnsAddress);
       ArrayList<String> aliases = accountInfo.getAliases();
       return new JSONArray(aliases).toString();
     } else {

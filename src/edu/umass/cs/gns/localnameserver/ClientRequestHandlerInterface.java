@@ -50,14 +50,6 @@ public interface ClientRequestHandlerInterface {
   public RequestHandlerParameters getParameters();
   
   /**
-   * Returns the id of this node.
-   * 
-   * @return 
-   */
-  @Deprecated
-  public int getNodeID();
-  
-  /**
    * Returns the address of this node.
    * 
    * @return 

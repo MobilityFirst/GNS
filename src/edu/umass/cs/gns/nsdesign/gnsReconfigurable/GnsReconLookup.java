@@ -59,7 +59,7 @@ public class GnsReconLookup {
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
 
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("Node " + gnsApp.getNodeID() + "; DNS Query Packet: " + dnsPacket.toString());
+      GNS.getLogger().fine("Node " + gnsApp.getNodeID() + "; DNS Query Packet: " + dnsPacket.toString());
     }
     // if all replicas are coordinating on a read request, then check if this node should reply to client.
     // whether coordination is done or not, only the replica receiving client's request replies to the client.
@@ -89,12 +89,13 @@ public class GnsReconLookup {
       // FIXME: ignore check for non-top-level fields
       if (reader != null) { // reader will be null for internal system reads
         if (field != null) {// single field check
-          errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message, MetaDataTypeName.READ_WHITELIST, gnsApp);
+          errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message, 
+                  MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getLnsAddress());
         } else { //multi field check - return an error if any field doesn't pass
           for (String key : fields) {
             NSResponseCode code;
             if ((code = NSAuthentication.signatureAndACLCheck(guid, key, reader, signature,
-                    message, MetaDataTypeName.READ_WHITELIST, gnsApp)).isAnError()) {
+                    message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getLnsAddress())).isAnError()) {
               errorCode = code;
             }
           }
@@ -118,19 +119,19 @@ public class GnsReconLookup {
         try {
           if (Defs.ALLFIELDS.equals(field)) {
             if (Config.debuggingEnabled) {
-              GNS.getLogger().info("#### Field=" + field + " Format=" + dnsPacket.getReturnFormat());
+              GNS.getLogger().fine("Field=" + field + " Format=" + dnsPacket.getReturnFormat());
             }
             // need everything so just grab all the fields
             nameRecord = NameRecord.getNameRecord(gnsApp.getDB(), guid);
           } else if (field != null) {
             if (Config.debuggingEnabled) {
-              GNS.getLogger().info("#### Field=" + field + " Format=" + dnsPacket.getReturnFormat());
+              GNS.getLogger().fine("Field=" + field + " Format=" + dnsPacket.getReturnFormat());
             }
             // otherwise grab a few system fields we need plus the field the user wanted
             nameRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, dnsSystemFields, dnsPacket.getReturnFormat(), field);
           } else { // multi-field lookup
             if (Config.debuggingEnabled) {
-              GNS.getLogger().finer("#### Fields=" + fields + " Format=" + dnsPacket.getReturnFormat());
+              GNS.getLogger().fine("Fields=" + fields + " Format=" + dnsPacket.getReturnFormat());
             }
             String[] fieldArray = new String[fields.size()];
             fieldArray = fields.toArray(fieldArray);

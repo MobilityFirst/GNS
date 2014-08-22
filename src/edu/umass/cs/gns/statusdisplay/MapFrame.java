@@ -215,16 +215,6 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
     switch (portType) {
       case NS_TCP_PORT:
         return Color.RED;
-      case LNS_ADMIN_PORT:
-        return Colors.Yellow;
-      case LNS_ADMIN_RESPONSE_PORT:
-        return Colors.Brown;
-      case LNS_ADMIN_DUMP_RESPONSE_PORT:
-        return Colors.Magenta;
-      case LNS_TCP_PORT:
-        return Colors.DeepPink;
-      case LNS_UDP_PORT:
-        return Colors.Cyan;
       case NS_ADMIN_PORT:
         return Colors.DarkGoldenrod;
       default:

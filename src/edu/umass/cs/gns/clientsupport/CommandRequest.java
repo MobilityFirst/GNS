@@ -64,7 +64,7 @@ public class CommandRequest {
           CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue, 
                   handler.getReceivedRequests(), handler.getRequestsPerSecond());
           if (Config.debuggingEnabled) {
-            GNS.getLogger().info("######## SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+            GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
           }
           handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
         } catch (JSONException e) {

@@ -15,6 +15,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -65,15 +66,17 @@ public class NSFieldMetaData {
     }
   }
 
-  public static void add(MetaDataTypeName type, String guid, String key, String value, GnsReconfigurableInterface activeReplica) {
+  public static void add(MetaDataTypeName type, String guid, String key, String value, 
+          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) {
 
     LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica, lnsAddress);
   }
 
-  public static void remove(MetaDataTypeName type, String guid, String key, String value, GnsReconfigurable activeReplica) {
+  public static void remove(MetaDataTypeName type, String guid, String key, String value, 
+          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) {
 
     LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
-            UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica);
+            UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
   }
 }

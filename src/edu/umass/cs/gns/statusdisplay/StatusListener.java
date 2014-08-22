@@ -4,6 +4,7 @@
  */
 package edu.umass.cs.gns.statusdisplay;
 
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
@@ -12,6 +13,7 @@ import edu.umass.cs.gns.nsdesign.packet.admin.StatusInitPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.StatusPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Date;
@@ -109,7 +111,7 @@ public class StatusListener extends Thread {
       // send out the StatusInit packet to all local name servers
       System.out.println("Sending status server init to LNS " + id);
       try {
-        Packet.sendTCPPacket(nodeConfig, json, id, GNS.PortType.LNS_ADMIN_PORT);
+        Packet.sendTCPPacket(json, new InetSocketAddress(LocalNameServer.getAddress().getHostString(), GNS.DEFAULT_LNS_ADMIN_PORT));
       } catch (IOException e) {
          System.out.println("Error sending status init to LNS " + id + " : " + e);
       }

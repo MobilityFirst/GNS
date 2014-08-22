@@ -17,131 +17,131 @@ import java.util.Set;
  * @author abhigyan
  *
  */
-public class NewActiveProposalPacket extends BasicPacket {
+public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
 
-	private final static String NAME = "name";
+  private final static String NAME = "name";
 
-	private final static String PROPOSING_NODE = "propNode";
+  private final static String PROPOSING_NODE = "propNode";
 
-	private final static String NEW_ACTIVES = "actives";
+  private final static String NEW_ACTIVES = "actives";
 
-	private final static String VERSION = "version";
+  private final static String VERSION = "version";
 
-  private final static String LNS_ID = "lns_id"; // this field is used during testing only
-
-	/**
-	 * name for which the new actives are being proposed
-	 */
-	String name;
-
-	/**
-	 * node which proposed this message.
-	 */
-	int proposingNode;
-
-	/**
-	 * current set of actives of this node.
-	 */
-	Set<Integer> newActives;
-
-	/**
-	 * Verion number of this new set of active name servers.
-	 */
-	int version;
-
-  private int lnsId = -1;
+  //private final static String LNS_ID = "lns_id"; // this field is used during testing only
 
   /**
-	 * Constructor method
-	 * @param name  name for which the new actives are being proposed
-	 * @param proposingNode  node which proposed this message.
-	 * @param newActives  current set of actives of this node.
+   * name for which the new actives are being proposed
+   */
+  String name;
+
+  /**
+   * node which proposed this message.
+   */
+  int proposingNode;
+
+  /**
+   * current set of actives of this node.
+   */
+  Set<Integer> newActives;
+
+  /**
+   * Verion number of this new set of active name servers.
+   */
+  int version;
+//
+//  private int lnsId = -1;
+
+  /**
+   * Constructor method
+   *
+   * @param name name for which the new actives are being proposed
+   * @param proposingNode node which proposed this message.
+   * @param newActives current set of actives of this node.
    * @param version Version number for this new set of active name servers.
-	 */
-	public NewActiveProposalPacket(String name, int proposingNode, Set<Integer> newActives, int version) {
-		this.type = PacketType.NEW_ACTIVE_PROPOSE;
-		this.name = name;
-		this.proposingNode = proposingNode;
-		this.newActives = newActives;
-		this.version = version;
-	}
+   */
+  public NewActiveProposalPacket(String name, int proposingNode, Set<Integer> newActives, int version) {
+    super(null);
+    this.type = PacketType.NEW_ACTIVE_PROPOSE;
+    this.name = name;
+    this.proposingNode = proposingNode;
+    this.newActives = newActives;
+    this.version = version;
+  }
 
+  public NewActiveProposalPacket(JSONObject json) throws JSONException {
+    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+    this.type = Packet.getPacketType(json);
+    this.name = json.getString(NAME);
 
-	public NewActiveProposalPacket(JSONObject json) throws JSONException {
+    this.proposingNode = json.getInt(PROPOSING_NODE);
 
-		this.type = Packet.getPacketType(json);
-		this.name = json.getString(NAME);
+    String actives = json.getString(NEW_ACTIVES);
 
-		this.proposingNode = json.getInt(PROPOSING_NODE);
+    this.newActives = new HashSet<Integer>();
 
-		String actives = json.getString(NEW_ACTIVES);
+    String[] activeSplit = actives.split(":");
 
-		this.newActives = new HashSet<Integer>();
+    for (String x : activeSplit) {
+      newActives.add(Integer.parseInt(x));
+    }
 
-		String[] activeSplit = actives.split(":");
+    this.version = json.getInt(VERSION);
+    //this.lnsId = json.getInt(LNS_ID);
+  }
 
-		for (String x: activeSplit) {
-			newActives.add(Integer.parseInt(x));
-		}
+  /**
+   * JSON object that is implemented.
+   *
+   * @return
+   * @throws org.json.JSONException
+   */
+  @Override
+  public JSONObject toJSONObject() throws JSONException {
+    JSONObject json = new JSONObject();
+    Packet.putPacketType(json, getType());
+    super.addToJSONObject(json);
+    json.put(NAME, name);
+    json.put(PROPOSING_NODE, proposingNode);
 
-		this.version = json.getInt(VERSION);
-    this.lnsId = json.getInt(LNS_ID);
-	}
-
-	/**
-	 * JSON object that is implemented.
-	 * @return
-	 * @throws org.json.JSONException
-	 */
-	@Override
-	public JSONObject toJSONObject() throws JSONException {
-		JSONObject json = new JSONObject();
-		Packet.putPacketType(json, getType());
-		json.put(NAME, name);
-		json.put(PROPOSING_NODE, proposingNode);
-		
-		// convert array to string
-		StringBuilder sb = new StringBuilder();
-		for (Integer x: newActives) {
-			if (sb.length() == 0) 
-				sb.append(x);
-			else {
+    // convert array to string
+    StringBuilder sb = new StringBuilder();
+    for (Integer x : newActives) {
+      if (sb.length() == 0) {
+        sb.append(x);
+      } else {
         sb.append(":");
         sb.append((x.toString()));
       }
-		}
-		String actives = sb.toString();
-		json.put(NEW_ACTIVES, actives);
-		json.put(VERSION, version);
-    json.put(LNS_ID, lnsId);
+    }
+    String actives = sb.toString();
+    json.put(NEW_ACTIVES, actives);
+    json.put(VERSION, version);
+    //json.put(LNS_ID, lnsId);
 
-		return json;
-	}
-	
-	
-	
-	public String getName() {
-		return name;
-	}
-
-	
-	public int getProposingNode() {
-		return proposingNode;
-	}
-	
-	public Set<Integer> getProposedActiveNameServers() {
-		return newActives;
-	}
-	
-	public int getVersion() {
-		return version;
-	}
-
-  public int getLnsId() {
-    return lnsId;
+    return json;
   }
 
-  public void setLnsId(int lnsId) {
-    this.lnsId = lnsId;
+  public String getName() {
+    return name;
   }
+
+  public int getProposingNode() {
+    return proposingNode;
+  }
+
+  public Set<Integer> getProposedActiveNameServers() {
+    return newActives;
+  }
+
+  public int getVersion() {
+    return version;
+  }
+
+//  public int getLnsId() {
+//    return lnsId;
+//  }
+//
+//  public void setLnsId(int lnsId) {
+//    this.lnsId = lnsId;
+//  }
 }

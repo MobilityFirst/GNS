@@ -36,13 +36,10 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  */
 public class LocalNameServer {
-
-  /**
-   * Local Name Server ID *
-   */
-  @Deprecated
-  private static int nodeID;
   
+  /**
+   * The address of the name server. Replaces nodeId.
+   */
   private static InetSocketAddress address; // will replace nodeId
 
   // FIXME: Future code cleanup note: The ClientRequestHandlerInterface and the IntercessorInterface
@@ -84,10 +81,9 @@ public class LocalNameServer {
    * @param nodeID Local Name Server Id
    * @throws IOException
    */
-  public LocalNameServer(int nodeID, InetSocketAddress address, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
+  public LocalNameServer(InetSocketAddress address, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
     // set node ID first because constructor for BasicClientRequestHandler reads 'nodeID' value.
-    this.nodeID = nodeID;
     this.address = address; // replaces id
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
@@ -103,7 +99,7 @@ public class LocalNameServer {
             StartLocalNameServer.replicationFramework
     );
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    requestHandler = new BasicClientRequestHandler(nodeID, address, gnsNodeConfig, parameters);
+    requestHandler = new BasicClientRequestHandler(address, gnsNodeConfig, parameters);
 
     if (!parameters.isExperimentMode()) {
       // intercessor for regular GNS use
@@ -111,20 +107,19 @@ public class LocalNameServer {
       intercessor = new Intercessor();
     } else {
       // intercessor for four simple DB operations: add, remove, write, read only.
-      intercessor = new DBClientIntercessor(nodeID, gnsNodeConfig.getLnsDbClientPort(nodeID),
+      intercessor = new DBClientIntercessor(-1, GNS.DEFAULT_LNS_DBCLIENT_PORT,
               new LNSPacketDemultiplexer(requestHandler));
     }
 
     if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
-      GnsHttpServer.runHttp(nodeID);
+      GnsHttpServer.runHttp();
     }
 
     if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      GNS.getLogger().info("LNS Node " + LocalNameServer.getAddress() + " started Ping server on port " +
-              gnsNodeConfig.getPingPort(nodeID));
-      pingManager = new PingManager(nodeID, gnsNodeConfig);
+      GNS.getLogger().info("LNS running at " + LocalNameServer.getAddress() + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
+      pingManager = new PingManager(PingManager.LOCALNAMESERVERID, gnsNodeConfig);
       pingManager.startPinging();
     }
 
@@ -137,21 +132,13 @@ public class LocalNameServer {
 
     if (parameters.isExperimentMode()) {
       GNS.getLogger().info("Starting experiment ..... ");
-      new StartExperiment().startMyTest(nodeID, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
+      new StartExperiment().startMyTest(-1, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
       // name server loads initialized.
       if (parameters.isLoadDependentRedirection()) {
         initializeNameServerLoadMonitoring();
       }
     }
-  }
-
-  /**
-   * @return the nodeID
-   */
-  @Deprecated
-  public static int getNodeID() {
-    return nodeID;
   }
 
   /**

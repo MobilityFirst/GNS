@@ -13,6 +13,7 @@ import edu.umass.cs.gns.util.GroupChangeIdentifier;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -86,8 +87,8 @@ public class GroupChange {
    * Hash map stores info about group changes that are requested by local name server.
    * This is used only for collecting statistics regarding group change.
    */
-  private final static ConcurrentHashMap<GroupChangeIdentifier, Integer> trackGroupChange =
-          new ConcurrentHashMap<GroupChangeIdentifier, Integer>();
+  private final static ConcurrentHashMap<GroupChangeIdentifier, InetSocketAddress> trackGroupChange =
+          new ConcurrentHashMap<GroupChangeIdentifier, InetSocketAddress>();
 
   /**
    * After replica controllers agree on changing the set of active replicas, this method updates the database to
@@ -119,10 +120,10 @@ public class GroupChange {
         GNS.getLogger().warning(" DECISION NOT APPLIED. Because most recently "
                 + "proposed active name servers is not yet running: " + rcRecord.getActiveNameservers());
         if (!recovery && trackGroupChange.size() > 0) {
-          int lnsID = activeProposalPacket.getLnsId();
-          GNS.getLogger().info("Group change canot be done so send confirmation to LNS  " + lnsID);
+          InetSocketAddress lnsAddress = activeProposalPacket.getLnsAddress();
+          GNS.getLogger().info("Group change canot be done so send confirmation to LNS  " + lnsAddress);
           GroupChangeCompletePacket gccp = new GroupChangeCompletePacket(activeProposalPacket.getVersion(), rcRecord.getName());
-          replicaController.getNioServer().sendToID(lnsID, gccp.toJSONObject());
+          replicaController.getNioServer().sendToAddress(lnsAddress, gccp.toJSONObject());
         }
         return;
       }
@@ -138,9 +139,9 @@ public class GroupChange {
 
       GNS.getLogger().fine("Name Record Now: = " + rcRecord.toString());
       if (!recovery) {
-        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID() && activeProposalPacket.getLnsId() != -1) {
+        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID() && activeProposalPacket.getLnsAddress() != null) {
           GNS.getLogger().info("Putting packet in hash map: " + activeProposalPacket);
-          trackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), activeProposalPacket.getVersion()), activeProposalPacket.getLnsId());
+          trackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), activeProposalPacket.getVersion()), activeProposalPacket.getLnsAddress());
         }
         // Next step: stop old actives
         if (activeProposalPacket.getProposingNode() == replicaController.getNodeID()) {// if I have proposed this change, I will start actives group change process
@@ -284,11 +285,11 @@ public class GroupChange {
 
       if (!recovery && trackGroupChange.size() > 0) {
         GroupChangeIdentifier gci = new GroupChangeIdentifier(packet.getName(), packet.getVersion());
-        Integer lnsID = trackGroupChange.remove(gci);
-        GNS.getLogger().info("After group change: Send confirmation to LNS  " + lnsID);
-        if (lnsID != null) {
-          GNS.getLogger().info("After group change: Send confirmation to LNS  " + lnsID);
-          replicaController.getNioServer().sendToID(lnsID, packet.toJSONObject());
+        InetSocketAddress lnsAddress = trackGroupChange.remove(gci);
+        GNS.getLogger().info("After group change: Send confirmation to LNS  " + lnsAddress);
+        if (lnsAddress != null) {
+          GNS.getLogger().info("After group change: Send confirmation to LNS  " + lnsAddress);
+          replicaController.getNioServer().sendToAddress(lnsAddress, packet.toJSONObject());
         }
       }
     } catch (RecordNotFoundException e) {

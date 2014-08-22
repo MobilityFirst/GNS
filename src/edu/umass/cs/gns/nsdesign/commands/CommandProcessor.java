@@ -34,14 +34,14 @@ public class CommandProcessor {
   private static final NSCommandModule commandModule = new NSCommandModule();
   
   public static void processCommandPacket(LNSToNSCommandPacket packet, GnsReconfigurableInterface gnsReconfigurable) throws IOException, JSONException{
-    String returnValue = processCommand(packet.getCommand(), gnsReconfigurable);
+    String returnValue = processCommand(packet.getCommand(), gnsReconfigurable, packet.getLnsAddress());
     packet.setReturnValue(returnValue);
      GNS.getLogger().info("NS" + gnsReconfigurable.getNodeID() + " sending back to LNS " + packet.getLnsAddress()
              + " command result: " + returnValue );
     gnsReconfigurable.getNioServer().sendToAddress(packet.getLnsAddress(), packet.toJSONObject());
   }
   
-  public static String processCommand(JSONObject json, GnsReconfigurableInterface gnsReconfigurable) {
+  public static String processCommand(JSONObject json, GnsReconfigurableInterface gnsReconfigurable, InetSocketAddress lnsAddress) {
     // not sure if this is the best way to do this
     commandModule.setHost(gnsReconfigurable.getGNSNodeConfig().getNodeAddress(gnsReconfigurable.getNodeID()).getHostName());
     // Now we execute the command
@@ -49,7 +49,7 @@ public class CommandProcessor {
     try {
       if (command != null) {
         GNS.getLogger().info("NS" + gnsReconfigurable.getNodeID() + " executing command: " + command.toString());
-        return command.execute(json, gnsReconfigurable);
+        return command.execute(json, gnsReconfigurable, lnsAddress);
       } else {
         return BADRESPONSE + " " + OPERATIONNOTSUPPORTED;
       }

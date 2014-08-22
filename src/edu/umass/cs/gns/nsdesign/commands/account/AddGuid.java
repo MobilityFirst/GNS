@@ -28,6 +28,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import java.net.InetSocketAddress;
 
 /**
  *
@@ -51,7 +52,7 @@ public class AddGuid extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica) throws InvalidKeyException, InvalidKeySpecException,
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String name = json.getString(NAME);
     String accountGuid = json.getString(GUID);
@@ -60,11 +61,11 @@ public class AddGuid extends NSCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
     GuidInfo accountGuidInfo;
-    if ((accountGuidInfo = NSAccountAccess.lookupGuidInfo(accountGuid, activeReplica)) == null) {
+    if ((accountGuidInfo = NSAccountAccess.lookupGuidInfo(accountGuid, activeReplica, lnsAddress)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;
     }
     if (NSAccessSupport.verifySignature(accountGuidInfo, signature, message)) {
-      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(accountGuid, activeReplica);
+      AccountInfo accountInfo = NSAccountAccess.lookupAccountInfoFromGuid(accountGuid, activeReplica, lnsAddress);
       if (accountInfo == null) {
         return BADRESPONSE + " " + BADACCOUNT + " " + accountGuid;
       }
@@ -73,13 +74,13 @@ public class AddGuid extends NSCommand {
       } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
         return BADRESPONSE + " " + TOMANYGUIDS;
       } else {
-        String result = NSAccountAccess.addGuid(accountInfo, name, newGuid, publicKey, activeReplica);
+        String result = NSAccountAccess.addGuid(accountInfo, name, newGuid, publicKey, activeReplica, lnsAddress);
         if (OKRESPONSE.equals(result)) {
           // set up the default read access
-          NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, activeReplica);
+          NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, activeReplica, lnsAddress);
           // give account guid read and write access to all fields in the new guid
-          NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid, activeReplica);
-          NSFieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid, activeReplica);
+          NSFieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid, activeReplica, lnsAddress);
+          NSFieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid, activeReplica, lnsAddress);
           return newGuid;
         } else {
           return result;
