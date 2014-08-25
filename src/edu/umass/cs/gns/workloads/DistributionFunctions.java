@@ -11,7 +11,7 @@ import java.util.Random;
  *  @author Hardeep Uppal
  *
  *************************************************************************/
-public class DistrubutionFunctions {
+public class DistributionFunctions {
 	
 	private static Random random = new Random( System.currentTimeMillis() );
 	
@@ -260,7 +260,7 @@ public class DistrubutionFunctions {
     public static void main( String[] args ) {
         int N = Integer.parseInt( args[0] );
         if ( args.length == 2 ) 
-        	DistrubutionFunctions.setSeed( Long.parseLong( args[1] ) );
+        	DistributionFunctions.setSeed( Long.parseLong( args[1] ) );
 
         double[] t = { .5, .3, .1, .1 };
 

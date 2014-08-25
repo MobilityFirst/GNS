@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.workloads;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 
 /*************************************************************

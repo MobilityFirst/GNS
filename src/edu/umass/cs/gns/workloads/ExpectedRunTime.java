@@ -12,7 +12,7 @@ public class ExpectedRunTime {
 		double totalUpdate = 0;
 		
 		for( double namei = 1; namei <= NUM_MOBILE_NAMES; namei++ ) {
-			totalUpdate += DistrubutionFunctions.uniform( 1, ( UNIFORM_DIST_MEAN * 2 ) + 1 );
+			totalUpdate += DistributionFunctions.uniform( 1, ( UNIFORM_DIST_MEAN * 2 ) + 1 );
 		}
 		
 		System.out.println( "Total Updates: " + totalUpdate );

@@ -24,7 +24,7 @@ public class Config {
 
   private static boolean initialized = false;
 
-  public static boolean debuggingEnabled = true;
+  public static boolean debuggingEnabled = false;
   
   // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?
   public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/"; 
