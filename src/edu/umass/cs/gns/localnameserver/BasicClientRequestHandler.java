@@ -508,7 +508,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     if (timeDiff != 0) {
       // multiple by 1000 cuz we're computing Ops per SECOND
       averageRequestsPerSecond.add((int) (deferedCnt * 1000000000L / timeDiff));
-      GNS.getLogger().info("" + deferedCnt);
       deferedCnt = 0;
       lastRecordedTime = currentTime;
     }
