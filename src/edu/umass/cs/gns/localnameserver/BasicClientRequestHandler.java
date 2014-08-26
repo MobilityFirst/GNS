@@ -87,7 +87,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    * Instrumentation: Keep track of the number of requests coming in.
    */
   long receivedRequests = 0;
-  long lastRequestTime = -1;
 
   public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
@@ -105,7 +104,6 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
 
     // IS THIS USED ANYWHERE?
     //new LNSListenerUDP(gnsNodeConfig, this).start();
-
     GNS.getLogger().info("LNS listener started.");
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
     if (parameters.isEmulatePingLatencies()) {
@@ -491,20 +489,28 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
     return "***NameRecordStatsMap***" + str.toString();
   }
 
+  long lastRecordedTime = -1;
   // Maintains a moving average of server request load to smooth out the burstiness.
-  private long deferedCnt = 0; // a little hair in case we are getting requests too fast for the millisecond timer (is this likely?)
-  private MovingAverage averageRequestsPerSecond = new MovingAverage(30);
-  
+  private long deferedCnt = 0; // a little hair in case we are getting requests too fast for the nanosecond timer (is this likely?)
+  private MovingAverage averageRequestsPerSecond = new MovingAverage(40);
+
   @Override
   public void updateRequestStatistics() {
-    long currentTime = System.currentTimeMillis();
-    long timeDiff =  currentTime - lastRequestTime;
+    // first time do nothing
+    if (lastRecordedTime == -1) {
+      lastRecordedTime = System.nanoTime();
+      return;
+    }   
+    long currentTime = System.nanoTime();
+    long timeDiff = currentTime - lastRecordedTime;
     deferedCnt++;
+    // in case we are running faster than the clock
     if (timeDiff != 0) {
       // multiple by 1000 cuz we're computing Ops per SECOND
-      averageRequestsPerSecond.add((int) (deferedCnt * 1000L / timeDiff));
+      averageRequestsPerSecond.add((int) (deferedCnt * 1000000000L / timeDiff));
+      GNS.getLogger().info("" + deferedCnt);
       deferedCnt = 0;
-      lastRequestTime = currentTime;
+      lastRecordedTime = currentTime;
     }
     receivedRequests++;
   }
