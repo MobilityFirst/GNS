@@ -7,12 +7,8 @@ import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
-import edu.umass.cs.gns.util.Format;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
@@ -31,7 +27,10 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * Installs n instances of the GNS Jars and executes them.
+ * Installs n instances of the GNS Jars on remote hosts and executes them.
+ * More specifically this copies the GNS JAR and all the required config files
+ * to the remote host then starts a Name Server and a Local Name server 
+ * on each host.
  *
  * Typical use:
  *
@@ -42,7 +41,6 @@ import org.apache.commons.cli.ParseException;
  */
 public class GNSInstaller {
 
-  private static final String NEWLINE = System.getProperty("line.separator");
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String CONF_FOLDER = FILESEPARATOR + "conf";
   private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
@@ -145,6 +143,11 @@ public class GNSInstaller {
    *
    * @param name
    * @param action
+   * @param removeLogs
+   * @param deleteDatabase
+   * @param lnsHostsFile
+   * @param nsHostsFile
+   * @param scriptFile
    */
   public static void updateRunSet(String name, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
           String lnsHostsFile, String nsHostsFile, String scriptFile) {
@@ -247,9 +250,11 @@ public class GNSInstaller {
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
               + "nohup java -cp " + gnsJarFileName + " " + StartLNSClass + " "
-              + "-id " + lnsId
+              //+ "-id " + lnsId
+              + " -address " + hostname
+              + " -port " + GNS.DEFAULT_LNS_TCP_PORT    
               + " -nsfile " + NS_HOSTS_FILENAME
-              + " -lnsfile " + LNS_HOSTS_FILENAME
+              //+ " -lnsfile " + LNS_HOSTS_FILENAME
               + " -configFile lns.conf "
               + " > LNSlogfile 2>&1 &");
     }
@@ -262,9 +267,9 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + "nohup java -cp " + gnsJarFileName + " " + StartNSClass + " "
-              + " -id " + nsId
+              + " -id " + nsId     
               + " -nsfile " + NS_HOSTS_FILENAME
-              + " -lnsfile " + LNS_HOSTS_FILENAME
+              //+ " -lnsfile " + LNS_HOSTS_FILENAME
               + " -configFile ns.conf "
               + " > NSlogfile 2>&1 &");
     }
@@ -366,53 +371,53 @@ public class GNSInstaller {
     RSync.upload(userName, hostname, keyFileName, nsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
   }
 
-  /**
-   * Write the name-server-info file on the remote host.
-   *
-   * @param hostname
-   * @param keyFile
-   */
-  private static void writeNSFile(String hostname) throws UnknownHostException {
-    StringBuilder result = new StringBuilder();
-    //HostID IsNS? IPAddress [StartingPort | - ] Ping-Latency Latitude Longitude
-    // WRITE OUT NSs
-    for (HostInfo info : hostTable.values()) {
-      result.append(info.getNsId());
-      result.append(" yes ");
-      //result.append(info.getHostIP());
-      result.append(info.getHostname());
-      result.append(" default ");
-      result.append(" 0 ");
-      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getY()) : 0.0);
-      result.append(" ");
-      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getX()) : 0.0);
-      result.append(NEWLINE);
-    }
-    // WRITE OUT LNSs whose numbers are N above NSs where N is the number of NSs
-    for (HostInfo info : hostTable.values()) {
-      result.append(info.getLnsId());
-      result.append(" no ");
-      //result.append(info.getHostIP());
-      result.append(info.getHostname());
-      result.append(" default ");
-      result.append(" 0 ");
-      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getY()) : 0.0);
-      result.append(" ");
-      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getX()) : 0.0);
-      result.append(NEWLINE);
-    }
-
-    try {
-      File temp = File.createTempFile("name-server-info", "");
-      BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
-      bw.write(result.toString());
-      bw.close();
-      RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), buildInstallFilePath("name-server-info"));
-    } catch (IOException e) {
-      GNS.getLogger().severe("Unable to write temporary name-server-info file: " + e);
-    }
-
-  }
+//  /**
+//   * Write the name-server-info file on the remote host.
+//   *
+//   * @param hostname
+//   * @param keyFile
+//   */
+//  private static void writeNSFile(String hostname) throws UnknownHostException {
+//    StringBuilder result = new StringBuilder();
+//    //HostID IsNS? IPAddress [StartingPort | - ] Ping-Latency Latitude Longitude
+//    // WRITE OUT NSs
+//    for (HostInfo info : hostTable.values()) {
+//      result.append(info.getNsId());
+//      result.append(" yes ");
+//      //result.append(info.getHostIP());
+//      result.append(info.getHostname());
+//      result.append(" default ");
+//      result.append(" 0 ");
+//      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getY()) : 0.0);
+//      result.append(" ");
+//      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getX()) : 0.0);
+//      result.append(NEWLINE);
+//    }
+//    // WRITE OUT LNSs whose numbers are N above NSs where N is the number of NSs
+//    for (HostInfo info : hostTable.values()) {
+//      result.append(info.getLnsId());
+//      result.append(" no ");
+//      //result.append(info.getHostIP());
+//      result.append(info.getHostname());
+//      result.append(" default ");
+//      result.append(" 0 ");
+//      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getY()) : 0.0);
+//      result.append(" ");
+//      result.append(info.getLocation() != null ? Format.formatLatLong(info.getLocation().getX()) : 0.0);
+//      result.append(NEWLINE);
+//    }
+//
+//    try {
+//      File temp = File.createTempFile("name-server-info", "");
+//      BufferedWriter bw = new BufferedWriter(new FileWriter(temp));
+//      bw.write(result.toString());
+//      bw.close();
+//      RSync.upload(userName, hostname, getKeyFile(), temp.getAbsolutePath(), buildInstallFilePath("name-server-info"));
+//    } catch (IOException e) {
+//      GNS.getLogger().severe("Unable to write temporary name-server-info file: " + e);
+//    }
+//
+//  }
 
   // Probably unnecessary at this point.
   private static void updateNodeConfigAndSendOutServerInit() {
@@ -423,10 +428,10 @@ public class GNSInstaller {
         nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
         ids.add(info.getNsId());
       }
-      if (info.getLnsId() != HostInfo.NULL_ID) {
-        nodeConfig.addHostInfo(info.getLnsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
-        ids.add(info.getLnsId());
-      }
+//      if (info.getLnsId() != HostInfo.NULL_ID) {
+//        nodeConfig.addHostInfo(info.getLnsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
+//        ids.add(info.getLnsId());
+//      }
     }
     // now we send out packets telling all the hosts where to send their status updates
     StatusListener.sendOutServerInitPackets(nodeConfig, ids);

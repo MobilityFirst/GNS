@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 //import edu.umass.cs.gns.util.ConfigFileInfo;
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.HostInfo;
 import edu.umass.cs.gns.util.ScreenUtils;
@@ -47,7 +47,7 @@ public class StartStatus {
       CommandLine parser = initializeOptions(args);
       String nsFile = parser.getOptionValue("nsfile");
       //lnsid = Integer.parseInt(parser.getOptionValue("lnsid"));
-      nodeConfig = new GNSNodeConfig(nsFile, 0);
+      nodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(nsFile, 0);
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);

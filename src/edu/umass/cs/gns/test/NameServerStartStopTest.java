@@ -16,7 +16,7 @@ public class NameServerStartStopTest {
 
   public static void main(String[] args) throws IOException, InterruptedException {
     // NOTE: Mongo DB must be running before running this test.
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(3, 1, 0);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(3, 0);
     HashMap<String, String> params = null;
     // start name server a few times
     for (int i = 0; i < 5; i ++) {

@@ -279,7 +279,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	public static void main(String[] args) {
 		int id = 100;
 		HashMap<String,String> configParameters = new HashMap<String,String>();
-		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 100);
+		GNSNodeConfig gnsNodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 100);
 		System.out.println(gnsNodeConfig.getNodePort(id));
 		try {
 			JSONNIOTransport niot = new JSONNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new PacketDemultiplexerDefault())); 

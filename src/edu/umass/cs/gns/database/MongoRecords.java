@@ -833,7 +833,7 @@ public class MongoRecords implements NoSQLRecords {
   // ALL THE CODE BELOW IS TEST CODE
 //  //test code
   private static void queryTest(int nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
+    GNSNodeConfig gnsNodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile("ns1", nodeID);
     Set<Integer> nameServerIDs = new HashSet<Integer>();
     nameServerIDs.add(0);
     nameServerIDs.add(1);

@@ -20,6 +20,9 @@ import java.util.concurrent.ConcurrentMap;
  * This class parses configuration files to gather information about each name server/local name
  * server in the system.
  *
+ * Note that Local Name Server info is being flushed from this. LNSs no longer have IDs. Nobody needs to
+ * know about them other than clients.
+ *
  * To use the nio package, GNS implements <code>NodeConfig</code> interface in this class.
  *
  * @author Abhigyan
@@ -47,12 +50,12 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    */
   private final ConcurrentMap<Integer, Integer> nameServerMapping
           = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
-  /**
-   * A subset hostInfoMapping with just the ids of the Local Name Server, not the NSs
-   */
-  private final ConcurrentMap<Integer, Integer> localNameServerMapping
-          = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
 
+//  /**
+//   * A subset hostInfoMapping with just the ids of the Local Name Server, not the NSs
+//   */
+//  private final ConcurrentMap<Integer, Integer> localNameServerMapping
+//          = new ConcurrentHashMap<Integer, Integer>(16, 0.75f, 8);
   /**
    * Creates an empty GNSNodeConfig
    */
@@ -61,52 +64,89 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   /**
+   * Creates a GNSNodeConfig and initializes it from an old style name-server-info file.
+   *
+   * @param nodeInfoFile
+   * @param nameServerID
+   * @return
+   */
+  @Deprecated
+  public static GNSNodeConfig CreateGNSNodeConfigFromOldStyleFile(String nodeInfoFile, int nameServerID) {
+    return new GNSNodeConfig(nodeInfoFile, nameServerID, true);
+  }
+
+  /**
    * Creates a GNSNodeConfig and initializes it from a name-server-info file.
-   * This is the legacy format. 
+   * This is the legacy format and will go away.
    *
    * @param nodeInfoFile
    * @param nameServerID
    */
-  public GNSNodeConfig(String nodeInfoFile, int nameServerID) {
-    initFromFile(nodeInfoFile, nameServerID);
+  @Deprecated
+  private GNSNodeConfig(String nodeInfoFile, int nameServerID, boolean old) {
+    initFromOldStyleFile(nodeInfoFile, nameServerID);
   }
 
   /**
-   * Creates a GNSNodeConfig and initializes it from a pair of host files.
+   * Creates a GNSNodeConfig and initializes it from a name server host file.
    * This supports the new hosts.txt style format.
    *
-   * @param nsHostsFile
-   * @param lnsHostsFile
+   * @param hostsFile
    * @param nameServerID
    */
-  public GNSNodeConfig(String nsHostsFile, String lnsHostsFile, int nameServerID) {
-    initFromFiles(nsHostsFile, lnsHostsFile, nameServerID);
+  public GNSNodeConfig(String hostsFile, int nameServerID) throws IOException {
+    if (isOldStyleFile(hostsFile)) {
+      initFromOldStyleFile(hostsFile, nameServerID);
+    } else {
+      initFromNSFile(hostsFile, nameServerID);
+    }
+  }
+
+  /**
+   * Returns true if the file is the old style (has lots of fields).
+   *
+   * @param file
+   * @return
+   */
+  private boolean isOldStyleFile(String file) throws IOException {
+    try {
+      BufferedReader reader = new BufferedReader(new FileReader(file));
+      if (!reader.ready()) {
+        throw new IOException("Problem reading host config file " + file);
+      }
+      String line = reader.readLine();
+      if (line == null) {
+        throw new IOException("Host config file is empty" + file);
+      }
+      return line.split("\\s+").length > 4;
+    } catch (IOException e) {
+      System.out.println("Problem reading host config file:" + e);
+      return false;
+    }
   }
 
   /**
    * Creates a GNSNodeConfig and initializes for a local installation
    *
    * @param nsHosts - number of NameServers created
-   * @param lnsHosts - number of Local NameServers created
    * @param nameServerID - the id of this server
    */
-  public GNSNodeConfig(int nsHosts, int lnsHosts, int nameServerID) {
+  public GNSNodeConfig(int nsHosts, int nameServerID) {
     this.nodeID = nameServerID;
     initServersCount(0, nsHosts, nameServerMapping);
     GNS.getLogger().info("Number of name servers is : " + nsHosts);
-    initServersCount(nsHosts, lnsHosts, localNameServerMapping);
-    GNS.getLogger().info("Number of local name servers is : " + lnsHosts);
   }
 
   /**
    * **
-   * Parse the host's information file to create a mapping of node information for name servers and local name severs
+   * Parse the host's information file to create a mapping of node information for name servers.
+   * LOCAL NAME SERVER INFO IN THESE FILES IS NOW IGNORED.
    *
    * @param nodeInfoFile Format: HostID IsNS? IPAddress StartingPort Ping-Latency Latitude Longitude
    * @param nameServerID
    * @throws NumberFormatException
    */
-  private void initFromFile(String nodeInfoFile, int nameServerID) {
+  private void initFromOldStyleFile(String nodeInfoFile, int nameServerID) {
     this.nodeID = nameServerID;
     long t0 = System.currentTimeMillis();
     // Reads in data from a text file containing information about each name server
@@ -163,7 +203,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
           nameServerMapping.put(id, id);
           nameServerCount++;
         } else {
-          localNameServerMapping.put(id, id);
+          //localNameServerMapping.put(id, id);
         }
 
         int startingPort;
@@ -191,19 +231,16 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
 
   /**
    * **
-   * Parse a pair of ns, lns hosts files to create a mapping of node information for name servers and local name severs
+   * Parse a pair of ns host file to create a mapping of node information for name servers.
    *
    * @param nsHostsFile
-   * @param lnsHostsFile
    * @param nameServerID
    * @throws NumberFormatException
    */
-  private void initFromFiles(String nsHostsFile, String lnsHostsFile, int nameServerID) {
+  private void initFromNSFile(String nsHostsFile, int nameServerID) {
     this.nodeID = nameServerID;
     int numberOfNameServers = initServersFromFile(0, nsHostsFile, nameServerMapping);
     GNS.getLogger().info("Number of name servers is : " + numberOfNameServers);
-    int totalServers = initServersFromFile(numberOfNameServers, lnsHostsFile, localNameServerMapping);
-    GNS.getLogger().info("Number of local name servers is : " + (totalServers - numberOfNameServers));
   }
 
   private int initServersFromFile(int startId, String hostsFile, ConcurrentMap<Integer, Integer> serverMap) {
@@ -268,6 +305,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * Returns the complete set of IDs for all servers (local and otherwise).
    * THIS IS THE SAME AS getNameServerIDs NOW THAT LNSs DO NOT HAVE IDS.
    * FIXME: Check uses of this an fix as necessary then maybe delete one or the other.
+   *
    * @return
    */
   @Override
@@ -317,8 +355,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   public int getNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
-  }       
-  
+  }
+
   public int getNSUdpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
@@ -376,7 +414,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * Returns the ping latency between two servers
    *
    * @param id Server id
-   * @return 
+   * @return
    */
   public long getPingLatency(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -400,7 +438,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     if (this.isNameServer(ID)) {
       return this.getNSTcpPort(ID);
     }
-    return GNS.DEFAULT_LNS_TCP_PORT;  
+    return GNS.DEFAULT_LNS_TCP_PORT;
   }
 
   /**
@@ -459,16 +497,15 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    */
   public static void main(String[] args) throws Exception {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    GNSNodeConfig gnsNodeConfigOldSchool = new GNSNodeConfig(filename, 44);
+    GNSNodeConfig gnsNodeConfigOldSchool = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(filename, 44);
     System.out.println(gnsNodeConfigOldSchool.hostInfoMapping.toString());
     System.out.println(gnsNodeConfigOldSchool.getNameServerIDs().size());
 
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/ns_hosts.txt",
-            Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/lns_hosts.txt", 44);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/ns_hosts.txt", 44);
     System.out.println("hostInfoMapping:" + gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNameServerIDs().size());
 
-    GNSNodeConfig gnsNodeConfigCount = new GNSNodeConfig(3, 1, 0);
+    GNSNodeConfig gnsNodeConfigCount = new GNSNodeConfig(3, 0);
     System.out.println("hostInfoMapping:" + gnsNodeConfigCount.hostInfoMapping.toString());
   }
 

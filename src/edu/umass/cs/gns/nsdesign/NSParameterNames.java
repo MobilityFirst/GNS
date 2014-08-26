@@ -19,7 +19,6 @@ public class NSParameterNames {
   public static final String HELP = "help";
   public static final String ID = "id";
   public static final String NS_FILE = "nsfile";
-  public static final String LNS_FILE = "lnsfile";
   public static final String LOCAL_NS_COUNT = "localnscount";
   public static final String LOCAL_LNS_COUNT = "locallnscount";
   public static final String PRIMARY_REPLICAS = "primary";
@@ -126,9 +125,6 @@ public class NSParameterNames {
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
     nsFile.setArgName("file");
 
-    Option lnsFile = new Option(LNS_FILE, true, "File with node configuration of all local name servers");
-    nsFile.setArgName("file");
-
     Option localNsCount = new Option(LOCAL_NS_COUNT, true, "Number of name servers to create on a local hosts");
     localNsCount.setArgName("file");
 
@@ -177,7 +173,6 @@ public class NSParameterNames {
     commandLineOptions.addOption(configFile);
     commandLineOptions.addOption(nodeId);
     commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(lnsFile);
     commandLineOptions.addOption(localNsCount);
     commandLineOptions.addOption(localLnsCount);
     commandLineOptions.addOption(primaryReplicas);

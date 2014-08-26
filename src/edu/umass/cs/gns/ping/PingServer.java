@@ -8,8 +8,8 @@
 package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 
+import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -85,7 +85,7 @@ public class PingServer extends Thread{
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     int nodeID = 0;
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
+    GNSNodeConfig gnsNodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, nodeID);
     PingServer pingServer = new PingServer(nodeID, gnsNodeConfig);
     new Thread(pingServer).start();
 //    startServer();

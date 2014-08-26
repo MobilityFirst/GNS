@@ -31,7 +31,6 @@ public class StartLocalNameServer {
   public static final String ADDRESS = "address";
   public static final String PORT = "port";
   public static final String NS_FILE = "nsfile";
-  public static final String LNS_FILE = "lnsfile";
   public static final String CACHE_SIZE = "cacheSize";
   public static final String PRIMARY = "primary";
   public static final String LOCATION = "location";
@@ -194,9 +193,6 @@ public class StartLocalNameServer {
     Option nsFile = OptionBuilder.withArgName("file").hasArg()
             .withDescription("File with node configuration of all name servers")
             .create(NS_FILE);
-    Option lnsFile = OptionBuilder.withArgName("file").hasArg()
-            .withDescription("File with node configuration of all local name servers")
-            .create(LNS_FILE);
 
     Option regularWorkload = OptionBuilder.withArgName("size").hasArg()
             .withDescription("[EXP] Regular workload size")
@@ -253,7 +249,6 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(address);
     commandLineOptions.addOption(port);
     commandLineOptions.addOption(nsFile);
-    commandLineOptions.addOption(lnsFile);
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(workloadFile);
@@ -331,12 +326,11 @@ public class StartLocalNameServer {
    */
   public static void main(String[] args) {
     // all parameters will be specified in the arg list
-    startLNS(null, -1, null, null, args);
+    startLNS(null, -1, null, args);
   }
 
-  // supports old style single name-server-info style as nsFile with lnsFile being null
-  // as well as new format where the NSs are in nsFile and the LNSs are in lnsFile
-  public static void startLNS(String address, int port, String nsFile, String lnsFile, String... args) {
+  // supports old style single name-server-info style as nsFile as well as new format 
+  public static void startLNS(String address, int port, String nsFile, String... args) {
     try {
       CommandLine parser = null;
       try {
@@ -357,7 +351,7 @@ public class StartLocalNameServer {
         configFile = parser.getOptionValue(CONFIG_FILE);
       }
 
-      startLNSConfigFile(address, port, nsFile, lnsFile, configFile, parser);
+      startLNSConfigFile(address, port, nsFile, configFile, parser);
     } catch (Exception e1) {
       e1.printStackTrace();
       printUsage();
@@ -374,11 +368,10 @@ public class StartLocalNameServer {
    * @param id ID of local name server (GOING AWAY)
    * @param address // replaces id
    * @param nsFile node config file (can be null)
-   * @param lnsFile
    * @param configFile config file with parameters (can be null)
    * @param parser command line arguments (can be null)
    */
-  public static void startLNSConfigFile(String address, int port, String nsFile, String lnsFile, String configFile, CommandLine parser) {
+  public static void startLNSConfigFile(String address, int port, String nsFile, String configFile, CommandLine parser) {
     try {
 
       // create a hash map with all options including options in config file and the command line arguments
@@ -427,9 +420,6 @@ public class StartLocalNameServer {
 
       if (allValues.containsKey(NS_FILE)) {
         nsFile = allValues.get(NS_FILE);
-      }
-      if (allValues.containsKey(LNS_FILE)) {
-        lnsFile = allValues.get(LNS_FILE);
       }
 
       cacheSize = (allValues.containsKey(CACHE_SIZE)) ? Integer.parseInt(allValues.get(CACHE_SIZE)) : 10000;
@@ -530,7 +520,6 @@ public class StartLocalNameServer {
     GNS.getLogger().info("Address: " + address);
     GNS.getLogger().info("Port: " + port);
     GNS.getLogger().info("NS File: " + nsFile);
-    GNS.getLogger().info("LNS File: " + lnsFile);
     GNS.getLogger().info("Regular Workload Size: " + regularWorkloadSize);
     GNS.getLogger().info("Mobile Workload Size: " + mobileWorkloadSize);
     GNS.getLogger().info("Workload File: " + workloadFile);
@@ -548,13 +537,7 @@ public class StartLocalNameServer {
 
     try {
       GNSNodeConfig gnsNodeConfig;
-      if (lnsFile != null) {
-        // New style with separate ns and lns files
-        gnsNodeConfig = new GNSNodeConfig(nsFile, lnsFile, -1);
-      } else {
-        // Old style with combined file
-        gnsNodeConfig = new GNSNodeConfig(nsFile, -1);
-      }
+      gnsNodeConfig = new GNSNodeConfig(nsFile, -1);
       ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
 
       //Start local name server

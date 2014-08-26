@@ -119,14 +119,8 @@ public class StartNameServer {
       System.exit(2);
     }
     int nodeID = Integer.parseInt(allValues.get(NSParameterNames.ID));
-
-    GNSNodeConfig gnsNodeConfig = null;
     
-    if (allValues.containsKey(NSParameterNames.LNS_FILE)) {
-      gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), allValues.get(NSParameterNames.LNS_FILE), nodeID);
-    } else {
-      gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), nodeID);
-    }
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), nodeID);
 
     new NameServer(nodeID, allValues, gnsNodeConfig);
   }

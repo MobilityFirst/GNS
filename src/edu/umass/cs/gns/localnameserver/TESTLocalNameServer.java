@@ -35,13 +35,13 @@ public class TESTLocalNameServer {
     GNS.fileLoggingLevel = GNS.consoleOutputLevel = "SEVERE";
     StartLocalNameServer.experimentMode = false;
     StartLocalNameServer.debugMode = false;
-    StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null, null);
+    StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null);
 
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, 0);
+    GNSNodeConfig gnsNodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, 0);
 
     for (int nameServerID: gnsNodeConfig.getNameServerIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
-      JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, new GNSNodeConfig(configFile, nameServerID), worker);
+      JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, nameServerID), worker);
       new Thread(gnsnioTransport).start();
       nsNiots.put(nameServerID, gnsnioTransport);
     }

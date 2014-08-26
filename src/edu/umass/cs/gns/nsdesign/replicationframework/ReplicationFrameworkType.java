@@ -32,7 +32,7 @@ public enum ReplicationFrameworkType {
   LOCATION,  // Main replication algorithm
   RANDOM,
   STATIC,    // used only for experiments
-  BEEHIVE;   // used only for experiments
+  BEEHIVE;   // used only for experiments// used only for experiments// used only for experiments// used only for experiments
 
   public static ReplicationFrameworkInterface instantiateReplicationFramework(ReplicationFrameworkType type, GNSNodeConfig gnsNodeConfig) {
     ReplicationFrameworkInterface framework;
