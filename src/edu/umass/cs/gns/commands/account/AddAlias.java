@@ -17,7 +17,7 @@ import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import edu.umass.cs.gns.httpserver.Defs;
+import edu.umass.cs.gns.localnameserver.httpserver.Defs;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;

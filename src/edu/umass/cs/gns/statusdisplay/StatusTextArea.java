@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.httpserver.Defs;
+import edu.umass.cs.gns.localnameserver.httpserver.Defs;
 import edu.umass.cs.gns.util.Format;
 import java.awt.Dimension;
 import java.awt.FlowLayout;

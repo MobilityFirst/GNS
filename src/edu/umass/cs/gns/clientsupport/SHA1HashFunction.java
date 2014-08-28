@@ -4,7 +4,6 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.httpserver.BasicHashFunction;
 import edu.umass.cs.gns.main.GNS;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

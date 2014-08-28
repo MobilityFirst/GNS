@@ -7,7 +7,7 @@ package edu.umass.cs.gns.commands;
 
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import static edu.umass.cs.gns.httpserver.Defs.*;
+import static edu.umass.cs.gns.localnameserver.httpserver.Defs.*;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;

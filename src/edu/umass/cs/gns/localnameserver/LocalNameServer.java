@@ -6,7 +6,8 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Intercessor;
-import edu.umass.cs.gns.httpserver.GnsHttpServer;
+import edu.umass.cs.gns.localnameserver.gnamed.UdpDnsServer;
+import edu.umass.cs.gns.localnameserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -23,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.Set;
@@ -139,6 +141,9 @@ public class LocalNameServer {
         initializeNameServerLoadMonitoring();
       }
     }
+    
+    new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8").start();
+    
   }
 
   /**

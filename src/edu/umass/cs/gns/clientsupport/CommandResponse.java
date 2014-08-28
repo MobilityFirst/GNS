@@ -13,7 +13,7 @@ public class CommandResponse {
    */
   private String returnValue;
   /**
-   * Indicates if the response is an error.
+   * Indicates if the response is an error. Can be null.
    */
   private NSResponseCode errorCode;
   /**
@@ -65,6 +65,15 @@ public class CommandResponse {
    */
   public NSResponseCode getErrorCode() {
     return errorCode;
+  }
+  
+  /**
+   * Does this Command contain an error result.
+   * 
+   * @return 
+   */
+  public boolean isError() {
+    return this.errorCode != null;
   }
 
   /**

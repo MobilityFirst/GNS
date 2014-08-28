@@ -38,6 +38,7 @@ public class ReplaceUserJSON extends AbstractUpdate {
 
   @Override
   public String getCommandDescription() {
-    return "Replaces the entire JSON record with the given JSONObject's fields.";
+    return "Replaces existing fields in JSON record with the given JSONObject's fields. "
+            + "Doesn't touch top-level fields that aren't in the given JSONObject.";
   }
 }
