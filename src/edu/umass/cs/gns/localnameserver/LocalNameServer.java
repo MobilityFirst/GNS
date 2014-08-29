@@ -24,8 +24,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -38,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  */
 public class LocalNameServer {
-  
+
   /**
    * The address of the name server. Replaces nodeId.
    */
@@ -54,7 +56,7 @@ public class LocalNameServer {
   private static ClientRequestHandlerInterface requestHandler;
 
   /**
-   * A local name server forwards the final response for all requests to intercessor. 
+   * A local name server forwards the final response for all requests to intercessor.
    */
   private static IntercessorInterface intercessor;
 
@@ -141,29 +143,33 @@ public class LocalNameServer {
         initializeNameServerLoadMonitoring();
       }
     }
-    
-    new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8").start();
-    
+
+    try {
+      new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8").start();
+    } catch (BindException e) {
+      GNS.getLogger().warning("LNS unable to run DNS Service (needs root permissions): " + e);
+    }
+
   }
 
   /**
    * Returns the host address of this LN server.
-   * 
-   * @return 
+   *
+   * @return
    */
   public static InetSocketAddress getAddress() {
     return address;
   }
-  
+
   /**
    * Should really only be used for testing code.
-   * 
-   * @return 
+   *
+   * @return
    */
   public static ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }
- 
+
   /**
    * @return the executorService
    */
@@ -179,7 +185,7 @@ public class LocalNameServer {
     return requestHandler.getUniqueRequestID();
   }
 
-  public static void addRequestInfo(int id, RequestInfo requestInfo){
+  public static void addRequestInfo(int id, RequestInfo requestInfo) {
     requestHandler.addRequestInfo(id, requestInfo);
   }
 
@@ -190,17 +196,17 @@ public class LocalNameServer {
    * @param id Query Id
    * @return
    */
-  public static RequestInfo removeRequestInfo(int id){
+  public static RequestInfo removeRequestInfo(int id) {
     return requestHandler.removeRequestInfo(id);
   }
 
-
   /**
    * Returns the update info for id.
+   *
    * @param id
    * @return
    */
-  public static RequestInfo getRequestInfo(int id){
+  public static RequestInfo getRequestInfo(int id) {
     return requestHandler.getRequestInfo(id);
   }
 
@@ -216,9 +222,7 @@ public class LocalNameServer {
     return requestHandler.getSelectInfo(id);
   }
 
-
   // CACHE METHODS
-  
   public static void invalidateCache() {
     requestHandler.invalidateCache();
   }
@@ -370,9 +374,8 @@ public class LocalNameServer {
   public static String getCacheLogString(String preamble) {
     return requestHandler.getCacheLogString(preamble);
   }
-  
+
   // STATS MAP
-  
   public static NameRecordStats getStats(String name) {
     return requestHandler.getStats(name);
   }
@@ -380,7 +383,7 @@ public class LocalNameServer {
   public static Set<String> getNameRecordStatsKeySet() {
     return requestHandler.getNameRecordStatsKeySet();
   }
-  
+
   public static void incrementLookupRequest(String name) {
     requestHandler.incrementLookupRequest(name);
   }

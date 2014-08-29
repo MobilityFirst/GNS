@@ -22,7 +22,6 @@ import org.xbill.DNS.Flags;
 import org.xbill.DNS.Header;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.Name;
-import org.xbill.DNS.OPTRecord;
 import org.xbill.DNS.Opcode;
 import org.xbill.DNS.Rcode;
 import org.xbill.DNS.Record;
@@ -155,6 +154,13 @@ public class NameResolutionThread extends Thread {
       //
     } else { // DNS resolution failed, let's try the GNS
 
+      // check for queries we can't handle
+      int type = query.getQuestion().getType();
+      // Was the query legitimate or implemented?
+      if (!Type.isRR(type) && type != Type.ANY) {
+        return errorMessage(query, Rcode.NOTIMP);
+      }
+
       final String fieldName = Type.string(query.getQuestion().getType());
       final Name requestedName = query.getQuestion().getName();
       final String domainName = requestedName.toString();
@@ -180,21 +186,15 @@ public class NameResolutionThread extends Thread {
         if (debuggingEnabled) {
           GNS.getLogger().info("Returning A Record with IP " + ip + " for " + requestedName);
         }
-        ARecord gnsARecord = new ARecord(requestedName, DClass.ANY, 0, InetAddress.getByName(ip));
+        ARecord gnsARecord = new ARecord(requestedName, DClass.IN, 0, InetAddress.getByName(ip));
 
         Message response = new Message(query.getHeader().getID());
         response.getHeader().setFlag(Flags.QR);
         if (query.getHeader().getFlag(Flags.RD)) {
-          response.getHeader().setFlag(Flags.RD);
+          response.getHeader().setFlag(Flags.RA);
         }
         response.addRecord(query.getQuestion(), Section.QUESTION);
         response.getHeader().setFlag(Flags.AA);
-
-        int type = query.getQuestion().getType();
-        // Was the query legitimate or implemented?
-        if (!Type.isRR(type) && type != Type.ANY) {
-          return errorMessage(query, Rcode.NOTIMP);
-        }
 
         // Write the response
         response.addRecord(gnsARecord, Section.ANSWER);

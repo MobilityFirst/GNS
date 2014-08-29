@@ -10,13 +10,12 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ThreadUtils;
 import java.io.IOException;
 import java.io.InterruptedIOException;
+import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.xbill.DNS.SimpleResolver;
 
