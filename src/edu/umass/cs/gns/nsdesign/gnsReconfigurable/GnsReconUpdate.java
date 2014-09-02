@@ -31,14 +31,29 @@ import java.security.spec.InvalidKeySpecException;
  */
 public class GnsReconUpdate {
 
+  /**
+   * Executes the local update in response to an UpdatePacket.
+   * 
+   * @param updatePacket
+   * @param replica
+   * @param noCoordinationState
+   * @param recovery
+   * @throws NoSuchAlgorithmException
+   * @throws InvalidKeySpecException
+   * @throws InvalidKeyException
+   * @throws SignatureException
+   * @throws JSONException
+   * @throws IOException
+   * @throws FailedDBOperationException 
+   */
   public static void executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
-          boolean noCoordinatonState, boolean recovery)
+          boolean noCoordinationState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
     }
 
-    if (noCoordinatonState) {
+    if (noCoordinationState) {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       if (!recovery) {
         replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
@@ -80,7 +95,7 @@ public class GnsReconUpdate {
           nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
         }
       } catch (RecordNotFoundException e) {
-        GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid);
+        GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid + " Packet = " + updatePacket.toString());
         e.printStackTrace();
         ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
         if (!recovery) {
