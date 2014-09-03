@@ -10,7 +10,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ThreadUtils;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -29,6 +28,7 @@ public class UdpDnsServer extends Thread {
 
   private final SimpleResolver dnsServer;
   DatagramSocket sock;
+  String dnsServerIP; // just stored for informational purposes
   //private GnsCredentials gnsCredentials;
 
   /**
@@ -46,12 +46,15 @@ public class UdpDnsServer extends Thread {
    */
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP) throws SecurityException, SocketException, UnknownHostException {
     this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
+    this.dnsServerIP = dnsServerIP;
     this.sock = new DatagramSocket(port, addr);
   }
 
   @Override
   public void run() {
-    GNS.getLogger().info("LNS Node at " + LocalNameServer.getAddress() + " starting DNS Server on port " + sock.getLocalPort());
+    GNS.getLogger().info("LNS Node at " + LocalNameServer.getAddress().getHostString() 
+            + " starting local DNS Server on port " + sock.getLocalPort() 
+            + (dnsServer != null ? " with fallback DNS server at " + dnsServerIP : ""));
     while (true) {
       try {
         final short udpLength = 512;
