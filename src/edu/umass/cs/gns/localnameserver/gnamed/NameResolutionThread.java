@@ -192,7 +192,7 @@ public class NameResolutionThread extends Thread {
         if (debuggingEnabled) {
           GNS.getLogger().info("Returning A Record with IP " + ip + " for " + requestedName);
         }
-        ARecord gnsARecord = new ARecord(requestedName, DClass.IN, 0, InetAddress.getByName(ip));
+        ARecord gnsARecord = new ARecord(requestedName, DClass.IN, 60, InetAddress.getByName(ip));
 
         Message response = new Message(query.getHeader().getID());
         response.getHeader().setFlag(Flags.QR);
