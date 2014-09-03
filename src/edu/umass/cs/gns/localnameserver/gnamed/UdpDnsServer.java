@@ -36,7 +36,8 @@ public class UdpDnsServer extends Thread {
    *
    * @param addr IP to bind (0.0.0.0 is acceptable)
    * @param port port to bind (53 is default for DNS)
-   * @param dnsServerIP primary DNS Server to forward requests to
+   * @param dnsServerIP primary DNS Server to forward requests to (make this null
+   * if you don't want to forward requests to a DNS server)
    *
    * A typical incantation thus looks like this:
    * <code>new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8")</code>
@@ -44,7 +45,7 @@ public class UdpDnsServer extends Thread {
    * @throws java.net.UnknownHostException
    */
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP) throws SecurityException, SocketException, UnknownHostException {
-    this.dnsServer = new SimpleResolver(dnsServerIP);
+    this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
     this.sock = new DatagramSocket(port, addr);
   }
 

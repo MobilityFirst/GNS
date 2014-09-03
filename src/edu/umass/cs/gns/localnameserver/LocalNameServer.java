@@ -145,7 +145,11 @@ public class LocalNameServer {
     }
 
     try {
-      new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8").start();
+      if (StartLocalNameServer.dnsGnsOnly) {
+        new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, null).start();
+      } else {
+        new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8").start();
+      }
     } catch (BindException e) {
       GNS.getLogger().warning("LNS unable to run DNS Service (needs root permissions): " + e);
     }

@@ -31,6 +31,7 @@ public class StartLocalNameServer {
   public static final String ADDRESS = "address";
   public static final String PORT = "port";
   public static final String NS_FILE = "nsfile";
+  public static final String DNS_GNS_ONLY = "dnsGnsOnly";
   public static final String CACHE_SIZE = "cacheSize";
   public static final String PRIMARY = "primary";
   public static final String LOCATION = "location";
@@ -104,6 +105,11 @@ public class StartLocalNameServer {
 
   public static boolean noEmail = false;
 
+  /**
+   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
+   */
+  public static boolean dnsGnsOnly = false;
+
 //  Abhigyan: parameters related to retransmissions.
 //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
   /**
@@ -153,6 +159,8 @@ public class StartLocalNameServer {
 
     Option debugMode = new Option(DEBUG_MODE, "Debug mode to print more verbose logs. Set to true only if log level is FINE or more verbose.");
     Option experimentMode = new Option(EXPERIMENT_MODE, "[EXP] Run in experiment mode. May execute some code that is needed only during experiments");
+
+    Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
 
     Option syntheticWorkload = new Option(ZIPF, "[EXP] Use Zipf distribution to generate workload");
 
@@ -249,6 +257,7 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(address);
     commandLineOptions.addOption(port);
     commandLineOptions.addOption(nsFile);
+    commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(workloadFile);
@@ -483,6 +492,10 @@ public class StartLocalNameServer {
       if (allValues.containsKey(DEBUG_MODE)) {
         debugMode = Boolean.parseBoolean(allValues.get(DEBUG_MODE));
       }
+
+      if (allValues.containsKey(DNS_GNS_ONLY)) {
+        dnsGnsOnly = Boolean.parseBoolean(allValues.get(DNS_GNS_ONLY));
+      }
       if (allValues.containsKey(EXPERIMENT_MODE)) {
         experimentMode = Boolean.parseBoolean(allValues.get(EXPERIMENT_MODE));
       }
@@ -533,6 +546,7 @@ public class StartLocalNameServer {
     GNS.getLogger().info("Vote Interval: " + voteIntervalMillis + "ms");
     GNS.getLogger().info("Cache Size: " + cacheSize);
     GNS.getLogger().info("Experiment Mode: " + experimentMode);
+    GNS.getLogger().info("DNS GNS Only: " + dnsGnsOnly);
     GNS.getLogger().info("Debug Mode: " + debugMode);
 
     try {

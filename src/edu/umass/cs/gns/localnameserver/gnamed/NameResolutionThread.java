@@ -51,7 +51,7 @@ public class NameResolutionThread extends Thread {
    * @param socket
    * @param incomingPacket
    * @param incomingData
-   * @param dnsServer
+   * @param dnsServer (might be null meaning don't send requests to a DNS server)
    */
   public NameResolutionThread(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver dnsServer) {
     this.sock = socket;
@@ -126,18 +126,20 @@ public class NameResolutionThread extends Thread {
     // Forwarding to DNS Server
     Message dnsResponse = null;
     Integer dnsRcode = null;
-    try {
-      dnsResponse = dnsServer.send(query);
+    if (dnsServer != null) {
+      try {
+        dnsResponse = dnsServer.send(query);
 
-      if (debuggingEnabled) {
-        GNS.getLogger().info("DNS response " + Rcode.string(dnsResponse.getHeader().getRcode()) + " with "
-                + dnsResponse.getSectionArray(Section.ANSWER).length + " answer, "
-                + dnsResponse.getSectionArray(Section.AUTHORITY).length + " authoritative and "
-                + dnsResponse.getSectionArray(Section.ADDITIONAL).length + " additional records");
+        if (debuggingEnabled) {
+          GNS.getLogger().info("DNS response " + Rcode.string(dnsResponse.getHeader().getRcode()) + " with "
+                  + dnsResponse.getSectionArray(Section.ANSWER).length + " answer, "
+                  + dnsResponse.getSectionArray(Section.AUTHORITY).length + " authoritative and "
+                  + dnsResponse.getSectionArray(Section.ADDITIONAL).length + " additional records");
+        }
+        dnsRcode = dnsResponse.getHeader().getRcode();
+      } catch (IOException e) {
+        GNS.getLogger().log(Level.WARNING, "DNS resolution failed for " + query, e);
       }
-      dnsRcode = dnsResponse.getHeader().getRcode();
-    } catch (IOException e) {
-      GNS.getLogger().log(Level.WARNING, "DNS resolution failed for " + query, e);
     }
 
     // if DNS resolution returned something useful return that
@@ -164,7 +166,11 @@ public class NameResolutionThread extends Thread {
       final String fieldName = Type.string(query.getQuestion().getType());
       final Name requestedName = query.getQuestion().getName();
       final String domainName = requestedName.toString();
-      GNS.getLogger().info("DNS resolution failed. Trying GNS lookup for field " + fieldName + " in domain " + domainName);
+      if (dnsServer != null) {
+        if (debuggingEnabled) {
+          GNS.getLogger().info("DNS resolution failed. Trying GNS lookup for field " + fieldName + " in domain " + domainName);
+        }
+      }
 
       String guid = AccountAccess.lookupGuid(domainName);
       try {
