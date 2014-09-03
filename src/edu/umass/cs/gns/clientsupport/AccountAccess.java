@@ -6,11 +6,13 @@
 package edu.umass.cs.gns.clientsupport;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ThreadUtils;
 import org.json.JSONException;
 
 import java.text.ParseException;
@@ -392,7 +394,7 @@ public class AccountAccess {
    */
   public static CommandResponse addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
     try {
-      // insure that the guis doesn't exist already
+      // insure that the guid doesn't exist already
       if (lookupGuidInfo(guid) != null) {
         return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
       }
@@ -408,6 +410,17 @@ public class AccountAccess {
         if (updateAccountInfoNoAuthentication(accountInfo)) {
           // add the GUID_INFO link
           Intercessor.sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
+          // added this step to insure that the pervious step happened.
+          // probably should add a timeout here
+          GuidInfo newGuidInfo = null;
+          int cnt = 0;
+          do {
+            newGuidInfo = lookupGuidInfo(guid);
+            ThreadUtils.sleep(100); // relax a bit
+          } while (newGuidInfo == null && ++cnt < 10);
+          if (newGuidInfo == null) {
+            throw new GnsRuntimeException("Unable to locate guid info structure.");
+          }
           // add a link the new GUID to primary GUID
           Intercessor.sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.SINGLE_FIELD_CREATE);
@@ -419,6 +432,8 @@ public class AccountAccess {
       return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + name);
     } catch (JSONException e) {
       return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());
+    } catch (GnsRuntimeException e) {
+      return new CommandResponse(BADRESPONSE + " " + GENERICEERROR + " " + e.getMessage());
     }
   }
 
