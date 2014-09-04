@@ -5,7 +5,6 @@
  *
  * Initial developer(s): Westy.
  */
-
 package edu.umass.cs.gns.localnameserver.gnamed;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
@@ -33,21 +32,21 @@ import org.xbill.DNS.Type;
  * @author westy
  */
 public class NameResolution {
-  
-  private static final boolean debuggingEnabled = true;
-  
+
+  public static final boolean debuggingEnabled = true;
+
   public static Message forwardToDnsServer(SimpleResolver dnsServer, Message query) {
     try {
       Message dnsResponse = dnsServer.send(query);
       if (debuggingEnabled) {
-        GNS.getLogger().info("DNS response " + Rcode.string(dnsResponse.getHeader().getRcode()) + " with "
+        GNS.getLogger().fine("DNS response " + Rcode.string(dnsResponse.getHeader().getRcode()) + " with "
                 + dnsResponse.getSectionArray(Section.ANSWER).length + " answer, "
                 + dnsResponse.getSectionArray(Section.AUTHORITY).length + " authoritative and "
                 + dnsResponse.getSectionArray(Section.ADDITIONAL).length + " additional records");
       }
       if (isReasonableResponse(dnsResponse)) {
         if (debuggingEnabled) {
-          GNS.getLogger().info("Outgoing response from DNS: " + dnsResponse.toString());
+          GNS.getLogger().fine("Outgoing response from DNS: " + dnsResponse.toString());
         }
         return dnsResponse;
       }
@@ -70,14 +69,14 @@ public class NameResolution {
     final Name requestedName = query.getQuestion().getName();
     final String domainName = requestedName.toString();
     if (debuggingEnabled) {
-      GNS.getLogger().info("Trying GNS lookup for field " + fieldName + " in domain " + domainName);
+      GNS.getLogger().fine("Trying GNS lookup for field " + fieldName + " in domain " + domainName);
     }
 
     String guid = AccountAccess.lookupGuid(domainName);
 
     if (guid == null) {
       if (debuggingEnabled) {
-        GNS.getLogger().info("GNS lookup: Domain " + domainName + " not found, returning NXDOMAIN result.");
+        GNS.getLogger().fine("GNS lookup: Domain " + domainName + " not found, returning NXDOMAIN result.");
       }
       return errorMessage(query, Rcode.NXDOMAIN);
     }
@@ -85,13 +84,13 @@ public class NameResolution {
     CommandResponse fieldResponse = FieldAccess.lookup(guid, fieldName, null, null, null, null);
     if (fieldResponse.isError()) {
       if (debuggingEnabled) {
-        GNS.getLogger().info("GNS lookup: Field " + fieldName + " in domain " + domainName + " not found, returning NXDOMAIN result.");
+        GNS.getLogger().fine("GNS lookup: Field " + fieldName + " in domain " + domainName + " not found, returning NXDOMAIN result.");
       }
       return errorMessage(query, Rcode.NXDOMAIN);
     }
     final String ip = fieldResponse.getReturnValue();
     if (debuggingEnabled) {
-      GNS.getLogger().info("Returning A Record with IP " + ip + " for " + requestedName);
+      GNS.getLogger().fine("Returning A Record with IP " + ip + " for " + requestedName);
     }
     // we'll need to change this to return other record types
     ARecord gnsARecord;
@@ -112,7 +111,7 @@ public class NameResolution {
     // Write the response
     response.addRecord(gnsARecord, Section.ANSWER);
     if (debuggingEnabled) {
-      GNS.getLogger().info("Outgoing response from GNS: " + response.toString());
+      GNS.getLogger().fine("Outgoing response from GNS: " + response.toString());
     }
     return response;
   }
@@ -187,5 +186,26 @@ public class NameResolution {
   public static Message errorMessage(Message query, int rcode) {
     return buildErrorMessage(query.getHeader(), rcode, query.getQuestion());
   }
-  
+
+  public static String queryAndResponseToString(Message query, Message response) {
+    StringBuilder result = new StringBuilder();
+    result.append(query.getQuestion().getName());
+    result.append(", type: ");
+    result.append(Type.string(query.getQuestion().getType()));
+    result.append(" -> ");
+
+    if (response.getHeader().getRcode() == Rcode.NOERROR) {
+      Record record = response.getSectionArray(Section.ANSWER)[0];
+      if (record instanceof ARecord) {
+        ARecord aRecord = (ARecord) record;
+        result.append(aRecord.getAddress().getHostAddress());
+      } else {
+        result.append("<NOT AN A RECORD>");
+      }
+    } else {
+      result.append(Rcode.string(response.getHeader().getRcode()));
+    }
+    return result.toString();
+  }
+
 }
