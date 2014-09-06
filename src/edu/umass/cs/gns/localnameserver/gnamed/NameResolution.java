@@ -195,12 +195,17 @@ public class NameResolution {
     result.append(" -> ");
 
     if (response.getHeader().getRcode() == Rcode.NOERROR) {
-      Record record = response.getSectionArray(Section.ANSWER)[0];
-      if (record instanceof ARecord) {
-        ARecord aRecord = (ARecord) record;
-        result.append(aRecord.getAddress().getHostAddress());
+      Record[] records = response.getSectionArray(Section.ANSWER);
+      if (records.length > 0) {
+        Record record = records[0];
+        if (record instanceof ARecord) {
+          ARecord aRecord = (ARecord) record;
+          result.append(aRecord.getAddress().getHostAddress());
+        } else {
+          result.append("<NOT AN A RECORD>");
+        }
       } else {
-        result.append("<NOT AN A RECORD>");
+        result.append("<NO ANSWER SECTIONS>");
       }
     } else {
       result.append(Rcode.string(response.getHeader().getRcode()));
