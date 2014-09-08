@@ -183,7 +183,7 @@ public class PingClient {
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     int nodeID = 0;
-    GNSNodeConfig gnsNodeConfig1 = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, nodeID);
+    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
     PingClient pingClient = new PingClient(gnsNodeConfig1);
     while (true) {
       GNS.getLogger().info("RTT = " + pingClient.sendPing(0));

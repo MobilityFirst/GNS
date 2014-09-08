@@ -916,7 +916,7 @@ public class ReplicaControllerRecord {
   private static void test() throws FieldNotFoundException, Exception {
     Config.movingAverageWindowSize = 10;
     int nodeID = 4;
-    GNSNodeConfig gnsNodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile("ns1", nodeID);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);

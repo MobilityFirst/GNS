@@ -85,7 +85,7 @@ public class PingServer extends Thread{
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     int nodeID = 0;
-    GNSNodeConfig gnsNodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, nodeID);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
     PingServer pingServer = new PingServer(nodeID, gnsNodeConfig);
     new Thread(pingServer).start();
 //    startServer();

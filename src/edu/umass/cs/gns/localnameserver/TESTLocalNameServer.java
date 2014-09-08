@@ -37,11 +37,11 @@ public class TESTLocalNameServer {
     StartLocalNameServer.debugMode = false;
     StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null);
 
-    GNSNodeConfig gnsNodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, 0);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, 0);
 
     for (int nameServerID: gnsNodeConfig.getNameServerIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
-      JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, nameServerID), worker);
+      JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, new GNSNodeConfig(configFile, nameServerID), worker);
       new Thread(gnsnioTransport).start();
       nsNiots.put(nameServerID, gnsnioTransport);
     }

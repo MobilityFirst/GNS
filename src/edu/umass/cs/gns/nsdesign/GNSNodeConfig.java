@@ -64,30 +64,6 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   /**
-   * Creates a GNSNodeConfig and initializes it from an old style name-server-info file.
-   *
-   * @param nodeInfoFile
-   * @param nameServerID
-   * @return
-   */
-  @Deprecated
-  public static GNSNodeConfig CreateGNSNodeConfigFromOldStyleFile(String nodeInfoFile, int nameServerID) {
-    return new GNSNodeConfig(nodeInfoFile, nameServerID, true);
-  }
-
-  /**
-   * Creates a GNSNodeConfig and initializes it from a name-server-info file.
-   * This is the legacy format and will go away.
-   *
-   * @param nodeInfoFile
-   * @param nameServerID
-   */
-  @Deprecated
-  private GNSNodeConfig(String nodeInfoFile, int nameServerID, boolean old) {
-    initFromOldStyleFile(nodeInfoFile, nameServerID);
-  }
-
-  /**
    * Creates a GNSNodeConfig and initializes it from a name server host file.
    * This supports the new hosts.txt style format.
    *
@@ -96,7 +72,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    */
   public GNSNodeConfig(String hostsFile, int nameServerID) throws IOException {
     if (isOldStyleFile(hostsFile)) {
-      initFromOldStyleFile(hostsFile, nameServerID);
+      throw new UnsupportedOperationException("THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: " + hostsFile);
+      //initFromOldStyleFile(hostsFile, nameServerID);
     } else {
       initFromNSFile(hostsFile, nameServerID);
     }
@@ -137,97 +114,99 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     GNS.getLogger().info("Number of name servers is : " + nsHosts);
   }
 
-  /**
-   * **
-   * Parse the host's information file to create a mapping of node information for name servers.
-   * LOCAL NAME SERVER INFO IN THESE FILES IS NOW IGNORED.
-   *
-   * @param nodeInfoFile Format: HostID IsNS? IPAddress StartingPort Ping-Latency Latitude Longitude
-   * @param nameServerID
-   * @throws NumberFormatException
-   */
-  private void initFromOldStyleFile(String nodeInfoFile, int nameServerID) {
-    this.nodeID = nameServerID;
-    long t0 = System.currentTimeMillis();
-    // Reads in data from a text file containing information about each name server
-    // in the system.
-    BufferedReader br = null;
-    try {
-      br = new BufferedReader(new FileReader(nodeInfoFile));
-    } catch (FileNotFoundException e1) {
-      GNS.getLogger().severe("Host info file not found: " + e1);
-      System.exit(0);
-    }
-
-    int nameServerCount = 0;
-
-    try {
-      while (br.ready()) {
-        String line = br.readLine();
-        if (line == null || line.equals("") || line.equals(" ")) {
-          continue;
-        }
-
-        String[] tokens = line.split("\\s+");
-
-        // Check for file's format
-        if (tokens.length != 7) {
-          System.err.println("Error: File " + nodeInfoFile + " formatted incorrectly");
-          System.err.println("HostId: " + nameServerID);
-          System.err.println("Token Length: " + tokens.length + " ");
-          for (String str : tokens) {
-            System.err.println(str);
-          }
-          System.err.println("Format:\nHostID IsNS? IPAddress [StartingPort | - ] Ping-Latency(ms) Latitude Longitude");
-          System.err.println("\nwhere IsNS? is yes or no\n and StartingPort is a port number, but can also be a dash \"-\""
-                  + " (or the word \"default\") to indicate that the default port can be used in the distributed case.");
-          //System.err.println("Format:\nNameServerID IPAddress Ping-Latency Latitude Longitude");
-          System.exit(0);
-        }
-
-        int id = Integer.parseInt(tokens[0]);
-        String isNameServerString = tokens[1];
-        String ipAddressString = tokens[2];
-        String startingPortString = tokens[3];
-        long pingLatency = Long.parseLong(tokens[4]);
-        double latitude = Double.parseDouble(tokens[5]);
-        double longitude = Double.parseDouble(tokens[6]);
-
-        if (isNameServerString.startsWith("yes")
-                || isNameServerString.startsWith("Yes")
-                || isNameServerString.startsWith("YES")
-                || isNameServerString.startsWith("X")
-                || isNameServerString.startsWith("true")
-                || isNameServerString.startsWith("True")
-                || isNameServerString.startsWith("TRUE")) {
-          nameServerMapping.put(id, id);
-          nameServerCount++;
-        } else {
-          //localNameServerMapping.put(id, id);
-        }
-
-        int startingPort;
-        if (startingPortString.startsWith("-") || startingPortString.startsWith("default")) {
-          startingPort = GNS.STARTINGPORT;
-        } else {
-          startingPort = Integer.parseInt(startingPortString);
-        }
-        if (ipAddressString.startsWith("-")
-                || ipAddressString.startsWith("local")) {
-          ipAddressString = InetAddress.getLocalHost().getHostAddress();
-        }
-        addHostInfo(id, ipAddressString, startingPort, pingLatency, latitude, longitude);
-      }
-      br.close();
-    } catch (NumberFormatException e) {
-      System.err.println("Problem parsing number in host config for NS " + nameServerID + " :" + e);
-    } catch (IOException e) {
-      System.err.println("Problem reading host config for NS " + nameServerID + " :" + e);
-    }
-    GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
-    long t1 = System.currentTimeMillis();
-    GNS.getStatLogger().info("Time to read all hosts info: " + (t1 - t0) / 1000 + " sec");
-  }
+//  /**
+//   * **
+//   * Parse the host's information file to create a mapping of node information for name servers.
+//   * LOCAL NAME SERVER INFO IN THESE FILES IS NOW IGNORED.
+//   *
+//   * @param nodeInfoFile Format: HostID IsNS? IPAddress StartingPort Ping-Latency Latitude Longitude
+//   * @param nameServerID
+//   * @throws NumberFormatException
+//   */
+//  @Deprecated
+//  private void initFromOldStyleFile(String nodeInfoFile, int nameServerID) {
+//    GNS.getLogger().warning("THE USE OF OLD STYLE NODE INFO FILES HAS BEEN DEPRECATED. FIX THIS FILE OR YOUR SYSTEM SOON WILL BREAK: " + nodeInfoFile);
+//    this.nodeID = nameServerID;
+//    long t0 = System.currentTimeMillis();
+//    // Reads in data from a text file containing information about each name server
+//    // in the system.
+//    BufferedReader br = null;
+//    try {
+//      br = new BufferedReader(new FileReader(nodeInfoFile));
+//    } catch (FileNotFoundException e1) {
+//      GNS.getLogger().severe("Host info file not found: " + e1);
+//      System.exit(0);
+//    }
+//
+//    int nameServerCount = 0;
+//
+//    try {
+//      while (br.ready()) {
+//        String line = br.readLine();
+//        if (line == null || line.equals("") || line.equals(" ")) {
+//          continue;
+//        }
+//
+//        String[] tokens = line.split("\\s+");
+//
+//        // Check for file's format
+//        if (tokens.length != 7) {
+//          System.err.println("Error: File " + nodeInfoFile + " formatted incorrectly");
+//          System.err.println("HostId: " + nameServerID);
+//          System.err.println("Token Length: " + tokens.length + " ");
+//          for (String str : tokens) {
+//            System.err.println(str);
+//          }
+//          System.err.println("Format:\nHostID IsNS? IPAddress [StartingPort | - ] Ping-Latency(ms) Latitude Longitude");
+//          System.err.println("\nwhere IsNS? is yes or no\n and StartingPort is a port number, but can also be a dash \"-\""
+//                  + " (or the word \"default\") to indicate that the default port can be used in the distributed case.");
+//          //System.err.println("Format:\nNameServerID IPAddress Ping-Latency Latitude Longitude");
+//          System.exit(0);
+//        }
+//
+//        int id = Integer.parseInt(tokens[0]);
+//        String isNameServerString = tokens[1];
+//        String ipAddressString = tokens[2];
+//        String startingPortString = tokens[3];
+//        long pingLatency = Long.parseLong(tokens[4]);
+//        double latitude = Double.parseDouble(tokens[5]);
+//        double longitude = Double.parseDouble(tokens[6]);
+//
+//        if (isNameServerString.startsWith("yes")
+//                || isNameServerString.startsWith("Yes")
+//                || isNameServerString.startsWith("YES")
+//                || isNameServerString.startsWith("X")
+//                || isNameServerString.startsWith("true")
+//                || isNameServerString.startsWith("True")
+//                || isNameServerString.startsWith("TRUE")) {
+//          nameServerMapping.put(id, id);
+//          nameServerCount++;
+//        } else {
+//          //localNameServerMapping.put(id, id);
+//        }
+//
+//        int startingPort;
+//        if (startingPortString.startsWith("-") || startingPortString.startsWith("default")) {
+//          startingPort = GNS.STARTINGPORT;
+//        } else {
+//          startingPort = Integer.parseInt(startingPortString);
+//        }
+//        if (ipAddressString.startsWith("-")
+//                || ipAddressString.startsWith("local")) {
+//          ipAddressString = InetAddress.getLocalHost().getHostAddress();
+//        }
+//        addHostInfo(id, ipAddressString, startingPort, pingLatency, latitude, longitude);
+//      }
+//      br.close();
+//    } catch (NumberFormatException e) {
+//      System.err.println("Problem parsing number in host config for NS " + nameServerID + " :" + e);
+//    } catch (IOException e) {
+//      System.err.println("Problem reading host config for NS " + nameServerID + " :" + e);
+//    }
+//    GNS.getLogger().fine("Number of name servers is : " + nameServerCount);
+//    long t1 = System.currentTimeMillis();
+//    GNS.getStatLogger().info("Time to read all hosts info: " + (t1 - t0) / 1000 + " sec");
+//  }
 
   /**
    * **
@@ -483,16 +462,13 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    */
   public static void main(String[] args) throws Exception {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    GNSNodeConfig gnsNodeConfigOldSchool = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(filename, 44);
+    GNSNodeConfig gnsNodeConfigOldSchool = new GNSNodeConfig(filename, 44);
     System.out.println(gnsNodeConfigOldSchool.hostInfoMapping.toString());
     System.out.println(gnsNodeConfigOldSchool.getNameServerIDs().size());
 
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/ns_hosts.txt", 44);
     System.out.println("hostInfoMapping:" + gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNameServerIDs().size());
-
-    GNSNodeConfig gnsNodeConfigCount = new GNSNodeConfig(3, 0);
-    System.out.println("hostInfoMapping:" + gnsNodeConfigCount.hostInfoMapping.toString());
   }
 
 }

@@ -47,7 +47,7 @@ public class StartStatus {
       CommandLine parser = initializeOptions(args);
       String nsFile = parser.getOptionValue("nsfile");
       //lnsid = Integer.parseInt(parser.getOptionValue("lnsid"));
-      nodeConfig = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(nsFile, 0);
+      nodeConfig = new GNSNodeConfig(nsFile, 0);
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);

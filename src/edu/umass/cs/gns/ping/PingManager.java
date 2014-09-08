@@ -165,7 +165,7 @@ public class PingManager implements Shutdownable{
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     int nodeID = 0;
-    GNSNodeConfig gnsNodeConfig1 = GNSNodeConfig.CreateGNSNodeConfigFromOldStyleFile(configFile, nodeID);
+    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
     new PingManager(nodeID, gnsNodeConfig1).startPinging();
   }
   public final static String NEWLINE = System.getProperty("line.separator");
