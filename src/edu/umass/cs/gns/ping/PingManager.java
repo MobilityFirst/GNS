@@ -134,7 +134,7 @@ public class PingManager implements Shutdownable{
    */
   public String tableToString(int node) {
     StringBuilder result = new StringBuilder();
-    result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    L/NS Hostname");
+    result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
     for (int i : gnsNodeConfig.getNameServerIDs()) {
       result.append(String.format("%4d", i));
@@ -156,8 +156,6 @@ public class PingManager implements Shutdownable{
         // for this node just output something useful
         result.append("  {this node }                                   ");
       }
-      result.append(gnsNodeConfig.isNameServer(i) ? "  NS " : "  LNS");
-      result.append("  ");
       result.append(gnsNodeConfig.getNodeAddress(i).getHostName());
       result.append(NEWLINE);
     }

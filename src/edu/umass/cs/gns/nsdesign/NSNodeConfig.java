@@ -20,11 +20,11 @@ public class NSNodeConfig implements InterfaceNodeConfig<Integer> {
   public NSNodeConfig(GNSNodeConfig gnsNodeConfig) {
     this.gnsNodeConfig = gnsNodeConfig;
   }
+
   @Override
   public boolean containsNodeInfo(Integer nodeId) {
     return gnsNodeConfig.getNameServerIDs().contains(nodeId);
   }
-
 
   @Override
   public Set<Integer> getNodeIDs() {
@@ -38,12 +38,7 @@ public class NSNodeConfig implements InterfaceNodeConfig<Integer> {
 
   @Override
   public int getNodePort(Integer ID) {
-    if (gnsNodeConfig.isNameServer(ID)) {
-      return gnsNodeConfig.getNSTcpPort(ID);
-    } else {
-      return -1;
-    }
+    return gnsNodeConfig.getNSTcpPort(ID);
   }
 
 }
-

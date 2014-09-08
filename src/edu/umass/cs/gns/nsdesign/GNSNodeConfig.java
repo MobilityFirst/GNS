@@ -385,20 +385,6 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   /**
-   * Returns the appropriate ping port for a server.
-   *
-   * @param id
-   * @return the port
-   */
-  public int getPingPort(int id) {
-    if (isNameServer(id)) {
-      return getNSPingPort(id);
-    } else {
-      return GNS.DEFAULT_LNS_PING_PORT;
-    }
-  }
-
-  /**
    * Returns the IP address of a name server.
    *
    * @param id Server id
