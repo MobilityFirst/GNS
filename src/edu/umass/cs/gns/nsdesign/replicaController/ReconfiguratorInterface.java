@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 
 /**
 @author V. Arun

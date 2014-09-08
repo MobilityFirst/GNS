@@ -7,7 +7,7 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 
 
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 
 /**
  * We choose the type of replication needed. The options that currently work are LOCATION, and RANDOM.

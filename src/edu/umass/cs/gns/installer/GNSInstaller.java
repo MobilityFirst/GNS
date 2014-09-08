@@ -1,11 +1,12 @@
 package edu.umass.cs.gns.installer;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.HostFileLoader;
 import edu.umass.cs.aws.networktools.ExecuteBash;
 import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -97,42 +98,43 @@ public class GNSInstaller {
 
   // THIS WILL NEED TO CHANGE WHEN WE GO TO IDLESS LNS HOSTS
   private static void loadHostsFiles(String configName) {
-    List<String> nsHosts = null;
+    List<HostFileLoader.HostSpec> nsHosts = null;
 
     File hostsFile = null;
     try {
       hostsFile = fileSomewhere(configName + FILESEPARATOR + NS_HOSTS_FILENAME, confFolderPath);
       nsHosts = HostFileLoader.loadHostFile(hostsFile.toString());
-    } catch (FileNotFoundException e) {
+    } catch (Exception e) {
       // should not happen as we've already verified this above
       System.out.println("Problem loading the NS host file " + hostsFile + "; exiting.");
       System.exit(1);
     }
 
-    int idCounter = 0;
-    for (String hostname : nsHosts) {
-      hostTable.put(hostname, new HostInfo(hostname, idCounter, HostInfo.NULL_ID, null));
-      idCounter = idCounter + 1;
+    for (HostFileLoader.HostSpec spec : nsHosts) {
+      String hostname = spec.getName();
+      int id = spec.getId();
+      hostTable.put(hostname, new HostInfo(hostname, id, HostInfo.NULL_ID, null));
     }
 
-    List<String> lnsHosts = null;
+    List<HostFileLoader.HostSpec> lnsHosts = null;
     try {
       hostsFile = fileSomewhere(configName + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath);
       lnsHosts = HostFileLoader.loadHostFile(hostsFile.toString());
       // should not happen as we've already verified this above
-    } catch (FileNotFoundException e) {
+    } catch (Exception e) {
       System.out.println("Problem loading the LNS host file " + hostsFile + "; exiting.");
       System.exit(1);
     }
     // THIS WILL CHANGE WHEN WE GO TO IDLESS LNS HOSTS
-    for (String hostname : lnsHosts) {
+    for (HostFileLoader.HostSpec spec : lnsHosts) {
+      String hostname = spec.getName();
+      int id = spec.getId();
       HostInfo hostEntry = hostTable.get(hostname);
       if (hostEntry != null) {
-        hostEntry.setLnsId(idCounter);
+        hostEntry.setLnsId(id);
       } else {
-        hostTable.put(hostname, new HostInfo(hostname, HostInfo.NULL_ID, idCounter, null));
+        hostTable.put(hostname, new HostInfo(hostname, HostInfo.NULL_ID, id, null));
       }
-      idCounter = idCounter + 1;
     }
   }
 

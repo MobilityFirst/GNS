@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Util;
 
 import java.io.File;

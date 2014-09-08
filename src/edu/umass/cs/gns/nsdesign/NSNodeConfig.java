@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
 import java.net.InetAddress;

@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.statusdisplay;
 
 //import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.HostInfo;
 import edu.umass.cs.gns.util.ScreenUtils;

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nio;
 
-import edu.umass.cs.gns.nsdesign.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
