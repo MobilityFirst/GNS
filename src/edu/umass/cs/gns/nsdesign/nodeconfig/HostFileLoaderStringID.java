@@ -17,22 +17,22 @@ import java.util.List;
  *
  * @author westy
  */
-public class HostFileLoader {
+public class HostFileLoaderStringID {
 
   /**
-   * A tuple of id and hostname
+   * A tuple of id and hostname.
    */
   public static class HostSpec {
 
-    Integer id;
+    String id;
     String name;
 
-    public HostSpec(Integer id, String name) {
+    public HostSpec(String id, String name) {
       this.id = id;
       this.name = name;
     }
 
-    public Integer getId() {
+    public String getId() {
       return id;
     }
 
@@ -69,21 +69,19 @@ public class HostFileLoader {
         }
         String[] tokens = line.split("\\s+");
         if (tokens.length == 2) {
-          int id = Integer.parseInt(tokens[0]);
+          String id = tokens[0];
           result.add(new HostSpec(id, tokens[1]));
           hasNumbers = true;
         } else if (tokens.length == 1) {
           if (hasNumbers) {
-            throw new IOException("Can't mix numbered and unnumbered format:" + line);
+            throw new IOException("Can't mix format with IDs provided and not provided:" + line);
           }
-          result.add(new HostSpec(hostCnt++, tokens[0]));
+          result.add(new HostSpec(Integer.toString(hostCnt), tokens[0]));
         } else {
           throw new IOException("Bad host format:" + line);
         }
       }
       br.close();
-    } catch (NumberFormatException e) {
-      throw new Exception("Problem reading hosts file: " + e);
     } catch (IOException e) {
       throw new Exception("Problem reading hosts file: " + e);
     }

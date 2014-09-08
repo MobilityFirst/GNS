@@ -77,6 +77,6 @@ public class LNSToNSCommandRequest {
       }
       GNS.getLogger().warning("!?!?!?!?!?!?!?! NO SERVER FOR NS for record " + guid);
     }
-    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNameServerIDs());
+    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNodeIDs());
   }
 }

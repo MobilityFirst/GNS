@@ -205,12 +205,9 @@ public class GnsHttpServer {
         String paxosVersionInfo =
                 "Paxos Replica Version: "
                 + PaxosReplica.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
-        String nioVersionInfo =
-                "NIO Version: "
-                + NioServer.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
         String serverLocalNameServerID = "\nLocal Name Server Address: " + LocalNameServer.getAddress() + "\n";
-        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNameServerIDs().size() + "\n";
+        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 
         responseBody.write(buildVersionInfo.getBytes());
@@ -221,7 +218,6 @@ public class GnsHttpServer {
         responseBody.write(groupsVersionInfo.getBytes());
         responseBody.write(selectVersionInfo.getBytes());
         responseBody.write(mongoRecordsVersionInfo.getBytes());
-        responseBody.write(nioVersionInfo.getBytes());
         responseBody.write(paxosVersionInfo.getBytes());
         responseBody.write(serverLocalNameServerID.getBytes());
         responseBody.write(numberOfNameServers.getBytes());

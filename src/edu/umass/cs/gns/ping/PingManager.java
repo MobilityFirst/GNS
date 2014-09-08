@@ -75,7 +75,7 @@ public class PingManager implements Shutdownable{
       Thread.sleep(TIME_BETWEEN_PINGS);
       long t0 = System.currentTimeMillis();
       // Note that we're only pinging other NameServers here, not LNSs (they don't have IDs anyway).
-      for (int id : gnsNodeConfig.getNameServerIDs()) {
+      for (int id : gnsNodeConfig.getNodeIDs()) {
         try {
           if (id != nodeId) {
             if (debug) GNS.getLogger().fine("Send from " + nodeId + " to " + id);
@@ -136,7 +136,7 @@ public class PingManager implements Shutdownable{
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
-    for (int i : gnsNodeConfig.getNameServerIDs()) {
+    for (int i : gnsNodeConfig.getNodeIDs()) {
       result.append(String.format("%4d", i));
       if (i != node) {
         result.append(" = ");

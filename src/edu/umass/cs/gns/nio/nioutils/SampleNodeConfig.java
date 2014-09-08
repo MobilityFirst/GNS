@@ -50,7 +50,7 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
 	}
 
 	@Override
-	public boolean containsNodeInfo(NodeIDType ID) {
+	public boolean nodeExists(NodeIDType ID) {
 		return nmap.containsKey(ID);
 	}
 

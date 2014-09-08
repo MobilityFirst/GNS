@@ -48,7 +48,7 @@ public enum ReplicationFrameworkType {
         framework = null;
         break;
       case BEEHIVE: // used only for experiments
-        BeehiveReplication.generateReplicationLevel(gnsNodeConfig.getNameServerIDs().size(), Config.beehiveC,
+        BeehiveReplication.generateReplicationLevel(gnsNodeConfig.getNumberOfNodes(), Config.beehiveC,
                 Config.beehiveWorkloadSize, Config.beehiveAlpha, Config.beehiveBase);
         framework = null;
         break;

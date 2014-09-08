@@ -54,7 +54,7 @@ public class StartStatus {
     }
     //
     //Set<String> hosts = new HashSet<String>();
-    for (int id : nodeConfig.getNameServerIDs()) {
+    for (int id : nodeConfig.getNodeIDs()) {
       StatusModel.getInstance().queueAddEntry(id);
     }
     //
@@ -66,7 +66,7 @@ public class StartStatus {
       System.exit(1);
     }
     //
-    StatusListener.sendOutServerInitPackets(nodeConfig, nodeConfig.getNameServerIDs());
+    StatusListener.sendOutServerInitPackets(nodeConfig, nodeConfig.getNodeIDs());
     //
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override

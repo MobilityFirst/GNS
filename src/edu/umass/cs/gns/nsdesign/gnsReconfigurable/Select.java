@@ -121,7 +121,7 @@ public class Select {
     }
     // If it's not a group lookup or is but enough time has passed we do the usual thing
     // and send the request out to all the servers. We'll get a response sent on the flipside.
-    Set<Integer> serverIds = replica.getGNSNodeConfig().getNameServerIDs();
+    Set<Integer> serverIds = replica.getGNSNodeConfig().getNodeIDs();
     // store the info for later
     int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());

@@ -350,7 +350,7 @@ public class Admintercessor {
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<Integer> missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getNameServerIDs());
+    Set<Integer> missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getNodeIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + missingIDs.toString());

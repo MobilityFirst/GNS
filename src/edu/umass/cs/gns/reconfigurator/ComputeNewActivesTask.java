@@ -248,15 +248,15 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 		else if (Config.singleNS) replicaCount = 1;
 		else if (update == 0) {
 			// no updates, replicate everywhere.
-			replicaCount = replicaController.getGnsNodeConfig().getNameServerIDs().size();
+			replicaCount = replicaController.getGnsNodeConfig().getNumberOfNodes();
 			replicaCount = Math.min(replicaCount, Config.maxReplica);
 		} else {
 
 			replicaCount = StrictMath.round(StrictMath.round(
 					(lookup / (update * Config.normalizingConstant))));
 			replicaCount = Math.max(replicaCount, Config.minReplica);
-			if (replicaCount > replicaController.getGnsNodeConfig().getNameServerIDs().size()) {
-				replicaCount = replicaController.getGnsNodeConfig().getNameServerIDs().size();
+			if (replicaCount > replicaController.getGnsNodeConfig().getNumberOfNodes()) {
+				replicaCount = replicaController.getGnsNodeConfig().getNumberOfNodes();
 			}
 			replicaCount = Math.min(replicaCount, Config.maxReplica);
 		}

@@ -420,7 +420,7 @@ public class LocalNameServer {
   // MONITOR NAME SERVER LOADS
   private void initializeNameServerLoadMonitoring() {
     nameServerLoads = new ConcurrentHashMap<Integer, Double>();
-    Set<Integer> nameServerIDs = requestHandler.getGnsNodeConfig().getNameServerIDs();
+    Set<Integer> nameServerIDs = requestHandler.getGnsNodeConfig().getNodeIDs();
     for (int x : nameServerIDs) {
       nameServerLoads.put(x, 0.0);
     }

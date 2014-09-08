@@ -51,7 +51,7 @@ class DBClient {
     this.myPort = myPort;
     this.nioTransport = new NIOTransport(0, new InterfaceNodeConfig<Integer>() {
       @Override
-      public boolean containsNodeInfo(Integer ID) {
+      public boolean nodeExists(Integer ID) {
         throw new UnsupportedOperationException();
       }
 

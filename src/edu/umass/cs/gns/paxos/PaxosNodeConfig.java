@@ -68,7 +68,7 @@ public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   @Override
-  public boolean containsNodeInfo(Integer ID) {
+  public boolean nodeExists(Integer ID) {
     return  nodesInfo.containsKey(ID);
   }
 
@@ -84,13 +84,13 @@ public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
 
   @Override
   public InetAddress getNodeAddress(Integer ID) {
-    if (containsNodeInfo(ID)) return  nodesInfo.get(ID).getAddress();
+    if (nodeExists(ID)) return  nodesInfo.get(ID).getAddress();
     return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
   public int getNodePort(Integer ID) {
-    if (containsNodeInfo(ID)) return  nodesInfo.get(ID).getPort();
+    if (nodeExists(ID)) return  nodesInfo.get(ID).getPort();
     return -1;  //To change body of implemented methods use File | Settings | File Templates.
   }
 }

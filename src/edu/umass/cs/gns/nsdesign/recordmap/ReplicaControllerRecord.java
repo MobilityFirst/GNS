@@ -917,7 +917,7 @@ public class ReplicaControllerRecord {
     Config.movingAverageWindowSize = 10;
     int nodeID = 4;
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
+    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();

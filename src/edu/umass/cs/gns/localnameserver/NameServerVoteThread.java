@@ -137,10 +137,10 @@ public class NameServerVoteThread extends Thread {
 
   private int selectNSToVoteFor() {
     if (StartLocalNameServer.loadDependentRedirection) {
-      Set<Integer> allNS = LocalNameServer.getGnsNodeConfig().getNameServerIDs();
+      Set<Integer> allNS = LocalNameServer.getGnsNodeConfig().getNodeIDs();
       return LocalNameServer.selectBestUsingLatencyPlusLoad(allNS);
     } else {
-      return LocalNameServer.getGnsNodeConfig().getClosestNameServer();
+      return LocalNameServer.getGnsNodeConfig().getClosestServer();
     }
   }
 

@@ -23,13 +23,13 @@ public class NSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   @Override
-  public boolean containsNodeInfo(Integer nodeId) {
-    return gnsNodeConfig.getNameServerIDs().contains(nodeId);
+  public boolean nodeExists(Integer nodeId) {
+    return getNodeIDs().contains(nodeId);
   }
 
   @Override
   public Set<Integer> getNodeIDs() {
-    return gnsNodeConfig.getNameServerIDs();
+    return gnsNodeConfig.getNodeIDs();
   }
 
   @Override

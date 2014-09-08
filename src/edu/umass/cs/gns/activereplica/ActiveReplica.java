@@ -211,7 +211,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 
 	public int getNodeID() {return this.myID;}
 	public GNSNodeConfig getGnsNodeConfig() {return this.gnsNodeConfig;}
-	public int[] getNameServerIDs() {return Util.setToIntArray(this.gnsNodeConfig.getNameServerIDs());}
+	//public int[] getNameServerIDs() {return Util.setToIntArray(this.gnsNodeConfig.getNodeIDs());}
 
 	public void send(MessagingTask mtask) {
 		try {
@@ -233,7 +233,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 		} catch(JSONException je) {je.printStackTrace();}
 		return stats;
 	}
-	public Set<Integer> getRecipients() {return this.gnsNodeConfig.getNameServerIDs();}
+	public Set<Integer> getRecipients() {return this.gnsNodeConfig.getNodeIDs();}
 
 	/* Value of a specific subset of stats. We may need
 	 * to send different stats to different sets of nodes. 

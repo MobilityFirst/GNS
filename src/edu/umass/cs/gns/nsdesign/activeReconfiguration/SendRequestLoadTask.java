@@ -62,7 +62,7 @@ public class SendRequestLoadTask extends TimerTask{
 
       try {
         JSONObject sendJson = nsLoad.toJSONObject();
-        for (int nsID: activeReplica.getGnsNodeConfig().getNameServerIDs()) { // send only to name servers
+        for (int nsID: activeReplica.getGnsNodeConfig().getNodeIDs()) {
           try {
             activeReplica.getNioServer().sendToID(nsID, sendJson);
           } catch (IOException e) {
@@ -78,7 +78,7 @@ public class SendRequestLoadTask extends TimerTask{
     this.prevReqCount = curReqCount;
     taskRunCount += 1;
 
-    double nextRunDelaySec = activeReplica.getGnsNodeConfig().getNameServerIDs().size()/SEND_RATE;
+    double nextRunDelaySec = activeReplica.getGnsNodeConfig().getNumberOfNodes()/SEND_RATE;
     if (Config.debuggingEnabled) GNS.getLogger().fine("Next run delay " + nextRunDelaySec + " sec");
     SendRequestLoadTask task = new SendRequestLoadTask(activeApp, activeReplica, prevReqCount, taskRunCount, prevRunTime);
     activeReplica.getScheduledThreadPoolExecutor().schedule(task, (int) nextRunDelaySec + 1, TimeUnit.SECONDS);

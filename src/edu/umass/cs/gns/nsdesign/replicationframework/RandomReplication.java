@@ -20,8 +20,8 @@ public class RandomReplication implements ReplicationFrameworkInterface{
           throws FieldNotFoundException {
     // random replicas will be selected deterministically for each name.
 
-    if (numReplica == rc.getGnsNodeConfig().getNameServerIDs().size()) {
-      return new ReplicationOutput(new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs()));
+    if (numReplica == rc.getGnsNodeConfig().getNumberOfNodes()) {
+      return new ReplicationOutput(new HashSet<Integer>(rc.getGnsNodeConfig().getNodeIDs()));
     }
 
     Set<Integer> activeNameServers = new HashSet<Integer>();
@@ -44,8 +44,8 @@ public class RandomReplication implements ReplicationFrameworkInterface{
         int numTries = 0;
         do {
           numTries += 1;
-          int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNameServerIDs().size());
-          int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNameServerIDs(),nsIndex);
+          int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
+          int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(),nsIndex);
           added = newActiveNameServerSet.add(newActiveNameServerId)
                   && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != -1;
         } while (!added && numTries < NUM_RETRY);
@@ -73,8 +73,8 @@ public class RandomReplication implements ReplicationFrameworkInterface{
           int numTries = 0;
           do {
             numTries += 1;
-            int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNameServerIDs().size());
-            int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNameServerIDs(),nsIndex);           
+            int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
+            int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(),nsIndex);           
             added = newActiveNameServerSet.add(newActiveNameServerId)
                     && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != GNSNodeConfig.INVALID_PING_LATENCY;
           } while (!added && numTries < NUM_RETRY);

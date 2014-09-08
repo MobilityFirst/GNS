@@ -44,7 +44,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
 
     this.nioTransport  = new NIOTransport(ID, new InterfaceNodeConfig<Integer>() {
       @Override
-      public boolean containsNodeInfo(Integer ID) {
+      public boolean nodeExists(Integer ID) {
         throw new UnsupportedOperationException();
       }
 

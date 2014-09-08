@@ -39,7 +39,7 @@ public class TESTLocalNameServer {
 
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, 0);
 
-    for (int nameServerID: gnsNodeConfig.getNameServerIDs()) {
+    for (int nameServerID: gnsNodeConfig.getNodeIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
       JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, new GNSNodeConfig(configFile, nameServerID), worker);
       new Thread(gnsnioTransport).start();

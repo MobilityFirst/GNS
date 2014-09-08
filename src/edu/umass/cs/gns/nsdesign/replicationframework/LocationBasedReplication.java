@@ -43,8 +43,8 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
       localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
     }
 
-    if (numReplica >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
-      newActiveNameServerSet = new HashSet<Integer>(rc.getGnsNodeConfig().getNameServerIDs());
+    if (numReplica >= rc.getGnsNodeConfig().getNumberOfNodes()) {
+      newActiveNameServerSet = new HashSet<Integer>(rc.getGnsNodeConfig().getNodeIDs());
     } else {
 
       // Select based on votes as much as you can.
@@ -53,7 +53,7 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
         int difference = numReplica - newActiveNameServerSet.size();
         //Randomly select the other active name servers
         for (int i = 1; i <= difference; i++) {
-          if (newActiveNameServerSet.size() >= rc.getGnsNodeConfig().getNameServerIDs().size()) {
+          if (newActiveNameServerSet.size() >= rc.getGnsNodeConfig().getNumberOfNodes()) {
             break;
           }
           boolean added = false;
@@ -63,13 +63,13 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
           int retries = 0;
           do {
             retries += 1;
-            int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNameServerIDs().size());
-            int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNameServerIDs(), nsIndex);
+            int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
+            int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
             if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
               continue;
             }
             added = newActiveNameServerSet.add(newActiveNameServerId);
-          } while (!added && retries < 5*rc.getGnsNodeConfig().getNameServerIDs().size());
+          } while (!added && retries < 5*rc.getGnsNodeConfig().getNumberOfNodes());
         }
       }
     }

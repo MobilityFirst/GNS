@@ -120,7 +120,7 @@ public class NameServer implements Shutdownable{
     // init worker thread pool
 
 //    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNameServerIDs());
+    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
     // set to false to cancel non-periodic delayed tasks upon shutdown
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 

@@ -161,14 +161,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   public Set<Integer> getNodeIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
-
-  /**
-   * Returns the complete set of IDs for all name servers (not local name servers).
-   *
-   * @return the set of IDs.
-   */
-  public Set<Integer> getNameServerIDs() {
-    return ImmutableSet.copyOf(hostInfoMapping.keySet());
+  
+  public int getNumberOfNodes() {
+    return hostInfoMapping.size();
   }
 
   /**
@@ -251,7 +246,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   @Override
-  public boolean containsNodeInfo(Integer ID) {
+  public boolean nodeExists(Integer ID) {
     return getNodeIDs().contains(ID);
   }
 
@@ -265,8 +260,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    *
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
    */
-  public int getClosestNameServer() {
-    return getClosestServer(getNameServerIDs());
+  public int getClosestServer() {
+    return GNSNodeConfig.this.getClosestServer(getNodeIDs());
   }
 
   /**
@@ -341,11 +336,11 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
     GNSNodeConfig gnsNodeConfigOldSchool = new GNSNodeConfig(filename, 44);
     System.out.println(gnsNodeConfigOldSchool.hostInfoMapping.toString());
-    System.out.println(gnsNodeConfigOldSchool.getNameServerIDs().size());
+    System.out.println(gnsNodeConfigOldSchool.getNumberOfNodes());
 
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/ns_hosts.txt", 44);
     System.out.println("hostInfoMapping:" + gnsNodeConfig.hostInfoMapping.toString());
-    System.out.println(gnsNodeConfig.getNameServerIDs().size());
+    System.out.println(gnsNodeConfig.getNumberOfNodes());
   }
 
 }

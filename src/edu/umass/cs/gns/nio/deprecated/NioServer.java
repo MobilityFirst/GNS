@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.nio.deprecated;
 
 /* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
+// When will this move take place? 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
@@ -171,7 +172,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<Integer> {
     String s = json.toString();
     byte[] data = ("&" + s.length() + "&" + s).getBytes();
 
-    if (!nodeConfig.containsNodeInfo(destID)) {
+    if (!nodeConfig.nodeExists(destID)) {
       return false;
     }
 

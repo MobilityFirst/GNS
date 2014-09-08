@@ -115,10 +115,10 @@ public class BeehiveReplication {
       return -1;
     }
 
-    if (allServers.contains(gnsNodeConfig.getClosestNameServer())) {
-      return gnsNodeConfig.getClosestNameServer();
+    if (allServers.contains(gnsNodeConfig.getClosestServer())) {
+      return gnsNodeConfig.getClosestServer();
     }
-    return beehiveNSChoose(gnsNodeConfig.getClosestNameServer(), allServers, nameserverQueried);
+    return beehiveNSChoose(gnsNodeConfig.getClosestServer(), allServers, nameserverQueried);
 
   }
 

@@ -156,7 +156,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 			JSONNIOTransport niot = new JSONNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new PacketDemultiplexerDefault())); 
 			MongoRecords mongoRecords = new MongoRecords(id, Config.mongoPort);
 			ReplicaController rc = new ReplicaController(id, configParameters, gnsNodeConfig, niot, mongoRecords);
-			ConsistentHashing.initialize(faultTolerance, gnsNodeConfig.getNameServerIDs());
+			ConsistentHashing.initialize(faultTolerance, gnsNodeConfig.getNodeIDs());
 			ReplicaControllerCoordinatorPaxos rccPaxos = new ReplicaControllerCoordinatorPaxos(id, niot, gnsNodeConfig, rc, paxosConfig);
 			System.out.println("SUCCESS: ReplicaControllerCoordinatorPaxos " + rccPaxos.myID + " started without exceptions." +
 					"\nNothing else except startup has been tested yet.");
