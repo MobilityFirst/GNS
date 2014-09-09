@@ -9,7 +9,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
