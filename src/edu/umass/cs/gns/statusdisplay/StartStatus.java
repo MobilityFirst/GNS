@@ -3,10 +3,8 @@ package edu.umass.cs.gns.statusdisplay;
 //import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.GEOLocator;
-import edu.umass.cs.gns.util.HostInfo;
-import edu.umass.cs.gns.util.ScreenUtils;
+  import edu.umass.cs.gns.util.ScreenUtils;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -18,7 +16,7 @@ import org.apache.commons.cli.ParseException;
 
 /**
  * A helper class that does all the necessary things to get status windows up and running.
- * 
+ *
  * @author westy
  */
 public class StartStatus {
@@ -82,7 +80,7 @@ public class StartStatus {
 //    StatusModel.getInstance().addUpdateListener(StatusFrame.getInstance());
 //    MapFrame.getInstance().setVisible(true);
 //    StatusModel.getInstance().addUpdateListener(MapFrame.getInstance());
-    
+
     ArrayList<String> cities = new ArrayList<String>();
     cities.add("Arlington, VA, USA");
     cities.add("Seattle, WA, USA");
@@ -103,19 +101,17 @@ public class StartStatus {
     cities.add("Tehran, Iran");
     cities.add("Riyadh, Saudi Arabia");
     cities.add("Morocco");
-    
+
     for (int id : nodeConfig.getNodeIDs()) {
-      HostInfo info = nodeConfig.getHostInfo(id);
-      InetAddress ipAddress = info.getIpAddress();
       StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING);
 //      Random rand = new Random();
 //      double randomLat = (double) (rand.nextInt(180) - 90);
 //      double randomLon = (double) (rand.nextInt(360) - 180);
-      StatusModel.getInstance().queueUpdate(id, "Node " + id, ipAddress.getHostAddress(),
+      StatusModel.getInstance().queueUpdate(id, "Node " + id, nodeConfig.getNodeAddress(id).getHostAddress(),
               GEOLocator.lookupCityLocation(cities.get(id))
-              //new Point2D.Double(randomLon, randomLat) 
-              //IPLocator.lookupLocation(ipAddress.getHostAddress())
-              );
+      //new Point2D.Double(randomLon, randomLat) 
+      //IPLocator.lookupLocation(ipAddress.getHostAddress())
+      );
     }
   }
 }

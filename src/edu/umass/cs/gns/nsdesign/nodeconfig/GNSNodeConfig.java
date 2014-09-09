@@ -42,12 +42,11 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
-  private final ConcurrentMap<Integer, HostInfo> hostInfoMapping
-          = new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
+  private final ConcurrentMap<Integer, HostInfo> hostInfoMapping = new ConcurrentHashMap<Integer, HostInfo>(16, 0.75f, 8);
 
   // Currently only used by GNSINstaller
   /**
-   * Creates an empty GNSNodeConfig 
+   * Creates an empty GNSNodeConfig
    */
   public GNSNodeConfig() {
     // this doesn't set numberOfNameServers
@@ -65,11 +64,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
       throw new UnsupportedOperationException("THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: " + hostsFile);
       //initFromOldStyleFile(hostsFile, nameServerID);
     } else {
-      initFromNSFile(hostsFile, nameServerID);
+      initFromFile(hostsFile, nameServerID);
     }
   }
-
-  
 
   /**
    * Creates a GNSNodeConfig and initializes for a local installation
@@ -80,28 +77,23 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   public GNSNodeConfig(int nsHosts, int nameServerID) {
     this.nodeID = nameServerID;
     initServersCount(0, nsHosts);
-    GNS.getLogger().info("Number of name servers is : " + nsHosts);
   }
-  
+
   /**
    * **
-   * Parse a pair of ns host file to create a mapping of node information for name servers.
+   * Parse a host file to create a mapping of node information for name servers.
    *
-   * @param nsHostsFile
+   * @param hostsFile
    * @param nameServerID
    * @throws NumberFormatException
    */
-  private void initFromNSFile(String nsHostsFile, int nameServerID) {
+  private void initFromFile(String hostsFile, int nameServerID) {
     this.nodeID = nameServerID;
-    initServersFromFile(nsHostsFile);
-  }
-
-  private void initServersFromFile(String hostsFile) {
     List<HostFileLoader.HostSpec> hosts = null;
     try {
       hosts = HostFileLoader.loadHostFile(hostsFile);
     } catch (Exception e) {
-      GNS.getLogger().severe("Problem loading hosts file file: " + e);
+      GNS.getLogger().severe("Problem loading hosts file: " + e);
       e.printStackTrace();
       return;
     }
@@ -161,62 +153,67 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   public Set<Integer> getNodeIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
-  
+
+  /**
+   * Returns the number of name server nodes.
+   * 
+   * @return the number of nodes
+   */
   public int getNumberOfNodes() {
     return hostInfoMapping.size();
   }
 
   /**
-   *
-   * Returns the HostInfo structure for a host
-   *
-   * @param id
-   * @return NameServerInfo *
-   */
-  public HostInfo getHostInfo(int id) {
-    return hostInfoMapping.get(id);
-  }
-
-  /**
-   * Returns the TCP port of a nameserver
+   * Returns the TCP port of a nameserver. 
+   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id Nameserver id
    * @return the stats port for a nameserver
    */
   public int getNSTcpPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
-  }
-
-  public int getNSUdpPort(int id) {
-    HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
+    return (nodeInfo == null) ? INVALID_NAME_SERVER_ID : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
   }
 
   /**
-   * Returns the Admin port of a Nameserver
+   *  Returns the UDP port of a nameserver.
+   *  Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
+   * 
+   * @param id
+   * @return 
+   */
+  public int getNSUdpPort(int id) {
+    HostInfo nodeInfo = hostInfoMapping.get(id);
+    return (nodeInfo == null) ? INVALID_NAME_SERVER_ID : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
+  }
+
+  /**
+   * Returns the Admin port of a Nameserver.
+   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
   public int getNSAdminRequestPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
+    return (nodeInfo == null) ? INVALID_NAME_SERVER_ID : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
   }
 
   /**
-   * Returns the NS ping port
+   * Returns the NS ping port.
+   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id
    * @return the port
    */
   public int getNSPingPort(int id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? -1 : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+    return (nodeInfo == null) ? INVALID_NAME_SERVER_ID : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
   }
 
   /**
    * Returns the IP address of a name server.
+   * Will return null if the node doesn't exist.
    *
    * @param id Server id
    * @return IP address of a server
@@ -228,7 +225,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   /**
-   * Returns the ping latency between two servers
+   * Returns the ping latency between two servers.
+   * Will return -1 if the node doesn't exist.
    *
    * @param id Server id
    * @return
@@ -245,11 +243,24 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     }
   }
 
+  /**
+   * Returns true if the node exists.
+   * 
+   * @param ID
+   * @return 
+   */
   @Override
   public boolean nodeExists(Integer ID) {
     return getNodeIDs().contains(ID);
   }
 
+  /**
+   * Returns the TCP port of a nameserver.
+   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
+   * 
+   * @param ID
+   * @return 
+   */
   @Override
   public int getNodePort(Integer ID) {
     return this.getNSTcpPort(ID);
@@ -277,6 +288,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
   /**
    * Selects the closest Name Server from a set of Name Servers.
    * excludeNameServers is a set of Name Servers from the first list to not consider.
+   * If the local server is one of the serverIds and not excluded this will return it.
    *
    * @param serverIds
    * @param excludeServers
@@ -286,6 +298,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
     if (serverIds == null) {
       return INVALID_NAME_SERVER_ID;
     }
+    // If the local server is one of the server ids and not excluded return it.
     if (serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
       return nodeID;
     }
@@ -305,7 +318,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<Integer> {
 
     return nameServerID;
   }
-  
+
   /**
    * Returns true if the file is the old style (has lots of fields).
    *
