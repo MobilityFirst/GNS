@@ -2,7 +2,10 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.*;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -98,7 +101,7 @@ public class PaxosLogger extends Thread {
   /**
    * Node ID of this node
    */
-  private int nodeID = -1;
+  private NodeId<String> nodeID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
   /**
    * This is the paxos manager object for which logger is doing the logging.
@@ -205,7 +208,7 @@ public class PaxosLogger extends Thread {
    * @param nodeID Node ID of this node.
    * @param paxosManager Paxos Manager object for this this logger is doing the logging.
    */
-  public PaxosLogger(String logFolder, int nodeID, PaxosManager paxosManager) {
+  public PaxosLogger(String logFolder, NodeId<String> nodeID, PaxosManager paxosManager) {
     this.logFolder = logFolder;
     this.nodeID = nodeID;
     this.paxosManager = paxosManager;
@@ -225,7 +228,7 @@ public class PaxosLogger extends Thread {
    * @param nodeID  Node ID of this node.
    * @param gnsRunning Set to true to perform offline analysis of logs.
    */
-  public PaxosLogger(String logFolder, int nodeID, boolean gnsRunning) {
+  public PaxosLogger(String logFolder, NodeId<String> nodeID, boolean gnsRunning) {
     this.logFolder = logFolder;
     this.nodeID = nodeID;
     this.gnsRunning = gnsRunning;
@@ -309,7 +312,7 @@ public class PaxosLogger extends Thread {
    * @param nodeIDs
    * @param initialState
    */
-  void logPaxosStart(String paxosID, Set<Integer> nodeIDs, StatePacket initialState) {
+  void logPaxosStart(String paxosID, Set<NodeId<String>> nodeIDs, StatePacket initialState) {
     if (!Config.noPaxosLog) {
       if (debugMode) {
         GNS.getLogger().fine(" Paxos ID = " + paxosID);
@@ -326,7 +329,7 @@ public class PaxosLogger extends Thread {
           // first log initial state
           logPaxosState(paxosID, initialState);
           // then append to paxos IDs
-          String logString = getLogString(paxosID, PaxosPacketType.START.getInt(), setIntegerToString(nodeIDs));
+          String logString = getLogString(paxosID, PaxosPacketType.START.getInt(), Util.setOfNodeIdToString(nodeIDs));
           appendToFile(paxosIDsFile1, logString);
         }
       }
@@ -625,7 +628,7 @@ public class PaxosLogger extends Thread {
   }
 
   private void handleLoggedMessage(LoggingCommand cmd) {
-    if (cmd.getDest() != -1) {
+    if (!cmd.getDest().equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       paxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
     }
   }
@@ -1117,7 +1120,7 @@ public class PaxosLogger extends Thread {
       return;
     }
 
-    Set<Integer> nodeIDs = stringToSetInteger(msg);
+    Set<NodeId<String>> nodeIDs = Util.stringToSetOfNodeId(msg);
 
     if (debugMode) {
       GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIDs);
@@ -1459,8 +1462,7 @@ public class PaxosLogger extends Thread {
     }
     return integerSet;
   }
-
-
+  
   private  String getNextFileName() {
     logFileNumber++;
     return getLogFolderPath() + "/" + logFilePrefix + logFileNumber;
@@ -1597,7 +1599,7 @@ class LoggingCommand {
   private String paxosID;
   private JSONObject logJson;
   private int actionAfterLog;
-  private int dest = -1;
+  private NodeId<String> dest = GNSNodeConfig.INVALID_NAME_SERVER_ID;
   private JSONObject sendJson;
 
   public LoggingCommand(String paxosID, JSONObject logJson, int actionAfterLog) {
@@ -1606,7 +1608,7 @@ class LoggingCommand {
     this.logJson = logJson;
   }
 
-  public LoggingCommand(String paxosID, JSONObject logJson, int actionAfterLog, int dest, JSONObject sendJson) {
+  public LoggingCommand(String paxosID, JSONObject logJson, int actionAfterLog, NodeId<String> dest, JSONObject sendJson) {
     this.paxosID = paxosID;
     this.actionAfterLog = actionAfterLog;
     this.logJson = logJson;
@@ -1627,7 +1629,7 @@ class LoggingCommand {
     return actionAfterLog;
   }
 
-  public int getDest() {
+  public NodeId<String> getDest() {
     return dest;
   }
 

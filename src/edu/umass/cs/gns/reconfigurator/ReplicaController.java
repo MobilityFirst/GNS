@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -45,7 +46,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	public static final int RC_TIMEOUT_MILLIS = 3000;
 	private static final long UNDOCUMENTED_DELAY_PARAMETER = 9000L;
 
-	private final int myID; 
+	private final NodeId<String> myID; 
 	private final InterfaceJSONNIOTransport niot; // used for all transport including helper classes
 	private final JSONMessenger messenger;
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
@@ -58,7 +59,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 
 	private Logger log = Logger.getLogger(getClass().getName()); //GNS.getLogger();
 
-	public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
+	public ReplicaController(NodeId<String> nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
 			InterfaceJSONNIOTransport nioServer, MongoRecords mongoRecords) {
 		Config.initialize(configParameters);
 		this.myID = nodeID;
@@ -72,7 +73,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	@Override public ConcurrentHashMap<Integer, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or removeEntireRecord
 	@Override public GNSNodeConfig getGnsNodeConfig() {return gnsNodeConfig;} // FIXME: make protected or removeEntireRecord
 
-	protected int getNodeID() {return myID;}
+	protected NodeId<String> getNodeID() {return myID;}
 	protected BasicRecordMap getDB() {return replicaControllerDB;}
 	protected InterfaceJSONNIOTransport getNioServer() {return niot;}
 	protected UniqueIDHashMap getOngoingStopActiveRequests() {return ongoingStopActiveRequests;}

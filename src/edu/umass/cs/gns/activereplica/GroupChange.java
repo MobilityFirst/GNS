@@ -6,6 +6,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.reconfigurator.Add;
@@ -92,7 +93,7 @@ public class GroupChange {
 	/**
 	 * Responds to a request from a new active replica regarding transferring state for a name.
 	 */
-	protected static MessagingTask handlePrevValueRequest(NewActiveSetStartupPacket packet, String finalState, int activeID)
+	protected static MessagingTask handlePrevValueRequest(NewActiveSetStartupPacket packet, String finalState, NodeId<String> activeID)
 			throws JSONException, IOException {
 		MessagingTask sendOldActiveState = null;
 		if (Config.debuggingEnabled) log.info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
@@ -125,7 +126,7 @@ public class GroupChange {
 	 *  node informs all new active replicas (including itself) of their membership in the new set.
 	 *  This method also creates book-keeping state at active replica to records response from active replicas.
 	 */
-	protected static MessagingTask handleNewActiveStart(NewActiveSetStartupPacket packet, int arID, HashMap<Integer,NewActiveStartInfo> activeStartups,
+	protected static MessagingTask handleNewActiveStart(NewActiveSetStartupPacket packet, NodeId<String> arID, HashMap<Integer,NewActiveStartInfo> activeStartups,
 			ARProtocolTask[] protocolTask)
 					throws JSONException, IOException{
 
@@ -143,8 +144,8 @@ public class GroupChange {
 		packet.setUniqueID(activeStartInfo.hashCode()); // this ID is set by active replica for identifying this packet.
 		if (Config.debuggingEnabled) log.info("NEW_ACTIVE_START: forwarded msg to nodes; "
 				+ packet.getNewActiveNameServers());
-		for (int nodeID: packet.getNewActiveNameServers()) {
-			if (arID != nodeID) { // exclude myself
+		for (NodeId<String> nodeID: packet.getNewActiveNameServers()) {
+			if (!arID.equals(nodeID)) { // exclude myself
 				newActiveForward = new MessagingTask(nodeID, packet.toJSONObject());
 			}
 		}
@@ -172,14 +173,14 @@ public class GroupChange {
 	 * response is valid, this node becomes functional as a new active replica and confirms back to that active replica
 	 * who informed it of its membership in new group.
 	 */
-	protected static MessagingTask handlePrevValueResponse(NewActiveSetStartupPacket originalPacket, int activeID)
+	protected static MessagingTask handlePrevValueResponse(NewActiveSetStartupPacket originalPacket, NodeId<String> activeID)
 			throws JSONException, IOException{
 		MessagingTask replyToActive = null;
 		
 		if (originalPacket != null) {
 			// send back response to the active who forwarded this packet to this node.
 			originalPacket.changePacketTypeToResponse();
-			int sendingActive = originalPacket.getSendingActive();
+			NodeId<String> sendingActive = originalPacket.getSendingActive();
 			originalPacket.changeSendingActive(activeID);
 
 			if (Config.debuggingEnabled) log.info("Node "+activeID+" NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);

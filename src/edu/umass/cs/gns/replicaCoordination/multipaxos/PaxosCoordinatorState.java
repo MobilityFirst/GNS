@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -117,7 +118,7 @@ public class PaxosCoordinatorState  {
 	private class ProposalStateAtCoordinator {
 		final PValuePacket pValuePacket;
 		final WaitforUtility waitfor;
-		ProposalStateAtCoordinator(int[] members, PValuePacket pValuePacket) {
+		ProposalStateAtCoordinator(NodeId<String>[] members, PValuePacket pValuePacket) {
 			this.pValuePacket = pValuePacket;
 			this.waitfor = new WaitforUtility(members);
 		}
@@ -717,7 +718,7 @@ public class PaxosCoordinatorState  {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		int myID = 21;
+		NodeId<String> myID = 21;
 		int ballotnum=2;
 		int numMembers = 43;
 		int[] members = new int[numMembers];

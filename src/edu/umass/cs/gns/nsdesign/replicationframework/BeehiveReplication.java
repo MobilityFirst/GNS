@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.Util;
 
 import java.io.File;
@@ -23,76 +24,78 @@ import java.util.*;
  * This was Hardeep's implementation of beehive DHT routing.
  */
 public class BeehiveReplication {
-	private static int numNodes;
-	private static double M;
-	private static double base;
-	
-	private static Map<Integer, Double> replicationLevelMap = new HashMap<Integer, Double>();
-	
 
-	public static void generateReplicationLevel(int numNodes, double C, double M, double alpha, double base ) {
+  private static int numNodes;
+  private static double M;
+  private static double base;
+
+  private static Map<Integer, Double> replicationLevelMap = new HashMap<Integer, Double>();
+
+  public static void generateReplicationLevel(int numNodes, double C, double M, double alpha, double base) {
     BeehiveReplication.numNodes = numNodes; //
-		BeehiveReplication.M = M;
-		BeehiveReplication.base = base;
-		
-		int kPrime = getKPrime( C, M, alpha, base );
-		double xi = 0;
-		int level = 0;
-		
-		while( xi < 1) {
-			xi = xi( level, C, M, alpha, base, kPrime );
-			if( xi > 1 )
-				replicationLevelMap.put( level, 1.0 );
-			else
-				replicationLevelMap.put( level, xi );
-			level++;
-		}
-	}
-	
-	public static int numActiveNameServers( String name ) {
-		double popularity = Integer.parseInt( name ) / M;
-		int level = 0;
-		for( ; level < replicationLevelMap.size(); level++ ) {
-			if( popularity <= replicationLevelMap.get( level ) )
-				break;
-		}
-		
-		int numActives = Util.roundToInt( numNodes / Math.pow( base, level ) );
-		if( numActives < 1 )
-			numActives = 1;
+    BeehiveReplication.M = M;
+    BeehiveReplication.base = base;
+
+    int kPrime = getKPrime(C, M, alpha, base);
+    double xi = 0;
+    int level = 0;
+
+    while (xi < 1) {
+      xi = xi(level, C, M, alpha, base, kPrime);
+      if (xi > 1) {
+        replicationLevelMap.put(level, 1.0);
+      } else {
+        replicationLevelMap.put(level, xi);
+      }
+      level++;
+    }
+  }
+
+  public static int numActiveNameServers(String name) {
+    double popularity = Integer.parseInt(name) / M;
+    int level = 0;
+    for (; level < replicationLevelMap.size(); level++) {
+      if (popularity <= replicationLevelMap.get(level)) {
+        break;
+      }
+    }
+
+    int numActives = Util.roundToInt(numNodes / Math.pow(base, level));
+    if (numActives < 1) {
+      numActives = 1;
+    }
 //		System.out.println( name + "\t" + level + "\t" + numActives );
-		return numActives;
-	}
+    return numActives;
+  }
 
-  private static double xi( int i, double C, double M, double alpha, double base, int kPrime ) {
+  private static double xi(int i, double C, double M, double alpha, double base, int kPrime) {
     double d_power = (1 - alpha) / alpha;
-    double D = Math.pow( base, d_power );
-    double CPrime = C * ( 1 - ( 1 / Math.pow(M, 1 - alpha ) ) );
+    double D = Math.pow(base, d_power);
+    double CPrime = C * (1 - (1 / Math.pow(M, 1 - alpha)));
 
-    double xi_num = ( Math.pow(D, i) * ( kPrime - CPrime ) );
+    double xi_num = (Math.pow(D, i) * (kPrime - CPrime));
     double xi_dem = 1;
 
-    for(int j = 1; j <= (kPrime - 1); j++ ) {
+    for (int j = 1; j <= (kPrime - 1); j++) {
       xi_dem += Math.pow(D, j);
     }
 
-    double xi_power = 1/( 1-alpha );
-    return Math.pow( (xi_num / xi_dem), xi_power );
+    double xi_power = 1 / (1 - alpha);
+    return Math.pow((xi_num / xi_dem), xi_power);
   }
 
-  private static int getKPrime( double C, double M, double alpha, double base ) {
+  private static int getKPrime(double C, double M, double alpha, double base) {
     double xkPrime = 0;
     int kPrime = 0;
 
-    while( xkPrime < 1 ) {
+    while (xkPrime < 1) {
       kPrime++;
-      xkPrime = xi( kPrime - 1, C, M, alpha, base, kPrime );
+      xkPrime = xi(kPrime - 1, C, M, alpha, base, kPrime);
 //			System.out.println("k':" + kPrime + "\tx_" + (kPrime-1) + ":" + xkPrime );
     }
 
-    return kPrime -1;
+    return kPrime - 1;
   }
-
 
   /**
    * Abhigyan: Putting this code here because it is related to the beehive replication strategy.
@@ -101,10 +104,10 @@ public class BeehiveReplication {
    * server whose ID is greater than current name server's ID. I think this approximates a replica that will be chosen
    * using DHT routing.
    */
-  public static int getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<Integer> activeNameServers, Set<Integer> nameserverQueried) {
-    ArrayList<Integer> allServers = new ArrayList<Integer>();
+  public static NodeId<String> getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<NodeId<String>> activeNameServers, Set<NodeId<String>> nameserverQueried) {
+    ArrayList<NodeId<String>> allServers = new ArrayList<NodeId<String>>();
     if (activeNameServers != null) {
-      for (int x : activeNameServers) {
+      for (NodeId<String> x : activeNameServers) {
         if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
           allServers.add(x);
         }
@@ -112,7 +115,7 @@ public class BeehiveReplication {
     }
 
     if (allServers.size() == 0) {
-      return -1;
+      return GNSNodeConfig.INVALID_NAME_SERVER_ID;
     }
 
     if (allServers.contains(gnsNodeConfig.getClosestServer())) {
@@ -122,39 +125,34 @@ public class BeehiveReplication {
 
   }
 
-
-  private static int beehiveNSChoose(int closestNS, ArrayList<Integer> nameServers, Set<Integer> nameServersQueried) {
+  private static NodeId<String> beehiveNSChoose(NodeId<String> closestNS, ArrayList<NodeId<String>> nameServers, Set<NodeId<String>> nameServersQueried) {
 
     if (nameServers.contains(closestNS) && (nameServersQueried == null || !nameServersQueried.contains(closestNS))) {
       return closestNS;
     }
-
     Collections.sort(nameServers);
-    for (int x : nameServers) {
-      if (x > closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
+    for (NodeId<String> x : nameServers) {
+      if (x.compareTo(closestNS) > 0 && (nameServersQueried == null || !nameServersQueried.contains(x))) {
         return x;
       }
     }
-
-    for (int x : nameServers) {
-      if (x < closestNS && (nameServersQueried == null || !nameServersQueried.contains(x))) {
+    for (NodeId<String> x : nameServers) {
+      if (x.compareTo(closestNS) < 0 && (nameServersQueried == null || !nameServersQueried.contains(x))) {
         return x;
       }
     }
-
-    return -1;
+    return GNSNodeConfig.INVALID_NAME_SERVER_ID;
   }
 
-	public static void main(String[] args) throws IOException {
-		int nameServerCount = 97;
-		int nameCount = 11000;
-		double hopCount = 0.54;
-		double zipfAlpha = 0.63;
+  public static void main(String[] args) throws IOException {
+    int nameServerCount = 97;
+    int nameCount = 11000;
+    double hopCount = 0.54;
+    double zipfAlpha = 0.63;
 
 //    BeehiveReplication.numNodes = nameServerCount;
-
-    HashMap<Double,Integer> loadAuspiceReplicaCount = new HashMap<Double, Integer>();
-    loadAuspiceReplicaCount.put(1.0,213332);
+    HashMap<Double, Integer> loadAuspiceReplicaCount = new HashMap<Double, Integer>();
+    loadAuspiceReplicaCount.put(1.0, 213332);
 //    loadAuspiceReplicaCount.put(2.0,144858);
 //    loadAuspiceReplicaCount.put(3.0,121721);
 //    loadAuspiceReplicaCount.put(4.0,110110);
@@ -162,19 +160,19 @@ public class BeehiveReplication {
 //    loadAuspiceReplicaCount.put(6.0, 99000);
 //    loadAuspiceReplicaCount.put(7.0, 99000);
 //    loadAuspiceReplicaCount.put(8.0, 99000);
-    for (Double load:loadAuspiceReplicaCount.keySet()) {
+    for (Double load : loadAuspiceReplicaCount.keySet()) {
 
       int auspiceTotalReplicas = loadAuspiceReplicaCount.get(load);
-  //		System.exit(2);
+      //		System.exit(2);
       double selectedHopCount = 2.0;
 
       int codonsTotalReplicas = 200000;
-      for(double j = 0.3; j <= 2.0; j = j + 0.02) {
+      for (double j = 0.3; j <= 2.0; j = j + 0.02) {
         hopCount = j;
         generateReplicationLevel(nameServerCount, hopCount, nameCount, 0.63, 16);
-  //					System.out.println(replicationLevelMap.toString() );
+        //					System.out.println(replicationLevelMap.toString() );
         int sum = 0;
-        for(int i = 1; i <= nameCount; i++) {
+        for (int i = 1; i <= nameCount; i++) {
           sum += numActiveNameServers(Integer.toString(i));
         }
         System.out.println("sum = " + sum);
@@ -185,27 +183,26 @@ public class BeehiveReplication {
         codonsTotalReplicas = sum;
         System.out.println(j + "\t" + sum * 1.0);
       }
-      System.out.println("Selected hop count\t" + selectedHopCount  + "\tCodons total replicas\t" + codonsTotalReplicas);
+      System.out.println("Selected hop count\t" + selectedHopCount + "\tCodons total replicas\t" + codonsTotalReplicas);
 
       generateReplicationLevel(nameServerCount, selectedHopCount, nameCount, zipfAlpha, 16);
       //		System.out.println(replicationLevelMap.toString() );
       int NUM_RETRY = nameServerCount;
-      FileWriter fw = new FileWriter(new File("nameActives-codons-load"  + load.intValue()));
-  //    System.out.println("ns count \t" + ConfigFileInfo.getNumberOfNameServers());
+      FileWriter fw = new FileWriter(new File("nameActives-codons-load" + load.intValue()));
+      //    System.out.println("ns count \t" + ConfigFileInfo.getNumberOfNameServers());
 
-      for(int i = 0; i <= nameCount; i++) {
+      for (int i = 0; i <= nameCount; i++) {
 
         int numReplica = numActiveNameServers(Integer.toString(i));
 
         Set<Integer> newActiveNameServerSet = new HashSet<Integer>();
 
-        if(numReplica == numNodes) {
-          for( int j = 0; j < numNodes; j++ ) {
+        if (numReplica == numNodes) {
+          for (int j = 0; j < numNodes; j++) {
             newActiveNameServerSet.add(j);
           }
-        }
-        else {
-          for( int j = 1; j <= numReplica; j++ ) {
+        } else {
+          for (int j = 1; j <= numReplica; j++) {
             Random random = new Random(i);
             boolean added;
             int numTries = 0;
@@ -213,24 +210,21 @@ public class BeehiveReplication {
               numTries += 1;
               int newActiveNameServerId = random.nextInt(numNodes);
               added = newActiveNameServerSet.add(newActiveNameServerId);
-            } while(!added && numTries < NUM_RETRY);
+            } while (!added && numTries < NUM_RETRY);
           }
         }
 
         fw.write(i + " ");
-        for (int ns: newActiveNameServerSet) {
+        for (int ns : newActiveNameServerSet) {
           fw.write(" " + ns);
         }
         fw.write("\n");
-  //      System.out.println(i + "\t" + numReplica + "\t" + newActiveNameServerSet.size());
+        //      System.out.println(i + "\t" + numReplica + "\t" + newActiveNameServerSet.size());
       }
       fw.close();
 
     }
 
+  }
 
-	}
-
-
-	
 }

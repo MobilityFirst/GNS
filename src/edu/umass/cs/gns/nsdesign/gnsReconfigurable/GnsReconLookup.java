@@ -11,6 +11,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -63,9 +64,9 @@ public class GnsReconLookup {
     }
     // if all replicas are coordinating on a read request, then check if this node should reply to client.
     // whether coordination is done or not, only the replica receiving client's request replies to the client.
-    if (dnsPacket.getResponder() != -1 && // -1 means that we are not coordinating with other replicas upon reads.
+    if (!dnsPacket.getResponder().equals(GNSNodeConfig.INVALID_NAME_SERVER_ID) && // -1 means that we are not coordinating with other replicas upon reads.
             // so this replica should reply to client
-            dnsPacket.getResponder() != gnsApp.getNodeID()) {
+            !dnsPacket.getResponder().equals(gnsApp.getNodeID())) {
       return;
     }
 

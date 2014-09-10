@@ -4,6 +4,8 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -26,12 +28,12 @@ public class CopyStateFromOldActiveTask extends TimerTask {
 
   private NewActiveSetStartupPacket packet;
 
-  private HashSet<Integer> oldActivesQueried;
+  private HashSet<NodeId<String>> oldActivesQueried;
 
   private int requestID;
 
   public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica<?> activeReplica) throws JSONException {
-    this.oldActivesQueried = new HashSet<Integer>();
+    this.oldActivesQueried = new HashSet<NodeId<String>>();
     this.activeReplica = activeReplica;
     // first, store the original packet in hash map
     this.requestID = activeReplica.getOngoingStateTransferRequests().put(packet);
@@ -81,10 +83,10 @@ public class CopyStateFromOldActiveTask extends TimerTask {
       }
 
       // select old active to send request to
-      int oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
+      NodeId<String> oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
               oldActivesQueried);
 
-      if (oldActive == -1) {
+      if (oldActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
         // this will happen after all actives have been tried at least once.
         GNS.getLogger().severe(" Exception ERROR:  No More Actives Left To Query. Cancel Task!!! " + packet + " Actives queried: " + oldActivesQueried);
         activeReplica.getOngoingStateTransferRequests().remove(requestID);

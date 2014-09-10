@@ -11,11 +11,9 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 
-
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.PortUnreachableException;
-
-
 
 /**
  * Handles the updating of ping latencies for Local and Name Servers.
@@ -23,23 +21,23 @@ import java.net.PortUnreachableException;
  *
  * @author westy
  */
-public class PingManager implements Shutdownable{
-  
+public class PingManager implements Shutdownable {
+
   // Since we don't have ids for LNSs anymore this represents and the LNS in our table.
-  public static final int LOCALNAMESERVERID = Integer.MAX_VALUE;
+  public static final NodeId<String> LOCALNAMESERVERID = new NodeId<String>(Integer.MAX_VALUE);
 
   private final static int TIME_BETWEEN_PINGS = 30000;
-  private final int nodeId;
+  private final NodeId<String> nodeId;
   private final PingClient pingClient;
   private final PingServer pingServer;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
-  private final SparseMatrix<Long> pingTable; // the place we store all the sampled rtt values
+  private final SparseMatrix<NodeId<String>, Integer, Long> pingTable; // the place we store all the sampled rtt values
   private final GNSNodeConfig gnsNodeConfig;
   private Thread managerThread;
 
   private final boolean debug = false;
 
-  public PingManager(int nodeId, GNSNodeConfig gnsNodeConfig) {
+  public PingManager(NodeId<String> nodeId, GNSNodeConfig gnsNodeConfig) {
     this.nodeId = nodeId;
     this.gnsNodeConfig = gnsNodeConfig;
     this.pingClient = new PingClient(gnsNodeConfig);
@@ -75,12 +73,16 @@ public class PingManager implements Shutdownable{
       Thread.sleep(TIME_BETWEEN_PINGS);
       long t0 = System.currentTimeMillis();
       // Note that we're only pinging other NameServers here, not LNSs (they don't have IDs anyway).
-      for (int id : gnsNodeConfig.getNodeIDs()) {
+      for (NodeId<String> id : gnsNodeConfig.getNodeIDs()) {
         try {
-          if (id != nodeId) {
-            if (debug) GNS.getLogger().fine("Send from " + nodeId + " to " + id);
+          if (!id.equals(nodeId)) {
+            if (debug) {
+              GNS.getLogger().fine("Send from " + nodeId + " to " + id);
+            }
             long rtt = pingClient.sendPing(id);
-            if (debug) GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
+            if (debug) {
+              GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
+            }
             pingTable.put(id, windowSlot, rtt);
             //pingTable[id][windowSlot] = rtt;
             // update the configuration file info with the current average... the reason we're here
@@ -92,9 +94,11 @@ public class PingManager implements Shutdownable{
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
         }
       }
-      long timeForAllPings = (System.currentTimeMillis() - t0)/1000;
+      long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
       GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId + "\t");
-      if (debug) GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
+      if (debug) {
+        GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
+      }
       windowSlot = (windowSlot + 1) % WINDOWSIZE;
     }
   }
@@ -106,7 +110,7 @@ public class PingManager implements Shutdownable{
    * @param node
    * @return
    */
-  public long nodeAverage(int node) {
+  public long nodeAverage(NodeId<String> node) {
     // calculate the average ignoring bad samples
     int count = WINDOWSIZE; // tracks the number of good samples
     double total = 0;
@@ -132,11 +136,11 @@ public class PingManager implements Shutdownable{
    * @param node
    * @return
    */
-  public String tableToString(int node) {
+  public String tableToString(NodeId<String> node) {
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
-    for (int i : gnsNodeConfig.getNodeIDs()) {
+    for (NodeId<String> i : gnsNodeConfig.getNodeIDs()) {
       result.append(String.format("%4d", i));
       if (i != node) {
         result.append(" = ");
@@ -162,14 +166,7 @@ public class PingManager implements Shutdownable{
     return result.toString();
   }
 
-  public static void main(String args[]) throws Exception {
-    String configFile = args[0];
-    int nodeID = 0;
-    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
-    new PingManager(nodeID, gnsNodeConfig1).startPinging();
-  }
-  public final static String NEWLINE = System.getProperty("line.separator");
-
+  @Override
   public void shutdown() {
     GNS.getLogger().warning("Ping shutting down .. ");
     this.managerThread.interrupt();
@@ -177,4 +174,13 @@ public class PingManager implements Shutdownable{
     this.pingClient.shutdown();
     GNS.getLogger().warning("Ping shutdown  complete.");
   }
+
+  public static void main(String args[]) throws Exception {
+    String configFile = args[0];
+    NodeId<String> nodeID = new NodeId<String>(0);
+    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
+    new PingManager(nodeID, gnsNodeConfig1).startPinging();
+  }
+  public final static String NEWLINE = System.getProperty("line.separator");
+
 }

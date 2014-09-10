@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
@@ -28,7 +29,7 @@ import java.io.IOException;
 public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
 
   /*** ID of this node */
-  private final int nodeID;
+  private final NodeId<String> nodeID;
 
   /*** nio server */
   private final InterfaceJSONNIOTransport nioServer;
@@ -42,7 +43,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
    */
   private PingManager pingManager;
 
-  public DummyGnsReconfigurable(int nodeID, GNSNodeConfig gnsNodeConfig,
+  public DummyGnsReconfigurable(NodeId<String> nodeID, GNSNodeConfig gnsNodeConfig,
                            InterfaceJSONNIOTransport nioServer) {
     GNS.getLogger().info("Starting DUMMY gns .... NodeID: " + nodeID);
     this.nodeID = nodeID;
@@ -197,7 +198,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   @Override
-  public int getNodeID() {
+  public NodeId<String> getNodeID() {
     return nodeID;
   }
 

@@ -6,19 +6,20 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
  */
 public class TESTPaxosNodeMultipleManagers {
-	private final int myID;
+	private final NodeId<String> myID;
 	private PaxosManager pm1=null;
 	private PaxosManager pm2=null; // not used, only for testing
 	private TESTPaxosReplicable app=null;
 
 	// A server must have an id
-	TESTPaxosNodeMultipleManagers(int id) throws IOException {
+	TESTPaxosNodeMultipleManagers(NodeId<String> id) throws IOException {
 		this.myID = id;
 		app = new TESTPaxosReplicable();
 		pm1 = startPaxosManager(id, app);
@@ -26,7 +27,7 @@ public class TESTPaxosNodeMultipleManagers {
 		// only for testing so app can send back response; in general, app should have its own NIO
 		app.setNIOTransport(pm1.getNIOTransport()); 
 	}
-	public PaxosManager startPaxosManager(int id, Replicable app) {
+	public PaxosManager startPaxosManager(NodeId<String> id, Replicable app) {
 		try {
 			this.pm1 = new PaxosManager(id, TESTPaxosConfig.getNodeConfig(), 
 					new JSONNIOTransport(id, TESTPaxosConfig.getNodeConfig(), 
@@ -89,7 +90,7 @@ public class TESTPaxosNodeMultipleManagers {
 	public static void main(String[] args) {
 		try {
 			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
-			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
+			NodeId<String> myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
 			assert(myID!=-1) : "Need a node ID argument: Try 0 for localhost"; 
 			
 			int numGroups = TESTPaxosConfig.NUM_GROUPS;

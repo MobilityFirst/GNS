@@ -5,6 +5,8 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -36,9 +38,9 @@ public class StartActiveSetTask implements RCProtocolTask {
 
 
   private String name;
-  private Set<Integer> oldActiveNameServers;
-  private Set<Integer> newActiveNameServers;
-  private Set<Integer> newActivesQueried;
+  private Set<NodeId<String>> oldActiveNameServers;
+  private Set<NodeId<String>> newActiveNameServers;
+  private Set<NodeId<String>> newActivesQueried;
   private int newActiveVersion;
   private int oldActiveVersion;
   private String initialValue;
@@ -48,12 +50,12 @@ public class StartActiveSetTask implements RCProtocolTask {
   /**
    * Constructor object
    */
-  public StartActiveSetTask(String name,Set<Integer> oldActiveNameServers, Set<Integer> newActiveNameServers,
+  public StartActiveSetTask(String name, Set<NodeId<String>> oldActiveNameServers, Set<NodeId<String>> newActiveNameServers,
 		  int newActiveVersion, int oldActiveVersion, String initialValue) {
     this.name = name;
     this.oldActiveNameServers = oldActiveNameServers;
     this.newActiveNameServers = newActiveNameServers;
-    this.newActivesQueried = new HashSet<Integer>();
+    this.newActivesQueried = new HashSet<NodeId<String>>();
     this.newActiveVersion = newActiveVersion;
     this.oldActiveVersion = oldActiveVersion;
     this.initialValue = initialValue;
@@ -86,9 +88,9 @@ public class StartActiveSetTask implements RCProtocolTask {
           GNS.getLogger().info(" Actives got accepted and replaced by new actives. Quitting. ");
         } else {
           // send request to a new active replica
-          int selectedActive = replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
+          NodeId<String> selectedActive = replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
                   newActivesQueried);
-          if (selectedActive == -1) {
+          if (selectedActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
             terminateTask = true;
             GNS.getLogger().severe("ERROR: No more active left to query. Active name servers queried: "
                     + newActivesQueried + " Actives not started.");

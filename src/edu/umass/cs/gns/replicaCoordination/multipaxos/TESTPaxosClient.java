@@ -24,7 +24,7 @@ public class TESTPaxosClient {
 	private static final int random = (int)(Math.random()*TESTPaxosConfig.NUM_GROUPS);
 
 	private final JSONNIOTransport niot;
-	private final int myID;
+	private final NodeId<String> myID;
 	private int reqCount=0;
 	private int replyCount=0;
 	private int noopCount=0;
@@ -202,7 +202,7 @@ public class TESTPaxosClient {
 
 	public static void main(String[] args) {
 		try {
-			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
+			NodeId<String> myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
 			assert(myID!=-1) : "Need a node ID argument";
 
 			if(TESTPaxosConfig.findMyIP(myID))  {

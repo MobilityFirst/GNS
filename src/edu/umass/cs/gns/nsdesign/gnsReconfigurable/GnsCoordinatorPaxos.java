@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -27,7 +28,7 @@ import java.util.Set;
 public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
-  private int nodeID;
+  private NodeId<String> nodeID;
   // this is the app object
   private Replicable paxosInterface;
 
@@ -38,7 +39,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
   private InterfaceJSONNIOTransport nioTransport;
 
-  public GnsCoordinatorPaxos(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public GnsCoordinatorPaxos(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                              Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
 
@@ -132,7 +133,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           // Why is this necessary? Let's say closest name server to a LNS in the previous replica set was quite far, but
           // in the new replica set the closest name server is very near to LNS. If we do not inform the LNS of
           // current active replica set, it will continue sending requests to the far away name server.
-          Set<Integer> nodeIds = paxosManager.getPaxosNodeIDs(name);
+          Set<NodeId<String>> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
             RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);

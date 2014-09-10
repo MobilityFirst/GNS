@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.main.GNS;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -118,13 +119,11 @@ public class JSONUtils {
   }
 
   /**
-   * **********************************************************
    * Converts a JSONArray to an ArrayList of string addresses
    *
    * @param json JSONArray
    * @return ArrayList with the content of JSONArray.
    * @throws JSONException
-   **********************************************************
    */
   public static Set<String> JSONArrayToSetString(JSONArray json) throws JSONException {
     Set<String> set = new HashSet<String>();
@@ -139,7 +138,7 @@ public class JSONUtils {
 
     return set;
   }
-
+  
   public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
     Map<String, ResultValue> result = new HashMap<String, ResultValue>();
     Iterator<String> keyIter = json.keys();

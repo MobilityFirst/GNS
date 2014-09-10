@@ -12,6 +12,7 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -40,7 +41,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   /**
    * ID of this node
    */
-  private final int nodeID;
+  private final NodeId<String> nodeID;
 
   /**
    * nio server
@@ -67,7 +68,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
    * @param nioServer
    * @param mongoRecords
    */
-  public GnsReconfigurable(int nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+  public GnsReconfigurable(NodeId<String> nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
           MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
@@ -86,7 +87,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   @Override
-  public int getNodeID() {
+  public NodeId<String> getNodeID() {
     return nodeID;
   }
 

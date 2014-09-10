@@ -17,7 +17,7 @@ public class TESTPaxosNode {
 	 */
 	//public static final int NUM_GROUPS = TESTPaxosConfig.MAX_CONFIG_GROUPS;
 
-	private final int myID;
+	private final NodeId<String> myID;
 	private PaxosManager pm=null;
 	private TESTPaxosReplicable app=null;
 
@@ -92,7 +92,7 @@ public class TESTPaxosNode {
 	public static void main(String[] args) {
 		try {
 			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
-			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
+			NodeId<String> myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
 			assert(myID!=-1) : "Need a node ID argument"; 
 			
 			int numGroups = TESTPaxosConfig.NUM_GROUPS;

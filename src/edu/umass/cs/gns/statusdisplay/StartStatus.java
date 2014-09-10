@@ -2,6 +2,7 @@ package edu.umass.cs.gns.statusdisplay;
 
 //import edu.umass.cs.gns.util.ConfigFileInfo;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.GEOLocator;
   import edu.umass.cs.gns.util.ScreenUtils;
 import java.io.IOException;
@@ -45,14 +46,14 @@ public class StartStatus {
       CommandLine parser = initializeOptions(args);
       String nsFile = parser.getOptionValue("nsfile");
       //lnsid = Integer.parseInt(parser.getOptionValue("lnsid"));
-      nodeConfig = new GNSNodeConfig(nsFile, 0);
+      nodeConfig = new GNSNodeConfig(nsFile, new NodeId<String>(0));
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);
     }
     //
     //Set<String> hosts = new HashSet<String>();
-    for (int id : nodeConfig.getNodeIDs()) {
+    for (NodeId<String> id : nodeConfig.getNodeIDs()) {
       StatusModel.getInstance().queueAddEntry(id);
     }
     //
@@ -102,13 +103,14 @@ public class StartStatus {
     cities.add("Riyadh, Saudi Arabia");
     cities.add("Morocco");
 
-    for (int id : nodeConfig.getNodeIDs()) {
+    int cityCnt = 0;
+    for (NodeId<String> id : nodeConfig.getNodeIDs()) {
       StatusModel.getInstance().queueUpdate(id, StatusEntry.State.RUNNING);
 //      Random rand = new Random();
 //      double randomLat = (double) (rand.nextInt(180) - 90);
 //      double randomLon = (double) (rand.nextInt(360) - 180);
       StatusModel.getInstance().queueUpdate(id, "Node " + id, nodeConfig.getNodeAddress(id).getHostAddress(),
-              GEOLocator.lookupCityLocation(cities.get(id))
+              GEOLocator.lookupCityLocation(cities.get(cityCnt++))
       //new Point2D.Double(randomLon, randomLat) 
       //IPLocator.lookupLocation(ipAddress.getHostAddress())
       );

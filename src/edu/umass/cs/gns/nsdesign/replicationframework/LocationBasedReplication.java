@@ -2,6 +2,8 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
@@ -32,19 +34,19 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
   @Override
   public ReplicationOutput newActiveReplica(ReconfiguratorInterface rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
 
-    Set<Integer> newActiveNameServerSet;
-    Set<Integer> localityBasedReplicas;
+    Set<NodeId<String>> newActiveNameServerSet;
+    Set<NodeId<String>> localityBasedReplicas;
     //		 Use top-K based on locality.
     if (numReplica > Config.nameServerVoteSize) {
       newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc, rc.getGnsNodeConfig(), Config.nameServerVoteSize);
-      localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
+      localityBasedReplicas = new HashSet<NodeId<String>>(newActiveNameServerSet);
     } else {
       newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc, rc.getGnsNodeConfig(), numReplica);
-      localityBasedReplicas = new HashSet<Integer>(newActiveNameServerSet);
+      localityBasedReplicas = new HashSet<NodeId<String>>(newActiveNameServerSet);
     }
 
     if (numReplica >= rc.getGnsNodeConfig().getNumberOfNodes()) {
-      newActiveNameServerSet = new HashSet<Integer>(rc.getGnsNodeConfig().getNodeIDs());
+      newActiveNameServerSet = new HashSet<NodeId<String>>(rc.getGnsNodeConfig().getNodeIDs());
     } else {
 
       // Select based on votes as much as you can.
@@ -64,7 +66,7 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
           do {
             retries += 1;
             int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
-            int newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
+            NodeId<String> newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
             if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
               continue;
             }
@@ -77,17 +79,17 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
     return new ReplicationOutput(newActiveNameServerSet, localityBasedReplicas);
   }
 
-  private boolean isHighlyLoaded(ReconfiguratorInterface rc, int nodeID) {
+  private boolean isHighlyLoaded(ReconfiguratorInterface rc, NodeId<String> nodeID) {
     return rc.getNsRequestRates().get(nodeID) != null && rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
   }
 
-  private int getSetIndex(Set<Integer> nodeIds, int index) {
+  private NodeId<String> getSetIndex(Set<NodeId<String>> nodeIds, int index) {
     int count = 0;
-    for (int node: nodeIds) {
+    for (NodeId<String> node: nodeIds) {
       if  (count == index) return node;
       count++;
 
     }
-    return -1;
+    return GNSNodeConfig.INVALID_NAME_SERVER_ID;
   }
 }

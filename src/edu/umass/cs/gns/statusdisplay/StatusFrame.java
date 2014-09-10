@@ -5,6 +5,7 @@
 package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import edu.umass.cs.gns.util.ThreadUtils;
@@ -79,24 +80,26 @@ public class StatusFrame extends javax.swing.JFrame implements UpdateListener {
     StatusModel.getInstance().addUpdateListener(StatusFrame.getInstance());
     ThreadUtils.sleep(4000);
     for (int i = 1; i < 51; i++) {
-      StatusModel.getInstance().queueAddEntry(i);
+      StatusModel.getInstance().queueAddEntry(new NodeId<String>(i));
     }
     ThreadUtils.sleep(1000);
-    StatusModel.getInstance().queueUpdate(1, StatusEntry.State.INITIALIZING);
+    StatusModel.getInstance().queueUpdate(new NodeId<String>(1), StatusEntry.State.INITIALIZING);
     ThreadUtils.sleep(1000);
-    StatusModel.getInstance().queueUpdate(2, StatusEntry.State.INITIALIZING);
+    StatusModel.getInstance().queueUpdate(new NodeId<String>(2), StatusEntry.State.INITIALIZING);
     ThreadUtils.sleep(500);
-    StatusModel.getInstance().queueUpdate(3, StatusEntry.State.INITIALIZING);
+    StatusModel.getInstance().queueUpdate(new NodeId<String>(3), StatusEntry.State.INITIALIZING);
     ThreadUtils.sleep(500);
-    StatusModel.getInstance().queueUpdate(4, StatusEntry.State.INITIALIZING);
-    StatusModel.getInstance().queueUpdate(5, StatusEntry.State.INITIALIZING);
+    StatusModel.getInstance().queueUpdate(new NodeId<String>(4), StatusEntry.State.INITIALIZING);
+    StatusModel.getInstance().queueUpdate(new NodeId<String>(5), StatusEntry.State.INITIALIZING);
     ThreadUtils.sleep(500);
-    StatusModel.getInstance().queueUpdate(1, "boo ya");
+    StatusModel.getInstance().queueUpdate(new NodeId<String>(1), "boo ya");
     ThreadUtils.sleep(1000);
-    StatusModel.getInstance().queueUpdate(1, StatusEntry.State.RUNNING);
+    StatusModel.getInstance().queueUpdate(new NodeId<String>(1), StatusEntry.State.RUNNING);
     
-     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(1, 5, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE,  null, null));
-     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(4, 3, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE,  "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(new NodeId<String>(1), new NodeId<String>(5),
+             GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE,  null, null));
+     StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(new NodeId<String>(4), new NodeId<String>(3),
+             GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE,  "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
           
 //    StatusModel.getInstance().addSendNotation(1, 2, GNRS.PortType.DNS_PORT, Packet.PacketType.DNS, new Date());
 //    StatusModel.getInstance().addSendNotation(2, 3, GNRS.PortType.LNS_UDP_PORT, Packet.PacketType.UPDATE_ADDRESS_LNS, new Date());

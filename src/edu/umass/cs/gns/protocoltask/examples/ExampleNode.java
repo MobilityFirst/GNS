@@ -25,7 +25,7 @@ import edu.umass.cs.gns.protocoltask.json.ThresholdProtocolTask;
  * @author V. Arun
  */
 public class ExampleNode {
-	private final int myID;
+	private final NodeId<String> myID;
 	private final Set<Integer> nodeIDs;
 	private final JSONNIOTransport<Integer> niot;
 	private final ProtocolExecutor<Integer, Packet.PacketType, Long> protocolExecutor;

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.Set;
 
 /**
@@ -14,25 +15,25 @@ import java.util.Set;
 public class ReplicationOutput {
 
   // all replicas for a name
-  private Set<Integer> replicas;
+  private Set<NodeId<String>> replicas;
 
   // replica chosen based on demand locality
-  private Set<Integer> localityBasedReplicas;
+  private Set<NodeId<String>> localityBasedReplicas;
 
-  public ReplicationOutput(Set<Integer> replicas) {
+  public ReplicationOutput(Set<NodeId<String>> replicas) {
     this(replicas, null);
   }
-  public ReplicationOutput(Set<Integer> replicas, Set<Integer> localityBasedReplicas) {
+  public ReplicationOutput(Set<NodeId<String>> replicas, Set<NodeId<String>> localityBasedReplicas) {
 
     this.replicas = replicas;
     this.localityBasedReplicas = localityBasedReplicas;
   }
 
-  public Set<Integer> getReplicas() {
+  public Set<NodeId<String>> getReplicas() {
     return replicas;
   }
 
-  public Set<Integer> getLocalityBasedReplicas() {
+  public Set<NodeId<String>> getLocalityBasedReplicas() {
     return localityBasedReplicas;
   }
 }

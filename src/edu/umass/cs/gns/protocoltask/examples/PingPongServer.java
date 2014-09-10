@@ -17,7 +17,7 @@ public class PingPongServer implements ProtocolTask<Integer, Packet.PacketType, 
 
 	private final Long key = null;
 
-	protected final int myID;
+	protected final NodeId<String> myID;
 
 	private Logger log =
 			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())

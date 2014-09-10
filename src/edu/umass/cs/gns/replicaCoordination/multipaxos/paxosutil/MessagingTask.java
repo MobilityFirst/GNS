@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 
 /**
@@ -18,30 +19,30 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPac
  */
 public class MessagingTask {
 
-	public final int[] recipients;
+	public final NodeId<String>[] recipients;
 	public final PaxosPacket[] msgs;
 	
 	// Unicast
-	public MessagingTask(int destID, PaxosPacket pkt) {
+	public MessagingTask(NodeId<String> destID, PaxosPacket pkt) {
 		assert(pkt!=null) : "Incorrect usage: MessagingTask should not be instantiated with no messages";
-		this.recipients = new int[1];
+		this.recipients = new NodeId[1];
 		this.recipients[0] = destID;
 		
 		this.msgs = new PaxosPacket[pkt==null?0:1];
 		if(pkt!=null) msgs[0] = pkt;
 	}
 	// Multicast
-	public MessagingTask(int[] destIDs, PaxosPacket pkt) {
+	public MessagingTask(NodeId<String>[] destIDs, PaxosPacket pkt) {
 		assert(pkt!=null && destIDs!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages or destinations";
 		this.recipients = destIDs;
 		this.msgs = new PaxosPacket[pkt==null?0:1];
 		if(pkt!=null) msgs[0] = pkt;
 	}
 	// Unicast multiple packets
-	public MessagingTask(int destID, PaxosPacket[] pkts) {
+	public MessagingTask(NodeId<String> destID, PaxosPacket[] pkts) {
 		assert(pkts!=null && pkts.length>0 && pkts[0]!=null) : "Incorrect usage: MessagingTask should not be instantiated with no messages";
 
-		this.recipients = new int[1];
+		this.recipients = new NodeId[1];
 		this.recipients[0] = destID;
 		this.msgs = pkts==null ? new PaxosPacket[0] : pkts;
 	}
@@ -50,11 +51,11 @@ public class MessagingTask {
 	 * no messages. We need this as it is convenient to create an empty MessagingTask in a 
 	 * logging-only LogMessagingTask object.
 	 */
-	public MessagingTask(int[] destIDs, PaxosPacket[] pkts) {
+	public MessagingTask(NodeId<String>[] destIDs, PaxosPacket[] pkts) {
 		assert(pkts!=null && destIDs!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages or destinations";
 		for(Object obj : pkts) assert(obj!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages";
 
-		this.recipients = (destIDs==null ? new int[0] : destIDs);
+		this.recipients = (destIDs==null ? new NodeId[0] : destIDs);
 		this.msgs = pkts==null ? new PaxosPacket[0] : pkts;
 	}
 	

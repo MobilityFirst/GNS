@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
@@ -104,7 +105,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	private static Logger log = Logger.getLogger(DerbyPaxosLogger.class.getName()); // GNS.getLogger();
 
-	DerbyPaxosLogger(int id, String dbPath, Messenger messenger) {
+	DerbyPaxosLogger(NodeId<String> id, String dbPath, Messenger messenger) {
 		super(id, dbPath, messenger);
 		initialize(); // will set up db, connection, tables, etc. as needed
 	}
@@ -1008,7 +1009,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		DerbyPaxosLogger logger = new DerbyPaxosLogger(23,null,null);
+		DerbyPaxosLogger logger = new DerbyPaxosLogger(new NodeId<String>(23),null,null);
 		//DerbyPaxosLogger logger1 = new DerbyPaxosLogger(23,null,null);
 		//System.out.println("Current database state for paxos0:\n" + logger.toString("paxos0"));
 

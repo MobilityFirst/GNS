@@ -4,6 +4,7 @@ import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
 
 import java.io.BufferedReader;
@@ -41,7 +42,7 @@ public class Correspondent implements Runnable{
 
   private String key = "EdgeRecord";
 
-  public Correspondent(int mobileID) {
+  public Correspondent(NodeId<String> mobileID) {
     mobileAddress = LocalNameServer.getGnsNodeConfig().getNodeAddress(mobileID);
   }
 

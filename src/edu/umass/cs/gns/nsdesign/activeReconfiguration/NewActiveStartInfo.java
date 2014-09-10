@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 
 import java.util.HashSet;
@@ -16,14 +17,14 @@ import java.util.HashSet;
 public class NewActiveStartInfo {
 
   public NewActiveSetStartupPacket originalPacket;
-  private HashSet<Integer> activesResponded = new HashSet<Integer>();
+  private HashSet<NodeId<String>> activesResponded = new HashSet<NodeId<String>>();
   boolean sent = false;
 
   public NewActiveStartInfo(NewActiveSetStartupPacket originalPacket) {
     this.originalPacket = originalPacket;
   }
 
-  public synchronized void receivedResponseFromActive(int ID) {
+  public synchronized void receivedResponseFromActive(NodeId<String> ID) {
     activesResponded.add(ID);
   }
 

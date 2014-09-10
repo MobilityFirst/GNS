@@ -14,9 +14,9 @@ import java.util.HashMap;
  *
  * @author westy
  */
-public class SparseMatrix<T> {
+public class SparseMatrix<U, V, T> {
 
-  HashMap<Integer, HashMap<Integer, T>> rows = new HashMap<Integer, HashMap<Integer, T>>();
+  HashMap<U, HashMap<V, T>> rows = new HashMap<U, HashMap<V, T>>();
 
   T defaultValue;
 
@@ -36,14 +36,14 @@ public class SparseMatrix<T> {
     this.defaultValue = defaultValue;
   }
 
-  public void put(int i, int j, T t) {
+  public void put(U i, V j, T t) {
     if (rows.get(i) == null) {
-      rows.put(i, new HashMap<Integer, T>());
+      rows.put(i, new HashMap<V, T>());
     }
     rows.get(i).put(j, t);
   }
 
-  public T get(int i, int j) {
+  public T get(U i, V j) {
     if (rows.get(i) == null) {
       return this.defaultValue;
     } else {

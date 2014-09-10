@@ -20,19 +20,19 @@ import java.util.List;
 public class HostFileLoaderStringID {
 
   /**
-   * A tuple of id and hostname.
+   * A tuple of NodeId and hostname.
    */
   public static class HostSpec {
 
-    String id;
+    NodeId<String> id;
     String name;
 
     public HostSpec(String id, String name) {
-      this.id = id;
+      this.id = new NodeId(id);
       this.name = name;
     }
 
-    public String getId() {
+    public NodeId<String> getId() {
       return id;
     }
 

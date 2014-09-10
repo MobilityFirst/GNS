@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +35,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState
  */
 public abstract class AbstractPaxosLogger {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
-	protected final int myID; // protected coz the pluggable logger needs it
+	protected final NodeId<String> myID; // protected coz the pluggable logger needs it
 	protected final String logDirectory; // protected coz the pluggable logger needs it
 	
 	private static ArrayList<AbstractPaxosLogger> instances = new ArrayList<AbstractPaxosLogger>();
@@ -51,7 +52,7 @@ public abstract class AbstractPaxosLogger {
 
 	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class.getName()); // GNS.getLogger();
 
-	AbstractPaxosLogger(int id, String logDir, Messenger msgr) {
+	AbstractPaxosLogger(NodeId<String> id, String logDir, Messenger msgr) {
 		this.myID = id;
 		logDirectory = (logDir==null ? "." : logDir)+"/";
 		this.messenger=msgr;

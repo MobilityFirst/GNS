@@ -37,7 +37,7 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 	private Long key = null;
 
 	private final int[] nodes;
-	private final int myID;
+	private final NodeId<String> myID;
 
 	private Logger log =  NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName()) : GNS.getLogger();
 

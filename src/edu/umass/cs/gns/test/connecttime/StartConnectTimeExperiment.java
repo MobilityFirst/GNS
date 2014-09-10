@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.test.connecttime;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.test.WorkloadParams;
 
 /**
@@ -8,7 +9,7 @@ import edu.umass.cs.gns.test.WorkloadParams;
  */
 public class StartConnectTimeExperiment {
 
-  public static void startTest(int nodeID, WorkloadParams workloadParams) {
+  public static void startTest(NodeId<String> nodeID, WorkloadParams workloadParams) {
     if (nodeID == workloadParams.getMobileId()) {
       new Thread(new Mobile(workloadParams.getMobileUpdateInterval())).start();
     }

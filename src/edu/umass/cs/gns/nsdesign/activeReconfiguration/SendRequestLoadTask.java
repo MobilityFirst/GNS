@@ -2,6 +2,8 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -58,11 +60,11 @@ public class SendRequestLoadTask extends TimerTask{
       double reqRate = (curReqCount - prevReqCount) * 1000.0 / (curTime - prevRunTime);
       GNS.getStatLogger().info("\tRequestRate\tnode\t" + activeReplica.getNodeID() + "\treqRate\t"
               + reqRate + "\t");
-      NameServerLoadPacket nsLoad = new NameServerLoadPacket(activeReplica.getNodeID(), -1, reqRate);
+      NameServerLoadPacket nsLoad = new NameServerLoadPacket(activeReplica.getNodeID(), GNSNodeConfig.INVALID_NAME_SERVER_ID, reqRate);
 
       try {
         JSONObject sendJson = nsLoad.toJSONObject();
-        for (int nsID: activeReplica.getGnsNodeConfig().getNodeIDs()) {
+        for (NodeId<String> nsID: activeReplica.getGnsNodeConfig().getNodeIDs()) {
           try {
             activeReplica.getNioServer().sendToID(nsID, sendJson);
           } catch (IOException e) {

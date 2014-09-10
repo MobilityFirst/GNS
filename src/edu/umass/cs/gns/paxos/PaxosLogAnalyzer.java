@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class PaxosLogAnalyzer {
   /**
    * Log messages at all nodes for all paxos instances. A nested HashMap data structure is used to store the messages.
    */
-  HashMap<Integer, ConcurrentHashMap<String, PaxosReplicaInterface>> paxosAllNS;
+  HashMap<NodeId<String>, ConcurrentHashMap<String, PaxosReplicaInterface>> paxosAllNS;
 
   /**
    * Constructor
@@ -39,9 +40,10 @@ public class PaxosLogAnalyzer {
   public PaxosLogAnalyzer(String paxosLogFolder, int numNS) {
     this.paxosLogFolder = paxosLogFolder;
     this.numNS = numNS;
-    paxosAllNS = new HashMap<Integer, ConcurrentHashMap<String, PaxosReplicaInterface>>();
+    paxosAllNS = new HashMap<NodeId<String>, ConcurrentHashMap<String, PaxosReplicaInterface>>();
   }
 
+  // FIX ME: THIS CODE ASSUMES NODES WILL BE NAMED 0 - N.
   /**
    * Reads all data from logs and reconstructs all paxos instances from every node
    */
@@ -49,7 +51,8 @@ public class PaxosLogAnalyzer {
 
 //    PaxosLogger.setGnsRunning(false);
 
-    for (int nodeID = 0; nodeID < numNS; nodeID++) {
+    for (int x = 0; x < numNS; x++) {
+      NodeId<String> nodeID = new NodeId<String>(x);
 
       String nodeLogFolder = getNodeLogFolder(nodeID);
       PaxosLogger logger = new PaxosLogger(nodeLogFolder, nodeID, false);
@@ -76,15 +79,15 @@ public class PaxosLogAnalyzer {
    * @param nodeID
    * @return name of folder where paxos logs for {@code nodeID} are stored.
    */
-  private String getNodeLogFolder(int nodeID) {
-    return paxosLogFolder + "/log_" + nodeID;
+  private String getNodeLogFolder(NodeId<String> nodeID) {
+    return paxosLogFolder + "/log_" + nodeID.get();
   }
 
   public void outputPaxosStats(String outputFile, String failedNodesFile) {
 
     HashSet<Integer> failedNodes = readFailedNodes(failedNodesFile);
-    HashMap<String, Set<Integer>> paxosNodeIDs = new HashMap<String, Set<Integer>>();
-    for (int nodeID: paxosAllNS.keySet()) {
+    HashMap<String, Set<NodeId<String>>> paxosNodeIDs = new HashMap<String, Set<NodeId<String>>>();
+    for (NodeId<String> nodeID: paxosAllNS.keySet()) {
       for (String paxosID: paxosAllNS.get(nodeID).keySet()) {
         if (paxosNodeIDs.containsKey(paxosID) == false) {
           paxosNodeIDs.put(paxosID, paxosAllNS.get(nodeID).get(paxosID).getNodeIDs());
@@ -107,7 +110,7 @@ public class PaxosLogAnalyzer {
       // paxosID slot numreplica commitdeficit acceptdeficit defaultcoordinator
       int slotCount = -1;
 
-      for (Integer nodeID: paxosNodeIDs.get(paxosID)) {
+      for (NodeId<String> nodeID: paxosNodeIDs.get(paxosID)) {
         PaxosReplicaInterface replica = paxosAllNS.get(nodeID).get(paxosID);
         if (replica == null) continue;
         for (int slot: replica.getPValuesAccepted().keySet()) {
@@ -118,7 +121,7 @@ public class PaxosLogAnalyzer {
       paxosIDSlots.put(paxosID, slotCount);
 
       boolean lastRequestStop = false; // true if request proposed in last episode is a stop request
-      for (Integer nodeID: paxosNodeIDs.get(paxosID)) {
+      for (NodeId<String> nodeID: paxosNodeIDs.get(paxosID)) {
         PaxosReplicaInterface replica = paxosAllNS.get(nodeID).get(paxosID);
         if (replica == null) continue;
         if((replica.getCommittedRequests().containsKey(slotCount - 1) &&
@@ -136,7 +139,7 @@ public class PaxosLogAnalyzer {
         int commitCount = 0;
         int acceptCountFailed = 0;
         int commitCountFailed = 0;
-        for (Integer nodeID: paxosNodeIDs.get(paxosID)) {
+        for (NodeId<String> nodeID: paxosNodeIDs.get(paxosID)) {
           if (failedNodes.contains(nodeID)) {
             acceptCountFailed += 1;
             commitCountFailed += 1;

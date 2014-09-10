@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import org.json.JSONException;
@@ -136,7 +137,7 @@ public class GroupChange {
     packet.setUniqueID(requestID); // this ID is set by active replica for identifying this packet.
     if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: forwarded msg to nodes; "
             + packet.getNewActiveNameServers());
-    for (int nodeID: packet.getNewActiveNameServers()) {
+    for (NodeId<String> nodeID: packet.getNewActiveNameServers()) {
       if (activeReplica.getNodeID() != nodeID) { // exclude myself
         activeReplica.getNioServer().sendToID(nodeID, packet.toJSONObject());
       }
@@ -176,7 +177,7 @@ public class GroupChange {
       if (originalPacket != null) {
         // send back response to the active who forwarded this packet to this node.
         originalPacket.changePacketTypeToResponse();
-        int sendingActive = originalPacket.getSendingActive();
+        NodeId<String> sendingActive = originalPacket.getSendingActive();
         originalPacket.changeSendingActive(activeReplica.getNodeID());
 
         if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: replied to active sending the startup packet from node: " + sendingActive);

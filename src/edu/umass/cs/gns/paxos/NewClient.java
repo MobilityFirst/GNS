@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import org.json.JSONException;
@@ -301,7 +302,7 @@ public class NewClient  extends AbstractPacketDemultiplexer{
     // create paxos instances
     for (int i = 0; i < testConfig1.numPaxosReplicas; i++) {
 //      System.out.println("started paxos " + i);
-      new PaxosManager(testConfigFile, i);
+      new PaxosManager(testConfigFile, new NodeId<String>(i));
     }
     try {
       Thread.sleep(10);

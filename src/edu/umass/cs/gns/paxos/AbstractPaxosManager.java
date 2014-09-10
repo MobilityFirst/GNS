@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONObject;
 
 import java.util.Set;
@@ -12,8 +13,6 @@ import java.util.Set;
  */
 public abstract class AbstractPaxosManager {
 
-
-
   /**
    *
    * @param paxosIDNoVersion paxos ID of paxos instance excluding the version number
@@ -23,9 +22,9 @@ public abstract class AbstractPaxosManager {
    * @return true if paxos instance is created. false if another instance with same ID and version already exists, or
    * size of nodeIDs is less than 3.
    */
-  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<Integer> nodeIDs, Replicable paxosInterface);
+  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeId<String>> nodeIDs, Replicable paxosInterface);
 
-  public abstract Set<Integer> getPaxosNodeIDs(String paxosIDNoVersion);
+  public abstract Set<NodeId<String>> getPaxosNodeIDs(String paxosIDNoVersion);
   /**
    * Propose requestPacket in the paxos instance with the given paxosID.
    *

@@ -78,7 +78,7 @@ public class TESTPaxosMain {
 			/*************** Setting up servers below ***************************/
 
 			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
-			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
+			NodeId<String> myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
 			assert(myID==-1) : "Cannot specify node ID for local test with TESTPaxosMain";
 
 			TESTPaxosMain tpMain=null;

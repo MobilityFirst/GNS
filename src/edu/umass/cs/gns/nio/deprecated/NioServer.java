@@ -11,6 +11,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONObject;
 
@@ -28,13 +29,13 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Deprecated
-public class NioServer implements Runnable, InterfaceJSONNIOTransport<Integer> {
+public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<String>> {
 
   public static String Version = "$Revision: 838 $";
   public static final boolean DEBUG = false;
   
   // The host:port combination to listen on
-  private int ID;
+  private NodeId<String> ID;
   private InetAddress myAddress;
   private int myPort;
   // The channel on which we'll accept connections
@@ -64,7 +65,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<Integer> {
   private double variation = 0.1;
   private GNSNodeConfig gnsNodeConfig = null;
 
-  public NioServer(int ID, ByteStreamToJSONObjects worker, InterfaceNodeConfig nodeConfig) throws IOException {
+  public NioServer(NodeId<String> ID, ByteStreamToJSONObjects worker, InterfaceNodeConfig nodeConfig) throws IOException {
     connectedIDs = new SocketChannel[nodeConfig.getNodeIDs().size()];
     pendingChangeByNode = new boolean[nodeConfig.getNodeIDs().size()];
     for (int i = 0; i < pendingChangeByNode.length; i++) {
@@ -96,7 +97,8 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<Integer> {
 
   }
 
-  public Integer getMyID() {
+  @Override
+  public NodeId<String> getMyID() {
     return this.ID;
   }
 
@@ -139,7 +141,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<Integer> {
   private Random random = new Random();
 
   @Override
-  public int sendToID(Integer destID, JSONObject json) throws IOException {
+  public int sendToID(NodeId<String> destID, JSONObject json) throws IOException {
     if (emulateDelay) {
       long delay = gnsNodeConfig.getPingLatency(destID) / 2; // divide by 2 for one-way delay
       delay = (long) ((1.0 + this.variation * random.nextDouble()) * delay);
@@ -162,7 +164,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<Integer> {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  boolean sendToIDActual(int destID, JSONObject json) throws IOException {
+  boolean sendToIDActual(NodeId<String> destID, JSONObject json) throws IOException {
 
     if (destID == ID) { // to send to same node, directly call the demultiplexer
       workerObject.getPacketDemux().handleJSONObject(json);
@@ -619,10 +621,10 @@ class WakeupSelectorTask extends TimerTask {
 class SendQueryWithDelay2 extends TimerTask {
 
   JSONObject json;
-  int destID;
+  NodeId<String> destID;
   NioServer nioServer;
 
-  public SendQueryWithDelay2(NioServer nioServer, int destID, JSONObject json) {
+  public SendQueryWithDelay2(NioServer nioServer, NodeId<String> destID, JSONObject json) {
     this.json = json;
     this.destID = destID;
     this.nioServer = nioServer;

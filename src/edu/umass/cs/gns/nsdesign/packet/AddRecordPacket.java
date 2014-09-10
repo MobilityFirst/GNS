@@ -6,8 +6,10 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -100,7 +102,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
    * replica set.
    */
-  private Set<Integer> activeNameSevers = null;
+  private Set<NodeId<String>> activeNameServers = null;
 
 
   /**
@@ -130,7 +132,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     //this.localNameServerID = localNameServerID;
     this.ttl = ttl;
     this.nameServerID = -1;
-    this.activeNameSevers = null;
+    this.activeNameServers = null;
   }
 
   /**
@@ -157,7 +159,8 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     this.ttl = json.getInt(TIME_TO_LIVE);
     this.nameServerID = json.getInt(NAMESERVER_ID);
     if (json.has(ACTIVE_NAMESERVERS)) {
-        this.activeNameSevers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
+        this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));
+        //this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
     }
   }
 
@@ -182,7 +185,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     json.put(TIME_TO_LIVE, getTTL());
     json.put(NAMESERVER_ID, getNameServerID());
     if (getActiveNameSevers() != null)
-      json.put(ACTIVE_NAMESERVERS, getActiveNameSevers());
+      json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameSevers()));
     return json;
   }
 
@@ -257,12 +260,12 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     return sourceId;
   }
 
-  public Set<Integer> getActiveNameSevers() {
-    return activeNameSevers;
+  public Set<NodeId<String>> getActiveNameSevers() {
+    return activeNameServers;
   }
 
-  public void setActiveNameSevers(Set<Integer> activeNameSevers) {
-    this.activeNameSevers = activeNameSevers;
+  public void setActiveNameSevers(Set<NodeId<String>> activeNameSevers) {
+    this.activeNameServers = activeNameSevers;
   }
 
 }

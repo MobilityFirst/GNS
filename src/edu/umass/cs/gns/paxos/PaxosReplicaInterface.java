@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.*;
 import org.json.JSONObject;
 
@@ -13,9 +14,9 @@ public abstract class PaxosReplicaInterface{
 
   public abstract String getPaxosID();
 
-  public abstract boolean isNodeInPaxosInstance(int responderNodeID);
+  public abstract boolean isNodeInPaxosInstance(NodeId<String> responderNodeID);
 
-  public abstract Set<Integer> getNodeIDs();
+  public abstract Set<NodeId<String>> getNodeIDs();
 
   public abstract boolean isStopped();
 

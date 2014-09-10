@@ -13,7 +13,6 @@ import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.paxos.PaxosReplica;
 
 import java.io.IOException;

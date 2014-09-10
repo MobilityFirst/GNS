@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
@@ -19,13 +20,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
 
-  private int nodeID;
+  private NodeId<String> nodeID;
 
   private Replicable replicable;
 
   private ConcurrentHashMap<String, Short>  nameAndGroupVersion = new ConcurrentHashMap<String, Short>();
 
-  public DummyGnsCoordinatorUnreplicated(int nodeID, Replicable replicable) {
+  public DummyGnsCoordinatorUnreplicated(NodeId<String> nodeID, Replicable replicable) {
     this.nodeID = nodeID;
     this.replicable = replicable;
   }

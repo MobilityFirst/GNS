@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PValuePacket;
@@ -136,7 +137,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private final int[] groupMembers; // final coz group changes => new paxos instance
 	private final Object paxosID; // App ID or "GUID". Object to allow easy testing across byte[] and String
 	private final short version;
-	private final int myID;
+	private final NodeId<String> myID;
 	private final PaxosManager paxosManager;
 	private final Replicable clientRequestHandler;
 
@@ -148,7 +149,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	// static, so does not count towards space.
 	private static Logger log = Logger.getLogger(PaxosInstanceStateMachine.class.getName()); // GNS.getLogger();
 
-	PaxosInstanceStateMachine(String groupId, short version, int id, Set<Integer> gms, 
+	PaxosInstanceStateMachine(String groupId, short version, NodeId<String> id, Set<Integer> gms, 
 			Replicable app, PaxosManager pm, HotRestoreInfo hri) {
 
 		/**************** final assignments ***********************

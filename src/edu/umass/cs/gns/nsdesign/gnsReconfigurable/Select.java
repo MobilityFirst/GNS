@@ -7,9 +7,12 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
+import edu.umass.cs.gns.installer.GNSInstallerV2;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
@@ -121,7 +124,7 @@ public class Select {
     }
     // If it's not a group lookup or is but enough time has passed we do the usual thing
     // and send the request out to all the servers. We'll get a response sent on the flipside.
-    Set<Integer> serverIds = replica.getGNSNodeConfig().getNodeIDs();
+    Set<NodeId<String>> serverIds = replica.getGNSNodeConfig().getNodeIDs();
     // store the info for later
     int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
@@ -136,7 +139,7 @@ public class Select {
       GNS.getLogger().fine("NS" + replica.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
     }
     try {
-      for (int serverId : serverIds) {
+      for (NodeId<String> serverId : serverIds) {
         replica.getNioServer().sendToID(serverId, outgoingJSON); // send to myself too
       }
     } catch (IOException e) {
@@ -217,10 +220,10 @@ public class Select {
     }
   }
 
-  private static void sendReponsePacketToLNS(int id, int lnsQueryId, InetSocketAddress address, Set<String> guids, GnsReconfigurable replica) throws JSONException {
-
+  private static void sendReponsePacketToLNS(int id, int lnsQueryId, InetSocketAddress address, Set<String> guids, 
+          GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
-            -1, -1, new JSONArray(guids));
+            -1, GNSNodeConfig.INVALID_NAME_SERVER_ID, new JSONArray(guids));
     try {
       replica.getNioServer().sendToAddress(address, response.toJSONObject());
     } catch (IOException f) {
@@ -260,7 +263,7 @@ public class Select {
     return result;
   }
 
-  private static int addQueryInfo(Set<Integer> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+  private static int addQueryInfo(Set<NodeId<String>> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     int id;
     do {
       id = randomID.nextInt();

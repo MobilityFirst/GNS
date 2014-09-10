@@ -4,6 +4,7 @@ import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
@@ -70,7 +71,7 @@ public class PaxosManager extends AbstractPaxosManager {
 	private final AbstractPaxosLogger paxosLogger;  // logging
 	private final FailureDetection FD;  // failure detection
 	private final Messenger messenger;  // messaging
-	private final int myID;
+	private final NodeId<String> myID;
 	private final Replicable myApp; // default app for all paxosIDs
 
 	// non-final
@@ -94,7 +95,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); //GNS.getLogger();;
 
-	public PaxosManager(int id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, Replicable pi, PaxosConfig pc) {
+	public PaxosManager(NodeId<String> id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, Replicable pi, PaxosConfig pc) {
 		this.myID = id;
 		this.myApp = pi;
 		this.FD = new FailureDetection(id, nc, niot, pc);
@@ -141,7 +142,7 @@ public class PaxosManager extends AbstractPaxosManager {
     return null;
   }
 
-  protected boolean createPaxosInstance(String paxosID, short version, int id, Set<Integer> gms, Replicable app,
+  protected boolean createPaxosInstance(String paxosID, short version, NodeId<String> id, Set<Integer> gms, Replicable app,
 			HotRestoreInfo hri, boolean tryRestore) {
 		if(this.isClosed() || id!=myID) return false;
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID, (hasRecovered && hri==null), tryRestore); 

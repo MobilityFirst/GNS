@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,7 +63,7 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 
 	private static Logger log = Logger.getLogger(DummyPaxosLogger.class.getName()); // GNS.getLogger();
 
-	DummyPaxosLogger(int id, String logDir, Messenger messenger) {
+	DummyPaxosLogger(NodeId<String> id, String logDir, Messenger messenger) {
 		super(id, logDir, messenger);
 		checkpoints = new ConcurrentHashMap<String,PaxosCheckpoint>();
 		messages = new ConcurrentHashMap<String,ArrayList<PaxosPacket>>();
@@ -242,7 +243,7 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 			Ballot ballot = new Ballot(i,i);
 			int slot = i;
 			String state = "state"+i;
-			loggers[i] = new DummyPaxosLogger(i,null,null);
+			loggers[i] = new DummyPaxosLogger(new NodeId<String>(i),null,null);
 			PaxosPacket[] packets = new PaxosPacket[numPackets];
 			String paxosID = "paxos"+i;
 			for(int j=0; j<packets.length; j++) {

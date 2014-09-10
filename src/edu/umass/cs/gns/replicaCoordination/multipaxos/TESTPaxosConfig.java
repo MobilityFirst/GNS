@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 
 /**
 @author V. Arun
@@ -69,7 +70,7 @@ public class TESTPaxosConfig {
 	
 	static{assert(NUM_CLIENTS <= MAX_CONFIG_GROUPS);} // all tests should be with at most MAX_CONFIG_GROUPS
 
-	private static ArrayList<Integer> failedNodes = new ArrayList<Integer>();
+	private static ArrayList<NodeId<String>> failedNodes = new ArrayList<NodeId<String>>();
 	//static {crash(TEST_START_NODE_ID);} // by default, first node is always crashed
 
 	private static boolean[] committed = new boolean[MAX_TEST_REQS];
@@ -165,16 +166,16 @@ public class TESTPaxosConfig {
 	public static SampleNodeConfig getNodeConfig() {
 		return nodeConfig;
 	}
-	public synchronized static void crash(int nodeID) {
+	public synchronized static void crash(NodeId<String> nodeID) {
 		TESTPaxosConfig.failedNodes.add(nodeID);
 	}
-	public synchronized static void recover(int nodeID) {
-		TESTPaxosConfig.failedNodes.remove(new Integer(nodeID));
+	public synchronized static void recover(NodeId<String> nodeID) {
+		TESTPaxosConfig.failedNodes.remove(nodeID);
 	}
-	public synchronized static boolean isCrashed(int nodeID) {
+	public synchronized static boolean isCrashed(NodeId<String>nodeID) {
 		return TESTPaxosConfig.failedNodes.contains(nodeID);
 	}
-	public synchronized static void setRecovered(int id, String paxosID, boolean b) {
+	public synchronized static void setRecovered(NodeId<String> id, String paxosID, boolean b) {
 		assert(id < MAX_NODE_ID) : " id = "+id + ", MAX_NODE_ID = " + MAX_NODE_ID;
 		if(paxosID.equals(TEST_GUID)) {
 			recovered[id] = b;
@@ -201,7 +202,7 @@ public class TESTPaxosConfig {
 	public static void testAssert(boolean b) { assert(!TEST_ASSERT_ENABLED || b);}
 
 	// Checks if the IP specified for the id argument is local
-	public static boolean findMyIP(int myID) throws SocketException {
+	public static boolean findMyIP(NodeId<String> myID) throws SocketException {
 		Enumeration<NetworkInterface> netfaces = NetworkInterface.getNetworkInterfaces();
 		ArrayList<InetAddress> myIPs = new ArrayList<InetAddress>();
 		while(netfaces.hasMoreElements()) {
@@ -226,9 +227,9 @@ public class TESTPaxosConfig {
 
 	public static void main(String[] args) {
 		assert(!TESTPaxosConfig.isCrashed(100));
-		TESTPaxosConfig.crash(100);
+		TESTPaxosConfig.crash(new NodeId<String>(100));
 		assert(TESTPaxosConfig.isCrashed(100));
-		TESTPaxosConfig.recover(100);
+		TESTPaxosConfig.recover(new NodeId<String>(100));
 		assert(!TESTPaxosConfig.isCrashed(100));
 	}
 }

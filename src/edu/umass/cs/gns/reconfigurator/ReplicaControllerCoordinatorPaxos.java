@@ -10,6 +10,7 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -33,13 +34,13 @@ import java.util.logging.Logger;
  */
 public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator {
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
-	private final int myID;
+	private final NodeId<String> myID;
 	private final AbstractPaxosManager paxosManager;
 	private final Replicable replicable;
 
 	private Logger log = Logger.getLogger(getClass().getName()); //log;
 
-	public ReplicaControllerCoordinatorPaxos(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+	public ReplicaControllerCoordinatorPaxos(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
 			Replicable paxosInterface, PaxosConfig paxosConfig) {
 		this.myID = nodeID;
 		this.replicable = paxosInterface;
@@ -56,7 +57,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 		createPrimaryPaxosInstances();
 	}
 	private void createPrimaryPaxosInstances() { // called by constructor above
-		HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(myID);
+		HashMap<String, Set<NodeId<String>>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(myID);
 		for (String groupID : groupIDsMembers.keySet()) {
 			log.info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
 			paxosManager.createPaxosInstance(groupID, (short) 1, groupIDsMembers.get(groupID), replicable);
