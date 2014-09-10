@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -179,13 +180,13 @@ public class MultiMap {
 			 * 
 			 */
 			mmap[i].put(29, 33.47);
-			RequestPacket p1 = new RequestPacket(3, "str", PaxosPacketType.NULL, true);
+			RequestPacket p1 = new RequestPacket(new NodeId<String>(3), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(93,p1);
-			RequestPacket p2 = new RequestPacket(4, "str", PaxosPacketType.NULL, true);
+			RequestPacket p2 = new RequestPacket(new NodeId<String>(4), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(99,p2);
-			RequestPacket p3 = new RequestPacket(5, "str", PaxosPacketType.NULL, true);
+			RequestPacket p3 = new RequestPacket(new NodeId<String>(5), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(9,p3);
-			RequestPacket p4 = new RequestPacket(6, "str", PaxosPacketType.NULL, true);
+			RequestPacket p4 = new RequestPacket(new NodeId<String>(6), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(23,p4);
 
 			/* Each additional Double also costs about 100B. It doesn't

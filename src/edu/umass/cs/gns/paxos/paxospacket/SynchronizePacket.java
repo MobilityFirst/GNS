@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,9 +13,9 @@ import org.json.JSONObject;
  */
 public class SynchronizePacket extends PaxosPacket {
 
-  public int nodeID;
+  public NodeId<String> nodeID;
 
-  public SynchronizePacket(int nodeID) {
+  public SynchronizePacket(NodeId<String> nodeID) {
     this.packetType = PaxosPacketType.SYNC_REQUEST.getInt();
     this.nodeID = nodeID;
 
@@ -25,7 +26,7 @@ public class SynchronizePacket extends PaxosPacket {
   public SynchronizePacket(JSONObject jsonObject) throws JSONException {
 
     this.packetType = PaxosPacketType.SYNC_REQUEST.getInt();
-    this.nodeID = jsonObject.getInt(NODE);
+    this.nodeID = new NodeId<String>(jsonObject.getString(NODE));
 
   }
 
@@ -33,7 +34,7 @@ public class SynchronizePacket extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(NODE, nodeID);
+    json.put(NODE, nodeID.get());
     return json;
   }
 }

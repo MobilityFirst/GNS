@@ -8,6 +8,7 @@ import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.*;
@@ -273,7 +274,8 @@ public class PaxosManager extends AbstractPaxosManager {
     }
     try {
       if (debugMode) GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
-      replica.handleIncomingMessage(new RequestPacket(0, value, PaxosPacketType.REQUEST, true).toJSONObject(), PaxosPacketType.REQUEST.getInt());
+      replica.handleIncomingMessage(new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, 
+              PaxosPacketType.REQUEST, true).toJSONObject(), PaxosPacketType.REQUEST.getInt());
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -282,7 +284,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
   @Override
   public String propose(String paxosIDNoVersion, String value) {
-    RequestPacket requestPacket = new RequestPacket(0, value, PaxosPacketType.REQUEST, false);
+    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, PaxosPacketType.REQUEST, false);
 //    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, false));
     PaxosReplicaInterface replica = paxosInstances.get(paxosIDNoVersion);
     if (replica == null) {

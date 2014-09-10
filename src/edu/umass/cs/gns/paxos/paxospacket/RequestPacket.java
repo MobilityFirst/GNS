@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -9,7 +10,7 @@ import java.util.Random;
 
 public class RequestPacket extends PaxosPacket implements Serializable {
 
-  public int clientID;
+  public NodeId<String> clientID;
 
   public int requestID;
 
@@ -17,7 +18,7 @@ public class RequestPacket extends PaxosPacket implements Serializable {
 
   private boolean stop = false;
 
-  public RequestPacket(int clientID, String value, PaxosPacketType packetType, boolean stop) {
+  public RequestPacket(NodeId<String> clientID, String value, PaxosPacketType packetType, boolean stop) {
     Random r = new Random();
     this.clientID = clientID;
     this.requestID = r.nextInt();
@@ -31,7 +32,7 @@ public class RequestPacket extends PaxosPacket implements Serializable {
     this.packetType = PaxosPacketType.REQUEST.getInt();
     String x = json.getString("y1");
     String[] tokens = x.split("\\s");
-    this.clientID = Integer.parseInt(tokens[0]);
+    this.clientID = new NodeId<String>(tokens[0]);
     this.requestID = Integer.parseInt(tokens[1]);
 
     this.stop = tokens[2].equals("1");
@@ -69,7 +70,7 @@ public class RequestPacket extends PaxosPacket implements Serializable {
   @Override
   public int hashCode() {
     int hash = 3;
-    hash = 79 * hash + this.clientID;
+    hash = 79 * hash + this.clientID.hashCode();
     hash = 79 * hash + this.requestID;
     hash = 79 * hash + Objects.hashCode(this.value);
     return hash;

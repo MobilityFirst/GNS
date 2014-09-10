@@ -47,9 +47,9 @@ public class HotRestoreInfo {
 	
 	private static final char SEP = '|';
 	public String toString() {
-		return paxosID + SEP + version + SEP + Util.arrayToString(members) + SEP + accSlot + SEP + 
+		return paxosID + SEP + version + SEP + Util.arrayOfIntToString(members) + SEP + accSlot + SEP + 
 				accBallot + SEP + accGCSlot + SEP + (coordBallot!=null?coordBallot:"null") + SEP + 
-				nextProposalSlot + SEP + (nodeSlots!=null ? Util.arrayToString(nodeSlots) : "null");
+				nextProposalSlot + SEP + (nodeSlots!=null ? Util.arrayOfIntToString(nodeSlots) : "null");
 	}
 	
 	public static void main(String[] args) {

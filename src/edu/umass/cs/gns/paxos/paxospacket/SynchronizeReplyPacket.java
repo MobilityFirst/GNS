@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -19,7 +20,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
   /**
    * node ID of sending node
    */
-  public int nodeID;
+  public NodeId<String> nodeID;
 
   /**
    * maximum slot for which nodeID has received decision
@@ -37,7 +38,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
 
   public boolean flag;
 
-  public SynchronizeReplyPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag1) {
+  public SynchronizeReplyPacket(NodeId<String> nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag1) {
     this.packetType = PaxosPacketType.SYNC_REPLY.getInt();
     this.nodeID = nodeID;
     this.maxDecisionSlot = maxDecisionSlot;
@@ -47,7 +48,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
 
   public SynchronizeReplyPacket(JSONObject json) throws JSONException {
 
-    this.nodeID = json.getInt(NODE);
+    this.nodeID = new NodeId<String>(json.getInt(NODE));
     this.maxDecisionSlot = json.getInt(MAX_SLOT);
     if (json.has(MISSING)) {
       missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
@@ -62,7 +63,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(NODE, nodeID);
+    json.put(NODE, nodeID.get());
     json.put(MAX_SLOT, maxDecisionSlot);
     json.put(FLAG, flag);
     if (missingSlotNumbers != null && missingSlotNumbers.size() > 0) {

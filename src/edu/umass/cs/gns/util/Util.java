@@ -145,10 +145,19 @@ public class Util {
     return array;
   }
 
-  public static String arrayToString(int[] array) {
+  public static String arrayOfIntToString(int[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
       s += array[i];
+      s += (i < array.length - 1 ? "," : "]");
+    }
+    return s;
+  }
+  
+  public static String arrayOfNodeIdsToString(NodeId[] array) {
+    String s = "[";
+    for (int i = 0; i < array.length; i++) {
+      s += array[i].get();
       s += (i < array.length - 1 ? "," : "]");
     }
     return s;

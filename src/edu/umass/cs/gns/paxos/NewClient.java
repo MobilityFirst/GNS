@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
@@ -44,7 +45,7 @@ public class NewClient  extends AbstractPacketDemultiplexer{
   /**
    * ID of this client
    */
-  int ID;
+  NodeId<String> ID;
 
   /**
    * config file listing address, port of paxos replicas, and clients
@@ -71,7 +72,7 @@ public class NewClient  extends AbstractPacketDemultiplexer{
   /**
    * nodeID of server replica to which this client sends requests
    */
-  int defaultReplica = 0;
+  NodeId<String> defaultReplica = GNSNodeConfig.INVALID_NAME_SERVER_ID; // FIXME: THIS WAS USING 0
 
   /**
    * number of responses received
@@ -97,7 +98,7 @@ public class NewClient  extends AbstractPacketDemultiplexer{
    * @param ID
    * @param testConfig
    */
-  public NewClient(int ID, String testConfig) {
+  public NewClient(NodeId<String> ID, String testConfig) {
     this.ID = ID;
 //    this.nodeConfigFile = nodeConfigFile;
 //    this.testConfig = testConfig;
@@ -149,7 +150,7 @@ public class NewClient  extends AbstractPacketDemultiplexer{
 
     for (int i = 1; i <= numberRequests/NewClient.groupsize; i++) {
 
-      int replica = defaultReplica;
+      NodeId<String> replica = defaultReplica;
       boolean x = false;
       if (i == numberRequests/NewClient.groupsize) x = true;
       SendRequestTask task = new SendRequestTask(i, ID, testConfig1.testPaxosID, replica, nioServer, x);
@@ -309,7 +310,9 @@ public class NewClient  extends AbstractPacketDemultiplexer{
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    int clientID = testConfig1.numPaxosReplicas;
+     // literal translation of the old code
+    NodeId<String> clientID = new NodeId<String>(testConfig1.numPaxosReplicas);
+    //int clientID = testConfig1.numPaxosReplicas;
     // create paxos
     NewClient client = new NewClient(clientID,  testConfigFile);
     client.testPaxos();
@@ -328,18 +331,18 @@ class SendRequestTask extends TimerTask {
 
   int requestID;
 
-  int ID;
+  NodeId<String> ID;
 
   String defaultPaxosID;
 
-  int replica;
+  NodeId<String> replica;
 
   NioServer nioServer;
 
   boolean stop;
 
-  public SendRequestTask(int requestID, int ID, String defaultPaxosID,
-                         int defaultReplica, NioServer nioServer, boolean stop) {
+  public SendRequestTask(int requestID, NodeId<String> ID, String defaultPaxosID,
+                         NodeId<String> defaultReplica, NioServer nioServer, boolean stop) {
     this.requestID = requestID;
     this.ID = ID;
     this.defaultPaxosID = defaultPaxosID;

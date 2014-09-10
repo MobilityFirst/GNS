@@ -1270,7 +1270,7 @@ public class PaxosLogger extends Thread {
           }
         case PREPARE:
           PreparePacket prepare = new PreparePacket(new JSONObject(logMsg.getMessage()));
-          if (stateFileName.ballot.compareTo(prepare.ballot) >= 0) {
+          if (stateFileName.ballot.compareTo(prepare.getBallot()) >= 0) {
             return true; // notice >= here
           } else {
             return false;
