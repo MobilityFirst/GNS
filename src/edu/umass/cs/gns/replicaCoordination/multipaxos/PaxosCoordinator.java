@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
@@ -53,7 +54,7 @@ public class PaxosCoordinator {
 
 	/* Come to exist if nonexistent. Called by PaxosInstanceStateMachine
 	 */
-	protected synchronized Ballot makeCoordinator(int bnum, int coord, int[] members, int slot, boolean recovery) {
+	protected synchronized Ballot makeCoordinator(int bnum, NodeId<String> coord, NodeId<String>[] members, int slot, boolean recovery) {
 		boolean sendPrepare=false;
 		if(pcs==null || (pcs.getBallot().compareTo(bnum, coord))<0) {
 			pcs = new PaxosCoordinatorState(bnum, coord, slot, members, pcs);
@@ -63,7 +64,7 @@ public class PaxosCoordinator {
 
 		return sendPrepare ? pcs.prepare(members) : null; // For ballotnum>0, must explicitly prepare
 	}
-	protected synchronized Ballot remakeCoordinator(int[] members) {
+	protected synchronized Ballot remakeCoordinator(NodeId<String>[] members) {
 		return (this.exists() && !this.isActive() ? pcs.prepare(members): null);
 	}
 	protected synchronized Ballot hotRestore(HotRestoreInfo hri) {
@@ -101,7 +102,7 @@ public class PaxosCoordinator {
 
 	/* Phase2a
 	 */
-	protected synchronized AcceptPacket propose(int[] groupMembers, RequestPacket req) {
+	protected synchronized AcceptPacket propose(NodeId<String>[] groupMembers, RequestPacket req) {
 		if(!this.exists()) log.severe("Coordinator resigned after check, DROPPING request: " + req);
 		return this.exists() ? this.pcs.propose(groupMembers, req) : null;
 	}
@@ -136,7 +137,7 @@ public class PaxosCoordinator {
 	/* Phase1a
 	 * Propose ballot.
 	 */
-	protected synchronized Ballot prepare(int[] members) {return this.pcs.prepare(members);}
+	protected synchronized Ballot prepare(NodeId<String>[] members) {return this.pcs.prepare(members);}
 	/* Phase1b
 	 * Event: Received a prepare reply message.
 	 * Action: Resign if reply contains higher ballot as we are

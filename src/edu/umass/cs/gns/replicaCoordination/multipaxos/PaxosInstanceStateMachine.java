@@ -819,14 +819,14 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * are up or down. Otherwise, paxos will be stuck if both the 
 	 * current and the next-in-line coordinator are both dead.
 	 */
-	private int getNextCoordinator(int ballotnum, int[] members) {
+	private NodeId<String> getNextCoordinator(int ballotnum, NodeId<String>[] members) {
 		for(int i=1; i<members.length; i++) assert(members[i-1] < members[i]);
 		for(int i=0; i<members.length;i++) {
 			if(this.paxosManager!=null && this.paxosManager.isNodeUp(members[i])) return members[i];
 		}
 		return roundRobinCoordinator(ballotnum); 
 	}
-	private int roundRobinCoordinator(int ballotnum) {
+	private NodeId<String> roundRobinCoordinator(int ballotnum) {
 		return this.getMembers()[ballotnum % this.getMembers().length];
 	}
 

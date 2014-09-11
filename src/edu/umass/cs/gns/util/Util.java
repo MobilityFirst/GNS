@@ -121,7 +121,7 @@ public class Util {
     return array;
   }
 
-  public static int[] stringToArray(String string) {
+  public static int[] stringToIntArray(String string) {
     string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
     String[] tokens = string.split(",");
     int[] array = new int[tokens.length];
@@ -130,6 +130,7 @@ public class Util {
     }
     return array;
   }
+  
 
   public static Integer[] objectToIntegerArray(Object[] objects) {
     if (objects == null) {
@@ -152,6 +153,16 @@ public class Util {
       s += (i < array.length - 1 ? "," : "]");
     }
     return s;
+  }
+  
+  public static NodeId[] stringToNodeIdArray(String string) {
+    string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
+    String[] tokens = string.split(",");
+    NodeId<String>[] array = new NodeId[tokens.length];
+    for (int i = 0; i < array.length; i++) {
+      array[i] = new NodeId(tokens[i]);
+    }
+    return array;
   }
   
   public static String arrayOfNodeIdsToString(NodeId[] array) {

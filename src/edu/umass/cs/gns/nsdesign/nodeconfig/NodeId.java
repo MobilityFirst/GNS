@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.nsdesign.nodeconfig;
 
+import edu.umass.cs.gns.main.GNS;
 import java.util.Objects;
 
 /**
@@ -53,7 +54,8 @@ public class NodeId<NodeItemType> implements Comparable<NodeId<NodeItemType>>{
   // so we don't miss any places for now
   @Override
   public String toString() {
-    throw new UnsupportedOperationException("Use get() instead for now.");
+    GNS.getLogger().warning("toString called... use get() instead for now.");
+    return id.toString();
   }
 
   @Override

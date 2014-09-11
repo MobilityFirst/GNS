@@ -494,8 +494,8 @@ public class PaxosManager extends AbstractPaxosManager {
 		}
 	}
 
-	protected void heardFrom(int id) {this.FD.heardFrom(id);}
-	protected boolean isNodeUp(int id) {return (FD!=null ? FD.isNodeUp(id) :false);}
+	protected void heardFrom(NodeId<String> id) {this.FD.heardFrom(id);}
+	protected boolean isNodeUp(NodeId<String> id) {return (FD!=null ? FD.isNodeUp(id) :false);}
 	protected boolean lastCoordinatorLongDead(int id) {return (FD!=null ? FD.lastCoordinatorLongDead(id) : true);}
 	protected AbstractPaxosLogger getPaxosLogger() {return paxosLogger;}
 	protected Messenger getMessenger() {return this.messenger;}

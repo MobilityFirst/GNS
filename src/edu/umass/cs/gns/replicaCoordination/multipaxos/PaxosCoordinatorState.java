@@ -128,7 +128,7 @@ public class PaxosCoordinatorState  {
 	/* Coordinator state is born into the ballot myBallot. 
 	 * myBallot can never change.
 	 */
-	PaxosCoordinatorState(int bnum, int coord, int slot, int[] members, PaxosCoordinatorState prev) { 
+	PaxosCoordinatorState(int bnum, NodeId<String> coord, int slot, NodeId<String>[] members, PaxosCoordinatorState prev) { 
 		this.myBallotNum = bnum; this.myBallotCoord=coord; 
 		this.nextProposalSlotNumber=slot;
 		this.nodeSlotNumbers = new int[members.length];
@@ -136,7 +136,7 @@ public class PaxosCoordinatorState  {
 		if(prev!=null && !prev.isActive() && !prev.myProposals.isEmpty()) 
 			this.copyOverPrevious(prev.myProposals, prev.nextProposalSlotNumber, members); // wasteful to drop these preactives
 	}
-	private void copyOverPrevious(NullIfEmptyMap<Integer,ProposalStateAtCoordinator> prev, int nextSlot, int[] members) {
+	private void copyOverPrevious(NullIfEmptyMap<Integer,ProposalStateAtCoordinator> prev, int nextSlot, NodeId<String>[] members) {
 		String s="["; 
 		String paxosID=null;
 		for(ProposalStateAtCoordinator psac : prev.values()) {
@@ -159,7 +159,7 @@ public class PaxosCoordinatorState  {
 	 * Return: The ballot. The caller will send out the ballot
 	 * to all nodes.
 	 */
-	protected synchronized Ballot prepare(int[] members) {
+	protected synchronized Ballot prepare(NodeId<String>[] members) {
 		if(this.active==true) return null; // I am already an active coordinator 
 		if(this.waitforMyBallot==null) this.waitforMyBallot = new WaitforUtility(members);
 		this.waitforMyBallot.setInitTime();
@@ -593,7 +593,7 @@ public class PaxosCoordinatorState  {
 				Arrays.toString(nodeSlotNumbers));
 	}
 
-	private synchronized AcceptPacket initCommander(int[] members, PValuePacket pvalue) {
+	private synchronized AcceptPacket initCommander(NodeId<String>[] members, PValuePacket pvalue) {
 		return this.initCommander(new ProposalStateAtCoordinator(members, pvalue));
 	}
 	private synchronized AcceptPacket initCommander(ProposalStateAtCoordinator pstate) {

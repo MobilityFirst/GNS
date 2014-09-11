@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,14 +12,14 @@ import java.util.Map;
 
 public class PrepareReplyPacket extends PaxosPacket {
 
-	public final int coordinatorID;
+	public final NodeId<String> coordinatorID;
 	public final Ballot ballot;
-	public final int receiverID;
+	public final NodeId<String> receiverID;
 	public  final int acceptorGCSlot;
 	public final Map<Integer, PValuePacket> accepted;
 
 
-	public PrepareReplyPacket(int coordinatorID, int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted, int slotNumber) {
+	public PrepareReplyPacket(NodeId<String> coordinatorID, NodeId<String> receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted, int slotNumber) {
 		super(accepted==null || accepted.isEmpty() ? (PaxosPacket)null : accepted.values().iterator().next());
 		this.coordinatorID = coordinatorID;
 		this.receiverID = receiverID;
@@ -33,8 +34,8 @@ public class PrepareReplyPacket extends PaxosPacket {
 		super(json);
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE_REPLY);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.coordinatorID = json.getInt("coordinatorID");
-		this.receiverID = json.getInt("receiverID");
+		this.coordinatorID = new NodeId<String>(json.getString("coordinatorID"));
+		this.receiverID = new NodeId<String>(json.getString("receiverID"));
 		this.ballot = new Ballot(json.getString("ballot"));
 		this.acceptorGCSlot = json.getInt("slotNumber");
 		this.accepted = parseJsonForAccepted(json);
@@ -58,8 +59,8 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException
 	{
 		JSONObject json = new JSONObject();
-		json.put("coordinatorID", coordinatorID);
-		json.put("receiverID", receiverID);
+		json.put("coordinatorID", coordinatorID.get());
+		json.put("receiverID", receiverID.get());
 		json.put("ballot", ballot.toString());
 		json.put("slotNumber", acceptorGCSlot);
 		assert(this.packetType == PaxosPacketType.PREPARE_REPLY);
