@@ -60,9 +60,9 @@ public class TESTPaxosNodeMultipleManagers {
 			for(int id: TESTPaxosConfig.getGroup(groupID)) {
 				boolean created = false;
 				if(myID==id) {
-					System.out.print(groupID + ":" + Util.arrayToSet(TESTPaxosConfig.getGroup(groupID)) + " ");
+					System.out.print(groupID + ":" + Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)) + " ");
 					created = this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-							Util.arrayToSet(TESTPaxosConfig.getGroup(groupID)), null);
+							Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)), null);
 					if(!created) System.out.println(":  not created (probably coz it is pre-existing)");
 				}
 			}
@@ -78,7 +78,7 @@ public class TESTPaxosNodeMultipleManagers {
 			String groupID = TESTPaxosConfig.TEST_GUID_PREFIX+i;
 			for(int id: TESTPaxosConfig.getDefaultGroup()) {
 				if(id==myID) this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-						Util.arrayToSet(TESTPaxosConfig.getGroup(groupID)), null);
+						Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)), null);
 			}
 			if(i%j==0 && ((j*=2)>1) || (i%100000==0)) {
 				System.out.print(i+" ");

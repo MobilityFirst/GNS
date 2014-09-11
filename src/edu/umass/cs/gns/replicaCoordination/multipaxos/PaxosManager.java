@@ -447,7 +447,7 @@ public class PaxosManager extends AbstractPaxosManager {
 				//if(DEBUG) 
 				log.info("Node"+myID+" successfully hot restored paused instance " + paxosID);
 				restored = this.createPaxosInstance(hri.paxosID, hri.version, myID, 
-						Util.arrayToSet(hri.members), this.myApp, hri, false);
+						Util.arrayToNodeIdSet(hri.members), this.myApp, hri, false);
 			}
 			else log.fine("Node"+myID+" unable to hot restore instance " + paxosID);
 		}
@@ -455,9 +455,9 @@ public class PaxosManager extends AbstractPaxosManager {
 	}
 
 	/* Create paxos instance restoring app state from checkpoint if any and roll forward */
-	private PaxosInstanceStateMachine recover(String paxosID, short version, int id, int[] members, Replicable app, boolean restoration) {
+	private PaxosInstanceStateMachine recover(String paxosID, short version, NodeId<String> id, NodeId<String>[] members, Replicable app, boolean restoration) {
 		if(DEBUG) log.info("Node " +this.myID + " " + paxosID + ":" + version + " recovering and about to roll forward: ");
-		this.createPaxosInstance(paxosID, version, id, Util.arrayToSet(members), app, null, false);
+		this.createPaxosInstance(paxosID, version, id, Util.arrayToNodeIdSet(members), app, null, false);
 		PaxosInstanceStateMachine pism = (this.getInstance(paxosID, true, false));
 		return pism;
 	}
@@ -481,7 +481,7 @@ public class PaxosManager extends AbstractPaxosManager {
 			if(pism!=null) pism.sendTestPaxosMessageToSelf();
 		}
 	}
-	private PaxosInstanceStateMachine recover(String paxosID, short version, int id, int[] members, Replicable app) {
+	private PaxosInstanceStateMachine recover(String paxosID, short version, NodeId<String> id, NodeId<String>[] members, Replicable app) {
 		return this.recover(paxosID, version, id, members, app, false);
 	}
 
@@ -519,9 +519,9 @@ public class PaxosManager extends AbstractPaxosManager {
 	 * We don't expect anything in return. It should 
 	 * really be called amAlive instead of monitor.
 	 */
-	private void monitor(Set<Integer> nodes) {FD.monitor(nodes);}
+	private void monitor(Set<NodeId<String>> nodes) {FD.monitor(nodes);}
 	/* Stop sending pings to the node */
-	private void unMonitor(int id) {FD.unMonitor(id);}
+	private void unMonitor(NodeId<String> id) {FD.unMonitor(id);}
 
 	private void printLog(String paxosID) {
 		System.out.println("State for " + paxosID + ": Checkpoint: " + this.paxosLogger.getStatePacket(paxosID));
@@ -551,7 +551,7 @@ public class PaxosManager extends AbstractPaxosManager {
 				// kill lower versions if any and create new paxos instance
 				if(pism.getVersion()-findGroup.getVersion()<0) this.kill(pism);
 				this.createPaxosInstance(findGroup.getPaxosID(), findGroup.getVersion(), 
-						this.myID, Util.arrayToSet(findGroup.group), myApp, null, false);
+						this.myID, Util.arrayToIntSet(findGroup.group), myApp, null, false);
 			}
 		}
 		try {

@@ -121,7 +121,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * of all of its state. It could of course be the stringified form 
 	 * of the actual state if the state is at most MAX_STATE_SIZE. 
 	 */
-	public void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int acceptedGCSlot) {
+	public void putCheckpointState(String paxosID, short version, NodeId<String>[] group, int slot, Ballot ballot, String state, int acceptedGCSlot) {
 		if(isClosed() || DISABLE_LOGGING) return;
 
 		long t1=System.currentTimeMillis(),t2=0;
@@ -134,10 +134,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setShort(1, version);
-			insertCP.setString(2, Util.arrayToSet(group).toString());
+			insertCP.setString(2, Util.arrayToNodeIdSet(group).toString());
 			insertCP.setInt(3, slot);
 			insertCP.setInt(4, ballot.ballotNumber);
-			insertCP.setInt(5, ballot.coordinatorID);
+			insertCP.setString(5, ballot.coordinatorID.get());
       insertCP.setClob(6, new StringReader(state));
 			insertCP.setString(7, paxosID);
 			insertCP.executeUpdate(); 
@@ -156,12 +156,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
     // Abhigyan: logging a huge string would add much overhead, so truncate to 8KB
     String logState = (state.length() < 8192) ? state: state.substring(0, 8192);
 
-		log.info("Node " + this.myID + " DB inserted checkpoint ("+paxosID+","+Util.arrayToSet(group).toString()+","+
+		log.info("Node " + this.myID + " DB inserted checkpoint ("+paxosID+","+Util.arrayToNodeIdSet(group).toString()+","+
 				slot+","+ballot+","+logState+","+acceptedGCSlot+"); took " + (t2-t1) + "ms; garbage collection took " +
 				(System.currentTimeMillis()-t2)+"ms");
 	}
 	/* Called by putCheckpointState to delete logged messages from before the checkpoint. */
-	private void deleteOutdatedMessages(String paxosID, int slot, int ballotnum, int coordinator, int acceptedGCSlot) {
+	private void deleteOutdatedMessages(String paxosID, int slot, int ballotnum, NodeId<String> coordinator, int acceptedGCSlot) {
 		if(isClosed()) return;
 		if(slot<PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL) return; // an optimization to avoid GC at slot 0
 
@@ -171,7 +171,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			String dcmd = "delete from " + getMTable() + " where paxos_id='"+paxosID+"' and " +
 					"(packet_type="+PaxosPacketType.DECISION.getNumber() + " and slot<"+(slot-MAX_OLD_DECISIONS)+") or " +
 					"(packet_type="+PaxosPacketType.PREPARE.getNumber() + " and (ballotnum<"+ballotnum + 
-					" or (ballotnum="+ballotnum + " and coordinator<"+coordinator+"))) or" +
+					" or (ballotnum="+ballotnum + " and coordinator<"+coordinator.get()+"))) or" +
 					"(packet_type="+PaxosPacketType.ACCEPT.getNumber() + " and slot<="+Math.min(acceptedGCSlot, slot)+")"; 
 			conn = getDefaultConn();
 			dstmt = conn.prepareStatement(dcmd);
@@ -183,7 +183,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	/* Used to be the entry point for message logging. Replaced by batchLog now */
-	public boolean log(String paxosID, short version, int slot, int ballotnum, int coordinator, PaxosPacketType type, String message) {
+	public boolean log(String paxosID, short version, int slot, int ballotnum, NodeId<String> coordinator, PaxosPacketType type, String message) {
 		if(isClosed() || DISABLE_LOGGING) return false;
 
 		boolean logged=false;
@@ -199,7 +199,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			localLogMsgStmt.setShort(2, version);
 			localLogMsgStmt.setInt(3, slot);
 			localLogMsgStmt.setInt(4, ballotnum);
-			localLogMsgStmt.setInt(5, coordinator);
+			localLogMsgStmt.setString(5, coordinator.get());
 			localLogMsgStmt.setInt(6, type.getNumber());
 			localLogMsgStmt.setString(7, message);
 			int rowcount = localLogMsgStmt.executeUpdate();
@@ -341,7 +341,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				sb = new SlotBallotState(
 						stateRS.getInt(1),
 						stateRS.getInt(2),
-						stateRS.getInt(3), 
+						new NodeId<String>(stateRS.getString(3)), 
 						stateRS.getString(4));
 				versionMismatch = (matchVersion && version!=stateRS.getShort(5));
 			}
@@ -384,8 +384,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				short version = stateRS.getShort(2);
 				String members = stateRS.getString(3);
 				String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
-				int[] group = new int[pieces.length];
-				for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
+				NodeId<String>[] group = new NodeId[pieces.length];
+				for(int i=0; i<group.length; i++) group[i] = new NodeId<String>(pieces[i].trim());
 				allPaxosInstances.add(new RecoveryInfo(paxosID, version, group));
 			}
 		} catch(SQLException sqle) {
@@ -408,8 +408,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				short version = stateRS.getShort(1);
 				String members = stateRS.getString(2);
 				String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
-				int[] group = new int[pieces.length];
-				for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
+				NodeId<String>[] group = new NodeId[pieces.length];
+				for(int i=0; i<group.length; i++) group[i] =  new NodeId<String>(pieces[i].trim());
 				pri = new RecoveryInfo(paxosID, version, group);
 			}
 		} catch(SQLException sqle) {
@@ -442,8 +442,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				short version = cursorRset.getShort(2);
 				String members = cursorRset.getString(3);
 				String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
-				int[] group = new int[pieces.length];
-				for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
+				NodeId<String>[] group = new NodeId[pieces.length];
+				for(int i=0; i<group.length; i++) group[i] = new NodeId<String>(pieces[i].trim());
 				String state = (readState ? cursorRset.getString(4) : null);
 				pri = new RecoveryInfo(paxosID, version, group, state);
 			}
@@ -509,10 +509,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * Logs the given packet. The packet must have a paxosID
 	 * in it already for this method to be useful.
 	 * @param packet
+         * @return 
 	 */
+        @Override
 	public boolean log(PaxosPacket packet) {
-		int[] slotballot = AbstractPaxosLogger.getSlotBallot(packet); assert(slotballot.length==3);
-		return log(packet.getPaxosID(), packet.getVersion(), slotballot[0], slotballot[1], slotballot[2], packet.getType(), packet.toString());
+		Object[] slotballot = AbstractPaxosLogger.getSlotBallot(packet); assert(slotballot.length==3);
+		return log(packet.getPaxosID(), packet.getVersion(), (int) slotballot[0], (int) slotballot[1], 
+                        new NodeId<String>((String) slotballot[2]),
+                        packet.getType(), packet.toString());
 	}
 	/**
 	 * Gets the list of logged messages for the paxosID. The static method
@@ -562,7 +566,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				PaxosPacketType.ACCEPT.getNumber() + " and slot>"+firstSlot);
 		TreeMap<Integer,PValuePacket> accepted = new TreeMap<Integer,PValuePacket>();
 		for(PaxosPacket p : list) {
-			int slot = AbstractPaxosLogger.getSlotBallot(p)[0];
+			int slot = (int) AbstractPaxosLogger.getSlotBallot(p)[0];
 			AcceptPacket accept = (AcceptPacket)p;
 			if(slot>=0 && (!accepted.containsKey(slot) || accepted.get(slot).ballot.compareTo(accept.ballot) < 0))
 				accepted.put(slot, accept);
@@ -879,21 +883,21 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			String state = getCheckpointState(s);
 			Ballot b = getCheckpointBallot(s);
 			int slot = getCheckpointSlot(s);
-			print += (s + " " + Util.arrayToSet(pri.getMembers()) + " " + slot  + " " + b + " " + state+"\n");
+			print += (s + " " + Util.arrayToNodeIdSet(pri.getMembers()) + " " + slot  + " " + b + " " + state+"\n");
 			ArrayList<PaxosPacket> loggedMsgs = getLoggedMessages(paxosID);
 			if(loggedMsgs!=null) for(PaxosPacket pkt : loggedMsgs) print += (pkt+"\n");
 		}
 		return print;
 	}
-	protected boolean isInserted(String paxosID, int[] group, int slot, Ballot ballot, String state) {
+	protected boolean isInserted(String paxosID, NodeId<String>[] group, int slot, Ballot ballot, String state) {
 		return 
-				(getCheckpointState(paxosID, "members").equals(Util.arrayToSet(group).toString())) &&
+				(getCheckpointState(paxosID, "members").equals(Util.arrayOfNodeIdsToString(group).toString())) &&
 				(getCheckpointState(paxosID, "slot").equals(""+slot)) &&
 				(getCheckpointState(paxosID, "ballotnum").equals(""+ballot.ballotNumber)) &&
 				(getCheckpointState(paxosID, "coordinator").equals(""+ballot.coordinatorID)) &&
 				(getCheckpointState(paxosID, "state").equals(""+state));
 	}
-	protected boolean isLogged(String paxosID, int slot, int ballotnum, int coordinator, String msg) {
+	protected boolean isLogged(String paxosID, int slot, int ballotnum, NodeId<String> coordinator, String msg) {
 		PreparedStatement pstmt=null; ResultSet messagesRS=null; Connection conn=null;
 		String cmd = "select paxos_id, message from " + getMTable() + " where paxos_id='" +paxosID+"' " +
 				" and slot="+slot+" and ballotnum="+ballotnum+" and coordinator="+coordinator +" and message=?";
@@ -914,17 +918,21 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return logged;
 	}
 	protected boolean isLogged(PaxosPacket packet) throws JSONException{
-		int[] sb = AbstractPaxosLogger.getSlotBallot(packet); assert(sb.length==3);
-		return this.isLogged(packet.getPaxosID(), sb[0], sb[1], 
-				sb[2], packet.toString());
+		Object[] sb = AbstractPaxosLogger.getSlotBallot(packet); assert(sb.length==3);
+		return this.isLogged(packet.getPaxosID(), (int) sb[0], (int) sb[1], 
+				new NodeId<String>((String) sb[2]), packet.toString());
 	}
 	private double createCheckpoints(int size) {
-		int[] group = {2, 4, 5, 11, 23, 34, 56, 78, 80, 83, 85, 96, 97, 98, 99};
+		NodeId[] group = {new NodeId<String>(2), new NodeId<String>(4), new NodeId<String>(5), 
+                new NodeId<String>(11), new NodeId<String>(23), new NodeId<String>(34), new NodeId<String>(56), 
+                new NodeId<String>(78), new NodeId<String>(80), new NodeId<String>(83), new NodeId<String>(85), 
+                new NodeId<String>(96), new NodeId<String>(97), new NodeId<String>(98), new NodeId<String>(99)};
+        
 		System.out.println("\nStarting " + size + " writes: ");
 		long t1 = System.currentTimeMillis(), t2=t1;
 		int k=1; DecimalFormat df = new DecimalFormat("#.##");
 		for(int i=0; i<size; i++) {
-			this.putCheckpointState("paxos"+i, (short)0, group, 0, new Ballot(0, i%34), "hello"+i, 0);
+			this.putCheckpointState("paxos"+i, (short)0, group, 0, new Ballot(0, new NodeId<String>(i%34)), "hello"+i, 0);
 			t2 = System.currentTimeMillis();
 			if(i%k==0 && i>0) {System.out.print("[" + i+" : " + df.format(((double)(t2-t1))/i) + "ms]\n"); k*=2;}
 		}
@@ -975,13 +983,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				try {
 					packetString = PaxosPacket.setRecovery(packet);
 				} catch(JSONException je) {je.printStackTrace(); continue;}
-				int[] sb = AbstractPaxosLogger.getSlotBallot(packet);
+				Object[] sb = AbstractPaxosLogger.getSlotBallot(packet);
 
 				pstmt.setString(1, packet.getPaxosID());
 				pstmt.setShort(2, packet.getVersion());
-				pstmt.setInt(3, sb[0]);
-				pstmt.setInt(4, sb[1]);
-				pstmt.setInt(5, sb[2]);
+				pstmt.setInt(3, (int) sb[0]);
+				pstmt.setInt(4, (int) sb[1]);
+				pstmt.setString(5, (String) sb[2]);
 				pstmt.setInt(6, packet.getType().getNumber());
 				pstmt.setString(7, packetString);
 				pstmt.addBatch();
@@ -1013,13 +1021,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		//DerbyPaxosLogger logger1 = new DerbyPaxosLogger(23,null,null);
 		//System.out.println("Current database state for paxos0:\n" + logger.toString("paxos0"));
 
-		int[] group = {32, 43, 54};
+		NodeId[] group = {new NodeId<String>(32), new NodeId<String>(43), new NodeId<String>(54)};
 		String paxosID = "paxos0";
 		int slot = 0;
 		int ballotnum=1;
-		int coordinator=2;
+		NodeId<String> coordinator = new NodeId<String>(2);
 		String state = "Hello World";
-		Ballot ballot = new Ballot(ballotnum,coordinator);
+		Ballot ballot = new Ballot(ballotnum, coordinator);
 		logger.putCheckpointState(paxosID, (short)0, group, slot, ballot, state, 0);
 		assert(logger.isInserted(paxosID, group, slot, ballot, state));
 		DecimalFormat df = new DecimalFormat("#.##");
@@ -1041,7 +1049,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			int i=0;
 			int reqClientID=25; 
 			String reqValue = "26";
-			int nodeID = coordinator;
+			NodeId<String> nodeID = coordinator;
 			int k=1;
 			for(int j=0; j<packets.length; j++) {
 				RequestPacket req = new RequestPacket(reqClientID,  0, reqValue, false);
@@ -1080,7 +1088,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			System.out.println("checked");
 
 			int newSlot = 2;
-			Ballot newBallot = new Ballot(0,2);
+			Ballot newBallot = new Ballot(0, new NodeId<String>(2));
 			logger.putCheckpointState(paxosID, (short)0, group, 2, newBallot, "Hello World",0);
 			System.out.println("Printing logger state after checkpointing:");
 			logger.initiateReadCheckpoints(true);
@@ -1090,9 +1098,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			}
 			System.out.print("Checking deletion of logged messages...");
 			for(int j=0; j<packets.length;j++) {
-				int[] sbc = AbstractPaxosLogger.getSlotBallot(packets[j]);
-				if(!((sbc[0] <= newSlot && sbc[0]>=0) || ((sbc[1]<newBallot.ballotNumber || 
-						(sbc[1]==newBallot.ballotNumber && sbc[2]<newBallot.coordinatorID) )))) {
+				Object[] sbc = AbstractPaxosLogger.getSlotBallot(packets[j]);
+				if(!(((int) sbc[0] <= newSlot 
+                                        && (int) sbc[0]>=0) || (((int) sbc[1]<newBallot.ballotNumber || 
+						((int) sbc[1]==newBallot.ballotNumber 
+                                        // not sure what is going on below... literal translation
+                                        && new NodeId<String>((String) sbc[2]).compareTo(newBallot.coordinatorID) < 0)
+                                        //&& (String) sbc[2] < newBallot.coordinatorID)
+                                        )))) {
 					assert(logger.isLogged(packets[j]));
 				}
 			}

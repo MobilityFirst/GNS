@@ -86,8 +86,16 @@ public class Util {
     return result;
   }
 
-  public static Set<Integer> arrayToSet(int[] array) {
+  public static Set<Integer> arrayToIntSet(int[] array) {
     TreeSet<Integer> set = new TreeSet<Integer>();
+    for (int i = 0; i < array.length; i++) {
+      set.add(array[i]);
+    }
+    return set;
+  }
+  
+  public static Set<NodeId<String>> arrayToNodeIdSet(NodeId[] array) {
+    TreeSet<NodeId<String>> set = new TreeSet<NodeId<String>>();
     for (int i = 0; i < array.length; i++) {
       set.add(array[i]);
     }
