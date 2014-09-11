@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
@@ -56,7 +58,7 @@ public class PaxosAcceptor {
 
 	private int slot=0;
 	private int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
-	private int ballotCoord=-1;
+	private NodeId<String> ballotCoord = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 	private boolean stopped=false;
 	private int minCommittedFrontierSlot=-1; 
 
@@ -72,7 +74,7 @@ public class PaxosAcceptor {
 	private static Logger log = Logger.getLogger(PaxosAcceptor.class.getName()); // GNS.getLogger();	
 
 
-	PaxosAcceptor(int b, int c, int s, HotRestoreInfo hri) {
+	PaxosAcceptor(int b, NodeId<String> c, int s, HotRestoreInfo hri) {
 		this.ballotNum = b;
 		this.ballotCoord = c;
 		this.slot = s;
@@ -103,7 +105,7 @@ public class PaxosAcceptor {
 	protected synchronized String getBallotStr() {return Ballot.getBallotString(ballotNum, ballotCoord);}
 	protected synchronized String getBallotSlot() {return getBallot()+", "+getSlot();}
 	protected synchronized int getBallotNum() {return this.ballotNum;}
-	protected synchronized int getBallotCoord() {return this.ballotCoord;}
+	protected synchronized NodeId<String> getBallotCoord() {return this.ballotCoord;}
 
 	/* Note: We don't have public putSlot and putBallot methods as external 
 	 * entities have no business modifying paxos state directly. 
@@ -268,7 +270,7 @@ public class PaxosAcceptor {
 					)
 					);
 			RequestPacket req = new RequestPacket(71+i, "hello41"+i,false);
-			this.committedRequests.put(43+i, new PValuePacket(new Ballot(0,0), new ProposalPacket(43+i,req)));
+			this.committedRequests.put(43+i, new PValuePacket(new Ballot(0,GNSNodeConfig.INVALID_NAME_SERVER_ID), new ProposalPacket(43+i,req)));
 		}
 	}
 	protected synchronized void jumpSlot(int slotNumber) {
@@ -283,7 +285,7 @@ public class PaxosAcceptor {
 	}
 
 
-	private static int testingCreateAcceptor(int size, int id, Set<Integer> group, String testMode) {
+	private static int testingCreateAcceptor(int size, int id, Set<NodeId<String>> group, String testMode) {
 		PaxosInstanceStateMachine[] pismarray = null;
 		MultiArrayMap<String, PaxosInstanceStateMachine> pismMap = new MultiArrayMap<String, PaxosInstanceStateMachine>(size);
 		PaxosAcceptor[] pasarray = null;
@@ -296,13 +298,14 @@ public class PaxosAcceptor {
 			try {
 				if(testMode.equals("FULL_INSTANCE")) {
 					if(pismarray==null) pismarray = new PaxosInstanceStateMachine[size];
-					pismarray[i] = new PaxosInstanceStateMachine(ID+i, (short)i, (i%3==0 ? coord : id), group, null, null, null); 
+					pismarray[i] = new PaxosInstanceStateMachine(ID+i, (short)i, 
+                                                new NodeId<String>(i%3==0 ? coord : id), group, null, null, null); 
 					pismMap.put(pismarray[i].getKey(), pismarray[i]);
 					pismarray[i].testingInit(0);
 				} 
 				else if(testMode.equals("ACCEPTOR")) {
 					if(pasarray==null) pasarray = new PaxosAcceptor[size];
-					pasarray[i] = new PaxosAcceptor(1, 2,0,null);
+					pasarray[i] = new PaxosAcceptor(1, new NodeId<String>(2), 0, null);
 					pasarray[i].testingInitInstance(0);
 				}
 				if(i%j==0 || (i+1)%million==0) {System.out.print(((i+1)>=million?(i+1)/million+"M":i)+" ");j*=2;}
@@ -330,8 +333,8 @@ public class PaxosAcceptor {
 
 		int million=1000000;
 		int size=(int)(6*million); // 11.5M for acceptors, and 4M for full instance (with GC kicking in at around 3M)
-		TreeSet<Integer> group = new TreeSet<Integer>();
-		group.add(23);
+		TreeSet<NodeId<String>> group = new TreeSet<NodeId<String>>();
+		group.add(new NodeId<String>(23));
 
 		try {
 			System.out.print("Verifying that JVM size is set to 1GB...");

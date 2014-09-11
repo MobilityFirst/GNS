@@ -55,7 +55,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	private final ReplicationFrameworkInterface replicationFrameworkInterface; // replication algorithm
 	private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap(); 
 	private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
-	private final ConcurrentHashMap<Integer, Double> nsRequestRates = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<NodeId<String>, Double> nsRequestRates = new ConcurrentHashMap<>();
 
 	private Logger log = Logger.getLogger(getClass().getName()); //GNS.getLogger();
 
@@ -70,7 +70,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 	}
 
-	@Override public ConcurrentHashMap<Integer, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or removeEntireRecord
+	@Override public ConcurrentHashMap<NodeId<String>, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or removeEntireRecord
 	@Override public GNSNodeConfig getGnsNodeConfig() {return gnsNodeConfig;} // FIXME: make protected or removeEntireRecord
 
 	protected NodeId<String> getNodeID() {return myID;}
@@ -250,12 +250,12 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		}
 	}
 	// FIXME: Method makes little sense and has hardcoded values. 
-	protected boolean isSmallestNodeRunning(String name, Set<Integer> nameServers) {
+	protected boolean isSmallestNodeRunning(String name, Set<NodeId<String>> nameServers) {
 		Random r = new Random(name.hashCode());
-		ArrayList<Integer> copy = new ArrayList<Integer>(nameServers);
+		ArrayList<NodeId<String>> copy = new ArrayList<NodeId<String>>(nameServers);
 		Collections.sort(copy);
 		Collections.shuffle(copy, r);
-		for (int id : copy) {
+		for (NodeId<String> id : copy) {
 			if (gnsNodeConfig.getPingLatency(id) < UNDOCUMENTED_DELAY_PARAMETER) // FIXME: What is this???
 				return id == myID;
 		}
@@ -278,9 +278,10 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	}
 
 	public static void main(String[] args) throws IOException {
-		int id = 100;
+		NodeId<String> id = new NodeId<String>(100);
 		HashMap<String,String> configParameters = new HashMap<String,String>();
-		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 100);
+		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 
+                        new NodeId<String>(100));
 		System.out.println(gnsNodeConfig.getNodePort(id));
 		try {
 			JSONNIOTransport niot = new JSONNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new PacketDemultiplexerDefault())); 

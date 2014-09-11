@@ -476,8 +476,8 @@ public class ReplicaControllerRecord {
    *
    * @param id Primary name server id
    */
-  public boolean containsPrimaryNameserver(int id) throws FieldNotFoundException {
-    Set<Integer> primaries = getPrimaryNameservers();
+  public boolean containsPrimaryNameserver(NodeId<String> id) throws FieldNotFoundException {
+    Set<NodeId<String>> primaries = getPrimaryNameservers();
     if (primaries != null) {
       return primaries.contains(id);
     }
@@ -607,11 +607,11 @@ public class ReplicaControllerRecord {
    * @param newActiveNameServers
    * @param newActiveVersion
    */
-  public void updateActiveNameServers(Set<Integer> newActiveNameServers, int newActiveVersion)
+  public void updateActiveNameServers(Set<NodeId<String>> newActiveNameServers, int newActiveVersion)
           throws FieldNotFoundException, FailedDBOperationException {
 
 //    boolean activeRunning = isActiveRunning();
-    Set<Integer> actives = getActiveNameservers();
+    Set<NodeId<String>> actives = getActiveNameservers();
     int activeVersion = getActiveVersion();
 
     ArrayList<ColumnField> updateFields = getUpdateActiveNameServerFields();
@@ -939,7 +939,7 @@ public class ReplicaControllerRecord {
     // create the lazy record
     record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", true);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
-    System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
+    System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(new NodeId<String>(12)));
     record.addNameServerStats(10, 50, 75);
     System.out.println("READ STATS: " + record.updateMovingWindowReadsWrites());
 

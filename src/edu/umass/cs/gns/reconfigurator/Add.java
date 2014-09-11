@@ -6,6 +6,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -45,7 +46,7 @@ public class Add {
 	 * @param addRecordPacket   Packet sent by client.
 	 * @param replicaController ReplicaController object calling this method.
 	 */
-	public static MessagingTask[] executeAddRecord(AddRecordPacket addRecordPacket, BasicRecordMap DB, int rcID,
+	public static MessagingTask[] executeAddRecord(AddRecordPacket addRecordPacket, BasicRecordMap DB, NodeId<String> rcID,
 			boolean recovery) throws JSONException, FailedDBOperationException, IOException {
 
 		MessagingTask activeMTask=null, LNSMTask=null;  // send add at active, confirmation or error to LNS
@@ -96,7 +97,7 @@ public class Add {
 		return !recovery ? MessagingTask.toArray(activeMTask, LNSMTask) : null; // no messaging during recovery
 	}
 	// FIXME: separate method because this should not matter and should always return false
-	private static boolean colocatedActiveAndReplicaController(AddRecordPacket addPacket, int rcID) {
+	private static boolean colocatedActiveAndReplicaController(AddRecordPacket addPacket, NodeId<String> rcID) {
 		return addPacket.getNameServerID() == rcID;
 	}
 	

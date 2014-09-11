@@ -148,10 +148,10 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   }
 
   public static void main(String[] args) throws IOException {
-		int id = 100;
+		NodeId<String> id = new NodeId<String>(100);
 		int faultTolerance = 3;
 		HashMap<String,String> configParameters = new HashMap<String,String>();
-		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 100);
+		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", id);
 		PaxosConfig paxosConfig = new PaxosConfig();
 		try {
 			JSONNIOTransport niot = new JSONNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new PacketDemultiplexerDefault())); 

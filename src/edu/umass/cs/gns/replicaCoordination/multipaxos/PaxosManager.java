@@ -134,15 +134,15 @@ public class PaxosManager extends AbstractPaxosManager {
 	 * handleIncomingPacket() -> getInstance(paxosID) ->? unpause(paxosID) ->? createPaxosInstance(info)
 	 */
 
-	public boolean createPaxosInstance(String paxosID, short version, Set<Integer> gms, Replicable app) {
+	public boolean createPaxosInstance(String paxosID, short version, Set<NodeId<String>> gms, Replicable app) {
 		return this.createPaxosInstance(paxosID, version, this.myID, gms, app, null, true);
 	}
 
-  public Set<Integer> getPaxosNodeIDs(String paxosID) {
+  public Set<NodeId<String>> getPaxosNodeIDs(String paxosID) {
     return null;
   }
 
-  protected boolean createPaxosInstance(String paxosID, short version, NodeId<String> id, Set<Integer> gms, Replicable app,
+  protected boolean createPaxosInstance(String paxosID, short version, NodeId<String> id, Set<NodeId<String>> gms, Replicable app,
 			HotRestoreInfo hri, boolean tryRestore) {
 		if(this.isClosed() || id!=myID) return false;
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID, (hasRecovered && hri==null), tryRestore); 

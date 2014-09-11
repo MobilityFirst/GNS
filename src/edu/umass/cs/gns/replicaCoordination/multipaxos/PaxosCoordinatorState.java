@@ -44,7 +44,7 @@ public class PaxosCoordinatorState  {
 
 	// final ballot, takes birth and dies with this PaxosCoordinatorState
 	private final int myBallotNum; // using two ints is 24 bytes less than Ballot
-	private final int myBallotCoord;
+	private final NodeId<String> myBallotCoord;
 
 	// List of replicas who have accepted my ballot
 	private WaitforUtility waitforMyBallot=null; // non-null only until the coordinator becomes active
@@ -177,7 +177,7 @@ public class PaxosCoordinatorState  {
 	 * Return: An AcceptPacket if any that will be sent out by the caller to 
 	 * other nodes so as to actually propose this request.
 	 */
-	protected synchronized AcceptPacket propose(int[] members, RequestPacket request) {
+	protected synchronized AcceptPacket propose(NodeId<String>[] members, RequestPacket request) {
 		if(this.myProposals.containsKey(this.nextProposalSlotNumber-1) && // no point enqueuing anything after stop
 				this.myProposals.get(this.nextProposalSlotNumber-1).pValuePacket.isStopRequest()) return null; 
 		AcceptPacket acceptPacket=null;
@@ -718,10 +718,10 @@ public class PaxosCoordinatorState  {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		NodeId<String> myID = 21;
+		NodeId<String> myID = new NodeId<String>(21);
 		int ballotnum=2;
 		int numMembers = 43;
-		int[] members = new int[numMembers];
+		NodeId<String>[] members = new NodeId[numMembers];
 		members[0] = myID;
 		for(int i=1; i<members.length; i++) {
 			members[i] = members[i-1] + 1 + (int)(Math.random()*10);

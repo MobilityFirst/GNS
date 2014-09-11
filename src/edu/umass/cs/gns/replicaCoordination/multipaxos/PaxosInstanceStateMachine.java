@@ -134,7 +134,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
 
 	/************ final Paxos state that is unchangeable after creation ***************/
-	private final int[] groupMembers; // final coz group changes => new paxos instance
+	private final NodeId<String>[] groupMembers; // final coz group changes => new paxos instance
 	private final Object paxosID; // App ID or "GUID". Object to allow easy testing across byte[] and String
 	private final short version;
 	private final NodeId<String> myID;
@@ -149,7 +149,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	// static, so does not count towards space.
 	private static Logger log = Logger.getLogger(PaxosInstanceStateMachine.class.getName()); // GNS.getLogger();
 
-	PaxosInstanceStateMachine(String groupId, short version, NodeId<String> id, Set<Integer> gms, 
+	PaxosInstanceStateMachine(String groupId, short version, NodeId<String> id, Set<NodeId<String>> gms, 
 			Replicable app, PaxosManager pm, HotRestoreInfo hri) {
 
 		/**************** final assignments ***********************
@@ -165,8 +165,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 
 		// Copy set gms to array groupMembers
 		assert(gms.size()>0);
-		this.groupMembers = new int[gms.size()];
-		int index=0; for(int i : gms) this.groupMembers[index++] = i; 
+                groupMembers = gms.toArray(new NodeId[gms.size()]);
+		// int index=0; for(int i : gms) this.groupMembers[index++] = i;
 		Arrays.sort(this.groupMembers); 
 		/**************** End of final assignments *******************/
 
@@ -188,8 +188,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	public Short getVersion() {return this.version;}
 
 	protected String getPaxosID() {return (paxosID instanceof String ? (String)paxosID : new String((byte[])paxosID)); }
-	protected int[] getMembers() {return this.groupMembers;}
-	protected int getNodeID() {return this.myID;}
+	protected NodeId<String>[] getMembers() {return this.groupMembers;}
+	protected NodeId<String> getNodeID() {return this.myID;}
 	protected Replicable getApp() {return this.clientRequestHandler;}
 	protected PaxosManager getPaxosManager() {return this.paxosManager;}
 	public String toString() {return this.getNodeState() + " " + (this.paxosState!=null ? this.paxosState.toString():"null") +
