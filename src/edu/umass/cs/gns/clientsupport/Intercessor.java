@@ -46,8 +46,7 @@ import java.util.ArrayList;
  * @author westy
  */
 public class Intercessor implements IntercessorInterface {
-
-  private static int localServerID = 0; // Can this go away? It will when we remove IDs from the LNS.
+  
   /* Used by the wait/notify calls */
   private static final Object monitor = new Object();
   /* Used by update confirmation */

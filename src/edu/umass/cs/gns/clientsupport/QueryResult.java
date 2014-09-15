@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -37,7 +38,7 @@ public class QueryResult implements Serializable{
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private int responder;
+  private NodeId<String> responder;
 
   /**
    * Creates a "normal" (non-error) QueryResult.
@@ -45,7 +46,7 @@ public class QueryResult implements Serializable{
    * @param valuesMap 
    * @param responder 
    */
-  public QueryResult(ValuesMap valuesMap, int responder) {
+  public QueryResult(ValuesMap valuesMap, NodeId<String> responder) {
     this.valuesMap = valuesMap;
     this.responder = responder;
   }
@@ -56,7 +57,7 @@ public class QueryResult implements Serializable{
    * @param errorCode 
    * @param responder 
    */
-  public QueryResult(NSResponseCode errorCode, int responder) {
+  public QueryResult(NSResponseCode errorCode, NodeId<String> responder) {
     this.errorCode = errorCode;
     this.responder = responder;
   }
@@ -155,7 +156,7 @@ public class QueryResult implements Serializable{
    * 
    * @return
    */
-  public int getResponder() {
+  public NodeId<String> getResponder() {
     return responder;
   }
 

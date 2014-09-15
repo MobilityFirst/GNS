@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.installer;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.parsers.DocumentBuilder;
@@ -38,7 +39,7 @@ public class WriteXMLConfFile {
 //  <host hostname="ec2-79-125-27-206.eu-west-1.compute.amazonaws.com" id="7" ip="79.125.27.206" lat="53.0" lon="-8.0"/>
 //</root>
   public static void writeFile(String filename, String keyName, String ec2UserName, String hostType, String datastore,
-          ConcurrentHashMap<Integer, HostInfo> idTable) {
+          ConcurrentHashMap<NodeId<String>, HostInfo> idTable) {
 
     try {
 
@@ -80,7 +81,7 @@ public class WriteXMLConfFile {
         rootElement.appendChild(element);
 
         attr = doc.createAttribute("id");
-        attr.setValue(Integer.toString(info.getId()));
+        attr.setValue(info.getId().get());
         element.setAttributeNode(attr);
 
         attr = doc.createAttribute("hostname");
@@ -118,10 +119,10 @@ public class WriteXMLConfFile {
   }
 
   public static void main(String argv[]) {
-    ConcurrentHashMap<Integer, HostInfo> idTable = new ConcurrentHashMap();
-    idTable.put(0, new HostInfo(0, "host1", null));
-    idTable.put(1, new HostInfo(1, "host2", null));
-    idTable.put(2, new HostInfo(2, "host3", null));
+    ConcurrentHashMap<NodeId<String>, HostInfo> idTable = new ConcurrentHashMap();
+    idTable.put(new NodeId<String>(0), new HostInfo(new NodeId<String>(0), "host1", null));
+    idTable.put(new NodeId<String>(1), new HostInfo(new NodeId<String>(1), "host2", null));
+    idTable.put(new NodeId<String>(2), new HostInfo(new NodeId<String>(2), "host3", null));
     writeFile("frank", "aws", "ec2-user", "linux", "MONGO", idTable);
   }
 

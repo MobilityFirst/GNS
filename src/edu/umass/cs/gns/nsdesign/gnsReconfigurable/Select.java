@@ -7,7 +7,6 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
-import edu.umass.cs.gns.installer.GNSInstallerV2;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;

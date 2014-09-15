@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.installer.GNSInstallerV1;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -12,7 +11,6 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 /**
  *
