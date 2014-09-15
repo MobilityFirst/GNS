@@ -9,7 +9,7 @@ import org.json.JSONObject;
 /* Work in progress. Inactive code.
  */
 public interface ReplicaControllerCoordinator extends Shutdownable{
-	public int coordinateRequest(JSONObject request);
+	public int coordinateRequest(JSONObject request); // FIXME: Why does this return an int?
 	public int initGroupChange(String name); // FIXME: Arun: Why is this needed?
 	public void reset(); // FIXME: Arun: Why is this part of coordination??
 }

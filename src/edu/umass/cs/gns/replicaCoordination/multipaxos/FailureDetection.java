@@ -161,7 +161,7 @@ public class FailureDetection {
 		}
 		return false;
 	}
-	protected synchronized boolean lastCoordinatorLongDead(int id) {
+	protected synchronized boolean lastCoordinatorLongDead(NodeId<String> id) {
 		Long lastHeard = 0L;
 		long now = System.currentTimeMillis();
 		if((lastHeard = this.lastHeardFrom.get(id))!=null) {

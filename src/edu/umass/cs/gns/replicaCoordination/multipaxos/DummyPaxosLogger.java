@@ -48,11 +48,11 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 	// Convenience structure used only by the fake, memory-based logger
 	private class PaxosCheckpoint {
 		protected final short version;
-		protected final int[] group;
+		protected final NodeId<String>[] group;
 		protected final Ballot ballot;
 		protected final int slot;
 		protected final String state;
-		PaxosCheckpoint(short ver, int[] g, Ballot b, int s, String cp) {
+		PaxosCheckpoint(short ver, NodeId<String>[] g, Ballot b, int s, String cp) {
 			this.version = ver;
 			this.group = g;
 			this.ballot=b;
@@ -113,7 +113,7 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 	}
 	/* gcSlot determines which accept messages can be dropped even if they are older than the checkpoint.
 	 */
-	public void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int gcSlot) {
+	public void putCheckpointState(String paxosID, short version, NodeId<String>[] group, int slot, Ballot ballot, String state, int gcSlot) {
 		PaxosCheckpoint checkpoint = new PaxosCheckpoint(version, group, ballot, slot, state);
 		this.checkpoints.put(paxosID, checkpoint);
 	}
@@ -184,7 +184,7 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 		}
 		return logged;
 	}
-	public boolean log(String paxosID, short version, int slot, int ballotnum, int coordinator, PaxosPacketType type, String message) {
+	public boolean log(String paxosID, short version, int slot, int ballotnum, NodeId<String> coordinator, PaxosPacketType type, String message) {
 		assert(false); // should never be invoked
 		return false;
 	}
@@ -239,20 +239,21 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 		int numPackets = 10;
 		DummyPaxosLogger[] loggers = new DummyPaxosLogger[nNodes];
 		for(int i=0; i<nNodes;i++) {
-			int[] group = {i, i+1, i+23, i+44};
-			Ballot ballot = new Ballot(i,i);
+			NodeId[] group = {new NodeId<String>(i), new NodeId<String>(i+1), new NodeId<String>(i+23), new NodeId<String>(i+44)};
+			Ballot ballot = new Ballot(i,new NodeId<String>(i));
 			int slot = i;
 			String state = "state"+i;
 			loggers[i] = new DummyPaxosLogger(new NodeId<String>(i),null,null);
 			PaxosPacket[] packets = new PaxosPacket[numPackets];
 			String paxosID = "paxos"+i;
 			for(int j=0; j<packets.length; j++) {
-				packets[j] = new RequestPacket(25,  "26", false);
+				packets[j] = new RequestPacket(new NodeId<String>(25),  "26", false);
 				packets[j].putPaxosID(paxosID, (short)0);
 				loggers[i].log(packets[j]);
 			}
 			loggers[i].putCheckpointState(paxosID, (short)0, group, slot, ballot, state, 0);
 		}
+                System.exit(0);
 	}
 
 	@Override

@@ -109,7 +109,7 @@ public class PaxosCoordinator {
 
 	/* Phase2b
 	 */
-	protected synchronized PValuePacket handleAcceptReply(int[] members, AcceptReplyPacket acceptReply) {
+	protected synchronized PValuePacket handleAcceptReply(NodeId<String>[] members, AcceptReplyPacket acceptReply) {
 		if(!this.exists() || !this.isActive()) return null;
 
 		PValuePacket committedPValue=null; PValuePacket preemptedPValue=null;
@@ -149,7 +149,7 @@ public class PaxosCoordinator {
 	 * Return: The set of accept messages (phase2a) to be sent out
 	 * corresponding to spawned commanders.
 	 */
-	protected synchronized ArrayList<AcceptPacket> handlePrepareReply(PrepareReplyPacket prepareReply, int[] members) {
+	protected synchronized ArrayList<AcceptPacket> handlePrepareReply(PrepareReplyPacket prepareReply, NodeId<String>[] members) {
 		if(!this.exists()) return null; 
 		ArrayList<AcceptPacket> acceptPacketList = null;
 
@@ -167,7 +167,7 @@ public class PaxosCoordinator {
 	/* Phase1b
 	 * Received prepare reply with higher ballot.
 	 */
-	protected synchronized ArrayList<ProposalPacket> getPreActivesIfPreempted(PrepareReplyPacket prepareReply, int[] members) {
+	protected synchronized ArrayList<ProposalPacket> getPreActivesIfPreempted(PrepareReplyPacket prepareReply, NodeId<String>[] members) {
 		return (this.exists() && !this.isActive() && this.pcs.isPreemptable(prepareReply)) ? this.resignAsCoordinator() : null;
 	}
 	protected synchronized boolean isOverloaded(int acceptorSlot) {

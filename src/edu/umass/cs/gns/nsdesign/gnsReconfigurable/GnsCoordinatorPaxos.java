@@ -112,7 +112,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           if (Config.debuggingEnabled) GNS.getLogger().fine("*******Before creating paxos instance: " + request);
           callHandleDecisionWithRetry(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
-          paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, recordPacket.getActiveNameSevers(), paxosInterface);
+          paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, recordPacket.getActiveNameServers(), paxosInterface);
           if (Config.debuggingEnabled) GNS.getLogger().fine("*******Added paxos instance:" + recordPacket.getName());
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change

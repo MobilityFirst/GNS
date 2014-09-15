@@ -4,6 +4,7 @@ import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -496,7 +497,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 	protected void heardFrom(NodeId<String> id) {this.FD.heardFrom(id);}
 	protected boolean isNodeUp(NodeId<String> id) {return (FD!=null ? FD.isNodeUp(id) :false);}
-	protected boolean lastCoordinatorLongDead(int id) {return (FD!=null ? FD.lastCoordinatorLongDead(id) : true);}
+	protected boolean lastCoordinatorLongDead(NodeId<String> id) {return (FD!=null ? FD.lastCoordinatorLongDead(id) : true);}
 	protected AbstractPaxosLogger getPaxosLogger() {return paxosLogger;}
 	protected Messenger getMessenger() {return this.messenger;}
 
@@ -529,8 +530,8 @@ public class PaxosManager extends AbstractPaxosManager {
 	// send a request asking for your group
 	private void findReplicaGroup(JSONObject msg, String paxosID, short version) throws JSONException {
 		FindReplicaGroupPacket findGroup = new FindReplicaGroupPacket(this.myID, msg); // paxosID and version should be within
-		int nodeID = FindReplicaGroupPacket.getNodeID(msg);
-		if(nodeID >= 0) {
+		NodeId<String> nodeID = FindReplicaGroupPacket.getNodeID(msg);
+		if(!nodeID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
 			try {
 				this.send(new MessagingTask(nodeID, findGroup));
 			} catch(IOException ioe) {ioe.printStackTrace();}
@@ -551,7 +552,7 @@ public class PaxosManager extends AbstractPaxosManager {
 				// kill lower versions if any and create new paxos instance
 				if(pism.getVersion()-findGroup.getVersion()<0) this.kill(pism);
 				this.createPaxosInstance(findGroup.getPaxosID(), findGroup.getVersion(), 
-						this.myID, Util.arrayToIntSet(findGroup.group), myApp, null, false);
+						this.myID, Util.arrayToNodeIdSet(findGroup.group), myApp, null, false);
 			}
 		}
 		try {
@@ -634,11 +635,12 @@ public class PaxosManager extends AbstractPaxosManager {
 	public static void main(String[] args) {
 		int nNodes = 3;
 
-		TreeSet<Integer> gms = new TreeSet<Integer>();
-		int[] members = new int[nNodes];
+		TreeSet<NodeId<String>> gms = new TreeSet<NodeId<String>>();
+		NodeId<String>[] members = new NodeId[nNodes];
 		for(int i=0; i<nNodes; i++) {
-			gms.add(i+100); 
-			members[i] = i+100;
+                        NodeId<String> id = new NodeId<String>(i+100);
+			gms.add(id); 
+			members[i] = id;
 		}
 
 		SampleNodeConfig snc = new SampleNodeConfig(2000);
@@ -687,7 +689,7 @@ public class PaxosManager extends AbstractPaxosManager {
 					if(paxosGroups>1000 && (j%k==0 || j%100000==0)) {System.out.print(j+" "); k*=2;}
 				}
 				for(int m=1; m<nNodes; m++) {
-					pms[0].unMonitor(m);
+					pms[0].unMonitor(new NodeId<String>(m));
 				}
 				System.out.println("");
 			}
@@ -740,7 +742,7 @@ public class PaxosManager extends AbstractPaxosManager {
 			int numExceptions=0;
 			double scheduledDelay=0; 
 			for(int i=0; i<numReqs; i++) {
-				reqs[i] = new RequestPacket(0, i, "[ Sample write request numbered " + i + " ]", false);
+				reqs[i] = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, i, "[ Sample write request numbered " + i + " ]", false);
 				reqs[i].putPaxosID(GUIDs[0], (short)0);
 				JSONObject reqJson =  reqs[i].toJSONObject();
 				Packet.putPacketType(reqJson, PacketType.PAXOS_PACKET);

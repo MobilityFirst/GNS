@@ -184,8 +184,8 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     //json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(TIME_TO_LIVE, getTTL());
     json.put(NAMESERVER_ID, nameServerID.get());
-    if (getActiveNameSevers() != null)
-      json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameSevers()));
+    if (getActiveNameServers() != null)
+      json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameServers()));
     return json;
   }
 
@@ -260,12 +260,12 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     return sourceId;
   }
 
-  public Set<NodeId<String>> getActiveNameSevers() {
+  public Set<NodeId<String>> getActiveNameServers() {
     return activeNameServers;
   }
 
-  public void setActiveNameSevers(Set<NodeId<String>> activeNameSevers) {
-    this.activeNameServers = activeNameSevers;
+  public void setActiveNameServers(Set<NodeId<String>> activeNameServers) {
+    this.activeNameServers = activeNameServers;
   }
 
 }

@@ -820,7 +820,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * current and the next-in-line coordinator are both dead.
 	 */
 	private NodeId<String> getNextCoordinator(int ballotnum, NodeId<String>[] members) {
-		for(int i=1; i<members.length; i++) assert(members[i-1] < members[i]);
+		for(int i=1; i<members.length; i++) assert(members[i-1].compareTo(members[i]) < 0);
 		for(int i=0; i<members.length;i++) {
 			if(this.paxosManager!=null && this.paxosManager.isNodeUp(members[i])) return members[i];
 		}
@@ -843,12 +843,12 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * Action: Send a sync reply containing missing committed requests to the requester.
 	 * If the requester is myself, multicast to all.
 	 */
-	private MessagingTask requestMissingDecisions(int coordinatorID) {
+	private MessagingTask requestMissingDecisions(NodeId<String> coordinatorID) {
 		ArrayList<Integer> missingSlotNumbers = this.paxosState.getMissingCommittedSlots(MAX_SYNC_GAP);
 		if(missingSlotNumbers==null || missingSlotNumbers.isEmpty()) return null;
 
 		int maxDecision = this.paxosState.getMaxCommittedSlot();
-		SyncDecisionsPacket srp =  new SyncDecisionsPacket(this.myID,maxDecision, missingSlotNumbers, 
+		SyncDecisionsPacket srp =  new SyncDecisionsPacket(this.myID, maxDecision, missingSlotNumbers, 
 				maxDecision-this.paxosState.getSlot() >= MAX_SYNC_GAP);
 
 		MessagingTask mtask = coordinatorID!=this.myID ? new MessagingTask(coordinatorID, srp) :
@@ -857,11 +857,13 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 
 	// Utility method to get members except myself
-	private int[] otherGroupMembers() {
-		int[] others = new int[this.groupMembers.length-1];
+	private NodeId<String>[] otherGroupMembers() {
+		NodeId<String>[] others = new NodeId[this.groupMembers.length-1];
 		int j=0;
 		for(int i=0; i<this.groupMembers.length;i++) {
-			if(this.groupMembers[i]!=this.myID) others[j++] = this.groupMembers[i];
+			if(!this.groupMembers[i].equals(this.myID)) {
+                          others[j++] = this.groupMembers[i];
+                        }
 		}
 		return others;
 	}

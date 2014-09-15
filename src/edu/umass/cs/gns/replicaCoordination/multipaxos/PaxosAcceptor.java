@@ -266,10 +266,10 @@ public class PaxosAcceptor {
 		for(int i=0; i<load; i++) {
 			this.acceptedProposals.put(25+i, new PValuePacket(new Ballot(ballotNum,ballotCoord), 
 					new ProposalPacket(45+i,
-							new RequestPacket(34+i, "hello39"+i,false))
+							new RequestPacket(new NodeId<String>(34+i), "hello39"+i,false))
 					)
 					);
-			RequestPacket req = new RequestPacket(71+i, "hello41"+i,false);
+			RequestPacket req = new RequestPacket(new NodeId<String>(71+i), "hello41"+i,false);
 			this.committedRequests.put(43+i, new PValuePacket(new Ballot(0,GNSNodeConfig.INVALID_NAME_SERVER_ID), new ProposalPacket(43+i,req)));
 		}
 	}

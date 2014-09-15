@@ -5,6 +5,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -52,9 +53,9 @@ public class Add {
     ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(), true);
 
     // if clauses used only during experiments
-    if (addRecordPacket.getActiveNameSevers() != null){
+    if (addRecordPacket.getActiveNameServers() != null){
       rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(),
-              addRecordPacket.getActiveNameSevers(), true);
+              addRecordPacket.getActiveNameServers(), true);
     } else if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.BEEHIVE) ||
             Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC) ) {
       rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(),
@@ -68,9 +69,9 @@ public class Add {
         if (!recovery) {
           // change packet type and inform all active replicas.
           addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
-          addRecordPacket.setActiveNameSevers(rcRecord.getActiveNameservers());
+          addRecordPacket.setActiveNameServers(rcRecord.getActiveNameservers());
           if (Config.debuggingEnabled) GNS.getLogger().fine("Name: " + rcRecord.getName() + " Initial active replicas: " + rcRecord.getActiveNameservers());
-          for (Integer nodeID: rcRecord.getActiveNameservers()) {
+          for (NodeId<String> nodeID: rcRecord.getActiveNameservers()) {
             replicaController.getNioServer().sendToID(nodeID, addRecordPacket.toJSONObject());
           }
         }
@@ -104,7 +105,7 @@ public class Add {
     }
   }
 
-  private static Set<Integer> getInitialReplicasForOtherReplicationSchemes(String name, ReplicaController rc) {
+  private static Set<NodeId<String>> getInitialReplicasForOtherReplicationSchemes(String name, ReplicaController rc) {
 
     if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
       GNS.getLogger().fine("Using static replication: " + name);

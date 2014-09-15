@@ -6,6 +6,7 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.Util;
 
@@ -57,12 +58,12 @@ public class TESTPaxosNodeMultipleManagers {
 	protected void createDefaultGroupInstances() {
 		System.out.println("\nNode " + this.myID + " initiating creation of default paxos groups:");
 		for(String groupID : TESTPaxosConfig.getGroups()) {
-			for(int id: TESTPaxosConfig.getGroup(groupID)) {
+			for(NodeId<String> id: TESTPaxosConfig.getGroup(groupID)) {
 				boolean created = false;
-				if(myID==id) {
-					System.out.print(groupID + ":" + Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)) + " ");
+				if(myID.equals(id)) {
+					System.out.print(groupID + ":" + Util.arrayToNodeIdSet(TESTPaxosConfig.getGroup(groupID)) + " ");
 					created = this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-							Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)), null);
+							Util.arrayToNodeIdSet(TESTPaxosConfig.getGroup(groupID)), null);
 					if(!created) System.out.println(":  not created (probably coz it is pre-existing)");
 				}
 			}
@@ -76,9 +77,9 @@ public class TESTPaxosNodeMultipleManagers {
 		// Creating groups beyond default configured groups (if numGroups > MAX_CONFIG_GROUPS)
 		for(int i=TESTPaxosConfig.MAX_CONFIG_GROUPS; i<numGroups; i++) {
 			String groupID = TESTPaxosConfig.TEST_GUID_PREFIX+i;
-			for(int id: TESTPaxosConfig.getDefaultGroup()) {
-				if(id==myID) this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-						Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)), null);
+			for(NodeId<String> id: TESTPaxosConfig.getDefaultGroup()) {
+				if(id.equals(myID)) this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
+						Util.arrayToNodeIdSet(TESTPaxosConfig.getGroup(groupID)), null);
 			}
 			if(i%j==0 && ((j*=2)>1) || (i%100000==0)) {
 				System.out.print(i+" ");
@@ -90,8 +91,9 @@ public class TESTPaxosNodeMultipleManagers {
 	public static void main(String[] args) {
 		try {
 			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
-			NodeId<String> myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
-			assert(myID!=-1) : "Need a node ID argument: Try 0 for localhost"; 
+			NodeId<String> myID = (args!=null && args.length>0 ? new NodeId<String>(Integer.parseInt(args[0]))
+                                : GNSNodeConfig.INVALID_NAME_SERVER_ID);
+			assert(!myID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) : "Need a node ID argument"; 
 			
 			int numGroups = TESTPaxosConfig.NUM_GROUPS;
 			if (args!=null && args.length>1) numGroups =  Integer.parseInt(args[1]);

@@ -176,7 +176,7 @@ public class ReplicaControllerRecord {
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
-  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<Integer> actives, boolean initialize) {
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<NodeId<String>> actives, boolean initialize) {
     this(replicaControllerDB, name, initialize);
 
     if (initialize == false) {
@@ -905,6 +905,9 @@ public class ReplicaControllerRecord {
 
   /**
    * END: static methods for reading/writing to database and iterating over records
+   * @param args
+   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
+   * @throws java.lang.Exception
    */
   // test code
   public static void main(String[] args) throws FieldNotFoundException, Exception {
@@ -916,8 +919,8 @@ public class ReplicaControllerRecord {
   // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
   private static void test() throws FieldNotFoundException, Exception {
     Config.movingAverageWindowSize = 10;
-    int nodeID = 4;
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", new NodeId<String>(nodeID));
+    NodeId<String> nodeID = new NodeId<String>(4);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt" ,nodeID);
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);

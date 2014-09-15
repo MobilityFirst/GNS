@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -19,21 +21,21 @@ public class RequestPacket extends PaxosPacket {
 	public static final String DEBUG_INFO = "DEBUG_INFO";
 	private static final Random random  = new Random();
 
-	public final int clientID;
+	public final NodeId<String> clientID;
 	public final int requestID;
 	public final String requestValue;
 	public final boolean stop; 
 
 	// needed to stop ping-ponging under coordinator confusion
 	private int forwardCount=0; 
-	private int forwarderID=-1;
+	private NodeId<String> forwarderID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
 	/* These are for testing and debugging */
 	private long createTime = System.currentTimeMillis(); // preserved across forwarding by nodes, so not final
 	private boolean replyToClient=false;
 	private String debugInfo = "";
 
-	public RequestPacket(int clientID,  String value, boolean stop) {
+	public RequestPacket(NodeId<String> clientID,  String value, boolean stop) {
     	super((PaxosPacket)null);
 		this.clientID = clientID;
 		this.requestID = random.nextInt();
@@ -42,7 +44,7 @@ public class RequestPacket extends PaxosPacket {
 		this.stop = stop;
 	}
 	// Used only for testing
-	public RequestPacket(int clientID,  int reqID, String value, boolean stop) {
+	public RequestPacket(NodeId<String> clientID,  int reqID, String value, boolean stop) {
     	super((PaxosPacket)null);
 		this.clientID = clientID;
 		this.requestID = reqID;
@@ -70,8 +72,8 @@ public class RequestPacket extends PaxosPacket {
 	public boolean isNoop() {return this.requestValue.equals(NO_OP);}
 	private void incrForwardCount() {this.forwardCount++;}
 	public int getForwardCount() {return this.forwardCount;}
-	public RequestPacket setForwarderID(int id) {this.forwarderID=id;this.incrForwardCount(); return this;}
-	public int getForwarderID() {return this.forwarderID;}
+	public RequestPacket setForwarderID(NodeId<String> id) {this.forwarderID=id;this.incrForwardCount(); return this;}
+	public NodeId<String> getForwarderID() {return this.forwarderID;}
 	private static String makeDebugInfo(String str, long cTime) {
 		return " " + str + ":" + (System.currentTimeMillis() - cTime);
 	}
@@ -104,7 +106,7 @@ public class RequestPacket extends PaxosPacket {
 		this.packetType = PaxosPacketType.REQUEST;
 		String x = json.getString(CLIENT_INFO);
 		String[] tokens = x.split("\\s");
-		this.clientID = Integer.parseInt(tokens[0]);
+		this.clientID = new NodeId<String>(tokens[0]);
 		this.requestID = Integer.parseInt(tokens[1]);
 
 		this.stop = tokens[2].equals("1") ? true : false;
@@ -112,7 +114,8 @@ public class RequestPacket extends PaxosPacket {
 		this.createTime = json.getLong(CREATE_TIME);
 		this.replyToClient = json.getBoolean(REPLY_TO_CLIENT);
 		this.forwardCount = (json.has(FORWARD_COUNT) ? json.getInt(FORWARD_COUNT) : 0);
-		this.forwarderID = (json.has(FORWARDER_ID) ? json.getInt(FORWARDER_ID) : -1);
+		this.forwarderID = (json.has(FORWARDER_ID) ? new NodeId<String>(json.getString(FORWARDER_ID)) 
+                        : GNSNodeConfig.INVALID_NAME_SERVER_ID);
 		this.debugInfo = (json.has(DEBUG_INFO) ? json.getString(DEBUG_INFO) : "");
 	}
 
@@ -120,9 +123,9 @@ public class RequestPacket extends PaxosPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
 		if (stop) {
-			json.put(CLIENT_INFO, clientID + " " + requestID + " " + 1 + " " + requestValue);
+			json.put(CLIENT_INFO, clientID.get() + " " + requestID + " " + 1 + " " + requestValue);
 		} else {
-			json.put(CLIENT_INFO, clientID + " " + requestID + " " + 0 + " " + requestValue);
+			json.put(CLIENT_INFO, clientID.get() + " " + requestID + " " + 0 + " " + requestValue);
 		}
 		json.put(CREATE_TIME, this.createTime);
 		json.put(REPLY_TO_CLIENT, replyToClient);
@@ -154,8 +157,8 @@ public class RequestPacket extends PaxosPacket {
 	}
 	
 	public static void main(String[] args) {
-		RequestPacket req1 = new RequestPacket(23, "asd", true);
-		RequestPacket req2 = new RequestPacket(23, "asd", true);
+		RequestPacket req1 = new RequestPacket(new NodeId<String>(23), "asd", true);
+		RequestPacket req2 = new RequestPacket(new NodeId<String>(23), "asd", true);
 		assert(!req1.equals(req2));
 	}
 }

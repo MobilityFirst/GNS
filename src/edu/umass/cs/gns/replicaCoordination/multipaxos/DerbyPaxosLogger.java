@@ -1047,7 +1047,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			PaxosPacket[] packets = new PaxosPacket[numPackets];
 			long time =0;
 			int i=0;
-			int reqClientID=25; 
+			NodeId<String> reqClientID=new NodeId<String>(25); 
 			String reqValue = "26";
 			NodeId<String> nodeID = coordinator;
 			int k=1;
