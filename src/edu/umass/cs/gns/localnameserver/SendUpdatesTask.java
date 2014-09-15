@@ -9,6 +9,8 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
@@ -17,7 +19,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashSet;
-import java.util.Random;
 import java.util.TimerTask;
 
 /**
@@ -40,7 +41,7 @@ public class SendUpdatesTask extends TimerTask {
   private UpdatePacket updatePacket;
   private final int lnsReqID;
 
-  private HashSet<Integer> activesQueried;
+  private HashSet<NodeId<String>> activesQueried;
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
@@ -76,7 +77,7 @@ public class SendUpdatesTask extends TimerTask {
         // When the new actives are received, a new task in place of this task will be rescheduled.
         throw new CancelExecutorTaskException();
       }
-      int nameServerID = selectNS(cacheEntry);
+      NodeId<String> nameServerID = selectNS(cacheEntry);
 
       sendToNS(nameServerID);
 
@@ -154,8 +155,8 @@ public class SendUpdatesTask extends TimerTask {
     }
   }
 
-  private int selectNS(CacheEntry cacheEntry) {
-    int nameServerID;
+  private NodeId<String> selectNS(CacheEntry cacheEntry) {
+    NodeId<String> nameServerID;
     if (handler.getParameters().isLoadDependentRedirection()) {
       nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
@@ -169,9 +170,9 @@ public class SendUpdatesTask extends TimerTask {
     return nameServerID;
   }
 
-  private void sendToNS(int nameServerID) {
+  private void sendToNS(NodeId<String> nameServerID) {
 
-    if (nameServerID == -1) {
+    if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
 
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + activesQueried);

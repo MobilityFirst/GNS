@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.clientsupport.CommandResponse;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
@@ -43,7 +45,7 @@ public class CommandValueReturnPacket extends BasicPacket {
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private final int responder;
+  private final NodeId<String> responder;
   /**
    * Instrumentation - the request counter from the LNS)
    */
@@ -91,7 +93,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     this.requestCnt = json.getLong(REQUESTCNT);
     //
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
-    this.responder = json.optInt(RESPONDER, -1);
+    this.responder = json.has(RESPONDER) ? new NodeId<String>(json.getString(RESPONDER)) : GNSNodeConfig.INVALID_NAME_SERVER_ID;
   }
 
   /**
@@ -116,7 +118,7 @@ public class CommandValueReturnPacket extends BasicPacket {
       json.put(LNSROUNDTRIPTIME, LNSRoundTripTime);
     }
     // instrumentation
-    if (responder != -1) {
+    if (!responder.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       json.put(RESPONDER, responder);
     }
     return json;
@@ -138,7 +140,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     return LNSRoundTripTime;
   }
 
-  public int getResponder() {
+  public NodeId<String> getResponder() {
     return responder;
   }
 

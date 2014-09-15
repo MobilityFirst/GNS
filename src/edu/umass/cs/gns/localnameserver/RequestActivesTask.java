@@ -3,6 +3,8 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,14 +31,14 @@ public class RequestActivesTask extends TimerTask {
   /**number of messages sent to replica controllers*/
   private int numAttempts = 0;
   private String name;
-  private HashSet<Integer> nameServersQueried;
+  private HashSet<NodeId<String>> nameServersQueried;
   private int requestID;
 
   private long startTime;
 
   public RequestActivesTask(String name, int requestID) {
     this.name = name;
-    this.nameServersQueried = new HashSet<Integer>();
+    this.nameServersQueried = new HashSet<NodeId<String>>();
     this.requestID = requestID;
     this.startTime = System.currentTimeMillis();
   }
@@ -65,12 +67,12 @@ public class RequestActivesTask extends TimerTask {
       }
 
       // next primary to be queried
-      int primaryID = LocalNameServer.getClosestReplicaController(name, nameServersQueried);
-      if (primaryID == -1) {
+      NodeId<String> primaryID = LocalNameServer.getClosestReplicaController(name, nameServersQueried);
+      if (primaryID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
         // we clear this set to resend requests to the same set of name servers
         nameServersQueried.clear();
         primaryID = LocalNameServer.getClosestReplicaController(name, nameServersQueried);
-        if (primaryID == -1) {
+        if (primaryID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
           GNS.getLogger().severe("No primary NS available. name = " + name);
           throw  new CancelExecutorTaskException();
         }
@@ -97,14 +99,14 @@ public class RequestActivesTask extends TimerTask {
    * @param primaryID ID of name server
    * @param requestID requestID for <code>RequestActivesPacket</code>
    */
-  private void sendActivesRequestPacketToPrimary(String name, int primaryID, int requestID) {
+  private void sendActivesRequestPacketToPrimary(String name, NodeId<String> primaryID, int requestID) {
 
     RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getAddress(), requestID, primaryID);
     try
     {
       JSONObject sendJson = packet.toJSONObject();
       LocalNameServer.sendToNS(sendJson,primaryID);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID
+      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID.get()
               + "\tname\t" + name);
     } catch (JSONException e)
     {

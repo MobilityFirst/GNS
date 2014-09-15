@@ -9,6 +9,8 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
@@ -35,7 +37,7 @@ public class SendAddRemoveTask extends TimerTask {
   private final String name;
   private final BasicPacket packet;
   private final int lnsRequestID;
-  private final HashSet<Integer> replicaControllersQueried;
+  private final HashSet<NodeId<String>> replicaControllersQueried;
   private int timeoutCount = -1;
   private final long requestRecvdTime;
   private final ClientRequestHandlerInterface handler;
@@ -45,7 +47,7 @@ public class SendAddRemoveTask extends TimerTask {
     this.handler = handler;
     this.packet = packet;
     this.lnsRequestID = lnsRequestID;
-    this.replicaControllersQueried = new HashSet<Integer>();
+    this.replicaControllersQueried = new HashSet<NodeId<String>>();
     this.requestRecvdTime = requestRecvdTime;
   }
 
@@ -61,7 +63,7 @@ public class SendAddRemoveTask extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-      int nameServerID = selectNS();
+      NodeId<String> nameServerID = selectNS();
 
       sendToNS(nameServerID);
 
@@ -116,13 +118,13 @@ public class SendAddRemoveTask extends TimerTask {
     return false;
   }
 
-  private int selectNS() {
+  private NodeId<String> selectNS() {
     return handler.getClosestReplicaController(getName(), replicaControllersQueried);
   }
 
-  private void sendToNS(int nameServerID) {
+  private void sendToNS(NodeId<String> nameServerID) {
 
-    if (nameServerID == -1) {
+    if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + replicaControllersQueried);
       return;
     }

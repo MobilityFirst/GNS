@@ -713,14 +713,14 @@ public class ReplicaControllerRecord {
    *
    * @param id Name server id receiving the vote
    */
-  public void addReplicaSelectionVote(int id, int vote, int update) throws FieldNotFoundException, FailedDBOperationException { //
+  public void addReplicaSelectionVote(NodeId<String> id, int vote, int update) throws FieldNotFoundException, FailedDBOperationException { //
     replicaControllerDB.increment(getName(),
             ColumnField.keys(PREV_TOTAL_READ, PREV_TOTAL_WRITE),
             //incrementFields,
             ColumnField.values(vote, update),
             //incrementValues,
             VOTES_MAP,
-            ColumnField.keys(new ColumnField(Integer.toString(id), ColumnFieldType.INTEGER)),
+            ColumnField.keys(new ColumnField(id.get(), ColumnFieldType.INTEGER)),
             //votesMapKeys,
             ColumnField.values(vote) //votesMapValues
     );
@@ -926,11 +926,11 @@ public class ReplicaControllerRecord {
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();
     ReplicaControllerRecord record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
-    record.addReplicaSelectionVote(1, 5, 4);
-    record.addReplicaSelectionVote(1, 1, 4);
-    record.addReplicaSelectionVote(2, 2, 4);
-    record.addReplicaSelectionVote(3, 3, 4);
-    record.addReplicaSelectionVote(4, 4, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(1), 5, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(1), 1, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(2), 2, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(3), 3, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(4), 4, 4);
     record.addNameServerStats(1, 50, 75);
     record.addNameServerStats(2, 50, 75);
     System.out.println(record.toJSONObject().toString());
@@ -946,11 +946,11 @@ public class ReplicaControllerRecord {
     record.addNameServerStats(10, 50, 75);
     System.out.println("READ STATS: " + record.updateMovingWindowReadsWrites());
 
-    record.addReplicaSelectionVote(11, 5, 0);
-    record.addReplicaSelectionVote(11, 1, 0);
-    record.addReplicaSelectionVote(21, 2, 0);
-    record.addReplicaSelectionVote(13, 3, 0);
-    record.addReplicaSelectionVote(14, 4, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(11), 5, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(11), 1, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(21), 2, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(13), 3, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(14), 4, 0);
     record.addNameServerStats(11, 50, 75);
     record.addNameServerStats(12, 50, 75);
     System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(null, gnsNodeConfig, 3));

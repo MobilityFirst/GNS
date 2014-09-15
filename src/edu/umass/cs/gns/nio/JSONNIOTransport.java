@@ -5,6 +5,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -99,7 +100,7 @@ InterfaceJSONNIOTransport<NodeIDType> {
 	@Override
 	public int sendToID(NodeIDType id, JSONObject jsonData) throws IOException {
 		if (JSONDelayEmulator.isDelayEmulated()) {
-			JSONDelayEmulator.putEmulatedDelay((Integer)id, jsonData); // FIXME: This cast from NodeIDType to integer makes no sense
+			JSONDelayEmulator.putEmulatedDelay((NodeId<String>)id, jsonData); // FIXME: This cast from NodeIDType to NodeId<String> makes no sense
 		}
 		return sendToIDActual(id, jsonData);
 	}

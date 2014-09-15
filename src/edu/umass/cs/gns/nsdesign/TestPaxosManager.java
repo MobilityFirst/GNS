@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
@@ -42,7 +43,7 @@ public class TestPaxosManager extends AbstractPaxosManager {
 
   @Override
   public String propose(String paxosIDNoVersion, String value) {
-    RequestPacket requestPacket = new RequestPacket(0, value, false);
+    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, false);
 //    try {
 //      GNS.getLogger().info(" Size of value: " + value.length() + "\trequestpacket size " + requestPacket.toJSONObject().toString().length());
 //      GNS.getLogger().info(" String value: " + value);
@@ -55,7 +56,7 @@ public class TestPaxosManager extends AbstractPaxosManager {
 
   @Override
   public String proposeStop(String paxosIDNoVersion, String value, short version) {
-    RequestPacket requestPacket = new RequestPacket(0, value, true);
+    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, true);
     return paxosManager.proposeStop(paxosIDNoVersion, requestPacket.toString(), version);
   }
 

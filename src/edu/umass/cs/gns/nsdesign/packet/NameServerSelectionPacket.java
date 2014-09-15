@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +37,7 @@ public class NameServerSelectionPacket extends BasicPacketWithLnsAddress {
 //  private int localnameserverID;
 
   /** Closest name server id **/
-  private int nameserverID;
+  private NodeId<String> nameserverID;
 
   /** Name (service/host/domain or device name) **/
   private String name;
@@ -58,7 +59,7 @@ public class NameServerSelectionPacket extends BasicPacketWithLnsAddress {
    * @param uniqueID
    ************************************************************/
   public NameServerSelectionPacket(String name,
-		  int vote, int update, int nameserverID, InetSocketAddress lnsAddress) {
+		  int vote, int update, NodeId<String> nameserverID, InetSocketAddress lnsAddress) {
     super(lnsAddress);
     this.type = Packet.PacketType.NAMESERVER_SELECTION;
     this.name = name;
@@ -79,7 +80,7 @@ public class NameServerSelectionPacket extends BasicPacketWithLnsAddress {
     this.name = json.getString(NAME);
     this.vote = json.getInt(VOTE);
     this.update = json.getInt(UPDATE);
-    this.nameserverID = json.getInt(NAMESERVER_ID);
+    this.nameserverID = new NodeId<String>(json.getString(NAMESERVER_ID));
     //this.localnameserverID = json.getInt(LOCAL_NAMESERVER_ID);
   }
 
@@ -96,7 +97,7 @@ public class NameServerSelectionPacket extends BasicPacketWithLnsAddress {
     json.put(NAME, getName());
     json.put(VOTE, getVote());
     json.put(UPDATE, getUpdate());
-    json.put(NAMESERVER_ID, getNameserverID());
+    json.put(NAMESERVER_ID, getNameserverID().get());
     //json.put(LOCAL_NAMESERVER_ID, getLocalnameserverID());
     return json;
   }
@@ -111,7 +112,7 @@ public class NameServerSelectionPacket extends BasicPacketWithLnsAddress {
   /**
    * @return the nameserverID
    */
-  public int getNameserverID() {
+  public NodeId<String> getNameserverID() {
     return nameserverID;
   }
 

@@ -51,7 +51,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
    */
-  public final static int LOCAL_SOURCE_ID = -1;
+  public final static NodeId<String> LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
   /** 
    * Unique identifier used by the entity making the initial request to confirm
@@ -96,7 +96,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
-  private final int sourceId;
+  private final NodeId<String> sourceId;
 
   /**
    * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
@@ -121,7 +121,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    * @param lnsAddress
    * @param ttl TTL of name record.
    */
-  public AddRecordPacket(int sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
+  public AddRecordPacket(NodeId<String> sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
     super(lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
     this.sourceId = sourceId;
@@ -149,7 +149,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.getInt(SOURCE_ID);
+    this.sourceId = new NodeId<String>(json.getString(SOURCE_ID));
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = json.getString(RECORDKEY);
@@ -175,7 +175,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, getSourceId());
+    json.put(SOURCE_ID, sourceId.get());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(RECORDKEY, getRecordKey());
@@ -256,7 +256,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     this.nameServerID = nameServerID;
   }
 
-  public int getSourceId() {
+  public NodeId<String> getSourceId() {
     return sourceId;
   }
 

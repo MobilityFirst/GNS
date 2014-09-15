@@ -149,7 +149,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         GNS.getLogger().info("SUCCESS: Name lookup returned updated value");
 
         // remove name
-        RemoveRecordPacket removePacket = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, ++reqCount, name, null);
+        RemoveRecordPacket removePacket = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, ++reqCount, name, null);
         dbClient.sendRequest(removePacket.toJSONObject());
         waitForResponse();
         confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);

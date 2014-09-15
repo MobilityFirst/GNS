@@ -8,6 +8,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
@@ -204,8 +205,8 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
 
                 break;
               case PINGTABLE:
-                int node = Integer.parseInt(adminRequestPacket.getArgument());
-                if (node == gnsReconfigurable.getNodeID()) {
+                NodeId<String> node = new NodeId<String>(adminRequestPacket.getArgument());
+                if (node.equals(gnsReconfigurable.getNodeID())) {
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", gnsReconfigurable.getPingManager().tableToString(gnsReconfigurable.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
@@ -216,9 +217,9 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                 }
                 break;
               case PINGVALUE:
-                int node1 = Integer.parseInt(adminRequestPacket.getArgument());
-                int node2 = Integer.parseInt(adminRequestPacket.getArgument2());
-                if (node1 == gnsReconfigurable.getNodeID()) {
+                NodeId<String> node1 = new NodeId<String>(adminRequestPacket.getArgument());
+                NodeId<String> node2 = new NodeId<String>(adminRequestPacket.getArgument2());
+                if (node1.equals(gnsReconfigurable.getNodeID())) {
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", gnsReconfigurable.getPingManager().nodeAverage(node2));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
@@ -269,7 +270,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
    * @throws JSONException
    */
   private void sendactiveNameServerInfo(ActiveNameServerInfoPacket activeNSInfoPacket,
-          Socket socket, int numRequest, Set<Integer> activeNameServers) throws IOException, JSONException {
+          Socket socket, int numRequest, Set<NodeId<String>> activeNameServers) throws IOException, JSONException {
     activeNSInfoPacket.setActiveNameServers(activeNameServers);
     activeNSInfoPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
     Packet.sendTCPPacket(activeNSInfoPacket.toJSONObject(), socket);

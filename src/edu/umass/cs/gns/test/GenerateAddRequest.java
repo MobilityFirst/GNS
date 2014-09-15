@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.util.ResultValue;
@@ -42,7 +43,7 @@ class GenerateAddRequest extends TimerTask {
 
     ResultValue newValue = new ResultValue();
     newValue.add(Util.randomString(objectSizeKB));
-    AddRecordPacket packet = new AddRecordPacket(-1, requestCount, name, "EdgeRecord", newValue, null, ttl);
+    AddRecordPacket packet = new AddRecordPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, requestCount, name, "EdgeRecord", newValue, null, ttl);
 
     if (activeNameServers != null) packet.setActiveNameServers(activeNameServers);
 

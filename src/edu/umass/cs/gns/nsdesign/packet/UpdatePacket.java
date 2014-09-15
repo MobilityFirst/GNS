@@ -65,7 +65,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
    */
-  public final static int LOCAL_SOURCE_ID = -1;
+  public final static NodeId<String> LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
   //
   // We have two ids in here. First one (requestID) is used by the entity making the initial request (often the intercessor).
   // Second (LNSRequestID) is used by the LNS to keep track of it's update records.
@@ -125,7 +125,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
-  private int sourceId;
+  private NodeId<String> sourceId;
   /**
    * Time to live
    */
@@ -149,7 +149,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    * @param signature
    * @param message
    */
-  public UpdatePacket(int sourceId, int requestID, String name, String recordKey,
+  public UpdatePacket(NodeId<String> sourceId, int requestID, String name, String recordKey,
           ResultValue newValue, ResultValue oldValue, int argument, UpdateOperation operation, InetSocketAddress lnsAddress, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, null, operation, lnsAddress, 
@@ -172,7 +172,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    * @param signature
    * @param message
    */
-  public UpdatePacket(int sourceId, int requestID, String name, ValuesMap userJSON, UpdateOperation operation, InetSocketAddress lnsAddress, int ttl,
+  public UpdatePacket(NodeId<String> sourceId, int requestID, String name, ValuesMap userJSON, UpdateOperation operation, InetSocketAddress lnsAddress, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, null, null, null, -1, userJSON, operation, lnsAddress, 
             GNSNodeConfig.INVALID_NAME_SERVER_ID, ttl,
@@ -198,7 +198,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    * @param signature
    * @param message
    */
-  public UpdatePacket(int sourceId, int requestID, String name, String recordKey,
+  public UpdatePacket(NodeId<String> sourceId, int requestID, String name, String recordKey,
           ResultValue newValue, ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation, InetSocketAddress lnsAddress, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, userJSON, operation, lnsAddress, 
@@ -228,7 +228,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    * @param message
    */
   public UpdatePacket(
-          int sourceId,
+          NodeId<String> sourceId,
           int requestID, int LNSRequestID,
           String name, String recordKey,
           ResultValue newValue,
@@ -268,7 +268,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
     super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
             json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.getInt(SOURCE_ID);
+    this.sourceId = new NodeId<String>(json.getString(SOURCE_ID));
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
 //    this.NSRequestID = json.getInt(NameServerREQUESTID);
@@ -310,7 +310,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
     json.put(REQUESTID, requestID);
-    json.put(SOURCE_ID, sourceId);
+    json.put(SOURCE_ID, sourceId.get());
     json.put(LocalNSREQUESTID, LNSRequestID);
     json.put(NAME, name);
     if (recordKey != null) {
@@ -417,7 +417,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
     this.nameServerId = nameServerId;
   }
 
-  public int getSourceId() {
+  public NodeId<String> getSourceId() {
     return sourceId;
   }
 
@@ -449,7 +449,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
     ResultValue x = new ResultValue();
     x.add("12345678");
     //
-    UpdatePacket up = new UpdatePacket(-1, 32234234, 123, "12322323",
+    UpdatePacket up = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 32234234, 123, "12322323",
             "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, new NodeId<String>("123"),
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
 

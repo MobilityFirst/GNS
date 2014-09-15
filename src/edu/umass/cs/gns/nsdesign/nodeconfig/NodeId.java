@@ -54,7 +54,7 @@ public class NodeId<NodeItemType> implements Comparable<NodeId<NodeItemType>>{
   // so we don't miss any places for now
   @Override
   public String toString() {
-    GNS.getLogger().warning("toString called... use get() instead for now.");
+    GNS.getLogger().warning("toString called in " + Thread.currentThread().getStackTrace()[2].toString() + " use get() instead for now.");
     return id.toString();
   }
 

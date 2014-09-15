@@ -9,6 +9,7 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -44,7 +45,8 @@ public class AddRemove {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
     int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), System.currentTimeMillis(), -1, addRecordPacket);
+    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), System.currentTimeMillis(), 
+            GNSNodeConfig.INVALID_NAME_SERVER_ID, addRecordPacket);
     LocalNameServer.addRequestInfo(lnsReqID, info);
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
@@ -68,7 +70,8 @@ public class AddRemove {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
     int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), System.currentTimeMillis(), -1, removeRecord);
+    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), System.currentTimeMillis(), 
+            GNSNodeConfig.INVALID_NAME_SERVER_ID, removeRecord);
     LocalNameServer.addRequestInfo(lnsReqID, info);
 
     SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, handler, removeRecord, removeRecord.getName(),

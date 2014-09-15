@@ -314,7 +314,7 @@ public class Intercessor implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.INTERCESSOR_SOURCE_ID, id, name, LocalNameServer.getAddress());
+    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, id, name, LocalNameServer.getAddress());
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);

@@ -35,7 +35,7 @@ class GenerateUpdateRequest extends TimerTask {
     ResultValue newValue = new ResultValue();
     newValue.add(Util.randomString(objectSizeBytes));
     //ignore signature info
-    UpdatePacket updateAddressPacket = new UpdatePacket(-1, updateCount, updateCount, name, "EdgeRecord",
+    UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, updateCount, updateCount, name, "EdgeRecord",
             newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, GNSNodeConfig.INVALID_NAME_SERVER_ID, GNS.DEFAULT_TTL_SECONDS, null, null, null);
     try {
       packetDemultiplexer.handleJSONObject(updateAddressPacket.toJSONObject());

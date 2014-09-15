@@ -36,7 +36,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
    */
-  public final static int INTERCESSOR_SOURCE_ID = -1;
+  public final static NodeId<String> LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
   /**
    * Unique identifier used by the entity making the initial request to confirm
@@ -67,7 +67,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
-  private final int sourceId;
+  private final NodeId<String> sourceId;
 
 
   /**
@@ -78,7 +78,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
    * @param name Host/domain/device name
    * @param lnsAddress
    */
-  public RemoveRecordPacket(int sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
+  public RemoveRecordPacket(NodeId<String> sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
     super(lnsAddress);
     this.type = Packet.PacketType.REMOVE_RECORD;
     this.sourceId = sourceId;
@@ -101,7 +101,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.getInt(SOURCE_ID);
+    this.sourceId = new NodeId<String>(json.getString(SOURCE_ID));
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
@@ -120,7 +120,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, getSourceId());
+    json.put(SOURCE_ID, sourceId.get());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(NAME, getName());
@@ -170,7 +170,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
     this.nameServerID = nameServerID;
   }
 
-  public int getSourceId() {
+  public NodeId<String> getSourceId() {
     return sourceId;
   }
 

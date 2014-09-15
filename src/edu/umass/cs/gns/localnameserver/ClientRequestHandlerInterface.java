@@ -7,6 +7,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
@@ -205,7 +206,7 @@ public interface ClientRequestHandlerInterface {
    * @param name
    * @return
    */
-  public Set<Integer> getReplicaControllers(String name);
+  public Set<NodeId<String>> getReplicaControllers(String name);
   
   /**
    **
@@ -216,7 +217,7 @@ public interface ClientRequestHandlerInterface {
    * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
    *
    */
-  public int getClosestReplicaController(String name, Set<Integer> nameServersQueried);
+  public NodeId<String> getClosestReplicaController(String name, Set<NodeId<String>> nameServersQueried);
 
   /**
    * Send packet to NS
@@ -224,7 +225,7 @@ public interface ClientRequestHandlerInterface {
    * @param json
    * @param ns
    */
-  public void sendToNS(JSONObject json, int ns); 
+  public void sendToNS(JSONObject json, NodeId<String> ns); 
 
   /**
    * Send a JSON packet to an IP address / port.

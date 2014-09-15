@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.commands.CommandProcessor;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -29,7 +30,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   private int intervalCount = 0;
 
-  public NSPacketDemultiplexer(final NameServer nameServer, final int nodeID) {
+  public NSPacketDemultiplexer(final NameServer nameServer, final NodeId<String> nodeID) {
     this.nameServer = nameServer;
     this.nameServer.getExecutorService().scheduleAtFixedRate(new TimerTask() {
       @Override
@@ -37,7 +38,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
         intervalCount += 1;
 
         GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount " +
-                (getMsgCount() - prevMsgCount) + " Node " + nodeID + " ");
+                (getMsgCount() - prevMsgCount) + " Node " + nodeID.get() + " ");
         prevMsgCount = msgCount;
       }
     },0, 10, TimeUnit.SECONDS);
