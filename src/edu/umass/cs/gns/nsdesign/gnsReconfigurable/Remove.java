@@ -130,7 +130,7 @@ public class Remove {
                                                                   GnsReconfigurable gnsApp, boolean recovery)
           throws JSONException, IOException {
     // confirm to primary name server that this set of actives has stopped
-    if (oldActiveStopPacket.getActiveReceiver() == gnsApp.getNodeID()) {
+    if (oldActiveStopPacket.getActiveReceiver().equals(gnsApp.getNodeID())) {
       // the active node who received this node, sends confirmation to primary
       // confirm to primary
       oldActiveStopPacket.changePacketTypeToActiveRemoved();

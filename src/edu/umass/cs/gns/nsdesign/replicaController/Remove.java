@@ -76,7 +76,7 @@ public class Remove {
           //  this name is in progress concurrently.
           if (Config.debuggingEnabled) GNS.getLogger().fine("Name Record marked for removal " + removeRecord);
 
-          if (removeRecord.getNameServerID() == rc.getNodeID()) { // this node received packet from client,
+          if (removeRecord.getNameServerID().equals(rc.getNodeID())) { // this node received packet from client,
             // so it will inform actives
             assert rcRecord.isActiveRunning(); // active must be running
             StopActiveSetTask stopActiveSetTask = new StopActiveSetTask(removeRecord.getName(),
@@ -104,7 +104,7 @@ public class Remove {
       if (Config.debuggingEnabled) GNS.getLogger().severe("Field Not Found Exception. " + e.getMessage());
       e.printStackTrace();
     }
-    if (removeRecord.getNameServerID() == rc.getNodeID() && sendError & !recovery) {
+    if (removeRecord.getNameServerID().equals(rc.getNodeID()) && sendError & !recovery) {
       ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(respCode, removeRecord);
       rc.getNioServer().sendToAddress(removeRecord.getLnsAddress(), failPacket.toJSONObject());
     }
@@ -143,7 +143,7 @@ public class Remove {
     if (Config.debuggingEnabled) GNS.getLogger().fine("DECISION executing remove record at RC: " + removeRecordPacket);
     rc.getDB().removeNameRecord(removeRecordPacket.getName());
 
-    if (removeRecordPacket.getNameServerID() == rc.getNodeID() && !recovery) { // this will be true at the replica controller who
+    if (removeRecordPacket.getNameServerID().equals(rc.getNodeID()) && !recovery) { // this will be true at the replica controller who
       // first received the client's request
       ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
       rc.getNioServer().sendToAddress(removeRecordPacket.getLnsAddress(), confirmPacket.toJSONObject());

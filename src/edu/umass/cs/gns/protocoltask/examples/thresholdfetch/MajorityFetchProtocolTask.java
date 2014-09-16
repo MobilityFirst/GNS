@@ -117,7 +117,7 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<NodeId<Stri
   }
 
   private boolean handlePong(PingPongPacket pong) {
-    assert (pong.getInitiator() == this.myID);
+    assert (pong.getInitiator().equals(this.myID));
     pong.incrCounter();
     NodeId<String> sender = pong.flip(this.myID);
     log.info("Node" + myID + " protocol task received pong from " + sender + ": " + pong);

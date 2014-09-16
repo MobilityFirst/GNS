@@ -179,7 +179,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
 
   boolean sendToIDActual(NodeId<String> destID, JSONObject json) throws IOException {
 
-    if (destID == ID) { // to send to same node, directly call the demultiplexer
+    if (destID.equals(ID)) { // to send to same node, directly call the demultiplexer
       workerObject.getPacketDemux().handleJSONObject(json);
       return true;
     }

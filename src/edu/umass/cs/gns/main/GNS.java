@@ -84,11 +84,11 @@ public class GNS {
   /**
    * Logging level for main logger
    */
-  public static String fileLoggingLevel = "INFO"; // should be INFO for production use
+  public static String fileLoggingLevel = "FINE"; // should be INFO for production use
   /**
    * Console output level for main logger
    */
-  public static String consoleOutputLevel = "INFO"; //should be INFO for production use
+  public static String consoleOutputLevel = "FINE"; //should be INFO for production use
   /**
    * Logging level for stat logger
    */

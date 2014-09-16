@@ -109,7 +109,7 @@ public class PingPongProtocolTask extends PingPongServer {
    * ************************* Private or testing methods below ********************************
    */
   private MessagingTask handlePingPong(PingPongPacket ppp) {
-    assert (ppp.getInitiator() == this.myID);
+    assert (ppp.getInitiator().equals(this.myID));
     return handlePong(ppp);
   }
 

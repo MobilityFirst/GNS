@@ -77,11 +77,11 @@ public class PingManager implements Shutdownable {
         try {
           if (!id.equals(nodeId)) {
             if (debug) {
-              GNS.getLogger().fine("Send from " + nodeId + " to " + id);
+              GNS.getLogger().fine("Send from " + nodeId.get() + " to " + id);
             }
             long rtt = pingClient.sendPing(id);
             if (debug) {
-              GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
+              GNS.getLogger().fine("From " + nodeId.get() + " to " + id + " RTT = " + rtt);
             }
             pingTable.put(id, windowSlot, rtt);
             //pingTable[id][windowSlot] = rtt;
@@ -95,7 +95,7 @@ public class PingManager implements Shutdownable {
         }
       }
       long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
-      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId + "\t");
+      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId.get() + "\t");
       if (debug) {
         GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
       }
@@ -140,17 +140,17 @@ public class PingManager implements Shutdownable {
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
-    for (NodeId<String> i : gnsNodeConfig.getNodeIDs()) {
-      result.append(String.format("%4d", i));
-      if (i != node) {
+    for (NodeId<String> otherNode : gnsNodeConfig.getNodeIDs()) {
+      result.append(String.format("%4d", otherNode));
+      if (!otherNode.equals(node)) {
         result.append(" = ");
-        result.append(String.format("%d", nodeAverage(i)));
+        result.append(String.format("%d", nodeAverage(otherNode)));
         result.append(" : ");
         // not print out all the samples... just do it in array order 
         // maybe do it in time order someday if we want to be cute
         for (int j = 0; j < WINDOWSIZE; j++) {
-          if (pingTable.get(i, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
-            result.append(String.format("%3d", pingTable.get(i, j)));
+          if (pingTable.get(otherNode, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
+            result.append(String.format("%3d", pingTable.get(otherNode, j)));
           } else {
             result.append("  X");
           }
@@ -160,7 +160,7 @@ public class PingManager implements Shutdownable {
         // for this node just output something useful
         result.append("  {this node }                                   ");
       }
-      result.append(gnsNodeConfig.getNodeAddress(i).getHostName());
+      result.append(gnsNodeConfig.getNodeAddress(otherNode).getHostName());
       result.append(NEWLINE);
     }
     return result.toString();

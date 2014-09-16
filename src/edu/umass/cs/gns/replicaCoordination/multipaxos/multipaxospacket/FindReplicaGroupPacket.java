@@ -91,7 +91,7 @@ public class FindReplicaGroupPacket extends PaxosPacket {
       FindReplicaGroupPacket frgReply = new FindReplicaGroupPacket(members, frg);
       System.out.println(frgReply.toJSONObject());
       FindReplicaGroupPacket frgReplyCopy = new FindReplicaGroupPacket(frgReply.toJSONObject());
-      assert (frgReply.nodeID == frgReplyCopy.nodeID);
+      assert (frgReply.nodeID.equals(frgReplyCopy.nodeID));
       assert (frgReply.group.length == frgReplyCopy.group.length);
       System.out.println(frgReplyCopy.toJSONObject());
     } catch (Exception e) {

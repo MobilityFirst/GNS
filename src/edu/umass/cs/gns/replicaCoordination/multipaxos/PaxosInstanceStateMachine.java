@@ -702,7 +702,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				checkpointed = true;
 				log.info(this.getNodeState() + " forcing checkpoint at slot " + this.paxosState.getSlot() + 
 						"; garbage collected accepts upto slot " + this.paxosState.getGCSlot() + "; max committed slot = " + 
-						this.paxosState.getMaxCommittedSlot() + (this.paxosState.getBallotCoord()==myID ? 
+						this.paxosState.getMaxCommittedSlot() + (this.paxosState.getBallotCoord().equals(myID) ? 
 								"; maxCommittedFrontier="+this.coordinator.getMajorityCommittedSlot() : ""));
 				this.forceStop();
 			}
@@ -764,11 +764,11 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 *   OR forceRun
 		 */
 		if((!this.coordinator.exists(curBallot) && !this.coordinator.ranRecently() && 
-				(curBallot.coordinatorID==this.myID // can happen during recovery
+				(curBallot.coordinatorID.equals(this.myID) // can happen during recovery
 				|| 
 				(!this.paxosManager.isNodeUp(curBallot.coordinatorID) 
 						&& 
-						(this.myID==getNextCoordinator(curBallot.ballotNumber+1, this.groupMembers) 
+						(this.myID.equals(getNextCoordinator(curBallot.ballotNumber+1, this.groupMembers)) 
 						|| 
 						paxosManager.lastCoordinatorLongDead(curBallot.coordinatorID)))))
 						|| forceRun) 
@@ -789,7 +789,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			 * than the typical node failure detection timeout). 
 			 */
 			log.info(getNodeState() + " decides to run for coordinator as node " + curBallot.coordinatorID + 
-					(curBallot.coordinatorID!=myID ? " appears to be dead" : " has not yet initialized its coordinator"));
+					(!curBallot.coordinatorID.equals(myID) ? " appears to be dead" : " has not yet initialized its coordinator"));
 			Ballot newBallot = new Ballot(curBallot.ballotNumber+1, this.myID); 
 			if(this.coordinator.makeCoordinator(newBallot.ballotNumber, newBallot.coordinatorID, 
 					this.groupMembers, this.paxosState.getSlot(), false)!=null) {
@@ -851,7 +851,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		SyncDecisionsPacket srp =  new SyncDecisionsPacket(this.myID, maxDecision, missingSlotNumbers, 
 				maxDecision-this.paxosState.getSlot() >= MAX_SYNC_GAP);
 
-		MessagingTask mtask = coordinatorID!=this.myID ? new MessagingTask(coordinatorID, srp) :
+		MessagingTask mtask = !coordinatorID.equals(this.myID) ? new MessagingTask(coordinatorID, srp) :
 			new MessagingTask(otherGroupMembers(), srp); // send sync request to coordinator or multicast to all but me
 		return mtask;
 	}
@@ -923,7 +923,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private void testingNoRecovery() {
 		int initSlot = 0;
 		this.coordinator = new PaxosCoordinator();
-		if(this.groupMembers[0]==this.myID) coordinator.makeCoordinator(0, this.groupMembers[0], groupMembers, initSlot, true);
+		if(this.groupMembers[0].equals(this.myID)) coordinator.makeCoordinator(0, this.groupMembers[0], groupMembers, initSlot, true);
 		this.paxosState = new PaxosAcceptor(0, this.groupMembers[0],initSlot,null);
 	}
 

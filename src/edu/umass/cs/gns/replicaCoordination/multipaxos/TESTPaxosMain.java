@@ -83,7 +83,7 @@ public class TESTPaxosMain {
 			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
 			NodeId<String> myID = (args!=null && args.length>0 ? new NodeId<String>(Integer.parseInt(args[0]))
                                 : GNSNodeConfig.INVALID_NAME_SERVER_ID);
-			assert(myID==GNSNodeConfig.INVALID_NAME_SERVER_ID) : "Cannot specify node ID for local test with TESTPaxosMain";
+			assert(myID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) : "Cannot specify node ID for local test with TESTPaxosMain";
 
 			TESTPaxosMain tpMain=null;
 			tpMain = new TESTPaxosMain(); // creates all nodes, each with its paxos manager and app

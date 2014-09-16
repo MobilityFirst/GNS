@@ -81,7 +81,7 @@ public class StartLocalNameServer {
   /**
    * * Set to true for more verbose logging level.
    */
-  public static boolean debugMode = false;
+  public static boolean debugMode = true;
 
   /**
    * * Used for running experiments for Auspice paper.

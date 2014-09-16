@@ -257,7 +257,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		Collections.shuffle(copy, r);
 		for (NodeId<String> id : copy) {
 			if (gnsNodeConfig.getPingLatency(id) < UNDOCUMENTED_DELAY_PARAMETER) // FIXME: What is this???
-				return id == myID;
+				return id.equals(myID);
 		}
 		return false;
 	}

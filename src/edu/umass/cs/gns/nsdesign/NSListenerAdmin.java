@@ -78,7 +78,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
+    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID().get() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();

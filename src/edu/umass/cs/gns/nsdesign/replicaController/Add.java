@@ -65,7 +65,8 @@ public class Add {
     try {
       ReplicaControllerRecord.addNameRecordPrimary(replicaController.getDB(), rcRecord);
 
-      if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
+      //FUCK THIS SHIT!!!
+      if (addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
         if (!recovery) {
           // change packet type and inform all active replicas.
           addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
@@ -86,11 +87,11 @@ public class Add {
 //    } catch (FailedDBOperationException e) {
 //      // send error to client
 //      ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
-//      if (!recovery && addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
+//      if (!recovery && addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
 //        replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
 //      }
     } catch (RecordExistsException e) {
-      if (addRecordPacket.getNameServerID() == replicaController.getNodeID()) {
+      if (addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
         // send error to client
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
         if (Config.debuggingEnabled)

@@ -60,7 +60,7 @@ public class RequestPacket extends PaxosPacket implements Serializable {
       return false;
     }
     RequestPacket other = (RequestPacket) obj;
-    if (other.clientID == this.clientID && other.requestID == this.requestID
+    if (other.clientID.equals(this.clientID) && other.requestID == this.requestID
             && other.value.equals(this.value)) {
       return true;
     }

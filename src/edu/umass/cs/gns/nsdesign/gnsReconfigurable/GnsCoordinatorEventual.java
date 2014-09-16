@@ -74,7 +74,7 @@ public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
 
           UpdatePacket update = new UpdatePacket(request);
           Set<NodeId<String>> nodeIDs = paxosManager.getPaxosNodeIDs(update.getName());
-          if (update.getNameServerId() == nodeID && nodeIDs!= null) {
+          if (update.getNameServerId().equals(nodeID) && nodeIDs!= null) {
             for (NodeId<String> x: nodeIDs) {
               if (!x.equals(nodeID))
                 nioTransport.sendToID(x,update.toJSONObject());

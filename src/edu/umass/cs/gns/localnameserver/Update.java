@@ -122,12 +122,12 @@ public class Update {
   }
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
-    if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
+    if (packet.getReturnTo().equals(DNSPacket.LOCAL_SOURCE_ID)) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       
       LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + 
+      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo().get() + 
               ":" + packet.toJSONObject().toString());
       
       try {

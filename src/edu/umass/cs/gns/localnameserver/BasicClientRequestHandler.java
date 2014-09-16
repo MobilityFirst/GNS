@@ -24,6 +24,7 @@ import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.MovingAverage;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONObject;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -363,14 +364,14 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   @Override
   public NodeId<String> getClosestReplicaController(String name, Set<NodeId<String>> nameServersQueried) {
     try {
-      Set<NodeId<String>> primary = getReplicaControllers(name);
+      Set<NodeId<String>> primaries = getReplicaControllers(name);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().fine("Primary Name Servers: " + primary.toString() + " for name: " + name);
+        GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
       }
 
-      NodeId<String> x = gnsNodeConfig.getClosestServer(primary, nameServersQueried);
+      NodeId<String> x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().fine("Closest Primary Name Server: " + x + " NS Queried: " + nameServersQueried);
+        GNS.getLogger().info("Closest Primary Name Server: " + x.get() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
       return x;
     } catch (Exception e) {

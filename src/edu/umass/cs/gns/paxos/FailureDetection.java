@@ -270,7 +270,6 @@ public class FailureDetection {
    * @param monitoredNode
    */
   void notifyNodeOfStatusChange(NodeId<String> monitoredNode) {
-//		 if (monitoredNode == 0) GNS.getLogger().severe("FDEnter ... ");
     FailureDetectionPacket fdPacket = null;
     lock.lock();
     try {
@@ -278,7 +277,6 @@ public class FailureDetection {
         boolean status = nodeStatus.get(monitoredNode);
         long val = nodeInfo.get(monitoredNode);
         long delay = System.currentTimeMillis() - val;
-//				if (monitoredNode == 0) GNS.getLogger().fine(nodeID + " status " + status + " delay " + delay);
 
         if (delay < timeoutIntervalMillis && status == false) {
           // case 1: node is up

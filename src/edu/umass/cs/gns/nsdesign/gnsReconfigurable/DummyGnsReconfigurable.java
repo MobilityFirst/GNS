@@ -135,7 +135,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   private void executeRemoveLocal(OldActiveSetStopPacket oldActiveStopPacket) throws JSONException, IOException {
-    if (oldActiveStopPacket.getActiveReceiver() == nodeID) {
+    if (oldActiveStopPacket.getActiveReceiver().equals(nodeID)) {
       // the active node who received this node, sends confirmation to primary
       // confirm to primary
       oldActiveStopPacket.changePacketTypeToActiveRemoved();
@@ -155,7 +155,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       returnJson = failConfirmPacket.toJSONObject();
     } else {
-      if (updatePacket.getNameServerId() == nodeID) {
+      if (updatePacket.getNameServerId().equals(nodeID)) {
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                 updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
                 NSResponseCode.NO_ERROR);

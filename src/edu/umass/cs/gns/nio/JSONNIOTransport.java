@@ -132,9 +132,10 @@ InterfaceJSONNIOTransport<NodeIDType> {
 			throws IOException {
 		int written = 0;
 		stampSenderIP(jsonData);
-		if (destID == this.myID) {
+		if (destID.equals(this.myID)) {
 			written = sendLocal(jsonData);
 		} else {
+                  System.out.println("######### " + jsonData.toString());
 			String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
 			written = this.sendUnderlying(destID, headeredMsg.getBytes())
 					- (headeredMsg.length() - jsonData.toString().length()); // subtract header length

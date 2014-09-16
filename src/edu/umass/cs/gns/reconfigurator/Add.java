@@ -70,7 +70,7 @@ public class Add {
 				LNSMTask = new MessagingTask(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
 			}
 		} catch (RecordExistsException e) {
-			if (addRecordPacket.getNameServerID() == rcID) {
+			if (addRecordPacket.getNameServerID().equals(rcID)) {
 				// send ERROR to LNS
 				ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
 				if (Config.debuggingEnabled) log.fine("Record exists. sending failure: name = " + addRecordPacket.getName() + 
@@ -98,7 +98,7 @@ public class Add {
 	}
 	// FIXME: separate method because this should not matter and should always return false
 	private static boolean colocatedActiveAndReplicaController(AddRecordPacket addPacket, NodeId<String> rcID) {
-		return addPacket.getNameServerID() == rcID;
+		return addPacket.getNameServerID().equals(rcID);
 	}
 	
 	/**

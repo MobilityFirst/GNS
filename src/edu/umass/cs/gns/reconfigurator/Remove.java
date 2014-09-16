@@ -80,7 +80,7 @@ public class Remove {
               removeRecord.getName(), applyMarkedForRemovalFields);
       rcRecord.setMarkedForRemoval(); // FIXME: should return boolean value if this can fail
       // check if record marked as removed; it may not be if a group change for this name is in progress.
-      if (rcRecord.isMarkedForRemoval() && removeRecord.getNameServerID() == rcID && !recovery) {
+      if (rcRecord.isMarkedForRemoval() && removeRecord.getNameServerID().equals(rcID) && !recovery) {
         // if marked for removal and this node received packet from client and not recover, inform actives
         if (Config.debuggingEnabled) {
           log.info("Node " + rcID + " marked for removal: " + removeRecord);
@@ -94,7 +94,7 @@ public class Remove {
       } else if (!rcRecord.isMarkedForRemoval()) {
         sendError = true;
         log.info("Remove record not executed because group change for the name is in progress " + removeRecord);
-      } else if (removeRecord.getNameServerID() != rcID) {
+      } else if (!removeRecord.getNameServerID().equals(rcID)) {
         if (Config.debuggingEnabled) {
           log.info("SKIP: remove record request does not not contain node ID " + rcRecord.getName());
         }
@@ -111,7 +111,7 @@ public class Remove {
       }
       e.printStackTrace();
     } finally {
-      if (sendError && removeRecord.getNameServerID() == rcID) {
+      if (sendError && removeRecord.getNameServerID().equals(rcID)) {
         ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
         replyToLNS = new MessagingTask(removeRecord.getLnsAddress(), failPacket.toJSONObject());
       }

@@ -60,7 +60,7 @@ public class GroupChange {
   public static void handleStopProcessed(OldActiveSetStopPacket stopPacket, ActiveReplica<?> activeReplica) {
     try {
       // confirm to primary name server that this set of actives has stopped
-      if (stopPacket.getActiveReceiver() == activeReplica.getNodeID()) {
+      if (stopPacket.getActiveReceiver().equals(activeReplica.getNodeID())) {
         // the active node who received this node, sends confirmation to primary
         // confirm to primary
         stopPacket.changePacketTypeToConfirm();
@@ -138,7 +138,7 @@ public class GroupChange {
     if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: forwarded msg to nodes; "
             + packet.getNewActiveNameServers());
     for (NodeId<String> nodeID: packet.getNewActiveNameServers()) {
-      if (activeReplica.getNodeID() != nodeID) { // exclude myself
+      if (!activeReplica.getNodeID().equals(nodeID)) { // exclude myself
         activeReplica.getNioServer().sendToID(nodeID, packet.toJSONObject());
       }
     }

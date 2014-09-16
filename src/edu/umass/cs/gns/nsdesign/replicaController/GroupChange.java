@@ -141,12 +141,12 @@ public class GroupChange {
 
       GNS.getLogger().fine("Name Record Now: = " + rcRecord.toString());
       if (!recovery) {
-        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID() && activeProposalPacket.getLnsAddress() != null) {
+        if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID()) && activeProposalPacket.getLnsAddress() != null) {
           GNS.getLogger().info("Putting packet in hash map: " + activeProposalPacket);
           trackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), activeProposalPacket.getVersion()), activeProposalPacket.getLnsAddress());
         }
         // Next step: stop old actives
-        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID()) {// if I have proposed this change, I will start actives group change process
+        if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID())) {// if I have proposed this change, I will start actives group change process
           GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
                   + activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
           // todo could use failure detector here

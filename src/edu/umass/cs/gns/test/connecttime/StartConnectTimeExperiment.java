@@ -10,10 +10,10 @@ import edu.umass.cs.gns.test.WorkloadParams;
 public class StartConnectTimeExperiment {
 
   public static void startTest(NodeId<String> nodeID, WorkloadParams workloadParams) {
-    if (nodeID == workloadParams.getMobileId()) {
+    if (nodeID.equals(workloadParams.getMobileId())) {
       new Thread(new Mobile(workloadParams.getMobileUpdateInterval())).start();
     }
-    if (nodeID == workloadParams.getCorrespondentId()) {
+    if (nodeID.equals(workloadParams.getCorrespondentId())) {
       new Thread(new Correspondent(workloadParams.getMobileId())).start();
     }
   }

@@ -270,7 +270,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
 
     coordinatorBallot = new Ballot(0, getInitialCoordinatorReplica());
     debugMode = paxosManager.isDebugMode();
-    if (coordinatorBallot.coordinatorID == nodeID) activeCoordinator = true;
+    if (coordinatorBallot.coordinatorID.equals(nodeID)) activeCoordinator = true;
 
     if (debugMode) GNS.getLogger().fine("Default coordinator chosen as: " + coordinatorBallot);
   }
@@ -517,9 +517,9 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
     try {
       acceptorLock.lock();
 
-      if (acceptorBallot.coordinatorID == nodeID) {
+      if (acceptorBallot.coordinatorID.equals(nodeID)) {
         startScout = true;
-      } else if (!paxosManager.isNodeUp(acceptorBallot.coordinatorID) && getNextCoordinatorReplica() == nodeID) {
+      } else if (!paxosManager.isNodeUp(acceptorBallot.coordinatorID) && getNextCoordinatorReplica().equals(nodeID)) {
         startScout = true;
       }
     } finally {
@@ -1460,7 +1460,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
           acceptorLock.unlock();
         }
         // if I should be next coordinator based on set of nodes active, I will try to get reelected as coordinator.
-        if (getNextCoordinatorReplica() == nodeID) initScout();
+        if (getNextCoordinatorReplica().equals(nodeID)) initScout();
       }
     }
 
@@ -1713,7 +1713,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
       scoutLock.unlock();
     }
     // if I should be the next coordinator based of set of active nodes, I will try to get re-elected.
-    if (tryReelect && getNextCoordinatorReplica() == nodeID) initScout();
+    if (tryReelect && getNextCoordinatorReplica().equals(nodeID)) initScout();
   }
 
   /**
@@ -1732,7 +1732,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
       acceptorLock.unlock();
     }
 
-    if (!paxosManager.isNodeUp(coordinatorID) && getNextCoordinatorReplica() == nodeID) {
+    if (!paxosManager.isNodeUp(coordinatorID) && getNextCoordinatorReplica().equals(nodeID)) {
       GNS.getLogger().severe(paxosID + "C\t" + nodeID + "C coordinator failed. " +
               coordinatorID);
       initScout();
@@ -1747,7 +1747,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
   private void handleNodeStatusUpdate(FailureDetectionPacket packet) {
     if (packet.status) return; // node is up.
     try {
-      assert packet.responderNodeID != nodeID;
+      assert !packet.responderNodeID.equals(nodeID);
     } catch (Exception e) {
       GNS.getLogger().severe("Exception Failure detection reports that this node has failed. Not possible. " + packet);
       e.printStackTrace();
@@ -1766,8 +1766,8 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
     } finally {
       acceptorLock.unlock();
     }
-    if (packet.responderNodeID == coordinatorID // current coordinator has failed.
-            && getNextCoordinatorReplica() == nodeID) { // I am next coordinator
+    if (packet.responderNodeID.equals(coordinatorID) // current coordinator has failed.
+            && getNextCoordinatorReplica().equals(nodeID)) { // I am next coordinator
 
       GNS.getLogger().warning(paxosID + "C\t" + nodeID + " Coordinator failed\t" + packet.responderNodeID +
               " Propose new ballot.");

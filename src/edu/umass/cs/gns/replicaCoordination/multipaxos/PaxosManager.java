@@ -145,7 +145,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
   protected boolean createPaxosInstance(String paxosID, short version, NodeId<String> id, Set<NodeId<String>> gms, Replicable app,
 			HotRestoreInfo hri, boolean tryRestore) {
-		if(this.isClosed() || id!=myID) return false;
+		if(this.isClosed() || !id.equals(myID)) return false;
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID, (hasRecovered && hri==null), tryRestore); 
 		if(pism!=null) return false;
 
@@ -166,7 +166,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 		PaxosPacketType paxosPacketType;
 		try {
-			RequestPacket.addDebugInfo(jsonMsg, ("i"+myID));
+			RequestPacket.addDebugInfo(jsonMsg, ("i"+myID.get()));
 			assert(Packet.getPacketType(jsonMsg)==PacketType.PAXOS_PACKET /*|| Packet.hasPacketTypeField(jsonMsg)*/);
 			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg); // will throw exception if no PAXOS_PACKET_TYPE
 

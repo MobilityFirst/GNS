@@ -9,6 +9,7 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,7 +46,7 @@ public class RequestActivesPacket extends BasicPacketWithLnsAddress {
    * Active name servers for the name. This field is populated when name server
    * sends a reply to a local name server.
    */
-  private Set<NodeId<String>> activeNameServers;
+  private Set<NodeId<String>> activeNameServers = null;
 
   /**
    * Unique request ID assigned by local name server.
@@ -63,7 +64,7 @@ public class RequestActivesPacket extends BasicPacketWithLnsAddress {
   public RequestActivesPacket(JSONObject json) throws JSONException {
     super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.name = json.getString(NAME);
-    this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVES));
+    this.activeNameServers = json.has(ACTIVES) ? Util.stringToSetOfNodeId(json.getString(ACTIVES)) : null;
     this.type = PacketType.REQUEST_ACTIVES;
     this.lnsRequestID = json.getInt(LNS_REQ_ID);
     this.nsID = new NodeId<String>(json.getString(NSID));
@@ -75,9 +76,11 @@ public class RequestActivesPacket extends BasicPacketWithLnsAddress {
     super.addToJSONObject(json);
     Packet.putPacketType(json, getType());
     json.put(NAME, name);
-    json.put(ACTIVES, Util.setOfNodeIdToString(activeNameServers));
+    if (activeNameServers != null) {
+      json.put(ACTIVES, Util.setOfNodeIdToString(activeNameServers));
+    }
     json.put(LNS_REQ_ID, lnsRequestID);
-    json.put(NSID, nsID);
+    json.put(NSID, nsID.get());
     return json;
   }
 
@@ -99,7 +102,6 @@ public class RequestActivesPacket extends BasicPacketWithLnsAddress {
 //  public InetSocketAddress getLnsAddress() {
 //    return lnsAddress;
 //  }
-
   public int getLnsRequestID() {
     return lnsRequestID;
   }
