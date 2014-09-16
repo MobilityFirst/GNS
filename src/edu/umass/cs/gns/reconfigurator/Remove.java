@@ -83,9 +83,9 @@ public class Remove {
       if (rcRecord.isMarkedForRemoval() && removeRecord.getNameServerID().equals(rcID) && !recovery) {
         // if marked for removal and this node received packet from client and not recover, inform actives
         if (Config.debuggingEnabled) {
-          log.info("Node " + rcID + " marked for removal: " + removeRecord);
+          log.info("Node " + rcID.get() + " marked for removal: " + removeRecord);
         }
-        assert rcRecord.isActiveRunning() : "Node " + rcID + " active not running: " + rcRecord;
+        assert rcRecord.isActiveRunning() : "Node " + rcID.get() + " active not running: " + rcRecord;
         assert (protocolTasks.length > 0);
         StopActiveSetTask stopActiveSetTask = new StopActiveSetTask(removeRecord.getName(),
                 rcRecord.getActiveNameservers(), rcRecord.getActiveVersion(),

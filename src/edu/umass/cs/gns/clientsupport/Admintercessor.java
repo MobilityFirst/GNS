@@ -354,12 +354,13 @@ public class Admintercessor {
     Set<NodeId<String>> missingIDs = new HashSet<NodeId<String>>(LocalNameServer.getGnsNodeConfig().getNodeIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
-      result.append("Missing NSs: " + missingIDs.toString());
+      result.append("Missing NSs: " + Util.setOfNodeIdToString(missingIDs));
       result.append(LINE_SEPARATOR);
     }
     // process all the entries into a nice string
     for (Map.Entry<NodeId<String>, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
-      result.append("Nameserver: " + entry.getKey() + " (" + LocalNameServer.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
+      result.append("Nameserver: " + entry.getKey().get() +
+              " (" + LocalNameServer.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
         try {

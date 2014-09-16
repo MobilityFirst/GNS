@@ -152,11 +152,12 @@ public class GroupChange {
 					throws FieldNotFoundException {
 		if (activeProposalPacket.getProposingNode().equals(rcID)) {// proposer RC initiates stopping of old actives
 			GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
-					+ activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
+					+ activeProposalPacket.getVersion() + "\tNewActives\t" + 
+                                Util.setOfNodeIdToString(activeProposalPacket.getProposedActiveNameServers()) + "\t");
 			// todo could use failure detector here
 			// if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
 			// then proposing node has failed, so I will start group change
-			if (Config.debuggingEnabled) log.fine("Node "+rcID+" : stop oldActiveSet name = " + activeProposalPacket.getName());
+			if (Config.debuggingEnabled) log.fine("Node "+rcID.get()+" : stop oldActiveSet name = " + activeProposalPacket.getName());
 			StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
 					rcRecord.getOldActiveNameservers(), rcRecord.getOldActiveVersion(),
 					Packet.PacketType.OLD_ACTIVE_STOP, activeProposalPacket);

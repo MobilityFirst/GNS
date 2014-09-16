@@ -58,7 +58,7 @@ public class SendAddRemoveTask extends TimerTask {
     try {
       timeoutCount = timeoutCount + 1;
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("ENTER name = " + getName() + " timeout = " + getTimeoutCount());
+        GNS.getLogger().info("ENTER name = " + getName() + " timeout = " + getTimeoutCount());
       }
 
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
@@ -83,7 +83,7 @@ public class SendAddRemoveTask extends TimerTask {
   private boolean isResponseReceived() {
     if (LocalNameServer.getRequestInfo(getLnsRequestID()) == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+        GNS.getLogger().info("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
       }
       return true;
     }
@@ -99,7 +99,7 @@ public class SendAddRemoveTask extends TimerTask {
         return true;
       }
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
+        GNS.getLogger().info("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
       }
       try {
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(updateInfo.getErrorMessage());
@@ -142,14 +142,14 @@ public class SendAddRemoveTask extends TimerTask {
 
     if (getTimeoutCount() == 0) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
+        GNS.getLogger().info("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
       }
       updatePacketWithRequestID(getPacket(), getLnsRequestID());
     }
     // create the packet that we'll send to the primary
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().fine("Sending request to node: " + nameServerID.get());
+      GNS.getLogger().info("Sending request to node: " + nameServerID.get());
     }
 
     // and send it off
@@ -158,7 +158,7 @@ public class SendAddRemoveTask extends TimerTask {
       handler.sendToNS(jsonToSend, nameServerID);
 
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine(" Send add/remove/upsert to: " + nameServerID.get() + " Name:" + getName() + " Id:" + getLnsRequestID()
+        GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.get() + " Name:" + getName() + " Id:" + getLnsRequestID()
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }
     } catch (JSONException e) {

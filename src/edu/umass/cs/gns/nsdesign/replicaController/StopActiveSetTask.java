@@ -33,16 +33,23 @@ import java.util.TimerTask;
 public class StopActiveSetTask extends TimerTask {
 
 
-  private String name;
-  private Set<NodeId<String>> oldActiveNameServers;
-  private Set<NodeId<String>> oldActivesQueried;
-  private int oldVersion;
-  private int requestID;
-  private PacketType packetType;
-  private ReplicaController rc;
+  private final String name;
+  private final Set<NodeId<String>> oldActiveNameServers;
+  private final Set<NodeId<String>> oldActivesQueried;
+  private final int oldVersion;
+  private final int requestID;
+  private final PacketType packetType;
+  private final ReplicaController rc;
 
   /**
-   * Constructor object
+   * Create a StopActiveSetTask.
+   * 
+   * @param name
+   * @param oldActiveNameServers
+   * @param oldVersion
+   * @param packetType
+   * @param clientPacket
+   * @param rc
    */
   public StopActiveSetTask(String name, Set<NodeId<String>> oldActiveNameServers, int oldVersion, PacketType packetType,
                            BasicPacket clientPacket, ReplicaController rc) {

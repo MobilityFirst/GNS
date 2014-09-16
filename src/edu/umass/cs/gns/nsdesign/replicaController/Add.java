@@ -66,7 +66,6 @@ public class Add {
     try {
       ReplicaControllerRecord.addNameRecordPrimary(replicaController.getDB(), rcRecord);
 
-      //FUCK THIS SHIT!!!
       if (addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
         if (!recovery) {
           // change packet type and inform all active replicas.

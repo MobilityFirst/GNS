@@ -79,8 +79,8 @@ public class AddRemove {
     LocalNameServer.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine(" Remove  Task Scheduled. "
-              + "Name: " + removeRecord.getName() + " Request: " + removeRecord.getRequestID());
+      GNS.getLogger().info("Remove Task Scheduled. " + "Name: " + removeRecord.getName() 
+              + " Request: " + removeRecord.getRequestID());
     }
   }
 

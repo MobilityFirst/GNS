@@ -90,7 +90,7 @@ public class OldActiveSetStopPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(REQ_ID, requestID);
     json.put(NAME, name);
-    json.put(PRIMARY_SENDER, primarySender);
+    json.put(PRIMARY_SENDER, primarySender.get());
     json.put(ACTIVE_RECEIVER, activeReceiver.get());
     json.put(VERSION, version);
     return json;

@@ -72,7 +72,7 @@ public class GroupChange {
 		MessagingTask confirmToRC = null;
 		try {
 			// confirm to primary name server that this set of actives has stopped
-			if (stopPacket.getActiveReceiver() == activeReplica.getNodeID()) {
+			if (stopPacket.getActiveReceiver().equals(activeReplica.getNodeID())) {
 				// the active node who received this node, sends confirmation to primary
 				// confirm to primary
 				stopPacket.changePacketTypeToConfirm();

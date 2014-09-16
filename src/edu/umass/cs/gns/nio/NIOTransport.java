@@ -76,8 +76,8 @@ import java.util.logging.Logger;
  * a socket channel and encounters an exception.
  */
 public class NIOTransport<NodeIDType> implements Runnable {
-	public static final boolean DEBUG = false;
-	public static final boolean LOCAL_LOGGER = true;
+	public static final boolean DEBUG = true;
+	public static final boolean LOCAL_LOGGER = false;
 
 	private static final double LOG_SAMPLING_FRACTION = 0.1;
 

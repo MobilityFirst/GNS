@@ -30,10 +30,8 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 
   private Replicable paxosInterface;
 
-
-
   public ReplicaControllerCoordinatorPaxos(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
-                                           Replicable paxosInterface, PaxosConfig paxosConfig) {
+          Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
 
     if (Config.multiPaxos) {
@@ -61,7 +59,12 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 
   @Override
   public int coordinateRequest(JSONObject request) {
-    if (this.paxosInterface == null) return -1; // replicable app not set
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Request: " + request.toString());
+    }
+    if (this.paxosInterface == null) {
+      return -1; // replicable app not set
+    }
     try {
       Packet.PacketType type = Packet.getPacketType(request);
       switch (type) {
@@ -143,7 +146,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   public void shutdown() {
     // todo how to shutdown multipaxos's PaxosManager?
     if (paxosManager instanceof PaxosManager) {
-      ((PaxosManager)paxosManager).shutdown();
+      ((PaxosManager) paxosManager).shutdown();
     }
   }
 }

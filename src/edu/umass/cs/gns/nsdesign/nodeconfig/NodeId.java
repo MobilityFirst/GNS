@@ -70,9 +70,10 @@ public class NodeId<NodeItemType> implements Comparable<NodeId<NodeItemType>> {
             + (stackTrace.length > 8 ? stackTrace[8].toString() + "\n" : "");
   }
 
+  
   @Override
-  public int compareTo(NodeId<NodeItemType> o) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public int compareTo(NodeId<NodeItemType> that) {
+     return ((Comparable)this.id).compareTo(that.id);
   }
 
 }
