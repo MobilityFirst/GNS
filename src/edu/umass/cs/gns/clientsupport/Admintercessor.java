@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
+import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
 
 /**
@@ -367,7 +368,7 @@ public class Admintercessor {
 //        result.append(" / KEY: ");
 //        result.append(record.getRecordKey().getName());
           result.append(" P: ");
-          result.append(record.getPrimaryNameservers().toString());
+          result.append(Util.setOfNodeIdToString(record.getPrimaryNameservers()));
 //          result.append(" A: ");
 //          result.append(record.getActiveNameServers().toString());
           result.append(" TTL: ");

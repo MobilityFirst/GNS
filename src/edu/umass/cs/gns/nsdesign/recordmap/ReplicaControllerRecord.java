@@ -106,9 +106,9 @@ import java.util.concurrent.ConcurrentMap;
 public class ReplicaControllerRecord {
 
   public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);
-  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField OLD_ACTIVE_NAMESERVERS = new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("rcr_primary", ColumnFieldType.SET_NODE_ID_STRING);
+  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("rcr_active", ColumnFieldType.SET_NODE_ID_STRING);
+  public final static ColumnField OLD_ACTIVE_NAMESERVERS = new ColumnField("rcr_oldactive", ColumnFieldType.SET_NODE_ID_STRING);
   public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN);
   public final static ColumnField ACTIVE_VERSION = new ColumnField("rcr_activeVersion", ColumnFieldType.INTEGER);
   public final static ColumnField OLD_ACTIVE_VERSION = new ColumnField("rcr_oldActiveVersion", ColumnFieldType.INTEGER);

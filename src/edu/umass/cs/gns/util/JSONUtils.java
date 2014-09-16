@@ -139,6 +139,27 @@ public class JSONUtils {
     return set;
   }
   
+  /**
+   * Converts a JSONArray to an set of NodeIds
+   *
+   * @param json JSONArray
+   * @return ArrayList with the content of JSONArray.
+   * @throws JSONException
+   */
+  public static Set<NodeId<String>> JSONArrayToSetNodeIdString(JSONArray json) throws JSONException {
+    Set<NodeId<String>> set = new HashSet<NodeId<String>>();
+
+    if (json == null) {
+      return set;
+    }
+
+    for (int i = 0; i < json.length(); i++) {
+      set.add(new NodeId<String>(json.getString(i)));
+    }
+
+    return set;
+  }
+  
   public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
     Map<String, ResultValue> result = new HashMap<String, ResultValue>();
     Iterator<String> keyIter = json.keys();
@@ -149,6 +170,7 @@ public class JSONUtils {
     return result;
   }
 
+  // This code is an abomination...
   public static Object getObject(ColumnField field, JSONObject jsonObject) throws JSONException {
     if (jsonObject.has(field.getName())) {
       switch (field.type()) {
@@ -160,6 +182,10 @@ public class JSONUtils {
           return jsonObject.getString(field.getName());
         case SET_INTEGER:
           return JSONUtils.JSONArrayToSetInteger(jsonObject.getJSONArray(field.getName()));
+        case SET_STRING:
+          return JSONUtils.JSONArrayToSetString(jsonObject.getJSONArray(field.getName()));
+        case SET_NODE_ID_STRING:
+          return JSONUtils.JSONArrayToSetNodeIdString(jsonObject.getJSONArray(field.getName()));
         case LIST_INTEGER:
           return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_STRING:
@@ -196,6 +222,12 @@ public class JSONUtils {
           break;
         case SET_INTEGER:
           jsonObject.put(field.getName(), (Set<Integer>) value);
+          break;
+        case SET_STRING:
+          jsonObject.put(field.getName(), (Set<String>) value);
+          break;
+         case SET_NODE_ID_STRING:
+          jsonObject.put(field.getName(), (Set<NodeId<String>>) value);
           break;
         case LIST_INTEGER:
           jsonObject.put(field.getName(), (ArrayList<Integer>) value);
