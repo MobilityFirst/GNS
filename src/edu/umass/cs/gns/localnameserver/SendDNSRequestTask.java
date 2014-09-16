@@ -13,6 +13,7 @@ import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashSet;
@@ -102,7 +103,7 @@ public class SendDNSRequestTask extends TimerTask {
     if (info == null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().fine("Query ID. Response recvd "
-                  + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + nameserversQueried + "\t");
+                  + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + Util.setOfNodeIdToString(nameserversQueried) + "\t");
         }
         return true;
     } else if (requestActivesCount == -1) {

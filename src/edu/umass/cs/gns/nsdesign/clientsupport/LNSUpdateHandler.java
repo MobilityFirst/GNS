@@ -69,7 +69,7 @@ public class LNSUpdateHandler {
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) {
-    GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending update: " + name + " : " + key + "->" + newValue.toString());
+    GNS.getLogger().fine("Node " + activeReplica.getNodeID().get() + "; Sending update: " + name + " : " + key + "->" + newValue.toString());
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingUpdates.put(id, id);
@@ -91,7 +91,7 @@ public class LNSUpdateHandler {
             null, null, null);
     try {
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending update " + updateId + " to LNS at" + lnsAddress
+        GNS.getLogger().info("########## Node " + activeReplica.getNodeID().get() + "; Sending update " + updateId + " to LNS at" + lnsAddress
                 + " for " + name + " / " + key + ": " + packet.toJSONObject());
       }
       activeReplica.getNioServer().sendToAddress(lnsAddress, packet.toJSONObject());
@@ -108,7 +108,7 @@ public class LNSUpdateHandler {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID() + "; Sending add: " + name + " : " + key + "->" + value + " to LNS " + lnsAddress);
+      GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID().get() + "; Sending add: " + name + " : " + key + "->" + value + " to LNS " + lnsAddress);
     }
     AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null, GNS.DEFAULT_TTL_SECONDS);
     try {
@@ -129,7 +129,7 @@ public class LNSUpdateHandler {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID() + "; Sending remove: " + name + " to LNS " + lnsAddress);
+      GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID().get() + "; Sending remove: " + name + " to LNS " + lnsAddress);
     }
     RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, null);
     try {

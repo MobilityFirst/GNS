@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentMap;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
 import java.util.Date;
 import java.util.HashSet;
@@ -135,7 +136,7 @@ public class Select {
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID() + " sending select " + outgoingJSON + " to " + serverIds);
+      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " sending select " + outgoingJSON + " to " + Util.setOfNodeIdToString(serverIds));
     }
     try {
       for (NodeId<String> serverId : serverIds) {
@@ -156,7 +157,7 @@ public class Select {
    */
   private static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd QueryRequest: " + incomingJSON);
+      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " recvd QueryRequest: " + incomingJSON);
     }
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
@@ -165,7 +166,7 @@ public class Select {
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsAddress(),
               request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().fine("NS" + replica.getNodeID() + " sending back " + jsonRecords.length() + " records");
+        GNS.getLogger().fine("NS" + replica.getNodeID().get() + " sending back " + jsonRecords.length() + " records");
       }
       // and send them back to the originating NS
       replica.getNioServer().sendToID(request.getNsID(), response.toJSONObject());
@@ -193,11 +194,11 @@ public class Select {
   public static void handleSelectResponse(JSONObject json, GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket packet = new SelectResponsePacket(json);
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID() + " recvd from NS" + packet.getNameServer());
+      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " recvd from NS" + packet.getNameServer().get());
     }
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
     if (info == null) {
-      GNS.getLogger().warning("NS" + replica.getNodeID() + " unabled to located query info:" + packet.getNsQueryId());
+      GNS.getLogger().warning("NS" + replica.getNodeID().get() + " unabled to located query info:" + packet.getNsQueryId());
       return;
     }
     // if there is no error update our results list
@@ -206,13 +207,13 @@ public class Select {
       processJSONRecords(packet.getRecords(), info, replica);
     } else { // error response
       if (Config.debuggingEnabled) {
-        GNS.getLogger().fine("NS" + replica.getNodeID() + " processing error response: " + packet.getErrorMessage());
+        GNS.getLogger().fine("NS" + replica.getNodeID().get() + " processing error response: " + packet.getErrorMessage());
       }
     }
     // Remove the NS ID from the list to keep track of who has responded
     info.removeServerID(packet.getNameServer());
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID() + " servers yet to respond:" + info.serversYetToRespond());
+      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " servers yet to respond:" + info.serversYetToRespond());
     }
     if (info.allServersResponded()) {
       handledAllServersResponded(packet, info, replica);
@@ -298,7 +299,7 @@ public class Select {
         break;
       case QUERY:
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID() + " query: " + request.getQuery());
+          GNS.getLogger().fine("NS" + ar.getNodeID().get() + " query: " + request.getQuery());
         }
         cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
         break;
@@ -317,7 +318,7 @@ public class Select {
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info, GnsReconfigurable ar) throws JSONException {
     int length = jsonArray.length();
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + ar.getNodeID() + " processing " + length + " records");
+      GNS.getLogger().fine("NS" + ar.getNodeID().get() + " processing " + length + " records");
     }
     // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
@@ -325,11 +326,11 @@ public class Select {
       String name = record.getString(NameRecord.NAME.getName());
       if (info.addResponseIfNotSeenYet(name, record)) {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID() + " added record for " + name);
+          GNS.getLogger().fine("NS" + ar.getNodeID().get() + " added record for " + name);
         }
       } else {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID() + " DID NOT ADD record for " + name);
+          GNS.getLogger().fine("NS" + ar.getNodeID().get() + " DID NOT ADD record for " + name);
         }
       }
     }

@@ -56,9 +56,14 @@ public class Logging {
     } catch (Exception e) {
       fileLevel = DEFAULTFILELEVEL;
     }
-    // overall level is ALL
-    // Abhigyan: changing it to file level.
-    logger.setLevel(fileLevel);
+    
+    // set the overall level to the less severe (more messages) of the two
+    if (fileLevel.intValue() < consoleLevel.intValue()) {
+      logger.setLevel(fileLevel);
+    } else {
+       logger.setLevel(consoleLevel);
+    }
+
     logger.setUseParentHandlers(false);
     
     try {

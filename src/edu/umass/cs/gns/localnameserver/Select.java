@@ -33,7 +33,7 @@ public class Select {
     // This should pick a Nameserver using the same method as a query!!
     NodeId<String> serverID = pickNameServer(packet.getGuid(), handler);
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID);
+      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID.get());
     }
     LocalNameServer.sendToNS(outgoingJSON, serverID);
   }
@@ -57,7 +57,7 @@ public class Select {
     }
     SelectResponsePacket packet = new SelectResponsePacket(json);
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " recvd from NS" + packet.getNameServer());
+      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " recvd from NS" + packet.getNameServer().get());
     }
     SelectInfo info = handler.getSelectInfo(packet.getLnsQueryId());
     // send a response back to the client

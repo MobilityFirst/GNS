@@ -119,7 +119,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     }
     // instrumentation
     if (!responder.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
-      json.put(RESPONDER, responder);
+      json.put(RESPONDER, responder.get());
     }
     return json;
   }

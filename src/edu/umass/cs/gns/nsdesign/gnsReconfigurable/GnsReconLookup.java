@@ -60,7 +60,7 @@ public class GnsReconLookup {
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
 
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("Node " + gnsApp.getNodeID() + "; DNS Query Packet: " + dnsPacket.toString());
+      GNS.getLogger().fine("Node " + gnsApp.getNodeID().get() + "; DNS Query Packet: " + dnsPacket.toString());
     }
     // if all replicas are coordinating on a read request, then check if this node should reply to client.
     // whether coordination is done or not, only the replica receiving client's request replies to the client.

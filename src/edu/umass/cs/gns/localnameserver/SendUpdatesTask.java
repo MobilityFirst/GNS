@@ -15,6 +15,7 @@ import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -175,7 +176,7 @@ public class SendUpdatesTask extends TimerTask {
     if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
 
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + activesQueried);
+        GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + Util.setOfNodeIdToString(activesQueried));
       }
       return;
     }
@@ -203,7 +204,7 @@ public class SendUpdatesTask extends TimerTask {
             updatePacket.getMessage());
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().fine("Sending Update to Node: " + nameServerID);
+      GNS.getLogger().fine("Sending Update to Node: " + nameServerID.get());
     }
 
     // and send it off
@@ -216,7 +217,7 @@ public class SendUpdatesTask extends TimerTask {
         updateInfo.setNameserverID(nameServerID);
       }
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Send update to: " + nameServerID + " Name:" + name + " Id:" + lnsReqID
+        GNS.getLogger().fine("Send update to: " + nameServerID.get() + " Name:" + name + " Id:" + lnsReqID
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }
     } catch (JSONException e) {

@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.RandomReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -71,7 +72,8 @@ public class Add {
           // change packet type and inform all active replicas.
           addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
           addRecordPacket.setActiveNameServers(rcRecord.getActiveNameservers());
-          if (Config.debuggingEnabled) GNS.getLogger().fine("Name: " + rcRecord.getName() + " Initial active replicas: " + rcRecord.getActiveNameservers());
+          if (Config.debuggingEnabled) GNS.getLogger().fine("Name: " + rcRecord.getName() +
+                  " Initial active replicas: " + Util.setOfNodeIdToString(rcRecord.getActiveNameservers()));
           for (NodeId<String> nodeID: rcRecord.getActiveNameservers()) {
             replicaController.getNioServer().sendToID(nodeID, addRecordPacket.toJSONObject());
           }

@@ -22,7 +22,7 @@ public class Add {
           throws JSONException, IOException, FailedDBOperationException {
 
     if (Config.debuggingEnabled) GNS.getLogger().fine("Add record at active replica. name = " + addRecordPacket.getName() +
-            " node id: " + gnsApp.getNodeID());
+            " node id: " + gnsApp.getNodeID().get());
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
 
