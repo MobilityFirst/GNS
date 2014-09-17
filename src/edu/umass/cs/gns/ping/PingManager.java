@@ -141,7 +141,7 @@ public class PingManager implements Shutdownable {
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
     for (NodeId<String> otherNode : gnsNodeConfig.getNodeIDs()) {
-      result.append(String.format("%4d", otherNode));
+      result.append(String.format("%4s", otherNode));
       if (!otherNode.equals(node)) {
         result.append(" = ");
         result.append(String.format("%d", nodeAverage(otherNode)));
