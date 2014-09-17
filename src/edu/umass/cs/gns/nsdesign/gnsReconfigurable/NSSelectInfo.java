@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import org.json.JSONObject;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class NSSelectInfo {
   private final int id;
-  private final Set<Integer> serversToBeProcessed; // the list of servers that have yet to be processed
+  private final Set<NodeId<String>> serversToBeProcessed; // the list of servers that have yet to be processed
   private final ConcurrentHashMap<String, JSONObject> responses;
   private final SelectOperation selectOperation;
   private final GroupBehavior groupBehavior;
@@ -34,9 +35,9 @@ public class NSSelectInfo {
    * @param minRefreshInterval 
    * @param guid 
    */
-  public NSSelectInfo(int id, Set<Integer> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+  public NSSelectInfo(int id, Set<NodeId<String>> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     this.id = id;
-    this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+    this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<NodeId<String>, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
     this.responses = new ConcurrentHashMap<String, JSONObject>(10, 0.75f, 3);
     this.selectOperation = selectOperation;
@@ -58,14 +59,14 @@ public class NSSelectInfo {
    * Removes the server if from the list of servers that have yet to be processed.
    * @param id 
    */
-  public void removeServerID(int id) {
+  public void removeServerID(NodeId<String> id) {
     serversToBeProcessed.remove(id);
   }
   /**
    * 
    * @return 
    */
-  public Set<Integer> serversYetToRespond() {
+  public Set<NodeId<String>> serversYetToRespond() {
     return serversToBeProcessed;
   }
   /**

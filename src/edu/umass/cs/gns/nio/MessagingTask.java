@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 
 /**
@@ -16,32 +17,32 @@ import java.net.InetSocketAddress;
  * This is a utility class as it is really just
  * a container for two arrays.
  */
-public class MessagingTask extends GenericMessagingTask<Integer,Object> {
+public class MessagingTask extends GenericMessagingTask<NodeId<String>,Object> {
 
 	public final Object[] recipients;
 	public final Object[] msgs;
 	
 	// Unicast
-	public MessagingTask(int destID, Object pkt) {
+	public MessagingTask(NodeId<String> destID, Object pkt) {
 		assert(pkt!=null) : "Incorrect usage: MessagingTask should not be instantiated with no messages";
-		this.recipients = new Integer[1];
+		this.recipients = new NodeId[1];
 		this.recipients[0] = destID;
 		
 		this.msgs = new Object[pkt==null?0:1];
 		if(pkt!=null) msgs[0] = pkt;
 	}
 	// Multicast
-	public MessagingTask(int[] destIDs, Object pkt) {
+	public MessagingTask(NodeId<String>[] destIDs, Object pkt) {
 		assert(pkt!=null && destIDs!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages or destinations";
 		this.recipients = toObject(destIDs);
 		this.msgs = new Object[pkt==null?0:1];
 		if(pkt!=null) msgs[0] = pkt;
 	}
 	// Unicast multiple packets
-	public MessagingTask(int destID, Object[] pkts) {
+	public MessagingTask(NodeId<String> destID, Object[] pkts) {
 		assert(pkts!=null && pkts.length>0 && pkts[0]!=null) : "Incorrect usage: MessagingTask should not be instantiated with no messages";
 
-		this.recipients = new Integer[1];
+		this.recipients = new NodeId[1];
 		this.recipients[0] = destID;
 		this.msgs = pkts==null ? new Object[0] : pkts;
 	}
@@ -50,11 +51,11 @@ public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 	 * no messages. We need this as it is convenient to create an empty MessagingTask in a 
 	 * logging-only LogMessagingTask object.
 	 */
-	public MessagingTask(int[] destIDs, Object[] pkts) {
+	public MessagingTask(NodeId<String>[] destIDs, Object[] pkts) {
 		assert(pkts!=null && destIDs!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages or destinations";
 		for(Object obj : pkts) assert(obj!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages";
 
-		this.recipients = (destIDs==null ? new Integer[0] : toObject(destIDs));
+		this.recipients = (destIDs==null ? new NodeId[0] : toObject(destIDs));
 		this.msgs = pkts==null ? new Object[0] : pkts;
 	}
         
@@ -113,11 +114,11 @@ public class MessagingTask extends GenericMessagingTask<Integer,Object> {
 		return s;
 	}
         
-        public static Integer[] toObject(int[] intArray) {
+        public static NodeId<String>[] toObject(NodeId<String>[] nodeArray) {
  
-		Integer[] result = new Integer[intArray.length];
-		for (int i = 0; i < intArray.length; i++) {
-			result[i] = Integer.valueOf(intArray[i]);
+		NodeId<String>[] result = new NodeId[nodeArray.length];
+		for (int i = 0; i < nodeArray.length; i++) {
+			result[i] = nodeArray[i];
 		}
 		return result;
  

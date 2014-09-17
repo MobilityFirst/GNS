@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.recordmap;
 
-import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
@@ -10,6 +9,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
@@ -37,7 +37,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
   public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
 //  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("nr_active", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_NODE_ID_STRING);
   public final static ColumnField ACTIVE_VERSION = new ColumnField("nr_version", ColumnFieldType.INTEGER);
   public final static ColumnField OLD_ACTIVE_VERSION = new ColumnField("nr_oldVersion", ColumnFieldType.INTEGER);
   public final static ColumnField TIME_TO_LIVE = new ColumnField("nr_ttl", ColumnFieldType.INTEGER);
@@ -182,15 +182,9 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(NAME);
   }
 
-//  public Set<Integer> getActiveNameServers() throws FieldNotFoundException {
-//    if (hashMap.has(ACTIVE_NAMESERVERS)) {
-//      return (Set<Integer>) hashMap.getAsArray(ACTIVE_NAMESERVERS);
-//    }
-//    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
-//  }
-  public Set<Integer> getPrimaryNameservers() throws FieldNotFoundException {
+  public Set<NodeId<String>> getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
-      return (Set<Integer>) hashMap.get(PRIMARY_NAMESERVERS);
+      return (Set<NodeId<String>>) hashMap.get(PRIMARY_NAMESERVERS);
     }
     throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
   }

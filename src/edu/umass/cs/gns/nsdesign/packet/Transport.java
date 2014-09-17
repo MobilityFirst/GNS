@@ -101,20 +101,6 @@ public class Transport {
 
   }
 
-  public void sendPacketToAll(JSONObject json, GNS.PortType portType, Set<Integer> destIDs) throws JSONException {
-    throw new UnsupportedOperationException();
-//    sendPacketToAll(json, portType, destIDs, -1);
-  }
-
-//  public void sendPacketToAll(JSONObject json, GNS.PortType portType, Set<Integer> destIDs, int excludeNameServerId) throws JSONException {
-//    for (Integer id : destIDs) {
-//      if (id.intValue() == excludeNameServerId) {
-//        continue;
-//      }
-//      sendPacket(json, id, Packet.getPort(id, portType));
-//    }
-//  }
-
   public JSONObject readPacket() {
     while (true) {
       //GNRS.getLogger().finer("Starting read wait.");

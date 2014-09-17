@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.installer.GNSInstallerV1;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -11,7 +11,6 @@ import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 /**
  *
@@ -45,7 +44,7 @@ public class StatusPanel extends JPanel implements ActionListener {
     Box box = Box.createVerticalBox();
     TreeSet<StatusEntry> entries = new TreeSet(StatusModel.getInstance().getEntries());
     // add the header
-    StatusPane pane = new StatusPane(-1);
+    StatusPane pane = new StatusPane(GNSNodeConfig.INVALID_NAME_SERVER_ID);
     pane.setAlignmentX(Component.LEFT_ALIGNMENT);
     box.add(pane);
     for (StatusEntry entry : entries) {

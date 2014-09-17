@@ -3,6 +3,8 @@ package edu.umass.cs.gns.reconfigurator;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -12,11 +14,10 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-
 /**
  * @author V. Arun
  * Based on code created by abhigyan
- * 
+ *
  * On a change in the set of active replicas for a name or when a record is to be removed, this class informs the old
  * set of active replicas to stop functioning. After a timeout, it checks if the old replicas have confirmed that
  * they have stopped functioning. If so, this task is cancelled, or else, this task sends another replica a message.
@@ -32,76 +33,76 @@ import java.util.Set;
  */
 public class StopActiveSetTask implements RCProtocolTask {
 
+  private String name;
+  private Set<NodeId<String>> oldActiveNameServers;
+  private Set<NodeId<String>> oldActivesQueried;
+  private short oldVersion;
+  private int requestID;
+  private PacketType packetType;
+  private ReplicaController rc;
 
-	private String name;
-	private Set<Integer> oldActiveNameServers;
-	private Set<Integer> oldActivesQueried;
-	private short oldVersion;
-	private int requestID;
-	private PacketType packetType;
-	private ReplicaController rc;
+  /**
+   * Constructor object
+   */
+  public StopActiveSetTask(String name, Set<NodeId<String>> oldActiveNameServers, short oldVersion, PacketType packetType,
+          BasicPacket clientPacket) {
+    this.name = name;
+    this.oldActiveNameServers = oldActiveNameServers;
+    this.oldActivesQueried = new HashSet<NodeId<String>>();
+    this.oldVersion = oldVersion;
+    this.requestID = rc.getOngoingStopActiveRequests().put(clientPacket);
+    this.packetType = packetType;
+  }
 
-	/**
-	 * Constructor object
-	 */
-	public StopActiveSetTask(String name, Set<Integer> oldActiveNameServers, short oldVersion, PacketType packetType,
-			BasicPacket clientPacket) {
-		this.name = name;
-		this.oldActiveNameServers = oldActiveNameServers;
-		this.oldActivesQueried = new HashSet<Integer>();
-		this.oldVersion = oldVersion;
-		this.requestID = rc.getOngoingStopActiveRequests().put(clientPacket);
-		this.packetType = packetType;
-	}
-	public void setReplicaController(ReplicaController rc) {
-		this.rc = rc;
-	}
+  public void setReplicaController(ReplicaController rc) {
+    this.rc = rc;
+  }
 
-	@Override
-	public void run() {
-		try {
-			boolean cancelTask = checkCancelTask();
-			if (cancelTask) {
-				throw new CancelExecutorTaskException();
-			}
-		} catch (Exception e) {
-			if (e.getClass().equals(CancelExecutorTaskException.class)) {
-				throw new RuntimeException();
-			}
-			GNS.getLogger().severe("Exception in Stop Active Set Task. " + e.getMessage());
-			e.printStackTrace();
-		}
-	}
+  @Override
+  public void run() {
+    try {
+      boolean cancelTask = checkCancelTask();
+      if (cancelTask) {
+        throw new CancelExecutorTaskException();
+      }
+    } catch (Exception e) {
+      if (e.getClass().equals(CancelExecutorTaskException.class)) {
+        throw new RuntimeException();
+      }
+      GNS.getLogger().severe("Exception in Stop Active Set Task. " + e.getMessage());
+      e.printStackTrace();
+    }
+  }
 
-	private boolean checkCancelTask() throws IOException {
+  private boolean checkCancelTask() throws IOException {
 
-		boolean cancelTask = true;
-		if (rc.getOngoingStopActiveRequests().get(requestID) == null) {
-			GNS.getLogger().fine("Old active name servers stopped. Version: " + oldVersion + " Old Actives : "
-					+ oldActiveNameServers);
-		} else {
-			int selectedOldActive = rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
-			if (selectedOldActive == -1) {
-				rc.getOngoingStopActiveRequests().remove(this.requestID);
-				GNS.getLogger().severe("Exception ERROR: Old Actives not stopped and no more old active left to query. "
-						+ "Old Active name servers queried: " + oldActivesQueried + ". Old Version " + oldVersion + " Name: "
-						+ name);
-			} else {
-				oldActivesQueried.add(selectedOldActive);
-				GNS.getLogger().fine(" Old Active Name Server Selected to Query: " + selectedOldActive);
-				OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, requestID, rc.getNodeID(), selectedOldActive,
-						oldVersion, packetType);
-				GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
-				try {
-					rc.send(new MessagingTask(selectedOldActive, packet.toJSONObject()));
-					cancelTask = false;
-				} catch (JSONException e) {
-					GNS.getLogger().severe("JSON Exception in sending OldActiveSetSTOPPacket: " + e.getMessage());
-					e.printStackTrace();
-				}
-			}
-		}
-		return cancelTask;
-	}
+    boolean cancelTask = true;
+    if (rc.getOngoingStopActiveRequests().get(requestID) == null) {
+      GNS.getLogger().fine("Old active name servers stopped. Version: " + oldVersion + " Old Actives : "
+              + oldActiveNameServers);
+    } else {
+      NodeId<String> selectedOldActive = rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
+      if (selectedOldActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+        rc.getOngoingStopActiveRequests().remove(this.requestID);
+        GNS.getLogger().severe("Exception ERROR: Old Actives not stopped and no more old active left to query. "
+                + "Old Active name servers queried: " + oldActivesQueried + ". Old Version " + oldVersion + " Name: "
+                + name);
+      } else {
+        oldActivesQueried.add(selectedOldActive);
+        GNS.getLogger().fine(" Old Active Name Server Selected to Query: " + selectedOldActive);
+        OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, requestID, rc.getNodeID(), selectedOldActive,
+                oldVersion, packetType);
+        GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
+        try {
+          rc.send(new MessagingTask(selectedOldActive, packet.toJSONObject()));
+          cancelTask = false;
+        } catch (JSONException e) {
+          GNS.getLogger().severe("JSON Exception in sending OldActiveSetSTOPPacket: " + e.getMessage());
+          e.printStackTrace();
+        }
+      }
+    }
+    return cancelTask;
+  }
 
 }

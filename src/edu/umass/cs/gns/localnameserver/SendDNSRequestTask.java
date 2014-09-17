@@ -7,14 +7,16 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashSet;
-import java.util.Random;
 import java.util.TimerTask;
 import java.util.logging.Level;
 
@@ -42,7 +44,7 @@ public class SendDNSRequestTask extends TimerTask {
   private final DNSPacket incomingPacket;
   private final int lnsReqID;
 
-  private final HashSet<Integer> nameserversQueried= new HashSet<>();
+  private final HashSet<NodeId<String>> nameserversQueried= new HashSet<>();
 
   private int timeoutCount = -1;
 
@@ -83,7 +85,7 @@ public class SendDNSRequestTask extends TimerTask {
       }
 
       // the cache contains a set of valid active replicas
-      int ns = selectNS(cacheEntry);
+      NodeId<String> ns = selectNS(cacheEntry);
 
       sendLookupToNS(ns);
 
@@ -101,7 +103,7 @@ public class SendDNSRequestTask extends TimerTask {
     if (info == null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().fine("Query ID. Response recvd "
-                  + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + nameserversQueried + "\t");
+                  + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + Util.setOfNodeIdToString(nameserversQueried) + "\t");
         }
         return true;
     } else if (requestActivesCount == -1) {
@@ -209,8 +211,8 @@ public class SendDNSRequestTask extends TimerTask {
             handler.getParameters().getQueryTimeout());
   }
 
-  private int selectNS(CacheEntry cacheEntry) {
-    int ns;
+  private NodeId<String> selectNS(CacheEntry cacheEntry) {
+    NodeId<String> ns;
     if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
       ns = BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(), cacheEntry.getActiveNameServers(),
               nameserversQueried);
@@ -220,8 +222,8 @@ public class SendDNSRequestTask extends TimerTask {
     return ns;
   }
 
-  private void sendLookupToNS(int ns) {
-    if (ns >= 0) {
+  private void sendLookupToNS(NodeId<String> ns) {
+    if (!ns.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       nameserversQueried.add(ns);
 
       DNSRequestInfo reqInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
@@ -236,7 +238,7 @@ public class SendDNSRequestTask extends TimerTask {
       try {
         json = incomingPacket.toJSONObjectQuestion();
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns + "  DNS Request = " + json);
+          GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns.get() + "  DNS Request = " + json);
         }
       } catch (JSONException e) {
         if (handler.getParameters().isDebugMode()) {

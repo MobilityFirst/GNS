@@ -10,6 +10,7 @@ package edu.umass.cs.gns.ping;
 import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -23,12 +24,12 @@ import java.net.InetAddress;
  */
 public class PingServer extends Thread{
 
-  private final int nodeID;
+  private final NodeId<String> nodeID;
   private final GNSNodeConfig gnsNodeConfig;
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
-  public PingServer(final int nodeID, final GNSNodeConfig gnsNodeConfig) {
+  public PingServer(final NodeId<String> nodeID, final GNSNodeConfig gnsNodeConfig) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
   }
@@ -38,7 +39,8 @@ public class PingServer extends Thread{
   public void run() {
 
     try {
-      serverSocket = new DatagramSocket(nodeID == PingManager.LOCALNAMESERVERID ? GNS.DEFAULT_LNS_PING_PORT : gnsNodeConfig.getNSPingPort(nodeID));
+      serverSocket = new DatagramSocket(nodeID.equals(PingManager.LOCALNAMESERVERID)
+              ? GNS.DEFAULT_LNS_PING_PORT : gnsNodeConfig.getNSPingPort(nodeID));
       byte[] receiveData = new byte[1024];
       byte[] sendData;
       while (true) {
@@ -84,7 +86,7 @@ public class PingServer extends Thread{
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
-    int nodeID = 0;
+    NodeId<String> nodeID = new NodeId<String>(0);
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
     PingServer pingServer = new PingServer(nodeID, gnsNodeConfig);
     new Thread(pingServer).start();

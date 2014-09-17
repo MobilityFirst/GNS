@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -54,22 +55,22 @@ public class CacheEntry implements Comparable<CacheEntry> {
   /**
    * A list of primary name servers for the name
    */
-  private HashSet<Integer> primaryNameServers;
+  private HashSet<NodeId<String>> replicaControllers;
   /**
    * A list of Active Nameservers for the name.
    */
-  private Set<Integer> activeNameServers;
+  private Set<NodeId<String>> activeNameServers;
 
   /**
    * Constructs a cache entry for a name from a list of replica controllers and a list of active replicas.
    *
    * @param name
-   * @param primaryNameServers
+   * @param replicaControllers
    * @param activeNameServers
    */
-  public CacheEntry(String name, HashSet<Integer> primaryNameServers, Set<Integer> activeNameServers) {
+  public CacheEntry(String name, HashSet<NodeId<String>> replicaControllers, Set<NodeId<String>> activeNameServers) {
     this.name = name;
-    this.primaryNameServers = primaryNameServers;
+    this.replicaControllers = replicaControllers;
     this.activeNameServers = activeNameServers;
   }
 
@@ -103,7 +104,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
       }
     }
     // Also update this (WHY do we cache this if it never changes)?
-    this.primaryNameServers = (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(name);
+    this.replicaControllers = (HashSet<NodeId<String>>) ConsistentHashing.getReplicaControllerSet(name);
 //    this.activeNameServer = packet.getActiveNameServers();
   }
 
@@ -113,8 +114,8 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @param name
    * @param primaryNameServers
    */
-  public CacheEntry(String name, Set<Integer> primaryNameServers) {
-    this(name, (HashSet<Integer>) primaryNameServers, primaryNameServers);
+  public CacheEntry(String name, Set<NodeId<String>> primaryNameServers) {
+    this(name, (HashSet<NodeId<String>>) primaryNameServers, primaryNameServers);
   }
 
   /**
@@ -123,7 +124,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @param packet
    */
   public CacheEntry(RequestActivesPacket packet) {
-    this(packet.getName(), (HashSet<Integer>) ConsistentHashing.getReplicaControllerSet(packet.getName()), packet.getActiveNameServers());
+    this(packet.getName(), (HashSet<NodeId<String>>) ConsistentHashing.getReplicaControllerSet(packet.getName()), packet.getActiveNameServers());
   }
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
@@ -169,8 +170,8 @@ public class CacheEntry implements Comparable<CacheEntry> {
   /**
    * @return the primaryNameServer
    */
-  public synchronized HashSet<Integer> getReplicaControllers() {
-    return primaryNameServers;
+  public synchronized HashSet<NodeId<String>> getReplicaControllers() {
+    return replicaControllers;
   }
 
   /**
@@ -180,7 +181,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     return timeToLiveInSeconds;
   }
 
-  public synchronized Set<Integer> getActiveNameServers() {
+  public synchronized Set<NodeId<String>> getActiveNameServers() {
     return activeNameServers;
   }
 
@@ -273,12 +274,12 @@ public class CacheEntry implements Comparable<CacheEntry> {
     entry.append("\n    TimestampAddress: " + timeStampHashToString(timestampAddress, timeToLiveInSeconds * 1000));
     entry.append("\n    PrimaryNS:[");
     boolean first = true;
-    for (int id : getReplicaControllers()) {
+    for (NodeId<String> id : replicaControllers) {
       if (first) {
-        entry.append(id);
+        entry.append(id.get());
         first = false;
       } else {
-        entry.append(", " + id);
+        entry.append(", " + id.get());
       }
     }
     entry.append("]");
@@ -286,7 +287,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     entry.append("\n    ActiveNS:[");
     if (activeNameServers != null) {
       first = true;
-      for (int id : activeNameServers) {
+      for (NodeId<String> id : activeNameServers) {
         if (first) {
           entry.append(id);
           first = false;

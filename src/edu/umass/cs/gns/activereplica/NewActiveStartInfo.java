@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.activereplica;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.WaitforUtility;
 import edu.umass.cs.gns.util.Util;
@@ -21,10 +22,10 @@ public class NewActiveStartInfo {
 
 	public NewActiveStartInfo(NewActiveSetStartupPacket originalPacket) {
 		this.originalPacket = originalPacket;
-		this.waitfor = new WaitforUtility(Util.setToIntArray(originalPacket.getNewActiveNameServers()));
+		this.waitfor = new WaitforUtility(Util.setToNodeIdArray(originalPacket.getNewActiveNameServers()));
 	}
 
-	public synchronized boolean receivedResponseFromActive(int ID) {
+	public synchronized boolean receivedResponseFromActive(NodeId<String> ID) {
 		return this.waitfor.updateHeardFrom(ID);
 	}
 

@@ -1,12 +1,13 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.Serializable;
 
 public class Ballot implements Comparable<Ballot>, Serializable{
 	public int ballotNumber;
-	public int coordinatorID;
+	public NodeId<String> coordinatorID;
 
-	public Ballot(int ballotNumber, int coordinatorID) {
+	public Ballot(int ballotNumber, NodeId<String> coordinatorID) {
 		this.ballotNumber = ballotNumber;
 		this.coordinatorID = coordinatorID;
 	}
@@ -14,7 +15,7 @@ public class Ballot implements Comparable<Ballot>, Serializable{
 	public Ballot(String s) {
 		String[] tokens = s.split(":");
 		ballotNumber = new Integer(tokens[0]);
-		coordinatorID = new Integer(tokens[1]);
+		coordinatorID = new NodeId<String>(tokens[1]);
 	}
 	
 	@Override
@@ -26,16 +27,14 @@ public class Ballot implements Comparable<Ballot>, Serializable{
 			return -1;
 		}
 		else {
-			if (coordinatorID > b.coordinatorID ) return 1;
-			else if (coordinatorID < b.coordinatorID) return -1;
-			return 0;
+                  return coordinatorID.compareTo(b.coordinatorID);
 		}
 	}
 
     public int getBallotNumber() {
       return ballotNumber;
     }
-    public int getCoordinatorID() {
+    public NodeId<String> getCoordinatorID() {
       return  coordinatorID;
     }
 

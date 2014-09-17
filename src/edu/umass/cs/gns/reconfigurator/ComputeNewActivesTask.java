@@ -8,6 +8,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
@@ -124,7 +125,7 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 					continue;
 				}
 				log.fine("Node "+getID()+" will select new actives for name = " + rcRecord.getName());
-				Set<Integer> newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
+				Set<NodeId<String>> newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
 				if (newActiveNameServers.size() < Config.minReplica) {
 					log.warning("Node "+getID()+": No group change as less than min replicas chosen: name: " + rcRecord.getName() +
 							" NewActives: " + newActiveNameServers + " OldActives: " + rcRecord.getActiveNameservers());
@@ -167,15 +168,15 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 
 	/************************ Methods below are private methods ************************/
 
-	private int getID() {return this.replicaController.getNodeID();} 
+	private NodeId<String> getID() {return this.replicaController.getNodeID();} 
 	/**
 	 * Returns true if the set of new actives is identical to the set of old actives. False otherwise.
 	 */
-	private boolean isActiveSetModified(Set<Integer> oldActives, Set<Integer> newActives) {
+	private boolean isActiveSetModified(Set<NodeId<String>> oldActives, Set<NodeId<String>> newActives) {
 		if (oldActives.size() != newActives.size()) {
 			return true;
 		}
-		for (int oldActive : oldActives) {
+		for (NodeId<String> oldActive : oldActives) {
 			if (!newActives.contains(oldActive)) {
 				return true;
 			}
@@ -190,10 +191,10 @@ public class ComputeNewActivesTask implements RCProtocolTask {
 	 * @param count number of times group changes have been done
 	 * @return set of active replicas for this name
 	 */
-	private Set<Integer> getNewActiveNameServers(ReplicaControllerRecord rcRecord, Set<Integer> oldActiveNameServers,
+	private Set<NodeId<String>> getNewActiveNameServers(ReplicaControllerRecord rcRecord, Set<NodeId<String>> oldActiveNameServers,
 			int count) throws FieldNotFoundException, FailedDBOperationException {
 
-		Set<Integer> newActiveNameServers;
+		Set<NodeId<String>> newActiveNameServers;
 
 		int numReplica = numberOfReplica(rcRecord);
 		if (numReplica == 0) {

@@ -7,6 +7,8 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.GroupChangeIdentifier;
@@ -139,12 +141,12 @@ public class GroupChange {
 
       GNS.getLogger().fine("Name Record Now: = " + rcRecord.toString());
       if (!recovery) {
-        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID() && activeProposalPacket.getLnsAddress() != null) {
+        if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID()) && activeProposalPacket.getLnsAddress() != null) {
           GNS.getLogger().info("Putting packet in hash map: " + activeProposalPacket);
           trackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), activeProposalPacket.getVersion()), activeProposalPacket.getLnsAddress());
         }
         // Next step: stop old actives
-        if (activeProposalPacket.getProposingNode() == replicaController.getNodeID()) {// if I have proposed this change, I will start actives group change process
+        if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID())) {// if I have proposed this change, I will start actives group change process
           GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
                   + activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
           // todo could use failure detector here
@@ -237,8 +239,8 @@ public class GroupChange {
     if (o != null) {
       // inform old actives to delete state
       OldActiveSetStopPacket oldActiveSetStopPacket = new OldActiveSetStopPacket(packet.getName(), 0,
-              replicaController.getNodeID(), -1, packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
-      for (int nodeID: packet.getOldActiveNameServers()) {
+              replicaController.getNodeID(), GNSNodeConfig.INVALID_NAME_SERVER_ID, packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
+      for (NodeId<String> nodeID: packet.getOldActiveNameServers()) {
         replicaController.getNioServer().sendToID(nodeID, oldActiveSetStopPacket.toJSONObject());
       }
       GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());

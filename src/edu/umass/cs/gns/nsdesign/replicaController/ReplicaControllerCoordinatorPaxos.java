@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -24,15 +25,13 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
-  private final int nodeID;
+  private final NodeId<String> nodeID;
   private AbstractPaxosManager paxosManager;
 
   private Replicable paxosInterface;
 
-
-
-  public ReplicaControllerCoordinatorPaxos(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
-                                           Replicable paxosInterface, PaxosConfig paxosConfig) {
+  public ReplicaControllerCoordinatorPaxos(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+          Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
 
     if (Config.multiPaxos) {
@@ -51,7 +50,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   }
 
   private void createPrimaryPaxosInstances() {
-    HashMap<String, Set<Integer>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
+    HashMap<String, Set<NodeId<String>>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
       paxosManager.createPaxosInstance(groupID, Config.FIRST_VERSION, groupIDsMembers.get(groupID), paxosInterface);
@@ -60,7 +59,12 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
 
   @Override
   public int coordinateRequest(JSONObject request) {
-    if (this.paxosInterface == null) return -1; // replicable app not set
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Request: " + request.toString());
+    }
+    if (this.paxosInterface == null) {
+      return -1; // replicable app not set
+    }
     try {
       Packet.PacketType type = Packet.getPacketType(request);
       switch (type) {
@@ -142,7 +146,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   public void shutdown() {
     // todo how to shutdown multipaxos's PaxosManager?
     if (paxosManager instanceof PaxosManager) {
-      ((PaxosManager)paxosManager).shutdown();
+      ((PaxosManager) paxosManager).shutdown();
     }
   }
 }

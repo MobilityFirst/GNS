@@ -6,8 +6,11 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +42,6 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
   private final static String NAME = "name";
   private final static String RECORDKEY = "recordkey";
   private final static String VALUE = "value";
-  //private final static String LOCALNAMESERVERID = "localID";
   private final static String NAMESERVER_ID = "ns_ID";
   private final static String SOURCE_ID = "sourceId"; 
   private final static String TIME_TO_LIVE = "ttlAddress";
@@ -49,7 +51,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
    */
-  public final static int LOCAL_SOURCE_ID = -1;
+  public final static NodeId<String> LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
   /** 
    * Unique identifier used by the entity making the initial request to confirm
@@ -89,18 +91,18 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
   /**
    * ID of name server receiving the message.
    */
-  private int nameServerID;
+  private NodeId<String> nameServerID;
   /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
-  private final int sourceId;
+  private final NodeId<String> sourceId;
 
   /**
    * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
    * replica set.
    */
-  private Set<Integer> activeNameSevers = null;
+  private Set<NodeId<String>> activeNameServers = null;
 
 
   /**
@@ -119,7 +121,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    * @param lnsAddress
    * @param ttl TTL of name record.
    */
-  public AddRecordPacket(int sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
+  public AddRecordPacket(NodeId<String> sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
     super(lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
     this.sourceId = sourceId;
@@ -129,8 +131,8 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     this.value = value;
     //this.localNameServerID = localNameServerID;
     this.ttl = ttl;
-    this.nameServerID = -1;
-    this.activeNameSevers = null;
+    this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.activeNameServers = null;
   }
 
   /**
@@ -147,7 +149,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.getInt(SOURCE_ID);
+    this.sourceId = new NodeId<String>(json.getString(SOURCE_ID));
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = json.getString(RECORDKEY);
@@ -155,9 +157,10 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
     //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.ttl = json.getInt(TIME_TO_LIVE);
-    this.nameServerID = json.getInt(NAMESERVER_ID);
+    this.nameServerID = new NodeId<String>(json.getString(NAMESERVER_ID));
     if (json.has(ACTIVE_NAMESERVERS)) {
-        this.activeNameSevers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
+        this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));
+        //this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
     }
   }
 
@@ -172,7 +175,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, getSourceId());
+    json.put(SOURCE_ID, sourceId.get());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(RECORDKEY, getRecordKey());
@@ -180,9 +183,9 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     json.put(VALUE, new JSONArray(getValue()));
     //json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(TIME_TO_LIVE, getTTL());
-    json.put(NAMESERVER_ID, getNameServerID());
-    if (getActiveNameSevers() != null)
-      json.put(ACTIVE_NAMESERVERS, getActiveNameSevers());
+    json.put(NAMESERVER_ID, nameServerID.get());
+    if (getActiveNameServers() != null)
+      json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameServers()));
     return json;
   }
 
@@ -245,24 +248,24 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     return ttl;
   }
 
-  public int getNameServerID() {
+  public NodeId<String> getNameServerID() {
     return nameServerID;
   }
 
-  public void setNameServerID(int nameServerID) {
+  public void setNameServerID(NodeId<String> nameServerID) {
     this.nameServerID = nameServerID;
   }
 
-  public int getSourceId() {
+  public NodeId<String> getSourceId() {
     return sourceId;
   }
 
-  public Set<Integer> getActiveNameSevers() {
-    return activeNameSevers;
+  public Set<NodeId<String>> getActiveNameServers() {
+    return activeNameServers;
   }
 
-  public void setActiveNameSevers(Set<Integer> activeNameSevers) {
-    this.activeNameSevers = activeNameSevers;
+  public void setActiveNameServers(Set<NodeId<String>> activeNameServers) {
+    this.activeNameServers = activeNameServers;
   }
 
 }

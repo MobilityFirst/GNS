@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.statusdisplay;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.Format;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -14,7 +16,7 @@ import javax.swing.JProgressBar;
  */
 public class StatusPane extends JPanel {
 
-  private int id;
+  private NodeId<String> id;
   private JLabel idLabel;
   private JLabel ipAddressLabel;
   private JLabel stateLabel;
@@ -28,7 +30,7 @@ public class StatusPane extends JPanel {
   /**
    * Creates new form StatusPane
    */
-  public StatusPane(int id) {
+  public StatusPane(NodeId<String> id) {
     this.id = id;
     initComponents();
   }
@@ -47,7 +49,7 @@ public class StatusPane extends JPanel {
     idLabel.setPreferredSize(new Dimension(40, height));
     ipAddressLabel = new JLabel();
     ipAddressLabel.setPreferredSize(new Dimension(ADDRESSWIDTH, height));
-    if (id != -1) {
+    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       progressBar = new JProgressBar();
       progressBar.setPreferredSize(new Dimension(PROGRESSWIDTH, height));
     } else {
@@ -65,19 +67,19 @@ public class StatusPane extends JPanel {
 //    jLabel5 = new JLabel();
 //    jLabel5.setPreferredSize(new Dimension(30, height));
 
-    if (id != -1) {
-      idLabel.setText(Integer.toString(id));
+    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+      idLabel.setText(id.get());
     } else {
       idLabel.setText("#");
     }
 
-    if (id != -1) {
+    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       ipAddressLabel.setText("<host name unknown>");
     } else {
       ipAddressLabel.setText("Host Name");
     }
 
-    if (id == -1) {
+    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       stateLabel.setText("State");
       statusLabel.setText("Status");
       progressBarHeaderLabel.setText("");
@@ -91,7 +93,7 @@ public class StatusPane extends JPanel {
 //    jLabel5.setText("Z");
     add(idLabel);
     add(ipAddressLabel);
-    if (id != -1) {
+    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       StatusEntry entry = StatusModel.getInstance().getEntry(id);
       if (entry.getState() != StatusEntry.State.RUNNING && entry.getState() != StatusEntry.State.TERMINATED
               && entry.getState() != StatusEntry.State.ERROR) {
@@ -111,9 +113,9 @@ public class StatusPane extends JPanel {
 
   @Override
   public void paintComponent(Graphics g) {
-    if (id != -1) {
+    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       StatusEntry entry = StatusModel.getInstance().getEntry(id);
-      idLabel.setText(Integer.toString(id));
+      idLabel.setText(id.get());
       stateLabel.setText(entry.getState().name());
       statusLabel.setText(entry.getStatusString());
       if (entry.getName() != null) {
@@ -123,7 +125,7 @@ public class StatusPane extends JPanel {
       //timeLabel.setText(Format.formatDateTimeOnlyMilleUTC(entry.getTime()));
       timeLabel.setText(entry.getTime().toString());
     }
-    if (id != -1) {
+    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       progressBar.setIndeterminate(true);
     }
 

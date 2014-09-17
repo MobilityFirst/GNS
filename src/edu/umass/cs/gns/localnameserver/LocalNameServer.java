@@ -12,6 +12,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
@@ -60,7 +61,7 @@ public class LocalNameServer {
    */
   private static IntercessorInterface intercessor;
 
-  private static ConcurrentHashMap<Integer, Double> nameServerLoads;
+  private static ConcurrentHashMap<NodeId<String>, Double> nameServerLoads;
 
   /**
    * Ping manager object for pinging other nodes and updating ping latencies in
@@ -70,7 +71,7 @@ public class LocalNameServer {
   /**
    * @return the nameServerLoads
    */
-  public static ConcurrentHashMap<Integer, Double> getNameServerLoads() {
+  public static ConcurrentHashMap<NodeId<String>, Double> getNameServerLoads() {
     return nameServerLoads;
   }
 
@@ -136,7 +137,7 @@ public class LocalNameServer {
 
     if (parameters.isExperimentMode()) {
       GNS.getLogger().info("Starting experiment ..... ");
-      new StartExperiment().startMyTest(-1, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
+      new StartExperiment().startMyTest(GNSNodeConfig.INVALID_NAME_SERVER_ID, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
       // name server loads initialized.
       if (parameters.isLoadDependentRedirection()) {
@@ -313,7 +314,7 @@ public class LocalNameServer {
    * @param name
    * @return
    */
-  public static Set<Integer> getReplicaControllers(String name) {
+  public static Set<NodeId<String>> getReplicaControllers(String name) {
     return requestHandler.getReplicaControllers(name);
   }
 
@@ -324,7 +325,7 @@ public class LocalNameServer {
    * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
    *
    */
-  public static int getClosestReplicaController(String name, Set<Integer> nameServersQueried) {
+  public static NodeId<String> getClosestReplicaController(String name, Set<NodeId<String>> nameServersQueried) {
     return requestHandler.getClosestReplicaController(name, nameServersQueried);
   }
 
@@ -335,7 +336,7 @@ public class LocalNameServer {
    * @param json
    * @param ns
    */
-  public static void sendToNS(JSONObject json, int ns) {
+  public static void sendToNS(JSONObject json, NodeId<String> ns) {
     requestHandler.sendToNS(json, ns);
   }
 
@@ -349,14 +350,14 @@ public class LocalNameServer {
    * @return Best name server among serverIDs given.
    * ***********************************************************
    */
-  public static int selectBestUsingLatencyPlusLoad(Set<Integer> serverIDs) {
+  public static NodeId<String> selectBestUsingLatencyPlusLoad(Set<NodeId<String>> serverIDs) {
     if (serverIDs == null || serverIDs.size() == 0) {
-      return -1;
+      return GNSNodeConfig.INVALID_NAME_SERVER_ID;
     }
-    int selectServer = -1;
+    NodeId<String> selectServer = GNSNodeConfig.INVALID_NAME_SERVER_ID;
     // select server whose latency + load is minimum
     double selectServerLatency = Double.MAX_VALUE;
-    for (int x : serverIDs) {
+    for (NodeId<String> x : serverIDs) {
       if (requestHandler.getGnsNodeConfig().getPingLatency(x) > 0) {
         double totallatency = 5 * getNameServerLoads().get(x) + (double) requestHandler.getGnsNodeConfig().getPingLatency(x);
         if (totallatency < selectServerLatency) {
@@ -419,13 +420,13 @@ public class LocalNameServer {
 
   // MONITOR NAME SERVER LOADS
   private void initializeNameServerLoadMonitoring() {
-    nameServerLoads = new ConcurrentHashMap<Integer, Double>();
-    Set<Integer> nameServerIDs = requestHandler.getGnsNodeConfig().getNodeIDs();
-    for (int x : nameServerIDs) {
+    nameServerLoads = new ConcurrentHashMap<NodeId<String>, Double>();
+    Set<NodeId<String>> nameServerIDs = requestHandler.getGnsNodeConfig().getNodeIDs();
+    for (NodeId<String> x : nameServerIDs) {
       nameServerLoads.put(x, 0.0);
     }
     Random r = new Random();
-    for (int x : nameServerIDs) {
+    for (NodeId<String> x : nameServerIDs) {
       SendLoadMonitorPacketTask loadMonitorTask = new SendLoadMonitorPacketTask(x);
       long interval = StartLocalNameServer.nameServerLoadMonitorIntervalSeconds * 1000;
       // Query NS at different times to avoid synchronization among local name servers.

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.net.InetSocketAddress;
@@ -18,11 +19,11 @@ public class UpdateInfo extends RequestInfo {
   /**
    * ID of the name server where update was sent *
    */
-  private int nameserverID;
+  private NodeId<String> nameserverID;
 
   private BasicPacket basicPacket;
 
-  public UpdateInfo(int lnsRequestID, String name, long startTime, int nameserverId, BasicPacket packet) {
+  public UpdateInfo(int lnsRequestID, String name, long startTime, NodeId<String> nameserverId, BasicPacket packet) {
     this.lnsReqID = lnsRequestID;
     this.name = name;
     this.startTime = startTime;
@@ -32,7 +33,7 @@ public class UpdateInfo extends RequestInfo {
     this.requestType = packet.getType();
   }
 
-  public synchronized void setNameserverID(int nameserverID) {
+  public synchronized void setNameserverID(NodeId<String> nameserverID) {
     this.nameserverID = nameserverID;
   }
 
@@ -51,9 +52,9 @@ public class UpdateInfo extends RequestInfo {
   }
 
   private String getFinalString(String queryStatus, String name, long latency, int numTransmissions,
-          int nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
+          NodeId<String> nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
           long curTime, String eventCodes) {
-    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameServerID + "\t"
+    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameServerID.get() + "\t"
             + address.toString() + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + curTime + "\t" + eventCodes;
   }
 

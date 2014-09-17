@@ -3,6 +3,7 @@ package edu.umass.cs.gns.test;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
@@ -34,8 +35,8 @@ class GenerateUpdateRequest extends TimerTask {
     ResultValue newValue = new ResultValue();
     newValue.add(Util.randomString(objectSizeBytes));
     //ignore signature info
-    UpdatePacket updateAddressPacket = new UpdatePacket(-1, updateCount, updateCount, name, "EdgeRecord",
-            newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, -1, GNS.DEFAULT_TTL_SECONDS, null, null, null);
+    UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, updateCount, updateCount, name, "EdgeRecord",
+            newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, GNSNodeConfig.INVALID_NAME_SERVER_ID, GNS.DEFAULT_TTL_SECONDS, null, null, null);
     try {
       packetDemultiplexer.handleJSONObject(updateAddressPacket.toJSONObject());
     } catch (JSONException e) {

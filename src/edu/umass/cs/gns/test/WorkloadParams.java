@@ -2,6 +2,7 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.main.GNS;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -32,8 +33,8 @@ public class WorkloadParams {
   private int ttl;
 
   // parameters for connect-time experiment
-  private int mobileId = 3;
-  private int correspondentId = 4;
+  private NodeId<String> mobileId = new NodeId<String>(3);
+  private NodeId<String> correspondentId = new NodeId<String>(4);
   private double mobileUpdateInterval = 4;
 
   public WorkloadParams(String workloadConfFile) throws IOException {
@@ -77,10 +78,10 @@ public class WorkloadParams {
       this.mobileUpdateInterval = Double.parseDouble(prop.getProperty(MOBILE_UPDATE_INTERVAL));
     }
     if (prop.containsKey(MOBILE_ID)) {
-      this.mobileId = Integer.parseInt(prop.getProperty(MOBILE_ID));
+      this.mobileId = new NodeId<String>(prop.getProperty(MOBILE_ID));
     }
     if (prop.containsKey(CORRESPONDENT_ID)) {
-      this.correspondentId = Integer.parseInt(prop.getProperty(CORRESPONDENT_ID));
+      this.correspondentId = new NodeId<String>(prop.getProperty(CORRESPONDENT_ID));
     }
 
   }
@@ -99,11 +100,11 @@ public class WorkloadParams {
     return expType;
   }
 
-  public int getMobileId() {
+  public NodeId<String> getMobileId() {
     return mobileId;
   }
 
-  public int getCorrespondentId() {
+  public NodeId<String> getCorrespondentId() {
     return correspondentId;
   }
 

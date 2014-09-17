@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.paxos.Ballot;
@@ -15,7 +16,7 @@ public class AcceptReplyPacket extends PaxosPacket {
     /**
      * nodeID of the node that sent the message
      */
-    public int nodeID;
+    public NodeId<String> nodeID;
 
     /**
      * ballot number
@@ -37,7 +38,7 @@ public class AcceptReplyPacket extends PaxosPacket {
     private static final  String SLOT_NUMBER = "ar3";
 //    private static final  String COMMIT_SLOT = "ar4";
 
-    public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
+    public AcceptReplyPacket(NodeId<String> nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
         this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
         this.nodeID = nodeID;
         this.ballot = ballot;
@@ -47,18 +48,17 @@ public class AcceptReplyPacket extends PaxosPacket {
 
     public AcceptReplyPacket(JSONObject jsonObject) throws  JSONException{
         this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
-        this.nodeID = jsonObject.getInt(NODE_ID);
+        this.nodeID = new NodeId<String>(jsonObject.getString(NODE_ID));
         this.ballot = new Ballot(jsonObject.getString(BALLOT_NUMBER));
         this.slotNumber = jsonObject.getInt(SLOT_NUMBER);
 //        this.commitSlot = jsonObject.getInt(COMMIT_SLOT);
     }
 
-
     @Override
     public JSONObject toJSONObject() throws JSONException {
         JSONObject jsonObject= new JSONObject();
         jsonObject.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-        jsonObject.put(NODE_ID, nodeID);
+        jsonObject.put(NODE_ID, nodeID.get());
         jsonObject.put(BALLOT_NUMBER, ballot.toString());
         jsonObject.put(SLOT_NUMBER, slotNumber);
 //        jsonObject.put(COMMIT_SLOT, slotNumber);

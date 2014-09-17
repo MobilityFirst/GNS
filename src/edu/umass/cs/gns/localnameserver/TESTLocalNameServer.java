@@ -8,6 +8,7 @@ import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -26,7 +27,7 @@ import java.util.*;
  */
 public class TESTLocalNameServer {
 
-  private static HashMap<Integer, JSONNIOTransport> nsNiots = new HashMap<>();
+  private static HashMap<NodeId<String>, JSONNIOTransport> nsNiots = new HashMap<>();
 
   private static Timer t = new Timer();
 
@@ -37,9 +38,9 @@ public class TESTLocalNameServer {
     StartLocalNameServer.debugMode = false;
     StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null);
 
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, 0);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, GNSNodeConfig.INVALID_NAME_SERVER_ID);
 
-    for (int nameServerID: gnsNodeConfig.getNodeIDs()) {
+    for (NodeId<String> nameServerID: gnsNodeConfig.getNodeIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
       JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, new GNSNodeConfig(configFile, nameServerID), worker);
       new Thread(gnsnioTransport).start();
@@ -48,30 +49,30 @@ public class TESTLocalNameServer {
     int numRequests = 1000;
     for (int i = 0; i < numRequests; i++) {
       // send 1 lookup with invalid response
-      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd", 
+      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, i, "abcd", 
               "EdgeRecord", null,
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
-      UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd", "EdgeRecord",
-              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
+      UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 0, 0, "abcd", "EdgeRecord",
+              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, new NodeId<String>(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
     }
     int numNames = 1000;
     for (int i = 0; i < numNames; i++) {
       // send 1 lookup with invalid response
-      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(-1, i, "abcd"+i, 
+      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, i, "abcd"+i, 
               "EdgeRecord", null,
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
-      UpdatePacket updateAddressPacket = new UpdatePacket(-1, 0, 0, "abcd"+i, "EdgeRecord",
-              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, i, GNS.DEFAULT_TTL_SECONDS, null, null, null);
+      UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 0, 0, "abcd"+i, "EdgeRecord",
+              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, new NodeId<String>(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
     }
@@ -80,11 +81,11 @@ public class TESTLocalNameServer {
     System.exit(2);
   }
 
-  private static Set<Integer> getActiveNameServers(String name) {
-    Set<Integer> activeNameServers = new HashSet<>();
-    activeNameServers.add(0);
-    activeNameServers.add(1);
-    activeNameServers.add(2);
+  private static Set<NodeId<String>> getActiveNameServers(String name) {
+    Set<NodeId<String>> activeNameServers = new HashSet<>();
+    activeNameServers.add(new NodeId<String>(0));
+    activeNameServers.add(new NodeId<String>(1));
+    activeNameServers.add(new NodeId<String>(2));
     return activeNameServers;
   }
 
@@ -92,20 +93,20 @@ public class TESTLocalNameServer {
     return new Random().nextInt(2000);
   }
 
-  public static void handleLookup(int nodeID, JSONObject json) throws JSONException, IOException {
+  public static void handleLookup(NodeId<String> nodeID, JSONObject json) throws JSONException, IOException {
     DNSPacket dnsPacket = new DNSPacket(json);
     dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     send(nodeID, dnsPacket.getLnsAddress(), dnsPacket.toJSONObjectForErrorResponse(), getDelay());
   }
 
-  public static void handleRequestActives(int nodeID, JSONObject json) throws JSONException, IOException {
+  public static void handleRequestActives(NodeId<String> nodeID, JSONObject json) throws JSONException, IOException {
     RequestActivesPacket requestActives = new RequestActivesPacket(json);
     requestActives.setActiveNameServers(getActiveNameServers(requestActives.getName()));
     send(nodeID, requestActives.getLnsAddress(), requestActives.toJSONObject(), getDelay());
   }
 
-  private static void send(final int nsID, final InetSocketAddress lnsAddress, final JSONObject json, long delay) {
+  private static void send(final NodeId<String> nsID, final InetSocketAddress lnsAddress, final JSONObject json, long delay) {
     if (delay > 0) {
       t.schedule(new TimerTask() {
         @Override
@@ -128,8 +129,8 @@ public class TESTLocalNameServer {
 }
 
 class TestPacketDemux extends AbstractPacketDemultiplexer {
-  private int nodeID;
-  public TestPacketDemux(int nodeID) {
+  private NodeId<String> nodeID;
+  public TestPacketDemux(NodeId<String> nodeID) {
     this.nodeID = nodeID;
   }
 

@@ -11,6 +11,8 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.Util;
@@ -24,7 +26,7 @@ public class TESTPaxosClient {
 	private static final int random = (int)(Math.random()*TESTPaxosConfig.NUM_GROUPS);
 
 	private final JSONNIOTransport niot;
-	private final int myID;
+	private final NodeId<String> myID;
 	private int reqCount=0;
 	private int replyCount=0;
 	private int noopCount=0;
@@ -67,7 +69,7 @@ public class TESTPaxosClient {
 		}
 	}
 
-	protected TESTPaxosClient(int id) throws IOException {
+	protected TESTPaxosClient(NodeId<String> id) throws IOException {
 		this.myID = id;
 		niot = new JSONNIOTransport(myID, TESTPaxosConfig.getNodeConfig(), 
 				new JSONMessageExtractor(new PacketDemultiplexerDefault()));
@@ -76,14 +78,14 @@ public class TESTPaxosClient {
 	}
 
 	protected void sendRequest(RequestPacket req) throws IOException, JSONException {
-		int[] group = TESTPaxosConfig.getGroup(req.getPaxosID());
+		NodeId<String>[] group = TESTPaxosConfig.getGroup(req.getPaxosID());
 		int index=-1;
 		while(index<0 || index>group.length || TESTPaxosConfig.isCrashed(group[index])) {
 			index = (int)(Math.random()*group.length); if(index==group.length) index--;
 		}
 		this.sendRequest(group[index], req);
 	}
-	protected void sendRequest(int id, RequestPacket req) throws IOException, JSONException {
+	protected void sendRequest(NodeId<String> id, RequestPacket req) throws IOException, JSONException {
 		log.info("Sending request to node " + id + ": " + req);
 		this.requests.put(req.requestID, req);
 		this.niot.sendToID(id, req.toJSONObject());
@@ -113,7 +115,7 @@ public class TESTPaxosClient {
 		TESTPaxosClient[] clients = new TESTPaxosClient[TESTPaxosConfig.NUM_CLIENTS];
 		for(int i=0; i<TESTPaxosConfig.NUM_CLIENTS; i++) {
 			try {
-				clients[i] = new TESTPaxosClient(TESTPaxosConfig.TEST_CLIENT_ID+i);
+				clients[i] = new TESTPaxosClient(new NodeId<String>(TESTPaxosConfig.TEST_CLIENT_ID+i));
 			} catch(Exception e) {
 				e.printStackTrace(); 
 				System.exit(1);
@@ -202,8 +204,9 @@ public class TESTPaxosClient {
 
 	public static void main(String[] args) {
 		try {
-			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
-			assert(myID!=-1) : "Need a node ID argument";
+			NodeId<String> myID = (args!=null && args.length>0) ? new NodeId<String>(Integer.parseInt(args[0]))
+                                : GNSNodeConfig.INVALID_NAME_SERVER_ID;
+			assert(!myID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) : "Need a node ID argument";
 
 			if(TESTPaxosConfig.findMyIP(myID))  {
 				TESTPaxosConfig.setDistributedServers();

@@ -9,6 +9,8 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -109,7 +111,7 @@ public class GroupChange {
 	 *
 	 * @param activeProposalPacket Actives proposed to primary replicas
 	 */
-	public static void executeNewActivesProposed(NewActiveProposalPacket activeProposalPacket, BasicRecordMap DB, int rcID, 
+	public static void executeNewActivesProposed(NewActiveProposalPacket activeProposalPacket, BasicRecordMap DB, NodeId<String> rcID, 
 			boolean recovery, RCProtocolTask[] protocolTasks /*return value*/) {
 
 		try {
@@ -127,7 +129,7 @@ public class GroupChange {
 			if(recovery) return;
 
 			// for some kinda testing
-			if (activeProposalPacket.getProposingNode() == rcID && activeProposalPacket.getLnsAddress() != null) {
+			if (activeProposalPacket.getProposingNode().equals(rcID) && activeProposalPacket.getLnsAddress() != null) {
 				TESTTrackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), 
 						activeProposalPacket.getVersion()), activeProposalPacket.getLnsAddress());
 			}
@@ -145,16 +147,17 @@ public class GroupChange {
 			e.printStackTrace();
 		}
 	}
-	private static void stopOldActives(NewActiveProposalPacket activeProposalPacket, int rcID, 
+	private static void stopOldActives(NewActiveProposalPacket activeProposalPacket, NodeId<String> rcID, 
 			ReplicaControllerRecord rcRecord, Runnable[] protocolTasks /*return value*/) 
 					throws FieldNotFoundException {
-		if (activeProposalPacket.getProposingNode() == rcID) {// proposer RC initiates stopping of old actives
+		if (activeProposalPacket.getProposingNode().equals(rcID)) {// proposer RC initiates stopping of old actives
 			GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
-					+ activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
+					+ activeProposalPacket.getVersion() + "\tNewActives\t" + 
+                                Util.setOfNodeIdToString(activeProposalPacket.getProposedActiveNameServers()) + "\t");
 			// todo could use failure detector here
 			// if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
 			// then proposing node has failed, so I will start group change
-			if (Config.debuggingEnabled) log.fine("Node "+rcID+" : stop oldActiveSet name = " + activeProposalPacket.getName());
+			if (Config.debuggingEnabled) log.fine("Node "+rcID.get()+" : stop oldActiveSet name = " + activeProposalPacket.getName());
 			StopActiveSetTask stopTask = new StopActiveSetTask(activeProposalPacket.getName(),
 					rcRecord.getOldActiveNameservers(), rcRecord.getOldActiveVersion(),
 					Packet.PacketType.OLD_ACTIVE_STOP, activeProposalPacket);
@@ -162,7 +165,7 @@ public class GroupChange {
 			protocolTasks[0] = stopTask; // return value
 		}
 	}
-	private static boolean earlyReturnCheck(ReplicaControllerRecord rcRecord, int rcID, NewActiveProposalPacket activeProposalPacket) 
+	private static boolean earlyReturnCheck(ReplicaControllerRecord rcRecord, NodeId<String> rcID, NewActiveProposalPacket activeProposalPacket) 
 			throws FieldNotFoundException {
 		if (rcRecord == null) return true;
 
@@ -189,7 +192,7 @@ public class GroupChange {
 	 * Old set of active replicas have stopped, and therefore new set of active replicas can be started.
 	 */
 	public static void handleOldActiveStop(OldActiveSetStopPacket oldActiveSetStop, BasicRecordMap DB, 
-			int rcID, UniqueIDHashMap ongoingStops, RCProtocolTask[] protocolTasks/*return value*/) throws FailedDBOperationException {
+			NodeId<String> rcID, UniqueIDHashMap ongoingStops, RCProtocolTask[] protocolTasks/*return value*/) throws FailedDBOperationException {
 		if (ongoingStops.remove(oldActiveSetStop.getRequestID()) != null) {
 			createStartActiveSetTask(oldActiveSetStop, DB, rcID, protocolTasks/*return value*/);
 		} else {
@@ -200,7 +203,7 @@ public class GroupChange {
 	/**
 	 * Old actives have stopped, create a task to start new actives for name.
 	 */
-	private static void createStartActiveSetTask(OldActiveSetStopPacket packet, BasicRecordMap DB, int rcID, 
+	private static void createStartActiveSetTask(OldActiveSetStopPacket packet, BasicRecordMap DB, NodeId<String> rcID, 
 			RCProtocolTask[] protocolTasks/*return value*/) throws FailedDBOperationException {
 		try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
@@ -236,7 +239,7 @@ public class GroupChange {
 	 * This method proposes a request to update replica controllers that new actives are running, and group change
 	 * is complete.
 	 */
-	public static MessagingTask[] handleNewActiveStartConfirmMessage(NewActiveSetStartupPacket packet, int rcID, 
+	public static MessagingTask[] handleNewActiveStartConfirmMessage(NewActiveSetStartupPacket packet, NodeId<String> rcID, 
 			UniqueIDHashMap ongoingStarts, RCProtocolTask[] protocolTasks) throws JSONException, IOException {
 		MessagingTask notifyRC = null, notifyOldActives = null;
 		if (Config.debuggingEnabled) log.info("NEW_ACTIVE_START: Received confirmation at primary. " + packet.getName());
@@ -245,8 +248,10 @@ public class GroupChange {
 		if (removed != null) {
 			// inform old actives to delete state
 			OldActiveSetStopPacket oldActiveSetStopPacket = new OldActiveSetStopPacket(packet.getName(), 0,
-					rcID, -1, packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
-			notifyOldActives = new MessagingTask(Util.setToIntArray(packet.getOldActiveNameServers()), oldActiveSetStopPacket.toJSONObject());
+					rcID, GNSNodeConfig.INVALID_NAME_SERVER_ID, 
+                                packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
+			notifyOldActives = new MessagingTask(Util.setToNodeIdArray(packet.getOldActiveNameServers()), 
+                                oldActiveSetStopPacket.toJSONObject());
 
 			// inform self of group change completion
 			GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());
@@ -275,7 +280,7 @@ public class GroupChange {
 	 * Executes the result of update proposed by <code>handleNewActiveStartConfirmMessage</code>.
 	 */
 	public static MessagingTask[] executeActiveNameServersRunning(GroupChangeCompletePacket packet,
-			BasicRecordMap DB, int rcID, boolean recovery)
+			BasicRecordMap DB, NodeId<String> rcID, boolean recovery)
 					throws JSONException {
 		MessagingTask replyToLNS = null;
 		if (Config.debuggingEnabled) log.info("Node "+rcID+": new active started; writing to database: " + packet);

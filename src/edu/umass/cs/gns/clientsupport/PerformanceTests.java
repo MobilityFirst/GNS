@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stats;
@@ -31,7 +31,7 @@ public class PerformanceTests {
   private static final String ACCOUNTNAME = "RoundTripPerformanceTest";
   private static final String PUBLICKEY = "RTT";
   private static final String NEWLINE = System.getProperty("line.separator");
-  private static Map<Integer, ArrayList<Double>> times;
+  private static Map<NodeId<String>, ArrayList<Double>> times;
 
   /**
    * This method implements the Round Trip time test. 
@@ -58,7 +58,7 @@ public class PerformanceTests {
       accountGuid = ClientUtils.createGuidFromPublicKey(PUBLICKEY);
       AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false);
     }
-    times = new HashMap<Integer, ArrayList<Double>>();
+    times = new HashMap<NodeId<String>, ArrayList<Double>>();
     if (verbose) {
       result.append("GUIDs:");
       result.append(NEWLINE);
@@ -128,7 +128,7 @@ public class PerformanceTests {
     }
   }
 
-  private static int getComparisonPingValue(int node) {
+  private static int getComparisonPingValue(NodeId<String> node) {
     String result = Admintercessor.sendPingValue(PingManager.LOCALNAMESERVERID, node);
     if (result.startsWith(Defs.BADRESPONSE)) {
       return 999;
@@ -141,14 +141,14 @@ public class PerformanceTests {
   
   private static String checkForExcessiveRtt() {
     StringBuilder result = new StringBuilder();
-    for (Entry<Integer, ArrayList<Double>> entry : times.entrySet()) {
-      int node = entry.getKey();
+    for (Entry<NodeId<String>, ArrayList<Double>> entry : times.entrySet()) {
+      NodeId<String> node = entry.getKey();
       Stats stats = new Stats(times.get(node));
       int avg = (int) Math.round(stats.getMean());
       int ping = getComparisonPingValue(node);
       if (avg - ping > EXCESSIVE_RTT_DIFFERENCE) {
         result.append("Node ");
-        result.append(entry.getKey());
+        result.append(entry.getKey().get());
         result.append(" has excessive rtt of ");
         result.append(avg);
         result.append("ms (ping is ");
@@ -162,11 +162,11 @@ public class PerformanceTests {
 
   private static String resultsToString() {
     StringBuilder result = new StringBuilder();
-    for (Entry<Integer, ArrayList<Double>> entry : times.entrySet()) {
+    for (Entry<NodeId<String>, ArrayList<Double>> entry : times.entrySet()) {
       Stats stats = new Stats(times.get(entry.getKey()));
       result.append(NEWLINE);
       result.append("Node: ");
-      result.append(entry.getKey());
+      result.append(entry.getKey().get());
       result.append(NEWLINE);
       result.append("Fields read = " + stats.getN());
       result.append(NEWLINE);

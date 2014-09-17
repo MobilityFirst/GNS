@@ -25,6 +25,7 @@ import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsCoordinatorUnreplicated;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorEventual;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorPaxos;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
@@ -34,7 +35,6 @@ import edu.umass.cs.gns.reconfigurator.Add;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.Reportable;
 import edu.umass.cs.gns.util.ReportingTask;
-import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
@@ -47,7 +47,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 
 	private final ActiveReplicaCoordinator coordinator; // don't create a getCoordinator() like method to just expose this outside
 
-	private final int myID;
+	private final NodeId<String> myID;
 
 	private final GNSNodeConfig gnsNodeConfig;
 
@@ -65,7 +65,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 
 	private static Logger log = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(Add.class.getName()) : GNS.getLogger();
 
-	public ActiveReplica(int id, GNSNodeConfig nc, JSONNIOTransport niot, AppType app) {
+	public ActiveReplica(NodeId<String> id, GNSNodeConfig nc, JSONNIOTransport niot, AppType app) {
 		this.myID = id;
 		this.gnsNodeConfig = nc;
 		this.app = app;
@@ -209,7 +209,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 		}
 	}
 
-	public int getNodeID() {return this.myID;}
+	public NodeId<String> getNodeID() {return this.myID;}
 	public GNSNodeConfig getGnsNodeConfig() {return this.gnsNodeConfig;}
 	//public int[] getNameServerIDs() {return Util.setToIntArray(this.gnsNodeConfig.getNodeIDs());}
 
@@ -233,7 +233,7 @@ public class ActiveReplica<AppType extends Reconfigurable & Replicable> implemen
 		} catch(JSONException je) {je.printStackTrace();}
 		return stats;
 	}
-	public Set<Integer> getRecipients() {return this.gnsNodeConfig.getNodeIDs();}
+	public Set<NodeId<String>> getRecipients() {return this.gnsNodeConfig.getNodeIDs();}
 
 	/* Value of a specific subset of stats. We may need
 	 * to send different stats to different sets of nodes. 

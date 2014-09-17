@@ -5,6 +5,7 @@ import java.util.TreeSet;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.MessagingTask;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
@@ -25,7 +26,7 @@ import edu.umass.cs.gns.util.Waitfor;
  * method that returns a protocol task to be executed when the threshold is reached (returning null
  * automatically cancels the task as it is considered complete).
  */
-public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implements
+public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType> implements
 		SchedulableProtocolTask<NodeIDType, EventType, KeyType> {
 	private final Waitfor<NodeIDType> waitfor;
 	private final int threshold;
@@ -35,7 +36,7 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 		this.threshold = nodes.size();
 	}
 
-	public ThresholdProtocolTask(Set<Integer> nodes, int threshold) {
+	public ThresholdProtocolTask(Set<NodeId<String>> nodes, int threshold) {
 		this.waitfor = new Waitfor<NodeIDType>(nodes.toArray());
 		this.threshold = threshold;
 	}
@@ -63,7 +64,7 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 		return null;
 	}
 
-	public GenericMessagingTask<Integer,?>[] fix(GenericMessagingTask<Integer,?>[] mtasks) {
+	public GenericMessagingTask<NodeId<String>,?>[] fix(GenericMessagingTask<NodeId<String>,?>[] mtasks) {
 		//System.out.println("Filtering heardFrom nodes " + Util.arrayToString(this.waitfor.getMembersHeardFrom()));
 		if (mtasks == null || mtasks.length == 0 || mtasks[0] == null ||
 				mtasks[0].msgs == null || mtasks[0].msgs.length == 0 ||
@@ -76,10 +77,10 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 		return fixed;
 	}
 
-	public GenericMessagingTask<Integer,?> fix(GenericMessagingTask<Integer,?> mtask) {
+	public GenericMessagingTask<NodeId<String>,?> fix(GenericMessagingTask<NodeId<String>,?> mtask) {
 		if (mtask == null || mtask.msgs == null || mtask.msgs.length == 0)
 			return null;
-		return new GenericMessagingTask<Integer,Object>(fix(this.waitfor.getMembersHeardFrom(),
+		return new GenericMessagingTask<NodeId<String>,Object>(fix(this.waitfor.getMembersHeardFrom(),
 				mtask.recipients), mtask.msgs);
 	}
 

@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
 import edu.umass.cs.gns.main.GNS.PortType;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -28,8 +29,8 @@ public class TrafficStatusPacket extends BasicPacket {
   public final static String NAME = "name";
   public final static String OTHER = "other";
   private Date time;
-  private int fromID;
-  private int toID;
+  private NodeId<String> fromID;
+  private NodeId<String> toID;
   private PortType portType;
   private PacketType packetType;
   private String name;
@@ -54,7 +55,7 @@ public class TrafficStatusPacket extends BasicPacket {
    * @param name
    * @param other
    */
-  public TrafficStatusPacket(int fromID, int toID, PortType portType, PacketType packetType, String name,
+  public TrafficStatusPacket(NodeId<String> fromID, NodeId<String> toID, PortType portType, PacketType packetType, String name,
           // String key,
           String other) {
     this.type = PacketType.TRAFFIC_STATUS;
@@ -84,8 +85,8 @@ public class TrafficStatusPacket extends BasicPacket {
 
     this.type = Packet.getPacketType(json);
     this.time = Format.parseDateTimeOnlyMilleUTC(json.getString(TIME));
-    this.fromID = json.getInt(FROMID);
-    this.toID = json.getInt(TOID);
+    this.fromID = new NodeId<String>(json.getString(FROMID));
+    this.toID = new NodeId<String>(json.getString(TOID));
     this.portType = PortType.valueOf(json.getString(PORTTYPE));
     this.packetType = PacketType.valueOf(json.getString(PACKETTYPE));
     this.name = json.optString(NAME, null);
@@ -96,11 +97,11 @@ public class TrafficStatusPacket extends BasicPacket {
     return time;
   }
 
-  public int getFromID() {
+  public NodeId<String> getFromID() {
     return fromID;
   }
 
-  public int getToID() {
+  public NodeId<String> getToID() {
     return toID;
   }
 
@@ -132,8 +133,8 @@ public class TrafficStatusPacket extends BasicPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(TIME, Format.formatDateTimeOnlyMilleUTC(time));
-    json.put(FROMID, fromID);
-    json.put(TOID, toID);
+    json.put(FROMID, fromID.get());
+    json.put(TOID, toID.get());
     json.put(PORTTYPE, portType.name());
     json.put(PACKETTYPE, packetType.name());
     if (name != null) {

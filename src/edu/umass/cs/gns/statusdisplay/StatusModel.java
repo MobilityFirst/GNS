@@ -2,6 +2,7 @@ package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.GNS.PortType;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import edu.umass.cs.gns.statusdisplay.StatusEntry.State;
@@ -30,7 +31,7 @@ public class StatusModel {
   public static StatusModel getInstance() {
     return instance;
   }
-  private Map<Integer, StatusEntry> entries = new ConcurrentHashMap<Integer, StatusEntry>();
+  private Map<NodeId<String>, StatusEntry> entries = new ConcurrentHashMap<NodeId<String>, StatusEntry>();
   private Set<UpdateListener> listeners = new HashSet<UpdateListener>();
 
   public synchronized void addUpdateListener(UpdateListener listener) {
@@ -45,14 +46,14 @@ public class StatusModel {
     return entries.values();
   }
 
-  public StatusEntry getEntry(int id) {
+  public StatusEntry getEntry(NodeId<String> id) {
     return entries.get(id);
   }
 
   public static class SendNotation {
 
-    private int sender;
-    private int receiver;
+    private NodeId<String> sender;
+    private NodeId<String> receiver;
     private GNS.PortType portType;
     private Packet.PacketType packetType;
     private Date time;
@@ -60,11 +61,11 @@ public class StatusModel {
     private String key;
     private String other;
 
-    public int getSender() {
+    public NodeId<String> getSender() {
       return sender;
     }
 
-    public int getReceiver() {
+    public NodeId<String> getReceiver() {
       return receiver;
     }
 
@@ -125,8 +126,8 @@ public class StatusModel {
   // the update queuing part
   public class EntryUpdate {
 
-    Integer newid; // so it can be null
-    int id;
+    NodeId<String> newid; // so it can be null
+    NodeId<String> id;
     Date time;
     StatusEntry.State newState;
     String statusString;
@@ -135,7 +136,7 @@ public class StatusModel {
     Point2D location;
     boolean clear;
 
-    public EntryUpdate(boolean isNew, int newid) {
+    public EntryUpdate(boolean isNew, NodeId<String> newid) {
       this.newid = newid;
     }
 
@@ -143,7 +144,7 @@ public class StatusModel {
       this.clear = true;
     }
 
-    public EntryUpdate(int id) {
+    public EntryUpdate(NodeId<String> id) {
       this.newid = null;
       this.clear = false;
       this.id = id;
@@ -155,45 +156,45 @@ public class StatusModel {
       this.location = null;
     }
 
-    public EntryUpdate(int id, String name, String ip, Point2D location) {
+    public EntryUpdate(NodeId<String> id, String name, String ip, Point2D location) {
       this(id);
       this.name = name;
       this.ip = ip;
       this.location = location;
     }
 
-    public EntryUpdate(int id, String statusString, Date time) {
+    public EntryUpdate(NodeId<String> id, String statusString, Date time) {
       this(id);
       this.statusString = statusString;
       this.time = time;
     }
 
-    public EntryUpdate(int id, State newState) {
+    public EntryUpdate(NodeId<String> id, State newState) {
       this(id);
       this.newState = newState;
     }
 
-    public EntryUpdate(int id, String statusString) {
+    public EntryUpdate(NodeId<String> id, String statusString) {
       this.id = id;
       this.statusString = statusString;
     }
 
-    public EntryUpdate(int id, State newState, String statusString) {
+    public EntryUpdate(NodeId<String> id, State newState, String statusString) {
       this.id = id;
       this.newState = newState;
       this.statusString = statusString;
     }
 
-    public EntryUpdate(int id, Date time) {
+    public EntryUpdate(NodeId<String> id, Date time) {
       this.id = id;
       this.time = time;
     }
 
-    public int getId() {
+    public NodeId<String> getId() {
       return id;
     }
 
-    public Integer getNewid() {
+    public NodeId<String> getNewid() {
       return newid;
     }
 
@@ -253,7 +254,7 @@ public class StatusModel {
     }
   }
 
-  public void queueAddEntry(int id) {
+  public void queueAddEntry(NodeId<String> id) {
     addModelEvent(new ModelEvent(new EntryUpdate(true, id)));
   }
 
@@ -261,27 +262,27 @@ public class StatusModel {
     addModelEvent(new ModelEvent(new EntryUpdate(false)));
   }
 
-  public void queueUpdate(int id, String statusString, Date time) {
+  public void queueUpdate(NodeId<String> id, String statusString, Date time) {
     addModelEvent(new ModelEvent(new EntryUpdate(id, statusString, time)));
   }
 
-  public void queueUpdate(int id, String name, String ip, Point2D location) {
+  public void queueUpdate(NodeId<String> id, String name, String ip, Point2D location) {
     addModelEvent(new ModelEvent(new EntryUpdate(id, name, ip, location)));
   }
 
-  public void queueUpdate(int id, StatusEntry.State newState) {
+  public void queueUpdate(NodeId<String> id, StatusEntry.State newState) {
     addModelEvent(new ModelEvent(new EntryUpdate(id, newState)));
   }
 
-  public void queueUpdate(int id, String statusString) {
+  public void queueUpdate(NodeId<String> id, String statusString) {
     addModelEvent(new ModelEvent(new EntryUpdate(id, statusString)));
   }
 
-  public void queueUpdate(int id, StatusEntry.State newState, String statusString) {
+  public void queueUpdate(NodeId<String> id, StatusEntry.State newState, String statusString) {
     addModelEvent(new ModelEvent(new EntryUpdate(id, newState, statusString)));
   }
 
-  public void queueUpdate(int id, Date time) {
+  public void queueUpdate(NodeId<String> id, Date time) {
     addModelEvent(new ModelEvent(new EntryUpdate(id, time)));
   }
 
@@ -309,7 +310,7 @@ public class StatusModel {
           if (update.isClear()) {
             entries.clear();
           } else if (update.getNewid() != null) {
-            int id = update.getNewid();
+            NodeId<String> id = update.getNewid();
             if (entries.get(id) != null) {
               System.out.println("Bad stuff: entry " + id + " already exists");
             } else {

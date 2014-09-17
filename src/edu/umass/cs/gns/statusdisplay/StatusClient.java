@@ -5,6 +5,7 @@
 package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.StatusPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
@@ -37,7 +38,7 @@ public class StatusClient {
     warningIssued = false;
   }
 
-  public static synchronized void sendStatus(int id, String message) {
+  public static synchronized void sendStatus(NodeId<String> id, String message) {
     if (statusServerAddress == null) {
       if (!warningIssued) {
         GNS.getLogger().warning("Unable to send status. Server address has not been initialized!");
@@ -81,8 +82,8 @@ public class StatusClient {
    * @param portType
    * @param packetType
    */
-  public static void sendTrafficStatus(int fromID, Set<Integer> toIDs, GNS.PortType portType, Packet.PacketType packetType) {
-    sendTrafficStatus(fromID, toIDs, -1, portType, packetType);
+  public static void sendTrafficStatus(NodeId<String> fromID, Set<NodeId<String>> toIDs, GNS.PortType portType, Packet.PacketType packetType) {
+    sendTrafficStatus(fromID, toIDs, new NodeId<String>(-1), portType, packetType);
   }
   
   /**
@@ -96,9 +97,9 @@ public class StatusClient {
    * @param name
    * @param key 
    */
-  public static void sendTrafficStatus(int fromID, Set<Integer> toIDs, GNS.PortType portType, Packet.PacketType packetType, 
+  public static void sendTrafficStatus(NodeId<String> fromID, Set<NodeId<String>> toIDs, GNS.PortType portType, Packet.PacketType packetType, 
           String name) {
-    sendTrafficStatus(fromID, toIDs, -1, portType, packetType, name);
+    sendTrafficStatus(fromID, toIDs, new NodeId<String>(-1), portType, packetType, name);
   }
 
   /**
@@ -110,9 +111,9 @@ public class StatusClient {
    * @param portType
    * @param packetType
    */
-  public static void sendTrafficStatus(int fromID, Set<Integer> toIDs, int exclude, GNS.PortType portType, Packet.PacketType packetType) {
-    for (int id : toIDs) {
-      if (exclude != id) {
+  public static void sendTrafficStatus(NodeId<String> fromID, Set<NodeId<String>> toIDs, NodeId<String> exclude, GNS.PortType portType, Packet.PacketType packetType) {
+    for (NodeId<String> id : toIDs) {
+      if (!exclude.equals(id)) {
         StatusClient.sendTrafficStatus(fromID, id, portType, packetType);
       }
     }
@@ -127,13 +128,13 @@ public class StatusClient {
    * @param exclude
    * @param portType
    * @param packetType
-   * @param name
-   * @param key 
+   * @param name 
    */
-  public static void sendTrafficStatus(int fromID, Set<Integer> toIDs, int exclude, GNS.PortType portType, Packet.PacketType packetType,
+  public static void sendTrafficStatus(NodeId<String> fromID, Set<NodeId<String>> toIDs, NodeId<String> exclude, GNS.PortType portType, 
+          Packet.PacketType packetType,
           String name) {
-    for (int id : toIDs) {
-      if (exclude != id) {
+    for (NodeId<String> id : toIDs) {
+      if (!exclude.equals(id)) {
         StatusClient.sendTrafficStatus(fromID, id, portType, packetType, name);
       }
     }
@@ -148,8 +149,8 @@ public class StatusClient {
    * @param portType
    * @param packetType
    */
-  public static void sendTrafficStatus(int fromID, Set<Integer> toIDs, Set<Integer> exclude, GNS.PortType portType, Packet.PacketType packetType) {
-    for (int id : toIDs) {
+  public static void sendTrafficStatus(NodeId<String> fromID, Set<NodeId<String>> toIDs, Set<NodeId<String>> exclude, GNS.PortType portType, Packet.PacketType packetType) {
+    for (NodeId<String> id : toIDs) {
       if (!exclude.contains(id)) {
         StatusClient.sendTrafficStatus(fromID, id, portType, packetType);
       }
@@ -168,9 +169,9 @@ public class StatusClient {
    * @param name
    * @param key 
    */
-  public static void sendTrafficStatus(int fromID, Set<Integer> toIDs, Set<Integer> exclude, GNS.PortType portType, Packet.PacketType packetType,
+  public static void sendTrafficStatus(NodeId<String> fromID, Set<NodeId<String>> toIDs, Set<NodeId<String>> exclude, GNS.PortType portType, Packet.PacketType packetType,
           String name) {
-    for (int id : toIDs) {
+    for (NodeId<String> id : toIDs) {
       if (!exclude.contains(id)) {
         StatusClient.sendTrafficStatus(fromID, id, portType, packetType, name);
       }
@@ -185,7 +186,7 @@ public class StatusClient {
    * @param portType
    * @param packetType
    */
-  public static synchronized void sendTrafficStatus(int fromID, int toID, GNS.PortType portType, Packet.PacketType packetType) {
+  public static synchronized void sendTrafficStatus(NodeId<String> fromID, NodeId<String> toID, GNS.PortType portType, Packet.PacketType packetType) {
     sendTrafficStatus(fromID, toID, portType, packetType, null, null);
   }
 
@@ -200,7 +201,7 @@ public class StatusClient {
    * @param name
    * @param key 
    */
-  public static synchronized void sendTrafficStatus(int fromID, int toID, GNS.PortType portType, Packet.PacketType packetType,
+  public static synchronized void sendTrafficStatus(NodeId<String> fromID, NodeId<String> toID, GNS.PortType portType, Packet.PacketType packetType,
           String name) {
     sendTrafficStatus(fromID, toID, portType, packetType, name, null);
   }
@@ -216,7 +217,7 @@ public class StatusClient {
    * @param key
    * @param other 
    */
-  public static synchronized void sendTrafficStatus(int fromID, int toID, GNS.PortType portType, Packet.PacketType packetType,
+  public static synchronized void sendTrafficStatus(NodeId<String> fromID, NodeId<String> toID, GNS.PortType portType, Packet.PacketType packetType,
           String name, String other) {
     if (statusServerAddress == null) {
       if (!warningIssued) {

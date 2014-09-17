@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
  */
 public final class SyncDecisionsPacket extends PaxosPacket{
 
-	public final int nodeID; // sending node
+	public final NodeId<String> nodeID; // sending node
 	public final int maxDecisionSlot; 	// max decided slot at nodeID
 	public final ArrayList<Integer> missingSlotNumbers;
 	public final boolean missingTooMuch; // can be computed from missingSlotNumbers, but can also be specified explicitly by sender
@@ -24,7 +25,7 @@ public final class SyncDecisionsPacket extends PaxosPacket{
 	private final static String MISSING = "MISSING";
 	private final static String FLAG = "MISSING_TOO_MUCH";
 
-	public SyncDecisionsPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
+	public SyncDecisionsPacket(NodeId<String> nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
 		super((PaxosPacket)null);
 		this.missingTooMuch = flag;
 		this.packetType = (missingTooMuch ? PaxosPacketType.SYNC_DECISIONS : PaxosPacketType.SYNC_DECISIONS); // missingTooMuch => checkpoint transfer
@@ -35,7 +36,7 @@ public final class SyncDecisionsPacket extends PaxosPacket{
 
 	public SyncDecisionsPacket(JSONObject json) throws JSONException{
 		super(json);
-		this.nodeID = json.getInt(NODE);
+		this.nodeID = new NodeId<String>(json.getString(NODE));
 		this.maxDecisionSlot = json.getInt(MAX_SLOT);
 		if (json.has(MISSING))
 			missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
@@ -48,7 +49,7 @@ public final class SyncDecisionsPacket extends PaxosPacket{
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(NODE, nodeID);
+		json.put(NODE, nodeID.get());
 		json.put(MAX_SLOT, maxDecisionSlot);
 		json.put(FLAG,missingTooMuch);
 		if (missingSlotNumbers!= null && missingSlotNumbers.size()>0)

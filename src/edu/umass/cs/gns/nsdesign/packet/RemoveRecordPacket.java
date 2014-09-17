@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,7 +36,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
    * Otherwise the sourceId field contains the number of the NS who made the request.
    */
-  public final static int INTERCESSOR_SOURCE_ID = -1;
+  public final static NodeId<String> LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
   /**
    * Unique identifier used by the entity making the initial request to confirm
@@ -60,12 +62,12 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
   /**
    * Id of name server who received this request from client
    */
-  private int nameServerID;
+  private NodeId<String> nameServerID;
    /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
-  private final int sourceId;
+  private final NodeId<String> sourceId;
 
 
   /**
@@ -76,14 +78,14 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
    * @param name Host/domain/device name
    * @param lnsAddress
    */
-  public RemoveRecordPacket(int sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
+  public RemoveRecordPacket(NodeId<String> sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
     super(lnsAddress);
     this.type = Packet.PacketType.REMOVE_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestId;
     this.name = name;
     //this.localNameServerID = localNameServerID;
-    this.nameServerID = -1; // this field will be set by name server after it received the packet
+    this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID; // this field will be set by name server after it received the packet
   }
 
   /**
@@ -99,12 +101,12 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.getInt(SOURCE_ID);
+    this.sourceId = new NodeId<String>(json.getString(SOURCE_ID));
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
     //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
-    this.nameServerID = json.getInt(NAME_SERVER_ID);
+    this.nameServerID = new NodeId<String>(json.getString(NAME_SERVER_ID));
   }
 
   /**
@@ -118,12 +120,12 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, getSourceId());
+    json.put(SOURCE_ID, sourceId.get());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(NAME, getName());
     //json.put(LOCALNAMESERVERID, getLocalNameServerID());
-    json.put(NAME_SERVER_ID, getNameServerID());
+    json.put(NAME_SERVER_ID, nameServerID.get());
     return json;
   }
 
@@ -160,15 +162,15 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
 //  }
 
 
-  public int getNameServerID() {
+  public NodeId<String> getNameServerID() {
     return nameServerID;
   }
 
-  public void setNameServerID(int nameServerID) {
+  public void setNameServerID(NodeId<String> nameServerID) {
     this.nameServerID = nameServerID;
   }
 
-  public int getSourceId() {
+  public NodeId<String> getSourceId() {
     return sourceId;
   }
 

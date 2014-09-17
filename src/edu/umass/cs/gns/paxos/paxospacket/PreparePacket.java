@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.Ballot;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -10,16 +11,16 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class PreparePacket extends PaxosPacket {
 
-  public int coordinatorID;
+  private NodeId<String> coordinatorID;
 
-  public Ballot ballot;
+  private Ballot ballot;
 
-  public int receiverID;
+  private NodeId<String> receiverID;
 
-  public int slotNumber;
-  public Map<Integer, PValuePacket> accepted;
+  private int slotNumber;
+  private Map<Integer, PValuePacket> accepted;
 
-  public PreparePacket(int coordinatorID, int receiverID, Ballot b, PaxosPacketType packetType) {
+  public PreparePacket(NodeId<String> coordinatorID, NodeId<String> receiverID, Ballot b, PaxosPacketType packetType) {
     this.coordinatorID = coordinatorID;
     this.receiverID = receiverID;
     this.ballot = b;
@@ -28,8 +29,7 @@ public class PreparePacket extends PaxosPacket {
 
   }
 
-  public PreparePacket getPrepareReplyPacket(Ballot b, int receiverID, Map<Integer, PValuePacket> accepted, int slotNumber) {
-
+  public PreparePacket getPrepareReplyPacket(Ballot b, NodeId<String> receiverID, Map<Integer, PValuePacket> accepted, int slotNumber) {
     if (b.equals(this.ballot)) {
       PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,
               this.ballot, PaxosPacketType.PREPARE_REPLY);
@@ -47,8 +47,8 @@ public class PreparePacket extends PaxosPacket {
 
   public PreparePacket(JSONObject json) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.coordinatorID = json.getInt("coordinatorID");
-    this.receiverID = json.getInt("receiverID");
+    this.coordinatorID = new NodeId<String>(json.getString("coordinatorID"));
+    this.receiverID = new NodeId<String>(json.getString("receiverID"));
     this.ballot = new Ballot(json.getString("ballot"));
     this.slotNumber = json.getInt("slotNumber");
     if (this.packetType == PaxosPacketType.PREPARE_REPLY.getInt()) {
@@ -74,8 +74,8 @@ public class PreparePacket extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put("coordinatorID", coordinatorID);
-    json.put("receiverID", receiverID);
+    json.put("coordinatorID", coordinatorID.get());
+    json.put("receiverID", receiverID.get());
     json.put("ballot", ballot.toString());
     json.put("slotNumber", slotNumber);
     if (this.packetType == PaxosPacketType.PREPARE_REPLY.getInt()) {
@@ -92,6 +92,45 @@ public class PreparePacket extends PaxosPacket {
       }
       json.put("accepted", jsonArray);
     }
+  }
+
+  /**
+   * @return the coordinatorID
+   */
+  public NodeId<String> getCoordinatorID() {
+    return coordinatorID;
+  }
+
+  /**
+   * @return the ballot
+   */
+  public Ballot getBallot() {
+    return ballot;
+  }
+
+  /**
+   * @return the receiverID
+   */
+  public NodeId<String> getReceiverID() {
+    return receiverID;
+  }
+
+  /**
+   * @return the slotNumber
+   */
+  public int getSlotNumber() {
+    return slotNumber;
+  }
+
+  /**
+   * @return the accepted
+   */
+  public Map<Integer, PValuePacket> getAccepted() {
+    return accepted;
+  }
+
+  public void setReceiverID(NodeId<String> receiverID) {
+    this.receiverID = receiverID;
   }
 
 }

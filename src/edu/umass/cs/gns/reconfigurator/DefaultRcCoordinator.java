@@ -2,6 +2,7 @@ package edu.umass.cs.gns.reconfigurator;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
@@ -15,10 +16,10 @@ import org.json.JSONObject;
  * Created by abhigyan on 4/8/14.
  */
 public class DefaultRcCoordinator implements ReplicaControllerCoordinator{
-  private int nodeID;
+  private NodeId<String> nodeID;
   private Replicable app;
 
-  public DefaultRcCoordinator(int nodeID, Replicable app) {
+  public DefaultRcCoordinator(NodeId<String> nodeID, Replicable app) {
     this.nodeID = nodeID;
     this.app = app;
   }

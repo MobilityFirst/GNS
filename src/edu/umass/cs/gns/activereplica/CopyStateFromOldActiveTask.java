@@ -6,6 +6,8 @@ import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.reconfigurator.Add;
 import edu.umass.cs.gns.util.ResultValue;
@@ -25,14 +27,14 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 
 	private final NewActiveSetStartupPacket packet;
 
-	private final HashSet<Integer> oldActivesQueried;
+	private final HashSet<NodeId<String>> oldActivesQueried;
 
 	private final int requestID;
 	
 	private static Logger log = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(Add.class.getName()) : GNS.getLogger();
 
 	protected CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet) throws JSONException {
-		this.oldActivesQueried = new HashSet<Integer>();
+		this.oldActivesQueried = new HashSet<NodeId<String>>();
 		// first, store the original packet in hash map
 		this.requestID = packet.hashCode();
 		activeReplica.getOngoingStateTransferRequests().put(requestID, packet);
@@ -84,10 +86,10 @@ public class CopyStateFromOldActiveTask implements ARProtocolTask {
 			}
 
 			// select old active to send request to
-			int oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
+			NodeId<String> oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
 					oldActivesQueried);
 
-			if (oldActive == -1) {
+			if (oldActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
 				// this will happen after all actives have been tried at least once.
 				log.severe(" Exception ERROR:  No More Actives Left To Query. Cancel Task!!! " + packet + " Actives queried: " + oldActivesQueried);
 				activeReplica.getOngoingStateTransferRequests().remove(requestID);

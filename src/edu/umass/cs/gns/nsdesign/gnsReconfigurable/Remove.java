@@ -71,7 +71,7 @@ public class Remove {
    */
   public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable gnsApp,
                                                      boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
-    if (Config.debuggingEnabled) GNS.getLogger().fine("Executing remove: " + oldActiveStopPacket);
+    if (Config.debuggingEnabled) GNS.getLogger().info("Executing remove: " + oldActiveStopPacket);
 //    GNSMessagingTask msgTask = null;
     if (noCoordinationState == false) { // normal case:
       try {
@@ -130,7 +130,7 @@ public class Remove {
                                                                   GnsReconfigurable gnsApp, boolean recovery)
           throws JSONException, IOException {
     // confirm to primary name server that this set of actives has stopped
-    if (oldActiveStopPacket.getActiveReceiver() == gnsApp.getNodeID()) {
+    if (oldActiveStopPacket.getActiveReceiver().equals(gnsApp.getNodeID())) {
       // the active node who received this node, sends confirmation to primary
       // confirm to primary
       oldActiveStopPacket.changePacketTypeToActiveRemoved();

@@ -7,6 +7,8 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
 import edu.umass.cs.gns.ping.PingManager;
@@ -96,14 +98,14 @@ public class LNSListenerAdmin extends Thread {
       switch (Packet.getPacketType(incomingJSON)) {
         case DUMP_REQUEST:
           DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON);
-          if (dumpRequestPacket.getPrimaryNameServer() == -1) {
+          if (dumpRequestPacket.getPrimaryNameServer().equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
             GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
             //dumpRequestPacket.setId(id);
             //dumpRequestPacket.setLnsAddress(LocalNameServer.getAddress()); // done before it gets here
             JSONObject json = dumpRequestPacket.toJSONObject();
-            Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
+            Set<NodeId<String>> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
             Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
@@ -134,7 +136,7 @@ public class LNSListenerAdmin extends Thread {
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              Set<Integer> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
+              Set<NodeId<String>> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               // clear the cache
               LocalNameServer.invalidateCache();
@@ -150,10 +152,10 @@ public class LNSListenerAdmin extends Thread {
               Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
               break;
             case PINGTABLE:
-              int node = Integer.parseInt(incomingPacket.getArgument());
+              NodeId<String> node = new NodeId<String>(incomingPacket.getArgument());
               // -1 means return the LNS data
-              if (node == -1 || LocalNameServer.getGnsNodeConfig().getNodeIDs().contains(node)) {
-                if (node == -1) {
+              if (node.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID) || LocalNameServer.getGnsNodeConfig().getNodeIDs().contains(node)) {
+                if (node.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
                   jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", LocalNameServer.getPingManager().tableToString(PingManager.LOCALNAMESERVERID));
                   // send a response back to where the request came from
@@ -173,12 +175,12 @@ public class LNSListenerAdmin extends Thread {
               }
               break;
             case PINGVALUE:
-              int node1 = Integer.parseInt(incomingPacket.getArgument());
-              int node2 = Integer.parseInt(incomingPacket.getArgument2());
+              NodeId<String> node1 = new NodeId<String>(incomingPacket.getArgument());
+              NodeId<String> node2 = new NodeId<String>(incomingPacket.getArgument2());
               // -1 means return the LNS data
-              if (node1 == -1 || LocalNameServer.getGnsNodeConfig().nodeExists(node1)
+              if (node1.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID) || LocalNameServer.getGnsNodeConfig().nodeExists(node1)
                       && LocalNameServer.getGnsNodeConfig().nodeExists(node2)) {
-                if (node1 == -1) {
+                if (node1.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
                   // handle it here
                   jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", LocalNameServer.getPingManager().nodeAverage(node2));
@@ -222,7 +224,7 @@ public class LNSListenerAdmin extends Thread {
         case STATUS_INIT:
           StatusClient.handleStatusInit(incomingSocket.getInetAddress());
           // FIXME: Should send address instead for LNSs (fix other end of this)
-          StatusClient.sendStatus(-1, "LNS Ready");
+          StatusClient.sendStatus(GNSNodeConfig.INVALID_NAME_SERVER_ID, "LNS Ready");
           break;
         default:
           GNS.getLogger().severe("Unknown packet type in packet: " + incomingJSON);

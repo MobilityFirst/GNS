@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.NSResponseCode;
 
 /**
@@ -23,7 +25,7 @@ public class CommandResponse {
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private int responder;
+  private NodeId<String> responder;
 
   /**
    * Create a command response object from a return value with an error code.
@@ -33,7 +35,7 @@ public class CommandResponse {
    * @param LNSRoundTripTime
    * @param responder
    */
-  public CommandResponse(String returnValue, NSResponseCode errorCode, long LNSRoundTripTime, int responder) {
+  public CommandResponse(String returnValue, NSResponseCode errorCode, long LNSRoundTripTime, NodeId<String> responder) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
     this.LNSRoundTripTime = LNSRoundTripTime;
@@ -46,7 +48,7 @@ public class CommandResponse {
    * @param returnValue
    */
   public CommandResponse(String returnValue) {
-    this(returnValue, NSResponseCode.NO_ERROR, -1, -1);
+    this(returnValue, NSResponseCode.NO_ERROR, -1, GNSNodeConfig.INVALID_NAME_SERVER_ID);
   }
 
   /**
@@ -89,7 +91,7 @@ public class CommandResponse {
    * 
    * @return
    */
-  public int getResponder() {
+  public NodeId<String> getResponder() {
     return responder;
   }
 

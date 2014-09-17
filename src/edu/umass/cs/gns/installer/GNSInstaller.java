@@ -7,6 +7,7 @@ import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -111,8 +112,8 @@ public class GNSInstaller {
 
     for (HostFileLoader.HostSpec spec : nsHosts) {
       String hostname = spec.getName();
-      int id = spec.getId();
-      hostTable.put(hostname, new HostInfo(hostname, id, HostInfo.NULL_ID, null));
+       NodeId<String> id = spec.getId();
+      hostTable.put(hostname, new HostInfo(hostname, id, -1, null));
     }
 
     List<HostFileLoader.HostSpec> lnsHosts = null;
@@ -124,15 +125,15 @@ public class GNSInstaller {
       System.out.println("Problem loading the LNS host file " + hostsFile + "; exiting.");
       System.exit(1);
     }
-    // THIS WILL CHANGE WHEN WE GO TO IDLESS LNS HOSTS
+    // FIXME: BROKEN FOR IDLESS LNS HOSTS
     for (HostFileLoader.HostSpec spec : lnsHosts) {
       String hostname = spec.getName();
-      int id = spec.getId();
+       NodeId<String> id = spec.getId();
       HostInfo hostEntry = hostTable.get(hostname);
       if (hostEntry != null) {
-        hostEntry.setLnsId(id);
+        hostEntry.setLnsId(-1);
       } else {
-        hostTable.put(hostname, new HostInfo(hostname, HostInfo.NULL_ID, id, null));
+        hostTable.put(hostname, new HostInfo(hostname, HostInfo.NULL_ID, -1, null));
       }
     }
   }
@@ -196,7 +197,7 @@ public class GNSInstaller {
    * @param scriptFile
    * @throws java.net.UnknownHostException
    */
-  public static void updateAndRunGNS(int nsId, int lnsId, String hostname, InstallerAction action, boolean removeLogs,
+  public static void updateAndRunGNS( NodeId<String> nsId, int lnsId, String hostname, InstallerAction action, boolean removeLogs,
           boolean deleteDatabase, String lnsHostsFile, String nsHostsFile, String scriptFile) throws UnknownHostException {
     if (!action.equals(InstallerAction.STOP)) {
       System.out.println("**** NS " + nsId + " LNS " + lnsId + " running on " + hostname + " starting update ****");
@@ -240,9 +241,9 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void startServers(int nsId, int lnsId, String hostname) {
+  private static void startServers( NodeId<String> nsId, int lnsId, String hostname) {
     File keyFileName = getKeyFile();
-    if (lnsId != HostInfo.NULL_ID) {
+    if (lnsId != -1) {
       System.out.println("Starting local name servers");
       ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName, buildInstallFilePath("runLNS.sh"),
               "#!/bin/bash\n"
@@ -423,7 +424,7 @@ public class GNSInstaller {
   // Probably unnecessary at this point.
   private static void updateNodeConfigAndSendOutServerInit() {
     GNSNodeConfig nodeConfig = new GNSNodeConfig();
-    Set<Integer> ids = new HashSet<>();
+    Set< NodeId<String>> ids = new HashSet<>();
     for (HostInfo info : hostTable.values()) {
       if (info.getNsId() != HostInfo.NULL_ID) {
         nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
@@ -656,7 +657,7 @@ public class GNSInstaller {
   static class UpdateThread extends Thread {
 
     private final String hostname;
-    private final int nsId;
+    private final NodeId<String> nsId;
     private final int lnsId;
     private final InstallerAction action;
     private final boolean removeLogs;
@@ -665,7 +666,7 @@ public class GNSInstaller {
     private final String nsHostsFile;
     private final String scriptFile;
 
-    public UpdateThread(String hostname, int nsId, int lnsId, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
+    public UpdateThread(String hostname, NodeId<String> nsId, int lnsId, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
             String lnsHostsFile, String nsHostsFile, String scriptFile) {
       this.hostname = hostname;
       this.nsId = nsId;

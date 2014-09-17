@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.Format;
@@ -19,7 +20,7 @@ public class StatusPacket extends BasicPacket {
   public final static String ID = "id";
   public final static String JSON = "json";
   public final static String TIME = "time";
-  private int id;
+  private NodeId<String> id;
   private Date time;
   /** JOSNObject where the results are kept **/
   private JSONObject jsonObject;
@@ -29,7 +30,7 @@ public class StatusPacket extends BasicPacket {
    * @param id
    * @param jsonObject
    */
-  public StatusPacket(int id, JSONObject jsonObject) {
+  public StatusPacket(NodeId<String> id, JSONObject jsonObject) {
     this.type = Packet.PacketType.STATUS;
     this.id = id;
     this.time = new Date();
@@ -41,7 +42,7 @@ public class StatusPacket extends BasicPacket {
    *
    * @param id
    */
-  public StatusPacket(int id) {
+  public StatusPacket(NodeId<String> id) {
     this(id, new JSONObject());
   }
 
@@ -58,12 +59,12 @@ public class StatusPacket extends BasicPacket {
     }
 
     this.type = Packet.getPacketType(json);
-    this.id = json.getInt(ID);
+    this.id = new NodeId<String>(json.getString(ID));
     this.time = Format.parseDateTimeOnlyMilleUTC(json.getString(TIME));
     this.jsonObject = json.getJSONObject(JSON);
   }
 
-  public int getId() {
+  public NodeId<String> getId() {
     return id;
   }
 
@@ -84,7 +85,7 @@ public class StatusPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(ID, id);
+    json.put(ID, id.get());
     json.put(TIME, Format.formatDateTimeOnlyMilleUTC(time));
     json.put(JSON, jsonObject);
 

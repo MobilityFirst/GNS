@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
@@ -41,7 +42,7 @@ public class Update {
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     int lnsReqID = handler.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), System.currentTimeMillis(),
-            -1, updatePacket);
+            GNSNodeConfig.INVALID_NAME_SERVER_ID, updatePacket);
     handler.addRequestInfo(lnsReqID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
     SendUpdatesTask updateTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
@@ -121,12 +122,12 @@ public class Update {
   }
 
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
-    if (packet.getReturnTo() == DNSPacket.LOCAL_SOURCE_ID) {
+    if (packet.getReturnTo().equals(DNSPacket.LOCAL_SOURCE_ID)) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       
       LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo() + 
+      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo().get() + 
               ":" + packet.toJSONObject().toString());
       
       try {

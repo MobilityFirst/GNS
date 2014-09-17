@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,7 +39,6 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
   private final static String VALUE = "value";
   private final static String OTHERVALUE = "otherValue";
   private final static String QUERY = "query";
-  //private final static String LNSID = "lnsid";
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSID = "nsid";
   private final static String NSQUERYID = "nsQueryId";
@@ -51,9 +52,8 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
   private Object value;
   private Object otherValue;
   private String query;
-  //private int lnsID; // the local name server handling this request
   private int lnsQueryId = -1; // used by the local name server to maintain state
-  private int nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
+  private NodeId<String> nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
   private int nsQueryId = -1; // used by the name server to maintain state
   private SelectOperation selectOperation;
   private GroupBehavior groupBehavior;
@@ -79,8 +79,7 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
     this.key = key;
     this.value = value;
     this.otherValue = otherValue;
-    //this.lnsID = lns;
-    this.nsID = -1;
+    this.nsID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupBehavior;
     this.query = null;
@@ -103,8 +102,7 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
-    //this.lnsID = lns;
-    this.nsID = -1;
+    this.nsID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupOperation;
     this.key = null;
@@ -170,9 +168,8 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
     this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
     this.query = json.optString(QUERY, null);
-    //this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
-    this.nsID = json.getInt(NSID);
+    this.nsID = new NodeId<String>(json.getString(NSID));
     this.nsQueryId = json.getInt(NSQUERYID);
     this.selectOperation = SelectOperation.valueOf(json.getString(SELECT_OPERATION));
     this.groupBehavior = GroupBehavior.valueOf(json.getString(GROUP_BEHAVIOR));
@@ -210,9 +207,8 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
     if (query != null) {
       json.put(QUERY, query);
     }
-    //json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
-    json.put(NSID, nsID);
+    json.put(NSID, nsID.get());
     json.put(NSQUERYID, nsQueryId);
     json.put(SELECT_OPERATION, selectOperation.name());
     json.put(GROUP_BEHAVIOR, groupBehavior.name());
@@ -232,7 +228,7 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
     this.nsQueryId = nsQueryId;
   }
 
-  public void setNsID(int nsID) {
+  public void setNsID(NodeId<String> nsID) {
     this.nsID = nsID;
   }
 
@@ -256,7 +252,7 @@ public class SelectRequestPacket extends BasicPacketWithLnsAddress {
     return lnsQueryId;
   }
 
-  public int getNsID() {
+  public NodeId<String> getNsID() {
     return nsID;
   }
 

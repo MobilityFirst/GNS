@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+
 /**
  * Created with IntelliJ IDEA.
  * User: abhigyan
@@ -18,10 +19,13 @@ import java.util.HashMap;
  * To change this template use File | Settings | File Templates.
  */
 public enum ColumnFieldType {
+
   BOOLEAN,
   INTEGER,
   STRING,
   SET_INTEGER,
+  SET_STRING,
+  SET_NODE_ID_STRING,
   LIST_INTEGER,
   LIST_STRING,
   VALUES_MAP,
@@ -29,7 +33,9 @@ public enum ColumnFieldType {
   STATS_MAP,
   USER_JSON // NOT FULLY SUPPORTED YET
   ;
+
   // THIS COULD PROBABLY ALSO BE DONE USING THE JSON LIB.
+
   /**
    *
    * @param hashMap
@@ -59,42 +65,64 @@ public enum ColumnFieldType {
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToSetInteger(new JSONArray(value)));
               } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                GNS.getLogger().severe("Problem populating hash map for SET_INTEGER: " + e);
+                e.printStackTrace();
+              }
+              break;
+            case SET_STRING:
+              try {
+                hashMap.put(field, JSONUtils.JSONArrayToSetString(new JSONArray(value)));
+              } catch (JSONException e) {
+                GNS.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
+                e.printStackTrace();
+              }
+              break;
+            case SET_NODE_ID_STRING:
+              try {
+                hashMap.put(field, JSONUtils.JSONArrayToSetNodeIdString(new JSONArray(value)));
+              } catch (JSONException e) {
+                GNS.getLogger().severe("Problem populating hash map for SET_STRING: " + e);
+                e.printStackTrace();
               }
               break;
             case LIST_INTEGER:
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToArrayListInteger(new JSONArray(value)));
               } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                GNS.getLogger().severe("Problem populating hash map for LIST_INTEGER: " + e);
+                e.printStackTrace();
               }
               break;
             case LIST_STRING:
               try {
                 hashMap.put(field, JSONUtils.JSONArrayToArrayListString(new JSONArray(value)));
               } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                GNS.getLogger().severe("Problem populating hash map for LIST_STRING: " + e);
+                e.printStackTrace();
               }
               break;
             case VALUES_MAP:
               try {
                 hashMap.put(field, new ValuesMap(new JSONObject(value)));
               } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                GNS.getLogger().severe("Problem populating hash map for VALUES_MAP: " + e);
+                e.printStackTrace();
               }
               break;
             case VOTES_MAP:
               try {
                 hashMap.put(field, JSONUtils.toIntegerMap(new JSONObject(value)));
               } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                GNS.getLogger().severe("Problem populating hash map for VOTES_MAP: " + e);
+                e.printStackTrace();
               }
               break;
             case STATS_MAP:
               try {
                 hashMap.put(field, JSONUtils.toStatsMap(new JSONObject(value)));
               } catch (JSONException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                GNS.getLogger().severe("Problem populating hash map for STATS_MAP: " + e);
+                e.printStackTrace();
               }
               break;
             default:

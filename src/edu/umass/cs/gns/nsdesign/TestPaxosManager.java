@@ -1,10 +1,10 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.Set;
@@ -31,19 +31,19 @@ public class TestPaxosManager extends AbstractPaxosManager {
   }
 
   @Override
-  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<Integer> nodeIDs,
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeId<String>> nodeIDs,
                                      Replicable paxosInterface) {
     return paxosManager.createPaxosInstance(paxosIDNoVersion, version, nodeIDs, paxosInterface);
   }
 
   @Override
-  public Set<Integer> getPaxosNodeIDs(String paxosIDNoVersion) {
+  public Set<NodeId<String>> getPaxosNodeIDs(String paxosIDNoVersion) {
     return paxosManager.getPaxosNodeIDs(paxosIDNoVersion);
   }
 
   @Override
   public String propose(String paxosIDNoVersion, String value) {
-    RequestPacket requestPacket = new RequestPacket(0, value, false);
+    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, false);
 //    try {
 //      GNS.getLogger().info(" Size of value: " + value.length() + "\trequestpacket size " + requestPacket.toJSONObject().toString().length());
 //      GNS.getLogger().info(" String value: " + value);
@@ -56,7 +56,7 @@ public class TestPaxosManager extends AbstractPaxosManager {
 
   @Override
   public String proposeStop(String paxosIDNoVersion, String value, short version) {
-    RequestPacket requestPacket = new RequestPacket(0, value, true);
+    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, true);
     return paxosManager.proposeStop(paxosIDNoVersion, requestPacket.toString(), version);
   }
 

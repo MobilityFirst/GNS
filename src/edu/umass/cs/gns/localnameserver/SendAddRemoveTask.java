@@ -9,11 +9,15 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.*;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashSet;
@@ -35,7 +39,7 @@ public class SendAddRemoveTask extends TimerTask {
   private final String name;
   private final BasicPacket packet;
   private final int lnsRequestID;
-  private final HashSet<Integer> replicaControllersQueried;
+  private final HashSet<NodeId<String>> replicaControllersQueried;
   private int timeoutCount = -1;
   private final long requestRecvdTime;
   private final ClientRequestHandlerInterface handler;
@@ -45,7 +49,7 @@ public class SendAddRemoveTask extends TimerTask {
     this.handler = handler;
     this.packet = packet;
     this.lnsRequestID = lnsRequestID;
-    this.replicaControllersQueried = new HashSet<Integer>();
+    this.replicaControllersQueried = new HashSet<NodeId<String>>();
     this.requestRecvdTime = requestRecvdTime;
   }
 
@@ -54,14 +58,14 @@ public class SendAddRemoveTask extends TimerTask {
     try {
       timeoutCount = timeoutCount + 1;
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("ENTER name = " + getName() + " timeout = " + getTimeoutCount());
+        GNS.getLogger().info("ENTER name = " + getName() + " timeout = " + getTimeoutCount());
       }
 
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
         throw new CancelExecutorTaskException();
       }
 
-      int nameServerID = selectNS();
+      NodeId<String> nameServerID = selectNS();
 
       sendToNS(nameServerID);
 
@@ -79,7 +83,7 @@ public class SendAddRemoveTask extends TimerTask {
   private boolean isResponseReceived() {
     if (LocalNameServer.getRequestInfo(getLnsRequestID()) == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+        GNS.getLogger().info("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
       }
       return true;
     }
@@ -95,7 +99,7 @@ public class SendAddRemoveTask extends TimerTask {
         return true;
       }
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
+        GNS.getLogger().info("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
       }
       try {
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(updateInfo.getErrorMessage());
@@ -116,31 +120,36 @@ public class SendAddRemoveTask extends TimerTask {
     return false;
   }
 
-  private int selectNS() {
+  private NodeId<String> selectNS() {
     return handler.getClosestReplicaController(getName(), replicaControllersQueried);
   }
 
-  private void sendToNS(int nameServerID) {
+  private void sendToNS(NodeId<String> nameServerID) {
 
-    if (nameServerID == -1) {
-      GNS.getLogger().fine("ERROR: No more primaries left to query. RETURN. Primaries queried " + replicaControllersQueried);
+    if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried "
+                + Util.setOfNodeIdToString(replicaControllersQueried));
+      }
       return;
     }
 
     UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsRequestID);
-    if (info != null) info.addEventCode(LNSEventCode.CONTACT_RC);
+    if (info != null) {
+      info.addEventCode(LNSEventCode.CONTACT_RC);
+    }
     replicaControllersQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
+        GNS.getLogger().info("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
       }
       updatePacketWithRequestID(getPacket(), getLnsRequestID());
     }
     // create the packet that we'll send to the primary
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().fine("Sending request to node: " + nameServerID);
+      GNS.getLogger().info("Sending request to node: " + nameServerID.get());
     }
 
     // and send it off
@@ -149,14 +158,13 @@ public class SendAddRemoveTask extends TimerTask {
       handler.sendToNS(jsonToSend, nameServerID);
 
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine(" Send add/remove/upsert to: " + nameServerID + " Name:" + getName() + " Id:" + getLnsRequestID()
+        GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.get() + " Name:" + getName() + " Id:" + getLnsRequestID()
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }
     } catch (JSONException e) {
       e.printStackTrace();
     }
   }
-
 
   // Special case code like this screams for using a super class other than BasicPacket
   private void updatePacketWithRequestID(BasicPacket packet, int requestID) {

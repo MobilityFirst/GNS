@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 //import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,7 +42,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
   /**
    * Indicates if this is supposed to go back to an Intercessor or another server.
    */
-  private int returnTo;
+  private NodeId<String> returnTo;
   
   /**
    * Constructs a new ConfirmUpdatePacket with the given parameters.
@@ -49,7 +50,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
    * @param type Type of this packet
    * @param requestID Id of local or name server
    */
-  public ConfirmUpdatePacket(Packet.PacketType type, int returnTo, int requestID, int LNSRequestID, NSResponseCode responseCode) {
+  public ConfirmUpdatePacket(Packet.PacketType type, NodeId<String> returnTo, int requestID, int LNSRequestID, NSResponseCode responseCode) {
     this.type = type;
     this.returnTo = returnTo;
     this.requestID = requestID;
@@ -105,7 +106,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
    */
   public ConfirmUpdatePacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.returnTo = json.getInt(RETURNTO);
+    this.returnTo = new NodeId<String>(json.getString(RETURNTO));
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy
@@ -122,7 +123,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(RETURNTO, returnTo);
+    json.put(RETURNTO, returnTo.get());
     json.put(REQUESTID, requestID);
     json.put(LNSREQUESTID, LNSRequestID);
     // store it as an int in the JSON to keep the byte counting folks happy
@@ -131,7 +132,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
     return json;
   }
 
-  public int getReturnTo() {
+  public NodeId<String> getReturnTo() {
     return returnTo;
   }
 

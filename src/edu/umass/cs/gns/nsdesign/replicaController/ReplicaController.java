@@ -10,6 +10,7 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -40,7 +41,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   /**
    * ID of this node
    */
-  private final int nodeID;
+  private final NodeId<String> nodeID;
 
   /**
    * nio server
@@ -64,7 +65,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
 
 
-  private final ConcurrentHashMap<Integer, Double> nsRequestRates = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<NodeId<String>, Double> nsRequestRates = new ConcurrentHashMap<>();
 
   /** Algorithm for replicating name records.*/
   private ReplicationFrameworkInterface replicationFrameworkInterface;
@@ -72,7 +73,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   /**
    * constructor object
    */
-  public ReplicaController(int nodeID,GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+  public ReplicaController(NodeId<String> nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
                            ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                            MongoRecords mongoRecords) {
     this.nodeID = nodeID;
@@ -85,7 +86,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
     this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 
     if (replicationFrameworkInterface != null) {
-      int initialDelay = new Random(nodeID*1000).nextInt(Config.analysisIntervalSec);
+      int initialDelay = new Random(1000).nextInt(Config.analysisIntervalSec);
       GNS.getLogger().info("Starting task to compute new actives ... initial delay: " + initialDelay);
       scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this), initialDelay,
               Config.analysisIntervalSec, TimeUnit.SECONDS);
@@ -95,7 +96,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   /**
    * BEGIN: getter methods for ReplicaController elements ***
    */
-  public int getNodeID() {
+  public NodeId<String> getNodeID() {
     return nodeID;
   }
 
@@ -133,14 +134,14 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   /**
    * ****BEGIN: miscellaneous methods needed by replica controller module ***
    */
-  public boolean isSmallestNodeRunning(String name, Set<Integer> nameServers) {
+  public boolean isSmallestNodeRunning(String name, Set<NodeId<String>> nameServers) {
     Random r = new Random(name.hashCode());
-    ArrayList<Integer> x1 = new ArrayList<Integer>(nameServers);
+    ArrayList<NodeId<String>> x1 = new ArrayList<NodeId<String>>(nameServers);
     Collections.sort(x1);
     Collections.shuffle(x1, r);
-    for (int x : x1) {
+    for (NodeId<String> x : x1) {
       if (gnsNodeConfig.getPingLatency(x) < 9000L)
-        return x == nodeID;
+        return x.equals(nodeID);
     }
     return false;
 
@@ -305,7 +306,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
     nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
 
-  public ConcurrentHashMap<Integer, Double> getNsRequestRates() {
+  public ConcurrentHashMap<NodeId<String>, Double> getNsRequestRates() {
     return nsRequestRates;
   }
 

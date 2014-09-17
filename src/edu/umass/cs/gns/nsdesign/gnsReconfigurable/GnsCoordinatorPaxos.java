@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -27,7 +28,7 @@ import java.util.Set;
 public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
-  private int nodeID;
+  private NodeId<String> nodeID;
   // this is the app object
   private Replicable paxosInterface;
 
@@ -38,7 +39,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
   private InterfaceJSONNIOTransport nioTransport;
 
-  public GnsCoordinatorPaxos(int nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public GnsCoordinatorPaxos(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                              Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
 
@@ -88,14 +89,14 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
         // call proposeStop
         case ACTIVE_REMOVE: // stop request for removing a name record
-          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Before proposing remove: " + request);
+          if (Config.debuggingEnabled) GNS.getLogger().info("*******Before proposing remove: " + request);
           OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket(request);
           paxosID = paxosManager.proposeStop(stopPacket1.getName(), stopPacket1.toString(), stopPacket1.getVersion());
           if (paxosID == null) {
             callHandleDecision = stopPacket1.toJSONObject();
             noCoordinatorState = true;
           }
-          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Remove proposed: " + request);
+          if (Config.debuggingEnabled) GNS.getLogger().info("*******Remove proposed: " + request);
           break;
         case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
           OldActiveSetStopPacket stopPacket2 = new OldActiveSetStopPacket(request);
@@ -111,7 +112,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           if (Config.debuggingEnabled) GNS.getLogger().fine("*******Before creating paxos instance: " + request);
           callHandleDecisionWithRetry(null, request.toString(), false);
           AddRecordPacket recordPacket = new AddRecordPacket(request);
-          paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, recordPacket.getActiveNameSevers(), paxosInterface);
+          paxosManager.createPaxosInstance(recordPacket.getName(), (short)Config.FIRST_VERSION, recordPacket.getActiveNameServers(), paxosInterface);
           if (Config.debuggingEnabled) GNS.getLogger().fine("*******Added paxos instance:" + recordPacket.getName());
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
@@ -132,7 +133,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           // Why is this necessary? Let's say closest name server to a LNS in the previous replica set was quite far, but
           // in the new replica set the closest name server is very near to LNS. If we do not inform the LNS of
           // current active replica set, it will continue sending requests to the far away name server.
-          Set<Integer> nodeIds = paxosManager.getPaxosNodeIDs(name);
+          Set<NodeId<String>> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
             RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);

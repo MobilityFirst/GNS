@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetAddress;
 import java.util.Set;
 
@@ -14,7 +15,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 3/30/14.
  */
-public class NSNodeConfig implements InterfaceNodeConfig<Integer> {
+public class NSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
 
   GNSNodeConfig gnsNodeConfig;
 
@@ -23,22 +24,22 @@ public class NSNodeConfig implements InterfaceNodeConfig<Integer> {
   }
 
   @Override
-  public boolean nodeExists(Integer nodeId) {
+  public boolean nodeExists(NodeId<String> nodeId) {
     return getNodeIDs().contains(nodeId);
   }
 
   @Override
-  public Set<Integer> getNodeIDs() {
+  public Set<NodeId<String>> getNodeIDs() {
     return gnsNodeConfig.getNodeIDs();
   }
 
   @Override
-  public InetAddress getNodeAddress(Integer ID) {
+  public InetAddress getNodeAddress(NodeId<String> ID) {
     return gnsNodeConfig.getNodeAddress(ID);
   }
 
   @Override
-  public int getNodePort(Integer ID) {
+  public int getNodePort(NodeId<String> ID) {
     return gnsNodeConfig.getNSTcpPort(ID);
   }
 

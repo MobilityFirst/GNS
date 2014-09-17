@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -15,11 +16,11 @@ import org.json.JSONObject;
  */
 public class DefaultGnsCoordinator extends ActiveReplicaCoordinator {
 
-  private int nodeID;
+  private NodeId<String> nodeID;
 
   private Replicable replicable;
 
-  public DefaultGnsCoordinator(int nodeID, Replicable replicable) {
+  public DefaultGnsCoordinator(NodeId<String> nodeID, Replicable replicable) {
     this.nodeID = nodeID;
     this.replicable = replicable;
   }

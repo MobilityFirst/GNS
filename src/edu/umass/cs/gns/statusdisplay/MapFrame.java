@@ -3,6 +3,7 @@ package edu.umass.cs.gns.statusdisplay;
 //License: GPL. Copyright 2008 by Jan Peter Stotz
 //Modified by Westy October 2012
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket;
 import edu.umass.cs.gns.statusdisplay.StatusModel.SendNotation;
@@ -98,7 +99,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
       TreeSet<StatusEntry> entries = new TreeSet(model.getEntries());
       for (StatusEntry entry : entries) {
         if (entry.getLocation() != null) {
-          map.addMapMarker(new MapMarkerLabeledDot(Integer.toString(entry.getId()), statusColor(entry), entry.getLocation().getY(), entry.getLocation().getX()));
+          map.addMapMarker(new MapMarkerLabeledDot(entry.getId().get(), statusColor(entry), entry.getLocation().getY(), entry.getLocation().getX()));
         }
       }
       map.removeAllMapPolylines();
@@ -430,15 +431,15 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
     Random rand = new Random();
     ThreadUtils.sleep(4000);
     for (int i = 1; i < 51; i++) {
-      StatusModel.getInstance().queueAddEntry(i);
+      StatusModel.getInstance().queueAddEntry(new NodeId(i));
       double randomLat = (double) (rand.nextInt(180) - 90);
       double randomLon = (double) (rand.nextInt(360) - 180);
-      StatusModel.getInstance().queueUpdate(i, i + "stuff", "10.0.0." + i, new Point2D.Double(randomLon, randomLat));
+      StatusModel.getInstance().queueUpdate(new NodeId(i), i + "stuff", "10.0.0." + i, new Point2D.Double(randomLon, randomLat));
     }
 
     for (int i = 1; i < 51; i++) {
-      int from = rand.nextInt(50) + 1;
-      int to = rand.nextInt(50) + 1;
+      NodeId<String> from = new NodeId<String>(rand.nextInt(50) + 1);
+      NodeId<String> to = new NodeId<String>(rand.nextInt(50) + 1);
       switch (rand.nextInt(7)) {
         case 0:
           //StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.REPLICATE_RECORD, null, null));

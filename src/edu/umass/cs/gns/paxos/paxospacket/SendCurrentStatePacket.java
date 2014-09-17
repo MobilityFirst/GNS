@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.paxos.Ballot;
@@ -9,7 +10,7 @@ public class SendCurrentStatePacket extends PaxosPacket {
   /**
    * ID of the node sending its state
    */
-  public int sendingNodeID;
+  public NodeId<String> sendingNodeID;
 
   /**
    * currentBallot accepted by the sending node
@@ -29,7 +30,7 @@ public class SendCurrentStatePacket extends PaxosPacket {
   public JSONObject decisions;
 
 //    public String state;
-  public SendCurrentStatePacket(int sendingNodeID, Ballot currentBallot,
+  public SendCurrentStatePacket(NodeId<String> sendingNodeID, Ballot currentBallot,
           Ballot prepareBallot, PaxosPacketType packetType, int slotNumber, JSONObject decisions) {
     this.sendingNodeID = sendingNodeID;
     this.currentBallot = currentBallot;
@@ -42,7 +43,7 @@ public class SendCurrentStatePacket extends PaxosPacket {
 
   public SendCurrentStatePacket(JSONObject json) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.sendingNodeID = json.getInt("sendingNodeID");
+    this.sendingNodeID = new NodeId<String>(json.getInt("sendingNodeID"));
     String curBallot = json.getString("currentBallot");
     if (curBallot.length() == 0) {
       this.currentBallot = null;
@@ -68,7 +69,7 @@ public class SendCurrentStatePacket extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put("sendingNodeID", sendingNodeID);
+    json.put("sendingNodeID", sendingNodeID.get());
     String ballot = "";
     if (currentBallot != null) {
       ballot = currentBallot.toString();

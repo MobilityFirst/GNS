@@ -14,6 +14,7 @@ import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -45,7 +46,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	public static final int RC_TIMEOUT_MILLIS = 3000;
 	private static final long UNDOCUMENTED_DELAY_PARAMETER = 9000L;
 
-	private final int myID; 
+	private final NodeId<String> myID; 
 	private final InterfaceJSONNIOTransport niot; // used for all transport including helper classes
 	private final JSONMessenger messenger;
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
@@ -54,11 +55,11 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	private final ReplicationFrameworkInterface replicationFrameworkInterface; // replication algorithm
 	private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap(); 
 	private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
-	private final ConcurrentHashMap<Integer, Double> nsRequestRates = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<NodeId<String>, Double> nsRequestRates = new ConcurrentHashMap<>();
 
 	private Logger log = Logger.getLogger(getClass().getName()); //GNS.getLogger();
 
-	public ReplicaController(int nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
+	public ReplicaController(NodeId<String> nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig,
 			InterfaceJSONNIOTransport nioServer, MongoRecords mongoRecords) {
 		Config.initialize(configParameters);
 		this.myID = nodeID;
@@ -69,10 +70,10 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 	}
 
-	@Override public ConcurrentHashMap<Integer, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or removeEntireRecord
+	@Override public ConcurrentHashMap<NodeId<String>, Double> getNsRequestRates() {return nsRequestRates;} // FIXME: make protected or removeEntireRecord
 	@Override public GNSNodeConfig getGnsNodeConfig() {return gnsNodeConfig;} // FIXME: make protected or removeEntireRecord
 
-	protected int getNodeID() {return myID;}
+	protected NodeId<String> getNodeID() {return myID;}
 	protected BasicRecordMap getDB() {return replicaControllerDB;}
 	protected InterfaceJSONNIOTransport getNioServer() {return niot;}
 	protected UniqueIDHashMap getOngoingStopActiveRequests() {return ongoingStopActiveRequests;}
@@ -249,14 +250,14 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 		}
 	}
 	// FIXME: Method makes little sense and has hardcoded values. 
-	protected boolean isSmallestNodeRunning(String name, Set<Integer> nameServers) {
+	protected boolean isSmallestNodeRunning(String name, Set<NodeId<String>> nameServers) {
 		Random r = new Random(name.hashCode());
-		ArrayList<Integer> copy = new ArrayList<Integer>(nameServers);
+		ArrayList<NodeId<String>> copy = new ArrayList<NodeId<String>>(nameServers);
 		Collections.sort(copy);
 		Collections.shuffle(copy, r);
-		for (int id : copy) {
+		for (NodeId<String> id : copy) {
 			if (gnsNodeConfig.getPingLatency(id) < UNDOCUMENTED_DELAY_PARAMETER) // FIXME: What is this???
-				return id == myID;
+				return id.equals(myID);
 		}
 		return false;
 	}
@@ -277,9 +278,10 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface {
 	}
 
 	public static void main(String[] args) throws IOException {
-		int id = 100;
+		NodeId<String> id = new NodeId<String>(100);
 		HashMap<String,String> configParameters = new HashMap<String,String>();
-		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 100);
+		GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.ARUN_GNS_DIR_PATH+"/conf/testCodeResources/name-server-info", 
+                        new NodeId<String>(100));
 		System.out.println(gnsNodeConfig.getNodePort(id));
 		try {
 			JSONNIOTransport niot = new JSONNIOTransport(id, gnsNodeConfig, new JSONMessageExtractor(new PacketDemultiplexerDefault())); 

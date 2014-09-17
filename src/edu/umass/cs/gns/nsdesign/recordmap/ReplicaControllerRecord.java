@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved
+ */
 package edu.umass.cs.gns.nsdesign.recordmap;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
@@ -11,11 +16,13 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
 import edu.umass.cs.gns.util.StatsInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.MovingAverage;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -105,9 +112,9 @@ import java.util.concurrent.ConcurrentMap;
 public class ReplicaControllerRecord {
 
   public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);
-  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("rcr_primary", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("rcr_active", ColumnFieldType.SET_INTEGER);
-  public final static ColumnField OLD_ACTIVE_NAMESERVERS = new ColumnField("rcr_oldactive", ColumnFieldType.SET_INTEGER);
+  public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("rcr_primary", ColumnFieldType.SET_NODE_ID_STRING);
+  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("rcr_active", ColumnFieldType.SET_NODE_ID_STRING);
+  public final static ColumnField OLD_ACTIVE_NAMESERVERS = new ColumnField("rcr_oldactive", ColumnFieldType.SET_NODE_ID_STRING);
   public final static ColumnField ACTIVE_NAMESERVERS_RUNNING = new ColumnField("rcr_activeRunning", ColumnFieldType.BOOLEAN);
   public final static ColumnField ACTIVE_VERSION = new ColumnField("rcr_activeVersion", ColumnFieldType.INTEGER);
   public final static ColumnField OLD_ACTIVE_VERSION = new ColumnField("rcr_oldActiveVersion", ColumnFieldType.INTEGER);
@@ -120,6 +127,9 @@ public class ReplicaControllerRecord {
   public final static ColumnField MOV_AVG_WRITE = new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER);
   public final static ColumnField KEEP_ALIVE_TIME = new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER);
 
+  /**
+   * The main storage for this ReplicaControllerRecord.
+   */
   private HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
 
   /**
@@ -128,11 +138,8 @@ public class ReplicaControllerRecord {
   private BasicRecordMap replicaControllerDB;
 
   /**
-   * ******************************************
    * CONSTRUCTORS
-   * *****************************************
    */
-
   /**
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
@@ -147,6 +154,9 @@ public class ReplicaControllerRecord {
     }
     hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     hashMap.put(ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS)));
+    }
     hashMap.put(OLD_ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
 
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
@@ -175,7 +185,7 @@ public class ReplicaControllerRecord {
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
-  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<Integer> actives, boolean initialize) {
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<NodeId<String>> actives, boolean initialize) {
     this(replicaControllerDB, name, initialize);
 
     if (initialize == false) {
@@ -183,6 +193,11 @@ public class ReplicaControllerRecord {
     }
     hashMap.put(ACTIVE_NAMESERVERS, actives);
     hashMap.put(OLD_ACTIVE_NAMESERVERS, actives);
+
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("@@@@@@@@@ RCR experiment ACTIVE_NAMESERVERS: "
+              + Util.setOfNodeIdToString((HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS)));
+    }
   }
 
   /**
@@ -194,6 +209,10 @@ public class ReplicaControllerRecord {
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
     this.replicaControllerDB = replicaControllerDB;
+
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("@@@@@@@@@ RCR empty ACTIVE_NAMESERVERS is null");
+    }
   }
 
   /**
@@ -204,6 +223,12 @@ public class ReplicaControllerRecord {
   public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, HashMap<ColumnField, Object> allValues) {
     this.hashMap = allValues;
     this.replicaControllerDB = replicaControllerDB;
+
+    if (Config.debuggingEnabled) {
+      HashSet<NodeId<String>> activeNameServers = (HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS);
+      GNS.getLogger().info("@@@@@@@@@ RCR from database ACTIVE_NAMESERVERS: "
+              + ((activeNameServers != null) ? Util.setOfNodeIdToString(activeNameServers) : "is null"));
+    }
   }
 
   /**
@@ -311,9 +336,9 @@ public class ReplicaControllerRecord {
    *
    * @return primaryNameservers as a set of Integers
    */
-  public HashSet<Integer> getPrimaryNameservers() throws FieldNotFoundException {
+  public HashSet<NodeId<String>> getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
-      return (HashSet<Integer>) hashMap.get(PRIMARY_NAMESERVERS);
+      return (HashSet<NodeId<String>>) hashMap.get(PRIMARY_NAMESERVERS);
     }
     throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
   }
@@ -321,9 +346,9 @@ public class ReplicaControllerRecord {
   /**
    * @return the activeNameservers
    */
-  public Set<Integer> getActiveNameservers() throws FieldNotFoundException {
+  public Set<NodeId<String>> getActiveNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(ACTIVE_NAMESERVERS)) {
-      return (Set<Integer>) hashMap.get(ACTIVE_NAMESERVERS);
+      return (Set<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS);
     }
     throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
   }
@@ -333,9 +358,9 @@ public class ReplicaControllerRecord {
    *
    * @return
    */
-  public Set<Integer> getOldActiveNameservers() throws FieldNotFoundException {
+  public Set<NodeId<String>> getOldActiveNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(OLD_ACTIVE_NAMESERVERS)) {
-      return (Set<Integer>) hashMap.get(OLD_ACTIVE_NAMESERVERS);
+      return (Set<NodeId<String>>) hashMap.get(OLD_ACTIVE_NAMESERVERS);
     }
     throw new FieldNotFoundException(OLD_ACTIVE_NAMESERVERS);
   }
@@ -386,9 +411,9 @@ public class ReplicaControllerRecord {
   /**
    * @return the nameServerVotesMap
    */
-  public ConcurrentMap<Integer, Integer> getNameServerVotesMap() throws FieldNotFoundException {
+  public ConcurrentMap<NodeId<String>, Integer> getNameServerVotesMap() throws FieldNotFoundException {
     if (hashMap.containsKey(VOTES_MAP)) {
-      return (ConcurrentMap<Integer, Integer>) hashMap.get(VOTES_MAP);
+      return (ConcurrentMap<NodeId<String>, Integer>) hashMap.get(VOTES_MAP);
     }
     throw new FieldNotFoundException(VOTES_MAP);
   }
@@ -475,8 +500,8 @@ public class ReplicaControllerRecord {
    *
    * @param id Primary name server id
    */
-  public boolean containsPrimaryNameserver(int id) throws FieldNotFoundException {
-    Set<Integer> primaries = getPrimaryNameservers();
+  public boolean containsPrimaryNameserver(NodeId<String> id) throws FieldNotFoundException {
+    Set<NodeId<String>> primaries = getPrimaryNameservers();
     if (primaries != null) {
       return primaries.contains(id);
     }
@@ -488,48 +513,48 @@ public class ReplicaControllerRecord {
    *
    * @param numReplica Number of name servers to be selected.
    */
-  public Set<Integer> getHighestVotedReplicaID(ReconfiguratorInterface rc, GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
-    Set<Integer> replicas = new HashSet<Integer>();
+  public Set<NodeId<String>> getHighestVotedReplicaID(ReconfiguratorInterface rc, GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
+    Set<NodeId<String>> result = new HashSet<NodeId<String>>();
 
     for (int i = 1; i <= numReplica; i++) {
       int highestVotes = -1;
-      int highestVotedReplicaID = -1;
+      NodeId<String> highestVotedReplicaID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
-      for (Map.Entry<Integer, Integer> entry : getNameServerVotesMap().entrySet()) {
-        int nameServerId = entry.getKey();
+      for (Map.Entry<NodeId<String>, Integer> entry : getNameServerVotesMap().entrySet()) {
+        NodeId<String> nameServerId = entry.getKey();
         int votes = entry.getValue();
         //Skip name server that are unreachable
         if (gnsNodeConfig.getPingLatency(nameServerId) == GNSNodeConfig.INVALID_PING_LATENCY) {
           continue;
         }
         // Also skip highly loaded servers
-        if  (rc!= null && isHighlyLoaded(rc, nameServerId)) {
-          GNS.getLogger().warning("Not choosing highly loaded replica for replication Name:" + getName() +
-                  " NS ID: " + nameServerId);
+        if (rc != null && isHighlyLoaded(rc, nameServerId)) {
+          GNS.getLogger().warning("Not choosing highly loaded replica for replication Name:" + getName()
+                  + " NS ID: " + nameServerId);
           continue;
         }
 
-        if (!replicas.contains(nameServerId)
+        if (!result.contains(nameServerId)
                 && votes > highestVotes) {
           highestVotes = votes;
           highestVotedReplicaID = nameServerId;
         }
       }
       //Checks whether a new replica was available to be added
-      if (highestVotedReplicaID != -1) {
-        replicas.add(highestVotedReplicaID);
+      if (!highestVotedReplicaID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+        result.add(highestVotedReplicaID);
       } else {
         break;
       }
 
-      if (replicas.size() == getNameServerVotesMap().size()) {
+      if (result.size() == getNameServerVotesMap().size()) {
         break;
       }
     }
-    return replicas;
+    return result;
   }
 
-  private boolean isHighlyLoaded(ReconfiguratorInterface rc, int nodeID) {
+  private boolean isHighlyLoaded(ReconfiguratorInterface rc, NodeId<String> nodeID) {
     return rc.getNsRequestRates().get(nodeID) != null && rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
   }
 
@@ -606,11 +631,11 @@ public class ReplicaControllerRecord {
    * @param newActiveNameServers
    * @param newActiveVersion
    */
-  public void updateActiveNameServers(Set<Integer> newActiveNameServers, int newActiveVersion)
+  public void updateActiveNameServers(Set<NodeId<String>> newActiveNameServers, int newActiveVersion)
           throws FieldNotFoundException, FailedDBOperationException {
 
 //    boolean activeRunning = isActiveRunning();
-    Set<Integer> actives = getActiveNameservers();
+    Set<NodeId<String>> actives = getActiveNameservers();
     int activeVersion = getActiveVersion();
 
     ArrayList<ColumnField> updateFields = getUpdateActiveNameServerFields();
@@ -712,14 +737,14 @@ public class ReplicaControllerRecord {
    *
    * @param id Name server id receiving the vote
    */
-  public void addReplicaSelectionVote(int id, int vote, int update) throws FieldNotFoundException, FailedDBOperationException { //
+  public void addReplicaSelectionVote(NodeId<String> id, int vote, int update) throws FieldNotFoundException, FailedDBOperationException { //
     replicaControllerDB.increment(getName(),
             ColumnField.keys(PREV_TOTAL_READ, PREV_TOTAL_WRITE),
             //incrementFields,
             ColumnField.values(vote, update),
             //incrementValues,
             VOTES_MAP,
-            ColumnField.keys(new ColumnField(Integer.toString(id), ColumnFieldType.INTEGER)),
+            ColumnField.keys(new ColumnField(id.get(), ColumnFieldType.INTEGER)),
             //votesMapKeys,
             ColumnField.values(vote) //votesMapValues
     );
@@ -861,7 +886,8 @@ public class ReplicaControllerRecord {
    */
   public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB, String name,
           ArrayList<ColumnField> fields) throws RecordNotFoundException, FailedDBOperationException {
-    return new ReplicaControllerRecord(replicaControllerDB, replicaControllerDB.lookupMultipleSystemFields(name, ReplicaControllerRecord.NAME, fields));
+    return new ReplicaControllerRecord(replicaControllerDB,
+            replicaControllerDB.lookupMultipleSystemFields(name, ReplicaControllerRecord.NAME, fields));
   }
 
   /**
@@ -904,6 +930,10 @@ public class ReplicaControllerRecord {
 
   /**
    * END: static methods for reading/writing to database and iterating over records
+   *
+   * @param args
+   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
+   * @throws java.lang.Exception
    */
   // test code
   public static void main(String[] args) throws FieldNotFoundException, Exception {
@@ -915,18 +945,18 @@ public class ReplicaControllerRecord {
   // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
   private static void test() throws FieldNotFoundException, Exception {
     Config.movingAverageWindowSize = 10;
-    int nodeID = 4;
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
+    NodeId<String> nodeID = new NodeId<String>(4);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt", nodeID);
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();
     ReplicaControllerRecord record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
-    record.addReplicaSelectionVote(1, 5, 4);
-    record.addReplicaSelectionVote(1, 1, 4);
-    record.addReplicaSelectionVote(2, 2, 4);
-    record.addReplicaSelectionVote(3, 3, 4);
-    record.addReplicaSelectionVote(4, 4, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(1), 5, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(1), 1, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(2), 2, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(3), 3, 4);
+    record.addReplicaSelectionVote(new NodeId<String>(4), 4, 4);
     record.addNameServerStats(1, 50, 75);
     record.addNameServerStats(2, 50, 75);
     System.out.println(record.toJSONObject().toString());
@@ -938,15 +968,15 @@ public class ReplicaControllerRecord {
     // create the lazy record
     record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", true);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
-    System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(12));
+    System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver(new NodeId<String>(12)));
     record.addNameServerStats(10, 50, 75);
     System.out.println("READ STATS: " + record.updateMovingWindowReadsWrites());
 
-    record.addReplicaSelectionVote(11, 5, 0);
-    record.addReplicaSelectionVote(11, 1, 0);
-    record.addReplicaSelectionVote(21, 2, 0);
-    record.addReplicaSelectionVote(13, 3, 0);
-    record.addReplicaSelectionVote(14, 4, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(11), 5, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(11), 1, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(21), 2, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(13), 3, 0);
+    record.addReplicaSelectionVote(new NodeId<String>(14), 4, 0);
     record.addNameServerStats(11, 50, 75);
     record.addNameServerStats(12, 50, 75);
     System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(null, gnsNodeConfig, 3));

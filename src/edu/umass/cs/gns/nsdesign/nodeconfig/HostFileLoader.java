@@ -20,24 +20,30 @@ import java.util.List;
 public class HostFileLoader {
 
   /**
-   * A tuple of id and hostname
+   * A tuple of NodeId and hostname.
    */
   public static class HostSpec {
 
-    Integer id;
-    String name;
+    private final NodeId<String> id;
+    private final String name;
+    private final Integer startPort;
 
-    public HostSpec(Integer id, String name) {
-      this.id = id;
+    public HostSpec(String id, String name, Integer startPort) {
+      this.id = new NodeId(id);
       this.name = name;
+      this.startPort = startPort;
     }
 
-    public Integer getId() {
+    public NodeId<String> getId() {
       return id;
     }
 
     public String getName() {
       return name;
+    }
+
+    public Integer getStartPort() {
+      return startPort;
     }
     
   }
@@ -45,13 +51,15 @@ public class HostFileLoader {
   /**
    * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
    * 
-   * This currently supports two formats (one of these per line):
+   * This currently supports three formats (one of these per line):
    * <code>
+   * {hostname}
+   * or
    * {number}{whitespace}{hostname}
    * or
-   * {hostname}
+   * {number}{whitespace}{hostname}{whitespace}{startingport}
    * </code>
-   * Also, you can't mix these two formats in one file.
+   * Also, you can't mix formats in one file.
    *
    * @param hostsFile
    * @return a List of hostnames
@@ -68,26 +76,26 @@ public class HostFileLoader {
           continue;
         }
         String[] tokens = line.split("\\s+");
-        if (tokens.length == 2) {
-          int id = Integer.parseInt(tokens[0]);
-          result.add(new HostSpec(id, tokens[1]));
+        if (tokens.length > 1) {
+          String id = tokens[0];
+          Integer port = tokens.length > 2 ? Integer.parseInt(tokens[2]) : null;
+          result.add(new HostSpec(id, tokens[1], port));
           hasNumbers = true;
         } else if (tokens.length == 1) {
           if (hasNumbers) {
-            throw new IOException("Can't mix numbered and unnumbered format:" + line);
+            throw new IOException("Can't mix format with IDs provided and not provided:" + line);
           }
-          result.add(new HostSpec(hostCnt++, tokens[0]));
+          result.add(new HostSpec(Integer.toString(hostCnt), tokens[0], null));
         } else {
           throw new IOException("Bad host format:" + line);
         }
       }
       br.close();
-    } catch (NumberFormatException e) {
-      throw new Exception("Problem reading hosts file: " + e);
     } catch (IOException e) {
       throw new Exception("Problem reading hosts file: " + e);
     }
     return result;
   }
+
 
 }

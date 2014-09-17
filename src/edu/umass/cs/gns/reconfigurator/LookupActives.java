@@ -7,6 +7,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -30,10 +31,10 @@ public class LookupActives {
 
 	private static Logger log = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(Add.class.getName()) : GNS.getLogger();
 
-	public static MessagingTask[] executeLookupActives(RequestActivesPacket packet, BasicRecordMap DB, int rcID, boolean recovery)
+	public static MessagingTask[] executeLookupActives(RequestActivesPacket packet, BasicRecordMap DB, NodeId<String> rcID, boolean recovery)
           throws JSONException, IOException, FailedDBOperationException {
 
-		if (recovery || packet.getNsID() != rcID) return null;
+		if (recovery || !packet.getNsID().equals(rcID)) return null;
 		MessagingTask replyToLNS = null;
 		boolean isError = false;
 
