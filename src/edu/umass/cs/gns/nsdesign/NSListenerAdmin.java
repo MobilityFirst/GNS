@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved
+ */
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
@@ -41,15 +46,15 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
    */
   private ServerSocket serverSocket;
 
-  private GnsReconfigurableInterface gnsReconfigurable;
+  private final GnsReconfigurableInterface gnsReconfigurable;
 
-  private ActiveReplicaCoordinator appCoordinator;
+  private final ActiveReplicaCoordinator appCoordinator;
 
-  private ReplicaController replicaController;
+  private final ReplicaController replicaController;
 
-  private ReplicaControllerCoordinator rcCoordinator;
+  private final ReplicaControllerCoordinator rcCoordinator;
 
-  private GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig gnsNodeConfig;
 
   /**
    * Creates a new listener thread for handling response packet

@@ -93,13 +93,21 @@ public class Util {
     }
     return set;
   }
-  
+
   public static Set<NodeId<String>> arrayToNodeIdSet(NodeId[] array) {
     TreeSet<NodeId<String>> set = new TreeSet<NodeId<String>>();
     for (int i = 0; i < array.length; i++) {
       set.add(array[i]);
     }
     return set;
+  }
+
+  public static Set<String> nodeIdSetToStringSet(Set<NodeId<String>> set) {
+    Set<String> result = new HashSet<String>();
+    for (NodeId<String> id : set) {
+      result.add(id.get());
+    }
+    return result;
   }
 
   public static int[] setToIntArray(Set<Integer> set) {
@@ -138,7 +146,6 @@ public class Util {
     }
     return array;
   }
-  
 
   public static Integer[] objectToIntegerArray(Object[] objects) {
     if (objects == null) {
@@ -162,7 +169,7 @@ public class Util {
     }
     return s;
   }
-  
+
   public static NodeId[] stringToNodeIdArray(String string) {
     string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
     String[] tokens = string.split(",");
@@ -172,7 +179,7 @@ public class Util {
     }
     return array;
   }
-  
+
   public static String arrayOfNodeIdsToString(NodeId[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
@@ -181,11 +188,10 @@ public class Util {
     }
     return s;
   }
-  
-  
+
   /**
    * Converts a set of NodeIds to a string.
-   * 
+   *
    * @param nodeIds
    * @return a string
    */
@@ -205,7 +211,7 @@ public class Util {
 
   /**
    * Converts a encoded NodeId string to a set of NodeId objects.
-   * 
+   *
    * @param string
    * @return a Set of NodeIds
    */
@@ -217,7 +223,6 @@ public class Util {
     }
     return nodeIds;
   }
-
 
   static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   static Random rnd = new Random(System.currentTimeMillis());

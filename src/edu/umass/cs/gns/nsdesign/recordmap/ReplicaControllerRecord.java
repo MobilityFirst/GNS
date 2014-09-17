@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved
+ */
 package edu.umass.cs.gns.nsdesign.recordmap;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
@@ -17,6 +22,7 @@ import edu.umass.cs.gns.util.StatsInfo;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.MovingAverage;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -121,6 +127,9 @@ public class ReplicaControllerRecord {
   public final static ColumnField MOV_AVG_WRITE = new ColumnField("rcr_movAvgWrite", ColumnFieldType.LIST_INTEGER);
   public final static ColumnField KEEP_ALIVE_TIME = new ColumnField("rcr_keepAlive", ColumnFieldType.INTEGER);
 
+  /**
+   * The main storage for this ReplicaControllerRecord.
+   */
   private HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
 
   /**
@@ -129,11 +138,8 @@ public class ReplicaControllerRecord {
   private BasicRecordMap replicaControllerDB;
 
   /**
-   * ******************************************
    * CONSTRUCTORS
-   * *****************************************
    */
-
   /**
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
@@ -148,6 +154,9 @@ public class ReplicaControllerRecord {
     }
     hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     hashMap.put(ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS)));
+    }
     hashMap.put(OLD_ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
 
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
@@ -184,6 +193,11 @@ public class ReplicaControllerRecord {
     }
     hashMap.put(ACTIVE_NAMESERVERS, actives);
     hashMap.put(OLD_ACTIVE_NAMESERVERS, actives);
+
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("@@@@@@@@@ RCR experiment ACTIVE_NAMESERVERS: "
+              + Util.setOfNodeIdToString((HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS)));
+    }
   }
 
   /**
@@ -195,6 +209,10 @@ public class ReplicaControllerRecord {
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
     this.replicaControllerDB = replicaControllerDB;
+
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("@@@@@@@@@ RCR empty ACTIVE_NAMESERVERS is null");
+    }
   }
 
   /**
@@ -205,6 +223,12 @@ public class ReplicaControllerRecord {
   public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, HashMap<ColumnField, Object> allValues) {
     this.hashMap = allValues;
     this.replicaControllerDB = replicaControllerDB;
+
+    if (Config.debuggingEnabled) {
+      HashSet<NodeId<String>> activeNameServers = (HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS);
+      GNS.getLogger().info("@@@@@@@@@ RCR from database ACTIVE_NAMESERVERS: "
+              + ((activeNameServers != null) ? Util.setOfNodeIdToString(activeNameServers) : "is null"));
+    }
   }
 
   /**
@@ -504,9 +528,9 @@ public class ReplicaControllerRecord {
           continue;
         }
         // Also skip highly loaded servers
-        if  (rc!= null && isHighlyLoaded(rc, nameServerId)) {
-          GNS.getLogger().warning("Not choosing highly loaded replica for replication Name:" + getName() +
-                  " NS ID: " + nameServerId);
+        if (rc != null && isHighlyLoaded(rc, nameServerId)) {
+          GNS.getLogger().warning("Not choosing highly loaded replica for replication Name:" + getName()
+                  + " NS ID: " + nameServerId);
           continue;
         }
 
@@ -862,7 +886,8 @@ public class ReplicaControllerRecord {
    */
   public static ReplicaControllerRecord getNameRecordPrimaryMultiField(BasicRecordMap replicaControllerDB, String name,
           ArrayList<ColumnField> fields) throws RecordNotFoundException, FailedDBOperationException {
-    return new ReplicaControllerRecord(replicaControllerDB, replicaControllerDB.lookupMultipleSystemFields(name, ReplicaControllerRecord.NAME, fields));
+    return new ReplicaControllerRecord(replicaControllerDB,
+            replicaControllerDB.lookupMultipleSystemFields(name, ReplicaControllerRecord.NAME, fields));
   }
 
   /**
@@ -905,6 +930,7 @@ public class ReplicaControllerRecord {
 
   /**
    * END: static methods for reading/writing to database and iterating over records
+   *
    * @param args
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    * @throws java.lang.Exception
@@ -920,7 +946,7 @@ public class ReplicaControllerRecord {
   private static void test() throws FieldNotFoundException, Exception {
     Config.movingAverageWindowSize = 10;
     NodeId<String> nodeID = new NodeId<String>(4);
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt" ,nodeID);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt", nodeID);
     ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);

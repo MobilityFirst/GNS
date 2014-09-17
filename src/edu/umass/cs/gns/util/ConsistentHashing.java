@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013
+ * Copyright (C) 2014
  * University of Massachusetts
  * All Rights Reserved 
  */
@@ -165,7 +165,6 @@ public class ConsistentHashing {
       }
       result.add(entry.getValue());
       key = (String) entry.getKey();
-//        System.out.println("x\t" + entry.getValue());
       if (result.size() == numReplicaControllers) {
         return result;
       }
@@ -173,13 +172,11 @@ public class ConsistentHashing {
 
     Map.Entry<String, NodeId<String>> entry = nsTreeMap.firstEntry();
     result.add(entry.getValue());
-//      System.out.println("y\t" + entry.getValue());
     key = (String) entry.getKey();
     while (result.size() != numReplicaControllers) {
       entry = nsTreeMap.higherEntry(key);
       result.add(entry.getValue());
       key = (String) entry.getKey();
-//        System.out.println("z\t" + entry.getValue());
     }
     return result;
   }

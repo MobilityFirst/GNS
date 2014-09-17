@@ -8,15 +8,19 @@ import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.main.GNS;
 
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.util.TreeMap;
-import java.util.SortedMap;
 
 /**
  *
@@ -138,7 +142,7 @@ public class JSONUtils {
 
     return set;
   }
-  
+
   /**
    * Converts a JSONArray to an set of NodeIds
    *
@@ -159,7 +163,7 @@ public class JSONUtils {
 
     return set;
   }
-  
+
   public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
     Map<String, ResultValue> result = new HashMap<String, ResultValue>();
     Iterator<String> keyIter = json.keys();
@@ -226,8 +230,12 @@ public class JSONUtils {
         case SET_STRING:
           jsonObject.put(field.getName(), (Set<String>) value);
           break;
-         case SET_NODE_ID_STRING:
-          jsonObject.put(field.getName(), (Set<NodeId<String>>) value);
+        case SET_NODE_ID_STRING:
+          Set<NodeId<String>> set = (Set<NodeId<String>>) value;
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("$$$$$$$$$$ Set: " + (set != null ? Util.setOfNodeIdToString(set) : " is null "));
+          }
+          jsonObject.put(field.getName(), Util.nodeIdSetToStringSet((Set<NodeId<String>>) value));
           break;
         case LIST_INTEGER:
           jsonObject.put(field.getName(), (ArrayList<Integer>) value);
@@ -303,25 +311,5 @@ public class JSONUtils {
     }
     return json;
   }
-
-//  /**
-//   * Returns a JSON Object string sorted by keys. 
-//   * This is only canonical one level deep. You've been warned.
-//   * @param json
-//   * @return 
-//   */
-//  public static String getCanonicalJSONString(JSONObject json) {
-//    SortedMap map = new TreeMap<String, Object>();
-//    Iterator<String> nameItr = json.keys();
-//    while (nameItr.hasNext()) {
-//      String key = nameItr.next();
-//      try {
-//        map.put(key, json.get(key));
-//      } catch (JSONException e) {
-//        // punt on any fields that hose us
-//      }
-//    }
-//    return map.toString();
-//  }
 
 }

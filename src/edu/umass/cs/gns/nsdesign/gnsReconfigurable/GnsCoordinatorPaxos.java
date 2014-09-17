@@ -89,14 +89,14 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
         // call proposeStop
         case ACTIVE_REMOVE: // stop request for removing a name record
-          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Before proposing remove: " + request);
+          if (Config.debuggingEnabled) GNS.getLogger().info("*******Before proposing remove: " + request);
           OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket(request);
           paxosID = paxosManager.proposeStop(stopPacket1.getName(), stopPacket1.toString(), stopPacket1.getVersion());
           if (paxosID == null) {
             callHandleDecision = stopPacket1.toJSONObject();
             noCoordinatorState = true;
           }
-          if (Config.debuggingEnabled) GNS.getLogger().fine("*******Remove proposed: " + request);
+          if (Config.debuggingEnabled) GNS.getLogger().info("*******Remove proposed: " + request);
           break;
         case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
           OldActiveSetStopPacket stopPacket2 = new OldActiveSetStopPacket(request);

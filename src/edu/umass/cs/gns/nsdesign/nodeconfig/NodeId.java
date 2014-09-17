@@ -51,10 +51,10 @@ public class NodeId<NodeItemType> implements Comparable<NodeId<NodeItemType>> {
     return this.id.equals(other.id);
   }
 
-  // so we don't miss any places for now
   @Override
   public String toString() {
-    GNS.getLogger().warning("***** toString called in \n   " + stackTraceToString() + " use get() instead for now.");
+    // So we don't miss any places...
+    //GNS.getLogger().warning("***** toString called in \n   " + stackTraceToString() + " use get() instead for now.");
     return id.toString();
   }
 
@@ -70,10 +70,9 @@ public class NodeId<NodeItemType> implements Comparable<NodeId<NodeItemType>> {
             + (stackTrace.length > 8 ? stackTrace[8].toString() + "\n" : "");
   }
 
-  
   @Override
   public int compareTo(NodeId<NodeItemType> that) {
-     return ((Comparable)this.id).compareTo(that.id);
+    return ((Comparable) this.id).compareTo(that.id);
   }
 
 }
