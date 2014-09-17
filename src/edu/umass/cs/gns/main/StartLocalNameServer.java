@@ -551,7 +551,7 @@ public class StartLocalNameServer {
 
     try {
       GNSNodeConfig gnsNodeConfig;
-      gnsNodeConfig = new GNSNodeConfig(nsFile, GNSNodeConfig.INVALID_NAME_SERVER_ID);
+      gnsNodeConfig = new GNSNodeConfig(nsFile, GNSNodeConfig.BOGUS_NULL_NAME_SERVER_ID);
       ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
 
       //Start local name server

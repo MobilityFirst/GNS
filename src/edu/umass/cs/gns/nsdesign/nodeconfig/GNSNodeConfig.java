@@ -10,6 +10,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,11 +34,10 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final NodeId<String> INVALID_NAME_SERVER_ID = new NodeId("Invalid");
+  public static final NodeId<String> BOGUS_NULL_NAME_SERVER_ID = new NodeId("_BOGUS_NULL_NAME_SERVER_ID_");
   public static final int INVALID_PORT = -1;
-  
-  private NodeId<String> nodeID = INVALID_NAME_SERVER_ID; // this will be -1 for Local Name Servers
 
-  
+  private NodeId<String> nodeID = INVALID_NAME_SERVER_ID; // this will be BOGUS_NULL_NAME_SERVER_ID for Local Name Servers
 
   /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
@@ -67,6 +67,11 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
     } else {
       initFromFile(hostsFile, nameServerID);
     }
+    for (Entry<NodeId<String>, HostInfo> hostInfoEntry : hostInfoMapping.entrySet()) {
+      GNS.getLogger().info("Id: " + hostInfoEntry.getValue().getId().get()
+              + " Host:" + hostInfoEntry.getValue().getIpAddress()
+              + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
+    }
   }
 
   /**
@@ -77,18 +82,22 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
    * @param nameServerID
    * @throws NumberFormatException
    */
-  private void initFromFile(String hostsFile, NodeId<String> nameServerID) {
+  private void initFromFile(String hostsFile, NodeId<String> nameServerID) throws IOException {
     this.nodeID = nameServerID;
     List<HostFileLoader.HostSpec> hosts = null;
     try {
       hosts = HostFileLoader.loadHostFile(hostsFile);
     } catch (Exception e) {
-      GNS.getLogger().severe("Problem loading hosts file: " + e);
       e.printStackTrace();
-      return;
+      throw new IOException("Problem loading hosts file: " + e);
     }
     for (HostFileLoader.HostSpec spec : hosts) {
       addHostInfo(spec.getId(), spec.getName(), spec.getStartPort());
+    }
+        // some idiot checking of the given Id
+    HostInfo nodeInfo = hostInfoMapping.get(nameServerID);
+    if (!nameServerID.equals(BOGUS_NULL_NAME_SERVER_ID) && nodeInfo == null) {
+      throw new IOException("NodeId not found in hosts file:" + nameServerID.get());
     }
   }
 
@@ -132,7 +141,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
 
   /**
    * Returns the number of name server nodes.
-   * 
+   *
    * @return the number of nodes
    */
   public int getNumberOfNodes() {
@@ -140,7 +149,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
   }
 
   /**
-   * Returns the TCP port of a nameserver. 
+   * Returns the TCP port of a nameserver.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id Nameserver id
@@ -148,15 +157,22 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
    */
   public int getNSTcpPort(NodeId<String> id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
+    if (nodeInfo != null) {
+      return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
+    } else {
+      //if (Config.debuggingEnabled) {
+        GNS.getLogger().warning("NodeId " + id.get() + " not a valid Id!");
+      //}
+      return INVALID_PORT;
+    }
   }
 
   /**
-   *  Returns the UDP port of a nameserver.
-   *  Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   * 
+   * Returns the UDP port of a nameserver.
+   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
+   *
    * @param id
-   * @return 
+   * @return
    */
   public int getNSUdpPort(NodeId<String> id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
@@ -184,7 +200,11 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
    */
   public int getNSPingPort(NodeId<String> id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+    if (nodeInfo != null) {
+      return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+    } else {
+      return INVALID_PORT;
+    }
   }
 
   /**
@@ -221,9 +241,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
 
   /**
    * Returns true if the node exists.
-   * 
+   *
    * @param ID
-   * @return 
+   * @return
    */
   @Override
   public boolean nodeExists(NodeId<String> ID) {
@@ -233,9 +253,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
   /**
    * Returns the TCP port of a nameserver.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   * 
+   *
    * @param ID
-   * @return 
+   * @return
    */
   @Override
   public int getNodePort(NodeId<String> ID) {
@@ -323,15 +343,11 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
    */
   public static void main(String[] args) throws Exception {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    GNSNodeConfig gnsNodeConfigOldSchool = new GNSNodeConfig(filename, 
-            new NodeId<String>(44));
-    System.out.println(gnsNodeConfigOldSchool.hostInfoMapping.toString());
-    System.out.println(gnsNodeConfigOldSchool.getNumberOfNodes());
-
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/ns_hosts.txt", 
-            new NodeId<String>(44));
-    System.out.println("hostInfoMapping:" + gnsNodeConfig.hostInfoMapping.toString());
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename,
+            new NodeId<String>("sammy"));
+    System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());
+    System.out.println(gnsNodeConfig.getNSTcpPort(new NodeId<String>("frank")));
   }
 
 }

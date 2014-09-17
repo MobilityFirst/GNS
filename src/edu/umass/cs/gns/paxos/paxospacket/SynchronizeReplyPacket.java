@@ -48,7 +48,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
 
   public SynchronizeReplyPacket(JSONObject json) throws JSONException {
 
-    this.nodeID = new NodeId<String>(json.getInt(NODE));
+    this.nodeID = new NodeId<String>(json.getString(NODE));
     this.maxDecisionSlot = json.getInt(MAX_SLOT);
     if (json.has(MISSING)) {
       missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
