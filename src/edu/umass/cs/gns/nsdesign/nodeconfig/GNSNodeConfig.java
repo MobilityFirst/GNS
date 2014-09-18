@@ -4,7 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.HostInfo;
+import edu.umass.cs.gns.util.Util;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -12,25 +15,24 @@ import java.net.InetAddress;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This class parses configuration files to gather information about each name server/local name
- * server in the system.
- *
- * Note that Local Name Server info is being flushed from this. LNSs no longer have IDs. Nobody needs to
- * know about them other than clients.
+ * This class parses a hosts file to gather information about each name server (not local) server in the system.
+ * 
+ * Also has support for checking to see if the hosts file changes. When that happens the host info is
+ * reloaded and the <code>ConsistentHashing.reInitialize</code> method is called.
  *
  * To use the nio package, GNS implements <code>NodeConfig</code> interface in this class.
- *
- * @author Abhigyan
  *
  * Arun: FIXME: Unclear why we
  * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable
  * from here.
  */
-public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
+public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutdownable {
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final NodeId<String> INVALID_NAME_SERVER_ID = new NodeId("Invalid");
@@ -38,19 +40,22 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
   public static final int INVALID_PORT = -1;
 
   private NodeId<String> nodeID = INVALID_NAME_SERVER_ID; // this will be BOGUS_NULL_NAME_SERVER_ID for Local Name Servers
+  private final String hostsFile;
 
   /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
-  private final ConcurrentMap<NodeId<String>, HostInfo> hostInfoMapping = new ConcurrentHashMap<NodeId<String>, HostInfo>(16, 0.75f, 8);
+  private ConcurrentMap<NodeId<String>, HostInfo> hostInfoMapping;
+  // keep this around
+  private ConcurrentMap<NodeId<String>, HostInfo> previousHostInfoMapping;
 
   // Currently only used by GNSINstaller
   /**
    * Creates an empty GNSNodeConfig
    */
   public GNSNodeConfig() {
-    // this doesn't set numberOfNameServers
+    hostsFile = null;
   }
 
   /**
@@ -61,29 +66,31 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
    * @param nameServerID
    */
   public GNSNodeConfig(String hostsFile, NodeId<String> nameServerID) throws IOException {
+    this.nodeID = nameServerID;
+    this.hostsFile = hostsFile;
     if (isOldStyleFile(hostsFile)) {
       throw new UnsupportedOperationException("THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: " + hostsFile);
       //initFromOldStyleFile(hostsFile, nameServerID);
-    } else {
-      initFromFile(hostsFile, nameServerID);
     }
+    readHostsFile(hostsFile);
+    // Informational purposes
     for (Entry<NodeId<String>, HostInfo> hostInfoEntry : hostInfoMapping.entrySet()) {
       GNS.getLogger().info("Id: " + hostInfoEntry.getValue().getId().get()
               + " Host:" + hostInfoEntry.getValue().getIpAddress()
               + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
     }
+    startCheckingForUpdates();
   }
 
   /**
-   * **
-   * Parse a host file to create a mapping of node information for name servers.
+   *
+   * Read a host file to create a mapping of node information for name servers.
    *
    * @param hostsFile
    * @param nameServerID
    * @throws NumberFormatException
    */
-  private void initFromFile(String hostsFile, NodeId<String> nameServerID) throws IOException {
-    this.nodeID = nameServerID;
+  private void readHostsFile(String hostsFile) throws IOException {
     List<HostFileLoader.HostSpec> hosts = null;
     try {
       hosts = HostFileLoader.loadHostFile(hostsFile);
@@ -91,14 +98,53 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
       e.printStackTrace();
       throw new IOException("Problem loading hosts file: " + e);
     }
+    // save the old one... maybe we'll need it again?
+    previousHostInfoMapping = hostInfoMapping;
+    // Create a new one so we don't hose the old one if the new file is bogus
+    ConcurrentMap<NodeId<String>, HostInfo> newHostInfoMapping = new ConcurrentHashMap<NodeId<String>, HostInfo>(16, 0.75f, 8);
     for (HostFileLoader.HostSpec spec : hosts) {
-      addHostInfo(spec.getId(), spec.getName(), spec.getStartPort());
+      newHostInfoMapping.put(spec.getId(), new HostInfo(spec.getId(), spec.getName(),
+              spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT, 0, 0, 0));
     }
-        // some idiot checking of the given Id
-    HostInfo nodeInfo = hostInfoMapping.get(nameServerID);
-    if (!nameServerID.equals(BOGUS_NULL_NAME_SERVER_ID) && nodeInfo == null) {
-      throw new IOException("NodeId not found in hosts file:" + nameServerID.get());
+    // some idiot checking of the given Id
+    HostInfo nodeInfo = newHostInfoMapping.get(this.nodeID);
+    if (!this.nodeID.equals(BOGUS_NULL_NAME_SERVER_ID) && nodeInfo == null) {
+      throw new IOException("NodeId not found in hosts file:" + this.nodeID.get());
     }
+    // ok.. things are cool... actually update (do we need to lock this)
+    hostInfoMapping = newHostInfoMapping;
+    ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
+  }
+
+  private static final long updateCheckPeriod = 60000; // 60 seconds
+
+  private TimerTask timerTask = null;
+
+  private void startCheckingForUpdates() {
+    Timer t = new Timer();
+    t.scheduleAtFixedRate(
+            timerTask = new TimerTask() {
+              @Override
+              public void run() {
+                checkForUpdates();
+              }
+            },
+            updateCheckPeriod, // run first occurrence later
+            updateCheckPeriod);
+    GNS.getLogger().info("Checking for hosts updates every " + updateCheckPeriod / 1000 + " seconds");
+  }
+
+  private void checkForUpdates() {
+    try {
+      GNS.getLogger().info("Checking for hosts update");
+      if (HostFileLoader.isChangedFileVersion(hostsFile)) {
+        GNS.getLogger().info("Reading updated hosts file");
+        readHostsFile(hostsFile);
+      }
+    } catch (IOException e) {
+      GNS.getLogger().severe("Problem reading hosts file:" + e);
+    }
+
   }
 
   /**
@@ -139,6 +185,10 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
 
+  public Set<NodeId<String>> getPreviousNodeIDs() {
+    return ImmutableSet.copyOf(previousHostInfoMapping.keySet());
+  }
+
   /**
    * Returns the number of name server nodes.
    *
@@ -161,7 +211,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
       return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
     } else {
       //if (Config.debuggingEnabled) {
-        GNS.getLogger().warning("NodeId " + id.get() + " not a valid Id!");
+      GNS.getLogger().warning("NodeId " + id.get() + " not a valid Id!");
       //}
       return INVALID_PORT;
     }
@@ -329,11 +379,11 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
       }
       String line = reader.readLine();
       if (line == null) {
-        throw new IOException("Host config file is empty" + file);
+        throw new IOException("Hosts file is empty" + file);
       }
       return line.split("\\s+").length > 4;
     } catch (IOException e) {
-      System.out.println("Problem reading host config file:" + e);
+      GNS.getLogger().severe("Problem reading hosts file:" + e);
       return false;
     }
   }
@@ -348,6 +398,13 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());
     System.out.println(gnsNodeConfig.getNSTcpPort(new NodeId<String>("frank")));
+  }
+
+  @Override
+  public void shutdown() {
+    if (timerTask != null) {
+      timerTask.cancel();
+    }
   }
 
 }

@@ -11,6 +11,7 @@ import edu.umass.cs.gns.localnameserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
@@ -23,12 +24,10 @@ import edu.umass.cs.gns.test.StartExperiment;
 import edu.umass.cs.gns.test.nioclient.DBClientIntercessor;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,12 +39,12 @@ import java.util.concurrent.TimeUnit;
  *
  * @author abhigyan
  */
-public class LocalNameServer {
+public class LocalNameServer implements Shutdownable {
 
   /**
    * The address of the name server. Replaces nodeId.
    */
-  private static InetSocketAddress address; // will replace nodeId
+  private static InetSocketAddress address;
 
   // FIXME: Future code cleanup note: The ClientRequestHandlerInterface and the IntercessorInterface
   // are closely related. Both encapsulate some functionality in the LocalNameServer that we might want to 
@@ -67,6 +66,11 @@ public class LocalNameServer {
    * Ping manager object for pinging other nodes and updating ping latencies in
    */
   private static PingManager pingManager;
+  
+  /**
+   * We keep a pointer to the gnsNodeConfig so we can shut it down.
+   */
+  private static GNSNodeConfig gnsNodeConfig;
 
   /**
    * @return the nameServerLoads
@@ -78,6 +82,7 @@ public class LocalNameServer {
   public static PingManager getPingManager() {
     return pingManager;
   }
+  
 
   /**
    **
@@ -88,8 +93,10 @@ public class LocalNameServer {
    */
   public LocalNameServer(InetSocketAddress address, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
-    // set node ID first because constructor for BasicClientRequestHandler reads 'nodeID' value.
-    this.address = address; // replaces id
+    // set aaddress first because constructor for BasicClientRequestHandler reads 'nodeID' value.
+    this.address = address;
+    // keep a copy of this so we can shut it down later
+    this.gnsNodeConfig = gnsNodeConfig;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
             StartLocalNameServer.experimentMode,
@@ -103,6 +110,7 @@ public class LocalNameServer {
             StartLocalNameServer.loadDependentRedirection,
             StartLocalNameServer.replicationFramework
     );
+    
     GNS.getLogger().info("Parameter values: " + parameters.toString());
     requestHandler = new BasicClientRequestHandler(address, gnsNodeConfig, parameters);
 
@@ -440,6 +448,11 @@ public class LocalNameServer {
 //    NameServerLoadPacket nsLoad = new NameServerLoadPacket(json);
 //    LocalNameServer.nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
     throw new UnsupportedOperationException();
+  }
+
+  @Override
+  public void shutdown() {
+    this.gnsNodeConfig.shutdown();
   }
 
 }

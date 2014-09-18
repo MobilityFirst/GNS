@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
  * <b>How to use this class:</b>
  * <p/>
  * <i>1. ADD a new record to database:</i>
- * Use the constructor <code>public ReplicaControllerRecord(String name, boolean initialize)</code> to create
+ * Use the constructor <code>public ReplicaControllerRecord(String name, boolean reInitialize)</code> to create
  * an new record. Next, insert this record into database by calling <code>addNameRecordPrimary</code> in
  * <code>NameServer</code>.
  * <p/>
@@ -73,7 +73,7 @@ import java.util.concurrent.ConcurrentMap;
  * <i>3. Add a new field to the record:</i>
  * There are four steps:
  * (1) Define the field as static {@link edu.umass.cs.gns.database.ColumnField} object in this class.
- * (2) Add this field in the constructor <code>public ReplicaControllerRecord(String name, boolean initialize)</code>.
+ * (2) Add this field in the constructor <code>public ReplicaControllerRecord(String name, boolean reInitialize)</code>.
  * (3) Update the method <code>toJSONObject</code>.
  * (4) Create a getter method for this field.
  * <p/>
@@ -216,7 +216,7 @@ public class ReplicaControllerRecord {
   }
 
   /**
-   * Constructor used by the initialize values read from database
+   * Constructor used by the reInitialize values read from database
    *
    * @param allValues
    */
@@ -947,7 +947,7 @@ public class ReplicaControllerRecord {
     Config.movingAverageWindowSize = 10;
     NodeId<String> nodeID = new NodeId<String>(4);
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt", nodeID);
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
+    ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();

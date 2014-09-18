@@ -263,9 +263,9 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
     this.nodeIDs = nodeIDs;
     this.nodeID = ID;
     this.paxosManager = paxosManager;
-    // initialize paxos manager before initializing acceptorBallot and coordinatorBallot
+    // reInitialize paxos manager before initializing acceptorBallot and coordinatorBallot
     // because getInitialCoordinatorReplica depends on paxos manager
-    // initialize acceptorBallot and coordinatorBallot to default values
+    // reInitialize acceptorBallot and coordinatorBallot to default values
     acceptorBallot = new Ballot(0, getInitialCoordinatorReplica());
 
     coordinatorBallot = new Ballot(0, getInitialCoordinatorReplica());

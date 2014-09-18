@@ -839,7 +839,7 @@ public class MongoRecords implements NoSQLRecords {
     nameServerIDs.add(new NodeId<String>(0));
     nameServerIDs.add(new NodeId<String>(1));
     nameServerIDs.add(new NodeId<String>(2));
-    ConsistentHashing.initialize(3, nameServerIDs);
+    ConsistentHashing.reInitialize(3, nameServerIDs);
     MongoRecords instance = new MongoRecords(nodeID, -1);
     System.out.println("***ALL RECORDS***");
     instance.printAllEntries(DBNAMERECORD);

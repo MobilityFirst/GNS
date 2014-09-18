@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-
 /**
  * <p>
  * This class represents a name server in GNS. It contains an GnsReconfigurable and a ReplicaController object
@@ -46,15 +45,14 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Created by abhigyan on 2/26/14.
  */
-public class NameServer implements Shutdownable{
+public class NameServer implements Shutdownable {
 
   private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(10); // worker thread pool
 
+  private ActiveReplicaCoordinator appCoordinator; // coordinates app's requests
 
-  private ActiveReplicaCoordinator  appCoordinator; // coordinates app's requests
- 
   private ActiveReplica<?> activeReplica; // reconfiguration logic
- 
+
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
 
   private ReplicaController replicaController;
@@ -69,11 +67,12 @@ public class NameServer implements Shutdownable{
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
+   *
    * @param nodeID ID of this name server
-   * @param configFile  Config file with parameters and values
+   * @param configFile Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
-  public NameServer(NodeId<String> nodeID, String configFile, GNSNodeConfig gnsNodeConfig) throws IOException{
+  public NameServer(NodeId<String> nodeID, String configFile, GNSNodeConfig gnsNodeConfig) throws IOException {
 
     // load options given in config file in a java properties object
     Properties prop = new Properties();
@@ -89,7 +88,7 @@ public class NameServer implements Shutdownable{
 
     // create a hash map with all options including options in config file
     HashMap<String, String> allValues = new HashMap<String, String>();
-    for (String propertyName: prop.stringPropertyNames()) {
+    for (String propertyName : prop.stringPropertyNames()) {
       allValues.put(propertyName, prop.getProperty(propertyName));
     }
     init(nodeID, allValues, gnsNodeConfig);
@@ -98,30 +97,25 @@ public class NameServer implements Shutdownable{
   /**
    * Constructor for name server object. It takes the list of parameters as a <code>HashMap</code> whose keys
    * are parameter names and values are parameter values. Parameter values are <code>String</code> objects.
+   *
    * @param nodeID ID of this name server
-   * @param configParameters  Config file with parameters and values
+   * @param configParameters Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
   public NameServer(NodeId<String> nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
-
     init(nodeID, configParameters, gnsNodeConfig);
-
   }
 
   /**
    * This methods actually does the work. It start a listening socket at the name server for incoming messages,
    * and creates <code>GnsReconfigurable</code> and <code>ReplicaController</code> objects.
+   *
    * @throws IOException
-   * 
+   *
    * NIOTransport will create an additional listening thread. threadPoolExecutor will create a few more shared
    * pool of threads.
    */
-  private void init(NodeId<String> nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException{
-    // create nio server
-    // init worker thread pool
-
-//    GNS.numPrimaryReplicas = numReplicaControllers; // setting it there in case someone is reading that field.
-    ConsistentHashing.initialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
+  private void init(NodeId<String> nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
     // set to false to cancel non-periodic delayed tasks upon shutdown
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
@@ -136,24 +130,23 @@ public class NameServer implements Shutdownable{
     new Thread(gnsnioTransport).start();
     tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, executorService);
     // be careful to give same 'nodeID' to everyone
-    
-    // init DB
 
+    // init DB
     mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
 
-    // initialize GNS
+    // reInitialize GNS
     if (Config.dummyGNS) {
       gnsReconfigurable = new DummyGnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport);
     } else { // real GNS
       gnsReconfigurable = new GnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
     }
     GNS.getLogger().info("GNS initialized");
-    // initialize active replica with the app
-    activeReplica  = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, executorService, gnsReconfigurable);
+    // reInitialize active replica with the app
+    activeReplica = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, executorService, gnsReconfigurable);
     GNS.getLogger().info("Active replica initialized");
 
     // we create app coordinator inside constructor for activeReplica because of cyclic dependency between them
-    appCoordinator  = activeReplica.getCoordinator();
+    appCoordinator = activeReplica.getCoordinator();
     GNS.getLogger().info("App (GNS) coordinator initialized");
 
     replicaController = new ReplicaController(nodeID, gnsNodeConfig, tcpTransport,
@@ -200,7 +193,10 @@ public class NameServer implements Shutdownable{
     return gnsReconfigurable;
   }
 
-  /*** Shutdown a name server by closing different components in. */
+  /**
+   * * Shutdown a name server by closing different components in.
+   */
+  @Override
   public void shutdown() {
     tcpTransport.stop();
     executorService.shutdown();

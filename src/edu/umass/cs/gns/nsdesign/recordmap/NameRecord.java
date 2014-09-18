@@ -132,7 +132,7 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   /**
-   * Constructor used by the initialize values read from database
+   * Constructor used by the reInitialize values read from database
    *
    * @param allValues
    */

@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.util;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +20,7 @@ import java.util.TreeMap;
  * This class contains the hash function used to find replica controllers (primary replicas)
  * of a name. The set of replica controllers is determined using consistent hashing.
  *
- * Before calling any method in this class, <code>initialize</code> method must be called. If <code>initialize</code>
+ * Before calling any method in this class, <code>reInitialize</code> method must be called. If <code>reInitialize</code>
  * method is called multiple times, the initialization is done based on the first call; later calls make no difference.
  *
  * The class is thread-safe.
@@ -44,19 +45,16 @@ public class ConsistentHashing {
    * ****************BEGIN: public methods in this class *****************************
    */
   /**
-   * Initialize consistent hashing. Before calling any method in this class, <code>initialize</code> method must be
-   * called. If <code>initialize</code> method is called multiple times, the initialization is done based on the first
-   * call; later calls make no difference.
+   * Initialize consistent hashing. Before calling any method in this class, <code>reInitialize</code> method must be
+   * called.
    */
-  public static void initialize(int numReplicaControllers, Set<NodeId<String>> nameServerIDs) {
+  public static void reInitialize(int numReplicaControllers, Set<NodeId<String>> nameServerIDs) {
     if (numReplicaControllers > nameServerIDs.size()) {
       throw new IllegalArgumentException("ERROR: Number of replica controllers " + numReplicaControllers
               + " numNameServers = " + nameServerIDs.size());
     }
-    synchronized (lock) {   // lock so that we do not initialize nsTreeMap multiple times.
-      if (nsTreeMap != null) {
-        return;
-      }
+    synchronized (lock) {
+      GNS.getLogger().info("Reinitializing consistent hashing with node Ids " +  Util.setOfNodeIdToString(nameServerIDs));
       ConsistentHashing.numReplicaControllers = numReplicaControllers;
       // Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
       nsTreeMap = new TreeMap<String, NodeId<String>>();
@@ -156,15 +154,15 @@ public class ConsistentHashing {
    * if 'k' primary replicas are to be selected, they are the higher
    */
   private static Set<NodeId<String>> getPrimaryReplicasNoCache(String name) {
-    String key = getMD5Hash(name);
+    String hashedName = getMD5Hash(name);
     HashSet<NodeId<String>> result = new HashSet<NodeId<String>>();
     while (true) {
-      Map.Entry<String, NodeId<String>> entry = nsTreeMap.higherEntry(key);
+      Map.Entry<String, NodeId<String>> entry = nsTreeMap.higherEntry(hashedName);
       if (entry == null) {
         break;
       }
       result.add(entry.getValue());
-      key = (String) entry.getKey();
+      hashedName = (String) entry.getKey();
       if (result.size() == numReplicaControllers) {
         return result;
       }
@@ -172,11 +170,11 @@ public class ConsistentHashing {
 
     Map.Entry<String, NodeId<String>> entry = nsTreeMap.firstEntry();
     result.add(entry.getValue());
-    key = (String) entry.getKey();
+    hashedName = (String) entry.getKey();
     while (result.size() != numReplicaControllers) {
-      entry = nsTreeMap.higherEntry(key);
+      entry = nsTreeMap.higherEntry(hashedName);
       result.add(entry.getValue());
-      key = (String) entry.getKey();
+      hashedName = (String) entry.getKey();
     }
     return result;
   }
@@ -193,7 +191,7 @@ public class ConsistentHashing {
       for (int i = 0; i < nameServers; i++) {
         nameServerIDs.add(new NodeId<String>(Util.randomString(4)));
       }
-      ConsistentHashing.initialize(numPrimaryReplicas, nameServerIDs);
+      ConsistentHashing.reInitialize(numPrimaryReplicas, nameServerIDs);
 
       for (int i = 0; i < names; i++) {
         String name = Util.randomString(6);
