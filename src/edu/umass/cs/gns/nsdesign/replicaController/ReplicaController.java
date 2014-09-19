@@ -134,6 +134,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   /**
    * ****BEGIN: miscellaneous methods needed by replica controller module ***
    */
+  // FIXME: Code like this really needs an explanation!!
   public boolean isSmallestNodeRunning(String name, Set<NodeId<String>> nameServers) {
     Random r = new Random(name.hashCode());
     ArrayList<NodeId<String>> x1 = new ArrayList<NodeId<String>>(nameServers);

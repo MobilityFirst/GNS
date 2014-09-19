@@ -36,12 +36,11 @@ public class DNSRequestInfo extends RequestInfo{
    * @param time System time when query was transmitted
    * @param nameserverID Response name server ID
    **************************************************************/
-  public DNSRequestInfo(int lnsReqId, String name, long time,
-          int nameserverID, DNSPacket incomingPacket) {
+  public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket incomingPacket) {
     this.requestType = Packet.PacketType.DNS;
     this.lnsReqID = lnsReqId;
     this.name = name;
-    this.startTime = time;
+    this.startTime = System.currentTimeMillis();
 
     this.incomingPacket = incomingPacket;
     this.numLookupActives = 0;

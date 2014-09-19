@@ -60,8 +60,7 @@ public class Lookup {
           throws JSONException, UnknownHostException {
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("LNS DNS Request:" + json);
     int lnsReqId = handler.getUniqueRequestID();
-    DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, dnsPacket.getGuid(), System.currentTimeMillis(), -1,
-            dnsPacket);
+    DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, dnsPacket.getGuid(), -1, dnsPacket);
     handler.addRequestInfo(lnsReqId, requestInfo);
     handler.incrementLookupRequest(dnsPacket.getGuid()); // important: used to count votes for names.
     SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqId, handler, dnsPacket);

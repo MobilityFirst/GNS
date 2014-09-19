@@ -40,7 +40,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
    */
   private NSResponseCode responseCode;
   /**
-   * Indicates if this is supposed to go back to an Intercessor or another server.
+   * Indicates if this is supposed to go back to an Intercessor at the LNS or another server.
    */
   private NodeId<String> returnTo;
   

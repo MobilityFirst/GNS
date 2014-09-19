@@ -23,10 +23,10 @@ public class UpdateInfo extends RequestInfo {
 
   private BasicPacket basicPacket;
 
-  public UpdateInfo(int lnsRequestID, String name, long startTime, NodeId<String> nameserverId, BasicPacket packet) {
+  public UpdateInfo(int lnsRequestID, String name, NodeId<String> nameserverId, BasicPacket packet) {
     this.lnsReqID = lnsRequestID;
     this.name = name;
-    this.startTime = startTime;
+    this.startTime = System.currentTimeMillis();
     this.nameserverID = nameserverId;
     this.numLookupActives = 0;
     this.basicPacket = packet;

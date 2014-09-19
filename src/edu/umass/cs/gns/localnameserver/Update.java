@@ -35,20 +35,35 @@ public class Update {
 
   private static Random r = new Random();
 
+  /**
+   * Handles incoming Update packets.
+   * 
+   * @param json
+   * @param handler
+   * @throws JSONException
+   * @throws UnknownHostException 
+   */
   public static void handlePacketUpdate(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
 
     UpdatePacket updatePacket = new UpdatePacket(json);
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), System.currentTimeMillis(),
-            GNSNodeConfig.INVALID_NAME_SERVER_ID, updatePacket);
+    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), GNSNodeConfig.INVALID_NAME_SERVER_ID, updatePacket);
     handler.addRequestInfo(lnsReqID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
     SendUpdatesTask updateTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
     handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
   }
 
+  /**
+   * Handles incoming Update confirmation packets.
+   * 
+   * @param json
+   * @param handler
+   * @throws UnknownHostException
+   * @throws JSONException 
+   */
   public static void handlePacketConfirmUpdate(JSONObject json, ClientRequestHandlerInterface handler) throws UnknownHostException, JSONException {
     ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json);
 
@@ -121,6 +136,19 @@ public class Update {
     PendingTasks.addToPendingRequests(updateInfo, task, handler.getParameters().getQueryTimeout());
   }
 
+  /**
+   * Checks the returnTo slot of the packet and sends the confirmation packet back to
+   * the correct destination. This can be DNSPacket.LOCAL_SOURCE_ID meaning that the original request
+   * originated at a standard client - the packet is then sent to the Intercessor which will
+   * pass the packet back to the client. If the returnTo is some other NodeId the packet will be
+   * send back to that NameServer node (which is acting like a client in this case).
+   * 
+   * This method is public because it also gets called from Add/Remove methods.
+   * 
+   * @param packet
+   * @param handler
+   * @throws JSONException 
+   */
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getReturnTo().equals(DNSPacket.LOCAL_SOURCE_ID)) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());

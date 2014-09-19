@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Class contains a few static methods for handling ADD, and REMOVE requests from clients
  * as well responses to these requests from name servers. Most functionality for handling request sent by clients
- * is implemented in <code>SendAddRemoveUpsertTask</code>. So also refer to its documentation.
+ * is implemented in <code>SendAddRemoveTask</code>. So also refer to its documentation.
  * <p>
  * The addition and removal of a name in GNS is handled by replica controllers, therefore we send ADD and REMOVE
  * to a replica controller. The replica controllers for a name are fixed and a local name server can compute the set of
@@ -45,8 +45,7 @@ public class AddRemove {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
     int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), System.currentTimeMillis(), 
-            GNSNodeConfig.INVALID_NAME_SERVER_ID, addRecordPacket);
+    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), GNSNodeConfig.INVALID_NAME_SERVER_ID, addRecordPacket);
     LocalNameServer.addRequestInfo(lnsReqID, info);
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
@@ -70,8 +69,7 @@ public class AddRemove {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
     int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), System.currentTimeMillis(), 
-            GNSNodeConfig.INVALID_NAME_SERVER_ID, removeRecord);
+    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), GNSNodeConfig.INVALID_NAME_SERVER_ID, removeRecord);
     LocalNameServer.addRequestInfo(lnsReqID, info);
 
     SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, handler, removeRecord, removeRecord.getName(),
