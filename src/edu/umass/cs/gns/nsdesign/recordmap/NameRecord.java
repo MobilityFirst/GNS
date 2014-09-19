@@ -36,7 +36,6 @@ public class NameRecord implements Comparable<NameRecord> {
   public static final int NULL_VALUE_ACTIVE_VERSION = 0;
 
   public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
-//  public final static ColumnField ACTIVE_NAMESERVERS = new ColumnField("nr_active", ColumnFieldType.SET_INTEGER);
   public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_NODE_ID_STRING);
   public final static ColumnField ACTIVE_VERSION = new ColumnField("nr_version", ColumnFieldType.INTEGER);
   public final static ColumnField OLD_ACTIVE_VERSION = new ColumnField("nr_oldVersion", ColumnFieldType.INTEGER);
@@ -281,12 +280,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(VALUES_MAP);
   }
 
-//  public boolean containsActiveNameServer(int id) throws FieldNotFoundException {
-//    if (hashMap.has(ACTIVE_NAMESERVERS)) {
-//      return ((Set<Integer>) hashMap.getAsArray(ACTIVE_NAMESERVERS)).contains(id);
-//    }
-//    throw new FieldNotFoundException(ACTIVE_NAMESERVERS);
-//  }
+  public enum VersionStatus {
+    ActiveVersionEqualsVersion,
+    OldActiveVersionEqualsVersion,
+    SomethingElse
+  }
+  
   /**
    * ACTIVE: checks whether version is current active version/oldactive version/neither. .
    *
@@ -294,16 +293,16 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
-  public int getVersionStatus(int version) throws FieldNotFoundException {
+  public VersionStatus getVersionStatus(int version) throws FieldNotFoundException {
     int activeVersion = getActiveVersion();
     int oldActiveVersion = getOldActiveVersion();
     if (activeVersion == version) {
-      return 1; // CONSIDER TURNING THESE INTS INTO ENUMERATED VALUES!
+      return VersionStatus.ActiveVersionEqualsVersion;
     }
     if (oldActiveVersion == version) {
-      return 2;
+      return VersionStatus.OldActiveVersionEqualsVersion;
     }
-    return 3;
+    return VersionStatus.SomethingElse;
 
   }
 
@@ -370,7 +369,6 @@ public class NameRecord implements Comparable<NameRecord> {
       keys.add(new ColumnField(recordKey, ColumnFieldType.LIST_STRING));
       recordMap.removeMapKeys(getName(), VALUES_MAP, keys);
       return true;
-
     }
 
     /*
@@ -640,35 +638,6 @@ public class NameRecord implements Comparable<NameRecord> {
     }
     return result;
   }
-  
-//  /**
-//   * Load a name record from the backing database and retrieve certain fields as well.
-//   *
-//   * @param recordMap
-//   * @param name
-//   * @param systemFields
-//   * @param userFieldNames - strings which name the user fields to return
-//   * @return
-//   * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
-//   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
-//   */
-//  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, String... userFieldNames)
-//          throws RecordNotFoundException, FailedDBOperationException {
-//    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, 
-//            userFieldList(userFieldNames)));
-//  }
-//
-//  private static ArrayList<ColumnField> userFieldList(String... fieldNames) {
-//    ArrayList<ColumnField> result = new ArrayList<ColumnField>();
-//    for (String fieldName : fieldNames) {
-//      result.add(new ColumnField(fieldName, 
-//              FieldAccess.isKeyDotNotation(fieldName) 
-//                      ? ColumnFieldType.USER_JSON 
-//                      : ColumnFieldType.LIST_STRING));
-//    }
-//    return result;
-//  }
-  
 
   /**
    * Add this name record to DB

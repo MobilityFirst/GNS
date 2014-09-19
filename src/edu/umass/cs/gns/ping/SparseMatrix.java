@@ -10,7 +10,9 @@ package edu.umass.cs.gns.ping;
 import java.util.HashMap;
 
 /**
- * Implementation of a Spare Matrix.
+ * Simple implementation of a Spare Matrix.
+ * There are probably better ways to do this if you're worried about efficiency 
+ * than nested hashmaps, but this is simple.
  *
  * @author westy
  */

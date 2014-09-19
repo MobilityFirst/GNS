@@ -85,8 +85,8 @@ public class MongoRecords implements NoSQLRecords {
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
     try {
-      // use a unique name in case we have more than one on a machine
-      dbName = DBROOTNAME + "-" + nodeID.get();
+      // use a unique name in case we have more than one on a machine (need to remove periods, btw)
+      dbName = DBROOTNAME + "-" + nodeID.get().replace('.', '-');
 //      MongoClient mongoClient;
       if (mongoPort > 0) {
         mongoClient = new MongoClient("localhost", mongoPort);

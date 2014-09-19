@@ -68,6 +68,12 @@ public class Remove {
    * TODO update this doc
    * Updates the database to indicate that this node is no longer an active replica, which effectively removes the
    * record from this active replica.
+   * @param oldActiveStopPacket
+   * @param gnsApp
+   * @param noCoordinationState
+   * @param recovery
+   * @throws java.io.IOException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable gnsApp,
                                                      boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
@@ -86,24 +92,19 @@ public class Remove {
       } catch (RecordNotFoundException e) {
         e.printStackTrace();
       }
-//      catch (FailedDBOperationException e) {
-//        GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-//        e.printStackTrace();
-//      }
     } else {  // exceptional case: either request is retransmitted by RC. or this replica never received any state for
     // this name.
       try {
         int version = oldActiveStopPacket.getVersion();
         NameRecord nameRecord1 = NameRecord.getNameRecordMultiField(gnsApp.getDB(), oldActiveStopPacket.getName(),
                 versionFields);
-        int versionStatus = nameRecord1.getVersionStatus(version);
+        NameRecord.VersionStatus versionStatus = nameRecord1.getVersionStatus(version);
         GNS.getLogger().severe("Version to Be Stopped = " + version + " VersionStatus = " + versionStatus + " name = "
                 + oldActiveStopPacket.getName());
-        // todo make enum out of constants: 1, 2, 3
-        if (versionStatus == 1) { // this is the current active version
+        if (versionStatus == NameRecord.VersionStatus.ActiveVersionEqualsVersion) { // this is the current active version
           GNS.getLogger().severe("Case cannot happen because coordinator state would have exist = " +
                   oldActiveStopPacket);
-        } else if (versionStatus == 2) { // this is the old version
+        } else if (versionStatus == NameRecord.VersionStatus.OldActiveVersionEqualsVersion) { // this is the old version
           // send confirmation to primary that this version is stopped.
           sendActiveRemovedConfirmationMsg(oldActiveStopPacket, gnsApp, recovery);
         } else {
