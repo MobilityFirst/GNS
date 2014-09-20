@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.nsdesign.nodeconfig;
 
-import edu.umass.cs.gns.main.GNS;
 import java.util.Objects;
 
 /**

@@ -53,9 +53,9 @@ public class TESTPaxosConfig {
 	public static final double TOTAL_LOAD = 1000; // 2000 reqs/sec default (across all clients)
 	/***********************************************************/
 
-	private static final SampleNodeConfig nodeConfig = new SampleNodeConfig();
+	private static final SampleNodeConfig<NodeId<String>> nodeConfig = new SampleNodeConfig<NodeId<String>>();
 	//private static final TreeSet<Integer> nodes = new TreeSet<Integer>();
-	static {for(int i=TEST_START_NODE_ID; i<TEST_START_NODE_ID+NUM_NODES; i++) nodeConfig.addLocal(i);}
+	static {for(int i=TEST_START_NODE_ID; i<TEST_START_NODE_ID+NUM_NODES; i++) nodeConfig.addLocal(new NodeId<String>(i));}
 
 	private static final HashMap<String, NodeId<String>[]> groups = new HashMap<String, NodeId<String>[]>();
 	static {setDefaultGroups(MAX_CONFIG_GROUPS);}
@@ -178,16 +178,16 @@ public class TESTPaxosConfig {
 		return TESTPaxosConfig.failedNodes.contains(nodeID);
 	}
 	public synchronized static void setRecovered(NodeId<String> id, String paxosID, boolean b) {
-                
-		assert(id.compareTo(new NodeId<String>(MAX_NODE_ID)) < 0) : " id = "+id + ", MAX_NODE_ID = " + MAX_NODE_ID;
+                //FIXME: removed this comparison which doesn't make sense for string NodeIds
+		//assert(id.compareTo(new NodeId<String>(MAX_NODE_ID)) < 0) : " id = "+id + ", MAX_NODE_ID = " + MAX_NODE_ID;
 		if(paxosID.equals(TEST_GUID)) {
                   // FIXME OR NOT: this will break if the id isn't an integer string
                   recovered[Integer.parseInt(id.get())] = b;
 		}
 	}
 	public synchronized static boolean getRecovered(NodeId<String> id, String paxosID) {
-                // on weird way to do this
-		assert(id.compareTo(new NodeId<String>(MAX_NODE_ID)) < 0);
+                //FIXME: removed this comparison which doesn't make sense for string NodeIds
+		//assert(id.compareTo(new NodeId<String>(MAX_NODE_ID)) < 0);
                 // FIXME OR NOT: this will break if the id isn't an integer string
 		if(paxosID.equals(TEST_GUID)) return recovered[Integer.parseInt(id.get())];
 		else return true;
