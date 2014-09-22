@@ -17,7 +17,7 @@ import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
-import edu.umass.cs.gns.nsdesign.replicaController.DefaultRcCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaController.NoCoordinationReplicaControllerCoordinator;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerCoordinatorPaxos;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -123,7 +123,7 @@ public class NameServer implements Shutdownable {
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this, nodeID);
     if (Config.emulatePingLatencies) {
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
-      GNS.getLogger().info("Emulating delays ... ");
+      GNS.getLogger().info(nodeID.get() + " Emulating delays ... ");
     }
     JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
     JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nodeID, gnsNodeConfig, worker);
@@ -140,21 +140,21 @@ public class NameServer implements Shutdownable {
     } else { // real GNS
       gnsReconfigurable = new GnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
     }
-    GNS.getLogger().info("GNS initialized");
+    GNS.getLogger().info(nodeID.get() + " GNS initialized");
     // reInitialize active replica with the app
     activeReplica = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, executorService, gnsReconfigurable);
-    GNS.getLogger().info("Active replica initialized");
+    GNS.getLogger().info(nodeID.get() + " Active replica initialized");
 
     // we create app coordinator inside constructor for activeReplica because of cyclic dependency between them
     appCoordinator = activeReplica.getCoordinator();
-    GNS.getLogger().info("App (GNS) coordinator initialized");
+    GNS.getLogger().info(nodeID.get() + " App (GNS) coordinator initialized");
 
     replicaController = new ReplicaController(nodeID, gnsNodeConfig, tcpTransport,
             executorService, mongoRecords);
-    GNS.getLogger().info("Replica controller initialized");
+    GNS.getLogger().info(nodeID.get() + " Replica controller initialized");
 
     if (Config.singleNS) {
-      replicaControllerCoordinator = new DefaultRcCoordinator(nodeID, replicaController);
+      replicaControllerCoordinator = new NoCoordinationReplicaControllerCoordinator(nodeID, replicaController);
     } else {
       PaxosConfig paxosConfig = new PaxosConfig();
       paxosConfig.setDebugMode(Config.debuggingEnabled);
@@ -164,13 +164,13 @@ public class NameServer implements Shutdownable {
       replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
               new NSNodeConfig(gnsNodeConfig), replicaController, paxosConfig);
     }
-    GNS.getLogger().info("Replica controller coordinator initialized");
+    GNS.getLogger().info(nodeID.get() + " Replica controller coordinator initialized");
 
     // start the NSListenerAdmin thread
     admin = new NSListenerAdmin(gnsReconfigurable, appCoordinator, replicaController, replicaControllerCoordinator, gnsNodeConfig);
     admin.start();
 
-    GNS.getLogger().info("Admin thread initialized");
+    GNS.getLogger().info(nodeID.get() + " Admin thread initialized");
   }
 
   public ActiveReplicaCoordinator getActiveReplicaCoordinator() {

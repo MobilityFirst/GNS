@@ -15,11 +15,11 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 4/8/14.
  */
-public class DefaultRcCoordinator implements ReplicaControllerCoordinator{
+public class NoCoordinationReplicaControllerCoordinator implements ReplicaControllerCoordinator{
   private NodeId<String> nodeID;
   private Replicable app;
 
-  public DefaultRcCoordinator(NodeId<String> nodeID, Replicable app) {
+  public NoCoordinationReplicaControllerCoordinator(NodeId<String> nodeID, Replicable app) {
     this.nodeID = nodeID;
     this.app = app;
   }

@@ -798,7 +798,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		Properties props = new Properties(); // connection properties
 		// providing a user name and PASSWORD is optional in the embedded
 		// and derbyclient frameworks
-		props.put("user", DerbyPaxosLogger.USER+this.myID);
+		props.put("user", DerbyPaxosLogger.USER+this.myID.get());
 		props.put("password", DerbyPaxosLogger.PASSWORD);
 		System.setProperty("derby.system.home", this.logDirectory); // doesn't seem to work
 
@@ -989,7 +989,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				pstmt.setShort(2, packet.getVersion());
 				pstmt.setInt(3, (int) sb[0]);
 				pstmt.setInt(4, (int) sb[1]);
-				pstmt.setString(5, (String) sb[2]);
+				pstmt.setString(5, ((NodeId<String>) sb[2]).get());
 				pstmt.setInt(6, packet.getType().getNumber());
 				pstmt.setString(7, packetString);
 				pstmt.addBatch();

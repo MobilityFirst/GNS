@@ -74,18 +74,19 @@ public class HostFileLoader {
   public static List<HostSpec> loadHostFile(String hostsFile) throws Exception {
     List<HostSpec> result = new ArrayList<HostSpec>();
     BufferedReader br = new BufferedReader(new FileReader(hostsFile));
-    boolean firstLine = false;
+    boolean readFirstLine = false;
     try {
       while (br.ready()) {
         String line = br.readLine();
-        if (line == null || line.equals("") || line.equals(" ")) {
+        if (line == null || line.equals("") || line.equals(" ")
+                || line.startsWith("#")) {
           // do nothing
-        } else if (!firstLine && isLineTheFileVersion(line)) {
+        } else if (!readFirstLine && isLineTheFileVersion(line)) {
           fileVersion = getTheVersionFromLine(line);
         } else {
           result.add(parseHostline(line));
         }
-        firstLine = true;
+        readFirstLine = true;
       }
       br.close();
     } catch (IOException e) {
