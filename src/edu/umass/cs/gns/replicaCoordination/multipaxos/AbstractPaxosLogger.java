@@ -54,7 +54,7 @@ public abstract class AbstractPaxosLogger {
 
 	AbstractPaxosLogger(NodeId<String> id, String logDir, Messenger msgr) {
 		this.myID = id;
-		logDirectory = (logDir==null ? "." : logDir)+"/";
+		logDirectory = (logDir==null ? "." : logDir) + "/" + id.get() + "/";
 		this.messenger=msgr;
 		this.batchLogger = new BatchLogger(this, this.messenger);
 		(new Thread(this.batchLogger)).start();
