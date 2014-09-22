@@ -22,14 +22,14 @@ public class HostInfo {
   private final NodeId<String> id;
   private final String hostname;
   private NodeId<String> nsId;
-  private int lnsId;
+  private boolean createLNS;
   private final Point2D location;
 
-  public HostInfo(String hostname, NodeId<String> nsId, int lnsId, Point2D location) {
+  public HostInfo(String hostname, NodeId<String> nsId, boolean createLNS, Point2D location) {
     this.id = NULL_ID;
     this.hostname = hostname;
     this.nsId = nsId;
-    this.lnsId = lnsId;
+    this.createLNS = createLNS;
     this.location = location;
   }
 
@@ -40,7 +40,7 @@ public class HostInfo {
     this.hostname = hostname;
     this.location = location;
     this.nsId = NULL_ID;
-    this.lnsId = -1;
+    this.createLNS = false;
   }
   
   @Deprecated
@@ -60,12 +60,12 @@ public class HostInfo {
     return nsId;
   }
 
-  public int getLnsId() {
-    return lnsId;
+  public boolean isCreateLNS() {
+    return createLNS;
   }
 
-  public void setLnsId(int lnsId) {
-    this.lnsId = lnsId;
+  public void createLNS(boolean createLNS) {
+    this.createLNS = createLNS;
   }
 
   public Point2D getLocation() {
@@ -74,7 +74,7 @@ public class HostInfo {
 
   @Override
   public String toString() {
-    return "HostInfo{" + "id=" + id + ", hostname=" + hostname + ", nsId=" + nsId + ", lnsId=" + lnsId + ", location=" + location + '}';
+    return "HostInfo{" + "id=" + id + ", hostname=" + hostname + ", nsId=" + nsId + ", createLNS=" + createLNS + ", location=" + location + '}';
   }
   
 }

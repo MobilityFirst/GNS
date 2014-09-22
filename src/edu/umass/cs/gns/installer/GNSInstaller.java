@@ -30,7 +30,7 @@ import org.apache.commons.cli.ParseException;
 /**
  * Installs n instances of the GNS Jars on remote hosts and executes them.
  * More specifically this copies the GNS JAR and all the required config files
- * to the remote host then starts a Name Server and a Local Name server 
+ * to the remote host then starts a Name Server and a Local Name server
  * on each host.
  *
  * Typical use:
@@ -57,6 +57,7 @@ public class GNSInstaller {
 
   /**
    * Stores information about the hosts we're using.
+   * Contains info for both NS and LNS hosts. Could be split up onto one table for each.
    */
   private static ConcurrentHashMap<String, HostInfo> hostTable = new ConcurrentHashMap<String, HostInfo>();
   //
@@ -112,8 +113,8 @@ public class GNSInstaller {
 
     for (HostFileLoader.HostSpec spec : nsHosts) {
       String hostname = spec.getName();
-       NodeId<String> id = spec.getId();
-      hostTable.put(hostname, new HostInfo(hostname, id, -1, null));
+      NodeId<String> id = spec.getId();
+      hostTable.put(hostname, new HostInfo(hostname, id, false, null));
     }
 
     List<HostFileLoader.HostSpec> lnsHosts = null;
@@ -128,12 +129,12 @@ public class GNSInstaller {
     // FIXME: BROKEN FOR IDLESS LNS HOSTS
     for (HostFileLoader.HostSpec spec : lnsHosts) {
       String hostname = spec.getName();
-       NodeId<String> id = spec.getId();
+      //NodeId<String> id = spec.getId();
       HostInfo hostEntry = hostTable.get(hostname);
       if (hostEntry != null) {
-        hostEntry.setLnsId(-1);
+        hostEntry.createLNS(true);
       } else {
-        hostTable.put(hostname, new HostInfo(hostname, HostInfo.NULL_ID, -1, null));
+        hostTable.put(hostname, new HostInfo(hostname, HostInfo.NULL_ID, true, null));
       }
     }
   }
@@ -141,7 +142,7 @@ public class GNSInstaller {
   /**
    * Copies the latest version of the JAR files to the all the hosts in the runset given by name and restarts all the servers.
    * Does this using a separate Thread for each host.
-   * 
+   *
    *
    * @param name
    * @param action
@@ -155,7 +156,7 @@ public class GNSInstaller {
           String lnsHostsFile, String nsHostsFile, String scriptFile) {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     for (HostInfo info : hostTable.values()) {
-      threads.add(new UpdateThread(info.getHostname(), info.getNsId(), info.getLnsId(), action, removeLogs, deleteDatabase,
+      threads.add(new UpdateThread(info.getHostname(), info.getNsId(), info.isCreateLNS(), action, removeLogs, deleteDatabase,
               lnsHostsFile, nsHostsFile, scriptFile));
     }
     for (Thread thread : threads) {
@@ -197,10 +198,10 @@ public class GNSInstaller {
    * @param scriptFile
    * @throws java.net.UnknownHostException
    */
-  public static void updateAndRunGNS( NodeId<String> nsId, int lnsId, String hostname, InstallerAction action, boolean removeLogs,
+  public static void updateAndRunGNS(NodeId<String> nsId, boolean createLNS, String hostname, InstallerAction action, boolean removeLogs,
           boolean deleteDatabase, String lnsHostsFile, String nsHostsFile, String scriptFile) throws UnknownHostException {
     if (!action.equals(InstallerAction.STOP)) {
-      System.out.println("**** NS " + nsId + " LNS " + lnsId + " running on " + hostname + " starting update ****");
+      System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
       makeInstallDir(hostname);
       killAllServers(hostname);
       if (scriptFile != null) {
@@ -222,11 +223,11 @@ public class GNSInstaller {
       // write the name-server-info
       copyHostsFiles(hostname, lnsHostsFile, nsHostsFile);
       //writeNSFile(hostname);
-      startServers(nsId, lnsId, hostname);
-      System.out.println("#### NS " + nsId + " LNS " + lnsId + " running on " + hostname + " finished update ####");
+      startServers(nsId, createLNS, hostname);
+      System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
     } else {
       killAllServers(hostname);
-      System.out.println("#### NS " + nsId + " LNS " + lnsId + " running on " + hostname + " has been stopped ####");
+      System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " has been stopped ####");
     }
   }
 
@@ -241,9 +242,9 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void startServers( NodeId<String> nsId, int lnsId, String hostname) {
+  private static void startServers(NodeId<String> nsId, boolean createLNS, String hostname) {
     File keyFileName = getKeyFile();
-    if (lnsId != -1) {
+    if (createLNS) {
       System.out.println("Starting local name servers");
       ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName, buildInstallFilePath("runLNS.sh"),
               "#!/bin/bash\n"
@@ -252,11 +253,9 @@ public class GNSInstaller {
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
               + "nohup java -cp " + gnsJarFileName + " " + StartLNSClass + " "
-              //+ "-id " + lnsId
               + " -address " + hostname
-              + " -port " + GNS.DEFAULT_LNS_TCP_PORT    
+              + " -port " + GNS.DEFAULT_LNS_TCP_PORT
               + " -nsfile " + NS_HOSTS_FILENAME
-              //+ " -lnsfile " + LNS_HOSTS_FILENAME
               + " -configFile lns.conf "
               + " > LNSlogfile 2>&1 &");
     }
@@ -269,7 +268,7 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + "nohup java -cp " + gnsJarFileName + " " + StartNSClass + " "
-              + " -id " + nsId     
+              + " -id " + nsId.get()
               + " -nsfile " + NS_HOSTS_FILENAME
               //+ " -lnsfile " + LNS_HOSTS_FILENAME
               + " -configFile ns.conf "
@@ -397,7 +396,7 @@ public class GNSInstaller {
 //    }
 //    // WRITE OUT LNSs whose numbers are N above NSs where N is the number of NSs
 //    for (HostInfo info : hostTable.values()) {
-//      result.append(info.getLnsId());
+//      result.append(info.isCreateLNS());
 //      result.append(" no ");
 //      //result.append(info.getHostIP());
 //      result.append(info.getHostname());
@@ -420,7 +419,6 @@ public class GNSInstaller {
 //    }
 //
 //  }
-
   // Probably unnecessary at this point.
   private static void updateNodeConfigAndSendOutServerInit() {
     GNSNodeConfig nodeConfig = new GNSNodeConfig();
@@ -430,9 +428,9 @@ public class GNSInstaller {
         nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
         ids.add(info.getNsId());
       }
-//      if (info.getLnsId() != HostInfo.NULL_ID) {
-//        nodeConfig.addHostInfo(info.getLnsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
-//        ids.add(info.getLnsId());
+//      if (info.isCreateLNS() != HostInfo.NULL_ID) {
+//        nodeConfig.addHostInfo(info.isCreateLNS(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
+//        ids.add(info.isCreateLNS());
 //      }
     }
     // now we send out packets telling all the hosts where to send their status updates
@@ -481,7 +479,7 @@ public class GNSInstaller {
       System.out.println("Config folder " + configNameOrFolder + " not found... exiting. ");
       System.exit(1);
     }
-    
+
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + INSTALLER_CONFIG_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + INSTALLER_CONFIG_FILENAME);
     }
@@ -607,8 +605,8 @@ public class GNSInstaller {
 
       String configName = runsetUpdate != null ? runsetUpdate
               : runsetRestart != null ? runsetRestart
-              : runsetStop != null ? runsetStop
-              : null;
+                      : runsetStop != null ? runsetStop
+                              : null;
 
       System.out.println("Config name: " + configName);
       System.out.println("Current directory: " + System.getProperty("user.dir"));
@@ -658,7 +656,7 @@ public class GNSInstaller {
 
     private final String hostname;
     private final NodeId<String> nsId;
-    private final int lnsId;
+    private final boolean createLNS;
     private final InstallerAction action;
     private final boolean removeLogs;
     private final boolean deleteDatabase;
@@ -666,11 +664,11 @@ public class GNSInstaller {
     private final String nsHostsFile;
     private final String scriptFile;
 
-    public UpdateThread(String hostname, NodeId<String> nsId, int lnsId, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
+    public UpdateThread(String hostname, NodeId<String> nsId, boolean createLNS, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
             String lnsHostsFile, String nsHostsFile, String scriptFile) {
       this.hostname = hostname;
       this.nsId = nsId;
-      this.lnsId = lnsId;
+      this.createLNS = createLNS;
       this.action = action;
       this.removeLogs = removeLogs;
       this.deleteDatabase = deleteDatabase;
@@ -683,7 +681,7 @@ public class GNSInstaller {
     @Override
     public void run() {
       try {
-        GNSInstaller.updateAndRunGNS(nsId, lnsId, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
+        GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }
