@@ -106,15 +106,19 @@ public class TESTPaxosMain {
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
 			Thread.sleep(1000);
+			System.out.println("Average response time of first run = " + TESTPaxosClient.getAvgLatency());
+			TESTPaxosClient.resetLatencyComputation();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
 
 
 			long t2=System.currentTimeMillis();
 
-			TESTPaxosClient.printOutput(clients);
-			System.out.println("Average throughput (req/sec) = " + 
-					Util.df(numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)));
+			TESTPaxosClient.printOutput(clients);	
+			System.out.println("Average throughput (overall) (req/sec) = " + 
+					Util.df(numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)) + "\n" +
+					"Total no-op count (overall) = " + TESTPaxosClient.getTotalNoopCount() +"\n" +
+					"Average response time of just the second run (not overall) = " + TESTPaxosClient.getAvgLatency());
 			for(int i=0; i<3; i++) {
 				PaxosManager.waitToFinishAll();
 				AbstractPaxosLogger.waitToFinishAll();

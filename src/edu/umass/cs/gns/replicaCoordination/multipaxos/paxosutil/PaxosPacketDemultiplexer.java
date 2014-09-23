@@ -17,6 +17,7 @@ public class PaxosPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
 	public PaxosPacketDemultiplexer(PaxosManager pm) {
 		paxosManager = pm;
+		this.register(Packet.PacketType.PAXOS_PACKET);
 	}
 
 	public boolean handleJSONObject(JSONObject jsonMsg) {
