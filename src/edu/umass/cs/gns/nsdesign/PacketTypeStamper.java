@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,16 +18,16 @@ import java.net.InetSocketAddress;
  * the name to StampAndSend or something to reflect that this class is 
  * actually sending the packet.
  */
-public class PacketTypeStamper implements InterfaceJSONNIOTransport<NodeId<String>> {
-  private final InterfaceJSONNIOTransport<NodeId<String>> nio;
+public class PacketTypeStamper implements InterfaceJSONNIOTransport<Integer> {
+  private final InterfaceJSONNIOTransport<Integer> nio;
   private final Packet.PacketType type;
 
-  public PacketTypeStamper(InterfaceJSONNIOTransport nio, Packet.PacketType type) {
+  public PacketTypeStamper(InterfaceJSONNIOTransport<Integer> nio, Packet.PacketType type) {
     this.nio = nio;
     this.type = type;
   }
   
-  public NodeId<String> getMyID() {return this.nio.getMyID();}
+  public Integer getMyID() {return this.nio.getMyID();}
 
   @Override
   public void stop() {
@@ -35,7 +35,7 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport<NodeId<Strin
   }
 
   @Override
-  public int sendToID(NodeId<String> id, JSONObject jsonData) throws IOException {
+  public int sendToID(Integer id, JSONObject jsonData) throws IOException {
     try {
       // Creating a copy of json so that modifications to the original object does not modify the outgoing packet.
       // This was created to fix a bug we were seeing.
@@ -101,13 +101,23 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport<NodeId<Strin
       public void stop() {
 
       }
+
+	@Override
+	public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+		throw new RuntimeException("Method not yet implemented");
+	}
     };
 
     PacketTypeStamper packetTypeStamper = new PacketTypeStamper(jsonnioTransport, type1);
     JSONObject sample = new JSONObject();
     sample.put("Apple" , "Banana");
-    packetTypeStamper.sendToID(new NodeId<String>(100), sample);
+    packetTypeStamper.sendToID(100, sample);
     packetTypeStamper.sendToAddress(null, sample);
     System.out.println("TEST SUCCESS.");
   }
+
+@Override
+public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+	throw new RuntimeException("Method not yet implemented");	
+}
 }

@@ -81,7 +81,7 @@ public class Waitfor<NodeType> {
 	private int getIndex(NodeType node) {
 		int index = -1;
 		for(int i=0; i<this.members.length; i++) {
-			if(this.members[i] == node) index = i;
+			if(this.members[i].equals(node)) index = i;
 		}
 		return index;
 	}

@@ -3,10 +3,11 @@ package edu.umass.cs.gns.util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.MessagingTask;
+import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.util.Reportable;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -15,14 +16,15 @@ import java.util.concurrent.TimeUnit;
  * recipients from any object that implements Reportable.
  */
 
-public class ReportingTask<Reportee extends Reportable> implements Runnable {
+public class ReportingTask<NodeIDType> implements Runnable {
 
 	private static final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);
+	public static List<Runnable> stop() {return executor.shutdownNow();}
 	
-	private final Reportee reportee;
+	private final Reportable<NodeIDType> reportee;
 	private final double msgRate; // total message rate per second for this task
 	
-	public ReportingTask(Reportee r, double rate) {
+	public ReportingTask(Reportable<NodeIDType> r, double rate) {
 		this.reportee = r;
 		this.msgRate = rate;
 	}
@@ -35,7 +37,7 @@ public class ReportingTask<Reportee extends Reportable> implements Runnable {
 	@Override
 	public void run() {
 		JSONObject report = this.reportee.getStats();
-		MessagingTask mtask = new MessagingTask(Util.setToNodeIdArray(reportee.getRecipients()), report);
+		GenericMessagingTask<NodeIDType,?> mtask = new GenericMessagingTask<NodeIDType, Object>(reportee.getRecipients().toArray(), report);
 		try {
 			this.reportee.getJSONMessenger().send(mtask);
 		} catch(IOException ioe) {
