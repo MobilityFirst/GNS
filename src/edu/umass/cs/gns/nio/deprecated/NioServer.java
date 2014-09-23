@@ -8,6 +8,7 @@ package edu.umass.cs.gns.nio.deprecated;
 /* This class is deprecated. The plan is to move to GNSNIOTransport instead. */
 // When will this move take place? 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
@@ -555,6 +556,11 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
       e.printStackTrace();
     }
   }
+
+@Override
+public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+	throw new RuntimeException("Method not yet implemented.");
+}
 
 }
 
