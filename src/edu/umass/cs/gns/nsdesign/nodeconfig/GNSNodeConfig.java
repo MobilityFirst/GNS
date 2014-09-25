@@ -185,6 +185,11 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
 
+  /**
+   * Returns the complete set of IDs that existed before the latest change.
+   * 
+   * @return 
+   */
   public Set<NodeId<String>> getPreviousNodeIDs() {
     return ImmutableSet.copyOf(previousHostInfoMapping.keySet());
   }
@@ -299,6 +304,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
   public boolean nodeExists(NodeId<String> ID) {
     return getNodeIDs().contains(ID);
   }
+  
+  
+  
 
   /**
    * Returns the TCP port of a nameserver.

@@ -12,10 +12,10 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
+import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
 
 /**
  * @author V. Arun
- * @param <NodeIDType>
  */
 /*
  * This class is separate in order to separate communication from the
@@ -27,8 +27,9 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 
 	private static final long RTX_DELAY = 1000; // ms
 	private static final int BACKOFF_FACTOR = 2;
+	private static final boolean RTX_ENABLED = false;
 
-	private final NodeIDType myID;
+	//private final NodeIDType myID;
 	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
 	private final ScheduledExecutorService execpool =
 			Executors.newScheduledThreadPool(5);
@@ -39,7 +40,7 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 
 	public JSONMessenger(InterfaceJSONNIOTransport<NodeIDType> niot) {
 		assert (niot != null);
-		myID = niot.getMyID(); // needed only for debug printing
+		//myID = niot.getMyID(); // needed only for debug printing
 		nioTransport = niot;
 	}
 
@@ -66,39 +67,43 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				else if (msg instanceof PacketInterface) {
 					jsonMsg = ((PacketInterface) (msg)).toJSONObject();
 				}
-				else {
-					log.warning("Messenger received non-JSON object: " + msg);
-					assert (false);
-					continue;
+				else if (msg instanceof ProtocolPacket){
+					log.fine("Messenger received non-JSON object: " + msg);
+					jsonMsg = ((ProtocolPacket<?,?>)msg).toJSONObject();
 				}
+
 				int length = jsonMsg.toString().length();
 				@SuppressWarnings("unchecked")
 				int sent = nioTransport.sendToID((NodeIDType)(mtask.recipients[r]), jsonMsg);
 				if (sent == length) {
-					log.finest("Node " + this.myID + " sent " + " to node " +
+					log.fine("Node " + this.nioTransport.getMyID() + " sent " + " to node " +
 							mtask.recipients[r] + ": " + jsonMsg);
 				}
 				else if (sent < length) {
 					if (NIOTransport.sampleLog()) {
-						log.warning("Node " + this.myID +
+						log.warning("Node " + this.nioTransport.getMyID() +
 								" messenger experiencing congestion, this is bad but not disastrous (yet)");
 					}
+					/*
 					@SuppressWarnings("unchecked")
 					Retransmitter rtxTask =
 							new Retransmitter((NodeIDType)(mtask.recipients[r]), jsonMsg,
 									RTX_DELAY);
 					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore future
+					*/
 				}
 				else {
-					log.severe("Node " + this.myID + " sent " + sent +
+					log.severe("Node " + this.nioTransport.getMyID() + " sent " + sent +
 							" bytes out of a " + length + " byte message");
 				}
 			}
 		}
 	}
 
+	// Note: stops underlying NIOTransport as well.
 	public void stop() {
 		this.execpool.shutdown();
+		this.nioTransport.stop();
 	}
 
 	/**
@@ -131,7 +136,7 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				ioe.printStackTrace();
 			} finally {
 				if (sent < msg.toString().length() && sent != -1) {
-					log.severe("Node " + myID + "->" + dest +
+					log.severe("Node " + nioTransport.getMyID() + "->" + dest +
 							" messenger backing off under severe congestion, Hail Mary!");
 					Retransmitter rtx =
 							new Retransmitter(dest, msg, delay * BACKOFF_FACTOR);
@@ -140,7 +145,7 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				}
 				else if (sent == -1) { // have to give up at this point
 					log.severe("Node " +
-							myID +
+							nioTransport.getMyID() +
 							"->" +
 							dest +
 							" messenger dropping message as destination unreachable: " +
@@ -188,10 +193,15 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 	 */
 	@Override
 	public NodeIDType getMyID() {
-		return this.myID;
+		return this.nioTransport.getMyID();
 	}
 	/**
 	 * ******************* End of GNSNIOTransportInterface methods ********************
 	 */
+
+	@Override
+	public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+		this.nioTransport.addPacketDemultiplexer(pd);
+	}
 
 }

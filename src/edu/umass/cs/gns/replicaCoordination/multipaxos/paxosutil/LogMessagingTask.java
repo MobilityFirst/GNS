@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 
 /**
@@ -11,7 +10,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPac
 public class LogMessagingTask extends MessagingTask {
 	public final PaxosPacket logMsg;
 	
-	public LogMessagingTask(NodeId<String> r, PaxosPacket p, PaxosPacket toLog) {
+	public LogMessagingTask(int r, PaxosPacket p, PaxosPacket toLog) {
 		super(r, p);
 		assert(p!=null);
 		this.logMsg = toLog;
@@ -19,7 +18,7 @@ public class LogMessagingTask extends MessagingTask {
 	}
 
 	public LogMessagingTask(PaxosPacket toLog) {
-		super(new NodeId<String>(0), new PaxosPacket[0]);
+		super(new int[0], new PaxosPacket[0]);
 		this.logMsg = toLog;
 		assert(logMsg!=null);
 	}

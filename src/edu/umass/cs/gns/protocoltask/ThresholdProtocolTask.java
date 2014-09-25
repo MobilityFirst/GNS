@@ -1,17 +1,14 @@
-package edu.umass.cs.gns.protocoltask.json;
+package edu.umass.cs.gns.protocoltask;
 
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.MessagingTask;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
-import edu.umass.cs.gns.protocoltask.ProtocolEvent;
-import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
-import edu.umass.cs.gns.protocoltask.ProtocolTask;
-import edu.umass.cs.gns.protocoltask.SchedulableProtocolTask;
-import edu.umass.cs.gns.protocoltask.ThresholdProtocolEvent;
+import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.gns.util.Waitfor;
+
 
 /**
  * @author V. Arun
@@ -26,17 +23,18 @@ import edu.umass.cs.gns.util.Waitfor;
  * method that returns a protocol task to be executed when the threshold is reached (returning null
  * automatically cancels the task as it is considered complete).
  */
-public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType> implements
+public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implements
 		SchedulableProtocolTask<NodeIDType, EventType, KeyType> {
 	private final Waitfor<NodeIDType> waitfor;
 	private final int threshold;
+	private boolean thresholdHandlerInvoked=false;
 
 	public ThresholdProtocolTask(Set<NodeIDType> nodes) { // default all
 		this.waitfor = new Waitfor<NodeIDType>(nodes.toArray());
 		this.threshold = nodes.size();
 	}
 
-	public ThresholdProtocolTask(Set<NodeId<String>> nodes, int threshold) {
+	public ThresholdProtocolTask(Set<NodeIDType> nodes, int threshold) {
 		this.waitfor = new Waitfor<NodeIDType>(nodes.toArray());
 		this.threshold = threshold;
 	}
@@ -44,8 +42,13 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType> impl
 	public abstract boolean handleEvent(
 			ProtocolEvent<EventType, KeyType> event); // return value tells if event is a valid response
 
-	public abstract GenericMessagingTask<NodeIDType,?>[] handleThresholdEvent(
-			ProtocolTask<NodeIDType, EventType, KeyType>[] ptasks); // action when threshold is reached
+	// default action is to cancel the protocol task when the threshold is reached
+	public GenericMessagingTask<NodeIDType,?>[] handleThresholdEvent(
+			ProtocolTask<NodeIDType, EventType, KeyType>[] ptasks) { // action when threshold is reached
+		ProtocolExecutor.cancel(this);
+
+		return null;
+	}
 
 	@SuppressWarnings("unchecked")
 	public GenericMessagingTask<NodeIDType,?>[] handleEvent(
@@ -55,17 +58,17 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType> impl
 		assert (event.getMessage() instanceof ProtocolPacket);
 		if (validResponse)
 			this.waitfor.updateHeardFrom(((ThresholdProtocolEvent<NodeIDType,EventType,KeyType>)event).getSender());
-		if (this.waitfor.getHeardCount() >= this.threshold) {
+		GenericMessagingTask<NodeIDType,?>[] mtasks = null;
+		if (this.waitfor.getHeardCount() >= this.threshold && testAndInvokeThresholdHandler()) {
 			// got valid responses from threshold nodes
-			GenericMessagingTask<NodeIDType,?>[] mtasks = this.handleThresholdEvent(ptasks);
-			if (MessagingTask.isEmpty(mtasks) && ptasks[0] == null)
-				ProtocolExecutor.cancel(this);
+			mtasks = this.handleThresholdEvent(ptasks);
+			if (GenericMessagingTask.isEmpty(mtasks) && ptasks[0] == null) ProtocolExecutor.cancel(this);
+			else ProtocolExecutor.timedCancel(this);
 		}
-		return null;
+		return mtasks;
 	}
 
-	public GenericMessagingTask<NodeId<String>,?>[] fix(GenericMessagingTask<NodeId<String>,?>[] mtasks) {
-		//System.out.println("Filtering heardFrom nodes " + Util.arrayToString(this.waitfor.getMembersHeardFrom()));
+	public GenericMessagingTask<Integer,?>[] fix(GenericMessagingTask<Integer,?>[] mtasks) {
 		if (mtasks == null || mtasks.length == 0 || mtasks[0] == null ||
 				mtasks[0].msgs == null || mtasks[0].msgs.length == 0 ||
 				mtasks[0].msgs[0] == null)
@@ -77,10 +80,10 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType> impl
 		return fixed;
 	}
 
-	public GenericMessagingTask<NodeId<String>,?> fix(GenericMessagingTask<NodeId<String>,?> mtask) {
+	public GenericMessagingTask<Integer,?> fix(GenericMessagingTask<Integer,?> mtask) {
 		if (mtask == null || mtask.msgs == null || mtask.msgs.length == 0)
 			return null;
-		return new GenericMessagingTask<NodeId<String>,Object>(fix(this.waitfor.getMembersHeardFrom(),
+		return new GenericMessagingTask<Integer,Object>(fix(this.waitfor.getMembersHeardFrom(),
 				mtask.recipients), mtask.msgs);
 	}
 
@@ -102,5 +105,9 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType> impl
 				filtered.add(i);
 		}
 		return filtered.toArray();
+	}
+	private synchronized boolean testAndInvokeThresholdHandler() {
+		if(!this.thresholdHandlerInvoked) return (this.thresholdHandlerInvoked=true);
+		return false;
 	}
 }

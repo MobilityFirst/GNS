@@ -45,6 +45,11 @@ public class Util {
   public static final double movingAverage(long sample, double historicalAverage, double alpha) {
     return movingAverage((double) sample, historicalAverage, alpha);
   }
+  
+  public static String refreshKey(String id) {
+		return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
+	}
+
 
   public static int roundToInt(double d) {
     return (int) Math.round(d);
@@ -93,7 +98,7 @@ public class Util {
     }
     return set;
   }
-
+  
   public static Set<NodeId<String>> arrayToNodeIdSet(NodeId[] array) {
     TreeSet<NodeId<String>> set = new TreeSet<NodeId<String>>();
     for (int i = 0; i < array.length; i++) {
@@ -146,6 +151,17 @@ public class Util {
     }
     return array;
   }
+  
+  public static Integer[] intToIntegerArray(int[] array) {
+		if(array==null) return null;
+		else if(array.length==0) return new Integer[0];
+		Integer[] retarray = new Integer[array.length];
+		int i=0;
+		for(int member : array) {
+			retarray[i++] = member; 
+		}
+		return retarray;
+	}
 
   public static Integer[] objectToIntegerArray(Object[] objects) {
     if (objects == null) {

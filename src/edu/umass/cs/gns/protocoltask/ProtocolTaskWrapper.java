@@ -1,10 +1,9 @@
 package edu.umass.cs.gns.protocoltask;
 
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
-import edu.umass.cs.gns.nio.MessagingTask;
-import edu.umass.cs.gns.protocoltask.json.ThresholdProtocolTask;
 
 /**
  * @author V. Arun
@@ -80,5 +79,10 @@ implements SchedulableProtocolTask<NodeIDType, EventType, KeyType> {
 		if (this.task instanceof ThresholdProtocolTask)
 			((ThresholdProtocolTask) (this.task)).fix(mtasks);
 		return mtasks;
+	}
+
+	@Override
+	public Set<EventType> getEventTypes() {
+		return this.task.getEventTypes();
 	}
 }

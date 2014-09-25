@@ -5,7 +5,6 @@ import edu.umass.cs.gns.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -131,7 +130,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
 
 	private boolean stopped = false;
 
-	private Logger log =
+	public static Logger log =
 			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(NIOTransport.class.getName())
 					: GNS.getLogger();
 
@@ -216,8 +215,12 @@ public class NIOTransport<NodeIDType> implements Runnable {
 	}
 
 	protected InetAddress getNodeAddress() {
-		return this.nodeConfig.getNodeAddress(myID);
+		return this.myID!=null ? this.nodeConfig.getNodeAddress(myID) : getListeningAddress();
 	}
+	protected int getNodePort() {
+		return this.myID!=null ? this.nodeConfig.getNodePort(myID) : this.getListeningPort();
+	}
+	
 
 	/**
 	 * ********** Start of private methods ***************************
@@ -680,27 +683,39 @@ public class NIOTransport<NodeIDType> implements Runnable {
 		this.serverChannel = ServerSocketChannel.open();
 		serverChannel.configureBlocking(false);
 
-                InetSocketAddress isa;
-                
-                //FIXME: make this a little less hackish
-                if (myID instanceof NodeId) {
 		// Bind the server socket to the specified address and port
-                  isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
-                                              this.nodeConfig.getNodePort(this.myID));
-                } else if (myID instanceof InetSocketAddress){
-		  isa = (InetSocketAddress) myID;
-                } else {
-                  throw new IOException("Unknown type for Node id " + myID.getClass());
-                }
-                
-                log.info("LNS listening on " + isa);
-                serverChannel.socket().bind(isa);
+		InetSocketAddress isa = this.myID!=null ? 
+				new InetSocketAddress(
+						this.nodeConfig.getNodeAddress(this.myID),
+						this.nodeConfig.getNodePort(this.myID)) :
+							new InetSocketAddress((InetAddress)null,0); 
+		serverChannel.socket().bind(isa); 
+		log.info("Node " + myID + " listening on " +
+				serverChannel.getLocalAddress());
 
 		// Register the server socket channel, indicating an interest in
 		// accepting new connections
 		serverChannel.register(socketSelector, SelectionKey.OP_ACCEPT);
 
 		return socketSelector;
+	}
+	protected int getListeningPort() {
+		try {
+			return ((InetSocketAddress)(this.serverChannel.getLocalAddress())).getPort();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	protected InetAddress getListeningAddress() {
+		try {
+			return ((InetSocketAddress)(this.serverChannel.getLocalAddress())).getAddress();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	// FIXME: Unused. Either use or remove.

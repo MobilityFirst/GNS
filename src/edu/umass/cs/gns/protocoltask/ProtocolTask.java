@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.protocoltask;
 
+import java.util.Set;
+
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.util.Keyable;
 
@@ -67,4 +69,7 @@ public interface ProtocolTask<NodeIDType, EventType, KeyType>
 	 */
 
 	public KeyType refreshKey(); // should return a random key that is unique across nodes
+	
+	public Set<EventType> getEventTypes();
+	
 }
