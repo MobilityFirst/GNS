@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
@@ -68,9 +70,9 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport<NodeId<Strin
   public static void main(String[] args) throws JSONException, IOException {
     System.out.println("Test if the send methods mark outgoing packets with correct packet types:");
     final Packet.PacketType type1 = Packet.PacketType.PAXOS_PACKET;
-    InterfaceJSONNIOTransport<Integer> jsonnioTransport = new InterfaceJSONNIOTransport<Integer>() {
+    InterfaceJSONNIOTransport<NodeId<String>> jsonnioTransport = new InterfaceJSONNIOTransport<NodeId<String>>() {
       @Override
-      public int sendToID(Integer id, JSONObject jsonData) throws IOException {
+      public int sendToID(NodeId<String> id, JSONObject jsonData) throws IOException {
         System.out.println("Sending Packet: " + jsonData);
         try {
           assert Packet.getPacketType(jsonData).equals(type1): "Packet type not matched";
@@ -93,13 +95,18 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport<NodeId<Strin
       }
 
       @Override
-      public Integer getMyID() {
-        return 0;
+      public NodeId<String> getMyID() {
+        return GNSNodeConfig.INVALID_NAME_SERVER_ID;
       }
 
       @Override
       public void stop() {
 
+      }
+
+      @Override
+      public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
       }
     };
 
@@ -109,5 +116,10 @@ public class PacketTypeStamper implements InterfaceJSONNIOTransport<NodeId<Strin
     packetTypeStamper.sendToID(new NodeId<String>(100), sample);
     packetTypeStamper.sendToAddress(null, sample);
     System.out.println("TEST SUCCESS.");
+  }
+
+  @Override
+  public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

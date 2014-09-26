@@ -22,7 +22,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 6/17/14.
  */
-public class TestPaxosManager extends AbstractPaxosManager<NodeId<String>> {
+public class TestPaxosManager extends AbstractPaxosManager {
 
   private PaxosManager paxosManager;
 
@@ -31,19 +31,18 @@ public class TestPaxosManager extends AbstractPaxosManager<NodeId<String>> {
   }
 
   @Override
-  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeId<String>> nodeIDs,
-                                     Replicable paxosInterface) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set nodeIDs, Replicable paxosInterface) {
     return paxosManager.createPaxosInstance(paxosIDNoVersion, version, nodeIDs, paxosInterface);
   }
-
+  
   @Override
-  public Set<NodeId<String>> getPaxosNodeIDs(String paxosIDNoVersion) {
+  public Set getPaxosNodeIDs(String paxosIDNoVersion) {
     return paxosManager.getPaxosNodeIDs(paxosIDNoVersion);
   }
 
   @Override
   public String propose(String paxosIDNoVersion, String value) {
-    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, false);
+    RequestPacket requestPacket = new RequestPacket(-1, value, false);
 //    try {
 //      GNS.getLogger().info(" Size of value: " + value.length() + "\trequestpacket size " + requestPacket.toJSONObject().toString().length());
 //      GNS.getLogger().info(" String value: " + value);
@@ -56,7 +55,7 @@ public class TestPaxosManager extends AbstractPaxosManager<NodeId<String>> {
 
   @Override
   public String proposeStop(String paxosIDNoVersion, String value, short version) {
-    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, true);
+    RequestPacket requestPacket = new RequestPacket(-1, value, true);
     return paxosManager.proposeStop(paxosIDNoVersion, requestPacket.toString(), version);
   }
 
@@ -69,4 +68,6 @@ public class TestPaxosManager extends AbstractPaxosManager<NodeId<String>> {
   public void resetAll() {
     paxosManager.resetAll();
   }
+
+  
 }
