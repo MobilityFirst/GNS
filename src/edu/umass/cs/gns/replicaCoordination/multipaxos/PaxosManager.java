@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * Testability: This class is unit-testable by running 
  * the main method.
  */
-public class PaxosManager extends AbstractPaxosManager {
+public class PaxosManager extends AbstractPaxosManager<Integer> {
 	public static final boolean DEBUG=NIOTransport.DEBUG;
 
 	private static final long MORGUE_DELAY = 30000;

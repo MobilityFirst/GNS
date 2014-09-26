@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
@@ -41,7 +42,7 @@ public class Packet {
   public final static String PACKET_TYPE = "type";
   //Type of packets
 
-  public enum PacketType {
+  public enum PacketType implements IntegerPacketType {
 
     // SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
     // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
@@ -131,6 +132,7 @@ public class Packet {
       this.number = number;
     }
 
+    @Override
     public int getInt() {
       return number;
     }

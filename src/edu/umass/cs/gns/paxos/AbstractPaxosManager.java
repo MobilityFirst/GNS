@@ -10,8 +10,9 @@ import java.util.Set;
  * Abstract class describing an interface for a PaxosManager.
  *
  * Created by abhigyan on 3/5/14.
+ * @param <NodeIdType>
  */
-public abstract class AbstractPaxosManager {
+public abstract class AbstractPaxosManager<NodeIdType> {
 
   /**
    *
@@ -22,9 +23,9 @@ public abstract class AbstractPaxosManager {
    * @return true if paxos instance is created. false if another instance with same ID and version already exists, or
    * size of nodeIDs is less than 3.
    */
-  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeId<String>> nodeIDs, Replicable paxosInterface);
+  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIdType> nodeIDs, Replicable paxosInterface);
 
-  public abstract Set<NodeId<String>> getPaxosNodeIDs(String paxosIDNoVersion);
+  public abstract Set<NodeIdType> getPaxosNodeIDs(String paxosIDNoVersion);
   /**
    * Propose requestPacket in the paxos instance with the given paxosID.
    *

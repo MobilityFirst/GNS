@@ -22,7 +22,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 6/17/14.
  */
-public class TestPaxosManager extends AbstractPaxosManager {
+public class TestPaxosManager extends AbstractPaxosManager<NodeId<String>> {
 
   private PaxosManager paxosManager;
 
