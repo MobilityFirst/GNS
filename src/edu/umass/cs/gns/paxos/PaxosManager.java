@@ -177,7 +177,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
   }
 
-  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeId<String>> nodeIDs, Replicable pi) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set nodeIDs, Replicable pi) {
     String initialState = pi.getState(paxosIDNoVersion);
     return createPaxosInstance(paxosIDNoVersion, version, nodeIDs, initialState);
   }

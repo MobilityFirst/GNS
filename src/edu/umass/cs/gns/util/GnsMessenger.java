@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONObject;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 5/3/14.
  */
-public class GnsMessenger implements InterfaceJSONNIOTransport<NodeId<String>> {
+public class GnsMessenger implements InterfaceJSONNIOTransport {
 
   private static final long RTX_DELAY = 1000; //ms
   private static final int BACKOFF_FACTOR = 2;
@@ -44,7 +45,6 @@ public class GnsMessenger implements InterfaceJSONNIOTransport<NodeId<String>> {
     gnsnioTransport.stop();
   }
 
-  @Override
   public int sendToID(NodeId<String> id, JSONObject jsonData) throws IOException {
     int sent = gnsnioTransport.sendToID(id, jsonData);
     if (sent < jsonData.length()) {
@@ -62,6 +62,16 @@ public class GnsMessenger implements InterfaceJSONNIOTransport<NodeId<String>> {
       scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
     }
     return jsonData.length();
+  }
+
+  @Override
+  public int sendToID(Object id, JSONObject jsonData) throws IOException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   /* We need this because NIO may drop messages when congested. Thankfully,

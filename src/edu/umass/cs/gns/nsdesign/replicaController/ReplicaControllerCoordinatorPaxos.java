@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -21,16 +20,16 @@ import java.util.Set;
  * Coordinates requests among replicas of replica controllers by using paxos consensus protocol.
  * Created by abhigyan on 3/30/14.
  */
-public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoordinator {
+public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaControllerCoordinator {
 
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
-  private final NodeId<String> nodeID;
+  private final NodeIdType nodeID;
   private AbstractPaxosManager paxosManager;
 
   private Replicable paxosInterface;
 
-  public ReplicaControllerCoordinatorPaxos(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public ReplicaControllerCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
           Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
 
@@ -52,7 +51,7 @@ public class ReplicaControllerCoordinatorPaxos implements ReplicaControllerCoord
   }
 
   private void createPrimaryPaxosInstances() {
-    HashMap<String, Set<NodeId<String>>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
+    HashMap<String, Set<NodeIdType>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
       paxosManager.createPaxosInstance(groupID, Config.FIRST_VERSION, groupIDsMembers.get(groupID), paxosInterface);
