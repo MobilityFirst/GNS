@@ -52,7 +52,7 @@ import java.util.logging.Logger;
  * Testability: This class is unit-testable by running 
  * the main method.
  */
-public class PaxosManager extends AbstractPaxosManager {
+public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	public static final boolean DEBUG=NIOTransport.DEBUG;
 
 	private static final long MORGUE_DELAY = 30000;
@@ -94,15 +94,15 @@ public class PaxosManager extends AbstractPaxosManager {
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); //GNS.getLogger();;
 
-	public PaxosManager(int id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, Replicable pi, PaxosConfig pc) {
-		this.myID = id;
+	public PaxosManager(NodeIDType id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, Replicable pi, PaxosConfig pc) {
+		this.myID = Integer.valueOf(id.toString()); // FIXME: Assumes NodeIDType can be case to String and back
 		this.myApp = pi;
-		this.FD = new FailureDetection(id, nc, niot, pc);
+		this.FD = new FailureDetection(this.myID, nc, niot, pc);
 		this.pinstances = new MultiArrayMap<String,PaxosInstanceStateMachine>(PINSTANCES_CAPACITY, LEVELS);
 		this.corpses = new HashMap<String,PaxosInstanceStateMachine>();
 		this.activePaxii = new HashMap<String,ActivePaxosState>();
-		this.messenger = new Messenger(id, niot);
-		this.paxosLogger = new DerbyPaxosLogger(id, (pc!=null?pc.getPaxosLogFolder():null), this.messenger);
+		this.messenger = new Messenger(this.myID, niot);
+		this.paxosLogger = new DerbyPaxosLogger(this.myID, (pc!=null?pc.getPaxosLogFolder():null), this.messenger);
 
 		timer.schedule(new Deactivator(), DEACTIVATION_PERIOD); // periodically remove active state for idle paxii
 
@@ -137,7 +137,7 @@ public class PaxosManager extends AbstractPaxosManager {
 		return this.createPaxosInstance(paxosID, version, this.myID, gms, app, null, true);
 	}
 
-  public Set<Integer> getPaxosNodeIDs(String paxosID) {
+  public Set<NodeIDType> getPaxosNodeIDs(String paxosID) {
     return null;
   }
 

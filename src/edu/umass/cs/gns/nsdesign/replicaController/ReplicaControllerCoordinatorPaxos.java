@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -43,7 +44,8 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
       GNS.getLogger().info("Using standard Paxos");
       this.paxosInterface = paxosInterface;
       paxosConfig.setConsistentHashCoordinatorOrder(true);
-      this.paxosManager = new PaxosManager(nodeID, nodeConfig,
+	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
+      this.paxosManager = new PaxosManager((NodeId<String>)nodeID, nodeConfig,
               new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
     }
@@ -51,7 +53,8 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
   }
 
   private void createPrimaryPaxosInstances() {
-    HashMap<String, Set<NodeIdType>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
+	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
+    HashMap<String, Set<NodeId<String>>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode((NodeId<String>)nodeID);
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
       paxosManager.createPaxosInstance(groupID, Config.FIRST_VERSION, groupIDsMembers.get(groupID), paxosInterface);
@@ -76,12 +79,14 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           break;
         case ADD_RECORD:
           AddRecordPacket recordPacket = new AddRecordPacket(request);
-          recordPacket.setNameServerID(nodeID);
+    	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
+          recordPacket.setNameServerID((NodeId<String>)nodeID);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), recordPacket.toString());
           break;
         case REMOVE_RECORD:
           RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
-          removePacket.setNameServerID(nodeID);
+    	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
+          removePacket.setNameServerID((NodeId<String>)nodeID);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
           break;
         // Packets sent from active replica
