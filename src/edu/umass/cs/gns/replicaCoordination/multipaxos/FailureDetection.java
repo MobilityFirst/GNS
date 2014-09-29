@@ -14,7 +14,7 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
 

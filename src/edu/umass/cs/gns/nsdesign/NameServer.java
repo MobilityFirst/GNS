@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;

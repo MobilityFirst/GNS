@@ -1,11 +1,11 @@
-package edu.umass.cs.gns.nio.nioutils;
+package edu.umass.cs.gns.nsdesign.nodeconfig;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Set;
 
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 
 /**
 @author V. Arun

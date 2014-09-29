@@ -2,7 +2,7 @@ package edu.umass.cs.gns.reconfiguration.examples;
 
 import java.util.Set;
 
-import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 
 /**

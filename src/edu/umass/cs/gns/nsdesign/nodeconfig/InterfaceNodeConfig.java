@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nio;
+package edu.umass.cs.gns.nsdesign.nodeconfig;
 
 import java.net.InetAddress;
 import java.util.Set;

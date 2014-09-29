@@ -1,10 +1,11 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

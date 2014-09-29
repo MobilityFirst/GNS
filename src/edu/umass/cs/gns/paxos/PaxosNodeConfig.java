@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

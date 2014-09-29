@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.test.nioclient;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.localnameserver.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;

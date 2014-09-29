@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.NSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.*;
