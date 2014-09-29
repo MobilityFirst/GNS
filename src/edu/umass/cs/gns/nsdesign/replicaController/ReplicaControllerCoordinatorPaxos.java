@@ -37,7 +37,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
     if (Config.multiPaxos) {
       GNS.getLogger().info("Using multiPaxos");
       this.paxosInterface = new TestReplicable(paxosInterface);
-      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID,
+      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.gigapaxos.PaxosManager(nodeID,
               nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig));
     } else {

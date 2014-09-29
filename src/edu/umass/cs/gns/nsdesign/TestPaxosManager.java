@@ -3,8 +3,8 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gns.gigapaxos.PaxosManager;
+import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import org.json.JSONObject;
 
 import java.util.Set;

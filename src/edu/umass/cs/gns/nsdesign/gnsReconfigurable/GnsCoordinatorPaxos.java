@@ -48,7 +48,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
 
     if (Config.multiPaxos) {
       this.paxosInterface = new TestReplicable(paxosInterface);
-      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager<NodeIdType>(nodeID,
+      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIdType>(nodeID,
               nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
               this.paxosInterface, paxosConfig));
     } else {
