@@ -155,7 +155,7 @@ public class ReplicaControllerRecord {
     hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     hashMap.put(ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS)));
+      GNS.getLogger().finer("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS)));
     }
     hashMap.put(OLD_ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
 
@@ -195,7 +195,7 @@ public class ReplicaControllerRecord {
     hashMap.put(OLD_ACTIVE_NAMESERVERS, actives);
 
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("@@@@@@@@@ RCR experiment ACTIVE_NAMESERVERS: "
+      GNS.getLogger().finer("@@@@@@@@@ RCR experiment ACTIVE_NAMESERVERS: "
               + Util.setOfNodeIdToString((HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS)));
     }
   }
@@ -211,7 +211,7 @@ public class ReplicaControllerRecord {
     this.replicaControllerDB = replicaControllerDB;
 
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("@@@@@@@@@ RCR empty ACTIVE_NAMESERVERS is null");
+      GNS.getLogger().finer("@@@@@@@@@ RCR empty ACTIVE_NAMESERVERS is null");
     }
   }
 
@@ -226,7 +226,7 @@ public class ReplicaControllerRecord {
 
     if (Config.debuggingEnabled) {
       HashSet<NodeId<String>> activeNameServers = (HashSet<NodeId<String>>) hashMap.get(ACTIVE_NAMESERVERS);
-      GNS.getLogger().info("@@@@@@@@@ RCR from database ACTIVE_NAMESERVERS: "
+      GNS.getLogger().finer("@@@@@@@@@ RCR from database ACTIVE_NAMESERVERS: "
               + ((activeNameServers != null) ? Util.setOfNodeIdToString(activeNameServers) : "is null"));
     }
   }

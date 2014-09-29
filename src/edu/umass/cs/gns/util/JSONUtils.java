@@ -233,7 +233,7 @@ public class JSONUtils {
         case SET_NODE_ID_STRING:
           Set<NodeId<String>> set = (Set<NodeId<String>>) value;
           if (Config.debuggingEnabled) {
-            GNS.getLogger().info("$$$$$$$$$$ Set: " + (set != null ? Util.setOfNodeIdToString(set) : " is null "));
+            GNS.getLogger().finer("$$$$$$$$$$ Set: " + (set != null ? Util.setOfNodeIdToString(set) : " is null "));
           }
           jsonObject.put(field.getName(), Util.nodeIdSetToStringSet((Set<NodeId<String>>) value));
           break;
@@ -256,8 +256,8 @@ public class JSONUtils {
           GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
       }
-    } catch (Exception e) {
-      GNS.getLogger().fine(" Value " + value + " Field = " + field);
+    } catch (JSONException e) {
+      GNS.getLogger().warning("Problem putting field in JSON Object: Value = " + value + " Field = " + field);
       e.printStackTrace();
     }
   }

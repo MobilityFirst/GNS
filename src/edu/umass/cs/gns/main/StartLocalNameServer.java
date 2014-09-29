@@ -183,10 +183,10 @@ public class StartLocalNameServer {
     Option mu = new Option(MU, true, "[EXP] Adaptive Retransmission: Co-efficient of estimated RTT in calculating timeout.");
     Option phi = new Option(PHI, true, "[EXP] Adaptive Retransmission: Co-efficient of deviation in calculating timeout.");
 
-    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file");
-    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output");
-    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "Verbosity level of log file for experiment related statistics");
-    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output for experiment related statistics");
+    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "Verbosity level of log file for experiment related statistics. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output for experiment related statistics. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
 
     Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "[EXP] Emulate a packet delay equal to ping delay in between two servers");
     Option variation = new Option(VARIATION, true, "[EXP] During emulation, what fraction of random variation to add to delay");
