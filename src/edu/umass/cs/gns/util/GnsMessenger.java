@@ -66,12 +66,17 @@ public class GnsMessenger implements InterfaceJSONNIOTransport {
 
   @Override
   public int sendToID(Object id, JSONObject jsonData) throws IOException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    // FIXME
+    if (id instanceof NodeId) {
+      return sendToID((NodeId) id, jsonData);
+    } else {
+      throw new UnsupportedOperationException("Not supported yet.");
+    }
   }
 
   @Override
   public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    //To change body of generated methods, choose Tools | Templates.
   }
 
   /* We need this because NIO may drop messages when congested. Thankfully,
