@@ -40,7 +40,7 @@ public class DefaultGnsCoordinator extends ActiveReplicaCoordinator {
 
         case UPDATE: // set a field in update packet because LNS may not set this field correctly.
           UpdatePacket update = new UpdatePacket(request);
-          update.setNameServerId(nodeID);
+          update.setNameServerID(nodeID);
           replicable.handleDecision(null, update.toString(), false);
           break;
         case ACTIVE_REMOVE: // stop request for removing a name record

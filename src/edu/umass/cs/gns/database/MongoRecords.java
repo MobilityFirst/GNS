@@ -86,7 +86,7 @@ public class MongoRecords implements NoSQLRecords {
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
-      dbName = DBROOTNAME + "-" + nodeID.get().replace('.', '-');
+      dbName = DBROOTNAME + "-" + nodeID.toString().replace('.', '-');
 //      MongoClient mongoClient;
       if (mongoPort > 0) {
         mongoClient = new MongoClient("localhost", mongoPort);
@@ -281,7 +281,7 @@ public class MongoRecords implements NoSQLRecords {
                 break;
               case LIST_STRING:
                 valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(getWithDotNotation(userKey, bson).toString())));
-                //valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(bson.get(userKey).toString())));
+                //valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(bson.toString(userKey).toString())));
                 break;
               default:
                 GNS.getLogger().severe("ERROR: Error: User keys field " + userKey + " is not a known type:" + valuesMapKeys.get(i).type());

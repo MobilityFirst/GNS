@@ -74,7 +74,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
     readHostsFile(hostsFile);
     // Informational purposes
     for (Entry<NodeId<String>, HostInfo> hostInfoEntry : hostInfoMapping.entrySet()) {
-      GNS.getLogger().info("Id: " + hostInfoEntry.getValue().getId().get()
+      GNS.getLogger().info("Id: " + hostInfoEntry.getValue().getId().toString()
               + " Host:" + hostInfoEntry.getValue().getIpAddress()
               + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
     }
@@ -108,7 +108,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
     // some idiot checking of the given Id
     HostInfo nodeInfo = newHostInfoMapping.get(this.nodeID);
     if (!this.nodeID.equals(BOGUS_NULL_NAME_SERVER_ID) && nodeInfo == null) {
-      throw new IOException("NodeId not found in hosts file:" + this.nodeID.get());
+      throw new IOException("NodeId not found in hosts file:" + this.nodeID.toString());
     }
     // ok.. things are cool... actually update (do we need to lock this)
     hostInfoMapping = newHostInfoMapping;
@@ -215,7 +215,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
       return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
     } else {
       //if (Config.debuggingEnabled) {
-      GNS.getLogger().warning("NodeId " + id.get() + " not a valid Id!");
+      GNS.getLogger().warning("NodeId " + id.toString() + " not a valid Id!");
       //}
       return INVALID_PORT;
     }

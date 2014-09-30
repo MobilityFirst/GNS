@@ -100,7 +100,7 @@ public class StatusEntry implements Comparable<StatusEntry> {
       return EQUAL;
     }
     
-    return this.id.get().compareTo(that.id.get());
+    return this.id.toString().compareTo(that.id.toString());
   }
 
   

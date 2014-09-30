@@ -129,7 +129,7 @@ public class GnsReconUpdate {
         if (Config.debuggingEnabled) {
           GNS.getLogger().info("Update operation failed " + updatePacket);
         }
-        if (updatePacket.getNameServerId().equals(replica.getNodeID())) { //if this node proposed this update
+        if (updatePacket.getNameServerID().equals(replica.getNodeID())) { //if this node proposed this update
           // send error message to client
           ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
@@ -150,7 +150,7 @@ public class GnsReconUpdate {
         // FIXME: Abhigyan: commented this because we are using lns votes for this calculation.
         // this should be uncommented once active replica starts to send read/write statistics for name.
 //        nameRecord.incrementUpdateRequest();
-        if (updatePacket.getNameServerId().equals(replica.getNodeID())) {
+        if (updatePacket.getNameServerID().equals(replica.getNodeID())) {
           ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);

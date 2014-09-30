@@ -33,7 +33,7 @@ public class StatusClient {
 
   public static void setStatusServerAddress(InetAddress address) {
     StatusClient.statusServerAddress = address;
-    // reset these when we get a new address
+    // reset these when we toString a new address
     problemCount = 0;
     warningIssued = false;
   }

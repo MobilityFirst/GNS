@@ -80,7 +80,7 @@ public class SendCurrentStatePacket2 extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(SENDING_NODE_ID, sendingNodeID.get());
+    json.put(SENDING_NODE_ID, sendingNodeID.toString());
     if (nodeIDs != null) {
       json.put(NODE_IDS, Util.setOfNodeIdToString(nodeIDs));
     }

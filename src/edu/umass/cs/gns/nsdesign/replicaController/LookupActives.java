@@ -23,7 +23,7 @@ public class LookupActives {
   public static void executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController, boolean recovery)
           throws JSONException, IOException, FailedDBOperationException {
 
-    if (recovery || !packet.getNsID().equals(replicaController.getNodeID())) return;
+    if (recovery || !packet.getNameServerID().equals(replicaController.getNodeID())) return;
 
     GNS.getLogger().fine("Received Request Active Packet Name = " + packet.getName());
 

@@ -110,7 +110,7 @@ public class Util {
   public static Set<String> nodeIdSetToStringSet(Set<NodeId<String>> set) {
     Set<String> result = new HashSet<String>();
     for (NodeId<String> id : set) {
-      result.add(id.get());
+      result.add(id.toString());
     }
     return result;
   }
@@ -199,7 +199,7 @@ public class Util {
   public static String arrayOfNodeIdsToString(NodeId[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
-      s += array[i].get();
+      s += array[i].toString();
       s += (i < array.length - 1 ? "," : "]");
     }
     return s;
@@ -216,10 +216,10 @@ public class Util {
     boolean first = true;
     for (NodeId<String> x : nodeIds) {
       if (first) {
-        sb.append(x.get());
+        sb.append(x.toString());
         first = false;
       } else {
-        sb.append(":" + x.get());
+        sb.append(":" + x.toString());
       }
     }
     return sb.toString();
@@ -250,4 +250,17 @@ public class Util {
     }
     return sb.toString();
   }
+  
+  // cute little hack to show us where
+  private String stackTraceToString() {
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    return (stackTrace.length > 2 ? stackTrace[2].toString() + "\n   " : "")
+            + (stackTrace.length > 3 ? stackTrace[3].toString() + "\n   " : "")
+            + (stackTrace.length > 4 ? stackTrace[4].toString() + "\n   " : "")
+            + (stackTrace.length > 5 ? stackTrace[5].toString() + "\n   " : "")
+            + (stackTrace.length > 6 ? stackTrace[6].toString() + "\n   " : "")
+            + (stackTrace.length > 7 ? stackTrace[7].toString() + "\n   " : "")
+            + (stackTrace.length > 8 ? stackTrace[8].toString() + "\n" : "");
+  }
+
 }

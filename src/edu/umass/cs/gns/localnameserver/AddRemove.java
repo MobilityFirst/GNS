@@ -88,7 +88,7 @@ public class AddRemove {
   static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
     UpdateInfo addInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmAddPacket.getLNSRequestID());
-    if (Config.debuggingEnabled) GNS.getLogger().fine("Confirm add packet: " + confirmAddPacket.toString() + " add info " + addInfo);
+    if (Config.debuggingEnabled) GNS.getLogger().fine("Confirm add packet: " + confirmAddPacket.toString()); 
     if (addInfo == null) {
       if (Config.debuggingEnabled) GNS.getLogger().warning("Add confirmation return info not found.: lns request id = " + 
               confirmAddPacket.getLNSRequestID());

@@ -26,7 +26,7 @@ public class JSONDelayEmulator {
 	private static double VARIATION = 0.1; // 10% variation in latency
 	private static boolean USE_CONFIG_FILE_INFO = false; // Enable this after figuring out how to use config file
 	private static long DEFAULT_DELAY = 100; // 100ms
-	private static GNSNodeConfig gnsNodeConfig = null; // node config object to get ping latencies for emulation.
+	private static GNSNodeConfig gnsNodeConfig = null; // node config object to toString ping latencies for emulation.
 
 
 	private static final Timer timer = new Timer();
@@ -99,7 +99,7 @@ public class JSONDelayEmulator {
     }
   }
 
-  /* Receiver calls this method to get delay that is to be emulated, and delays processing the packet by that amount.
+  /* Receiver calls this method to toString delay that is to be emulated, and delays processing the packet by that amount.
   * We put the delay to be emulated inside the json at the sender side because the receiver side does not know which
   * node ID sent the packet, and hence cannot know how much to delay the packet */
   public static long getEmulatedDelay(JSONObject jsonData){

@@ -123,7 +123,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(RETURNTO, returnTo.get());
+    json.put(RETURNTO, returnTo.toString());
     json.put(REQUESTID, requestID);
     json.put(LNSREQUESTID, LNSRequestID);
     // store it as an int in the JSON to keep the byte counting folks happy

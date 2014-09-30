@@ -204,7 +204,7 @@ public class SendUpdatesTask extends TimerTask {
             updatePacket.getMessage());
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().fine("Sending Update to Node: " + nameServerID.get());
+      GNS.getLogger().fine("Sending Update to Node: " + nameServerID.toString());
     }
 
     // and send it off
@@ -217,7 +217,7 @@ public class SendUpdatesTask extends TimerTask {
         updateInfo.setNameserverID(nameServerID);
       }
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Send update to: " + nameServerID.get() + " Name:" + name + " Id:" + lnsReqID
+        GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + lnsReqID
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }
     } catch (JSONException e) {

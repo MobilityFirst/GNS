@@ -236,7 +236,7 @@ public class EC2Runner {
         }
     }
 
-    String idString = id.get();
+    String idString = id.toString();
     StatusModel.getInstance().queueAddEntry(id); // for the gui
     StatusModel.getInstance().queueUpdate(id, region.name() + ": [Unknown hostname]", null, null);
     try {
@@ -254,7 +254,7 @@ public class EC2Runner {
       if (instance != null) {
         StatusModel.getInstance().queueUpdate(id, "Instance created");
         StatusModel.getInstance().queueUpdate(id, StatusEntry.State.INITIALIZING);
-        // get our ip
+        // toString our ip
         String hostname = instance.getPublicDnsName();
         InetAddress inetAddress = InetAddress.getByName(hostname);
         String ip = inetAddress.getHostAddress();

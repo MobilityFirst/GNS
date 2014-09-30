@@ -83,7 +83,7 @@ public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
         // call propose
         case UPDATE: // updates need coordination
           UpdatePacket update = new UpdatePacket(request);
-          update.setNameServerId(nodeID);
+          update.setNameServerID(nodeID);
           Random r = new Random(update.getName().hashCode());
           Set<NodeId<String>> replicaControllers = ConsistentHashing.getReplicaControllerSet(update.getName());
           int selectIndex = r.nextInt(GNS.numPrimaryReplicas);
@@ -98,7 +98,7 @@ public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
             }
             count += 1;
           }
-          String proposeToPaxosID = ConsistentHashing.getReplicaControllerGroupID(selectNode.get());
+          String proposeToPaxosID = ConsistentHashing.getReplicaControllerGroupID(selectNode.toString());
 //          GNS.getLogger().info("Propose to Paxos ID = " + proposeToPaxosID + " select node = " + selectNode);
           String paxosID = paxosManager.propose(proposeToPaxosID, update.toString());
 //          GNS.getLogger().info("Propsal reply Paxos ID = " + paxosID);

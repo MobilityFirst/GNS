@@ -276,10 +276,10 @@ public class CacheEntry implements Comparable<CacheEntry> {
     boolean first = true;
     for (NodeId<String> id : replicaControllers) {
       if (first) {
-        entry.append(id.get());
+        entry.append(id.toString());
         first = false;
       } else {
-        entry.append(", " + id.get());
+        entry.append(", " + id.toString());
       }
     }
     entry.append("]");

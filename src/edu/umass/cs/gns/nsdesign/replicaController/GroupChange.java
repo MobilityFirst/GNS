@@ -39,9 +39,9 @@ import java.util.concurrent.TimeUnit;
  * because the next group change cannot start unless this update is done.</p>
  *
  * <p>
- * If a manager does get a response from either old or new active replicas, it retries sending those messages.
- * We expect that the request are successful on a few retries. Otherwise, the manager gives up, and group change is left
- * incomplete at that stage.</p>
+ If a manager does toString a response from either old or new active replicas, it retries sending those messages.
+ We expect that the request are successful on a few retries. Otherwise, the manager gives up, and group change is left
+ incomplete at that stage.</p>
  *
  * <p>
  * Also refer to documentation in activeReconfiguration/GroupChange on how active replicas implement group change.</p>

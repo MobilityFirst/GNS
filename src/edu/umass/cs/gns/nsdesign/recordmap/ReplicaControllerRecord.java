@@ -82,8 +82,8 @@ import java.util.concurrent.ConcurrentMap;
  * <b>Internal Design:</b> This class uses a generic <code>HashMap</code> to store fields that are currently in
  * memory. The keys and values of the hash map are the field names (string) and their values respectively.
  * Using a generic <code>HashMap</code> has the advantage that we can store different types of objects in the
- * same hash map. While reading a field, we need type conversion to get the actual object.
- * <p/>
+ same hash map. While reading a field, we need type conversion to toString the actual object.
+ <p/>
  * In designing this class, we first thought of defining a class field for every field in the record.
  * This design would allocate pointers for all fields in the record every time a <code>ReplicaControllerRecord</code>
  * object is created. We chose the <code>HashMap</code> design for its efficiency, as it only creates those fields
@@ -744,7 +744,7 @@ public class ReplicaControllerRecord {
             ColumnField.values(vote, update),
             //incrementValues,
             VOTES_MAP,
-            ColumnField.keys(new ColumnField(id.get(), ColumnFieldType.INTEGER)),
+            ColumnField.keys(new ColumnField(id.toString(), ColumnFieldType.INTEGER)),
             //votesMapKeys,
             ColumnField.values(vote) //votesMapValues
     );

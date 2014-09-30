@@ -155,7 +155,7 @@ public class DummyGnsReconfigurable implements GnsReconfigurableInterface {
       ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       returnJson = failConfirmPacket.toJSONObject();
     } else {
-      if (updatePacket.getNameServerId().equals(nodeID)) {
+      if (updatePacket.getNameServerID().equals(nodeID)) {
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
                 updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
                 NSResponseCode.NO_ERROR);

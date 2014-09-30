@@ -109,7 +109,7 @@ public class Lookup {
 
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Recvd Lookup Error Response" + jsonObject);
 
-    // if invalid active name server error, get correct active name servers
+    // if invalid active name server error, toString correct active name servers
     if (dnsPacket.containsInvalidActiveNSError()) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
       handler.invalidateActiveNameServer(dnsPacket.getGuid());

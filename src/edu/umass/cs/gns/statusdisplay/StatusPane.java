@@ -68,7 +68,7 @@ public class StatusPane extends JPanel {
 //    jLabel5.setPreferredSize(new Dimension(30, height));
 
     if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
-      idLabel.setText(id.get());
+      idLabel.setText(id.toString());
     } else {
       idLabel.setText("#");
     }
@@ -115,7 +115,7 @@ public class StatusPane extends JPanel {
   public void paintComponent(Graphics g) {
     if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       StatusEntry entry = StatusModel.getInstance().getEntry(id);
-      idLabel.setText(id.get());
+      idLabel.setText(id.toString());
       stateLabel.setText(entry.getState().name());
       statusLabel.setText(entry.getStatusString());
       if (entry.getName() != null) {

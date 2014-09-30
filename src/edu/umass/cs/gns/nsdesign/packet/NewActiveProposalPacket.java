@@ -108,10 +108,10 @@ public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
     StringBuilder sb = new StringBuilder();
     for (NodeId<String> x : newActives) {
       if (sb.length() == 0) {
-        sb.append(x.get());
+        sb.append(x.toString());
       } else {
         sb.append(":");
-        sb.append(x.get());
+        sb.append(x.toString());
       }
     }
     String actives = sb.toString();

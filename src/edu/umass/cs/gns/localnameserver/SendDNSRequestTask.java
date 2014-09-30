@@ -238,7 +238,7 @@ public class SendDNSRequestTask extends TimerTask {
       try {
         json = incomingPacket.toJSONObjectQuestion();
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns.get() + "  DNS Request = " + json);
+          GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns.toString() + "  DNS Request = " + json);
         }
       } catch (JSONException e) {
         if (handler.getParameters().isDebugMode()) {

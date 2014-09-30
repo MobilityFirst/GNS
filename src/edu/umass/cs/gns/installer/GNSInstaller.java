@@ -268,7 +268,7 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + "nohup java -cp " + gnsJarFileName + " " + StartNSClass + " "
-              + " -id " + nsId.get()
+              + " -id " + nsId.toString()
               + " -nsfile " + NS_HOSTS_FILENAME
               //+ " -lnsfile " + LNS_HOSTS_FILENAME
               + " -configFile ns.conf "

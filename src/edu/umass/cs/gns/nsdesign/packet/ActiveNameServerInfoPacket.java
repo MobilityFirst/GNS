@@ -16,8 +16,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This class implements the packet transmitted between local nameserver and a primary nameserver to get information
- * about the current active nameserver set.
+ * This class implements the packet transmitted between local nameserver and a primary nameserver to toString information
+ about the current active nameserver set.
  *
  * @author Hardeep Uppal
  */
@@ -123,7 +123,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(PRIMARY_NAMESERVER, primaryNameServer.get());
+    json.put(PRIMARY_NAMESERVER, primaryNameServer.toString());
     json.put(LOCAL_NAMESERVER, getLocalNameServer());
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());

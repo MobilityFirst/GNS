@@ -133,8 +133,8 @@ public class TrafficStatusPacket extends BasicPacket {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(TIME, Format.formatDateTimeOnlyMilleUTC(time));
-    json.put(FROMID, fromID.get());
-    json.put(TOID, toID.get());
+    json.put(FROMID, fromID.toString());
+    json.put(TOID, toID.toString());
     json.put(PORTTYPE, portType.name());
     json.put(PACKETTYPE, packetType.name());
     if (name != null) {

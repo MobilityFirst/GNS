@@ -876,7 +876,7 @@ public class PaxosLogger extends Thread {
    */
   private  void recoverLogMessagesAfterLoggedState(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
 
-    // get list of log files
+    // toString list of log files
     String[] fileList = getSortedLogFileList();
 
     if (debugMode) {
@@ -992,16 +992,16 @@ public class PaxosLogger extends Thread {
         break;
       // Abhigyan: I am not deleting these because we may be adding some of these log messages
 //      case BALLOT:
-//        parseCurrentBallot(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+//        parseCurrentBallot(paxosInstances.toString(logMessage.getPaxosID()), logMessage.getMessage());
 //        break;
 //      case SLOTNUMBER:
-//        parseCurrentSlotNumber(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+//        parseCurrentSlotNumber(paxosInstances.toString(logMessage.getPaxosID()), logMessage.getMessage());
 //        break;
 //      case GARBAGESLOT:
-//        parseGarbageCollectionSlot(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+//        parseGarbageCollectionSlot(paxosInstances.toString(logMessage.getPaxosID()), logMessage.getMessage());
 //        break;
 //      case PaxosPacketType.PREPARE:
-//        parsePValue(paxosInstances.get(logMessage.getPaxosID()), logMessage.getMessage());
+//        parsePValue(paxosInstances.toString(logMessage.getPaxosID()), logMessage.getMessage());
 //        break;
     }
   }

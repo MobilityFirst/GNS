@@ -46,8 +46,8 @@ public class FailureDetectionPacket extends PaxosPacket {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, packetType);
     json.put("status", status);
-    json.put("sender", senderNodeID.get());
-    json.put("responder", responderNodeID.get());
+    json.put("sender", senderNodeID.toString());
+    json.put("responder", responderNodeID.toString());
     return json;
   }
 

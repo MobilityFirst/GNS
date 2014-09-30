@@ -11,8 +11,8 @@ import org.json.JSONObject;
 
 /**
  *
- * This class implements the packet transmitted between local nameserver and a primary nameserver to get information about the
- * contents of the nameserver;
+ * This class implements the packet transmitted between local nameserver and a primary nameserver to toString information about the
+ contents of the nameserver;
  *
  * @author Westy
  */
@@ -107,7 +107,7 @@ public class DumpRequestPacket extends BasicPacketWithLnsAddress {
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
     json.put(ID, id);
-    json.put(PRIMARY_NAMESERVER, primaryNameServer.get());
+    json.put(PRIMARY_NAMESERVER, primaryNameServer.toString());
     //json.put(LOCAL_NAMESERVER, localNameServer);
 //    json.put(LNS_ADDRESS, lnsAddress.getHostString());
 //    json.put(LNS_PORT, lnsAddress.getPort());

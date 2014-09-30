@@ -24,7 +24,7 @@ import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
  * It is straightforward to extend MultiMap to have generic keys. 
  * 
  * For each member in PaxosRequestState, it is necessary to create
- * a set of methods (like get, put, remove, keySet, values(), etc.)
+ * a set of methods (like toString, put, remove, keySet, values(), etc.)
  * as exemplified below.
  * */
 

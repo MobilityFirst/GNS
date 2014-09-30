@@ -200,13 +200,13 @@ public class PaxosManager extends AbstractPaxosManager {
 
     if(debugMode) GNS.getLogger().info(paxosID + "\tEnter createPaxos");
     if (nodeIDs.size() < 3) {
-      GNS.getLogger().severe(nodeID.get() + " less than three replicas paxos instance cannot be created. SEVERE ERROR. " +
+      GNS.getLogger().severe(nodeID.toString() + " less than three replicas paxos instance cannot be created. SEVERE ERROR. " +
               "EXCEPTION Exception.");
       return false;
     }
 
     if (!nodeIDs.contains(nodeID)) {
-      GNS.getLogger().severe(nodeID.get() + " this node not a member of paxos instance. replica not created.");
+      GNS.getLogger().severe(nodeID.toString() + " this node not a member of paxos instance. replica not created.");
       return false;
     }
 
@@ -235,7 +235,7 @@ public class PaxosManager extends AbstractPaxosManager {
     if (r1 != null && !r1.getPaxosID().equals(paxosID)) {
       r1.removePendingProposals();
       GNS.getLogger().info("OldPaxos replica replaced .. so log a stop message .. " + r1.getPaxosID() + " new replica " + paxosID);
-      paxosLogger.logPaxosStop(r1.getPaxosID());  // multiple stop msgs can get logged because other replica might stop in meanwhile.
+      paxosLogger.logPaxosStop(r1.getPaxosID());  // multiple stop msgs can toString logged because other replica might stop in meanwhile.
     }
 
     if (r!= null) {
@@ -526,7 +526,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
     NioServer tcpTransportLocal = null;
     try {
-      GNS.getLogger().fine(" Node ID is " + nodeID.get());
+      GNS.getLogger().fine(" Node ID is " + nodeID.toString());
 
       ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
       tcpTransportLocal = new NioServer(nodeID, jsonMessageWorker, config);
@@ -534,7 +534,7 @@ public class PaxosManager extends AbstractPaxosManager {
 //      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
 
 
-      if (debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID.get());
+      if (debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID.toString());
 
       // start TCP transport thread
       new Thread(tcpTransportLocal).start();

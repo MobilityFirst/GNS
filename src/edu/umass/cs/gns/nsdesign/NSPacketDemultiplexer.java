@@ -38,7 +38,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
         intervalCount += 1;
 
         GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount " +
-                (getMsgCount() - prevMsgCount) + " Node " + nodeID.get() + " ");
+                (getMsgCount() - prevMsgCount) + " Node " + nodeID.toString() + " ");
         prevMsgCount = msgCount;
       }
     },0, 10, TimeUnit.SECONDS);

@@ -72,7 +72,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
   private final ConcurrentMap<String, NameRecordStats> nameRecordStatsMap;
 
   /**
-   * GNS node config object used by LNS to get node information, such as IP, Port, ping latency.
+   * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
   private final GNSNodeConfig gnsNodeConfig;
 
@@ -371,7 +371,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
 
       NodeId<String> x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Closest Primary Name Server: " + x.get() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
+        GNS.getLogger().info("Closest Primary Name Server: " + x.toString() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
       return x;
     } catch (Exception e) {
@@ -419,7 +419,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
       return x;
     }
     return x1.get(0);
-    //    return  x1.get(count);
+    //    return  x1.toString(count);
   }
 
   // STATS MAP

@@ -24,13 +24,13 @@ import org.json.JSONObject;
  * But it uses fields in this packet in sending the reply.
  *
  */
-public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
+public class RemoveRecordPacket extends BasicPacketWithNSAndLNS {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
   //private final static String LOCALNAMESERVERID = "local";
-  private final static String NAME_SERVER_ID = "nsID";
+  //private final static String NAME_SERVER_ID = "nsID";
   private final static String SOURCE_ID = "sourceId";
    /**
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
@@ -59,10 +59,10 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
 //  private int localNameServerID;
 
 
-  /**
-   * Id of name server who received this request from client
-   */
-  private NodeId<String> nameServerID;
+//  /**
+//   * Id of name server who received this request from client
+//   */
+//  private NodeId<String> nameServerID;
    /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
@@ -79,13 +79,13 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
    * @param lnsAddress
    */
   public RemoveRecordPacket(NodeId<String> sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
-    super(lnsAddress);
+    super(GNSNodeConfig.INVALID_NAME_SERVER_ID, lnsAddress);
     this.type = Packet.PacketType.REMOVE_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestId;
     this.name = name;
     //this.localNameServerID = localNameServerID;
-    this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID; // this field will be set by name server after it received the packet
+    //this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID; // this field will be set by name server after it received the packet
   }
 
   /**
@@ -95,7 +95,8 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
    * @throws org.json.JSONException
    */
   public RemoveRecordPacket(JSONObject json) throws JSONException {
-    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
@@ -106,7 +107,7 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
     //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
-    this.nameServerID = new NodeId<String>(json.getString(NAME_SERVER_ID));
+    //this.nameServerID = new NodeId<String>(json.getString(NAME_SERVER_ID));
   }
 
   /**
@@ -120,12 +121,12 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, sourceId.get());
+    json.put(SOURCE_ID, sourceId.toString());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(NAME, getName());
     //json.put(LOCALNAMESERVERID, getLocalNameServerID());
-    json.put(NAME_SERVER_ID, nameServerID.get());
+    //json.put(NAME_SERVER_ID, nameServerID.toString());
     return json;
   }
 
@@ -162,13 +163,13 @@ public class RemoveRecordPacket extends BasicPacketWithLnsAddress {
 //  }
 
 
-  public NodeId<String> getNameServerID() {
-    return nameServerID;
-  }
-
-  public void setNameServerID(NodeId<String> nameServerID) {
-    this.nameServerID = nameServerID;
-  }
+//  public NodeId<String> getNameServerID() {
+//    return nameServerID;
+//  }
+//
+//  public void setNameServerID(NodeId<String> nameServerID) {
+//    this.nameServerID = nameServerID;
+//  }
 
   public NodeId<String> getSourceId() {
     return sourceId;

@@ -63,7 +63,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(NODE, nodeID.get());
+    json.put(NODE, nodeID.toString());
     json.put(MAX_SLOT, maxDecisionSlot);
     json.put(FLAG, flag);
     if (missingSlotNumbers != null && missingSlotNumbers.size() > 0) {

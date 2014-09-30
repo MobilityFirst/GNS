@@ -155,7 +155,7 @@ public class Update {
       
       LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo().get() + 
+      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo().toString() + 
               ":" + packet.toJSONObject().toString());
       
       try {

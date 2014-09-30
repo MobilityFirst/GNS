@@ -47,7 +47,7 @@ public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
 
         case UPDATE: // set a field in update packet because LNS may not set this field correctly.
           UpdatePacket update = new UpdatePacket(request);
-          update.setNameServerId(nodeID);
+          update.setNameServerID(nodeID);
           request = update.toJSONObject();
           if (!nameAndGroupVersion.contains(update.getName())) {
             noCoordinatorState = true;

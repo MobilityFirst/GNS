@@ -58,7 +58,7 @@ public class AcceptReplyPacket extends PaxosPacket {
     public JSONObject toJSONObject() throws JSONException {
         JSONObject jsonObject= new JSONObject();
         jsonObject.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-        jsonObject.put(NODE_ID, nodeID.get());
+        jsonObject.put(NODE_ID, nodeID.toString());
         jsonObject.put(BALLOT_NUMBER, ballot.toString());
         jsonObject.put(SLOT_NUMBER, slotNumber);
 //        jsonObject.put(COMMIT_SLOT, slotNumber);

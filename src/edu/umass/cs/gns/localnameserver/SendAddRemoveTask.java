@@ -149,7 +149,7 @@ public class SendAddRemoveTask extends TimerTask {
     // create the packet that we'll send to the primary
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("Sending request to node: " + nameServerID.get());
+      GNS.getLogger().info("Sending request to node: " + nameServerID.toString());
     }
 
     // and send it off
@@ -158,7 +158,7 @@ public class SendAddRemoveTask extends TimerTask {
       handler.sendToNS(jsonToSend, nameServerID);
 
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.get() + " Name:" + getName() + " Id:" + getLnsRequestID()
+        GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.toString() + " Name:" + getName() + " Id:" + getLnsRequestID()
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }
     } catch (JSONException e) {

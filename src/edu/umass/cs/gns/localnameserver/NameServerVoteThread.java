@@ -87,7 +87,7 @@ public class NameServerVoteThread extends Thread {
       int update;
       NameServerSelectionPacket nsSelectionPacket;
       NodeId<String> nsToVoteFor = selectNSToVoteFor(); // name server selection does not depend on name
-      GNS.getLogger().info("LNS ID" + LocalNameServer.getAddress() + " Closest NS " + nsToVoteFor.get());
+      GNS.getLogger().info("LNS ID" + LocalNameServer.getAddress() + " Closest NS " + nsToVoteFor.toString());
       if (StartLocalNameServer.debugMode) {
         GNS.getLogger().fine(" NameRecordStats Key Set Size: " + LocalNameServer.getNameRecordStatsKeySet().size());
       }

@@ -21,7 +21,7 @@ public class UpdateInfo extends RequestInfo {
    */
   private NodeId<String> nameserverID;
 
-  private BasicPacket basicPacket;
+  private final BasicPacket basicPacket;
 
   public UpdateInfo(int lnsRequestID, String name, NodeId<String> nameserverId, BasicPacket packet) {
     this.lnsReqID = lnsRequestID;
@@ -54,7 +54,7 @@ public class UpdateInfo extends RequestInfo {
   private String getFinalString(String queryStatus, String name, long latency, int numTransmissions,
           NodeId<String> nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
           long curTime, String eventCodes) {
-    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameServerID.get() + "\t"
+    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameServerID.toString() + "\t"
             + address.toString() + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + curTime + "\t" + eventCodes;
   }
 

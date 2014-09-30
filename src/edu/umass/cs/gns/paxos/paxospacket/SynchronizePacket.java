@@ -34,7 +34,7 @@ public class SynchronizePacket extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(NODE, nodeID.get());
+    json.put(NODE, nodeID.toString());
     return json;
   }
 }

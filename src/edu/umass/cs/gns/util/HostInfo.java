@@ -114,7 +114,7 @@ public class HostInfo {
 
   @Override
   public String toString() {
-    return "HostInfo{" + "id=" + id.get() + ", ipAddress=" + getIpAddress() + ", startingPortNumber="
+    return "HostInfo{" + "id=" + id.toString() + ", ipAddress=" + getIpAddress() + ", startingPortNumber="
             + startingPortNumber + ", pingLatency=" + pingLatency + ", latitude=" + latitude + ", longitude=" + longitude + '}';
   }
   

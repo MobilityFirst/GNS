@@ -59,7 +59,7 @@ public class ConsistentHashing {
       // Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
       nsTreeMap = new TreeMap<String, NodeId<String>>();
       for (NodeId<String> nodeID : nameServerIDs) {
-        nsTreeMap.put(getMD5Hash(nodeID.get()), nodeID);
+        nsTreeMap.put(getMD5Hash(nodeID.toString()), nodeID);
       }
     }
   }
@@ -107,7 +107,7 @@ public class ConsistentHashing {
 
     for (int i = 0; i < nsTreeMap.size(); i++) {
       int paxosMemberIndex = i;
-      String paxosID = getMD5Hash(nodesSorted.get(paxosMemberIndex).get());
+      String paxosID = getMD5Hash(nodesSorted.get(paxosMemberIndex).toString());
       HashSet<NodeId<String>> nodes = new HashSet<NodeId<String>>();
       boolean hasNode = false;
       while (nodes.size() < numReplicaControllers) {
@@ -200,7 +200,7 @@ public class ConsistentHashing {
                 + getReplicaControllerGroupID(name) + "\t");
       }
       for (NodeId<String> node :  nameServerIDs) {
-        System.out.println("Groups for node: " + "\t" + node.get() + "\t" + getReplicaControllerGroupIDsForNode(node));
+        System.out.println("Groups for node: " + "\t" + node.toString() + "\t" + getReplicaControllerGroupIDsForNode(node));
       }
 
       int avg = names * numPrimaryReplicas / nameServers;

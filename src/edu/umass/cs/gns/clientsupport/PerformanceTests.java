@@ -148,7 +148,7 @@ public class PerformanceTests {
       int ping = getComparisonPingValue(node);
       if (avg - ping > EXCESSIVE_RTT_DIFFERENCE) {
         result.append("Node ");
-        result.append(entry.getKey().get());
+        result.append(entry.getKey().toString());
         result.append(" has excessive rtt of ");
         result.append(avg);
         result.append("ms (ping is ");
@@ -166,7 +166,7 @@ public class PerformanceTests {
       Stats stats = new Stats(times.get(entry.getKey()));
       result.append(NEWLINE);
       result.append("Node: ");
-      result.append(entry.getKey().get());
+      result.append(entry.getKey().toString());
       result.append(NEWLINE);
       result.append("Fields read = " + stats.getN());
       result.append(NEWLINE);

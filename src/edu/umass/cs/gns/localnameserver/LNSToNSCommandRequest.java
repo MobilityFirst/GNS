@@ -72,7 +72,7 @@ public class LNSToNSCommandRequest {
         NodeId<String> id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
           
-          GNS.getLogger().info("@@@@@@@ Picked NS" + id.get() + " for record " + guid);
+          GNS.getLogger().info("@@@@@@@ Picked NS" + id.toString() + " for record " + guid);
           return id;
         }
       }

@@ -65,9 +65,9 @@ public class PaxosLogAnalyzer {
     }
 //    for (Integer nodeID: paxosAllNS.keySet()) {
 //      System.out.println("Node " + nodeID);
-//      for (String paxosID: paxosAllNS.get(nodeID).keySet()) {
-//        System.out.println("\t" + paxosID + "\t" + paxosAllNS.get(nodeID).get(paxosID).getPValuesAccepted().keySet().size()
-//                + "\t" + paxosAllNS.get(nodeID).get(paxosID).getCommittedRequests().keySet().size());
+//      for (String paxosID: paxosAllNS.toString(nodeID).keySet()) {
+//        System.out.println("\t" + paxosID + "\t" + paxosAllNS.toString(nodeID).toString(paxosID).getPValuesAccepted().keySet().size()
+//                + "\t" + paxosAllNS.toString(nodeID).toString(paxosID).getCommittedRequests().keySet().size());
 //      }
 //      System.out.println();
 //    }
@@ -80,7 +80,7 @@ public class PaxosLogAnalyzer {
    * @return name of folder where paxos logs for {@code nodeID} are stored.
    */
   private String getNodeLogFolder(NodeId<String> nodeID) {
-    return paxosLogFolder + "/log_" + nodeID.get();
+    return paxosLogFolder + "/log_" + nodeID.toString();
   }
 
   public void outputPaxosStats(String outputFile, String failedNodesFile) {
@@ -104,7 +104,7 @@ public class PaxosLogAnalyzer {
 
       int paxosGroupSize = paxosNodeIDs.get(paxosID).size();
       int defaultCoordinator = -1; // TODO fix this.
-//      int defaultCoordinator = PaxosReplica.getDefaultCoordinatorReplica(paxosID, paxosNodeIDs.get(paxosID));
+//      int defaultCoordinator = PaxosReplica.getDefaultCoordinatorReplica(paxosID, paxosNodeIDs.toString(paxosID));
 
       // check which slots have any activity, print deficit info.
       // paxosID slot numreplica commitdeficit acceptdeficit defaultcoordinator

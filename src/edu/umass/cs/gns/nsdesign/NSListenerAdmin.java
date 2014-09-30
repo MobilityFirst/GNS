@@ -83,7 +83,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID().get() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
+    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID().toString() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();
@@ -240,7 +240,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                 GNS.getLogger().setLevel(level);
                 break;
               case CLEARCACHE:
-                // shouldn't ever get this
+                // shouldn't ever toString this
                 GNS.getLogger().warning("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Ignoring CLEARCACHE request");
                 break;
 

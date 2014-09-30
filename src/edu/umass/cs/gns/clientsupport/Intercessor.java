@@ -63,7 +63,7 @@ public class Intercessor implements IntercessorInterface {
   // Instrumentation
   private static final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  public static boolean debuggingEnabled = false;
+  public static boolean debuggingEnabled = true;
 
   static {
     randomID = new Random();
@@ -125,7 +125,7 @@ public class Intercessor implements IntercessorInterface {
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           if (debuggingEnabled) {
-            GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");
+            GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update/Add/Remove (" + id + ") ");
           }
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.getResponseCode());

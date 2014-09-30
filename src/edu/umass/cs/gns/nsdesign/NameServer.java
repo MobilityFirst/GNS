@@ -124,7 +124,7 @@ public class NameServer implements Shutdownable {
     NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this, nodeID);
     if (Config.emulatePingLatencies) {
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
-      GNS.getLogger().info(nodeID.get() + " Emulating delays ... ");
+      GNS.getLogger().info(nodeID.toString() + " Emulating delays ... ");
     }
     JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
     JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nodeID, gnsNodeConfig, worker);
@@ -141,18 +141,18 @@ public class NameServer implements Shutdownable {
     } else { // real GNS
       gnsReconfigurable = new GnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
     }
-    GNS.getLogger().info(nodeID.get() + " GNS initialized");
+    GNS.getLogger().info(nodeID.toString() + " GNS initialized");
     // reInitialize active replica with the app
     activeReplica = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, executorService, gnsReconfigurable);
-    GNS.getLogger().info(nodeID.get() + " Active replica initialized");
+    GNS.getLogger().info(nodeID.toString() + " Active replica initialized");
 
     // we create app coordinator inside constructor for activeReplica because of cyclic dependency between them
     appCoordinator = activeReplica.getCoordinator();
-    GNS.getLogger().info(nodeID.get() + " App (GNS) coordinator initialized");
+    GNS.getLogger().info(nodeID.toString() + " App (GNS) coordinator initialized");
 
     replicaController = new ReplicaController(nodeID, gnsNodeConfig, tcpTransport,
             executorService, mongoRecords);
-    GNS.getLogger().info(nodeID.get() + " Replica controller initialized");
+    GNS.getLogger().info(nodeID.toString() + " Replica controller initialized");
 
     if (Config.singleNS) {
       replicaControllerCoordinator = new NoCoordinationReplicaControllerCoordinator(nodeID, replicaController);
@@ -165,13 +165,13 @@ public class NameServer implements Shutdownable {
       replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
               new NSNodeConfig(gnsNodeConfig), replicaController, paxosConfig);
     }
-    GNS.getLogger().info(nodeID.get() + " Replica controller coordinator initialized");
+    GNS.getLogger().info(nodeID.toString() + " Replica controller coordinator initialized");
 
     // start the NSListenerAdmin thread
     admin = new NSListenerAdmin(gnsReconfigurable, appCoordinator, replicaController, replicaControllerCoordinator, gnsNodeConfig);
     admin.start();
 
-    GNS.getLogger().info(nodeID.get() + " Admin thread initialized");
+    GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
   }
 
   public ActiveReplicaCoordinator getActiveReplicaCoordinator() {

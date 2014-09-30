@@ -19,11 +19,11 @@ import java.util.concurrent.locks.ReentrantLock;
  * An implementation of the paxos protocol.
  * <p/>
  * <p/>
- * This class interfaces with PaxosManager class and PaxosLogger class. PaxosManager class is used to
- * provide (1) message transport to/from other nodes (2) execute a committed decision (e.g. a write operation)
- * (3) read current state of the data that this paxos replica is maintaining from the database.
- * (4) resend any requests proposed by coordinator that have failed to get response from majority after a timeout.
- * <p/>
+ This class interfaces with PaxosManager class and PaxosLogger class. PaxosManager class is used to
+ provide (1) message transport to/from other nodes (2) execute a committed decision (e.g. a write operation)
+ (3) read current state of the data that this paxos replica is maintaining from the database.
+ (4) resend any requests proposed by coordinator that have failed to toString response from majority after a timeout.
+ <p/>
  * PaxosLogger class is used to log paxos messages, e.g., PREPARE, COMMIT, ACCEPT. During recovery process,
  * PaxosLogger passes the messages recovered to PaxosReplica, which allows PaxosReplica to recreate its state.
  * <p/>
@@ -704,7 +704,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
     GNS.getLogger().fine("Using consistent-hash based coordinator");
     TreeMap<String, NodeId<String>> sorted = new TreeMap<String, NodeId<String>>();
     for (NodeId<String> x : nodeIDs) {
-      String hashVal = ConsistentHashing.getConsistentHash(x.get());
+      String hashVal = ConsistentHashing.getConsistentHash(x.toString());
       sorted.put(hashVal, x);
     }
     // assuming paxos ID is the hash of the name
@@ -1220,7 +1220,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
           // remove pvalue at slot, so that no-op is proposed
           pValuesScout.remove(slot);
         }
-      } else { // if (!r.isDecisionComplete(proposals.get(slot)))
+      } else { // if (!r.isDecisionComplete(proposals.toString(slot)))
         if (debugMode) GNS.getLogger().fine(paxosID + "C\t" + nodeID + "C " + "PValue proposal for slot: " + slot);
         selectPValues.add(new PValuePacket(ballotScout, pValuesScout.get(slot).proposal));
       }
@@ -1459,7 +1459,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
         } finally {
           acceptorLock.unlock();
         }
-        // if I should be next coordinator based on set of nodes active, I will try to get reelected as coordinator.
+        // if I should be next coordinator based on set of nodes active, I will try to toString reelected as coordinator.
         if (getNextCoordinatorReplica().equals(nodeID)) initScout();
       }
     }
@@ -1505,7 +1505,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
   }
 
   /**
-   * Send prepare packet to get new ballot accepted.
+   * Send prepare packet to toString new ballot accepted.
    */
   private void initScout() {
 
@@ -1712,7 +1712,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
     } finally {
       scoutLock.unlock();
     }
-    // if I should be the next coordinator based of set of active nodes, I will try to get re-elected.
+    // if I should be the next coordinator based of set of active nodes, I will try to toString re-elected.
     if (tryReelect && getNextCoordinatorReplica().equals(nodeID)) initScout();
   }
 
@@ -1742,7 +1742,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
   /**
    * Message reporting node failure.
    * We check if the failed node is current coordinator. if yes, and if I am next node who should
-   * become the coordinator I will try to get elected.
+ become the coordinator I will try to toString elected.
    */
   private void handleNodeStatusUpdate(FailureDetectionPacket packet) {
     if (packet.status) return; // node is up.
@@ -1774,7 +1774,7 @@ public class PaxosReplica extends PaxosReplicaInterface implements Serializable 
       GNS.getLogger().severe(paxosID + "C\t" + nodeID + "C coordinator has failed " + coordinatorID);
       if (debugMode)
         GNS.getLogger().fine(paxosID + "C\t" + nodeID + " current ballot coordinator failed " + coordinatorID);
-      // I should try to get a new ballot accepted.
+      // I should try to toString a new ballot accepted.
       initScout();
     }
   }

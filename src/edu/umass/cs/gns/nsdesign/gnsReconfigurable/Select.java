@@ -36,28 +36,28 @@ import java.util.HashSet;
 /**
  * This class handles select operations which have a similar semantics to an SQL SELECT.
  * The semantics is that we want to look up all the records with a given value or whose
- * value falls in a given range or that more generally match a query.
- *
- * The SelectRequestPacket is sent to some NS (determining which one is done by the
- * LNS). This NS handles the broadcast to all of the NSs and the collection of results.
- *
- * For all select operations the NS which receive the broadcasted select packet execute the
- * appropriate query to collect all the guids that satisfy it. They then send the full records
- * from all these queries back to the collecting NS. The collecting NS then extracts the GUIDS
- * from all the results removing duplicates and then sends back JUST THE GUIDs, not the full
- * records.
- *
- * Here's the special handling the NS does for guid GROUPs:
- *
- * On the request side when we get a GROUP_SETUP request we do the regular broadcast thing.
- *
- * On the response side for a GROUP_SETUP we do the regular collate thing and return the results,
- * plus we set the value of the group guid and the values of last_refreshed_time.
- * We need a GROUP info structure to hold these things.
- *
- * On the request side when we get a GROUP_LOOKUP request we need to
- * 1) Check to see if enough time has passed since the last update
- * (current time > last_refreshed_time + min_refresh_interval). If it has we
+ value falls in a given range or that more generally match a query.
+
+ The SelectRequestPacket is sent to some NS (determining which one is done by the
+ LNS). This NS handles the broadcast to all of the NSs and the collection of results.
+
+ For all select operations the NS which receive the broadcasted select packet execute the
+ appropriate query to collect all the guids that satisfy it. They then send the full records
+ from all these queries back to the collecting NS. The collecting NS then extracts the GUIDS
+ from all the results removing duplicates and then sends back JUST THE GUIDs, not the full
+ records.
+
+ Here's the special handling the NS does for guid GROUPs:
+
+ On the request side when we toString a GROUP_SETUP request we do the regular broadcast thing.
+
+ On the response side for a GROUP_SETUP we do the regular collate thing and return the results,
+ plus we set the value of the group guid and the values of last_refreshed_time.
+ We need a GROUP info structure to hold these things.
+
+ On the request side when we toString a GROUP_LOOKUP request we need to
+ 1) Check to see if enough time has passed since the last update
+ (current time > last_refreshed_time + min_refresh_interval). If it has we
  * do the usual query broadcast.
  * If not enough time has elapsed we send back the response with the current value of the group guid.
  *
@@ -123,7 +123,7 @@ public class Select {
       GNS.getLogger().info(packet.getSelectOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
     }
     // If it's not a group lookup or is but enough time has passed we do the usual thing
-    // and send the request out to all the servers. We'll get a response sent on the flipside.
+    // and send the request out to all the servers. We'll toString a response sent on the flipside.
     Set<NodeId<String>> serverIds = replica.getGNSNodeConfig().getNodeIDs();
     // store the info for later
     int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
@@ -132,11 +132,11 @@ public class Select {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
       packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), replica, packet.getLnsAddress()));
     }
-    packet.setNsID(replica.getNodeID());
+    packet.setNameServerID(replica.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " sending select " + outgoingJSON + " to " + Util.setOfNodeIdToString(serverIds));
+      GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " sending select " + outgoingJSON + " to " + Util.setOfNodeIdToString(serverIds));
     }
     try {
       for (NodeId<String> serverId : serverIds) {
@@ -157,7 +157,7 @@ public class Select {
    */
   private static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " recvd QueryRequest: " + incomingJSON);
+      GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " recvd QueryRequest: " + incomingJSON);
     }
     SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
     try {
@@ -166,16 +166,16 @@ public class Select {
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsAddress(),
               request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().fine("NS" + replica.getNodeID().get() + " sending back " + jsonRecords.length() + " records");
+        GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " sending back " + jsonRecords.length() + " records");
       }
       // and send them back to the originating NS
-      replica.getNioServer().sendToID(request.getNsID(), response.toJSONObject());
+      replica.getNioServer().sendToID(request.getNameServerID(), response.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().severe("Exception while handling select request: " + e);
       SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsAddress(),
               request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), e.getMessage());
       try {
-        replica.getNioServer().sendToID(request.getNsID(), failResponse.toJSONObject());
+        replica.getNioServer().sendToID(request.getNameServerID(), failResponse.toJSONObject());
       } catch (IOException f) {
         GNS.getLogger().severe("Unable to send Failure SelectResponsePacket: " + f);
         return;
@@ -194,11 +194,11 @@ public class Select {
   public static void handleSelectResponse(JSONObject json, GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket packet = new SelectResponsePacket(json);
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " recvd from NS" + packet.getNameServer().get());
+      GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " recvd from NS" + packet.getNameServerID().toString());
     }
     NSSelectInfo info = queriesInProgress.get(packet.getNsQueryId());
     if (info == null) {
-      GNS.getLogger().warning("NS" + replica.getNodeID().get() + " unabled to located query info:" + packet.getNsQueryId());
+      GNS.getLogger().warning("NS" + replica.getNodeID().toString() + " unabled to located query info:" + packet.getNsQueryId());
       return;
     }
     // if there is no error update our results list
@@ -207,13 +207,13 @@ public class Select {
       processJSONRecords(packet.getRecords(), info, replica);
     } else { // error response
       if (Config.debuggingEnabled) {
-        GNS.getLogger().fine("NS" + replica.getNodeID().get() + " processing error response: " + packet.getErrorMessage());
+        GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " processing error response: " + packet.getErrorMessage());
       }
     }
     // Remove the NS ID from the list to keep track of who has responded
-    info.removeServerID(packet.getNameServer());
+    info.removeServerID(packet.getNameServerID());
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + replica.getNodeID().get() + " servers yet to respond:" + info.serversYetToRespond());
+      GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " servers yet to respond:" + info.serversYetToRespond());
     }
     if (info.allServersResponded()) {
       handledAllServersResponded(packet, info, replica);
@@ -299,7 +299,7 @@ public class Select {
         break;
       case QUERY:
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID().get() + " query: " + request.getQuery());
+          GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " query: " + request.getQuery());
         }
         cursor = NameRecord.selectRecordsQuery(ar.getDB(), request.getQuery());
         break;
@@ -318,7 +318,7 @@ public class Select {
   private static void processJSONRecords(JSONArray jsonArray, NSSelectInfo info, GnsReconfigurable ar) throws JSONException {
     int length = jsonArray.length();
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + ar.getNodeID().get() + " processing " + length + " records");
+      GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " processing " + length + " records");
     }
     // org.json sucks... should have converted a long time ago
     for (int i = 0; i < length; i++) {
@@ -326,11 +326,11 @@ public class Select {
       String name = record.getString(NameRecord.NAME.getName());
       if (info.addResponseIfNotSeenYet(name, record)) {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID().get() + " added record for " + name);
+          GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " added record for " + name);
         }
       } else {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("NS" + ar.getNodeID().get() + " DID NOT ADD record for " + name);
+          GNS.getLogger().fine("NS" + ar.getNodeID().toString() + " DID NOT ADD record for " + name);
         }
       }
     }

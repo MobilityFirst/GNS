@@ -81,7 +81,7 @@ public class WriteXMLConfFile {
         rootElement.appendChild(element);
 
         attr = doc.createAttribute("id");
-        attr.setValue(info.getId().get());
+        attr.setValue(info.getId().toString());
         element.setAttributeNode(attr);
 
         attr = doc.createAttribute("hostname");

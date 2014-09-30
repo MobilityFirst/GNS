@@ -138,7 +138,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
           }
 //          for (int i = 0; i < pendingChangeByNode.length; i++) {
 //            if (pendingChangeByNode[i]) {
-//              this.pendingChanges.add(new ChangeRequest(connectedIDs.get(i), ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
+//              this.pendingChanges.add(new ChangeRequest(connectedIDs.toString(i), ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
 //              //this.pendingChanges.add(new ChangeRequest(connectedIDs[i], ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
 //              pendingChangeByNode[i] = false;
 //            }
@@ -194,7 +194,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
 //        SocketChannel socketChannel = null;
     // synchronized for thread safety
     synchronized (this.connectedIDs) {
-//      if (connectionAttempts.containsKey(destID)) {// && (Integer) connectionAttempts.get(destID) >= MAX_ATTEMPTS) {
+//      if (connectionAttempts.containsKey(destID)) {// && (Integer) connectionAttempts.toString(destID) >= MAX_ATTEMPTS) {
 //        if (StartNameServer.debugMode) GNRS.getLogger().severe("NIOEXCEPTION: Could not connect. Max attempts reached. = " + MAX_ATTEMPTS);
 //        return false;
 //      }
@@ -220,8 +220,8 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
 //                if (StartNameServer.debugMode) GNS.getLogger().info("\tNIOSTAT\tconnection-event\t"
 //                        + numberOfConnectionsInitiated + "\t" + destID + "\t");
         // new connection.
-//				String host = ((String)ID_to_IP_Port.get(id)).split(":")[0];
-//				int port = Integer.parseInt(((String)ID_to_IP_Port.get(id)).split(":")[1]);
+//				String host = ((String)ID_to_IP_Port.toString(id)).split(":")[0];
+//				int port = Integer.parseInt(((String)ID_to_IP_Port.toString(id)).split(":")[1]);
         SocketChannel newSocketChannel = SocketChannel.open();
         newSocketChannel.configureBlocking(false);
         InetAddress address = nodeConfig.getNodeAddress(destID);
@@ -521,7 +521,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
     System.exit(2);
     NodeId<String> ID = new NodeId<String>(args[0]);
     // hack
-    int integerVersionOfTheNodeId = Integer.parseInt(ID.get());
+    int integerVersionOfTheNodeId = Integer.parseInt(ID.toString());
     int port = 9000 + 10 * integerVersionOfTheNodeId;
     try {
       ByteStreamToJSONObjects worker = new ByteStreamToJSONObjects(null);
@@ -584,21 +584,21 @@ class WakeupSelectorTask extends TimerTask {
 //
 //	synchronized (this.connectionStatus) {
 //		int status = 0;
-//		if (connectionStatus.containsKey(id)) status = (Integer) connectionStatus.get(id);
+//		if (connectionStatus.containsKey(id)) status = (Integer) connectionStatus.toString(id);
 //
 //		// ID is connected
 //		if (status == 2) {
 //			// then connectedIDs must also contain a SocketChannel object.
 //			if (connectedIDs.containsKey(id)) {
-//				SocketChannel socketChannel = (SocketChannel) connectedIDs.get(id);
+//				SocketChannel socketChannel = (SocketChannel) connectedIDs.toString(id);
 //				send(socketChannel, data);
 //			}
 //		} else if (status == 1) { // connected initiated.
-//			// get socketChannel
-//			SocketChannel socketChannel = (SocketChannel) connectedIDs.get(id);
+//			// toString socketChannel
+//			SocketChannel socketChannel = (SocketChannel) connectedIDs.toString(id);
 //			// Add to pendingData
 //			synchronized (this.pendingData) {
-//				List queue = (List) this.pendingData.get(socketChannel);
+//				List queue = (List) this.pendingData.toString(socketChannel);
 //				if (queue == null) {
 //					queue = new ArrayList();
 //					this.pendingData.put(socketChannel, queue);
@@ -607,8 +607,8 @@ class WakeupSelectorTask extends TimerTask {
 //			}
 //		} else if (status == 0) { // establish connection and send.
 //			System.out.println("SendToID:" + status);
-//			String host = ((String)ID_to_IP_Port.get(id)).split(":")[0];
-//			int port = Integer.parseInt(((String)ID_to_IP_Port.get(id)).split(":")[1]);
+//			String host = ((String)ID_to_IP_Port.toString(id)).split(":")[0];
+//			int port = Integer.parseInt(((String)ID_to_IP_Port.toString(id)).split(":")[1]);
 //
 //			SocketChannel socketChannel = this.initiateConnection(host, port);
 //			connectedIDs.put(id, socketChannel);
@@ -616,7 +616,7 @@ class WakeupSelectorTask extends TimerTask {
 //
 //			// ABHIGYAN
 //			synchronized (this.pendingData) {
-//				List queue = (List) this.pendingData.get(socketChannel);
+//				List queue = (List) this.pendingData.toString(socketChannel);
 //				if (queue == null) {
 //					queue = new ArrayList();
 //					this.pendingData.put(socketChannel, queue);
@@ -637,7 +637,7 @@ class WakeupSelectorTask extends TimerTask {
 //			String hostIP  = "127.0.0.1";
 //			int port = socketChannel.socket().getPort();
 //			if (IP_Port_to_ID.containsKey(hostIP + ":" + port)) {
-//				int id = (Integer) IP_Port_to_ID.get(hostIP + ":" + port);
+//				int id = (Integer) IP_Port_to_ID.toString(hostIP + ":" + port);
 //				System.out.println("CONNECTED to " + id);
 //			}
 //		}

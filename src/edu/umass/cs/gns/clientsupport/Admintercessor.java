@@ -208,7 +208,7 @@ public class Admintercessor {
   public static String sendPingValue(NodeId<String> node1, NodeId<String> node2) {
     int id = nextAdminRequestID();
     try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.get(), node2.get()).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(), node2.toString()).toJSONObject());
       waitForAdminResponse(id);
       JSONObject json = adminResult.get(id);
       if (json != null) {
@@ -359,7 +359,7 @@ public class Admintercessor {
     }
     // process all the entries into a nice string
     for (Map.Entry<NodeId<String>, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
-      result.append("Nameserver: " + entry.getKey().get() +
+      result.append("Nameserver: " + entry.getKey().toString() +
               " (" + LocalNameServer.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {

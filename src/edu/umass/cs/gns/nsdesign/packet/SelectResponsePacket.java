@@ -17,7 +17,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
 */
-public class SelectResponsePacket extends BasicPacketWithLnsAddress {
+public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
 
   public enum ResponseCode {
 
@@ -30,14 +30,14 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
   private final static String GUIDS = "guids";
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSQUERYID = "nsQueryId";
-  private final static String NAMESERVER = "ns";
+  //private final static String NAMESERVER = "ns";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
   
   private int id;
   private int lnsQueryId;
   private int nsQueryId;
-  private NodeId<String> nameServer;
+  //private NodeId<String> nameServer;
   private JSONArray records;
   private JSONArray guids;
   private ResponseCode responseCode;
@@ -49,14 +49,14 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
    * @param jsonObject 
    */
   private SelectResponsePacket(int id, InetSocketAddress lnsAddress, int lnsQueryId, int nsQueryId,
-          NodeId<String> nameServer, JSONArray records, JSONArray guids, ResponseCode responseCode,
+          NodeId<String> nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
           String errorMessage) {
-    super(lnsAddress);
+    super(nameServerID, lnsAddress);
     this.type = Packet.PacketType.SELECT_RESPONSE;
     this.id = id;
     this.lnsQueryId = lnsQueryId;
     this.nsQueryId = nsQueryId;
-    this.nameServer = nameServer;
+    //this.nameServer = nameServer;
     this.records = records;
     this.guids = guids;
     this.responseCode = responseCode;
@@ -70,13 +70,13 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
    * @param lnsAddress
    * @param lnsQueryId
    * @param nsQueryId
-   * @param nameServer
+   * @param nameServerID
    * @param records
    * @return 
    */
   public static SelectResponsePacket makeSuccessPacketForRecordsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId, 
-          int nsQueryId, NodeId<String> nameServer, JSONArray records) {
-    return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServer, records, null, ResponseCode.NOERROR, null);
+          int nsQueryId, NodeId<String> nameServerID, JSONArray records) {
+    return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, records, null, ResponseCode.NOERROR, null);
   }
   
   /**
@@ -86,13 +86,13 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
    * @param lnsAddress
    * @param lnsQueryId
    * @param nsQueryId
-   * @param nameServer
+   * @param nameServerID
    * @param guids
    * @return 
    */
   public static SelectResponsePacket makeSuccessPacketForGuidsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId, 
-          int nsQueryId, NodeId<String> nameServer, JSONArray guids) {
-    return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServer, null, guids, ResponseCode.NOERROR, null);
+          int nsQueryId, NodeId<String> nameServerID, JSONArray guids) {
+    return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, null, guids, ResponseCode.NOERROR, null);
   }
 
   /**
@@ -116,7 +116,8 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
    * @throws org.json.JSONException
    */
   public SelectResponsePacket(JSONObject json) throws JSONException {
-    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {;
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
     }
@@ -125,7 +126,7 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
     //this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.nsQueryId = json.getInt(NSQUERYID);
-    this.nameServer = new NodeId<String>(json.getString(NAMESERVER));
+    //this.nameServer = new NodeId<String>(json.getString(NAMESERVER));
     this.responseCode = ResponseCode.valueOf(json.getString(RESPONSECODE));
     // either of these could be null
     this.records = json.optJSONArray(RECORDS);
@@ -149,7 +150,7 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
     //json.put(LNSID, lnsID);
     json.put(LNSQUERYID, lnsQueryId);
     json.put(NSQUERYID, nsQueryId);
-    json.put(NAMESERVER, nameServer.get());
+    //json.put(NAMESERVER, nameServer.toString());
     json.put(RESPONSECODE, responseCode.name());
     if (records != null) {
       json.put(RECORDS, records);
@@ -187,9 +188,9 @@ public class SelectResponsePacket extends BasicPacketWithLnsAddress {
     return nsQueryId;
   }
 
-  public NodeId<String> getNameServer() {
-    return nameServer;
-  }
+//  public NodeId<String> getNameServerID() {
+//    return nameServer;
+//  }
 
   public ResponseCode getResponseCode() {
     return responseCode;

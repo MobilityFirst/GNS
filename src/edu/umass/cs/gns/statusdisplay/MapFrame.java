@@ -99,7 +99,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
       TreeSet<StatusEntry> entries = new TreeSet(model.getEntries());
       for (StatusEntry entry : entries) {
         if (entry.getLocation() != null) {
-          map.addMapMarker(new MapMarkerLabeledDot(entry.getId().get(), statusColor(entry), entry.getLocation().getY(), entry.getLocation().getX()));
+          map.addMapMarker(new MapMarkerLabeledDot(entry.getId().toString(), statusColor(entry), entry.getLocation().getY(), entry.getLocation().getX()));
         }
       }
       map.removeAllMapPolylines();

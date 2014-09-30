@@ -134,8 +134,8 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(ID, uniqueID);
     json.put(NAME, name);
-    json.put(PRIMARY_SENDER, primarySender.get());
-    json.put(ACTIVE_SENDER, activeSender.get());
+    json.put(PRIMARY_SENDER, primarySender.toString());
+    json.put(ACTIVE_SENDER, activeSender.toString());
 
     String actives = convertArrayToString(newActives);
     json.put(NEW_ACTIVES, actives);
@@ -156,9 +156,9 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     StringBuilder sb = new StringBuilder();
     for (NodeId<String> x : values) {
       if (sb.length() == 0) {
-        sb.append(x.get());
+        sb.append(x.toString());
       } else {
-        sb.append(":" + x.get());
+        sb.append(":" + x.toString());
       }
     }
     return sb.toString();

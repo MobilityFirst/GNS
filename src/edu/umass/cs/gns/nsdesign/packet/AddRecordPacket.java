@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.JSONUtils;
@@ -35,15 +34,15 @@ import java.util.Set;
  * <code>ConfirmUpdateLNSPacket</code>. But it uses fields in this packet in sending the reply.
  *
  */
-public class AddRecordPacket extends BasicPacketWithLnsAddress {
+public class AddRecordPacket extends BasicPacketWithNSAndLNS {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
   private final static String RECORDKEY = "recordkey";
   private final static String VALUE = "value";
-  private final static String NAMESERVER_ID = "ns_ID";
-  private final static String SOURCE_ID = "sourceId"; 
+  //private final static String NAMESERVER_ID = "ns_ID";
+  private final static String SOURCE_ID = "sourceId";
   private final static String TIME_TO_LIVE = "ttlAddress";
   private final static String ACTIVE_NAMESERVERS = "actives";
 
@@ -53,7 +52,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    */
   public final static NodeId<String> LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
-  /** 
+  /**
    * Unique identifier used by the entity making the initial request to confirm
    */
   private int requestID;
@@ -87,11 +86,10 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
 //   * Id of local nameserver handling this request *
 //   */
 //  private int localNameServerID;
-
-  /**
-   * ID of name server receiving the message.
-   */
-  private NodeId<String> nameServerID;
+//  /**
+//   * ID of name server receiving the message.
+//   */
+//  private NodeId<String> nameServerID;
   /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
@@ -104,7 +102,6 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    */
   private Set<NodeId<String>> activeNameServers = null;
 
-
   /**
    * Constructs a new AddRecordPacket with the given name, value, and TTL.
    * This constructor does not specify one fields in this packet: <code>LNSRequestID</code>.
@@ -115,14 +112,14 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    *
    * @param sourceId
    * @param requestID Unique identifier used by the entity making the initial request to confirm
-   * @param name   Host/domain/device name
+   * @param name Host/domain/device name
    * @param recordKey The initial key that will be stored in the name record.
    * @param value The inital value of the key that is specified.
    * @param lnsAddress
    * @param ttl TTL of name record.
    */
   public AddRecordPacket(NodeId<String> sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
-    super(lnsAddress);
+    super(GNSNodeConfig.INVALID_NAME_SERVER_ID, lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
     this.sourceId = sourceId;
     this.requestID = requestID;
@@ -131,7 +128,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     this.value = value;
     //this.localNameServerID = localNameServerID;
     this.ttl = ttl;
-    this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    //this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.activeNameServers = null;
   }
 
@@ -142,7 +139,8 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
    * @throws org.json.JSONException
    */
   public AddRecordPacket(JSONObject json) throws JSONException {
-    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
@@ -157,10 +155,10 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
     //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.ttl = json.getInt(TIME_TO_LIVE);
-    this.nameServerID = new NodeId<String>(json.getString(NAMESERVER_ID));
+    //this.nameServerID = new NodeId<String>(json.getString(NAMESERVER_ID));
     if (json.has(ACTIVE_NAMESERVERS)) {
-        this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));
-        //this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
+      this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));
+      //this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
     }
   }
 
@@ -175,7 +173,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, sourceId.get());
+    json.put(SOURCE_ID, sourceId.toString());
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(RECORDKEY, getRecordKey());
@@ -183,9 +181,10 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     json.put(VALUE, new JSONArray(getValue()));
     //json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(TIME_TO_LIVE, getTTL());
-    json.put(NAMESERVER_ID, nameServerID.get());
-    if (getActiveNameServers() != null)
+    //json.put(NAMESERVER_ID, nameServerID.toString());
+    if (getActiveNameServers() != null) {
       json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameServers()));
+    }
     return json;
   }
 
@@ -203,6 +202,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
 
   /**
    * LNS uses this method to set the ID it will use for bookkeeping about this request.
+   *
    * @param LNSRequestID
    */
   public void setLNSRequestID(int LNSRequestID) {
@@ -215,7 +215,7 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
   public String getName() {
     return name;
   }
-  
+
   /**
    * @return the recordKey
    */
@@ -240,7 +240,6 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
 //  public void setLocalNameServerID(int localNameServerID1) {
 //    localNameServerID = localNameServerID1;
 //  }
-
   /**
    * @return the ttl
    */
@@ -248,13 +247,13 @@ public class AddRecordPacket extends BasicPacketWithLnsAddress {
     return ttl;
   }
 
-  public NodeId<String> getNameServerID() {
-    return nameServerID;
-  }
-
-  public void setNameServerID(NodeId<String> nameServerID) {
-    this.nameServerID = nameServerID;
-  }
+//  public NodeId<String> getNameServerID() {
+//    return nameServerID;
+//  }
+//
+//  public void setNameServerID(NodeId<String> nameServerID) {
+//    this.nameServerID = nameServerID;
+//  }
 
   public NodeId<String> getSourceId() {
     return sourceId;

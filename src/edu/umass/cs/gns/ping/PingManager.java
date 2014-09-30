@@ -77,11 +77,11 @@ public class PingManager implements Shutdownable {
         try {
           if (!id.equals(nodeId)) {
             if (debug) {
-              GNS.getLogger().fine("Send from " + nodeId.get() + " to " + id);
+              GNS.getLogger().fine("Send from " + nodeId.toString() + " to " + id);
             }
             long rtt = pingClient.sendPing(id);
             if (debug) {
-              GNS.getLogger().fine("From " + nodeId.get() + " to " + id + " RTT = " + rtt);
+              GNS.getLogger().fine("From " + nodeId.toString() + " to " + id + " RTT = " + rtt);
             }
             pingTable.put(id, windowSlot, rtt);
             //pingTable[id][windowSlot] = rtt;
@@ -95,7 +95,7 @@ public class PingManager implements Shutdownable {
         }
       }
       long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
-      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId.get() + "\t");
+      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId.toString() + "\t");
       if (debug) {
         GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
       }
@@ -115,7 +115,7 @@ public class PingManager implements Shutdownable {
     int count = WINDOWSIZE; // tracks the number of good samples
     double total = 0;
     for (int j = 0; j < WINDOWSIZE; j++) {
-      //System.out.println("PINGTABLE: Node: " + node + " Time: " + j + " = " + pingTable.get(node, j));
+      //System.out.println("PINGTABLE: Node: " + node + " Time: " + j + " = " + pingTable.toString(node, j));
       if (pingTable.get(node, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
         total = total + pingTable.get(node, j);
       } else {

@@ -80,7 +80,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
         case UPDATE: // updates need coordination
           UpdatePacket update = new UpdatePacket(request);
     	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
-          update.setNameServerId((NodeId<String>)nodeID);
+          update.setNameServerID((NodeId<String>)nodeID);
           String paxosID = paxosManager.propose(update.getName(), update.toString());
           if (paxosID == null) {
             callHandleDecision = update.toJSONObject();

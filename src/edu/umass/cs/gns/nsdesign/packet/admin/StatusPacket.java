@@ -85,7 +85,7 @@ public class StatusPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(ID, id.get());
+    json.put(ID, id.toString());
     json.put(TIME, Format.formatDateTimeOnlyMilleUTC(time));
     json.put(JSON, jsonObject);
 

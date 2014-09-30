@@ -45,7 +45,7 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
+public class UpdatePacket extends BasicPacketWithSignatureInfoAndNSAndLNS {
 
   private final static String REQUESTID = "reqID";
   private final static String LocalNSREQUESTID = "LNSreqID";
@@ -54,7 +54,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
   private final static String NEWVALUE = "newvalue";
   private final static String OLDVALUE = "oldvalue";
   private final static String USERJSON = "userjson";
-  private final static String NAMESERVER_ID = "nsID";
+  //private final static String NAMESERVER_ID = "nsID";
   //private final static String LOCAL_NAMESERVER_ID = "lnsID";
   private final static String SOURCE_ID = "sourceId";
   private final static String TTL = "ttl";
@@ -117,10 +117,10 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    * The operation to perform *
    */
   private UpdateOperation operation;
-  /**
-   * Name server transmitting this packet *
-   */
-  private NodeId<String> nameServerId;
+//  /**
+//   * Name server transmitting this packet *
+//   */
+//  private NodeId<String> nameServerId;
   /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
@@ -240,7 +240,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
           // signature info
           String writer, String signature, String message) {
     // include the signature info
-    super(lnsAddress, writer, signature, message);
+    super(nameServerId, lnsAddress, writer, signature, message);
     this.type = Packet.PacketType.UPDATE;
     this.sourceId = sourceId;
     this.requestID = requestID;
@@ -253,7 +253,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
     this.argument = argument;
     this.userJSON = userJSON;
     //this.localNameServerId = localNameServerId;
-    this.nameServerId = nameServerId;
+    //this.nameServerId = nameServerId;
     this.ttl = ttl;
   }
 
@@ -265,7 +265,8 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    */
   public UpdatePacket(JSONObject json) throws JSONException {
     // include the address and signature info
-    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
+    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
             json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
     this.sourceId = new NodeId<String>(json.getString(SOURCE_ID));
@@ -280,7 +281,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
     this.userJSON = json.has(USERJSON) ? new ValuesMap(json.getJSONObject(USERJSON)) : null;
     this.oldValue = json.has(OLDVALUE) ? JSONUtils.JSONArrayToResultValue(json.getJSONArray(OLDVALUE)) : null;
     //this.localNameServerId = json.getInt(LOCAL_NAMESERVER_ID);
-    this.nameServerId = new NodeId<String>(json.getString(NAMESERVER_ID));
+    //this.nameServerId = new NodeId<String>(json.getString(NAMESERVER_ID));
     this.ttl = json.getInt(TTL);
   }
 
@@ -306,11 +307,10 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    */
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
-    super.addToJSONObject(json); // include the signature info
     Packet.putPacketType(json, getType());
-    super.addToJSONObject(json);
+    super.addToJSONObject(json); // include the signature info and other info
     json.put(REQUESTID, requestID);
-    json.put(SOURCE_ID, sourceId.get());
+    json.put(SOURCE_ID, sourceId.toString());
     json.put(LocalNSREQUESTID, LNSRequestID);
     json.put(NAME, name);
     if (recordKey != null) {
@@ -331,7 +331,7 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
     }
     json.put(OPERATION, operation.name());
     //json.put(LOCAL_NAMESERVER_ID, localNameServerId);
-    json.put(NAMESERVER_ID, nameServerId.get());
+    //json.put(NAMESERVER_ID, nameServerId.toString());
     json.put(TTL, ttl);
   }
 
@@ -395,27 +395,17 @@ public class UpdatePacket extends BasicPacketWithSignatureInfoAndLnsAddress {
   public ValuesMap getUserJSON() {
     return userJSON;
   }
-
+//
 //  /**
-//   * @return the localNameServerId
+//   * @return the nameServerId
 //   */
-//  public int getLocalNameServerId() {
-//    return localNameServerId;
+//  public NodeId<String> getNameServerID() {
+//    return nameServerId;
 //  }
 //
-//  public void setLocalNameServerId(int localNameServerId) {
-//    this.localNameServerId = localNameServerId;
+//  public void setNameServerId(NodeId<String> nameServerId) {
+//    this.nameServerId = nameServerId;
 //  }
-  /**
-   * @return the nameServerId
-   */
-  public NodeId<String> getNameServerId() {
-    return nameServerId;
-  }
-
-  public void setNameServerId(NodeId<String> nameServerId) {
-    this.nameServerId = nameServerId;
-  }
 
   public NodeId<String> getSourceId() {
     return sourceId;

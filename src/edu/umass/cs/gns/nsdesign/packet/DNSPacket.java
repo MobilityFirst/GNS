@@ -85,7 +85,7 @@ public class DNSPacket extends BasicPacketWithSignatureInfoAndLnsAddress {
    */
   private ValuesMap recordValue;
   /**
-   * Determines the format of the return value that we get back in the response packet.
+   * Determines the format of the return value that we toString back in the response packet.
    */
   ColumnFieldType returnFormat;
   /**
@@ -263,13 +263,13 @@ public class DNSPacket extends BasicPacketWithSignatureInfoAndLnsAddress {
       json.put(KEYS, keys);
     }
     json.put(GUID, guid);
-    json.put(SOURCE_ID, sourceId.get());
+    json.put(SOURCE_ID, sourceId.toString());
     if (returnFormat != null) {
       json.put(RETURN_FORMAT, returnFormat.name());
     }
     // this goes in with query (if it's not empty -1) in case it's an error response and we want to know the reponder
     if (!responder.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
-      json.put(RESPONDER, responder.get());
+      json.put(RESPONDER, responder.toString());
     }
     // response section
     if (includeReponseSection) {
