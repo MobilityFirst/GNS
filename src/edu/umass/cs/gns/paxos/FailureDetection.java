@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import org.json.JSONException;
@@ -15,7 +14,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class FailureDetection {
+public class FailureDetection<NodeIDType> {
 
   /**
    * Frequency of pinging a node
@@ -30,17 +29,17 @@ public class FailureDetection {
   /**
    * ID of this node.
    */
-  public NodeId<String> nodeID;
+  public NodeIDType nodeID;
 
   /**
    * Last time a message is received from this node.
    */
-  public ConcurrentHashMap<NodeId<String>, Long> nodeInfo = new ConcurrentHashMap<NodeId<String>, Long>();
+  public ConcurrentHashMap<NodeIDType, Long> nodeInfo = new ConcurrentHashMap<NodeIDType, Long>();
 
   /**
    * Current status (up or down) of all nodes.
    */
-  private ConcurrentHashMap<NodeId<String>, Boolean> nodeStatus = new ConcurrentHashMap<NodeId<String>, Boolean>();
+  private ConcurrentHashMap<NodeIDType, Boolean> nodeStatus = new ConcurrentHashMap<NodeIDType, Boolean>();
 
   /**
    * Current status (up or down) of all nodes.
@@ -65,7 +64,7 @@ public class FailureDetection {
    * @param nodeIDs set of nodes to monitor
    * @param nodeID  ID of this node
    */
-  public FailureDetection(Set<NodeId<String>> nodeIDs, NodeId<String> nodeID, ScheduledThreadPoolExecutor executorService, PaxosManager paxosManager,
+  public FailureDetection(Set<NodeIDType> nodeIDs, NodeIDType nodeID, ScheduledThreadPoolExecutor executorService, PaxosManager paxosManager,
                           int pingIntervalMillis, int timeoutIntervalMillis) {
     this.nodeID = nodeID;
 //     this.N =  N;
@@ -77,7 +76,7 @@ public class FailureDetection {
     assert this.pingIntervalMillis * 3 >= this.timeoutIntervalMillis;
     GNS.getLogger().info("Failure Detector: Ping Interval: " + this.pingIntervalMillis +
             " Timeout: " + this.timeoutIntervalMillis);
-    for (NodeId<String> remoteNodeID : nodeIDs) {
+    for (NodeIDType remoteNodeID : nodeIDs) {
       if (remoteNodeID.equals(nodeID)) {
         nodeStatus.put(nodeID, true);
         nodeInfo.put(nodeID, System.currentTimeMillis());
@@ -94,7 +93,7 @@ public class FailureDetection {
    *
    * @param monitoredNodeID
    */
-  void startNodeMonitoring(NodeId<String> monitoredNodeID) {
+  void startNodeMonitoring(NodeIDType monitoredNodeID) {
     lock.lock();
     try {
 
@@ -154,7 +153,7 @@ public class FailureDetection {
    * Update node info for the fdPacket.
    * //	 * @param fdPacket
    */
-  void updateNodeInfo(NodeId<String> responderNodeID) {
+  void updateNodeInfo(NodeIDType responderNodeID) {
 
     // this condition should never be true.
 //		if (fdPacket.senderNodeID != nodeID) return;
@@ -174,7 +173,7 @@ public class FailureDetection {
 
   }
 
-  void resetNodeInfo(NodeId<String> responderNodeID) {
+  void resetNodeInfo(NodeIDType responderNodeID) {
 
     // this condition should never be true.
 //		if (fdPacket.senderNodeID != nodeID) return;
@@ -198,7 +197,7 @@ public class FailureDetection {
    * @param nodeID ID of the node.
    * @return true if node = nodeID is up, false otherwise.
    */
-  boolean isNodeUp(NodeId<String> nodeID) {
+  boolean isNodeUp(NodeIDType nodeID) {
 //    return true;
     return nodeStatus.get(nodeID);
   }
@@ -269,7 +268,7 @@ public class FailureDetection {
    *
    * @param monitoredNode
    */
-  void notifyNodeOfStatusChange(NodeId<String> monitoredNode) {
+  void notifyNodeOfStatusChange(NodeIDType monitoredNode) {
     FailureDetectionPacket fdPacket = null;
     lock.lock();
     try {
@@ -313,7 +312,7 @@ public class FailureDetection {
 }
 
 
-class FailureDetectionTask extends TimerTask {
+class FailureDetectionTask<NodeIDType> extends TimerTask {
 
   /**
    * JSONObject  is a FailureDetectionPacket object.
@@ -323,7 +322,7 @@ class FailureDetectionTask extends TimerTask {
   /**
    * Send failure detection packet to the destination node ID.
    */
-  NodeId<String> destNodeID;
+  NodeIDType destNodeID;
 
   FailureDetection failureDetection;
 
@@ -333,7 +332,7 @@ class FailureDetectionTask extends TimerTask {
    * @param destNodeID which node to monitor
    * @param json       failure detection packet to send
    */
-  public FailureDetectionTask(NodeId<String> destNodeID, JSONObject json, FailureDetection failureDetection) {
+  public FailureDetectionTask(NodeIDType destNodeID, JSONObject json, FailureDetection failureDetection) {
     this.destNodeID = destNodeID;
     this.json = json;
     this.failureDetection = failureDetection;

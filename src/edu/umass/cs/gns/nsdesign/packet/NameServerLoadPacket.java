@@ -1,17 +1,16 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class NameServerLoadPacket extends BasicPacket {
+public class NameServerLoadPacket<NodeIDType> extends BasicPacket {
 
-  private NodeId<String> reportingNodeID;
-  private NodeId<String> requestingNodeID;
+  private final NodeIDType reportingNodeID;
+  private final NodeIDType requestingNodeID;
   private double loadValue;
 
-  public NameServerLoadPacket(NodeId<String> reportingNodeID, NodeId<String> requestingNodeID, double loadValue) {
+  public NameServerLoadPacket(NodeIDType reportingNodeID, NodeIDType requestingNodeID, double loadValue) {
     this.type = PacketType.NAME_SERVER_LOAD;
     this.reportingNodeID = reportingNodeID;
     this.loadValue = loadValue;
@@ -20,9 +19,9 @@ public class NameServerLoadPacket extends BasicPacket {
 
   public NameServerLoadPacket(JSONObject json) throws JSONException {
     this.type = PacketType.NAME_SERVER_LOAD;
-    this.reportingNodeID = new NodeId<String>(json.getString("reportingNodeID"));
+    this.reportingNodeID = (NodeIDType)json.get("reportingNodeID");
     this.loadValue = json.getDouble("lV");
-    this.requestingNodeID = new NodeId<String>(json.getString("requestingNodeID"));
+    this.requestingNodeID = (NodeIDType)json.get("requestingNodeID");
   }
 
   @Override
@@ -38,11 +37,11 @@ public class NameServerLoadPacket extends BasicPacket {
   /**
    * @return the reportingNodeID
    */
-  public NodeId<String> getReportingNodeID() {
+  public NodeIDType getReportingNodeID() {
     return reportingNodeID;
   }
 
-  public NodeId<String> getRequestingNodeID() {
+  public NodeIDType getRequestingNodeID() {
     return requestingNodeID;
   }
   /**

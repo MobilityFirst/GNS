@@ -3,9 +3,7 @@ package edu.umass.cs.gns.test;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -16,8 +14,9 @@ import java.util.concurrent.TimeUnit;
 /**
  *
  * Created by abhigyan on 5/21/14.
+ * @param <NodeIDType>
  */
-public class NewRequestGenerator {
+public class NewRequestGenerator<NodeIDType> {
 
   private static final int PERIOD = 10000;
 
@@ -90,9 +89,9 @@ public class NewRequestGenerator {
             String[] tokens = line.trim().split("\\s+");
             if (tokens.length > 2) {
               // if an initial set of active replicas for this name is given in trace, then use those replicas
-              Set<NodeId<String>> activeReplicas = new HashSet<NodeId<String>>();
+              Set activeReplicas = new HashSet();
               for (int i = 2; i < tokens.length; i++) {
-                activeReplicas.add(new NodeId<String>(tokens[i]));
+                activeReplicas.add(tokens[i]);
               }
               GNS.getLogger().fine("Name " + r.name + " Initial active replicas: " + activeReplicas);
               t = new GenerateAddRequest(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),

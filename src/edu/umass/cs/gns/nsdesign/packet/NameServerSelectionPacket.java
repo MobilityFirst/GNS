@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,9 +24,10 @@ import org.json.JSONObject;
  *
  *
  * @author Hardeep Uppal, Abhigyan
+ * @param <NodeIDType>
  ***********************************************************
  */
-public class NameServerSelectionPacket extends BasicPacketWithNSAndLNS {
+public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> {
 
   private final static String NAME = "name";
   private final static String VOTE = "vote";
@@ -38,7 +38,7 @@ public class NameServerSelectionPacket extends BasicPacketWithNSAndLNS {
 //  /** Local name server transmitting this packet **/
 //  private int localnameserverID;
 //  /** Closest name server id **/
-//  private NodeId<String> nameserverID;
+//  private NodeIDType nameserverID;
   /**
    * Name (service/host/domain or device name) *
    */
@@ -56,7 +56,6 @@ public class NameServerSelectionPacket extends BasicPacketWithNSAndLNS {
   /**
    * Unique ID for this vote message *
    */
-
   /**
    * ***********************************************************
    * Constructs a new NSLocationPacket with the given parameters
@@ -67,11 +66,10 @@ public class NameServerSelectionPacket extends BasicPacketWithNSAndLNS {
    * @param nameserverID ID of a name server closest to the
    * transmitting local name server
    * @param lnsAddress
-   * @param uniqueID
    ***********************************************************
    */
   public NameServerSelectionPacket(String name,
-          int vote, int update, NodeId<String> nameserverID, InetSocketAddress lnsAddress) {
+          int vote, int update, NodeIDType nameserverID, InetSocketAddress lnsAddress) {
     super(nameserverID, lnsAddress);
     this.type = Packet.PacketType.NAMESERVER_SELECTION;
     this.name = name;
@@ -90,13 +88,13 @@ public class NameServerSelectionPacket extends BasicPacketWithNSAndLNS {
    ***********************************************************
    */
   public NameServerSelectionPacket(JSONObject json) throws JSONException {
-    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+    super((NodeIDType) json.get(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);
     this.vote = json.getInt(VOTE);
     this.update = json.getInt(UPDATE);
-    //this.nameserverID = new NodeId<String>(json.getString(NAMESERVER_ID));
+    //this.nameserverID = new NodeIDType(json.getString(NAMESERVER_ID));
     //this.localnameserverID = json.getInt(LOCAL_NAMESERVER_ID);
   }
 
@@ -130,10 +128,9 @@ public class NameServerSelectionPacket extends BasicPacketWithNSAndLNS {
   /**
    * @return the nameserverID
    */
-//  public NodeId<String> getNameServerID() {
+//  public NodeIDType getNameServerID() {
 //    return nameserverID;
 //  }
-
   /**
    * @return the name
    */

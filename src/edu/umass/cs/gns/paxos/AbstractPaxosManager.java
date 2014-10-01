@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONObject;
 
 import java.util.Set;

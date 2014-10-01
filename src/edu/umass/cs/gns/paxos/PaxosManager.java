@@ -9,7 +9,6 @@ import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.*;
 import org.json.JSONException;
@@ -27,14 +26,14 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  *
  */
-public class PaxosManager extends AbstractPaxosManager {
+public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
   static final String PAXOS_ID = "PXS";
 
   /**
    * nodeID of this node.
    */
-  NodeId<String> nodeID;
+  NodeIDType nodeID;
 
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
@@ -109,7 +108,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
   /********************BEGIN: public methods for paxos manager********************/
 
-  public PaxosManager(NodeId<String> nodeID, InterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport nioServer,
+  public PaxosManager(NodeIDType nodeID, InterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport nioServer,
                               Replicable outputHandler, PaxosConfig paxosConfig) {
 
     this.executorService = new ScheduledThreadPoolExecutor(2);
@@ -147,14 +146,14 @@ public class PaxosManager extends AbstractPaxosManager {
    * @param testConfigFile config file used for tests
    * @param nodeID ID of this node
    */
-  public PaxosManager(String testConfigFile, NodeId<String> nodeID) {
+  public PaxosManager(String testConfigFile, NodeIDType nodeID) {
 
 //    debug = true;
     TestConfig testConfig1 = new TestConfig(testConfigFile);
 //    this.N = testConfig1.numPaxosReplicas;
-    Set<NodeId<String>> nodeIDs = new HashSet<NodeId<String>>();
+    Set<NodeIDType> nodeIDs = new HashSet<NodeIDType>();
     for (int i = 0; i < testConfig1.numPaxosReplicas; i++)
-      nodeIDs.add(new NodeId<String>(i));
+      nodeIDs.add((NodeIDType) Integer.toString(i));
     this.nodeID = nodeID;
 
     this.nioServer =  initTransport(testConfig1.numPaxosReplicas + 1,  testConfig1.startingPort);
@@ -184,7 +183,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 
   @Override
-  public Set<NodeId<String>> getPaxosNodeIDs(String paxosIDNoVersion) {
+  public Set<NodeIDType> getPaxosNodeIDs(String paxosIDNoVersion) {
     PaxosReplicaInterface replica = paxosInstances.get(paxosIDNoVersion);
     if (replica != null) {
       return replica.getNodeIDs();
@@ -194,7 +193,7 @@ public class PaxosManager extends AbstractPaxosManager {
 
 
   /*** Adds a new Paxos instance to the set of actives. */
-  public boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<NodeId<String>> nodeIDs, String initialState) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, int version, Set<NodeIDType> nodeIDs, String initialState) {
 
     String paxosID = getPaxosIDWithVersionNumber(paxosIDNoVersion, version);
 
@@ -261,7 +260,7 @@ public class PaxosManager extends AbstractPaxosManager {
             RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
   }
 
-  PaxosReplicaInterface createPaxosReplicaObject(String paxosID, NodeId<String> nodeID, Set<NodeId<String>> nodeIDs1) {
+  PaxosReplicaInterface createPaxosReplicaObject(String paxosID, NodeIDType nodeID, Set<NodeIDType> nodeIDs1) {
     return new PaxosReplica(paxosID, nodeID, nodeIDs1, this);
   }
 
@@ -304,7 +303,7 @@ public class PaxosManager extends AbstractPaxosManager {
    * @param nodeID  ID of node to be tested
    * @return <code>true</code> if failure detector tells node is up
    */
-  boolean isNodeUp(NodeId<String> nodeID) {
+  boolean isNodeUp(NodeIDType nodeID) {
     return failureDetection == null || failureDetection.isNodeUp(nodeID);
   }
 
@@ -412,7 +411,7 @@ public class PaxosManager extends AbstractPaxosManager {
     }
   }
 
-  void sendMessage(NodeId<String> destID, JSONObject json, String paxosID) {
+  void sendMessage(NodeIDType destID, JSONObject json, String paxosID) {
     try {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destID, json);
@@ -421,7 +420,7 @@ public class PaxosManager extends AbstractPaxosManager {
     }
   }
 
-  void sendMessage(Set<NodeId<String>> destIDs, JSONObject json, String paxosID) {
+  void sendMessage(Set<NodeIDType> destIDs, JSONObject json, String paxosID) {
     try {
       json.put(PaxosManager.PAXOS_ID, paxosID);
       sendMessage(destIDs, json);
@@ -505,9 +504,9 @@ public class PaxosManager extends AbstractPaxosManager {
       return;
     }
     // create a default paxos instance for testing.
-    Set<NodeId<String>> x = new HashSet<NodeId<String>>();
+    Set x = new HashSet();
     for (int i = 0;  i < N; i++)
-      x.add(new NodeId<String>(i));
+      x.add(Integer.toString(i));
     createPaxosInstance(testPaxosID, 0, x, clientRequestHandler.getState(testPaxosID));
   }
 
@@ -555,7 +554,7 @@ public class PaxosManager extends AbstractPaxosManager {
    * @param destID send message to this node
    * @param json  json object to send
    */
-  private void sendMessage(NodeId<String> destID, JSONObject json) {
+  private void sendMessage(NodeIDType destID, JSONObject json) {
     try
     {
       if (!test) {
@@ -572,13 +571,13 @@ public class PaxosManager extends AbstractPaxosManager {
     }
   }
 
-  private  void sendMessage(Set<NodeId<String>> destIDs, JSONObject json) {
+  private  void sendMessage(Set<NodeIDType> destIDs, JSONObject json) {
     try {
       if (!test) {
         Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
       }
       if (initialized) {
-        for (NodeId<String> x: destIDs)
+        for (NodeIDType x: destIDs)
           nioServer.sendToID(x, json);
       }
     } catch (IOException e) {
@@ -665,7 +664,8 @@ class ResendPendingMessagesTask extends TimerTask{
     try{
       //
       synchronized (paxosManager.proposalStates){
-        for (ProposalStateAtCoordinator propState: paxosManager.proposalStates) {
+        for (Object object: paxosManager.proposalStates) {
+          ProposalStateAtCoordinator propState = (ProposalStateAtCoordinator) object;
           if (propState.getResendCount() >= PaxosManager.MAX_RESENDS) {
             removeList.add(propState);
           }

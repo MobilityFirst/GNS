@@ -1,8 +1,6 @@
 package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
-import edu.umass.cs.gns.util.Format;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -16,7 +14,7 @@ import javax.swing.JProgressBar;
  */
 public class StatusPane extends JPanel {
 
-  private NodeId<String> id;
+  private Object id;
   private JLabel idLabel;
   private JLabel ipAddressLabel;
   private JLabel stateLabel;
@@ -30,7 +28,7 @@ public class StatusPane extends JPanel {
   /**
    * Creates new form StatusPane
    */
-  public StatusPane(NodeId<String> id) {
+  public StatusPane(Object id) {
     this.id = id;
     initComponents();
   }
@@ -94,7 +92,7 @@ public class StatusPane extends JPanel {
     add(idLabel);
     add(ipAddressLabel);
     if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
-      StatusEntry entry = StatusModel.getInstance().getEntry(id);
+      StatusEntry entry = StatusModel.getInstance().getEntry((String) id);
       if (entry.getState() != StatusEntry.State.RUNNING && entry.getState() != StatusEntry.State.TERMINATED
               && entry.getState() != StatusEntry.State.ERROR) {
         add(progressBar);
@@ -114,7 +112,7 @@ public class StatusPane extends JPanel {
   @Override
   public void paintComponent(Graphics g) {
     if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
-      StatusEntry entry = StatusModel.getInstance().getEntry(id);
+      StatusEntry entry = StatusModel.getInstance().getEntry((String) id);
       idLabel.setText(id.toString());
       stateLabel.setText(entry.getState().name());
       statusLabel.setText(entry.getStatusString());

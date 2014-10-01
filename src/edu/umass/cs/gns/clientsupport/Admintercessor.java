@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 
 import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
@@ -56,16 +55,16 @@ public class Admintercessor {
   /**
    * This is where dump response records are collected while we're waiting for all them to come in.
    */
-  private static ConcurrentMap<Integer, Map<NodeId<String>, TreeSet<NameRecord>>> dumpStorage;
+  private static ConcurrentMap<Integer, Map<String, TreeSet<NameRecord>>> dumpStorage;
   /**
    * This is where the final dump response results are put once we see the sentinel packet.
    */
-  private static ConcurrentMap<Integer, Map<NodeId<String>, TreeSet<NameRecord>>> dumpResult;
+  private static ConcurrentMap<Integer, Map<String, TreeSet<NameRecord>>> dumpResult;
 
   static {
     randomID = new Random();
-    dumpStorage = new ConcurrentHashMap<Integer, Map<NodeId<String>, TreeSet<NameRecord>>>(10, 0.75f, 3);
-    dumpResult = new ConcurrentHashMap<Integer, Map<NodeId<String>, TreeSet<NameRecord>>>(10, 0.75f, 3);
+    dumpStorage = new ConcurrentHashMap<Integer, Map<String, TreeSet<NameRecord>>>(10, 0.75f, 3);
+    dumpResult = new ConcurrentHashMap<Integer, Map<String, TreeSet<NameRecord>>>(10, 0.75f, 3);
     adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
   }
 
@@ -194,7 +193,7 @@ public class Admintercessor {
    * @return the ping value between those nodes
    */
   public static String sendPingValue(int node1, int node2) {
-    return sendPingValue(new NodeId<String>(node1), new NodeId<String>(node2));
+    return sendPingValue(Integer.toString(node1), Integer.toString(node1));
   }
 
   /**
@@ -205,7 +204,7 @@ public class Admintercessor {
    * @param node2
    * @return
    */
-  public static String sendPingValue(NodeId<String> node1, NodeId<String> node2) {
+  public static String sendPingValue(String node1, String node2) {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(), node2.toString()).toJSONObject());
@@ -312,7 +311,7 @@ public class Admintercessor {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
-    Map<NodeId<String>, TreeSet<NameRecord>> result = dumpResult.get(id);
+    Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
       return new CommandResponse(formatDumpRecords(result));
@@ -330,7 +329,7 @@ public class Admintercessor {
           dumpMonitor.wait(timeoutExpiredMs - System.currentTimeMillis());
           if (System.currentTimeMillis() >= timeoutExpiredMs) {
             // we timed out... only got partial results{
-            Map<NodeId<String>, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
+            Map<String, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
             if (recordsMap != null) { // can be null if we timed out before getting any responses
               dumpResult.put(id, recordsMap);
               dumpStorage.remove(id);
@@ -346,19 +345,19 @@ public class Admintercessor {
     }
   }
 
-  private static String formatDumpRecords(Map<NodeId<String>, TreeSet<NameRecord>> recordsMap) {
+  private static String formatDumpRecords(Map<String, TreeSet<NameRecord>> recordsMap) {
     // now process all the records we received
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<NodeId<String>> missingIDs = new HashSet<NodeId<String>>(LocalNameServer.getGnsNodeConfig().getNodeIDs());
+    Set missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getNodeIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + Util.setOfNodeIdToString(missingIDs));
       result.append(LINE_SEPARATOR);
     }
     // process all the entries into a nice string
-    for (Map.Entry<NodeId<String>, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
+    for (Map.Entry<String, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
       result.append("Nameserver: " + entry.getKey().toString() +
               " (" + LocalNameServer.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
@@ -399,14 +398,14 @@ public class Admintercessor {
             DumpRequestPacket dumpResponse = new DumpRequestPacket(json);
             int id = dumpResponse.getId();
             // grab or make a new recordsMap
-            Map<NodeId<String>, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
+            Map<String, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
             if (recordsMap == null) {
-              recordsMap = new TreeMap<NodeId<String>, TreeSet<NameRecord>>();
+              recordsMap = new TreeMap<String, TreeSet<NameRecord>>();
               dumpStorage.put(id, recordsMap);
             }
             // pull the records out of the dump response and put them in dumpStorage
             JSONArray jsonArray = dumpResponse.getJsonArray();
-            NodeId<String> serverID = dumpResponse.getPrimaryNameServer();
+            String serverID = (String) dumpResponse.getPrimaryNameServer();
             TreeSet<NameRecord> records = new TreeSet<NameRecord>();
             for (int i = 0; i < jsonArray.length(); i++) {
               records.add(new NameRecord(null, jsonArray.getJSONObject(i)));
@@ -449,7 +448,7 @@ public class Admintercessor {
       return null;
     }
     waitForDumpResponse(id);
-    Map<NodeId<String>, TreeSet<NameRecord>> result = dumpResult.get(id);
+    Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
 
     if (result != null) {

@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
@@ -24,7 +23,7 @@ import java.util.Set;
  *
  * @author Abhigyan
  */
-public class RequestActivesPacket extends BasicPacketWithNSAndLNS {
+public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
 
   public static final String NAME = "name";
   public static final String ACTIVES = "actives";
@@ -39,20 +38,20 @@ public class RequestActivesPacket extends BasicPacketWithNSAndLNS {
 //  /**
 //   * Name server that received request from LNS.
 //   */
-//  private final NodeId<String> nsID;
+//  private final NodeIDType nsID;
 
   /**
    * Active name servers for the name. This field is populated when name server
    * sends a reply to a local name server.
    */
-  private Set<NodeId<String>> activeNameServers = null;
+  private Set<NodeIDType> activeNameServers = null;
 
   /**
    * Unique request ID assigned by local name server.
    */
   private final int lnsRequestID;
 
-  public RequestActivesPacket(String name, InetSocketAddress lnsAddress, int lnsRequestID, NodeId<String> nameServerID) {
+  public RequestActivesPacket(String name, InetSocketAddress lnsAddress, int lnsRequestID, NodeIDType nameServerID) {
     super(nameServerID, lnsAddress);
     this.name = name;
     this.type = PacketType.REQUEST_ACTIVES;
@@ -61,13 +60,13 @@ public class RequestActivesPacket extends BasicPacketWithNSAndLNS {
   }
 
   public RequestActivesPacket(JSONObject json) throws JSONException {
-    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+    super((NodeIDType)json.get(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.name = json.getString(NAME);
     this.activeNameServers = json.has(ACTIVES) ? Util.stringToSetOfNodeId(json.getString(ACTIVES)) : null;
     this.type = PacketType.REQUEST_ACTIVES;
     this.lnsRequestID = json.getInt(LNS_REQ_ID);
-    //this.nsID = new NodeId<String>(json.getString(NSID));
+    //this.nsID = new NodeIDType(json.getString(NSID));
   }
 
   @Override
@@ -84,7 +83,7 @@ public class RequestActivesPacket extends BasicPacketWithNSAndLNS {
     return json;
   }
 
-  public void setActiveNameServers(Set<NodeId<String>> activeNameServers) {
+  public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
     this.activeNameServers = activeNameServers;
   }
 
@@ -92,7 +91,7 @@ public class RequestActivesPacket extends BasicPacketWithNSAndLNS {
     return name;
   }
 
-  public Set<NodeId<String>> getActiveNameServers() {
+  public Set<NodeIDType> getActiveNameServers() {
     return activeNameServers;
   }
 
@@ -106,7 +105,7 @@ public class RequestActivesPacket extends BasicPacketWithNSAndLNS {
     return lnsRequestID;
   }
 
-//  public NodeId<String> getNameServerID() {
+//  public NodeIDType getNameServerID() {
 //    return nsID;
 //  }
 }

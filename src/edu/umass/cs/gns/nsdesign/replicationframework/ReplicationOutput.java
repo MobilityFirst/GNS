@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.Set;
 
 /**
@@ -11,29 +10,30 @@ import java.util.Set;
  * locality.
  *
  * Created by abhigyan on 4/30/14.
+ * @param <NodeIDType>
  */
-public class ReplicationOutput {
+public class ReplicationOutput<NodeIDType> {
 
   // all replicas for a name
-  private Set<NodeId<String>> replicas;
+  private Set<NodeIDType> replicas;
 
   // replica chosen based on demand locality
-  private Set<NodeId<String>> localityBasedReplicas;
+  private Set<NodeIDType> localityBasedReplicas;
 
-  public ReplicationOutput(Set<NodeId<String>> replicas) {
+  public ReplicationOutput(Set<NodeIDType> replicas) {
     this(replicas, null);
   }
-  public ReplicationOutput(Set<NodeId<String>> replicas, Set<NodeId<String>> localityBasedReplicas) {
+  public ReplicationOutput(Set<NodeIDType> replicas, Set<NodeIDType> localityBasedReplicas) {
 
     this.replicas = replicas;
     this.localityBasedReplicas = localityBasedReplicas;
   }
 
-  public Set<NodeId<String>> getReplicas() {
+  public Set<NodeIDType> getReplicas() {
     return replicas;
   }
 
-  public Set<NodeId<String>> getLocalityBasedReplicas() {
+  public Set<NodeIDType> getLocalityBasedReplicas() {
     return localityBasedReplicas;
   }
 }

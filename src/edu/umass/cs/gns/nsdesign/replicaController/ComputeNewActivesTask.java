@@ -6,7 +6,6 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
@@ -45,7 +44,7 @@ import java.util.TimerTask;
  *
  * @author abhigyan
  */
-public class ComputeNewActivesTask extends TimerTask {
+public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
 
   private static ArrayList<ColumnField> computeNewActivesFields = new ArrayList<ColumnField>();
   static {
@@ -106,7 +105,7 @@ public class ComputeNewActivesTask extends TimerTask {
           continue;
         }
         GNS.getLogger().fine("I will select new actives for name = " + rcRecord.getName());
-        Set<NodeId<String>> newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
+        Set<NodeIDType> newActiveNameServers = getNewActiveNameServers(rcRecord, rcRecord.getActiveNameservers(), replicationRound);
         if (newActiveNameServers.size() < Config.minReplica) {
           GNS.getLogger().warning("No group change as less than min replicas chosen: name: " + rcRecord.getName() +
                   " NewActives: " + newActiveNameServers + " OldActives: " + rcRecord.getActiveNameservers());
@@ -152,11 +151,11 @@ public class ComputeNewActivesTask extends TimerTask {
   /**
    * Returns true if the set of new actives is identical to the set of old actives. False otherwise.
    */
-  private boolean isActiveSetModified(Set<NodeId<String>> oldActives, Set<NodeId<String>> newActives) {
+  private boolean isActiveSetModified(Set<NodeIDType> oldActives, Set<NodeIDType> newActives) {
     if (oldActives.size() != newActives.size()) {
       return true;
     }
-    for (NodeId<String> x : oldActives) {
+    for (NodeIDType x : oldActives) {
       if (!newActives.contains(x)) {
         return true;
       }
@@ -171,10 +170,10 @@ public class ComputeNewActivesTask extends TimerTask {
    * @param count number of times group changes have been done
    * @return set of active replicas for this name
    */
-  private Set<NodeId<String>> getNewActiveNameServers(ReplicaControllerRecord rcRecord, Set<NodeId<String>> oldActiveNameServers,
+  private Set<NodeIDType> getNewActiveNameServers(ReplicaControllerRecord rcRecord, Set<NodeIDType> oldActiveNameServers,
                                                int count) throws FieldNotFoundException, FailedDBOperationException {
 
-    Set<NodeId<String>> newActiveNameServers;
+    Set<NodeIDType> newActiveNameServers;
 
     int numReplica = numberOfReplica(rcRecord);
     if (numReplica == 0) {

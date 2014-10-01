@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.Format;
@@ -15,12 +14,12 @@ import java.util.Date;
  * 
  * @author Westy
  */
-public class StatusPacket extends BasicPacket {
+public class StatusPacket<NodeIDType> extends BasicPacket {
 
   public final static String ID = "id";
   public final static String JSON = "json";
   public final static String TIME = "time";
-  private NodeId<String> id;
+  private NodeIDType id;
   private Date time;
   /** JOSNObject where the results are kept **/
   private JSONObject jsonObject;
@@ -30,7 +29,7 @@ public class StatusPacket extends BasicPacket {
    * @param id
    * @param jsonObject
    */
-  public StatusPacket(NodeId<String> id, JSONObject jsonObject) {
+  public StatusPacket(NodeIDType id, JSONObject jsonObject) {
     this.type = Packet.PacketType.STATUS;
     this.id = id;
     this.time = new Date();
@@ -42,7 +41,7 @@ public class StatusPacket extends BasicPacket {
    *
    * @param id
    */
-  public StatusPacket(NodeId<String> id) {
+  public StatusPacket(NodeIDType id) {
     this(id, new JSONObject());
   }
 
@@ -59,12 +58,12 @@ public class StatusPacket extends BasicPacket {
     }
 
     this.type = Packet.getPacketType(json);
-    this.id = new NodeId<String>(json.getString(ID));
+    this.id = (NodeIDType) json.get(ID);
     this.time = Format.parseDateTimeOnlyMilleUTC(json.getString(TIME));
     this.jsonObject = json.getJSONObject(JSON);
   }
 
-  public NodeId<String> getId() {
+  public NodeIDType getId() {
     return id;
   }
 

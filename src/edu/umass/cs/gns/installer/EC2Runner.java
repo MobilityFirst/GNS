@@ -13,7 +13,6 @@ import edu.umass.cs.aws.support.InstanceStateRecord;
 import edu.umass.cs.aws.support.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.statusdisplay.MapFrame;
 import edu.umass.cs.gns.statusdisplay.StatusEntry;
 import edu.umass.cs.gns.statusdisplay.StatusFrame;
@@ -66,10 +65,10 @@ public class EC2Runner {
   /**
    * Stores information about instances that have started.
    */
-  private static ConcurrentHashMap<NodeId<String>, HostInfo> hostTable = new ConcurrentHashMap<NodeId<String>, HostInfo>();
+  private static ConcurrentHashMap<String, HostInfo> hostTable = new ConcurrentHashMap<String, HostInfo>();
   //
   private static final int STARTINGNODENUMBER = 0;
-  private static ConcurrentHashMap<NodeId<String>, NodeId<String>> hostsThatDidNotStart = new ConcurrentHashMap<NodeId<String>, NodeId<String>>();
+  private static ConcurrentHashMap<String, String> hostsThatDidNotStart = new ConcurrentHashMap<String, String>();
   private static DataStoreType dataStoreType = DEFAULT_DATA_STORE_TYPE;
   private static AMIRecordType amiRecordType = DEFAULT_AMI_RECORD_TYPE;
   private static String ec2UserName = DEFAULT_EC2_USERNAME;
@@ -106,7 +105,7 @@ public class EC2Runner {
       for (EC2RegionSpec regionSpec : regionsList) {
         int i;
         for (i = 0; i < regionSpec.getCount(); i++) {
-          threads.add(new EC2RunnerThread(runSetName, regionSpec.getRegion(), new  NodeId<String>(cnt), i == 0 ? regionSpec.getIp() : null, timeout));
+          threads.add(new EC2RunnerThread(runSetName, regionSpec.getRegion(), Integer.toString(cnt), i == 0 ? regionSpec.getIp() : null, timeout));
           cnt = cnt + 1;
         }
       }
@@ -204,7 +203,7 @@ public class EC2Runner {
    * @param elasticIP
    * @param timeout
    */
-  public static void initAndUpdateEC2Host(RegionRecord region, String runSetName, NodeId<String> id, String elasticIP, int timeout) {
+  public static void initAndUpdateEC2Host(RegionRecord region, String runSetName, String id, String elasticIP, int timeout) {
     String installScript;
     AMIRecord ami = AMIRecord.getAMI(amiRecordType, region);
     if (ami == null) {
@@ -295,11 +294,11 @@ public class EC2Runner {
             String idString = getTagValue(instance, "id");
             if (name.equals(getTagValue(instance, "runset"))) {
               if (idString != null) {
-                StatusModel.getInstance().queueUpdate(new NodeId<String>(idString), "Terminating");
+                StatusModel.getInstance().queueUpdate(new String(idString), "Terminating");
               }
               AWSEC2.terminateInstance(ec2, instance.getInstanceId());
               if (idString != null) {
-                StatusModel.getInstance().queueUpdate(new NodeId<String>(idString), StatusEntry.State.TERMINATED, "");
+                StatusModel.getInstance().queueUpdate(new String(idString), StatusEntry.State.TERMINATED, "");
               }
             }
           }
@@ -331,7 +330,7 @@ public class EC2Runner {
         if (!instance.getState().getName().equals(InstanceStateRecord.TERMINATED.getName())) {
           String idString = getTagValue(instance, "id");
           if (idString != null && name.equals(getTagValue(instance, "runset"))) {
-            NodeId<String> id = new NodeId<String>(idString);
+            String id = new String(idString);
             String hostname = instance.getPublicDnsName();
             String ip = getHostIPSafe(hostname);
             // and take a guess at the location (lat, long) of this host
@@ -493,11 +492,11 @@ public class EC2Runner {
 
     String runSetName;
     RegionRecord region;
-    NodeId<String> id;
+    String id;
     String ip;
     int timeout;
 
-    public EC2RunnerThread(String runSetName, RegionRecord region,  NodeId<String> id, String ip, int timeout) {
+    public EC2RunnerThread(String runSetName, RegionRecord region,  String id, String ip, int timeout) {
       super("Install Start " + id);
       this.runSetName = runSetName;
       this.region = region;

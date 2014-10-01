@@ -11,7 +11,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
@@ -124,7 +123,7 @@ public class Select {
     }
     // If it's not a group lookup or is but enough time has passed we do the usual thing
     // and send the request out to all the servers. We'll toString a response sent on the flipside.
-    Set<NodeId<String>> serverIds = replica.getGNSNodeConfig().getNodeIDs();
+    Set<Object> serverIds = replica.getGNSNodeConfig().getNodeIDs();
     // store the info for later
     int queryId = addQueryInfo(serverIds, packet.getSelectOperation(), packet.getGroupBehavior(),
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
@@ -139,7 +138,7 @@ public class Select {
       GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " sending select " + outgoingJSON + " to " + Util.setOfNodeIdToString(serverIds));
     }
     try {
-      for (NodeId<String> serverId : serverIds) {
+      for (Object serverId : serverIds) {
         replica.getNioServer().sendToID(serverId, outgoingJSON); // send to myself too
       }
     } catch (IOException e) {
@@ -263,7 +262,7 @@ public class Select {
     return result;
   }
 
-  private static int addQueryInfo(Set<NodeId<String>> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+  private static int addQueryInfo(Set<Object> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     int id;
     do {
       id = randomID.nextInt();

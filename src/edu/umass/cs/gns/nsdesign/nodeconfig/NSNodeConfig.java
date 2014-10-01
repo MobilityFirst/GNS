@@ -1,9 +1,5 @@
 package edu.umass.cs.gns.nsdesign.nodeconfig;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-
-import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetAddress;
 import java.util.Set;
 
@@ -14,8 +10,9 @@ import java.util.Set;
  * replica-coordination does not try to detect failure of local name servers.
  *
  * Created by abhigyan on 3/30/14.
+ * @param <NodeIDType>
  */
-public class NSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
+public class NSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType> {
 
   GNSNodeConfig gnsNodeConfig;
 
@@ -24,22 +21,22 @@ public class NSNodeConfig implements InterfaceNodeConfig<NodeId<String>> {
   }
 
   @Override
-  public boolean nodeExists(NodeId<String> nodeId) {
+  public boolean nodeExists(NodeIDType nodeId) {
     return getNodeIDs().contains(nodeId);
   }
 
   @Override
-  public Set<NodeId<String>> getNodeIDs() {
+  public Set<NodeIDType> getNodeIDs() {
     return gnsNodeConfig.getNodeIDs();
   }
 
   @Override
-  public InetAddress getNodeAddress(NodeId<String> ID) {
+  public InetAddress getNodeAddress(NodeIDType ID) {
     return gnsNodeConfig.getNodeAddress(ID);
   }
 
   @Override
-  public int getNodePort(NodeId<String> ID) {
+  public int getNodePort(NodeIDType ID) {
     return gnsNodeConfig.getNSTcpPort(ID);
   }
 

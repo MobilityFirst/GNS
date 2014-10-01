@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -26,16 +25,17 @@ import java.util.TimerTask;
  * <p>
  *
  *
+ * @param <NodeIDType>
  * @see edu.umass.cs.gns.nsdesign.replicaController.StartActiveSetTask
  * @see edu.umass.cs.gns.nsdesign.replicaController.ReplicaController
  * @author abhigyan
  */
-public class StopActiveSetTask extends TimerTask {
+public class StopActiveSetTask<NodeIDType> extends TimerTask {
 
 
   private final String name;
-  private final Set<NodeId<String>> oldActiveNameServers;
-  private final Set<NodeId<String>> oldActivesQueried;
+  private final Set<NodeIDType> oldActiveNameServers;
+  private final Set<NodeIDType> oldActivesQueried;
   private final int oldVersion;
   private final int requestID;
   private final PacketType packetType;
@@ -51,11 +51,11 @@ public class StopActiveSetTask extends TimerTask {
    * @param clientPacket
    * @param rc
    */
-  public StopActiveSetTask(String name, Set<NodeId<String>> oldActiveNameServers, int oldVersion, PacketType packetType,
+  public StopActiveSetTask(String name, Set<NodeIDType> oldActiveNameServers, int oldVersion, PacketType packetType,
                            BasicPacket clientPacket, ReplicaController rc) {
     this.name = name;
     this.oldActiveNameServers = oldActiveNameServers;
-    this.oldActivesQueried = new HashSet<NodeId<String>>();
+    this.oldActivesQueried = new HashSet<NodeIDType>();
     this.oldVersion = oldVersion;
     this.requestID = rc.getOngoingStopActiveRequests().put(clientPacket);
     this.packetType = packetType;
@@ -85,7 +85,7 @@ public class StopActiveSetTask extends TimerTask {
       GNS.getLogger().fine("Old active name servers stopped. Version: " + oldVersion + " Old Actives : "
               + oldActiveNameServers);
     } else {
-      NodeId<String> selectedOldActive = rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
+      NodeIDType selectedOldActive = (NodeIDType) rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
       if (selectedOldActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
         rc.getOngoingStopActiveRequests().remove(this.requestID);
         GNS.getLogger().severe("Exception ERROR: Old Actives not stopped and no more old active left to query. "

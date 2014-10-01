@@ -1,16 +1,15 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.Ballot;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class AcceptPacket extends PaxosPacket {
+public class AcceptPacket<NodeIDType> extends PaxosPacket {
 
   /**
    * nodeID of the node that sent the message
    */
-  public NodeId<String> nodeID;
+  public NodeIDType nodeID;
   /**
    * 
    */
@@ -22,7 +21,7 @@ public class AcceptPacket extends PaxosPacket {
   String NODE = "x1";
   String SLOT = "x2";
 
-  public AcceptPacket(NodeId<String> nodeID, PValuePacket pValue, PaxosPacketType packetType, int slotNumber) {
+  public AcceptPacket(NodeIDType nodeID, PValuePacket pValue, PaxosPacketType packetType, int slotNumber) {
     this.packetType = packetType.getInt();
     this.nodeID = nodeID;
     this.pValue = pValue;
@@ -33,11 +32,11 @@ public class AcceptPacket extends PaxosPacket {
   public AcceptPacket(JSONObject json) throws JSONException {
     this.pValue = new PValuePacket(json);
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.nodeID = new NodeId<String>(json.getString(NODE));
+    this.nodeID = (NodeIDType) json.get(NODE);
     this.slotNumberAtReplica = json.getInt(SLOT);
   }
 
-  public AcceptPacket getAcceptReplyPacket(NodeId<String> nodeID, Ballot ballot) {
+  public AcceptPacket getAcceptReplyPacket(NodeIDType nodeID, Ballot ballot) {
     if (ballot == null) {
       ballot = this.pValue.ballot;
     }

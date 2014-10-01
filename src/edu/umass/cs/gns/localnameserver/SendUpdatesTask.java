@@ -10,7 +10,6 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
@@ -30,19 +29,20 @@ import java.util.TimerTask;
  * (3) local name server's cache does not have active replicas for a name. In this case, we start the process
  * of obtaining current set of actives for the name.
  *
+ * @param <NodeIDType>
  * @see edu.umass.cs.gns.localnameserver.Update
  * @see edu.umass.cs.gns.localnameserver.UpdateInfo
  * @see edu.umass.cs.gns.nsdesign.packet.UpdatePacket
  *
  * @author abhigyan
  */
-public class SendUpdatesTask extends TimerTask {
+public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   private final String name;
   private UpdatePacket updatePacket;
   private final int lnsReqID;
 
-  private HashSet<NodeId<String>> activesQueried;
+  private HashSet<NodeIDType> activesQueried;
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
@@ -78,7 +78,7 @@ public class SendUpdatesTask extends TimerTask {
         // When the new actives are received, a new task in place of this task will be rescheduled.
         throw new CancelExecutorTaskException();
       }
-      NodeId<String> nameServerID = selectNS(cacheEntry);
+      NodeIDType nameServerID = selectNS(cacheEntry);
 
       sendToNS(nameServerID);
 
@@ -156,22 +156,22 @@ public class SendUpdatesTask extends TimerTask {
     }
   }
 
-  private NodeId<String> selectNS(CacheEntry cacheEntry) {
-    NodeId<String> nameServerID;
+  private NodeIDType selectNS(CacheEntry cacheEntry) {
+    NodeIDType nameServerID;
     if (handler.getParameters().isLoadDependentRedirection()) {
-      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
+      nameServerID = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
     } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
-      nameServerID = BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
+      nameServerID = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
               cacheEntry.getActiveNameServers(), activesQueried);
     } else {
-      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
+      nameServerID = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
     }
     return nameServerID;
   }
 
-  private void sendToNS(NodeId<String> nameServerID) {
+  private void sendToNS(NodeIDType nameServerID) {
 
     if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
 

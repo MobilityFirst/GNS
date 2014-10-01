@@ -2,7 +2,6 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.test.connecttime.StartConnectTimeExperiment;
 import edu.umass.cs.gns.test.rmiclient.LNSSideImplementation;
 
@@ -15,7 +14,7 @@ import java.io.IOException;
  */
 public class StartExperiment {
 
-  public void startMyTest(NodeId<String> nodeID, String workloadFile, String updateTraceFile,
+  public void startMyTest(String nodeID, String workloadFile, String updateTraceFile,
                           ClientRequestHandlerInterface handler)
           throws IOException, InterruptedException {
 

@@ -1,21 +1,21 @@
 package edu.umass.cs.gns.util;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
  * ***********************************************************
  *
- * @author Hardeep Uppal, Abhigyan
+ * @author  Westy
+ * @param <NodeIDType>
  ***********************************************************
  */
-public class HostInfo {
+public class HostInfo<NodeIDType> {
 
   /**
    * Id of the name server *
    */
-  private final NodeId<String> id;
+  private final NodeIDType id;
   /**
    * IP address of the name server *
    */
@@ -59,7 +59,7 @@ public class HostInfo {
    * @param longitude Longitude of the nameserver
    ***********************************************************
    */
-  public HostInfo(NodeId<String> id, String ipAddressString, int startingPortNumber, long pingLatency, double latitude, double longitude) {
+  public HostInfo(NodeIDType id, String ipAddressString, int startingPortNumber, long pingLatency, double latitude, double longitude) {
 
     this.id = id;
     this.ipAddressString = ipAddressString;
@@ -70,7 +70,7 @@ public class HostInfo {
     this.longitude = longitude;
   }
 
-  public NodeId<String> getId() {
+  public NodeIDType getId() {
     return id;
   }
 

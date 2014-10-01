@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -53,8 +52,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
               this.paxosInterface, paxosConfig));
     } else {
       this.paxosInterface = paxosInterface;
-      // FIXME NodeId: Makes no sense to cast generic NodeIdType to NodeId<String>
-      this.paxosManager = new PaxosManager((NodeId<String>)nodeID, nodeConfig,
+      this.paxosManager = new PaxosManager(nodeID, nodeConfig,
               new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), this.paxosInterface, paxosConfig);
     }
   }
@@ -79,8 +77,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
         // call propose
         case UPDATE: // updates need coordination
           UpdatePacket update = new UpdatePacket(request);
-    	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
-          update.setNameServerID((NodeId<String>)nodeID);
+          update.setNameServerID(nodeID);
           String paxosID = paxosManager.propose(update.getName(), update.toString());
           if (paxosID == null) {
             callHandleDecision = update.toJSONObject();
@@ -137,15 +134,12 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
           // current active replica set, it will continue sending requests to the far away name server.
           Set<NodeIdType> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
-        	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
-            RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, (NodeId<String>)nodeID);
-      	  // FIXME NodeId: Makes no to cast Set of generic type to Set<NodeId<String>>
-            requestActives.setActiveNameServers((Set<NodeId<String>>)nodeIds);
+            RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, nodeID);
+            requestActives.setActiveNameServers(nodeIds);
             nioTransport.sendToAddress(dnsPacket.getLnsAddress(), requestActives.toJSONObject());
           }
           if (readCoordination && dnsPacket.isQuery()) {
-        	  // FIXME NodeId: Makes no to cast generic type to NodeId<String>
-            dnsPacket.setResponder((NodeId<String>)nodeID);
+            dnsPacket.setResponder(nodeID);
             paxosID = paxosManager.propose(dnsPacket.getGuid(), dnsPacket.toString());
             if (paxosID == null) {
               callHandleDecision = dnsPacket.toJSONObjectQuestion();

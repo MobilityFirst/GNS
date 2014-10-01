@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 
 import java.util.HashSet;
@@ -13,18 +12,19 @@ import java.util.HashSet;
  * documented. It seems to be waiting for a majority of responses 
  * from (old or new?) active replicas. Should use WaitforUtility in
  * multipaxos.
+ * @param <NodeIDType>
  */
-public class NewActiveStartInfo {
+public class NewActiveStartInfo<NodeIDType> {
 
   public NewActiveSetStartupPacket originalPacket;
-  private HashSet<NodeId<String>> activesResponded = new HashSet<NodeId<String>>();
+  private HashSet<NodeIDType> activesResponded = new HashSet<NodeIDType>();
   boolean sent = false;
 
   public NewActiveStartInfo(NewActiveSetStartupPacket originalPacket) {
     this.originalPacket = originalPacket;
   }
 
-  public synchronized void receivedResponseFromActive(NodeId<String> ID) {
+  public synchronized void receivedResponseFromActive(NodeIDType ID) {
     activesResponded.add(ID);
   }
 

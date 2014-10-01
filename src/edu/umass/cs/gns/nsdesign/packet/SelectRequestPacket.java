@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +17,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class SelectRequestPacket extends BasicPacketWithNSAndLNS {
+public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
 
   public enum SelectOperation {
 
@@ -54,7 +53,7 @@ public class SelectRequestPacket extends BasicPacketWithNSAndLNS {
   private Object otherValue;
   private String query;
   private int lnsQueryId = -1; // used by the local name server to maintain state
-  //private NodeId<String> nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
+  //private NodeIDType nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
   private int nsQueryId = -1; // used by the name server to maintain state
   private SelectOperation selectOperation;
   private GroupBehavior groupBehavior;
@@ -160,7 +159,7 @@ public class SelectRequestPacket extends BasicPacketWithNSAndLNS {
    * @throws org.json.JSONException
    */
   public SelectRequestPacket(JSONObject json) throws JSONException {
-    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+    super((NodeIDType)json.get(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
@@ -172,7 +171,7 @@ public class SelectRequestPacket extends BasicPacketWithNSAndLNS {
     this.otherValue = json.optString(OTHERVALUE, null);
     this.query = json.optString(QUERY, null);
     this.lnsQueryId = json.getInt(LNSQUERYID);
-    //this.nsID = new NodeId<String>(json.getString(NSID));
+    //this.nsID = new NodeIDType(json.getString(NSID));
     this.nsQueryId = json.getInt(NSQUERYID);
     this.selectOperation = SelectOperation.valueOf(json.getString(SELECT_OPERATION));
     this.groupBehavior = GroupBehavior.valueOf(json.getString(GROUP_BEHAVIOR));
@@ -231,7 +230,7 @@ public class SelectRequestPacket extends BasicPacketWithNSAndLNS {
     this.nsQueryId = nsQueryId;
   }
 
-//  public void setNsID(NodeId<String> nsID) {
+//  public void setNsID(NodeIDType nsID) {
 //    this.nsID = nsID;
 //  }
 
@@ -254,7 +253,7 @@ public class SelectRequestPacket extends BasicPacketWithNSAndLNS {
     return lnsQueryId;
   }
 
-//  public NodeId<String> getNameServerID() {
+//  public NodeIDType getNameServerID() {
 //    return nsID;
 //  }
 

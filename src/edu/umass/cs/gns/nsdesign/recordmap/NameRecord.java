@@ -9,7 +9,6 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
@@ -181,9 +180,9 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(NAME);
   }
 
-  public Set<NodeId<String>> getPrimaryNameservers() throws FieldNotFoundException {
+  public Set getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
-      return (Set<NodeId<String>>) hashMap.get(PRIMARY_NAMESERVERS);
+      return (Set) hashMap.get(PRIMARY_NAMESERVERS);
     }
     throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
   }

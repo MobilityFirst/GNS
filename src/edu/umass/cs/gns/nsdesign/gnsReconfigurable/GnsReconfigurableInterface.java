@@ -6,7 +6,6 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 
@@ -17,9 +16,10 @@ import edu.umass.cs.gns.ping.PingManager;
  * which is useful during testing.
  *
  * Created by abhigyan on 5/19/14.
+ * @param <NodeIDType>
  */
-public interface GnsReconfigurableInterface extends Replicable, Reconfigurable, Shutdownable{
-  NodeId<String> getNodeID();
+public interface GnsReconfigurableInterface<NodeIDType> extends Replicable, Reconfigurable, Shutdownable{
+  NodeIDType getNodeID();
 
   BasicRecordMap getDB();
 

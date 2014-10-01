@@ -6,7 +6,6 @@ import edu.umass.cs.gns.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -690,7 +689,11 @@ public class NIOTransport<NodeIDType> implements Runnable {
                 //FIXME: make this a little less hackish
                 if (this.myID == null) {
                   isa = new InetSocketAddress((InetAddress)null, 0);
-                } else if (myID instanceof NodeId) {
+//                } else if (myID instanceof NodeId) {
+//		// Bind the server socket to the specified address and port
+//                  isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
+//                                              this.nodeConfig.getNodePort(this.myID));
+                } else if (myID instanceof String) {
 		// Bind the server socket to the specified address and port
                   isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
                                               this.nodeConfig.getNodePort(this.myID));

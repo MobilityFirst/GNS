@@ -28,12 +28,12 @@ import org.json.JSONObject;
 public class ActiveReplicaApp implements Reconfigurable, Replicable {
 
 	Application app=null;
-	ActiveReplica<?> activeReplica = null;
+	ActiveReplica<?, ?> activeReplica = null;
 
   /*** Total number of requests handled by this node */
   private int requestCount = 0;
 
-	public ActiveReplicaApp(Application app, ActiveReplica<?> activeReplica) {
+	public ActiveReplicaApp(Application app, ActiveReplica<?, ?> activeReplica) {
 		this.app = app;
     this.activeReplica = activeReplica;
 	}

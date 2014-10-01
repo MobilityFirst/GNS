@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 //import edu.umass.cs.gns.packet.Packet.PacketType;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,8 +19,9 @@ import org.json.JSONObject;
  * which could be update, add and remove. If this fields are not set correctly, request will not be routed back to
  * client.
  *
+ * @param <NodeIDType>
  */
-public class ConfirmUpdatePacket extends BasicPacket {
+public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
 
   private final static String REQUESTID = "reqid";
   private final static String LNSREQUESTID = "lnsreqid";
@@ -42,7 +42,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
   /**
    * Indicates if this is supposed to go back to an Intercessor at the LNS or another server.
    */
-  private NodeId<String> returnTo;
+  private NodeIDType returnTo;
   
   /**
    * Constructs a new ConfirmUpdatePacket with the given parameters.
@@ -50,7 +50,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
    * @param type Type of this packet
    * @param requestID Id of local or name server
    */
-  public ConfirmUpdatePacket(Packet.PacketType type, NodeId<String> returnTo, int requestID, int LNSRequestID, NSResponseCode responseCode) {
+  public ConfirmUpdatePacket(Packet.PacketType type, NodeIDType returnTo, int requestID, int LNSRequestID, NSResponseCode responseCode) {
     this.type = type;
     this.returnTo = returnTo;
     this.requestID = requestID;
@@ -90,12 +90,14 @@ public class ConfirmUpdatePacket extends BasicPacket {
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_ADD, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
+    this(Packet.PacketType.CONFIRM_ADD, (NodeIDType) packet.getSourceId(), 
+            packet.getRequestID(), packet.getLNSRequestID(), code);
 
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_REMOVE, packet.getSourceId(), packet.getRequestID(), packet.getLNSRequestID(), code);
+    this(Packet.PacketType.CONFIRM_REMOVE, (NodeIDType) packet.getSourceId(), 
+            packet.getRequestID(), packet.getLNSRequestID(), code);
   }
 
   /**
@@ -106,7 +108,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
    */
   public ConfirmUpdatePacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.returnTo = new NodeId<String>(json.getString(RETURNTO));
+    this.returnTo = (NodeIDType) json.get(RETURNTO);
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy
@@ -132,7 +134,7 @@ public class ConfirmUpdatePacket extends BasicPacket {
     return json;
   }
 
-  public NodeId<String> getReturnTo() {
+  public NodeIDType getReturnTo() {
     return returnTo;
   }
 

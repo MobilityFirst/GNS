@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,7 +16,7 @@ import org.json.JSONObject;
  * 
  * @author Westy
 */
-public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
+public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> {
 
   public enum ResponseCode {
 
@@ -37,7 +36,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
   private int id;
   private int lnsQueryId;
   private int nsQueryId;
-  //private NodeId<String> nameServer;
+  //private NodeIDType nameServer;
   private JSONArray records;
   private JSONArray guids;
   private ResponseCode responseCode;
@@ -49,7 +48,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
    * @param jsonObject 
    */
   private SelectResponsePacket(int id, InetSocketAddress lnsAddress, int lnsQueryId, int nsQueryId,
-          NodeId<String> nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
+          NodeIDType nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
           String errorMessage) {
     super(nameServerID, lnsAddress);
     this.type = Packet.PacketType.SELECT_RESPONSE;
@@ -75,7 +74,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
    * @return 
    */
   public static SelectResponsePacket makeSuccessPacketForRecordsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId, 
-          int nsQueryId, NodeId<String> nameServerID, JSONArray records) {
+          int nsQueryId, Object nameServerID, JSONArray records) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, records, null, ResponseCode.NOERROR, null);
   }
   
@@ -91,7 +90,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
    * @return 
    */
   public static SelectResponsePacket makeSuccessPacketForGuidsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId, 
-          int nsQueryId, NodeId<String> nameServerID, JSONArray guids) {
+          int nsQueryId, Object nameServerID, JSONArray guids) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, null, guids, ResponseCode.NOERROR, null);
   }
 
@@ -106,7 +105,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
    * @return 
    */
   public static SelectResponsePacket makeFailPacket(int id, InetSocketAddress lnsAddress, 
-          int lnsQueryId, int nsQueryId, NodeId<String> nameServer, String errorMessage) {
+          int lnsQueryId, int nsQueryId, Object nameServer, String errorMessage) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServer, null, null, ResponseCode.ERROR, errorMessage);
   }
 
@@ -116,7 +115,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
    * @throws org.json.JSONException
    */
   public SelectResponsePacket(JSONObject json) throws JSONException {
-    super(new NodeId<String>(json.getString(NAMESERVER_ID)),
+    super((NodeIDType) json.get(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {;
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
@@ -126,7 +125,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
     //this.lnsID = json.getInt(LNSID);
     this.lnsQueryId = json.getInt(LNSQUERYID);
     this.nsQueryId = json.getInt(NSQUERYID);
-    //this.nameServer = new NodeId<String>(json.getString(NAMESERVER));
+    //this.nameServer = new NodeIDType(json.getString(NAMESERVER));
     this.responseCode = ResponseCode.valueOf(json.getString(RESPONSECODE));
     // either of these could be null
     this.records = json.optJSONArray(RECORDS);
@@ -188,7 +187,7 @@ public class SelectResponsePacket extends BasicPacketWithNSAndLNS {
     return nsQueryId;
   }
 
-//  public NodeId<String> getNameServerID() {
+//  public NodeIDType getNameServerID() {
 //    return nameServer;
 //  }
 

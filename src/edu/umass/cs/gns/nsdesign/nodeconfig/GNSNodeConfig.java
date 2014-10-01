@@ -30,24 +30,25 @@ import java.util.concurrent.ConcurrentMap;
  * Arun: FIXME: Unclear why we
  * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable
  * from here.
+ * @param <NodeIDType>
  */
-public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutdownable {
+public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType>, Shutdownable {
 
   public static final long INVALID_PING_LATENCY = -1L;
-  public static final NodeId<String> INVALID_NAME_SERVER_ID = new NodeId("Invalid");
-  public static final NodeId<String> BOGUS_NULL_NAME_SERVER_ID = new NodeId("_BOGUS_NULL_NAME_SERVER_ID_");
+  public static final String INVALID_NAME_SERVER_ID = "Invalid";
+  public static final String BOGUS_NULL_NAME_SERVER_ID = "_BOGUS_NULL_NAME_SERVER_ID_";
   public static final int INVALID_PORT = -1;
 
-  private NodeId<String> nodeID = INVALID_NAME_SERVER_ID; // this will be BOGUS_NULL_NAME_SERVER_ID for Local Name Servers
+  private NodeIDType nodeID = (NodeIDType) INVALID_NAME_SERVER_ID; // this will be BOGUS_NULL_NAME_SERVER_ID for Local Name Servers
   private final String hostsFile;
 
   /**
    * Contains information about each name server. <Key = HostID, Value = HostInfo>
    *
    */
-  private ConcurrentMap<NodeId<String>, HostInfo> hostInfoMapping;
+  private ConcurrentMap<NodeIDType, HostInfo> hostInfoMapping;
   // keep this around
-  private ConcurrentMap<NodeId<String>, HostInfo> previousHostInfoMapping;
+  private ConcurrentMap<NodeIDType, HostInfo> previousHostInfoMapping;
 
   // Currently only used by GNSINstaller
   /**
@@ -64,7 +65,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param hostsFile
    * @param nameServerID
    */
-  public GNSNodeConfig(String hostsFile, NodeId<String> nameServerID) throws IOException {
+  public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
     this.nodeID = nameServerID;
     this.hostsFile = hostsFile;
     if (isOldStyleFile(hostsFile)) {
@@ -73,7 +74,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
     }
     readHostsFile(hostsFile);
     // Informational purposes
-    for (Entry<NodeId<String>, HostInfo> hostInfoEntry : hostInfoMapping.entrySet()) {
+    for (Entry<NodeIDType, HostInfo> hostInfoEntry : hostInfoMapping.entrySet()) {
       GNS.getLogger().info("Id: " + hostInfoEntry.getValue().getId().toString()
               + " Host:" + hostInfoEntry.getValue().getIpAddress()
               + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
@@ -90,7 +91,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @throws NumberFormatException
    */
   private void readHostsFile(String hostsFile) throws IOException {
-    List<HostFileLoader.HostSpec> hosts = null;
+    List<HostSpec> hosts = null;
     try {
       hosts = HostFileLoader.loadHostFile(hostsFile);
     } catch (Exception e) {
@@ -100,9 +101,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
     // save the old one... maybe we'll need it again?
     previousHostInfoMapping = hostInfoMapping;
     // Create a new one so we don't hose the old one if the new file is bogus
-    ConcurrentMap<NodeId<String>, HostInfo> newHostInfoMapping = new ConcurrentHashMap<NodeId<String>, HostInfo>(16, 0.75f, 8);
-    for (HostFileLoader.HostSpec spec : hosts) {
-      newHostInfoMapping.put(spec.getId(), new HostInfo(spec.getId(), spec.getName(),
+    ConcurrentMap<NodeIDType, HostInfo> newHostInfoMapping = new ConcurrentHashMap<NodeIDType, HostInfo>(16, 0.75f, 8);
+    for (HostSpec spec : hosts) {
+      newHostInfoMapping.put((NodeIDType) spec.getId(), new HostInfo(spec.getId(), spec.getName(),
               spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT, 0, 0, 0));
     }
     // some idiot checking of the given Id
@@ -156,7 +157,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param latitude
    * @param longitude
    */
-  public void addHostInfo(NodeId<String> id, String ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
+  public void addHostInfo(NodeIDType id, String ipAddress, int startingPort, long pingLatency, double latitude, double longitude) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
@@ -168,7 +169,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param id
    * @param ipAddress
    */
-  public void addHostInfo(NodeId<String> id, String ipAddress, Integer startingPort) {
+  public void addHostInfo(NodeIDType id, String ipAddress, Integer startingPort) {
     HostInfo nodeInfo = new HostInfo(id, ipAddress, startingPort != null ? startingPort : GNS.STARTINGPORT, 0, 0, 0);
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
@@ -180,7 +181,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @return the set of IDs.
    */
   @Override
-  public Set<NodeId<String>> getNodeIDs() {
+  public Set<NodeIDType> getNodeIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
 
@@ -189,7 +190,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * 
    * @return 
    */
-  public Set<NodeId<String>> getPreviousNodeIDs() {
+  public Set<NodeIDType> getPreviousNodeIDs() {
     return ImmutableSet.copyOf(previousHostInfoMapping.keySet());
   }
 
@@ -209,7 +210,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param id Nameserver id
    * @return the stats port for a nameserver
    */
-  public int getNSTcpPort(NodeId<String> id) {
+  public int getNSTcpPort(NodeIDType id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     if (nodeInfo != null) {
       return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_TCP_PORT.getOffset();
@@ -228,7 +229,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param id
    * @return
    */
-  public int getNSUdpPort(NodeId<String> id) {
+  public int getNSUdpPort(NodeIDType id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
   }
@@ -240,7 +241,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
-  public int getNSAdminRequestPort(NodeId<String> id) {
+  public int getNSAdminRequestPort(NodeIDType id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
   }
@@ -252,7 +253,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param id
    * @return the port
    */
-  public int getNSPingPort(NodeId<String> id) {
+  public int getNSPingPort(NodeIDType id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     if (nodeInfo != null) {
       return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
@@ -269,7 +270,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @return IP address of a server
    */
   @Override
-  public InetAddress getNodeAddress(NodeId<String> id) {
+  public InetAddress getNodeAddress(NodeIDType id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? null : nodeInfo.getIpAddress();
   }
@@ -281,12 +282,12 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param id Server id
    * @return
    */
-  public long getPingLatency(NodeId<String> id) {
+  public long getPingLatency(NodeIDType id) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? INVALID_PING_LATENCY : nodeInfo.getPingLatency();
   }
 
-  public void updatePingLatency(NodeId<String> id, long responseTime) {
+  public void updatePingLatency(NodeIDType id, long responseTime) {
     HostInfo nodeInfo = hostInfoMapping.get(id);
     if (nodeInfo != null) {
       nodeInfo.updatePingLatency(responseTime);
@@ -300,7 +301,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @return
    */
   @Override
-  public boolean nodeExists(NodeId<String> ID) {
+  public boolean nodeExists(NodeIDType ID) {
     return getNodeIDs().contains(ID);
   }
   
@@ -315,7 +316,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @return
    */
   @Override
-  public int getNodePort(NodeId<String> ID) {
+  public int getNodePort(NodeIDType ID) {
     return this.getNSTcpPort(ID);
   }
 
@@ -324,7 +325,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    *
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
    */
-  public NodeId<String> getClosestServer() {
+  public NodeIDType getClosestServer() {
     return GNSNodeConfig.this.getClosestServer(getNodeIDs());
   }
 
@@ -334,7 +335,7 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param servers
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
    */
-  public NodeId<String> getClosestServer(Set<NodeId<String>> servers) {
+  public NodeIDType getClosestServer(Set<NodeIDType> servers) {
     return getClosestServer(servers, null);
   }
 
@@ -347,9 +348,9 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    * @param excludeServers
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
    */
-  public NodeId<String> getClosestServer(Set<NodeId<String>> serverIds, Set<NodeId<String>> excludeServers) {
+  public NodeIDType getClosestServer(Set<NodeIDType> serverIds, Set<NodeIDType> excludeServers) {
     if (serverIds == null) {
-      return INVALID_NAME_SERVER_ID;
+      return (NodeIDType)INVALID_NAME_SERVER_ID;
     }
     // If the local server is one of the server ids and not excluded return it.
     if (serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
@@ -357,8 +358,8 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
     }
 
     long lowestLatency = Long.MAX_VALUE;
-    NodeId<String> nameServerID = INVALID_NAME_SERVER_ID;
-    for (NodeId<String> serverId : serverIds) {
+    NodeIDType nameServerID = (NodeIDType)INVALID_NAME_SERVER_ID;
+    for (NodeIDType serverId : serverIds) {
       if (excludeServers != null && excludeServers.contains(serverId)) {
         continue;
       }
@@ -400,11 +401,10 @@ public class GNSNodeConfig implements InterfaceNodeConfig<NodeId<String>>, Shutd
    */
   public static void main(String[] args) throws Exception {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename,
-            new NodeId<String>("sammy"));
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, "sammy");
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());
-    System.out.println(gnsNodeConfig.getNSTcpPort(new NodeId<String>("frank")));
+    System.out.println(gnsNodeConfig.getNSTcpPort("frank"));
   }
 
   @Override

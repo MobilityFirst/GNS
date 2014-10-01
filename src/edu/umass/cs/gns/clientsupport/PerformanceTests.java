@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stats;
@@ -31,7 +30,7 @@ public class PerformanceTests {
   private static final String ACCOUNTNAME = "RoundTripPerformanceTest";
   private static final String PUBLICKEY = "RTT";
   private static final String NEWLINE = System.getProperty("line.separator");
-  private static Map<NodeId<String>, ArrayList<Double>> times;
+  private static Map<String, ArrayList<Double>> times;
 
   /**
    * This method implements the Round Trip time test. 
@@ -58,7 +57,7 @@ public class PerformanceTests {
       accountGuid = ClientUtils.createGuidFromPublicKey(PUBLICKEY);
       AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false);
     }
-    times = new HashMap<NodeId<String>, ArrayList<Double>>();
+    times = new HashMap<String, ArrayList<Double>>();
     if (verbose) {
       result.append("GUIDs:");
       result.append(NEWLINE);
@@ -118,7 +117,7 @@ public class PerformanceTests {
         if (!value.isError()) {
           //result.append(value.getRoundTripTime());
           if (times.get(value.getResponder()) == null) {
-            times.put(value.getResponder(), new ArrayList<Double>());
+            times.put((String)value.getResponder(), new ArrayList<Double>());
           }
           times.get(value.getResponder()).add(new Double(value.getRoundTripTime()));
         } else {
@@ -128,7 +127,7 @@ public class PerformanceTests {
     }
   }
 
-  private static int getComparisonPingValue(NodeId<String> node) {
+  private static int getComparisonPingValue(String node) {
     String result = Admintercessor.sendPingValue(PingManager.LOCALNAMESERVERID, node);
     if (result.startsWith(Defs.BADRESPONSE)) {
       return 999;
@@ -141,8 +140,8 @@ public class PerformanceTests {
   
   private static String checkForExcessiveRtt() {
     StringBuilder result = new StringBuilder();
-    for (Entry<NodeId<String>, ArrayList<Double>> entry : times.entrySet()) {
-      NodeId<String> node = entry.getKey();
+    for (Entry<String, ArrayList<Double>> entry : times.entrySet()) {
+      String node = entry.getKey();
       Stats stats = new Stats(times.get(node));
       int avg = (int) Math.round(stats.getMean());
       int ping = getComparisonPingValue(node);
@@ -162,7 +161,7 @@ public class PerformanceTests {
 
   private static String resultsToString() {
     StringBuilder result = new StringBuilder();
-    for (Entry<NodeId<String>, ArrayList<Double>> entry : times.entrySet()) {
+    for (Entry<String, ArrayList<Double>> entry : times.entrySet()) {
       Stats stats = new Stats(times.get(entry.getKey()));
       result.append(NEWLINE);
       result.append("Node: ");

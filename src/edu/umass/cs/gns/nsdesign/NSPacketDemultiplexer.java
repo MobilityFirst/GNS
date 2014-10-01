@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.commands.CommandProcessor;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * <p/>
  * Created by abhigyan on 2/26/14.
  */
-public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
+public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
   private NameServer nameServer;
 
@@ -30,7 +29,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   private int intervalCount = 0;
 
-  public NSPacketDemultiplexer(final NameServer nameServer, final NodeId<String> nodeID) {
+  public NSPacketDemultiplexer(final NameServer nameServer, final NodeIDType nodeID) {
     this.nameServer = nameServer;
     this.nameServer.getExecutorService().scheduleAtFixedRate(new TimerTask() {
       @Override

@@ -2,7 +2,6 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
@@ -13,7 +12,7 @@ import java.util.TimerTask;
 /**
  * Created by abhigyan on 5/21/14.
  */
-public class GenerateGroupChangeRequest extends TimerTask {
+public class GenerateGroupChangeRequest<NodeIDType> extends TimerTask {
 
   private int requestCount;
   private String name;
@@ -40,11 +39,9 @@ public class GenerateGroupChangeRequest extends TimerTask {
     }
   }
 
-  private NodeId<String> selectReplicaController(String name) {
-    Set<NodeId<String>> replicaControllers = ConsistentHashing.getReplicaControllerSet(name);
-    return LocalNameServer.getGnsNodeConfig().getClosestServer(replicaControllers, null);
-//      ArrayList<Integer> replicaControllers = new ArrayList<Integer>(ConsistentHashing.getReplicaControllerSet(name));
-//      return replicaControllers.get(new Random().nextInt(replicaControllers.size()));
+  private NodeIDType selectReplicaController(String name) {
+    Set replicaControllers = ConsistentHashing.getReplicaControllerSet(name);
+    return (NodeIDType) LocalNameServer.getGnsNodeConfig().getClosestServer(replicaControllers, null);
   }
 }
 

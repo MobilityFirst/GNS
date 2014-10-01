@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
@@ -17,16 +16,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * This coordinator informs the dummy app, whether it is a valid active replica or not.
  *
  * Created by abhigyan on 4/8/14.
+ * @param <NodeIDType>
  */
-public class DummyGnsCoordinatorUnreplicated extends ActiveReplicaCoordinator {
+public class DummyGnsCoordinatorUnreplicated<NodeIDType> extends ActiveReplicaCoordinator {
 
-  private NodeId<String> nodeID;
+  private NodeIDType nodeID;
 
   private Replicable replicable;
 
   private ConcurrentHashMap<String, Short>  nameAndGroupVersion = new ConcurrentHashMap<String, Short>();
 
-  public DummyGnsCoordinatorUnreplicated(NodeId<String> nodeID, Replicable replicable) {
+  public DummyGnsCoordinatorUnreplicated(NodeIDType nodeID, Replicable replicable) {
     this.nodeID = nodeID;
     this.replicable = replicable;
   }

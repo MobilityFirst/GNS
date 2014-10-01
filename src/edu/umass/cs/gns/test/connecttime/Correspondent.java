@@ -4,7 +4,6 @@ import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
 
 import java.io.BufferedReader;
@@ -22,7 +21,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 5/13/14.
  */
-public class Correspondent implements Runnable{
+public class Correspondent<NodeIDType> implements Runnable{
 
   private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
 
@@ -42,7 +41,7 @@ public class Correspondent implements Runnable{
 
   private String key = "EdgeRecord";
 
-  public Correspondent(NodeId<String> mobileID) {
+  public Correspondent(NodeIDType mobileID) {
     mobileAddress = LocalNameServer.getGnsNodeConfig().getNodeAddress(mobileID);
   }
 

@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -21,7 +20,7 @@ import java.util.Iterator;
  * 
  * @author westy
  */
-public class QueryResult implements Serializable{
+public class QueryResult<NodeIDType> implements Serializable{
 
   /**
    * Set if the response is not an error.
@@ -38,7 +37,7 @@ public class QueryResult implements Serializable{
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private NodeId<String> responder;
+  private NodeIDType responder;
 
   /**
    * Creates a "normal" (non-error) QueryResult.
@@ -46,7 +45,7 @@ public class QueryResult implements Serializable{
    * @param valuesMap 
    * @param responder 
    */
-  public QueryResult(ValuesMap valuesMap, NodeId<String> responder) {
+  public QueryResult(ValuesMap valuesMap, NodeIDType responder) {
     this.valuesMap = valuesMap;
     this.responder = responder;
   }
@@ -57,7 +56,7 @@ public class QueryResult implements Serializable{
    * @param errorCode 
    * @param responder 
    */
-  public QueryResult(NSResponseCode errorCode, NodeId<String> responder) {
+  public QueryResult(NSResponseCode errorCode, NodeIDType responder) {
     this.errorCode = errorCode;
     this.responder = responder;
   }
@@ -156,7 +155,7 @@ public class QueryResult implements Serializable{
    * 
    * @return
    */
-  public NodeId<String> getResponder() {
+  public NodeIDType getResponder() {
     return responder;
   }
 

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -11,8 +10,9 @@ import java.util.Set;
 
 /**
  * TODO write documentation for this class.
+ * @param <NodeIDType>
  */
-public class NewActiveSetStartupPacket extends BasicPacket {
+public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
 
   private final static String ID = "nasID"; // new active set ID
   private final static String NAME = "name";
@@ -37,19 +37,19 @@ public class NewActiveSetStartupPacket extends BasicPacket {
   /**
    * primary node that sent this message
    */
-  NodeId<String> primarySender;
+  NodeIDType primarySender;
   /**
    * active node to which this message was sent
    */
-  NodeId<String> activeSender;
+  NodeIDType activeSender;
   /**
    * current set of actives of this node.
    */
-  Set<NodeId<String>> newActives;
+  Set<NodeIDType> newActives;
   /**
    * Previous set of actives of this node.
    */
-  Set<NodeId<String>> oldActives;
+  Set<NodeIDType> oldActives;
   /**
    * Version of the new set of actives.
    */
@@ -74,8 +74,8 @@ public class NewActiveSetStartupPacket extends BasicPacket {
    * @param newActives
    */
   public NewActiveSetStartupPacket(String name,
-          NodeId<String> primarySender, NodeId<String> activeSender, Set<NodeId<String>> newActives,
-          Set<NodeId<String>> oldActives, short oldActiveVersion, short newActiveVersion,
+          NodeIDType primarySender, NodeIDType activeSender, Set<NodeIDType> newActives,
+          Set<NodeIDType> oldActives, short oldActiveVersion, short newActiveVersion,
           PacketType type1, String previousValue, boolean previousValueCorrect) {
     Random r = new Random();
     this.uniqueID = r.nextInt();
@@ -98,22 +98,22 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     this.type = Packet.getPacketType(json);
     this.uniqueID = json.getInt(ID);
     this.name = json.getString(NAME);
-    this.primarySender = new NodeId<String>(json.getString(PRIMARY_SENDER));
-    this.activeSender = new NodeId<String>(json.getString(ACTIVE_SENDER));
+    this.primarySender = (NodeIDType)json.getString(PRIMARY_SENDER);
+    this.activeSender = (NodeIDType) json.getString(ACTIVE_SENDER);
     //FIXME: Use utility function here
     String actives = json.getString(NEW_ACTIVES);
-    this.newActives = new HashSet<NodeId<String>>();
+    this.newActives = new HashSet<NodeIDType>();
     String[] activeSplit = actives.split(":");
     for (String x : activeSplit) {
-      newActives.add(new NodeId<String>(x));
+      newActives.add((NodeIDType) x);
     }
 
     //FIXME: Use utility function here
     String old_actives = json.getString(OLD_ACTIVES);
-    this.oldActives = new HashSet<NodeId<String>>();
+    this.oldActives = new HashSet<NodeIDType>();
     String[] tokens = old_actives.split(":");
     for (String x : tokens) {
-      oldActives.add(new NodeId<String>(x));
+      oldActives.add((NodeIDType) x);
     }
 
     this.oldActiveVersion = (short)json.getInt(OLD_ACTIVE_VERSION); 
@@ -152,9 +152,9 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     return json;
   }
 
-  private String convertArrayToString(Set<NodeId<String>> values) {
+  private String convertArrayToString(Set<NodeIDType> values) {
     StringBuilder sb = new StringBuilder();
-    for (NodeId<String> x : values) {
+    for (NodeIDType x : values) {
       if (sb.length() == 0) {
         sb.append(x.toString());
       } else {
@@ -178,11 +178,11 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     return name;
   }
 
-  public NodeId<String> getSendingPrimary() {
+  public NodeIDType getSendingPrimary() {
     return primarySender;
   }
 
-  public NodeId<String> getSendingActive() {
+  public NodeIDType getSendingActive() {
     return activeSender;
   }
 
@@ -190,7 +190,7 @@ public class NewActiveSetStartupPacket extends BasicPacket {
    *
    * @return
    */
-  public Set<NodeId<String>> getNewActiveNameServers() {
+  public Set<NodeIDType> getNewActiveNameServers() {
     return newActives;
   }
 
@@ -198,7 +198,7 @@ public class NewActiveSetStartupPacket extends BasicPacket {
    *
    * @return
    */
-  public Set<NodeId<String>> getOldActiveNameServers() {
+  public Set<NodeIDType> getOldActiveNameServers() {
     return oldActives;
   }
 
@@ -238,7 +238,7 @@ public class NewActiveSetStartupPacket extends BasicPacket {
     setType(PacketType.NEW_ACTIVE_START_PREV_VALUE_RESPONSE);
   }
 
-  public void changeSendingActive(NodeId<String> ID) {
+  public void changeSendingActive(NodeIDType ID) {
     this.activeSender = ID;
   }
 

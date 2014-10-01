@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
@@ -150,7 +149,7 @@ public class Lookup {
   /**
    * Send reply to user after DNS record is received.
    */
-  private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, NodeId<String> responder, ClientRequestHandlerInterface handler) {
+  private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, Object responder, ClientRequestHandlerInterface handler) {
 
     try {
       DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getSourceId(), 

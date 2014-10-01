@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
 import edu.umass.cs.gns.main.GNS.PortType;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -17,9 +16,10 @@ import java.util.Date;
  * This class implements a packet that contains sends traffic status information
  *
  * @author Westy 
+ * @param <NodeIDType> 
  * 
  */
-public class TrafficStatusPacket extends BasicPacket {
+public class TrafficStatusPacket<NodeIDType> extends BasicPacket {
 
   public final static String FROMID = "fromID";
   public final static String TOID = "toID";
@@ -29,8 +29,8 @@ public class TrafficStatusPacket extends BasicPacket {
   public final static String NAME = "name";
   public final static String OTHER = "other";
   private Date time;
-  private NodeId<String> fromID;
-  private NodeId<String> toID;
+  private NodeIDType fromID;
+  private NodeIDType toID;
   private PortType portType;
   private PacketType packetType;
   private String name;
@@ -55,7 +55,7 @@ public class TrafficStatusPacket extends BasicPacket {
    * @param name
    * @param other
    */
-  public TrafficStatusPacket(NodeId<String> fromID, NodeId<String> toID, PortType portType, PacketType packetType, String name,
+  public TrafficStatusPacket(NodeIDType fromID, NodeIDType toID, PortType portType, PacketType packetType, String name,
           // String key,
           String other) {
     this.type = PacketType.TRAFFIC_STATUS;
@@ -85,8 +85,8 @@ public class TrafficStatusPacket extends BasicPacket {
 
     this.type = Packet.getPacketType(json);
     this.time = Format.parseDateTimeOnlyMilleUTC(json.getString(TIME));
-    this.fromID = new NodeId<String>(json.getString(FROMID));
-    this.toID = new NodeId<String>(json.getString(TOID));
+    this.fromID = (NodeIDType) json.get(FROMID);
+    this.toID = (NodeIDType) json.get(TOID);
     this.portType = PortType.valueOf(json.getString(PORTTYPE));
     this.packetType = PacketType.valueOf(json.getString(PACKETTYPE));
     this.name = json.optString(NAME, null);
@@ -97,11 +97,11 @@ public class TrafficStatusPacket extends BasicPacket {
     return time;
   }
 
-  public NodeId<String> getFromID() {
+  public NodeIDType getFromID() {
     return fromID;
   }
 
-  public NodeId<String> getToID() {
+  public NodeIDType getToID() {
     return toID;
   }
 

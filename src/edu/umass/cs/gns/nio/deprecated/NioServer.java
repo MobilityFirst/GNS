@@ -12,7 +12,6 @@ import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONObject;
 
@@ -29,13 +28,13 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 
 @Deprecated
-public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<String>> {
+public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTransport<NodeIDType> {
 
   public static String Version = "$Revision: 838 $";
   public static final boolean DEBUG = false;
   
   // The host:port combination to listen on
-  private NodeId<String> ID;
+  private NodeIDType ID;
   private InetAddress myAddress;
   private int myPort;
   // The channel on which we'll accept connections
@@ -50,11 +49,11 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
   // Maps a SocketChannel to a list of ByteBuffer instances
   private Map pendingData = new HashMap();
   private boolean newPendingData = false;
-  private  Map<NodeId<String>, Boolean> pendingChangeByNode;
+  private  Map<NodeIDType, Boolean> pendingChangeByNode;
   //private boolean[] pendingChangeByNode;
   // ABHIGYAN
   // Used only for sending not for receiving.
-  private Map<NodeId<String>, SocketChannel> connectedIDs;
+  private Map<NodeIDType, SocketChannel> connectedIDs;
   //private SocketChannel[] connectedIDs; // K = ID, V = SocketChannel
   //private Map connectionAttempts = new ConcurrentHashMap(); // K = ID, V = number of attempts
   private static int MAX_ATTEMPTS = 20; // max attempts at connection;
@@ -67,11 +66,11 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
   private double variation = 0.1;
   private GNSNodeConfig gnsNodeConfig = null;
 
-  public NioServer(NodeId<String> ID, ByteStreamToJSONObjects worker, InterfaceNodeConfig nodeConfig) throws IOException {
+  public NioServer(NodeIDType ID, ByteStreamToJSONObjects worker, InterfaceNodeConfig nodeConfig) throws IOException {
     
-    connectedIDs = new HashMap<NodeId<String>, SocketChannel>();
+    connectedIDs = new HashMap<NodeIDType, SocketChannel>();
     //connectedIDs = new SocketChannel[nodeConfig.getNodeIDs().size()];
-    pendingChangeByNode = new HashMap<NodeId<String>, Boolean>();
+    pendingChangeByNode = new HashMap<NodeIDType, Boolean>();
     //pendingChangeByNode = new boolean[nodeConfig.getNodeIDs().size()];
 //    for (int i = 0; i < nodeConfig.getNodeIDs().size(); i++) {
 //      pendingChangeByNode[i] = false;
@@ -103,7 +102,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
   }
 
   @Override
-  public NodeId<String> getMyID() {
+  public NodeIDType getMyID() {
     return this.ID;
   }
 
@@ -129,11 +128,11 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
           wakeup = newPendingData;
           newPendingData = false;
 
-          for (NodeId<String> nodeId : gnsNodeConfig.getNodeIDs()) 
+          for (Object nodeId : gnsNodeConfig.getNodeIDs()) 
             if (pendingChangeByNode.containsKey(nodeId) && pendingChangeByNode.get(nodeId)) {
               this.pendingChanges.add(new ChangeRequest(connectedIDs.get(nodeId), ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
               //this.pendingChanges.add(new ChangeRequest(connectedIDs[i], ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
-              pendingChangeByNode.put(nodeId, false);
+              pendingChangeByNode.put((NodeIDType) nodeId, false);
             }
           }
 //          for (int i = 0; i < pendingChangeByNode.length; i++) {
@@ -154,7 +153,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
   private Random random = new Random();
 
   @Override
-  public int sendToID(NodeId<String> destID, JSONObject json) throws IOException {
+  public int sendToID(NodeIDType destID, JSONObject json) throws IOException {
     if (emulateDelay) {
       long delay = gnsNodeConfig.getPingLatency(destID) / 2; // divide by 2 for one-way delay
       delay = (long) ((1.0 + this.variation * random.nextDouble()) * delay);
@@ -177,7 +176,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
-  boolean sendToIDActual(NodeId<String> destID, JSONObject json) throws IOException {
+  boolean sendToIDActual(NodeIDType destID, JSONObject json) throws IOException {
 
     if (destID.equals(ID)) { // to send to same node, directly call the demultiplexer
       workerObject.getPacketDemux().handleJSONObject(json);
@@ -292,7 +291,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
 //    }
 //    return socketChannel;
 //  }
-  private void send(NodeId<String> nodeId, SocketChannel socket, byte[] data) {
+  private void send(NodeIDType nodeId, SocketChannel socket, byte[] data) {
 
 //        synchronized (this.pendingChanges) {
     // Indicate we want the interest ops set changed
@@ -519,7 +518,7 @@ public class NioServer implements Runnable, InterfaceJSONNIOTransport<NodeId<Str
       System.out.println(">>> " + delay);
     }
     System.exit(2);
-    NodeId<String> ID = new NodeId<String>(args[0]);
+    Object ID = args[0];
     // hack
     int integerVersionOfTheNodeId = Integer.parseInt(ID.toString());
     int port = 9000 + 10 * integerVersionOfTheNodeId;
@@ -644,13 +643,13 @@ class WakeupSelectorTask extends TimerTask {
 //	}
 //
 
-class SendQueryWithDelay2 extends TimerTask {
+class SendQueryWithDelay2<NodeIDType> extends TimerTask {
 
   JSONObject json;
-  NodeId<String> destID;
+  NodeIDType destID;
   NioServer nioServer;
 
-  public SendQueryWithDelay2(NioServer nioServer, NodeId<String> destID, JSONObject json) {
+  public SendQueryWithDelay2(NioServer nioServer, NodeIDType destID, JSONObject json) {
     this.json = json;
     this.destID = destID;
     this.nioServer = nioServer;

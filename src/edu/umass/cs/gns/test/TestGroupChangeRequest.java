@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.test;
 
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -10,23 +9,23 @@ import java.util.Set;
  *
  * Created by abhigyan on 4/10/14.
  */
-public class TestGroupChangeRequest extends TestRequest {
+public class TestGroupChangeRequest<NodeIDType> extends TestRequest {
 
   // version number of active replicas
   int version;
 
   // set of new active replicas
-  Set<NodeId<String>> replicaSet;
+  Set<NodeIDType> replicaSet;
 
   public TestGroupChangeRequest(String name, String request) {
     super(name, TestRequest.GROUP_CHANGE);
     String[] tokens = request.split("\\s+");
     this.version = Integer.parseInt(tokens[2]);
     String[] replicaString = tokens[3].split(":");
-    this.replicaSet = new HashSet<NodeId<String>>();
+    this.replicaSet = new HashSet();
 
     for (String s: replicaString) {
-      this.replicaSet.add(new NodeId<String>(s));
+      this.replicaSet.add((NodeIDType) s);
     }
 
   }

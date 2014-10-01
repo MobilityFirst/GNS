@@ -211,10 +211,10 @@ public class Util {
    * @param nodeIds
    * @return a string
    */
-  public static String setOfNodeIdToString(Set<NodeId<String>> nodeIds) {
+  public static String setOfNodeIdToString(Set nodeIds) {
     StringBuilder sb = new StringBuilder();
     boolean first = true;
-    for (NodeId<String> x : nodeIds) {
+    for (Object x : nodeIds) {
       if (first) {
         sb.append(x.toString());
         first = false;
@@ -231,11 +231,11 @@ public class Util {
    * @param string
    * @return a Set of NodeIds
    */
-  public static Set<NodeId<String>> stringToSetOfNodeId(String string) {
-    Set<NodeId<String>> nodeIds = new HashSet<NodeId<String>>();
+  public static Set stringToSetOfNodeId(String string) {
+    Set nodeIds = new HashSet();
     String[] tokens = string.split(":");
     for (String s : tokens) {
-      nodeIds.add(new NodeId<String>(s));
+      nodeIds.add(s);
     }
     return nodeIds;
   }

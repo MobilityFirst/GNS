@@ -16,7 +16,6 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
@@ -50,7 +49,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  *
  * @author westy
  */
-public class BasicClientRequestHandler implements ClientRequestHandlerInterface {
+public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHandlerInterface<NodeIDType> {
 
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
@@ -349,7 +348,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    * @return
    */
   @Override
-  public Set<NodeId<String>> getReplicaControllers(String name) {
+  public Set<NodeIDType> getReplicaControllers(String name) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : ConsistentHashing.getReplicaControllerSet(name);
   }
@@ -362,20 +361,20 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    *
    */
   @Override
-  public NodeId<String> getClosestReplicaController(String name, Set<NodeId<String>> nameServersQueried) {
+  public NodeIDType getClosestReplicaController(String name, Set<NodeIDType> nameServersQueried) {
     try {
-      Set<NodeId<String>> primaries = getReplicaControllers(name);
+      Set<NodeIDType> primaries = getReplicaControllers(name);
       if (parameters.isDebugMode()) {
         GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
       }
 
-      NodeId<String> x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
+      Object x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
         GNS.getLogger().info("Closest Primary Name Server: " + x.toString() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
-      return x;
+      return (NodeIDType) x;
     } catch (Exception e) {
-      return GNSNodeConfig.INVALID_NAME_SERVER_ID;
+      return (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     }
   }
 
@@ -386,7 +385,7 @@ public class BasicClientRequestHandler implements ClientRequestHandlerInterface 
    * @param ns
    */
   @Override
-  public void sendToNS(JSONObject json, NodeId<String> ns) {
+  public void sendToNS(JSONObject json, NodeIDType ns) {
     try {
       tcpTransport.sendToID(ns, json);
     } catch (IOException e) {

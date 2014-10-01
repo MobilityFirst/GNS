@@ -3,7 +3,6 @@ package edu.umass.cs.gns.paxos;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.*;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
@@ -90,7 +89,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Date: 7/24/13
  * Time: 8:16 AM
  */
-public class PaxosLogger extends Thread {
+public class PaxosLogger<NodeIDType> extends Thread {
 
 
   /**
@@ -101,7 +100,7 @@ public class PaxosLogger extends Thread {
   /**
    * Node ID of this node
    */
-  private NodeId<String> nodeID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+  private NodeIDType nodeID = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
   /**
    * This is the paxos manager object for which logger is doing the logging.
@@ -208,7 +207,7 @@ public class PaxosLogger extends Thread {
    * @param nodeID Node ID of this node.
    * @param paxosManager Paxos Manager object for this this logger is doing the logging.
    */
-  public PaxosLogger(String logFolder, NodeId<String> nodeID, PaxosManager paxosManager) {
+  public PaxosLogger(String logFolder, NodeIDType nodeID, PaxosManager paxosManager) {
     this.logFolder = logFolder;
     this.nodeID = nodeID;
     this.paxosManager = paxosManager;
@@ -228,7 +227,7 @@ public class PaxosLogger extends Thread {
    * @param nodeID  Node ID of this node.
    * @param gnsRunning Set to true to perform offline analysis of logs.
    */
-  public PaxosLogger(String logFolder, NodeId<String> nodeID, boolean gnsRunning) {
+  public PaxosLogger(String logFolder, NodeIDType nodeID, boolean gnsRunning) {
     this.logFolder = logFolder;
     this.nodeID = nodeID;
     this.gnsRunning = gnsRunning;
@@ -312,7 +311,7 @@ public class PaxosLogger extends Thread {
    * @param nodeIDs
    * @param initialState
    */
-  void logPaxosStart(String paxosID, Set<NodeId<String>> nodeIDs, StatePacket initialState) {
+  void logPaxosStart(String paxosID, Set<NodeIDType> nodeIDs, StatePacket initialState) {
     if (!Config.noPaxosLog) {
       if (debugMode) {
         GNS.getLogger().fine(" Paxos ID = " + paxosID);
@@ -1120,7 +1119,7 @@ public class PaxosLogger extends Thread {
       return;
     }
 
-    Set<NodeId<String>> nodeIDs = Util.stringToSetOfNodeId(msg);
+    Set<NodeIDType> nodeIDs = Util.stringToSetOfNodeId(msg);
 
     if (debugMode) {
       GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIDs);
@@ -1592,14 +1591,14 @@ class PaxosStateFileName implements Comparable {
 /**
  *
  */
-class LoggingCommand {
+class LoggingCommand<NodeIDType> {
 
   public static int LOG_AND_EXECUTE = 1;
   public static  int LOG_AND_SEND_MSG = 2;
   private String paxosID;
   private JSONObject logJson;
   private int actionAfterLog;
-  private NodeId<String> dest = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+  private NodeIDType dest = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
   private JSONObject sendJson;
 
   public LoggingCommand(String paxosID, JSONObject logJson, int actionAfterLog) {
@@ -1608,7 +1607,7 @@ class LoggingCommand {
     this.logJson = logJson;
   }
 
-  public LoggingCommand(String paxosID, JSONObject logJson, int actionAfterLog, NodeId<String> dest, JSONObject sendJson) {
+  public LoggingCommand(String paxosID, JSONObject logJson, int actionAfterLog, NodeIDType dest, JSONObject sendJson) {
     this.paxosID = paxosID;
     this.actionAfterLog = actionAfterLog;
     this.logJson = logJson;
@@ -1629,7 +1628,7 @@ class LoggingCommand {
     return actionAfterLog;
   }
 
-  public NodeId<String> getDest() {
+  public NodeIDType getDest() {
     return dest;
   }
 
@@ -1713,9 +1712,9 @@ class LogPaxosStateTask extends TimerTask {
 
       GNS.getLogger().info("Logging paxos state task.");
 
-      for (String paxosKey: paxosManager.paxosInstances.keySet()) {
+      for (Object paxosKey: paxosManager.paxosInstances.keySet()) {
 
-        PaxosReplicaInterface replica = paxosManager.paxosInstances.get(paxosKey);
+        PaxosReplicaInterface replica = (PaxosReplicaInterface) paxosManager.paxosInstances.get(paxosKey);
         if (paxosKey != null) {
           StatePacket packet = replica.getState();
           if (packet != null) {

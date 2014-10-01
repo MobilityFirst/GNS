@@ -3,7 +3,6 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +17,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 5/20/14.
  */
-public class SendRequestLoadTask extends TimerTask{
+public class SendRequestLoadTask<NodeIDType> extends TimerTask{
 
   // the average outgoing traffic rate (in msgs/sec) sent by this task
   private static final double SEND_RATE = 1.0;
@@ -64,7 +63,7 @@ public class SendRequestLoadTask extends TimerTask{
 
       try {
         JSONObject sendJson = nsLoad.toJSONObject();
-        for (NodeId<String> nsID: activeReplica.getGnsNodeConfig().getNodeIDs()) {
+        for (Object nsID: activeReplica.getGnsNodeConfig().getNodeIDs()) {
           try {
             activeReplica.getNioServer().sendToID(nsID, sendJson);
           } catch (IOException e) {

@@ -17,14 +17,12 @@ import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.replicaController.NoCoordinationReplicaControllerCoordinator;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerCoordinatorPaxos;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
-import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
 
 import java.io.File;
@@ -46,13 +44,13 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Created by abhigyan on 2/26/14.
  */
-public class NameServer implements Shutdownable {
+public class NameServer<NodeIDType> implements Shutdownable {
 
   private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(10); // worker thread pool
 
   private ActiveReplicaCoordinator appCoordinator; // coordinates app's requests
 
-  private ActiveReplica<?> activeReplica; // reconfiguration logic
+  private ActiveReplica<?,?> activeReplica; // reconfiguration logic
 
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
 
@@ -73,7 +71,7 @@ public class NameServer implements Shutdownable {
    * @param configFile Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
-  public NameServer(NodeId<String> nodeID, String configFile, GNSNodeConfig gnsNodeConfig) throws IOException {
+  public NameServer(NodeIDType nodeID, String configFile, GNSNodeConfig gnsNodeConfig) throws IOException {
 
     // load options given in config file in a java properties object
     Properties prop = new Properties();
@@ -103,7 +101,7 @@ public class NameServer implements Shutdownable {
    * @param configParameters Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
-  public NameServer(NodeId<String> nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
+  public NameServer(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
     init(nodeID, configParameters, gnsNodeConfig);
   }
 
@@ -116,7 +114,7 @@ public class NameServer implements Shutdownable {
    * NIOTransport will create an additional listening thread. threadPoolExecutor will create a few more shared
    * pool of threads.
    */
-  private void init(NodeId<String> nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
+  private void init(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
     // set to false to cancel non-periodic delayed tasks upon shutdown
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
@@ -178,7 +176,7 @@ public class NameServer implements Shutdownable {
     return appCoordinator;
   }
 
-  public ActiveReplica<?> getActiveReplica() {
+  public ActiveReplica<?,?> getActiveReplica() {
     return activeReplica;
   }
 

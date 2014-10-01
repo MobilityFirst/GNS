@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.paxos.Ballot;
@@ -11,12 +10,13 @@ import edu.umass.cs.gns.paxos.Ballot;
  * Date: 7/25/13
  * Time: 8:49 AM
  * To change this template use File | Settings | File Templates.
+ * @param <NodeIDType>
  */
-public class AcceptReplyPacket extends PaxosPacket {
+public class AcceptReplyPacket<NodeIDType> extends PaxosPacket {
     /**
      * nodeID of the node that sent the message
      */
-    public NodeId<String> nodeID;
+    public NodeIDType nodeID;
 
     /**
      * ballot number
@@ -38,7 +38,7 @@ public class AcceptReplyPacket extends PaxosPacket {
     private static final  String SLOT_NUMBER = "ar3";
 //    private static final  String COMMIT_SLOT = "ar4";
 
-    public AcceptReplyPacket(NodeId<String> nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
+    public AcceptReplyPacket(NodeIDType nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
         this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
         this.nodeID = nodeID;
         this.ballot = ballot;
@@ -48,7 +48,7 @@ public class AcceptReplyPacket extends PaxosPacket {
 
     public AcceptReplyPacket(JSONObject jsonObject) throws  JSONException{
         this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
-        this.nodeID = new NodeId<String>(jsonObject.getString(NODE_ID));
+        this.nodeID = (NodeIDType) jsonObject.getString(NODE_ID);
         this.ballot = new Ballot(jsonObject.getString(BALLOT_NUMBER));
         this.slotNumber = jsonObject.getInt(SLOT_NUMBER);
 //        this.commitSlot = jsonObject.getInt(COMMIT_SLOT);

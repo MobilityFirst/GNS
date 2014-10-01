@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.*;
 import org.json.JSONObject;
 
@@ -9,14 +8,15 @@ import java.util.Set;
 
 /**
  * Created by abhigyan on 1/13/14.
+ * @param <NodeIDType>
  */
-public abstract class PaxosReplicaInterface{
+public abstract class PaxosReplicaInterface<NodeIDType>{
 
   public abstract String getPaxosID();
 
-  public abstract boolean isNodeInPaxosInstance(NodeId<String> responderNodeID);
+  public abstract boolean isNodeInPaxosInstance(NodeIDType responderNodeID);
 
-  public abstract Set<NodeId<String>> getNodeIDs();
+  public abstract Set<NodeIDType> getNodeIDs();
 
   public abstract boolean isStopped();
 

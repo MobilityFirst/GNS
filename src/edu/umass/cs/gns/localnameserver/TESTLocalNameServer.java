@@ -8,7 +8,6 @@ import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -27,9 +26,9 @@ import java.util.*;
  */
 public class TESTLocalNameServer {
 
-  private static HashMap<NodeId<String>, JSONNIOTransport> nsNiots = new HashMap<>();
+  private static final HashMap<Object, JSONNIOTransport> nsNiots = new HashMap<>();
 
-  private static Timer t = new Timer();
+  private static final Timer t = new Timer();
 
   public static void main(String[] args) throws IOException, JSONException, InterruptedException {
     String configFile = "scripts/8nodeslocal/name-server-info";
@@ -40,7 +39,7 @@ public class TESTLocalNameServer {
 
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, GNSNodeConfig.BOGUS_NULL_NAME_SERVER_ID);
 
-    for (NodeId<String> nameServerID: gnsNodeConfig.getNodeIDs()) {
+    for (Object nameServerID: gnsNodeConfig.getNodeIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
       JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nameServerID, new GNSNodeConfig(configFile, nameServerID), worker);
       new Thread(gnsnioTransport).start();
@@ -57,7 +56,7 @@ public class TESTLocalNameServer {
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
       UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 0, 0, "abcd", "EdgeRecord",
-              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, new NodeId<String>(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
+              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, Integer.toString(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
     }
@@ -72,7 +71,7 @@ public class TESTLocalNameServer {
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
       UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 0, 0, "abcd"+i, "EdgeRecord",
-              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, new NodeId<String>(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
+              newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, Integer.toString(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
     }
@@ -81,11 +80,11 @@ public class TESTLocalNameServer {
     System.exit(2);
   }
 
-  private static Set<NodeId<String>> getActiveNameServers(String name) {
-    Set<NodeId<String>> activeNameServers = new HashSet<>();
-    activeNameServers.add(new NodeId<String>(0));
-    activeNameServers.add(new NodeId<String>(1));
-    activeNameServers.add(new NodeId<String>(2));
+  private static Set<Object> getActiveNameServers(String name) {
+    Set<Object> activeNameServers = new HashSet<>();
+    activeNameServers.add(Integer.toString(0));
+    activeNameServers.add(Integer.toString(1));
+    activeNameServers.add(Integer.toString(2));
     return activeNameServers;
   }
 
@@ -93,20 +92,20 @@ public class TESTLocalNameServer {
     return new Random().nextInt(2000);
   }
 
-  public static void handleLookup(NodeId<String> nodeID, JSONObject json) throws JSONException, IOException {
+  public static void handleLookup(Object nodeID, JSONObject json) throws JSONException, IOException {
     DNSPacket dnsPacket = new DNSPacket(json);
     dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     send(nodeID, dnsPacket.getLnsAddress(), dnsPacket.toJSONObjectForErrorResponse(), getDelay());
   }
 
-  public static void handleRequestActives(NodeId<String> nodeID, JSONObject json) throws JSONException, IOException {
+  public static void handleRequestActives(Object nodeID, JSONObject json) throws JSONException, IOException {
     RequestActivesPacket requestActives = new RequestActivesPacket(json);
     requestActives.setActiveNameServers(getActiveNameServers(requestActives.getName()));
     send(nodeID, requestActives.getLnsAddress(), requestActives.toJSONObject(), getDelay());
   }
 
-  private static void send(final NodeId<String> nsID, final InetSocketAddress lnsAddress, final JSONObject json, long delay) {
+  private static void send(final Object nsID, final InetSocketAddress lnsAddress, final JSONObject json, long delay) {
     if (delay > 0) {
       t.schedule(new TimerTask() {
         @Override
@@ -129,8 +128,8 @@ public class TESTLocalNameServer {
 }
 
 class TestPacketDemux extends AbstractPacketDemultiplexer {
-  private NodeId<String> nodeID;
-  public TestPacketDemux(NodeId<String> nodeID) {
+  private Object nodeID;
+  public TestPacketDemux(Object nodeID) {
     this.nodeID = nodeID;
   }
 

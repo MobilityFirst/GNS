@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -14,8 +13,9 @@ import org.json.JSONObject;
  * Provides a packet with signature info and a NameServerID and LNS address field.
  *
  * @author westy
+ * @param <NodeIDType>
  */
-public abstract class BasicPacketWithSignatureInfoAndNSAndLNS extends BasicPacketWithNSAndLNS 
+public abstract class BasicPacketWithSignatureInfoAndNSAndLNS<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> 
 implements PacketInterface, ExtensiblePacketInterface {
 
   public final static String ACCESSOR = "si_accessor";
@@ -31,7 +31,7 @@ implements PacketInterface, ExtensiblePacketInterface {
    *
    * @param lnsAddress
    */
-  public BasicPacketWithSignatureInfoAndNSAndLNS(NodeId<String> nameServerID, InetSocketAddress lnsAddress) {
+  public BasicPacketWithSignatureInfoAndNSAndLNS(NodeIDType nameServerID, InetSocketAddress lnsAddress) {
     this(nameServerID, lnsAddress, null, null, null);
   }
 
@@ -43,7 +43,7 @@ implements PacketInterface, ExtensiblePacketInterface {
    * @param signature
    * @param message
    */
-  public BasicPacketWithSignatureInfoAndNSAndLNS(NodeId<String> nameServerID, InetSocketAddress lnsAddress, String accessor, String signature, String message) {
+  public BasicPacketWithSignatureInfoAndNSAndLNS(NodeIDType nameServerID, InetSocketAddress lnsAddress, String accessor, String signature, String message) {
     super(nameServerID, lnsAddress);
     this.accessor = accessor;
     this.signature = signature;
@@ -59,7 +59,7 @@ implements PacketInterface, ExtensiblePacketInterface {
    * @param signature
    * @param message
    */
-  public BasicPacketWithSignatureInfoAndNSAndLNS(NodeId<String> nameServerID, String address, Integer port, String accessor, String signature, String message) {
+  public BasicPacketWithSignatureInfoAndNSAndLNS(NodeIDType nameServerID, String address, Integer port, String accessor, String signature, String message) {
     this(nameServerID, address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null,
             accessor, signature, message);
   }

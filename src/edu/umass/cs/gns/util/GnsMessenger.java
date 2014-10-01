@@ -3,7 +3,6 @@ package edu.umass.cs.gns.util;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -20,23 +19,23 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 5/3/14.
  */
-public class GnsMessenger implements InterfaceJSONNIOTransport {
+public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType>  {
 
   private static final long RTX_DELAY = 1000; //ms
   private static final int BACKOFF_FACTOR = 2;
 
-  private final InterfaceJSONNIOTransport<NodeId<String>> gnsnioTransport;
+  private final InterfaceJSONNIOTransport<NodeIDType> gnsnioTransport;
   private final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
-  private final NodeId<String> myID;
+  private final NodeIDType myID;
 
-  public GnsMessenger(NodeId<String> myID, InterfaceJSONNIOTransport<NodeId<String>> gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
+  public GnsMessenger(NodeIDType myID, InterfaceJSONNIOTransport<NodeIDType> gnsnioTransport, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor) {
     this.myID = myID;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
     this.gnsnioTransport = gnsnioTransport;
   }
 
   @Override
-  public NodeId<String> getMyID() {
+  public NodeIDType getMyID() {
     return this.myID;
   }
 
@@ -45,7 +44,8 @@ public class GnsMessenger implements InterfaceJSONNIOTransport {
     gnsnioTransport.stop();
   }
 
-  public int sendToID(NodeId<String> id, JSONObject jsonData) throws IOException {
+  @Override
+  public int sendToID(NodeIDType id, JSONObject jsonData) throws IOException {
     int sent = gnsnioTransport.sendToID(id, jsonData);
     if (sent < jsonData.length()) {
       Retransmitter rtxTask = new Retransmitter(id, jsonData, RTX_DELAY);
@@ -65,16 +65,6 @@ public class GnsMessenger implements InterfaceJSONNIOTransport {
   }
 
   @Override
-  public int sendToID(Object id, JSONObject jsonData) throws IOException {
-    // FIXME
-    if (id instanceof NodeId) {
-      return sendToID((NodeId) id, jsonData);
-    } else {
-      throw new UnsupportedOperationException("Not supported yet.");
-    }
-  }
-
-  @Override
   public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
     //To change body of generated methods, choose Tools | Templates.
   }
@@ -87,13 +77,13 @@ public class GnsMessenger implements InterfaceJSONNIOTransport {
   private class Retransmitter implements Runnable {
 
     // One of these next two will be non-null:
-    private final NodeId<String> destID;
+    private final NodeIDType destID;
     private final InetSocketAddress destAddress;
     //
     private final JSONObject msg;
     private final long delay;
 
-    Retransmitter(NodeId<String> destId, JSONObject m, long d) {
+    Retransmitter(NodeIDType destId, JSONObject m, long d) {
       this.destID = destId;
       this.destAddress = null;
       this.msg = m;

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import static edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.getPacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
 

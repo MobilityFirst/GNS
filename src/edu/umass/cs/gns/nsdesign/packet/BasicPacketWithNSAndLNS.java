@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,7 +15,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class BasicPacketWithNSAndLNS extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
   public final static String NAMESERVER_ID = "ns_ID";
   public final static String LNS_ADDRESS = "lnsAddress";
@@ -29,7 +28,7 @@ public abstract class BasicPacketWithNSAndLNS extends BasicPacket implements Pac
    * ID of name server receiving the message.
    * Often if this is GNSNodeConfig.INVALID_NAME_SERVER_ID if the packet hasn't made it to the NS yet.
    */
-  private NodeId<String> nameServerID;
+  private NodeIDType nameServerID;
   //
   /**
    * This is used by the Nameservers so they know which LNS to send the packet back to.
@@ -42,7 +41,7 @@ public abstract class BasicPacketWithNSAndLNS extends BasicPacket implements Pac
    *
    * @param address
    */
-  public BasicPacketWithNSAndLNS(NodeId<String> nameServerID, InetSocketAddress address) {
+  public BasicPacketWithNSAndLNS(NodeIDType nameServerID, InetSocketAddress address) {
     this.nameServerID = nameServerID;
     this.lnsAddress = address;
   }
@@ -53,7 +52,7 @@ public abstract class BasicPacketWithNSAndLNS extends BasicPacket implements Pac
    * @param address
    * @param port
    */
-  public BasicPacketWithNSAndLNS(NodeId<String> nameServerID, String address, Integer port) {
+  public BasicPacketWithNSAndLNS(NodeIDType nameServerID, String address, Integer port) {
     this(nameServerID, address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null);
   }
 
@@ -71,7 +70,7 @@ public abstract class BasicPacketWithNSAndLNS extends BasicPacket implements Pac
    * 
    * @return 
    */
-  public NodeId<String> getNameServerID() {
+  public NodeIDType getNameServerID() {
     return nameServerID;
   }
   
@@ -79,7 +78,7 @@ public abstract class BasicPacketWithNSAndLNS extends BasicPacket implements Pac
    * Sets the id of the name server (usually the one that is handling this packet).
    * @param nameServerID 
    */
-  public void setNameServerID(NodeId<String> nameServerID) {
+  public void setNameServerID(NodeIDType nameServerID) {
     this.nameServerID = nameServerID;
   }
 
