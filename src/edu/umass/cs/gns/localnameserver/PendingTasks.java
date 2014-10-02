@@ -89,7 +89,7 @@ public class PendingTasks {
    */
   public static void handleActivesRequestReply(JSONObject json) throws JSONException {
     RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json);
-    if (StartLocalNameServer.debugMode) {
+    if (StartLocalNameServer.debuggingEnabled) {
       GNS.getLogger().fine("Recvd request actives packet: " + requestActivesPacket
               + " name\t" + requestActivesPacket.getName());
     }
@@ -103,13 +103,13 @@ public class PendingTasks {
 
     if (LocalNameServer.containsCacheEntry(requestActivesPacket.getName())) {
       LocalNameServer.updateCacheEntry(requestActivesPacket);
-      if (StartLocalNameServer.debugMode) {
+      if (StartLocalNameServer.debuggingEnabled) {
         GNS.getLogger().fine("Updating cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
     } else {
       LocalNameServer.addCacheEntry(requestActivesPacket);
-      if (StartLocalNameServer.debugMode) {
+      if (StartLocalNameServer.debuggingEnabled) {
         GNS.getLogger().fine("Adding to cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
@@ -128,7 +128,7 @@ public class PendingTasks {
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
     if (runTasks != null && runTasks.size() > 0) {
-      if (StartLocalNameServer.debugMode) {
+      if (StartLocalNameServer.debuggingEnabled) {
         GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount " + runTasks.size());
       }
       for (PendingTask task : runTasks) {
@@ -136,12 +136,12 @@ public class PendingTasks {
         task.requestInfo.unsetLookupActives();
         //
         if (task.period > 0) {
-          if (StartLocalNameServer.debugMode) {
+          if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine(" Running Pending tasks. REPEAT!!");
           }
           LocalNameServer.getExecutorService().scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
         } else {
-          if (StartLocalNameServer.debugMode) {
+          if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine(" Pending tasks. No repeat.");
           }
           LocalNameServer.getExecutorService().schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);

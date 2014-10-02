@@ -43,13 +43,9 @@ public class Packet {
 
   public enum PacketType implements IntegerPacketType {
 
-    // SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
-    // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
-    DNS(-1),
-    DNS_RESPONSE(-2),
-    DNS_ERROR_RESPONSE(-3),
+    DNS(1),
     // Add
-    ADD_RECORD(1),
+    ADD_RECORD(2),
     CONFIRM_ADD(3),
     ACTIVE_ADD(4), // on an add request replica controller sends to active replica
     ACTIVE_ADD_CONFIRM(5), // after adding name, active replica confirms to replica controller
@@ -113,7 +109,13 @@ public class Packet {
     TEST_PING(222),
     TEST_PONG(223),
     
-    TEST_NOOP(224);
+    TEST_NOOP(224),
+    
+    // SPECIAL CASES FOR DNS_SUBTYPE_QUERY PACKETS WHICH USE ONE PACKET FOR ALL THESE
+    // these 3 are here for completeness and instrumentation
+    DNS_SUBTYPE_QUERY(-1),
+    DNS_SUBTYPE_RESPONSE(-2),
+    DNS_SUBTYPE_ERROR_RESPONSE(-3);
 
     private int number;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
@@ -141,14 +143,14 @@ public class Packet {
     }
   }
 
-  public static PacketType getDNSPacketType(DNSPacket dnsPacket) throws JSONException {
+  public static PacketType getDNSPacketSubType(DNSPacket dnsPacket) throws JSONException {
 
     if (dnsPacket.isQuery()) { // Query
-      return PacketType.DNS;
+      return PacketType.DNS_SUBTYPE_QUERY;
     } else if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
-      return PacketType.DNS_RESPONSE;
+      return PacketType.DNS_SUBTYPE_RESPONSE;
     } else if (dnsPacket.containsAnyError()) {
-      return PacketType.DNS_ERROR_RESPONSE;
+      return PacketType.DNS_SUBTYPE_ERROR_RESPONSE;
     }
     return null;
   }
@@ -159,12 +161,11 @@ public class Packet {
   }
 
   public static PacketType getPacketType(JSONObject json) throws JSONException {
-    //System.out.println("*****PACKETTYPE****:: " + json.getInt(PACKET_TYPE) + " : " + PacketType.getPacketType(json.getInt(PACKET_TYPE)));
     if (Packet.hasPacketTypeField(json)) {
       return getPacketType(json.getInt(PACKET_TYPE));
+    } else {
+      throw new JSONException("Packet missing packet type field:" + json.toString());
     }
-    // why... why not just put the type in the packet like all the other ones do?
-    return PacketType.DNS;
   }
 
   public static boolean hasPacketTypeField(JSONObject json) {

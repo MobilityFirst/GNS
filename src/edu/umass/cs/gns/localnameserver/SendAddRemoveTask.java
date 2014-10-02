@@ -155,12 +155,11 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
     // and send it off
     try {
       JSONObject jsonToSend = getPacket().toJSONObject();
-      handler.sendToNS(jsonToSend, nameServerID);
-
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.toString() + " Name:" + getName() + " Id:" + getLnsRequestID()
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }
+      handler.sendToNS(jsonToSend, nameServerID);
     } catch (JSONException e) {
       e.printStackTrace();
     }

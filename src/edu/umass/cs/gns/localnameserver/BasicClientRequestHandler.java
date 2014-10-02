@@ -49,7 +49,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  *
  * @author westy
  */
-public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHandlerInterface<NodeIDType> {
+public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
 
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
@@ -60,7 +60,7 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
   private final ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
 
   /**
-   * Cache of Name records Key: Name, Value: CacheEntry (DNS record)
+   * Cache of Name records Key: Name, Value: CacheEntry (DNS_SUBTYPE_QUERY record)
    *
    */
   private final Cache<String, CacheEntry> cache;
@@ -128,6 +128,7 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
     return gnsNodeConfig;
   }
 
+  @Override
   public InetSocketAddress getNodeAddress() {
     return nodeAddress;
   }
@@ -137,7 +138,8 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
     return parameters;
   }
 
-  // REQUEST INFO METHODS
+  // REQUEST INFO METHODS 
+  // What happens when this overflows?
   private int currentRequestID = 0;
 
   @Override
@@ -197,7 +199,7 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
 
   /**
    **
-   * Returns true if the local name server cache contains DNS record for the specified name, false otherwise
+   * Returns true if the local name server cache contains DNS_SUBTYPE_QUERY record for the specified name, false otherwise
    *
    * @param name Host/Domain name
    */
@@ -209,10 +211,10 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
 
   /**
    **
-   * Adds a new CacheEntry (NameRecord) from a DNS packet. Overwrites existing cache entry for a name, if the name
+   * Adds a new CacheEntry (NameRecord) from a DNS_SUBTYPE_QUERY packet. Overwrites existing cache entry for a name, if the name
    * record exist in the cache.
    *
-   * @param packet DNS packet containing record
+   * @param packet DNS_SUBTYPE_QUERY packet containing record
    */
   @Override
   public CacheEntry addCacheEntry(DNSPacket packet) {
@@ -229,9 +231,9 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
   }
 
   /**
-   * Updates an existing cache entry with new information from a DNS packet.
+   * Updates an existing cache entry with new information from a DNS_SUBTYPE_QUERY packet.
    *
-   * @param packet DNS packet containing record
+   * @param packet DNS_SUBTYPE_QUERY packet containing record
    */
   @Override
   public CacheEntry updateCacheEntry(DNSPacket packet) {
@@ -387,6 +389,9 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
   @Override
   public void sendToNS(JSONObject json, NodeIDType ns) {
     try {
+      if (parameters.isDebugMode()) {
+        GNS.getLogger().info("Send to: " + ns + " json: " + json);
+      }
       tcpTransport.sendToID(ns, json);
     } catch (IOException e) {
       e.printStackTrace();
@@ -500,7 +505,7 @@ public class BasicClientRequestHandler<NodeIDType>  implements ClientRequestHand
     if (lastRecordedTime == -1) {
       lastRecordedTime = System.nanoTime();
       return;
-    }   
+    }
     long currentTime = System.nanoTime();
     long timeDiff = currentTime - lastRecordedTime;
     deferedCnt++;

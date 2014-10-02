@@ -106,11 +106,11 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
     {
       JSONObject sendJson = packet.toJSONObject();
       LocalNameServer.sendToNS(sendJson, primaryID);
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID.toString()
+      if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID.toString()
               + "\tname\t" + name);
     } catch (JSONException e)
     {
-      if (StartLocalNameServer.debugMode) GNS.getLogger().fine("JSON Exception in sending packet. name\t" + name);
+      if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("JSON Exception in sending packet. name\t" + name);
       e.printStackTrace();
     }
 

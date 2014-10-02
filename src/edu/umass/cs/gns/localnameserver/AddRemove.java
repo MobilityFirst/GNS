@@ -50,7 +50,7 @@ public class AddRemove {
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
     LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-    if (StartLocalNameServer.debugMode) {
+    if (StartLocalNameServer.debuggingEnabled) {
       if (Config.debuggingEnabled) {
         GNS.getLogger().fine(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
       }

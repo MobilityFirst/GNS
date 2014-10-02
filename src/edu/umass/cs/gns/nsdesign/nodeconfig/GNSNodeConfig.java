@@ -6,7 +6,6 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.HostInfo;
-import edu.umass.cs.gns.util.Util;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

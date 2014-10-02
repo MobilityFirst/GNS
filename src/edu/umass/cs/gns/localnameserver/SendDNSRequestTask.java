@@ -63,6 +63,9 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   public void run() {
     try {
       timeoutCount++;
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("ENTER name = " + incomingPacket.getGuid() + "/" + incomingPacket.getKey() + " timeout = " + timeoutCount);
+      }
 
       if (isMaxWaitTimeExceeded(handler) || isResponseReceived(handler)) {
         throw new CancelExecutorTaskException();
@@ -93,7 +96,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       if (e.getClass().equals(CancelExecutorTaskException.class)) {
         throw new RuntimeException();
       }
-      GNS.getLogger().severe("Exception in SendUpdatesTask: " + e);
+      GNS.getLogger().severe("Problem sending a DNS request: " + e);
       e.printStackTrace();
     }
   }
@@ -128,7 +131,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
         if (requestInfo!=null) {
           // send error response to user and log error
           if (handler.getParameters().isDebugMode()) {
-            GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getKey() + " " + incomingPacket.getGuid()
+            GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getGuid() + "/" + incomingPacket.getKey()
                     + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
                     + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
           }

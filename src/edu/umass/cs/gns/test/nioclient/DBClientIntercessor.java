@@ -114,7 +114,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
   // incoming packets from LNS
   @Override
   public void handleIncomingPacket(JSONObject incomingJson) {
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
+    if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
     int origReqID;
     JSONObject origJson = null; // json sent by client
     JSONObject outgoingJson = null;

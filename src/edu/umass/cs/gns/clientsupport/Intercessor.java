@@ -84,29 +84,6 @@ public class Intercessor implements IntercessorInterface {
     lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
   }
 
-//  /**
-//   * Returns the local server ID associate with the Intercessor.
-//   * 
-//   * @return
-//   */
-//  public static int getLocalServerID() {
-//    return localServerID;
-//  }
-
-//  /**
-//   * Sets the local server ID associate with the Intercessor.
-//   * 
-//   * @param localServerID
-//   */
-//  public static void setLocalServerID(int localServerID) {
-//    Intercessor.localServerID = localServerID;
-//
-//    GNS.getLogger().info("Local server id: " + localServerID
-//            + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
-//            + " LNS TCP Port: " + GNS.DEFAULT_LNS_TCP_PORT);
-//            //+ " LNS TCP Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
-//  }
-
   /**
    * This is invoked to receive packets. It updates the appropriate map
    * for the id and notifies the appropriate monitor to wake the

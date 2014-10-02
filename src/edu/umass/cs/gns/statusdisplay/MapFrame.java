@@ -170,9 +170,9 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
   public static final Map<Packet.PacketType, PacketGraphic> packetGraphics = new EnumMap(Packet.PacketType.class);
 
   static {
-    packetGraphics.put(Packet.PacketType.DNS, new PacketGraphic(Colors.Black, 1.0));
-    packetGraphics.put(Packet.PacketType.DNS_RESPONSE, new PacketGraphic(Colors.Blue, 1.1));
-    packetGraphics.put(Packet.PacketType.DNS_ERROR_RESPONSE, new PacketGraphic(Colors.Red, 1.2));
+    packetGraphics.put(Packet.PacketType.DNS_SUBTYPE_QUERY, new PacketGraphic(Colors.Black, 1.0));
+    packetGraphics.put(Packet.PacketType.DNS_SUBTYPE_RESPONSE, new PacketGraphic(Colors.Blue, 1.1));
+    packetGraphics.put(Packet.PacketType.DNS_SUBTYPE_ERROR_RESPONSE, new PacketGraphic(Colors.Red, 1.2));
     packetGraphics.put(Packet.PacketType.ADD_RECORD, new PacketGraphic(Colors.Green, 1.3));
    // packetGraphics.put(Packet.PacketType.REPLICATE_RECORD, new PacketGraphic(Colors.Cyan, 1.4));
     //packetGraphics.put(Packet.PacketType.REMOVE_REPLICATION_RECORD, new PacketGraphic(Colors.DarkSalmon, 1.0));
@@ -444,12 +444,12 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
           //StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.REPLICATE_RECORD, null, null));
           break;
         case 1:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_SUBTYPE_QUERY, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_SUBTYPE_ERROR_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(to, from, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_SUBTYPE_RESPONSE, "E592EDC0DAD5E4DF8E5E79F22BAB6680D1899567", null));
           break;
         case 2:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_RESPONSE, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_SUBTYPE_RESPONSE, null, null));
           break;
         case 3:
           //StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.UPDATE_ADDRESS_NS, null, null));
@@ -461,7 +461,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
           StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.ADD_RECORD, null, null));
           break;
         case 6:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_ERROR_RESPONSE, null, null));
+          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.DNS_SUBTYPE_ERROR_RESPONSE, null, null));
           break;
       }
       ThreadUtils.sleep(100);

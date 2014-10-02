@@ -97,7 +97,7 @@ public class LocalNameServer implements Shutdownable {
     // keep a copy of this so we can shut it down later
     this.gnsNodeConfig = gnsNodeConfig;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
-    RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debugMode,
+    RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debuggingEnabled,
             StartLocalNameServer.experimentMode,
             StartLocalNameServer.emulatePingLatencies,
             StartLocalNameServer.variation,

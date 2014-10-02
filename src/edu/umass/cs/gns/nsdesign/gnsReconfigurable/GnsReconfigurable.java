@@ -122,6 +122,9 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       JSONObject json = new JSONObject(value);
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().severe("Handling " + packetType.name() + " packet: " + json.toString());
+      }
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests

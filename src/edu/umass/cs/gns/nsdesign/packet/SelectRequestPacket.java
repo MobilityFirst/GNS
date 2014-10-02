@@ -11,7 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * A SelectRequestPacket is like a DNS packet without a GUID, but with a key and value.
+ * A SelectRequestPacket is like a DNS_SUBTYPE_QUERY packet without a GUID, but with a key and value.
  * The semantics is that we want to look up all the records that have a field named key with the given value.
  * We also use this to do automatic group GUID maintenence.
  *

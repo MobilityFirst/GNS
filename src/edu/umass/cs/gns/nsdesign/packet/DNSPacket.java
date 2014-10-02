@@ -108,6 +108,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
           ColumnFieldType returnFormat,
           String accessor, String signature, String message) {
     super(null, accessor, signature, message); // lnsAddress is null
+    this.type = Packet.PacketType.DNS;
     this.header = new Header(id, DNSRecordType.QUERY, NSResponseCode.NO_ERROR);
     this.guid = guid;
     this.key = key;
@@ -115,46 +116,6 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     this.sourceId = sourceId;
     this.responder = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.returnFormat = returnFormat;
-  }
-
-  /**
-   **
-   * Constructs a packet from a JSONObject that represents a DNS packet.
-   * This packet has both a query and response section.
-   * The response section will be empty if this is an error response.
-   *
-   * @param json JSONObject that represents a DNS packet
-   * @throws org.json.JSONException
-   */
-  public DNSPacket(JSONObject json) throws JSONException {
-    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
-            json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
-    //super(json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
-    this.header = new Header(json.getJSONObject(HEADER));
-    this.guid = json.getString(GUID);
-    if (json.has(KEY)) {
-      this.key = json.getString(KEY);
-    } else {
-      this.key = null;
-    }
-    if (json.has(KEYS)) {
-      this.keys = JSONUtils.JSONArrayToArrayListString(json.getJSONArray(KEYS));
-    } else {
-      this.keys = null;
-    }
-    this.sourceId = (NodeIDType) json.get(SOURCE_ID);
-    // read the optional responder if it is there
-    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
-    this.returnFormat = json.has(RETURN_FORMAT) ? ColumnFieldType.valueOf(json.getString(RETURN_FORMAT)) : null;
-
-    // These will only be present in non-error response packets
-    if (header.isResponse() && !header.isAnyKindOfError()) {
-      this.ttl = json.getInt(TIME_TO_LIVE);
-      if (json.has(RECORD_VALUE)) {
-        this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
-      }
-    }
-
   }
 
   /**
@@ -189,6 +150,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    */
   public DNSPacket(NodeIDType sourceId, int id, String name, String key, ArrayList<String> keys, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
     super(null); // lnsAddress is null and no sigs for this baby
+    this.type = Packet.PacketType.DNS;
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
     this.guid = name;
     this.key = key;
@@ -198,6 +160,47 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     this.ttl = TTL;
     this.responder = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.returnFormat = null;
+  }
+
+  
+  /**
+   **
+   * Constructs a packet from a JSONObject that represents a DNS packet.
+   * This packet has both a query and response section.
+   * The response section will be empty if this is an error response.
+   *
+   * @param json JSONObject that represents a DNS packet
+   * @throws org.json.JSONException
+   */
+  public DNSPacket(JSONObject json) throws JSONException {
+    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
+            json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
+    this.type = Packet.getPacketType(json);
+    this.header = new Header(json.getJSONObject(HEADER));
+    this.guid = json.getString(GUID);
+    if (json.has(KEY)) {
+      this.key = json.getString(KEY);
+    } else {
+      this.key = null;
+    }
+    if (json.has(KEYS)) {
+      this.keys = JSONUtils.JSONArrayToArrayListString(json.getJSONArray(KEYS));
+    } else {
+      this.keys = null;
+    }
+    this.sourceId = (NodeIDType) json.get(SOURCE_ID);
+    // read the optional responder if it is there
+    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.returnFormat = json.has(RETURN_FORMAT) ? ColumnFieldType.valueOf(json.getString(RETURN_FORMAT)) : null;
+
+    // These will only be present in non-error response packets
+    if (header.isResponse() && !header.isAnyKindOfError()) {
+      this.ttl = json.getInt(TIME_TO_LIVE);
+      if (json.has(RECORD_VALUE)) {
+        this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
+      }
+    }
+
   }
 
   /**
@@ -253,6 +256,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   // conditionally writes various parts depending on whether we are a query or a response
   private void addToJSONObjectHelper(JSONObject json, boolean includeSignatureSection, boolean includeReponseSection) throws JSONException {
     super.addToJSONObject(json, includeSignatureSection);
+    Packet.putPacketType(json, getType());
     // query section
     json.put(HEADER, getHeader().toJSONObject());
     if (key != null) {

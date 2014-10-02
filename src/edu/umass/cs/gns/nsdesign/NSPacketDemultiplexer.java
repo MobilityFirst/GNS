@@ -36,11 +36,11 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
       public void run() {
         intervalCount += 1;
 
-        GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount " +
-                (getMsgCount() - prevMsgCount) + " Node " + nodeID.toString() + " ");
+        GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount "
+                + (getMsgCount() - prevMsgCount) + " Node " + nodeID.toString() + " ");
         prevMsgCount = msgCount;
       }
-    },0, 10, TimeUnit.SECONDS);
+    }, 0, 10, TimeUnit.SECONDS);
     register(Packet.PacketType.LNS_TO_NS_COMMAND);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.DNS);
@@ -55,7 +55,6 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     register(Packet.PacketType.CONFIRM_UPDATE);
     register(Packet.PacketType.CONFIRM_ADD);
     register(Packet.PacketType.CONFIRM_REMOVE);
-
 
     register(Packet.PacketType.ADD_RECORD);
     register(Packet.PacketType.REQUEST_ACTIVES);
@@ -75,8 +74,6 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     // packets from coordination modules at replica controller
     register(Packet.PacketType.REPLICA_CONTROLLER_COORDINATION);
 
-
-
     register(Packet.PacketType.NEW_ACTIVE_START);
     register(Packet.PacketType.NEW_ACTIVE_START_FORWARD);
     register(Packet.PacketType.NEW_ACTIVE_START_RESPONSE);
@@ -84,10 +81,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     register(Packet.PacketType.NEW_ACTIVE_START_PREV_VALUE_RESPONSE);
     register(Packet.PacketType.OLD_ACTIVE_STOP);
     register(Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
-
   }
-
-
 
   /**
    * Entry point for all packets received at name server.
@@ -95,15 +89,16 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
    * Based on the packet type it forwards to active replica or replica controller.
    *
    * @param json JSON object received by NIO package.
+   * @return 
    */
   @Override
   public boolean handleJSONObject(final JSONObject json) {
     incrementMsgCount();
     try {
       final Packet.PacketType type = Packet.getPacketType(json);
-
-      // return value should be true if packet type matches these packets:
-      if (Config.debuggingEnabled) GNS.getLogger().fine(" MsgType " + type + " Msg " + json);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().fine("MsgType " + type + " Msg " + json);
+      }
       nameServer.getExecutorService().submit(new Runnable() {
         @Override
         public void run() {
@@ -118,12 +113,12 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
               case DNS:
               case SELECT_REQUEST:
               case SELECT_RESPONSE:
-                // Packets sent from replica controller
+              // Packets sent from replica controller
               case ACTIVE_ADD:
               case ACTIVE_REMOVE:
               case ACTIVE_COORDINATION:
                 // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
-                // coming back from the LNS is handled.
+              // coming back from the LNS is handled.
               case CONFIRM_UPDATE:
               case CONFIRM_ADD:
               case CONFIRM_REMOVE:
@@ -139,19 +134,19 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
               case REMOVE_RECORD:
               case RC_REMOVE:
 
-                // Packets sent by active replica
+              // Packets sent by active replica
               case ACTIVE_ADD_CONFIRM:
               case ACTIVE_REMOVE_CONFIRM:
               case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
               case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
 
-                // Packets sent by replica controller to itself (this will proposed for coordination)
+              // Packets sent by replica controller to itself (this will proposed for coordination)
               case NEW_ACTIVE_PROPOSE:
               case GROUP_CHANGE_COMPLETE:
               case NAMESERVER_SELECTION:
               case NAME_RECORD_STATS_RESPONSE:
               case NAME_SERVER_LOAD:
-                // packets from coordination modules at replica controller
+              // packets from coordination modules at replica controller
               case REPLICA_CONTROLLER_COORDINATION:
                 ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
                 if (replicaController != null) {
@@ -188,6 +183,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     } catch (JSONException e) {
       e.printStackTrace();
     }
+    // return value should be true if packet type matches these packets
     return true;
   }
 

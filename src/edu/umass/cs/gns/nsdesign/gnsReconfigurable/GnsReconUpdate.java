@@ -50,7 +50,7 @@ public class GnsReconUpdate {
           boolean noCoordinationState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine(" Processing UPDATE: " + updatePacket);
+      GNS.getLogger().fine("Processing UPDATE: " + updatePacket);
     }
 
     if (noCoordinationState) {

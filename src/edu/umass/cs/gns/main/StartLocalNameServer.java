@@ -81,7 +81,7 @@ public class StartLocalNameServer {
   /**
    * * Set to true for more verbose logging level.
    */
-  public static boolean debugMode = false;
+  public static boolean debuggingEnabled = true;
 
   /**
    * * Used for running experiments for Auspice paper.
@@ -324,7 +324,7 @@ public class StartLocalNameServer {
    -cacheSize 10000 -primary 3 -location -vInterval 1000 -chooseFromClosestK 1 -lookupRate 10000 
    -updateRateMobile 0 -updateRateRegular 10000 -maxQueryWaitTime 100000 -queryTimeout 100
    -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO
-   -debugMode
+   -debuggingEnabled
    */
   /**
    * ************************************************************
@@ -490,7 +490,7 @@ public class StartLocalNameServer {
               ? Double.parseDouble(allValues.get(OUTPUT_SAMPLE_RATE)) : 1.0;
 
       if (allValues.containsKey(DEBUG_MODE)) {
-        debugMode = Boolean.parseBoolean(allValues.get(DEBUG_MODE));
+        debuggingEnabled = Boolean.parseBoolean(allValues.get(DEBUG_MODE));
       }
 
       if (allValues.containsKey(DNS_GNS_ONLY)) {
@@ -547,7 +547,7 @@ public class StartLocalNameServer {
     GNS.getLogger().info("Cache Size: " + cacheSize);
     GNS.getLogger().info("Experiment Mode: " + experimentMode);
     GNS.getLogger().info("DNS GNS Only: " + dnsGnsOnly);
-    GNS.getLogger().info("Debug Mode: " + debugMode);
+    GNS.getLogger().info("Debug Mode: " + debuggingEnabled);
 
     try {
       GNSNodeConfig gnsNodeConfig;
