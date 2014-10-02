@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -99,17 +98,17 @@ public class Util {
     return set;
   }
   
-  public static Set<NodeId<String>> arrayToNodeIdSet(NodeId[] array) {
-    TreeSet<NodeId<String>> set = new TreeSet<NodeId<String>>();
+  public static Set arrayToNodeIdSet(Object[] array) {
+    TreeSet set = new TreeSet();
     for (int i = 0; i < array.length; i++) {
       set.add(array[i]);
     }
     return set;
   }
 
-  public static Set<String> nodeIdSetToStringSet(Set<NodeId<String>> set) {
+  public static Set<String> nodeIdSetToStringSet(Set set) {
     Set<String> result = new HashSet<String>();
-    for (NodeId<String> id : set) {
+    for (Object id : set) {
       result.add(id.toString());
     }
     return result;
@@ -124,10 +123,10 @@ public class Util {
     return array;
   }
 
-  public static NodeId<String>[] setToNodeIdArray(Set<NodeId<String>> set) {
-    NodeId[] array = new NodeId[set.size()];
+  public static Object[] setToNodeIdArray(Set set) {
+    Object[] array = new Object[set.size()];
     int i = 0;
-    for (NodeId<String> id : set) {
+    for (Object id : set) {
       array[i++] = id;
     }
     return array;
@@ -186,17 +185,17 @@ public class Util {
     return s;
   }
 
-  public static NodeId[] stringToNodeIdArray(String string) {
+  public static Object[] stringToNodeIdArray(String string) {
     string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
     String[] tokens = string.split(",");
-    NodeId<String>[] array = new NodeId[tokens.length];
+    Object[] array = new Object[tokens.length];
     for (int i = 0; i < array.length; i++) {
-      array[i] = new NodeId(tokens[i]);
+      array[i] = tokens[i];
     }
     return array;
   }
 
-  public static String arrayOfNodeIdsToString(NodeId[] array) {
+  public static String arrayOfNodeIdsToString(Object[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
       s += array[i].toString();

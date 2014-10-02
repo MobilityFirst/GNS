@@ -9,7 +9,6 @@ import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -150,15 +149,15 @@ public class JSONUtils {
    * @return ArrayList with the content of JSONArray.
    * @throws JSONException
    */
-  public static Set<NodeId<String>> JSONArrayToSetNodeIdString(JSONArray json) throws JSONException {
-    Set<NodeId<String>> set = new HashSet<NodeId<String>>();
+  public static Set JSONArrayToSetNodeIdString(JSONArray json) throws JSONException {
+    Set set = new HashSet();
 
     if (json == null) {
       return set;
     }
 
     for (int i = 0; i < json.length(); i++) {
-      set.add(new NodeId<String>(json.getString(i)));
+      set.add(json.get(i));
     }
 
     return set;
@@ -231,11 +230,11 @@ public class JSONUtils {
           jsonObject.put(field.getName(), (Set<String>) value);
           break;
         case SET_NODE_ID_STRING:
-          Set<NodeId<String>> set = (Set<NodeId<String>>) value;
+          Set set = (Set) value;
           if (Config.debuggingEnabled) {
             GNS.getLogger().finer("$$$$$$$$$$ Set: " + (set != null ? Util.setOfNodeIdToString(set) : " is null "));
           }
-          jsonObject.put(field.getName(), Util.nodeIdSetToStringSet((Set<NodeId<String>>) value));
+          jsonObject.put(field.getName(), Util.nodeIdSetToStringSet(set));
           break;
         case LIST_INTEGER:
           jsonObject.put(field.getName(), (ArrayList<Integer>) value);
