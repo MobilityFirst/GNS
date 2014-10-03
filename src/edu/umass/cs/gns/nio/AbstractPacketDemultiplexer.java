@@ -72,7 +72,7 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
       executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
     } else {
       if (Config.debuggingEnabled) {
-        log.fine("Ignoring packet type: " + JSONPacket.getPacketType(jsonObject));
+        log.warning("!!!!!!!!!!!!! Ignoring packet type: " + JSONPacket.getPacketType(jsonObject));
       }
     }
     return handled;

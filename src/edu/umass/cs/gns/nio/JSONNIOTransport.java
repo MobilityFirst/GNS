@@ -47,7 +47,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   private String IPField = null;
   private String portField = null;
 
-  public static final boolean DEBUG = true; // enables send monitoring
+  public static final boolean DEBUG = false; // enables send monitoring
 
   public JSONNIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nodeConfig)
           throws IOException {

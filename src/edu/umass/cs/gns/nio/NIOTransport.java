@@ -78,7 +78,7 @@ import java.util.logging.Logger;
  */
 public class NIOTransport<NodeIDType> implements Runnable {
 
-  public static final boolean DEBUG = true;
+  public static final boolean DEBUG = false;
   public static final boolean LOCAL_LOGGER = false;
 
   private static final double LOG_SAMPLING_FRACTION = 0.1;
