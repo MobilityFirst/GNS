@@ -63,7 +63,7 @@ public class Intercessor implements IntercessorInterface {
   // Instrumentation
   private static final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  public static boolean debuggingEnabled = true;
+  public static boolean debuggingEnabled = false;
 
   static {
     randomID = new Random();

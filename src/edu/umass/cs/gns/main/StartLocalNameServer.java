@@ -79,9 +79,9 @@ public class StartLocalNameServer {
   public static long voteIntervalMillis = 1000000000;
 
   /**
-   * * Set to true for more verbose logging level.
+   * * Set to true to enable all the debugging logging statements.
    */
-  public static boolean debuggingEnabled = true;
+  public static boolean debuggingEnabled = false;
 
   /**
    * * Used for running experiments for Auspice paper.
