@@ -12,7 +12,6 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -36,12 +35,12 @@ import java.util.ArrayList;
  *
  * Created by abhigyan on 2/26/14.
  */
-public class GnsReconfigurable implements GnsReconfigurableInterface {
+public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface {
 
   /**
    * ID of this node
    */
-  private final NodeId<String> nodeID;
+  private final NodeIDType nodeID;
 
   /**
    * nio server
@@ -68,7 +67,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
    * @param nioServer
    * @param mongoRecords
    */
-  public GnsReconfigurable(NodeId<String> nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
           MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
@@ -87,7 +86,7 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
   }
 
   @Override
-  public NodeId<String> getNodeID() {
+  public NodeIDType getNodeID() {
     return nodeID;
   }
 
@@ -123,6 +122,9 @@ public class GnsReconfigurable implements GnsReconfigurableInterface {
       JSONObject json = new JSONObject(value);
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().finer("Handling " + packetType.name() + " packet: " + json.toString());
+      }
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests

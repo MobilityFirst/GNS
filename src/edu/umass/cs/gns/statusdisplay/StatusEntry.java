@@ -4,7 +4,6 @@
  */
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.awt.geom.Point2D;
 import java.util.Date;
 
@@ -18,7 +17,7 @@ public class StatusEntry implements Comparable<StatusEntry> {
 
     PENDING, INITIALIZING, RUNNING, TERMINATED, ERROR;
   }
-  private NodeId<String> id;
+  private String id;
   private String name;
   private String ip;
   private Point2D location;
@@ -26,7 +25,7 @@ public class StatusEntry implements Comparable<StatusEntry> {
   private String statusString;
   private Date time;
 
-  public StatusEntry(NodeId<String> id) {
+  public StatusEntry(String id) {
     this.id = id;
     this.name = null;
     this.state = State.PENDING;
@@ -35,12 +34,12 @@ public class StatusEntry implements Comparable<StatusEntry> {
     this.ip = null;
   }
 
-  public StatusEntry(NodeId<String> id, String name) {
+  public StatusEntry(String id, String name) {
     this(id);
     this.name = name;
   }
 
-  public NodeId<String> getId() {
+  public String getId() {
     return id;
   }
 
@@ -100,7 +99,7 @@ public class StatusEntry implements Comparable<StatusEntry> {
       return EQUAL;
     }
     
-    return this.id.get().compareTo(that.id.get());
+    return this.id.toString().compareTo(that.id.toString());
   }
 
   

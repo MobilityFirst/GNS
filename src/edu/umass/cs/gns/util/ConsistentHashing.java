@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -34,7 +33,7 @@ public class ConsistentHashing {
   /**
    * A treemap whose keys are hashes of ID of all name servers, and values are IDs of name servers.
    */
-  private static TreeMap<String, NodeId<String>> nsTreeMap;
+  private static TreeMap<String, Object> nsTreeMap;
 
   /**
    * Lock object for checking if <code>nsTreeMap</code> is initialized.
@@ -48,7 +47,7 @@ public class ConsistentHashing {
    * Initialize consistent hashing. Before calling any method in this class, <code>reInitialize</code> method must be
    * called.
    */
-  public static void reInitialize(int numReplicaControllers, Set<NodeId<String>> nameServerIDs) {
+  public static void reInitialize(int numReplicaControllers, Set nameServerIDs) {
     if (numReplicaControllers > nameServerIDs.size()) {
       throw new IllegalArgumentException("ERROR: Number of replica controllers " + numReplicaControllers
               + " numNameServers = " + nameServerIDs.size());
@@ -57,9 +56,9 @@ public class ConsistentHashing {
       GNS.getLogger().info("Reinitializing consistent hashing with node Ids " +  Util.setOfNodeIdToString(nameServerIDs));
       ConsistentHashing.numReplicaControllers = numReplicaControllers;
       // Keys of treemap are hashes of ID of all name servers, values are IDs of name servers.
-      nsTreeMap = new TreeMap<String, NodeId<String>>();
-      for (NodeId<String> nodeID : nameServerIDs) {
-        nsTreeMap.put(getMD5Hash(nodeID.get()), nodeID);
+      nsTreeMap = new TreeMap<String, Object>();
+      for (Object nodeID : nameServerIDs) {
+        nsTreeMap.put(getMD5Hash(nodeID.toString()), nodeID);
       }
     }
   }
@@ -71,7 +70,7 @@ public class ConsistentHashing {
    * @param name Name
    * @return a set with nodeIDs of replica controllers
    */
-  public static Set<NodeId<String>> getReplicaControllerSet(String name) {
+  public static Set<Object> getReplicaControllerSet(String name) {
     if (name == null || name.trim().equals("")) {
       return null;
     }
@@ -96,19 +95,19 @@ public class ConsistentHashing {
    * We return a hash map whose keys are groupIDs of replica controller groups, and
    * values are list of members in that group.
    */
-  public static HashMap<String, Set<NodeId<String>>> getReplicaControllerGroupIDsForNode(NodeId<String> nodeID) {
+  public static HashMap<String, Set> getReplicaControllerGroupIDsForNode(Object nodeID) {
 
-    HashMap<String, Set<NodeId<String>>> groupIDsAndMembers = new HashMap<String, Set<NodeId<String>>>();
+    HashMap<String, Set> groupIDsAndMembers = new HashMap<String, Set>();
 
-    ArrayList<NodeId<String>> nodesSorted = new ArrayList<NodeId<String>>();
+    ArrayList<Object> nodesSorted = new ArrayList<Object>();
     for (String s1 : nsTreeMap.keySet()) {
       nodesSorted.add(nsTreeMap.get(s1));
     }
 
     for (int i = 0; i < nsTreeMap.size(); i++) {
       int paxosMemberIndex = i;
-      String paxosID = getMD5Hash(nodesSorted.get(paxosMemberIndex).get());
-      HashSet<NodeId<String>> nodes = new HashSet<NodeId<String>>();
+      String paxosID = getMD5Hash(nodesSorted.get(paxosMemberIndex).toString());
+      HashSet<Object> nodes = new HashSet<Object>();
       boolean hasNode = false;
       while (nodes.size() < numReplicaControllers) {
         if (nodesSorted.get(paxosMemberIndex).equals(nodeID)) {
@@ -153,11 +152,11 @@ public class ConsistentHashing {
    * First, all nodes are mapped on to key space by hashing. Then, the name is hashed on to the key space.
    * if 'k' primary replicas are to be selected, they are the higher
    */
-  private static Set<NodeId<String>> getPrimaryReplicasNoCache(String name) {
+  private static Set<Object> getPrimaryReplicasNoCache(String name) {
     String hashedName = getMD5Hash(name);
-    HashSet<NodeId<String>> result = new HashSet<NodeId<String>>();
+    HashSet<Object> result = new HashSet<Object>();
     while (true) {
-      Map.Entry<String, NodeId<String>> entry = nsTreeMap.higherEntry(hashedName);
+      Map.Entry<String, Object> entry = nsTreeMap.higherEntry(hashedName);
       if (entry == null) {
         break;
       }
@@ -168,7 +167,7 @@ public class ConsistentHashing {
       }
     }
 
-    Map.Entry<String, NodeId<String>> entry = nsTreeMap.firstEntry();
+    Map.Entry<String, Object> entry = nsTreeMap.firstEntry();
     result.add(entry.getValue());
     hashedName = (String) entry.getKey();
     while (result.size() != numReplicaControllers) {
@@ -187,27 +186,27 @@ public class ConsistentHashing {
       int nameServers = 10;
       int numPrimaryReplicas = 3;
       int names = 10;
-      Set<NodeId<String>> nameServerIDs = new HashSet<NodeId<String>>();
+      Set<Object> nameServerIDs = new HashSet<Object>();
       for (int i = 0; i < nameServers; i++) {
-        nameServerIDs.add(new NodeId<String>(Util.randomString(4)));
+        nameServerIDs.add(Util.randomString(4));
       }
       ConsistentHashing.reInitialize(numPrimaryReplicas, nameServerIDs);
 
       for (int i = 0; i < names; i++) {
         String name = Util.randomString(6);
-        Set<NodeId<String>> primaryNameServers = getPrimaryReplicasNoCache(name);
+        Set<Object> primaryNameServers = getPrimaryReplicasNoCache(name);
         System.out.println("Name: " + name + "\tPrimaries: " + primaryNameServers + "\tGroupID:"
                 + getReplicaControllerGroupID(name) + "\t");
       }
-      for (NodeId<String> node :  nameServerIDs) {
-        System.out.println("Groups for node: " + "\t" + node.get() + "\t" + getReplicaControllerGroupIDsForNode(node));
+      for (Object node :  nameServerIDs) {
+        System.out.println("Groups for node: " + "\t" + node.toString() + "\t" + getReplicaControllerGroupIDsForNode(node));
       }
 
       int avg = names * numPrimaryReplicas / nameServers;
       System.out.println("Avg: " + avg);
 
       String name = "Frank";
-      Set<NodeId<String>> replicas = getReplicaControllerSet(name);
+      Set<Object> replicas = getReplicaControllerSet(name);
       System.out.println(name + ": " + replicas.toString());
 
       String s = "B04A8EBC86BC3BFDD1EF88377D55B8304088821C";

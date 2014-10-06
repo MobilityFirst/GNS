@@ -6,9 +6,7 @@ package edu.umass.cs.gns.statusdisplay;
 
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.StatusInitPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.StatusPacket;
@@ -66,7 +64,7 @@ public class StatusListener extends Thread {
             JSONObject jsonObject = statusPacket.getJsonObject();
             String message = jsonObject.optString(MESSAGE);
             if (message != null) {
-              StatusModel.getInstance().queueUpdate(statusPacket.getId(), message, time);
+              StatusModel.getInstance().queueUpdate((String) statusPacket.getId(), message, time);
               //StatusModel.getInstance().updateEntry(statusPacket.getId(), message, time);
             }
             break;
@@ -95,7 +93,7 @@ public class StatusListener extends Thread {
    * Tells the remote hosts where to send their status packets. This should be called after all the remote hosts are
    * running.
    */
-  public static void sendOutServerInitPackets(GNSNodeConfig nodeConfig, Set<NodeId<String>> ids) {
+  public static void sendOutServerInitPackets(GNSNodeConfig nodeConfig, Set ids) {
     JSONObject json;
     System.out.println("Sending status server init to all servers");
     // First we tell them all where we are
@@ -108,7 +106,7 @@ public class StatusListener extends Thread {
     }
 
 
-    for (NodeId<String> id : ids) {
+    for (Object id : ids) {
       // send out the StatusInit packet to all local name servers
       System.out.println("Sending status server init to LNS " + id);
       try {

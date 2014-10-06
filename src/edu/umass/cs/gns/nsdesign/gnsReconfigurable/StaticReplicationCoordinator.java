@@ -2,12 +2,11 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -36,9 +35,9 @@ import java.util.Set;
  *
  * Created by abhigyan on 4/27/14.
  */
-public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
+public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoordinator{
 
-  private NodeId<String> nodeID;
+  private NodeIDType nodeID;
   // this is the app object
   private Replicable paxosInterface;
 
@@ -47,7 +46,7 @@ public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
   // if true, reads are coordinated as well.
   private boolean readCoordination = false;
 
-  public StaticReplicationCoordinator(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public StaticReplicationCoordinator(NodeIDType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                                       Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
@@ -61,7 +60,7 @@ public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
 
 
   private void createNodePaxosInstances() {
-    HashMap<String, Set<NodeId<String>>> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
+    HashMap<String, Set> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));
       paxosManager.createPaxosInstance(groupID, (short) 1, groupIDsMembers.get(groupID), paxosInterface);
@@ -83,22 +82,22 @@ public class StaticReplicationCoordinator extends ActiveReplicaCoordinator{
         // call propose
         case UPDATE: // updates need coordination
           UpdatePacket update = new UpdatePacket(request);
-          update.setNameServerId(nodeID);
+          update.setNameServerID(nodeID);
           Random r = new Random(update.getName().hashCode());
-          Set<NodeId<String>> replicaControllers = ConsistentHashing.getReplicaControllerSet(update.getName());
+          Set replicaControllers = ConsistentHashing.getReplicaControllerSet(update.getName());
           int selectIndex = r.nextInt(GNS.numPrimaryReplicas);
           int count = 0;
           // FIXME: THIS WAS ASSUMING THAT A NODE NAMED 0 WOULD EXIST
-          NodeId<String> selectNode = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+          NodeIDType selectNode = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
           //int selectNode = 0;
-          for (NodeId<String> x: replicaControllers) {
+          for (Object x: replicaControllers) {
             if (count == selectIndex) {
-              selectNode = x;
+              selectNode = (NodeIDType) x;
               break;
             }
             count += 1;
           }
-          String proposeToPaxosID = ConsistentHashing.getReplicaControllerGroupID(selectNode.get());
+          String proposeToPaxosID = ConsistentHashing.getReplicaControllerGroupID(selectNode.toString());
 //          GNS.getLogger().info("Propose to Paxos ID = " + proposeToPaxosID + " select node = " + selectNode);
           String paxosID = paxosManager.propose(proposeToPaxosID, update.toString());
 //          GNS.getLogger().info("Propsal reply Paxos ID = " + paxosID);

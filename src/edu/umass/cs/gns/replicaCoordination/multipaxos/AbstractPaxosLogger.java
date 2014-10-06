@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +34,7 @@ import edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.SlotBallotState
  */
 public abstract class AbstractPaxosLogger {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
-	protected final NodeId<String> myID; // protected coz the pluggable logger needs it
+	protected final int myID; // protected coz the pluggable logger needs it
 	protected final String logDirectory; // protected coz the pluggable logger needs it
 	
 	private static ArrayList<AbstractPaxosLogger> instances = new ArrayList<AbstractPaxosLogger>();
@@ -52,9 +51,9 @@ public abstract class AbstractPaxosLogger {
 
 	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class.getName()); // GNS.getLogger();
 
-	AbstractPaxosLogger(NodeId<String> id, String logDir, Messenger msgr) {
+	AbstractPaxosLogger(int id, String logDir, Messenger msgr) {
 		this.myID = id;
-		logDirectory = (logDir==null ? "." : logDir) + "/" + id.get() + "/";
+		logDirectory = (logDir==null ? "." : logDir)+"/";
 		this.messenger=msgr;
 		this.batchLogger = new BatchLogger(this, this.messenger);
 		(new Thread(this.batchLogger)).start();
@@ -93,7 +92,7 @@ public abstract class AbstractPaxosLogger {
 
 	// Designed to offload checkpointing to its own task so that the paxos instance can move on.
 	public static final void checkpoint(AbstractPaxosLogger logger, String paxosID, short version, 
-			NodeId<String>[] members, int slot, Ballot ballot, String state, int gcSlot) {
+			int[] members, int slot, Ballot ballot, String state, int gcSlot) {
 		CheckpointTask checkpointer = logger.new CheckpointTask(logger, paxosID, version, members, 
 				slot, ballot, state, gcSlot);
 		logger.collapsingCheckpointer.enqueue(checkpointer);
@@ -181,7 +180,7 @@ public abstract class AbstractPaxosLogger {
 	public abstract int getCheckpointSlot(String paxosID);
 	public abstract SlotBallotState getSlotBallotState(String paxosID);
 	public abstract SlotBallotState getSlotBallotState(String paxosID, short version, boolean matchVersion);
-	public abstract void putCheckpointState(String paxosID, short version, NodeId<String>[] group, int slot, Ballot ballot, String state, int gcSlot);
+	public abstract void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int gcSlot);
 	public abstract  StatePacket getStatePacket(String paxosID);
 
 	// recovery methods
@@ -200,7 +199,7 @@ public abstract class AbstractPaxosLogger {
 
 	// message logging methods
 	public abstract boolean log(PaxosPacket packet);
-	public abstract boolean log(String paxosID, short version, int slot, int ballotnum, NodeId<String> coordinator, PaxosPacketType type, String message);
+	public abstract boolean log(String paxosID, short version, int slot, int ballotnum, int coordinator, PaxosPacketType type, String message);
 	public abstract boolean logBatch(PaxosPacket[] packets);
 	public abstract ArrayList<PaxosPacket> getLoggedMessages(String paxosID); 
 	public abstract Map<Integer,PValuePacket> getLoggedAccepts(String paxosID, int firstSlot);
@@ -213,8 +212,7 @@ public abstract class AbstractPaxosLogger {
 	/**************** End of extensible methods ***********************/
 
 	// A utility method with seemingly no other place to put
-        // Made this return an Object Array because the third element is now a NodeId. Enjoy.
-	public static Object[] getSlotBallot(PaxosPacket packet) {
+	public static int[] getSlotBallot(PaxosPacket packet) {
 		int slot=-1;
 		Ballot ballot=null;
 		PValuePacket pvalue = null;
@@ -232,7 +230,7 @@ public abstract class AbstractPaxosLogger {
 			assert(false);
 		}
 		assert(ballot!=null);
-		Object[] slotBallot = {slot, ballot.ballotNumber, ballot.coordinatorID};
+		int[] slotBallot = {slot, ballot.ballotNumber, ballot.coordinatorID};
 		return slotBallot;
 	}
 
@@ -322,10 +320,10 @@ public abstract class AbstractPaxosLogger {
 	// Just a convenience container for a single checkpoint task
 	private class CheckpointTask {
 		final AbstractPaxosLogger logger; final String paxosID; 
-		final short version; final NodeId<String>[] members; final int slot; 
+		final short version; final int[] members; final int slot; 
 		final Ballot ballot; final String state; final int gcSlot;
 		CheckpointTask(AbstractPaxosLogger logger, String paxosID, short version, 
-				NodeId<String>[] members, int slot, Ballot ballot, String state, int gcSlot) {
+				int[] members, int slot, Ballot ballot, String state, int gcSlot) {
 			this.logger=logger;
 			this.paxosID=paxosID;
 			this.version=version;

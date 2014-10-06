@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
@@ -109,7 +108,7 @@ public class Lookup {
 
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Recvd Lookup Error Response" + jsonObject);
 
-    // if invalid active name server error, get correct active name servers
+    // if invalid active name server error, toString correct active name servers
     if (dnsPacket.containsInvalidActiveNSError()) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
       handler.invalidateActiveNameServer(dnsPacket.getGuid());
@@ -150,7 +149,7 @@ public class Lookup {
   /**
    * Send reply to user after DNS record is received.
    */
-  private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, NodeId<String> responder, ClientRequestHandlerInterface handler) {
+  private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, Object responder, ClientRequestHandlerInterface handler) {
 
     try {
       DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getSourceId(), 

@@ -13,7 +13,6 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
@@ -83,7 +82,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID().get() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
+    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID().toString() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();
@@ -210,7 +209,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
 
                 break;
               case PINGTABLE:
-                NodeId<String> node = new NodeId<String>(adminRequestPacket.getArgument());
+                Object node = adminRequestPacket.getArgument();
                 if (node.equals(gnsReconfigurable.getNodeID())) {
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", gnsReconfigurable.getPingManager().tableToString(gnsReconfigurable.getNodeID()));
@@ -222,8 +221,8 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                 }
                 break;
               case PINGVALUE:
-                NodeId<String> node1 = new NodeId<String>(adminRequestPacket.getArgument());
-                NodeId<String> node2 = new NodeId<String>(adminRequestPacket.getArgument2());
+                Object node1 = adminRequestPacket.getArgument();
+                Object node2 = adminRequestPacket.getArgument2();
                 if (node1.equals(gnsReconfigurable.getNodeID())) {
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", gnsReconfigurable.getPingManager().nodeAverage(node2));
@@ -240,7 +239,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                 GNS.getLogger().setLevel(level);
                 break;
               case CLEARCACHE:
-                // shouldn't ever get this
+                // shouldn't ever toString this
                 GNS.getLogger().warning("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Ignoring CLEARCACHE request");
                 break;
 
@@ -275,7 +274,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
    * @throws JSONException
    */
   private void sendactiveNameServerInfo(ActiveNameServerInfoPacket activeNSInfoPacket,
-          Socket socket, int numRequest, Set<NodeId<String>> activeNameServers) throws IOException, JSONException {
+          Socket socket, int numRequest, Set<Object> activeNameServers) throws IOException, JSONException {
     activeNSInfoPacket.setActiveNameServers(activeNameServers);
     activeNSInfoPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
     Packet.sendTCPPacket(activeNSInfoPacket.toJSONObject(), socket);

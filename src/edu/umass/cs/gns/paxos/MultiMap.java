@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +23,7 @@ import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
  * It is straightforward to extend MultiMap to have generic keys. 
  * 
  * For each member in PaxosRequestState, it is necessary to create
- * a set of methods (like get, put, remove, keySet, values(), etc.)
+ * a set of methods (like toString, put, remove, keySet, values(), etc.)
  * as exemplified below.
  * */
 
@@ -180,13 +179,13 @@ public class MultiMap {
 			 * 
 			 */
 			mmap[i].put(29, 33.47);
-			RequestPacket p1 = new RequestPacket(new NodeId<String>(3), "str", PaxosPacketType.NULL, true);
+			RequestPacket p1 = new RequestPacket(Integer.toString(3), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(93,p1);
-			RequestPacket p2 = new RequestPacket(new NodeId<String>(4), "str", PaxosPacketType.NULL, true);
+			RequestPacket p2 = new RequestPacket(Integer.toString(4), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(99,p2);
-			RequestPacket p3 = new RequestPacket(new NodeId<String>(5), "str", PaxosPacketType.NULL, true);
+			RequestPacket p3 = new RequestPacket(Integer.toString(5), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(9,p3);
-			RequestPacket p4 = new RequestPacket(new NodeId<String>(6), "str", PaxosPacketType.NULL, true);
+			RequestPacket p4 = new RequestPacket(Integer.toString(6), "str", PaxosPacketType.NULL, true);
 			mmap[i].put(23,p4);
 
 			/* Each additional Double also costs about 100B. It doesn't

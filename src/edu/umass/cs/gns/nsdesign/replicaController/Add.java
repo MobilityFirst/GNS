@@ -5,7 +5,6 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -73,7 +72,7 @@ public class Add {
           addRecordPacket.setActiveNameServers(rcRecord.getActiveNameservers());
           if (Config.debuggingEnabled) GNS.getLogger().fine("Name: " + rcRecord.getName() +
                   " Initial active replicas: " + Util.setOfNodeIdToString(rcRecord.getActiveNameservers()));
-          for (NodeId<String> nodeID: rcRecord.getActiveNameservers()) {
+          for (Object nodeID: rcRecord.getActiveNameservers()) {
             replicaController.getNioServer().sendToID(nodeID, addRecordPacket.toJSONObject());
           }
         }
@@ -107,7 +106,7 @@ public class Add {
     }
   }
 
-  private static Set<NodeId<String>> getInitialReplicasForOtherReplicationSchemes(String name, ReplicaController rc) {
+  private static Set getInitialReplicasForOtherReplicationSchemes(String name, ReplicaController rc) {
 
     if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
       GNS.getLogger().fine("Using static replication: " + name);

@@ -2,7 +2,6 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.main.GNS;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -13,7 +12,7 @@ import java.util.Properties;
  *
  * Created by abhigyan on 4/13/14.
  */
-public class WorkloadParams {
+public class WorkloadParams<NodeIDType> {
 
   public static final String EXP_TYPE = "exp_type";
 
@@ -33,8 +32,8 @@ public class WorkloadParams {
   private int ttl;
 
   // parameters for connect-time experiment
-  private NodeId<String> mobileId = new NodeId<String>(3);
-  private NodeId<String> correspondentId = new NodeId<String>(4);
+  private Object mobileId =  "3";
+  private Object correspondentId = "4";
   private double mobileUpdateInterval = 4;
 
   public WorkloadParams(String workloadConfFile) throws IOException {
@@ -78,10 +77,10 @@ public class WorkloadParams {
       this.mobileUpdateInterval = Double.parseDouble(prop.getProperty(MOBILE_UPDATE_INTERVAL));
     }
     if (prop.containsKey(MOBILE_ID)) {
-      this.mobileId = new NodeId<String>(prop.getProperty(MOBILE_ID));
+      this.mobileId = prop.getProperty(MOBILE_ID);
     }
     if (prop.containsKey(CORRESPONDENT_ID)) {
-      this.correspondentId = new NodeId<String>(prop.getProperty(CORRESPONDENT_ID));
+      this.correspondentId = prop.getProperty(CORRESPONDENT_ID);
     }
 
   }
@@ -100,12 +99,12 @@ public class WorkloadParams {
     return expType;
   }
 
-  public NodeId<String> getMobileId() {
-    return mobileId;
+  public NodeIDType getMobileId() {
+    return (NodeIDType) mobileId;
   }
 
-  public NodeId<String> getCorrespondentId() {
-    return correspondentId;
+  public NodeIDType getCorrespondentId() {
+    return (NodeIDType) correspondentId;
   }
 
   public double getMobileUpdateInterval() {

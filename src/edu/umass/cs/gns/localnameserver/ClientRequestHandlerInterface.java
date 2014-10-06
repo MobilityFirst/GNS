@@ -7,7 +7,6 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
@@ -26,8 +25,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * 
  * Someday maybe both NS and LNS will use this.
  *
+ * @param <NodeIDType>
  */
-public interface ClientRequestHandlerInterface {
+public interface ClientRequestHandlerInterface<NodeIDType>  {
 
   /**
    * The executor that runs tasks.
@@ -206,7 +206,7 @@ public interface ClientRequestHandlerInterface {
    * @param name
    * @return
    */
-  public Set<NodeId<String>> getReplicaControllers(String name);
+  public Set<NodeIDType> getReplicaControllers(String name);
   
   /**
    **
@@ -217,7 +217,7 @@ public interface ClientRequestHandlerInterface {
    * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
    *
    */
-  public NodeId<String> getClosestReplicaController(String name, Set<NodeId<String>> nameServersQueried);
+  public NodeIDType getClosestReplicaController(String name, Set<NodeIDType> nameServersQueried);
 
   /**
    * Send packet to NS
@@ -225,7 +225,7 @@ public interface ClientRequestHandlerInterface {
    * @param json
    * @param ns
    */
-  public void sendToNS(JSONObject json, NodeId<String> ns); 
+  public void sendToNS(JSONObject json, NodeIDType ns); 
 
   /**
    * Send a JSON packet to an IP address / port.

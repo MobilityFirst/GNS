@@ -1,14 +1,16 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
+import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -43,6 +45,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   public static final String DEFAULT_PORT_FIELD = "_TCP_PORT";
 
   private String IPField = null;
+  private String portField = null;
 
   public static final boolean DEBUG = false; // enables send monitoring
 
@@ -59,8 +62,8 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   // common case usage, hence created a constructor
   public JSONNIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nodeConfig,
           AbstractPacketDemultiplexer pd, boolean start) throws IOException {
-    super(id, nodeConfig, new JSONMessageExtractor()); // Switched order of the latter two arguments
-    addPacketDemultiplexer(pd);
+    super(id, nodeConfig, new JSONMessageExtractor(pd)); // Switched order of the latter two arguments
+    //addPacketDemultiplexer(pd);
     if (start && !isStarted()) {
       (new Thread(this)).start();
     }
@@ -101,7 +104,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   @Override
   public int sendToID(NodeIDType id, JSONObject jsonData) throws IOException {
     if (JSONDelayEmulator.isDelayEmulated()) {
-      JSONDelayEmulator.putEmulatedDelay((NodeId<String>) id, jsonData); // FIXME: This cast from NodeIDType to NodeId<String> makes no sense
+      JSONDelayEmulator.putEmulatedDelay(id, jsonData);
     }
     return sendToIDActual(id, jsonData);
   }
@@ -118,14 +121,12 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData)
           throws IOException {
     int written = 0;
-    stampSenderIP(jsonData);
-    String jsonDataString = jsonData.toString();
-//    if (Config.debuggingEnabled) {
-//      System.out.println("######### " + jsonDataString);
-//    }
-    String headeredMsg = JSONMessageExtractor.prependHeader(jsonDataString);
-    // note that we subtract header length below
-    written = this.sendUnderlying(isa, headeredMsg.getBytes()) - (headeredMsg.length() - jsonDataString.length());
+    int originalSize = jsonData.toString().length();
+    stampSenderInfo(jsonData);
+    String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
+    written = this.sendUnderlying(isa, headeredMsg.getBytes())
+            - (headeredMsg.length() - originalSize); // subtract header length
+    assert (written == originalSize);
     return written;
   }
 
@@ -136,42 +137,97 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   protected int sendToIDActual(NodeIDType destID, JSONObject jsonData)
           throws IOException {
     int written = 0;
-    stampSenderIP(jsonData);
+    int originalSize = jsonData.toString().length();
+    stampSenderInfo(jsonData);
     if (destID.equals(this.myID)) {
-      written = sendLocal(jsonData);
+      written = sendLocal(jsonData) - (jsonData.toString().length() - originalSize);
     } else {
-      String jsonDataString = jsonData.toString();
-//      if (Config.debuggingEnabled) {
-//        System.out.println("######### " + jsonDataString);
-//      }
-      String headeredMsg = JSONMessageExtractor.prependHeader(jsonDataString);
-      // note that we subtract header length below
-      written = this.sendUnderlying(destID, headeredMsg.getBytes()) - (headeredMsg.length() - jsonDataString.length());
+      String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
+      written = (this.sendUnderlying(destID, headeredMsg.getBytes())
+              - (headeredMsg.length() - originalSize)); // subtract header length
     }
     return written;
   }
 
-  public void enableStampSenderIP() {
+  public JSONNIOTransport<NodeIDType> enableStampSenderInfo() {
     this.IPField = DEFAULT_IP_FIELD;
+    this.portField = DEFAULT_PORT_FIELD;
+    return this;
   }
 
-  public void enableStampSenderIP(String key) {
+  public JSONNIOTransport<NodeIDType> enableStampSenderIP(String key) {
     this.IPField = key;
+    return this;
   }
 
-  public void disableStampSenderIP() {
+  public JSONNIOTransport<NodeIDType> enableStampSenderPort(String key) {
+    this.portField = key;
+    return this;
+  }
+
+  public JSONNIOTransport<NodeIDType> enableStampSenderPort() {
+    this.portField = DEFAULT_PORT_FIELD;
+    return this;
+  }
+
+  public JSONNIOTransport<NodeIDType> disableStampSenderIP() {
     this.IPField = null;
+    this.portField = null;
+    return this;
+  }
+
+  public static InetSocketAddress getSenderAddress(JSONObject json) {
+    try {
+      InetAddress address = (json.has(JSONNIOTransport.DEFAULT_IP_FIELD)
+              ? InetAddress.getByName(json.getString(JSONNIOTransport.DEFAULT_IP_FIELD).replaceAll("[^0-9.]*", "")) : null);
+      int port = (json.has(JSONNIOTransport.DEFAULT_PORT_FIELD)
+              ? json.getInt(JSONNIOTransport.DEFAULT_PORT_FIELD) : -1);
+      if (address != null && port > 0) {
+        return new InetSocketAddress(address, port);
+      }
+    } catch (UnknownHostException | JSONException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public static String getSenderAddressAsString(JSONObject json) {
+    try {
+      String address = (json.has(JSONNIOTransport.DEFAULT_IP_FIELD)
+              ? (json.getString(JSONNIOTransport.DEFAULT_IP_FIELD).replaceAll("[^0-9.]*", ""))
+              : null);
+      return address;
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  public static int getSenderPort(JSONObject json) {
+    try {
+      int port = (json.has(JSONNIOTransport.DEFAULT_PORT_FIELD)
+              ? (json.getInt(JSONNIOTransport.DEFAULT_PORT_FIELD))
+              : -1);
+      return port;
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return -1;
   }
 
   /**
    * ******************End of public send methods************************************
    */
   // stamp sender IP address if IPField is set
-  private void stampSenderIP(JSONObject jsonData) {
+  private void stampSenderInfo(JSONObject jsonData) {
     try {
       if (this.IPField != null && !this.IPField.isEmpty()) {
         jsonData.put(this.IPField, this.getNodeAddress().toString());
       }
+      if (this.portField != null && !this.portField.isEmpty()) {
+        jsonData.put(this.portField, this.getNodePort());
+      }
+
     } catch (JSONException je) {
       je.printStackTrace();
     }
@@ -194,6 +250,9 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
    * all NIO sends actually happen. Do NOT add more gunk to this method.
    */
   private int sendUnderlying(NodeIDType id, byte[] data) throws IOException {
+    if (DEBUG) {
+      GNS.getLogger().info("Send to: " + id + " json: " + new String(data));
+    }
     return this.send(id, data);
   }
 

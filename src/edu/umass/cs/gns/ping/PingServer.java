@@ -10,7 +10,6 @@ package edu.umass.cs.gns.ping;
 import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -21,15 +20,16 @@ import java.net.InetAddress;
  * The PingClient class handles the flip side of this protocol.
  * 
  * @author westy
+ * @param <NodeIDType>
  */
-public class PingServer extends Thread{
+public class PingServer<NodeIDType> extends Thread{
 
-  private final NodeId<String> nodeID;
+  private final NodeIDType nodeID;
   private final GNSNodeConfig gnsNodeConfig;
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
-  public PingServer(final NodeId<String> nodeID, final GNSNodeConfig gnsNodeConfig) {
+  public PingServer(final NodeIDType nodeID, final GNSNodeConfig gnsNodeConfig) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
   }
@@ -86,7 +86,7 @@ public class PingServer extends Thread{
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
-    NodeId<String> nodeID = new NodeId<String>(0);
+    String nodeID = "0";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
     PingServer pingServer = new PingServer(nodeID, gnsNodeConfig);
     new Thread(pingServer).start();

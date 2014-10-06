@@ -1,14 +1,13 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.NSResponseCode;
 
 /**
  * Encapsulates the response values and instrumentation that we pass back from the 
  * Local Name Server to the client.
  */
-public class CommandResponse {
+public class CommandResponse<NodeIDType> {
 
   /**
    * Value returned... probably will become a JSONObject soon.
@@ -25,7 +24,7 @@ public class CommandResponse {
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private NodeId<String> responder;
+  private NodeIDType responder;
 
   /**
    * Create a command response object from a return value with an error code.
@@ -35,7 +34,7 @@ public class CommandResponse {
    * @param LNSRoundTripTime
    * @param responder
    */
-  public CommandResponse(String returnValue, NSResponseCode errorCode, long LNSRoundTripTime, NodeId<String> responder) {
+  public CommandResponse(String returnValue, NSResponseCode errorCode, long LNSRoundTripTime, NodeIDType responder) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
     this.LNSRoundTripTime = LNSRoundTripTime;
@@ -48,7 +47,7 @@ public class CommandResponse {
    * @param returnValue
    */
   public CommandResponse(String returnValue) {
-    this(returnValue, NSResponseCode.NO_ERROR, -1, GNSNodeConfig.INVALID_NAME_SERVER_ID);
+    this(returnValue, NSResponseCode.NO_ERROR, -1, (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID);
   }
 
   /**
@@ -91,7 +90,7 @@ public class CommandResponse {
    * 
    * @return
    */
-  public NodeId<String> getResponder() {
+  public NodeIDType getResponder() {
     return responder;
   }
 

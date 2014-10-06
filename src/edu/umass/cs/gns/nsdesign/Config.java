@@ -24,6 +24,10 @@ public class Config {
 
   private static boolean initialized = false;
 
+  /**
+   * One way this is used is to wrap if conditionals around logging statements. If this is false
+   * logging used for debugging won't be generated in many cases.
+   */
   public static boolean debuggingEnabled = false;
   
   // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?

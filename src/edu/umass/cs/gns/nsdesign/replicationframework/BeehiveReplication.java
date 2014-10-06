@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.Util;
 
 import java.io.File;
@@ -22,6 +21,8 @@ import java.util.*;
  * Abhigyan: Keeping this code around here only because we may need to run some experiments with beehive replication.
  *
  * This was Hardeep's implementation of beehive DHT routing.
+ * 
+ * It assumes that Node Ids are Strings (because it uses compareTo).
  */
 public class BeehiveReplication {
 
@@ -104,39 +105,39 @@ public class BeehiveReplication {
    * server whose ID is greater than current name server's ID. I think this approximates a replica that will be chosen
    * using DHT routing.
    */
-  public static NodeId<String> getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<NodeId<String>> activeNameServers, Set<NodeId<String>> nameserverQueried) {
-    ArrayList<NodeId<String>> allServers = new ArrayList<NodeId<String>>();
+  public static Object getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<String> activeNameServers, Set nameserverQueried) {
+    ArrayList<String> allServers = new ArrayList<String>();
     if (activeNameServers != null) {
-      for (NodeId<String> x : activeNameServers) {
+      for (String x : activeNameServers) {
         if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
           allServers.add(x);
         }
       }
     }
 
-    if (allServers.size() == 0) {
+    if (allServers.isEmpty()) {
       return GNSNodeConfig.INVALID_NAME_SERVER_ID;
     }
 
-    if (allServers.contains(gnsNodeConfig.getClosestServer())) {
+    if (allServers.contains((String) gnsNodeConfig.getClosestServer())) {
       return gnsNodeConfig.getClosestServer();
     }
-    return beehiveNSChoose(gnsNodeConfig.getClosestServer(), allServers, nameserverQueried);
+    return beehiveNSChoose((String)gnsNodeConfig.getClosestServer(), allServers, nameserverQueried);
 
   }
 
-  private static NodeId<String> beehiveNSChoose(NodeId<String> closestNS, ArrayList<NodeId<String>> nameServers, Set<NodeId<String>> nameServersQueried) {
+  private static Object beehiveNSChoose(String closestNS, ArrayList<String> nameServers, Set<Object> nameServersQueried) {
 
     if (nameServers.contains(closestNS) && (nameServersQueried == null || !nameServersQueried.contains(closestNS))) {
       return closestNS;
     }
     Collections.sort(nameServers);
-    for (NodeId<String> x : nameServers) {
+    for (String x : nameServers) {
       if (x.compareTo(closestNS) > 0 && (nameServersQueried == null || !nameServersQueried.contains(x))) {
         return x;
       }
     }
-    for (NodeId<String> x : nameServers) {
+    for (String x : nameServers) {
       if (x.compareTo(closestNS) < 0 && (nameServersQueried == null || !nameServersQueried.contains(x))) {
         return x;
       }

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.test.nioclient;
 
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.localnameserver.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
@@ -113,7 +114,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
   // incoming packets from LNS
   @Override
   public void handleIncomingPacket(JSONObject incomingJson) {
-    if (StartLocalNameServer.debugMode) GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
+    if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
     int origReqID;
     JSONObject origJson = null; // json sent by client
     JSONObject outgoingJson = null;

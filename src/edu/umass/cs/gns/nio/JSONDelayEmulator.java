@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nio;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,7 +25,7 @@ public class JSONDelayEmulator {
 	private static double VARIATION = 0.1; // 10% variation in latency
 	private static boolean USE_CONFIG_FILE_INFO = false; // Enable this after figuring out how to use config file
 	private static long DEFAULT_DELAY = 100; // 100ms
-	private static GNSNodeConfig gnsNodeConfig = null; // node config object to get ping latencies for emulation.
+	private static GNSNodeConfig gnsNodeConfig = null; // node config object to toString ping latencies for emulation.
 
 
 	private static final Timer timer = new Timer();
@@ -36,10 +35,10 @@ public class JSONDelayEmulator {
 	private static class DelayerTask extends TimerTask {
 
 		JSONObject json;
-		NodeId<String> destID;
-		JSONNIOTransport<NodeId<String>> nioTransport;
+		Object destID;
+		JSONNIOTransport<Object> nioTransport;
 
-		public DelayerTask(JSONNIOTransport<NodeId<String>> nioTransport, NodeId<String> destID, JSONObject json) {
+		public DelayerTask(JSONNIOTransport<Object> nioTransport, Object destID, JSONObject json) {
 			this.json = json;
 			this.destID = destID;
 			this.nioTransport = nioTransport;
@@ -48,7 +47,7 @@ public class JSONDelayEmulator {
 		@Override
 		public void run() {
 			try {
-				((JSONNIOTransport<NodeId<String>>)nioTransport).sendToIDActual(destID, json);
+				((JSONNIOTransport<Object>)nioTransport).sendToIDActual(destID, json);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -59,7 +58,7 @@ public class JSONDelayEmulator {
    * Emulating delays at sender side prevents GNSNIOTransport.sendToID from returning
    * the correct return value. */
   @Deprecated
-	public static int sendWithDelay(JSONNIOTransport<NodeId<String>> niot, NodeId<String> id, JSONObject jsonData) throws IOException {
+	public static int sendWithDelay(JSONNIOTransport<Object> niot, Object id, JSONObject jsonData) throws IOException {
 		int written = 0;
 		if (JSONDelayEmulator.EMULATE_DELAYS) {
 			DelayerTask dtask = new DelayerTask(niot, id, jsonData);
@@ -89,7 +88,7 @@ public class JSONDelayEmulator {
 	}
 
   /* Sender calls this method to put delay value in the json object before json object is sent.*/
-  public static void putEmulatedDelay(NodeId<String> id, JSONObject jsonData) {
+  public static void putEmulatedDelay(Object id, JSONObject jsonData) {
     if (JSONDelayEmulator.EMULATE_DELAYS) {
       try {
         jsonData.put(DELAY_STR, getDelay(id));
@@ -99,7 +98,7 @@ public class JSONDelayEmulator {
     }
   }
 
-  /* Receiver calls this method to get delay that is to be emulated, and delays processing the packet by that amount.
+  /* Receiver calls this method to toString delay that is to be emulated, and delays processing the packet by that amount.
   * We put the delay to be emulated inside the json at the sender side because the receiver side does not know which
   * node ID sent the packet, and hence cannot know how much to delay the packet */
   public static long getEmulatedDelay(JSONObject jsonData){
@@ -117,7 +116,7 @@ public class JSONDelayEmulator {
   }
 
 
-  private static long getDelay(NodeId<String> id) {
+  private static long getDelay(Object id) {
 		long delay = 0;
 		if (JSONDelayEmulator.EMULATE_DELAYS) {
 			if (JSONDelayEmulator.USE_CONFIG_FILE_INFO) {
@@ -131,7 +130,7 @@ public class JSONDelayEmulator {
 	}
 
 	public static void main(String[] args) {
-		System.out.println("Delay to node " + 3 + " = " + getDelay(new NodeId<String>(3)));
+		System.out.println("Delay to node " + 3 + " = " + getDelay("3"));
 		System.out.println("There is no testing code for this class as it is unclear"
 				+ " how to access and use ConfigFileInfo. It is unclear what getPingLatency(id) even means."
 				+ " How does one specify the source node id?");

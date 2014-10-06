@@ -8,7 +8,6 @@ package edu.umass.cs.gns.installer;
 import edu.umass.cs.gns.database.DataStoreType;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.GEOLocator;
 import java.awt.geom.Point2D;
 import java.io.File;
@@ -119,7 +118,7 @@ public class HostConfigParser {
         if (idString.isEmpty() || hostname.isEmpty()) {
           throw new HostConfigParseException("Missing id or hostname attribute!");
         }
-        int id = Integer.parseInt(idString);
+        //int id = Integer.parseInt(idString);
         Point2D location = null;
         if (!lonString.isEmpty() && !latString.isEmpty()) {
           location = new Point2D.Double(Double.parseDouble(lonString), Double.parseDouble(latString));
@@ -135,7 +134,7 @@ public class HostConfigParser {
           // and take a guess at the location (lat, long) of this host
           location = GEOLocator.lookupIPLocation(ip);
         }
-        hosts.add(new HostInfo(new NodeId<String>(id), hostname, location));
+        hosts.add(new HostInfo(idString, hostname, location));
       }
     }
     keyname = getSingleElementAttribute(doc, KEYNAME, "name");

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.net.InetSocketAddress;
@@ -14,16 +13,16 @@ import org.json.JSONObject;
  *
  * @author abhigyan
  */
-public class UpdateInfo extends RequestInfo {
+public class UpdateInfo<NodeIDType> extends RequestInfo {
 
   /**
    * ID of the name server where update was sent *
    */
-  private NodeId<String> nameserverID;
+  private NodeIDType nameserverID;
 
-  private BasicPacket basicPacket;
+  private final BasicPacket basicPacket;
 
-  public UpdateInfo(int lnsRequestID, String name, NodeId<String> nameserverId, BasicPacket packet) {
+  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet) {
     this.lnsReqID = lnsRequestID;
     this.name = name;
     this.startTime = System.currentTimeMillis();
@@ -33,7 +32,7 @@ public class UpdateInfo extends RequestInfo {
     this.requestType = packet.getType();
   }
 
-  public synchronized void setNameserverID(NodeId<String> nameserverID) {
+  public synchronized void setNameserverID(NodeIDType nameserverID) {
     this.nameserverID = nameserverID;
   }
 
@@ -52,9 +51,9 @@ public class UpdateInfo extends RequestInfo {
   }
 
   private String getFinalString(String queryStatus, String name, long latency, int numTransmissions,
-          NodeId<String> nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
+          NodeIDType nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
           long curTime, String eventCodes) {
-    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameServerID.get() + "\t"
+    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameServerID.toString() + "\t"
             + address.toString() + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + curTime + "\t" + eventCodes;
   }
 

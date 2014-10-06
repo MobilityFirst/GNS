@@ -6,7 +6,6 @@ import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -22,7 +21,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class UnreplicatedServer {
 
-  static NodeId<String> nodeID;
+  static Object nodeID;
 //    static int N;
   public static ScheduledThreadPoolExecutor executorService;
   private static String serverLogFileName;
@@ -31,7 +30,7 @@ public class UnreplicatedServer {
    */
   public static NioServer tcpTransport;
 
-  public static void initializeUnreplicatedServer(NodeId<String> nodeID1, String nodeConfigFile, String serverLogFileName1) {
+  public static void initializeUnreplicatedServer(Object nodeID1, String nodeConfigFile, String serverLogFileName1) {
     nodeID = nodeID1;
     File f = new File(serverLogFileName1);
     if (f.exists()) {
@@ -99,7 +98,7 @@ public class UnreplicatedServer {
     Config.debuggingEnabled = false;
     String nodeConfigFile = args[0];
     String serverLogFileName = args[1];
-    NodeId<String> nodeID = new NodeId<String>(args[2]);
+    Object nodeID = args[2];
     initializeUnreplicatedServer(nodeID, nodeConfigFile, serverLogFileName);
   }
 }
@@ -175,7 +174,7 @@ class UnreplicatedSendClientResponseTask extends TimerTask {
 ////            UnreplicatedServer.logDecision(reqNumber,requestPacket.value);
 //        }
     try {
-      UnreplicatedServer.tcpTransport.sendToID(new NodeId<String>(1), jsonObject);
+      UnreplicatedServer.tcpTransport.sendToID("1", jsonObject);
       System.out.println("Sent to client ...");
     } catch (IOException e) {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.

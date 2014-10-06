@@ -5,7 +5,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -21,19 +20,20 @@ import java.util.TimerTask;
  * Created by abhigyan on 3/28/14.
  * 
  * Arun: 
+ * @param <NodeIDType>
  */
-public class CopyStateFromOldActiveTask extends TimerTask {
+public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
 
-  private ActiveReplica<?> activeReplica;
+  private ActiveReplica<?,?> activeReplica;
 
   private NewActiveSetStartupPacket packet;
 
-  private HashSet<NodeId<String>> oldActivesQueried;
+  private HashSet<NodeIDType> oldActivesQueried;
 
   private int requestID;
 
-  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica<?> activeReplica) throws JSONException {
-    this.oldActivesQueried = new HashSet<NodeId<String>>();
+  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica<?,?> activeReplica) throws JSONException {
+    this.oldActivesQueried = new HashSet<NodeIDType>();
     this.activeReplica = activeReplica;
     // first, store the original packet in hash map
     this.requestID = activeReplica.getOngoingStateTransferRequests().put(packet);
@@ -83,7 +83,7 @@ public class CopyStateFromOldActiveTask extends TimerTask {
       }
 
       // select old active to send request to
-      NodeId<String> oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
+      NodeIDType oldActive = (NodeIDType) activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
               oldActivesQueried);
 
       if (oldActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {

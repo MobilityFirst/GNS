@@ -2,11 +2,10 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -27,10 +26,11 @@ import java.util.Set;
  *
  *
  * Created by abhigyan on 3/28/14.
+ * @param <NodeIDType>
  */
-public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
+public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator{
 
-  private NodeId<String> nodeID;
+  private NodeIDType nodeID;
   // this is the app object
   private Replicable paxosInterface;
 
@@ -41,7 +41,7 @@ public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
 
   private InterfaceJSONNIOTransport nioTransport;
 
-  public GnsCoordinatorEventual(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public GnsCoordinatorEventual(NodeIDType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                                 Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
     this.paxosInterface = paxosInterface;
@@ -73,9 +73,9 @@ public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
         case UPDATE: // updates need coordination
 
           UpdatePacket update = new UpdatePacket(request);
-          Set<NodeId<String>> nodeIDs = paxosManager.getPaxosNodeIDs(update.getName());
-          if (update.getNameServerId().equals(nodeID) && nodeIDs!= null) {
-            for (NodeId<String> x: nodeIDs) {
+          Set<NodeIDType> nodeIDs = paxosManager.getPaxosNodeIDs(update.getName());
+          if (update.getNameServerID().equals(nodeID) && nodeIDs!= null) {
+            for (NodeIDType x: nodeIDs) {
               if (!x.equals(nodeID))
                 nioTransport.sendToID(x,update.toJSONObject());
             }
@@ -120,7 +120,7 @@ public class GnsCoordinatorEventual extends ActiveReplicaCoordinator{
           DNSPacket dnsPacket = new DNSPacket(request);
           String name = dnsPacket.getGuid();
 
-          Set<NodeId<String>> nodeIds = paxosManager.getPaxosNodeIDs(name);
+          Set<NodeIDType> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
             RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);

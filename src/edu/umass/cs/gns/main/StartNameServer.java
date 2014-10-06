@@ -4,7 +4,6 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.NSParameterNames;
 import edu.umass.cs.gns.nsdesign.NameServer;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -119,7 +118,7 @@ public class StartNameServer {
       printUsage(NSParameterNames.getAllOptions());
       System.exit(2);
     }
-    NodeId<String> nodeID = new NodeId<String>(allValues.get(NSParameterNames.ID));
+    String nodeID = allValues.get(NSParameterNames.ID);
     
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), nodeID);
 

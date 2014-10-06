@@ -3,54 +3,55 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
-import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-/*************************************************************
+/**
  * This class implements the ReplicationFramework interface
  * and is used to select active name servers based on location
  * of the demand.
- * 
+ *
  * @author Hardeep Uppal, Abhigyan
- ************************************************************/
-public class LocationBasedReplication implements ReplicationFrameworkInterface {
+ * @param <NodeIDType>
+ */
+public class LocationBasedReplication<NodeIDType> implements ReplicationFrameworkInterface {
 
-  /*************************************************************
-   * Returns a new set of active name servers based on votes 
+  /**
+   * Returns a new set of active name servers based on votes
    * received for replica selection for this record. NameServers
    * with the highest votes are selected as the new active name
    * servers.
+   *
+   * @param rc
    * @param rcRecord NameRecord whose active name server set is
    * generated.
    * @param numReplica Size of the new active name server set.
-   * @param count  Number of times replicas have been computed
-   ************************************************************/
+   * @param count Number of times replicas have been computed
+   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
+   */
   @Override
   public ReplicationOutput newActiveReplica(ReconfiguratorInterface rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
 
-    Set<NodeId<String>> newActiveNameServerSet;
-    Set<NodeId<String>> localityBasedReplicas;
+    Set<NodeIDType> newActiveNameServerSet;
+    Set<NodeIDType> localityBasedReplicas;
     //		 Use top-K based on locality.
     if (numReplica > Config.nameServerVoteSize) {
       newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc, rc.getGnsNodeConfig(), Config.nameServerVoteSize);
-      localityBasedReplicas = new HashSet<NodeId<String>>(newActiveNameServerSet);
+      localityBasedReplicas = new HashSet<NodeIDType>(newActiveNameServerSet);
     } else {
       newActiveNameServerSet = rcRecord.getHighestVotedReplicaID(rc, rc.getGnsNodeConfig(), numReplica);
-      localityBasedReplicas = new HashSet<NodeId<String>>(newActiveNameServerSet);
+      localityBasedReplicas = new HashSet<NodeIDType>(newActiveNameServerSet);
     }
 
     if (numReplica >= rc.getGnsNodeConfig().getNumberOfNodes()) {
-      newActiveNameServerSet = new HashSet<NodeId<String>>(rc.getGnsNodeConfig().getNodeIDs());
+      newActiveNameServerSet = new HashSet<NodeIDType>(rc.getGnsNodeConfig().getNodeIDs());
     } else {
 
       // Select based on votes as much as you can.
-
       if (newActiveNameServerSet.size() < numReplica) {
         int difference = numReplica - newActiveNameServerSet.size();
         //Randomly select the other active name servers
@@ -66,12 +67,12 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
           do {
             retries += 1;
             int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
-            NodeId<String> newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
+            NodeIDType newActiveNameServerId = (NodeIDType) getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
             if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
               continue;
             }
             added = newActiveNameServerSet.add(newActiveNameServerId);
-          } while (!added && retries < 5*rc.getGnsNodeConfig().getNumberOfNodes());
+          } while (!added && retries < 5 * rc.getGnsNodeConfig().getNumberOfNodes());
         }
       }
     }
@@ -79,17 +80,19 @@ public class LocationBasedReplication implements ReplicationFrameworkInterface {
     return new ReplicationOutput(newActiveNameServerSet, localityBasedReplicas);
   }
 
-  private boolean isHighlyLoaded(ReconfiguratorInterface rc, NodeId<String> nodeID) {
-    return rc.getNsRequestRates().get(nodeID) != null && rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
+  private boolean isHighlyLoaded(ReconfiguratorInterface rc, NodeIDType nodeID) {
+    return rc.getNsRequestRates().get(nodeID) != null && (Double) rc.getNsRequestRates().get(nodeID) >= Config.maxReqRate;
   }
 
-  private NodeId<String> getSetIndex(Set<NodeId<String>> nodeIds, int index) {
+  private NodeIDType getSetIndex(Set<NodeIDType> nodeIds, int index) {
     int count = 0;
-    for (NodeId<String> node: nodeIds) {
-      if  (count == index) return node;
+    for (NodeIDType node : nodeIds) {
+      if (count == index) {
+        return node;
+      }
       count++;
 
     }
-    return GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    return (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
   }
 }

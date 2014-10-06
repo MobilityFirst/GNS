@@ -27,7 +27,7 @@ public class NameStats {
     try {
       ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), selectionPacket.getName());
       try {
-        rcRecord.addReplicaSelectionVote(selectionPacket.getNameserverID(), selectionPacket.getVote(),selectionPacket.getUpdate());
+        rcRecord.addReplicaSelectionVote(selectionPacket.getNameServerID(), selectionPacket.getVote(),selectionPacket.getUpdate());
       } catch (FieldNotFoundException e) {
         GNS.getLogger().severe("Field not found exception. " + e.getMessage());
         e.printStackTrace();

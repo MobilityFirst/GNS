@@ -1,27 +1,26 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class FailureDetectionPacket extends PaxosPacket {
+public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 
   /**
    * ID of node that sent the packet.
    */
-  public NodeId<String> senderNodeID;
+  public NodeIDType senderNodeID;
 
   /**
    * ID of destination node.
    */
-  public NodeId<String> responderNodeID;
+  public NodeIDType responderNodeID;
 
   /**
    * Status of responder node. true = node is up, false = node is down.
    */
   public boolean status;
 
-  public FailureDetectionPacket(NodeId<String> senderNodeID, NodeId<String> responderNodeID,
+  public FailureDetectionPacket(NodeIDType senderNodeID, NodeIDType responderNodeID,
           boolean status, PaxosPacketType packetType) {
     this.packetType = packetType.getInt();
     this.senderNodeID = senderNodeID;
@@ -31,8 +30,8 @@ public class FailureDetectionPacket extends PaxosPacket {
 
   public FailureDetectionPacket(JSONObject json) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.senderNodeID = new NodeId<String>(json.getString("sender"));
-    this.responderNodeID = new NodeId<String>(json.getString("responder"));
+    this.senderNodeID = (NodeIDType) json.get("sender");
+    this.responderNodeID = (NodeIDType) json.getString("responder");
     this.status = json.getBoolean("status");
   }
 
@@ -46,8 +45,8 @@ public class FailureDetectionPacket extends PaxosPacket {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, packetType);
     json.put("status", status);
-    json.put("sender", senderNodeID.get());
-    json.put("responder", responderNodeID.get());
+    json.put("sender", senderNodeID.toString());
+    json.put("responder", responderNodeID.toString());
     return json;
   }
 

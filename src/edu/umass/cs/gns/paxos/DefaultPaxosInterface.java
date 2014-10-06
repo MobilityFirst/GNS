@@ -2,7 +2,6 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import org.json.JSONException;
 
@@ -17,18 +16,19 @@ import java.io.IOException;
  * User: abhigyan
  * Date: 6/29/13
  * Time: 8:57 PM
+ * @param <NodeIDType>
  */
-public class DefaultPaxosInterface implements Replicable {
+public class DefaultPaxosInterface<NodeIDType> implements Replicable {
   
   // NOTE: We have hardcoded that nodeID = 0 will respond to client. Therefore, in our tests
   // nodeID = 0 must be a paxos replica and it must not be crashed.
   // THIS WILL BREAK, BTW... GUARANTEED.
-  private static final NodeId<String> RESPONDING_NODE = new NodeId<String>(0);
+  private static final String RESPONDING_NODE = "0";
 
   /**
    *
    */
-  NodeId<String> nodeID;
+  NodeIDType nodeID;
 
   /**
    * Transport object. It is needed to send responses to client.
@@ -36,7 +36,7 @@ public class DefaultPaxosInterface implements Replicable {
   InterfaceJSONNIOTransport nioServer;
 
 
-  public DefaultPaxosInterface(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer) {
+  public DefaultPaxosInterface(NodeIDType nodeID, InterfaceJSONNIOTransport nioServer) {
     this.nodeID = nodeID;
     this.nioServer = nioServer;
   }

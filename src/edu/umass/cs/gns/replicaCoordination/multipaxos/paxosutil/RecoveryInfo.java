@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
-
 /**
 @author V. Arun
  */
@@ -12,15 +10,15 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 	public class RecoveryInfo {
 		final String paxosID;
 		final short version;
-		final NodeId<String>[] members;
+		final int[] members;
 		private String state=null;
 
-		public RecoveryInfo(String id, short ver, NodeId<String>[] group) {
+		public RecoveryInfo(String id, short ver, int[] group) {
 			this.paxosID = id;
 			this.version = ver;
 			this.members = group;
 		}
-		public RecoveryInfo(String id, short ver, NodeId<String>[] group, String state) {
+		public RecoveryInfo(String id, short ver, int[] group, String state) {
 			this.paxosID = id;
 			this.version = ver;
 			this.members = group;
@@ -28,7 +26,7 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 		}
 		public String getPaxosID() {return paxosID;}
 		public short getVersion() {return version;}
-		public NodeId<String>[] getMembers() {return members;}
+		public int[] getMembers() {return members;}
 		public String getState() {return this.state;}
 		public String toString() {
 			String s="", group="[";

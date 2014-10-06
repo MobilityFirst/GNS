@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -8,9 +7,9 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Random;
 
-public class RequestPacket extends PaxosPacket implements Serializable {
+public class RequestPacket<NodeIDType> extends PaxosPacket implements Serializable {
 
-  public NodeId<String> clientID;
+  public NodeIDType clientID;
 
   public int requestID;
 
@@ -18,7 +17,7 @@ public class RequestPacket extends PaxosPacket implements Serializable {
 
   private boolean stop = false;
 
-  public RequestPacket(NodeId<String> clientID, String value, PaxosPacketType packetType, boolean stop) {
+  public RequestPacket(NodeIDType clientID, String value, PaxosPacketType packetType, boolean stop) {
     Random r = new Random();
     this.clientID = clientID;
     this.requestID = r.nextInt();
@@ -32,7 +31,7 @@ public class RequestPacket extends PaxosPacket implements Serializable {
     this.packetType = PaxosPacketType.REQUEST.getInt();
     String x = json.getString("y1");
     String[] tokens = x.split("\\s");
-    this.clientID = new NodeId<String>(tokens[0]);
+    this.clientID = (NodeIDType) tokens[0];
     this.requestID = Integer.parseInt(tokens[1]);
 
     this.stop = tokens[2].equals("1");

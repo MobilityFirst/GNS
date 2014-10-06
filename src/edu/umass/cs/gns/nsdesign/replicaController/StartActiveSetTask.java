@@ -6,7 +6,6 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -24,12 +23,13 @@ import java.util.TimerTask;
  * Note: this class is executed using a timer object and not an executor service.
  *
  * @author abhigyan
+ * @param <NodeIDType>
  *
  */
-public class StartActiveSetTask extends TimerTask {
+public class StartActiveSetTask<NodeIDType> extends TimerTask {
 
   /** Fields read from database */
-  private static ArrayList<ColumnField> startupActiveSetFields = new ArrayList<ColumnField>();
+  private static final ArrayList<ColumnField> startupActiveSetFields = new ArrayList<ColumnField>();
 
   static {
     startupActiveSetFields.add(ReplicaControllerRecord.ACTIVE_NAMESERVERS_RUNNING);
@@ -37,25 +37,25 @@ public class StartActiveSetTask extends TimerTask {
   }
 
 
-  private String name;
-  private Set<NodeId<String>> oldActiveNameServers;
-  private Set<NodeId<String>> newActiveNameServers;
-  private Set<NodeId<String>> newActivesQueried;
-  private int newActiveVersion;
-  private int oldActiveVersion;
-  private String initialValue;
-  private ReplicaController replicaController;
-  private int requestID;
+  private final String name;
+  private final Set<NodeIDType> oldActiveNameServers;
+  private final Set<NodeIDType> newActiveNameServers;
+  private final Set<NodeIDType> newActivesQueried;
+  private final int newActiveVersion;
+  private final int oldActiveVersion;
+  private final String initialValue;
+  private final ReplicaController replicaController;
+  private final int requestID;
 
   /**
    * Constructor object
    */
-  public StartActiveSetTask(String name, Set<NodeId<String>> oldActiveNameServers, Set<NodeId<String>> newActiveNameServers,
+  public StartActiveSetTask(String name, Set<NodeIDType> oldActiveNameServers, Set<NodeIDType> newActiveNameServers,
                             int newActiveVersion, int oldActiveVersion, String initialValue, ReplicaController replicaController) {
     this.name = name;
     this.oldActiveNameServers = oldActiveNameServers;
     this.newActiveNameServers = newActiveNameServers;
-    this.newActivesQueried = new HashSet<NodeId<String>>();
+    this.newActivesQueried = new HashSet<NodeIDType>();
     this.newActiveVersion = newActiveVersion;
     this.oldActiveVersion = oldActiveVersion;
     this.initialValue = initialValue;
@@ -86,7 +86,7 @@ public class StartActiveSetTask extends TimerTask {
           GNS.getLogger().info(" Actives got accepted and replaced by new actives. Quitting. ");
         } else {
           // send request to a new active replica
-          NodeId<String> selectedActive = replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
+          NodeIDType selectedActive = (NodeIDType) replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
                   newActivesQueried);
           if (selectedActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
             terminateTask = true;

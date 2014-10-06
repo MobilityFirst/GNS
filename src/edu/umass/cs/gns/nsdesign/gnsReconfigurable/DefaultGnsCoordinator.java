@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -13,14 +12,15 @@ import org.json.JSONObject;
  *
  * Trivial coordinator for a single name server GNS, which executes requests without any coordination.
  * Created by abhigyan on 4/8/14.
+ * @param <NodeIDType>
  */
-public class DefaultGnsCoordinator extends ActiveReplicaCoordinator {
+public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator {
 
-  private NodeId<String> nodeID;
+  private NodeIDType nodeID;
 
   private Replicable replicable;
 
-  public DefaultGnsCoordinator(NodeId<String> nodeID, Replicable replicable) {
+  public DefaultGnsCoordinator(NodeIDType nodeID, Replicable replicable) {
     this.nodeID = nodeID;
     this.replicable = replicable;
   }
@@ -40,7 +40,7 @@ public class DefaultGnsCoordinator extends ActiveReplicaCoordinator {
 
         case UPDATE: // set a field in update packet because LNS may not set this field correctly.
           UpdatePacket update = new UpdatePacket(request);
-          update.setNameServerId(nodeID);
+          update.setNameServerID(nodeID);
           replicable.handleDecision(null, update.toString(), false);
           break;
         case ACTIVE_REMOVE: // stop request for removing a name record

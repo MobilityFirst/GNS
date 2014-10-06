@@ -2,7 +2,6 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.NameServerSelectionPacket;
 import java.util.Random;
 import java.util.Set;
@@ -21,11 +20,12 @@ import java.util.Set;
  * replicas.
  * <br/>
  *
+ * @param <NodeIDType>
  * @see edu.umass.cs.gns.localnameserver.NameRecordStats
  * @see edu.umass.cs.gns.nsdesign.replicaController.NameStats
  * @author Hardeep Uppal, Abhigyan
  */
-public class NameServerVoteThread extends Thread {
+public class NameServerVoteThread<NodeIDType> extends Thread {
 
   /**
    * Time interval in ms between transmitting votes *
@@ -63,7 +63,7 @@ public class NameServerVoteThread extends Thread {
       Thread.sleep(x);
       GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + x + "ms");
     } catch (InterruptedException e) {
-      if (StartLocalNameServer.debugMode) {
+      if (StartLocalNameServer.debuggingEnabled) {
         GNS.getLogger().fine("Initial thread sleeping period.");
       }
     }
@@ -76,7 +76,7 @@ public class NameServerVoteThread extends Thread {
           Thread.sleep(voteIntervalMillis);
           GNS.getLogger().fine("NameServerVoteThread: Sleeping for " + voteIntervalMillis + "ms");
         } catch (InterruptedException e) {
-          if (StartLocalNameServer.debugMode) {
+          if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine("Thread sleeping interrupted.");
           }
         }
@@ -86,9 +86,9 @@ public class NameServerVoteThread extends Thread {
       int vote;
       int update;
       NameServerSelectionPacket nsSelectionPacket;
-      NodeId<String> nsToVoteFor = selectNSToVoteFor(); // name server selection does not depend on name
-      GNS.getLogger().info("LNS ID" + LocalNameServer.getAddress() + " Closest NS " + nsToVoteFor.get());
-      if (StartLocalNameServer.debugMode) {
+      NodeIDType nsToVoteFor = selectNSToVoteFor(); // name server selection does not depend on name
+      GNS.getLogger().info("LNS ID" + LocalNameServer.getAddress() + " Closest NS " + nsToVoteFor.toString());
+      if (StartLocalNameServer.debuggingEnabled) {
         GNS.getLogger().fine(" NameRecordStats Key Set Size: " + LocalNameServer.getNameRecordStatsKeySet().size());
       }
       int nameCount = 0;
@@ -96,7 +96,7 @@ public class NameServerVoteThread extends Thread {
       long t0 = System.currentTimeMillis();
       for (String name : LocalNameServer.getNameRecordStatsKeySet()) {
         allNames++;
-        if (StartLocalNameServer.debugMode) {
+        if (StartLocalNameServer.debuggingEnabled) {
           GNS.getLogger().fine(" BEGIN VOTING: " + name);
         }
         try {
@@ -104,24 +104,24 @@ public class NameServerVoteThread extends Thread {
 
           vote = stats.getVotes();
           update = stats.getUpdateVotes();
-          if (StartLocalNameServer.debugMode) {
+          if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine(" VOTE COUNT: " + vote);
           }
           if (vote == 0 && update == 0) {
             continue;
           }
           nameCount++;
-          if (StartLocalNameServer.debugMode) {
+          if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine("\tVoteSent\t" + name + "\t" + vote + "\t" + update + "\t");
           }
           nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.getAddress());
 
           // send to all primaries.
-          Set<NodeId<String>> primaryNameServers = LocalNameServer.getReplicaControllers(name);
-          if (StartLocalNameServer.debugMode) {
+          Set<NodeIDType> primaryNameServers = LocalNameServer.getReplicaControllers(name);
+          if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().info("Primary name servers = " + primaryNameServers + " name = " + name);
           }
-          for (NodeId<String> primary : primaryNameServers) {
+          for (NodeIDType primary : primaryNameServers) {
             LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);
           }
           Thread.sleep(100); // rate limit the sending of votes. if we do limit rate, there will be a period
@@ -136,12 +136,12 @@ public class NameServerVoteThread extends Thread {
     }
   }
 
-  private NodeId<String> selectNSToVoteFor() {
+  private NodeIDType selectNSToVoteFor() {
     if (StartLocalNameServer.loadDependentRedirection) {
-      Set<NodeId<String>> allNS = LocalNameServer.getGnsNodeConfig().getNodeIDs();
-      return LocalNameServer.selectBestUsingLatencyPlusLoad(allNS);
+      Set allNS = LocalNameServer.getGnsNodeConfig().getNodeIDs();
+      return (NodeIDType) LocalNameServer.selectBestUsingLatencyPlusLoad(allNS);
     } else {
-      return LocalNameServer.getGnsNodeConfig().getClosestServer();
+      return (NodeIDType) LocalNameServer.getGnsNodeConfig().getClosestServer();
     }
   }
 

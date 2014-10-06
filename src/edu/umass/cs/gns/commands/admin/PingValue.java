@@ -12,7 +12,6 @@ import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,7 +40,7 @@ public class PingValue extends GnsCommand {
     String node1String = json.getString(N);
     String node2String = json.getString(N2);
     if (module.isAdminMode()) {
-      return new CommandResponse(Admintercessor.sendPingValue(new NodeId<String>(node1String), new NodeId<String>(node2String)));
+      return new CommandResponse(Admintercessor.sendPingValue(node1String, node2String));
     }
     return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }

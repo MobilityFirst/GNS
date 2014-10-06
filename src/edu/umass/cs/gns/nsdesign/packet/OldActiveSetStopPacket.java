@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,8 +16,9 @@ import org.json.JSONObject;
  *
  * Refer to the classes <link>StopActiveSetTask</link>
  * for more documentation.
+ * @param <NodeIDType>
  */
-public class OldActiveSetStopPacket extends BasicPacket {
+public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket {
 
   private final static String REQ_ID = "reqID";
 
@@ -43,12 +43,12 @@ public class OldActiveSetStopPacket extends BasicPacket {
   /**
    * primary node that sent this message
    */
-  private NodeId<String> primarySender;
+  private NodeIDType primarySender;
 
   /**
    * active who received this message from primary
    */
-  private NodeId<String> activeReceiver;
+  private NodeIDType activeReceiver;
 
   /**
    * Actives ID that is requested to be stopped.
@@ -60,7 +60,7 @@ public class OldActiveSetStopPacket extends BasicPacket {
    * @param name
    * @param primarySender
    */
-  public OldActiveSetStopPacket(String name, int requestID, NodeId<String> primarySender, NodeId<String> activeReceiver, short version, PacketType type1) {
+  public OldActiveSetStopPacket(String name, int requestID, NodeIDType primarySender, NodeIDType activeReceiver, short version, PacketType type1) {
     this.name = name;
     this.requestID = requestID;
     this.type = type1;
@@ -73,8 +73,8 @@ public class OldActiveSetStopPacket extends BasicPacket {
     this.type = Packet.getPacketType(json);
     this.requestID = json.getInt(REQ_ID);
     this.name = json.getString(NAME);
-    this.primarySender = new NodeId<String>(json.getString(PRIMARY_SENDER));
-    this.activeReceiver = new NodeId<String>(json.getString(ACTIVE_RECEIVER));
+    this.primarySender = (NodeIDType)json.get(PRIMARY_SENDER);
+    this.activeReceiver = (NodeIDType)json.get(ACTIVE_RECEIVER);
     this.version = (short) json.getInt(VERSION);
   }
 
@@ -90,8 +90,8 @@ public class OldActiveSetStopPacket extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(REQ_ID, requestID);
     json.put(NAME, name);
-    json.put(PRIMARY_SENDER, primarySender.get());
-    json.put(ACTIVE_RECEIVER, activeReceiver.get());
+    json.put(PRIMARY_SENDER, primarySender.toString());
+    json.put(ACTIVE_RECEIVER, activeReceiver.toString());
     json.put(VERSION, version);
     return json;
   }
@@ -104,11 +104,11 @@ public class OldActiveSetStopPacket extends BasicPacket {
     return name;
   }
 
-  public NodeId<String> getPrimarySender() {
+  public NodeIDType getPrimarySender() {
     return primarySender;
   }
 
-  public NodeId<String> getActiveReceiver() {
+  public NodeIDType getActiveReceiver() {
     return activeReceiver;
   }
 

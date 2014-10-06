@@ -2,7 +2,6 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
@@ -14,7 +13,7 @@ import java.util.TimerTask;
 /**
 * Created by abhigyan on 5/21/14.
 */
-class GenerateAddRequest extends TimerTask {
+class GenerateAddRequest<NodeIDType> extends TimerTask {
 
   private int requestCount;
   private String name;
@@ -22,10 +21,10 @@ class GenerateAddRequest extends TimerTask {
   private int objectSizeKB;
   private int ttl;
 
-  private Set<NodeId<String>> activeNameServers;
+  private Set<NodeIDType> activeNameServers;
 
   public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, LNSPacketDemultiplexer packetDemux,
-                            Set<NodeId<String>> activeNameServers) {
+                            Set<NodeIDType> activeNameServers) {
     this.requestCount = count;
     this.name = name;
     this.packetDemux = packetDemux;

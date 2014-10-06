@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.nsdesign.commands.CommandProcessor;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * <p/>
  * Created by abhigyan on 2/26/14.
  */
-public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
+public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
   private NameServer nameServer;
 
@@ -30,18 +29,18 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   private int intervalCount = 0;
 
-  public NSPacketDemultiplexer(final NameServer nameServer, final NodeId<String> nodeID) {
+  public NSPacketDemultiplexer(final NameServer nameServer, final NodeIDType nodeID) {
     this.nameServer = nameServer;
     this.nameServer.getExecutorService().scheduleAtFixedRate(new TimerTask() {
       @Override
       public void run() {
         intervalCount += 1;
 
-        GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount " +
-                (getMsgCount() - prevMsgCount) + " Node " + nodeID.get() + " ");
+        GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount "
+                + (getMsgCount() - prevMsgCount) + " Node " + nodeID.toString() + " ");
         prevMsgCount = msgCount;
       }
-    },0, 10, TimeUnit.SECONDS);
+    }, 0, 10, TimeUnit.SECONDS);
     register(Packet.PacketType.LNS_TO_NS_COMMAND);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.DNS);
@@ -56,7 +55,6 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
     register(Packet.PacketType.CONFIRM_UPDATE);
     register(Packet.PacketType.CONFIRM_ADD);
     register(Packet.PacketType.CONFIRM_REMOVE);
-
 
     register(Packet.PacketType.ADD_RECORD);
     register(Packet.PacketType.REQUEST_ACTIVES);
@@ -76,8 +74,6 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
     // packets from coordination modules at replica controller
     register(Packet.PacketType.REPLICA_CONTROLLER_COORDINATION);
 
-
-
     register(Packet.PacketType.NEW_ACTIVE_START);
     register(Packet.PacketType.NEW_ACTIVE_START_FORWARD);
     register(Packet.PacketType.NEW_ACTIVE_START_RESPONSE);
@@ -85,10 +81,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
     register(Packet.PacketType.NEW_ACTIVE_START_PREV_VALUE_RESPONSE);
     register(Packet.PacketType.OLD_ACTIVE_STOP);
     register(Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
-
   }
-
-
 
   /**
    * Entry point for all packets received at name server.
@@ -96,15 +89,16 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
    * Based on the packet type it forwards to active replica or replica controller.
    *
    * @param json JSON object received by NIO package.
+   * @return 
    */
   @Override
   public boolean handleJSONObject(final JSONObject json) {
     incrementMsgCount();
     try {
       final Packet.PacketType type = Packet.getPacketType(json);
-
-      // return value should be true if packet type matches these packets:
-      if (Config.debuggingEnabled) GNS.getLogger().fine(" MsgType " + type + " Msg " + json);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().finer("MsgType " + type + " Msg " + json);
+      }
       nameServer.getExecutorService().submit(new Runnable() {
         @Override
         public void run() {
@@ -119,12 +113,12 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
               case DNS:
               case SELECT_REQUEST:
               case SELECT_RESPONSE:
-                // Packets sent from replica controller
+              // Packets sent from replica controller
               case ACTIVE_ADD:
               case ACTIVE_REMOVE:
               case ACTIVE_COORDINATION:
                 // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
-                // coming back from the LNS is handled.
+              // coming back from the LNS is handled.
               case CONFIRM_UPDATE:
               case CONFIRM_ADD:
               case CONFIRM_REMOVE:
@@ -140,19 +134,19 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
               case REMOVE_RECORD:
               case RC_REMOVE:
 
-                // Packets sent by active replica
+              // Packets sent by active replica
               case ACTIVE_ADD_CONFIRM:
               case ACTIVE_REMOVE_CONFIRM:
               case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
               case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
 
-                // Packets sent by replica controller to itself (this will proposed for coordination)
+              // Packets sent by replica controller to itself (this will proposed for coordination)
               case NEW_ACTIVE_PROPOSE:
               case GROUP_CHANGE_COMPLETE:
               case NAMESERVER_SELECTION:
               case NAME_RECORD_STATS_RESPONSE:
               case NAME_SERVER_LOAD:
-                // packets from coordination modules at replica controller
+              // packets from coordination modules at replica controller
               case REPLICA_CONTROLLER_COORDINATION:
                 ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
                 if (replicaController != null) {
@@ -189,6 +183,7 @@ public class NSPacketDemultiplexer extends AbstractPacketDemultiplexer {
     } catch (JSONException e) {
       e.printStackTrace();
     }
+    // return value should be true if packet type matches these packets
     return true;
   }
 

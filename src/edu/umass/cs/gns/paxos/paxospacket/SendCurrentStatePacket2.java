@@ -1,10 +1,7 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.Ballot;
-import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.Util;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,7 +14,7 @@ import java.util.Set;
  * Time: 10:29 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SendCurrentStatePacket2 extends PaxosPacket {
+public class SendCurrentStatePacket2<NodeIDType> extends PaxosPacket {
 
   private static final String SENDING_NODE_ID = "sendingNodeID";
 
@@ -32,13 +29,13 @@ public class SendCurrentStatePacket2 extends PaxosPacket {
   /**
    * ID of the node sending its state.
    */
-  public NodeId<String> sendingNodeID;
+  public NodeIDType sendingNodeID;
 
 
   /**
    * IDs of nodes that belong to this paxos group.
    */
-  public Set<NodeId<String>> nodeIDs;
+  public Set<NodeIDType> nodeIDs;
 
   /**
    * currentBallot accepted by the sending node.
@@ -55,8 +52,8 @@ public class SendCurrentStatePacket2 extends PaxosPacket {
    */
   public String dbState;
 
-  public SendCurrentStatePacket2(NodeId<String> sendingNodeID, Ballot currentBallot, int slotNumber, String dbState,
-                                 Set<NodeId<String>> nodeIDs, PaxosPacketType packetType) {
+  public SendCurrentStatePacket2(NodeIDType sendingNodeID, Ballot currentBallot, int slotNumber, String dbState,
+                                 Set<NodeIDType> nodeIDs, PaxosPacketType packetType) {
     this.sendingNodeID = sendingNodeID;
     this.currentBallot = currentBallot;
     this.slotNumber = slotNumber;
@@ -67,7 +64,7 @@ public class SendCurrentStatePacket2 extends PaxosPacket {
 
   public SendCurrentStatePacket2(JSONObject json) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.sendingNodeID = new NodeId<String>(json.getString(SENDING_NODE_ID));
+    this.sendingNodeID = (NodeIDType) json.get(SENDING_NODE_ID);
     if (json.has(NODE_IDS)) {
       this.nodeIDs = Util.stringToSetOfNodeId(NODE_IDS);
     } else this.nodeIDs = null;
@@ -80,7 +77,7 @@ public class SendCurrentStatePacket2 extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(SENDING_NODE_ID, sendingNodeID.get());
+    json.put(SENDING_NODE_ID, sendingNodeID.toString());
     if (nodeIDs != null) {
       json.put(NODE_IDS, Util.setOfNodeIdToString(nodeIDs));
     }

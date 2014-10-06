@@ -8,7 +8,6 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
 import edu.umass.cs.gns.ping.PingManager;
@@ -105,7 +104,7 @@ public class LNSListenerAdmin extends Thread {
             //dumpRequestPacket.setId(id);
             //dumpRequestPacket.setLnsAddress(LocalNameServer.getAddress()); // done before it gets here
             JSONObject json = dumpRequestPacket.toJSONObject();
-            Set<NodeId<String>> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
+            Set<String> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
             Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
@@ -136,7 +135,7 @@ public class LNSListenerAdmin extends Thread {
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              Set<NodeId<String>> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
+              Set<String> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               // clear the cache
               LocalNameServer.invalidateCache();
@@ -152,7 +151,7 @@ public class LNSListenerAdmin extends Thread {
               Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
               break;
             case PINGTABLE:
-              NodeId<String> node = new NodeId<String>(incomingPacket.getArgument());
+              String node = new String(incomingPacket.getArgument());
               // -1 means return the LNS data
               if (node.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID) || LocalNameServer.getGnsNodeConfig().getNodeIDs().contains(node)) {
                 if (node.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
@@ -175,8 +174,8 @@ public class LNSListenerAdmin extends Thread {
               }
               break;
             case PINGVALUE:
-              NodeId<String> node1 = new NodeId<String>(incomingPacket.getArgument());
-              NodeId<String> node2 = new NodeId<String>(incomingPacket.getArgument2());
+              String node1 = new String(incomingPacket.getArgument());
+              String node2 = new String(incomingPacket.getArgument2());
               // -1 means return the LNS data
               if (node1.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID) || LocalNameServer.getGnsNodeConfig().nodeExists(node1)
                       && LocalNameServer.getGnsNodeConfig().nodeExists(node2)) {

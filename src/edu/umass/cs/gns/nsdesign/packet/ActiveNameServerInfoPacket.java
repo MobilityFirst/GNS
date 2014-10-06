@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,12 +15,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * This class implements the packet transmitted between local nameserver and a primary nameserver to get information
- * about the current active nameserver set.
+ * This class implements the packet transmitted between local nameserver and a primary nameserver to toString information
+ about the current active nameserver set.
  *
  * @author Hardeep Uppal
+ * @param <NodeIDType>
  */
-public class ActiveNameServerInfoPacket extends BasicPacket {
+public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
 
   public final static String PRIMARY_NAMESERVER = "primary";
   public final static String LOCAL_NAMESERVER = "local";
@@ -39,7 +39,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   /**
    * Primary name server receiving the request *
    */
-  private NodeId<String> primaryNameServer;
+  private NodeIDType primaryNameServer;
   /**
    * Local name server sending the request *
    */
@@ -47,7 +47,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   /**
    * Set containing ids of active name servers *
    */
-  private Set<NodeId<String>> activeNameServers;
+  private Set<NodeIDType> activeNameServers;
 
   public ActiveNameServerInfoPacket() {
   }
@@ -63,7 +63,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
    * @param name Host/domain/device name
    ***********************************************************
    */
-  public ActiveNameServerInfoPacket(int localNameServer, NodeId<String> primaryNameServer, String name, String recordType, Set<NodeId<String>> activeNameservers) {
+  public ActiveNameServerInfoPacket(int localNameServer, NodeIDType primaryNameServer, String name, String recordType, Set<NodeIDType> activeNameservers) {
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
     this.primaryNameServer = primaryNameServer;
     this.localNameServer = localNameServer;
@@ -82,7 +82,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
    */
   public ActiveNameServerInfoPacket(int localNameServer, String name, String recordKey) {
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
-    this.primaryNameServer = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.primaryNameServer = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.localNameServer = localNameServer;
     this.recordKey = recordKey;
     this.name = name;
@@ -104,7 +104,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
     }
 
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
-    this.primaryNameServer = new NodeId<String>(json.getString(PRIMARY_NAMESERVER));
+    this.primaryNameServer = (NodeIDType) json.get(PRIMARY_NAMESERVER);
     this.localNameServer = json.getInt(LOCAL_NAMESERVER);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
@@ -123,7 +123,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(PRIMARY_NAMESERVER, primaryNameServer.get());
+    json.put(PRIMARY_NAMESERVER, primaryNameServer.toString());
     json.put(LOCAL_NAMESERVER, getLocalNameServer());
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
@@ -185,10 +185,10 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
     System.out.println("json:" + (t42 - t41));
     System.out.println("pkt:" + (t43 - t42));
 
-    Set<NodeId<String>> active = new HashSet<NodeId<String>>();
-    active.add(new NodeId<String>(1));
-    active.add(new NodeId<String>(2));
-    active.add(new NodeId<String>(3));
+    Set active = new HashSet();
+    active.add("1");
+    active.add("2");
+    active.add("3");
     pkt.activeNameServers = active;
     System.out.println(pkt.toJSONObject());
     pkt = new ActiveNameServerInfoPacket(pkt.toJSONObject());
@@ -212,7 +212,7 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   /**
    * @return the primaryNameServer
    */
-  public NodeId<String> getPrimaryNameServer() {
+  public NodeIDType getPrimaryNameServer() {
     return primaryNameServer;
   }
 
@@ -226,15 +226,15 @@ public class ActiveNameServerInfoPacket extends BasicPacket {
   /**
    * @return the activeNameServers
    */
-  public Set<NodeId<String>> getActiveNameServers() {
+  public Set<NodeIDType> getActiveNameServers() {
     return activeNameServers;
   }
 
-  public void setPrimaryNameServer(NodeId<String> primaryNameServer) {
+  public void setPrimaryNameServer(NodeIDType primaryNameServer) {
     this.primaryNameServer = primaryNameServer;
   }
 
-  public void setActiveNameServers(Set<NodeId<String>> activeNameServers) {
+  public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
     this.activeNameServers = activeNameServers;
   }
 }

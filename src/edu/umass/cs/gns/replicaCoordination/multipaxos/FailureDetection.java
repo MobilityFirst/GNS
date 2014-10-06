@@ -14,8 +14,7 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.FailureDetectionPacket;
 
@@ -49,22 +48,22 @@ public class FailureDetection {
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
-	private final NodeId<String> myID;
+	private final int myID;
 	private final InterfaceJSONNIOTransport nioTransport;
 
 	// non-final 
-	private Set<NodeId<String>> monitoredNodes;  // other nodes to which keepalives will be sent
-	private HashMap<NodeId<String>,Long> lastHeardFrom;
-	private HashMap<NodeId<String>,ScheduledFuture<PingTask>> futures;
+	private Set<Integer> monitoredNodes;  // other nodes to which keepalives will be sent
+	private HashMap<Integer,Long> lastHeardFrom;
+	private HashMap<Integer,ScheduledFuture<PingTask>> futures;
 
 	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
 
-	FailureDetection(NodeId<String> id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, PaxosConfig pc) {
+	FailureDetection(int id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, PaxosConfig pc) {
 		nioTransport = niot;
 		myID = id;
-		lastHeardFrom = new HashMap<NodeId<String>,Long>();
-		monitoredNodes = new TreeSet<NodeId<String>>();
-		futures = new HashMap<NodeId<String>,ScheduledFuture<PingTask>>();
+		lastHeardFrom = new HashMap<Integer,Long>();
+		monitoredNodes = new TreeSet<Integer>();
+		futures = new HashMap<Integer,ScheduledFuture<PingTask>>();
 		initialize(pc);  // this line needs to be commented for paxos tests to make sense
 	}
 	// FIXME: Should really not be taking this from outside
@@ -91,7 +90,7 @@ public class FailureDetection {
 		 * because there is no way to just change their period midway.
 		 */
 		if(adjusted) {
-			for(NodeId<String> id : this.monitoredNodes) {
+			for(int id : this.monitoredNodes) {
 				unMonitor(id);
 				monitor(id);
 			}
@@ -101,18 +100,18 @@ public class FailureDetection {
 	/* Synchronized because we don't want monitoredNodes 
 	 * getting concurrently read by pingAll().
 	 */
-	public void monitor(NodeId<String>[] nodes) {
+	public void monitor(int[] nodes) {
 		for(int i=0; i<nodes.length; i++) {
 			monitor(nodes[i]);
 		}
 	}
-	public void monitor(Set<NodeId<String>> nodes) {
-		for(NodeId<String> id : nodes) {
+	public void monitor(Set<Integer> nodes) {
+		for(int id : nodes) {
 			monitor(id);
 		}
 	}
 	/* Used only during testing */
-	public synchronized void unMonitor(NodeId<String> id) {
+	public synchronized void unMonitor(int id) {
 		boolean wasPresent = this.monitoredNodes.remove(id); 
 		if(wasPresent && this.futures.containsKey(id)) {
 			ScheduledFuture<PingTask> pingTask = futures.get(id);
@@ -122,7 +121,7 @@ public class FailureDetection {
 	}
 	/* Synchronized as it touches monitoredNodes.
 	 */
-	public synchronized void monitor(NodeId<String> id)  {
+	public synchronized void monitor(int id)  {
 		if(!this.monitoredNodes.contains(id)) this.monitoredNodes.add(id);
 		try {
 			if(!this.futures.containsKey(id)) {
@@ -148,20 +147,20 @@ public class FailureDetection {
 	/* protected in order to allow paxos instances to provide useful liveliness 
 	 * information through the paxos manager.
 	 */
-	protected synchronized void heardFrom(NodeId<String> id) {
+	protected synchronized void heardFrom(int id) {
 		this.lastHeardFrom.put(id, System.currentTimeMillis());
 	}
 
-	protected synchronized boolean isNodeUp(NodeId<String> id) {
+	protected synchronized boolean isNodeUp(int id) {
 		Long lastHeard = 0L;
-		if(id.equals(this.myID)) return true;
+		if(id==this.myID) return true;
 		if((lastHeard = this.lastHeardFrom.get(id))!=null && 
 				((System.currentTimeMillis() - lastHeard) < node_detection_timeout_millis)) {
 				return true;
 		}
 		return false;
 	}
-	protected synchronized boolean lastCoordinatorLongDead(NodeId<String> id) {
+	protected synchronized boolean lastCoordinatorLongDead(int id) {
 		Long lastHeard = 0L;
 		long now = System.currentTimeMillis();
 		if((lastHeard = this.lastHeardFrom.get(id))!=null) {
@@ -170,18 +169,18 @@ public class FailureDetection {
 		return true;
 	}
 
-	private JSONObject getPingPacket(NodeId<String> id) throws JSONException {
+	private JSONObject getPingPacket(int id) throws JSONException {
 		FailureDetectionPacket fdp = new FailureDetectionPacket(myID, id, true);
 		JSONObject fdpJson = fdp.toJSONObject();
 		return fdpJson;
 	}
 
 	private class PingTask implements Runnable {
-		private final NodeId<String> destID;
+		private final int destID;
 		private final JSONObject pingJson;
 		private final InterfaceJSONNIOTransport nioTransport;
 
-		PingTask(NodeId<String> id, JSONObject fdpJson, InterfaceJSONNIOTransport niot) {
+		PingTask(int id, JSONObject fdpJson, InterfaceJSONNIOTransport niot) {
 			destID = id;
 			pingJson = fdpJson;
 			nioTransport = niot;
@@ -205,7 +204,7 @@ public class FailureDetection {
 	/* Currently unused. Will be useful for cleaning up
 	 * ping tasks that fail because of exceptions.
 	 */
-	private synchronized void cleanupFailedPingTask(NodeId<String> id) {
+	private synchronized void cleanupFailedPingTask(int id) {
 		ScheduledFuture<PingTask> pingTask = this.futures.get(id);
 		if(pingTask!=null) {
 			pingTask.cancel(true);

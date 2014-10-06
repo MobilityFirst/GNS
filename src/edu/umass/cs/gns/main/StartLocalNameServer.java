@@ -79,9 +79,9 @@ public class StartLocalNameServer {
   public static long voteIntervalMillis = 1000000000;
 
   /**
-   * * Set to true for more verbose logging level.
+   * * Set to true to enable all the debugging logging statements.
    */
-  public static boolean debugMode = false;
+  public static boolean debuggingEnabled = false;
 
   /**
    * * Used for running experiments for Auspice paper.
@@ -183,10 +183,10 @@ public class StartLocalNameServer {
     Option mu = new Option(MU, true, "[EXP] Adaptive Retransmission: Co-efficient of estimated RTT in calculating timeout.");
     Option phi = new Option(PHI, true, "[EXP] Adaptive Retransmission: Co-efficient of deviation in calculating timeout.");
 
-    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file");
-    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output");
-    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "Verbosity level of log file for experiment related statistics");
-    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output for experiment related statistics");
+    Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+    Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+    Option statFileLoggingLevel = new Option(STAT_FILE_LOGGING_LEVEL, true, "Verbosity level of log file for experiment related statistics. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
+    Option statConsoleOutputLevel = new Option(STAT_CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output for experiment related statistics. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
 
     Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "[EXP] Emulate a packet delay equal to ping delay in between two servers");
     Option variation = new Option(VARIATION, true, "[EXP] During emulation, what fraction of random variation to add to delay");
@@ -324,7 +324,7 @@ public class StartLocalNameServer {
    -cacheSize 10000 -primary 3 -location -vInterval 1000 -chooseFromClosestK 1 -lookupRate 10000 
    -updateRateMobile 0 -updateRateRegular 10000 -maxQueryWaitTime 100000 -queryTimeout 100
    -fileLoggingLevel FINE -consoleOutputLevel INFO -statFileLoggingLevel INFO -statConsoleOutputLevel INFO
-   -debugMode
+   -debuggingEnabled
    */
   /**
    * ************************************************************
@@ -490,7 +490,7 @@ public class StartLocalNameServer {
               ? Double.parseDouble(allValues.get(OUTPUT_SAMPLE_RATE)) : 1.0;
 
       if (allValues.containsKey(DEBUG_MODE)) {
-        debugMode = Boolean.parseBoolean(allValues.get(DEBUG_MODE));
+        debuggingEnabled = Boolean.parseBoolean(allValues.get(DEBUG_MODE));
       }
 
       if (allValues.containsKey(DNS_GNS_ONLY)) {
@@ -547,7 +547,7 @@ public class StartLocalNameServer {
     GNS.getLogger().info("Cache Size: " + cacheSize);
     GNS.getLogger().info("Experiment Mode: " + experimentMode);
     GNS.getLogger().info("DNS GNS Only: " + dnsGnsOnly);
-    GNS.getLogger().info("Debug Mode: " + debugMode);
+    GNS.getLogger().info("Debug Mode: " + debuggingEnabled);
 
     try {
       GNSNodeConfig gnsNodeConfig;

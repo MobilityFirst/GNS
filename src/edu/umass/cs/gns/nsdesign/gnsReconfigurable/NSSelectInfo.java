@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
 import org.json.JSONObject;
@@ -16,9 +15,9 @@ import java.util.concurrent.ConcurrentHashMap;
  * This class represents a data structure to store information
  * about Select operations performed on the GNS.
  */
-public class NSSelectInfo {
+public class NSSelectInfo<NodeIDType> {
   private final int id;
-  private final Set<NodeId<String>> serversToBeProcessed; // the list of servers that have yet to be processed
+  private final Set<NodeIDType> serversToBeProcessed; // the list of servers that have yet to be processed
   private final ConcurrentHashMap<String, JSONObject> responses;
   private final SelectOperation selectOperation;
   private final GroupBehavior groupBehavior;
@@ -35,9 +34,9 @@ public class NSSelectInfo {
    * @param minRefreshInterval 
    * @param guid 
    */
-  public NSSelectInfo(int id, Set<NodeId<String>> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
+  public NSSelectInfo(int id, Set<NodeIDType> serverIds, SelectOperation selectOperation, GroupBehavior groupBehavior, String query, int minRefreshInterval, String guid) {
     this.id = id;
-    this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<NodeId<String>, Boolean>());
+    this.serversToBeProcessed = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
     this.serversToBeProcessed.addAll(serverIds);
     this.responses = new ConcurrentHashMap<String, JSONObject>(10, 0.75f, 3);
     this.selectOperation = selectOperation;
@@ -59,14 +58,14 @@ public class NSSelectInfo {
    * Removes the server if from the list of servers that have yet to be processed.
    * @param id 
    */
-  public void removeServerID(NodeId<String> id) {
+  public void removeServerID(NodeIDType id) {
     serversToBeProcessed.remove(id);
   }
   /**
    * 
    * @return 
    */
-  public Set<NodeId<String>> serversYetToRespond() {
+  public Set<NodeIDType> serversYetToRespond() {
     return serversToBeProcessed;
   }
   /**

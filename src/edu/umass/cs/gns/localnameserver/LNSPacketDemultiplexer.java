@@ -30,6 +30,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
   public LNSPacketDemultiplexer(ClientRequestHandlerInterface handler) {
     this.handler = handler;
     register(Packet.PacketType.DNS);
+    register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.ADD_RECORD);
     register(Packet.PacketType.COMMAND);
     register(Packet.PacketType.CONFIRM_ADD);
@@ -55,7 +56,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
   @Override
   public boolean handleJSONObject(JSONObject json) {
     handler.updateRequestStatistics();
-    if (StartLocalNameServer.debugMode) {
+    if (StartLocalNameServer.debuggingEnabled) {
       GNS.getLogger().fine("******* Incoming packet: " + json);
     }
     boolean isPacketTypeFound = true;
@@ -63,16 +64,16 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
       switch (Packet.getPacketType(json)) {
         case DNS:
           DNSPacket dnsPacket = new DNSPacket(json);
-          Packet.PacketType incomingPacketType = Packet.getDNSPacketType(dnsPacket);
+          Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
           switch (incomingPacketType) {
             // Lookup // these have been converted to use handler
-            case DNS:
+            case DNS_SUBTYPE_QUERY:
               Lookup.handlePacketLookupRequest(json, dnsPacket, handler);
               break;
-            case DNS_RESPONSE:
+            case DNS_SUBTYPE_RESPONSE:
               Lookup.handlePacketLookupResponse(json, dnsPacket, handler);
               break;
-            case DNS_ERROR_RESPONSE:
+            case DNS_SUBTYPE_ERROR_RESPONSE:
               Lookup.handlePacketLookupErrorResponse(json, dnsPacket, handler);
               break;
           }

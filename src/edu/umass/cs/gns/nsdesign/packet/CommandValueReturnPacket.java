@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
@@ -15,8 +14,9 @@ import org.json.JSONObject;
  * plus instrumentation.
  *
  * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent.
+ * @param <NodeIDType>
  */
-public class CommandValueReturnPacket extends BasicPacket {
+public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
 
   private final static String REQUESTID = "reqID";
   private final static String RETURNVALUE = "returnValue";
@@ -45,7 +45,7 @@ public class CommandValueReturnPacket extends BasicPacket {
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private final NodeId<String> responder;
+  private final NodeIDType responder;
   /**
    * Instrumentation - the request counter from the LNS)
    */
@@ -68,7 +68,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
     this.LNSRoundTripTime = response.getLNSRoundTripTime();
-    this.responder = response.getResponder();
+    this.responder = (NodeIDType) response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
   }
@@ -93,7 +93,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     this.requestCnt = json.getLong(REQUESTCNT);
     //
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
-    this.responder = json.has(RESPONDER) ? new NodeId<String>(json.getString(RESPONDER)) : GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
   }
 
   /**
@@ -119,7 +119,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     }
     // instrumentation
     if (!responder.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
-      json.put(RESPONDER, responder.get());
+      json.put(RESPONDER, responder.toString());
     }
     return json;
   }
@@ -140,7 +140,7 @@ public class CommandValueReturnPacket extends BasicPacket {
     return LNSRoundTripTime;
   }
 
-  public NodeId<String> getResponder() {
+  public NodeIDType getResponder() {
     return responder;
   }
 

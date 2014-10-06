@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright (C) 2013
  * University of Massachusetts
  * All Rights Reserved 
@@ -63,7 +63,7 @@ public class Intercessor implements IntercessorInterface {
   // Instrumentation
   private static final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  private static boolean debuggingEnabled = false;
+  public static boolean debuggingEnabled = false;
 
   static {
     randomID = new Random();
@@ -84,29 +84,6 @@ public class Intercessor implements IntercessorInterface {
     lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
   }
 
-//  /**
-//   * Returns the local server ID associate with the Intercessor.
-//   * 
-//   * @return
-//   */
-//  public static int getLocalServerID() {
-//    return localServerID;
-//  }
-
-//  /**
-//   * Sets the local server ID associate with the Intercessor.
-//   * 
-//   * @param localServerID
-//   */
-//  public static void setLocalServerID(int localServerID) {
-//    Intercessor.localServerID = localServerID;
-//
-//    GNS.getLogger().info("Local server id: " + localServerID
-//            + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
-//            + " LNS TCP Port: " + GNS.DEFAULT_LNS_TCP_PORT);
-//            //+ " LNS TCP Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
-//  }
-
   /**
    * This is invoked to receive packets. It updates the appropriate map
    * for the id and notifies the appropriate monitor to wake the
@@ -125,7 +102,7 @@ public class Intercessor implements IntercessorInterface {
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           if (debuggingEnabled) {
-            GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update (" + id + ") ");
+            GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update/Add/Remove (" + id + ") ");
           }
           synchronized (monitorUpdate) {
             updateSuccessResult.put(id, packet.getResponseCode());

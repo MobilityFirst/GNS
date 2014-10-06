@@ -23,7 +23,7 @@ public interface NameServerInterface {
 
   public ActiveReplicaCoordinator getActiveReplicaCoordinator();
 
-  public ActiveReplica<?> getActiveReplica();
+  public ActiveReplica<?,?> getActiveReplica();
 
   public ReplicaControllerCoordinator getReplicaControllerCoordinator();
 

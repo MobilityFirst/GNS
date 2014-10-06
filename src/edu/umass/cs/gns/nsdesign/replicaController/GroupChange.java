@@ -8,7 +8,6 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.GroupChangeIdentifier;
@@ -39,9 +38,9 @@ import java.util.concurrent.TimeUnit;
  * because the next group change cannot start unless this update is done.</p>
  *
  * <p>
- * If a manager does get a response from either old or new active replicas, it retries sending those messages.
- * We expect that the request are successful on a few retries. Otherwise, the manager gives up, and group change is left
- * incomplete at that stage.</p>
+ If a manager does toString a response from either old or new active replicas, it retries sending those messages.
+ We expect that the request are successful on a few retries. Otherwise, the manager gives up, and group change is left
+ incomplete at that stage.</p>
  *
  * <p>
  * Also refer to documentation in activeReconfiguration/GroupChange on how active replicas implement group change.</p>
@@ -240,7 +239,7 @@ public class GroupChange {
       // inform old actives to delete state
       OldActiveSetStopPacket oldActiveSetStopPacket = new OldActiveSetStopPacket(packet.getName(), 0,
               replicaController.getNodeID(), GNSNodeConfig.INVALID_NAME_SERVER_ID, packet.getOldActiveVersion(), Packet.PacketType.DELETE_OLD_ACTIVE_STATE);
-      for (NodeId<String> nodeID: packet.getOldActiveNameServers()) {
+      for (Object nodeID: packet.getOldActiveNameServers()) {
         replicaController.getNioServer().sendToID(nodeID, oldActiveSetStopPacket.toJSONObject());
       }
       GroupChangeCompletePacket proposePacket = new GroupChangeCompletePacket(packet.getNewActiveVersion(), packet.getName());

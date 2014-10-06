@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -15,22 +14,22 @@ import java.util.ArrayList;
  * Time: 7:45 PM
  * To change this template use File | Settings | File Templates.
  */
-public class SynchronizeReplyPacket extends PaxosPacket {
+public class SynchronizeReplyPacket<NodeIDType> extends PaxosPacket {
 
   /**
    * node ID of sending node
    */
-  public NodeId<String> nodeID;
+  private NodeIDType nodeID;
 
   /**
    * maximum slot for which nodeID has received decision
    */
-  public int maxDecisionSlot;
+  private int maxDecisionSlot;
 
   /**
    * slot numbers less than max slot which are missing
    */
-  public ArrayList<Integer> missingSlotNumbers;
+  private ArrayList<Integer> missingSlotNumbers;
   String NODE = "x1";
   String MAX_SLOT = "x2";
   String MISSING = "x3";
@@ -38,7 +37,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
 
   public boolean flag;
 
-  public SynchronizeReplyPacket(NodeId<String> nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag1) {
+  public SynchronizeReplyPacket(NodeIDType nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag1) {
     this.packetType = PaxosPacketType.SYNC_REPLY.getInt();
     this.nodeID = nodeID;
     this.maxDecisionSlot = maxDecisionSlot;
@@ -48,7 +47,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
 
   public SynchronizeReplyPacket(JSONObject json) throws JSONException {
 
-    this.nodeID = new NodeId<String>(json.getString(NODE));
+    this.nodeID = (NodeIDType) json.get(NODE);
     this.maxDecisionSlot = json.getInt(MAX_SLOT);
     if (json.has(MISSING)) {
       missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
@@ -63,7 +62,7 @@ public class SynchronizeReplyPacket extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(NODE, nodeID.get());
+    json.put(NODE, nodeID.toString());
     json.put(MAX_SLOT, maxDecisionSlot);
     json.put(FLAG, flag);
     if (missingSlotNumbers != null && missingSlotNumbers.size() > 0) {
@@ -71,5 +70,47 @@ public class SynchronizeReplyPacket extends PaxosPacket {
     }
     return json;
 
+  }
+
+  /**
+   * @return the nodeID
+   */
+  public NodeIDType getNodeID() {
+    return nodeID;
+  }
+
+  /**
+   * @param nodeID the nodeID to set
+   */
+  public void setNodeID(NodeIDType nodeID) {
+    this.nodeID = nodeID;
+  }
+
+  /**
+   * @return the maxDecisionSlot
+   */
+  public int getMaxDecisionSlot() {
+    return maxDecisionSlot;
+  }
+
+  /**
+   * @param maxDecisionSlot the maxDecisionSlot to set
+   */
+  public void setMaxDecisionSlot(int maxDecisionSlot) {
+    this.maxDecisionSlot = maxDecisionSlot;
+  }
+
+  /**
+   * @return the missingSlotNumbers
+   */
+  public ArrayList<Integer> getMissingSlotNumbers() {
+    return missingSlotNumbers;
+  }
+
+  /**
+   * @param missingSlotNumbers the missingSlotNumbers to set
+   */
+  public void setMissingSlotNumbers(ArrayList<Integer> missingSlotNumbers) {
+    this.missingSlotNumbers = missingSlotNumbers;
   }
 }

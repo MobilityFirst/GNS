@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
@@ -15,11 +14,11 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 4/8/14.
  */
-public class NoCoordinationReplicaControllerCoordinator implements ReplicaControllerCoordinator{
-  private NodeId<String> nodeID;
+public class NoCoordinationReplicaControllerCoordinator<NodeIDType> implements ReplicaControllerCoordinator{
+  private NodeIDType nodeID;
   private Replicable app;
 
-  public NoCoordinationReplicaControllerCoordinator(NodeId<String> nodeID, Replicable app) {
+  public NoCoordinationReplicaControllerCoordinator(NodeIDType nodeID, Replicable app) {
     this.nodeID = nodeID;
     this.app = app;
   }

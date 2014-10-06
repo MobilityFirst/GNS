@@ -7,7 +7,7 @@ import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
+import edu.umass.cs.gns.nsdesign.nodeconfig.HostSpec;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -99,7 +99,7 @@ public class GNSInstaller {
 
   // THIS WILL NEED TO CHANGE WHEN WE GO TO IDLESS LNS HOSTS
   private static void loadHostsFiles(String configName) {
-    List<HostFileLoader.HostSpec> nsHosts = null;
+    List<HostSpec> nsHosts = null;
 
     File hostsFile = null;
     try {
@@ -111,13 +111,13 @@ public class GNSInstaller {
       System.exit(1);
     }
 
-    for (HostFileLoader.HostSpec spec : nsHosts) {
+    for (HostSpec spec : nsHosts) {
       String hostname = spec.getName();
-      NodeId<String> id = spec.getId();
+      String id = (String) spec.getId();
       hostTable.put(hostname, new HostInfo(hostname, id, false, null));
     }
 
-    List<HostFileLoader.HostSpec> lnsHosts = null;
+    List<HostSpec> lnsHosts = null;
     try {
       hostsFile = fileSomewhere(configName + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath);
       lnsHosts = HostFileLoader.loadHostFile(hostsFile.toString());
@@ -127,9 +127,9 @@ public class GNSInstaller {
       System.exit(1);
     }
     // FIXME: BROKEN FOR IDLESS LNS HOSTS
-    for (HostFileLoader.HostSpec spec : lnsHosts) {
+    for (HostSpec spec : lnsHosts) {
       String hostname = spec.getName();
-      //NodeId<String> id = spec.getId();
+      //String id = spec.getId();
       HostInfo hostEntry = hostTable.get(hostname);
       if (hostEntry != null) {
         hostEntry.createLNS(true);
@@ -198,7 +198,7 @@ public class GNSInstaller {
    * @param scriptFile
    * @throws java.net.UnknownHostException
    */
-  public static void updateAndRunGNS(NodeId<String> nsId, boolean createLNS, String hostname, InstallerAction action, boolean removeLogs,
+  public static void updateAndRunGNS(String nsId, boolean createLNS, String hostname, InstallerAction action, boolean removeLogs,
           boolean deleteDatabase, String lnsHostsFile, String nsHostsFile, String scriptFile) throws UnknownHostException {
     if (!action.equals(InstallerAction.STOP)) {
       System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
@@ -242,7 +242,7 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void startServers(NodeId<String> nsId, boolean createLNS, String hostname) {
+  private static void startServers(String nsId, boolean createLNS, String hostname) {
     File keyFileName = getKeyFile();
     if (createLNS) {
       System.out.println("Starting local name servers");
@@ -268,7 +268,7 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + "nohup java -cp " + gnsJarFileName + " " + StartNSClass + " "
-              + " -id " + nsId.get()
+              + " -id " + nsId.toString()
               + " -nsfile " + NS_HOSTS_FILENAME
               //+ " -lnsfile " + LNS_HOSTS_FILENAME
               + " -configFile ns.conf "
@@ -422,7 +422,7 @@ public class GNSInstaller {
   // Probably unnecessary at this point.
   private static void updateNodeConfigAndSendOutServerInit() {
     GNSNodeConfig nodeConfig = new GNSNodeConfig();
-    Set< NodeId<String>> ids = new HashSet<>();
+    Set< String> ids = new HashSet<>();
     for (HostInfo info : hostTable.values()) {
       if (info.getNsId() != HostInfo.NULL_ID) {
         nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
@@ -655,7 +655,7 @@ public class GNSInstaller {
   static class UpdateThread extends Thread {
 
     private final String hostname;
-    private final NodeId<String> nsId;
+    private final String nsId;
     private final boolean createLNS;
     private final InstallerAction action;
     private final boolean removeLogs;
@@ -664,7 +664,7 @@ public class GNSInstaller {
     private final String nsHostsFile;
     private final String scriptFile;
 
-    public UpdateThread(String hostname, NodeId<String> nsId, boolean createLNS, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
+    public UpdateThread(String hostname, String nsId, boolean createLNS, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
             String lnsHostsFile, String nsHostsFile, String scriptFile) {
       this.hostname = hostname;
       this.nsId = nsId;

@@ -10,7 +10,6 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -33,15 +32,16 @@ import java.util.concurrent.TimeUnit;
  * We keep a single instance of this class for all names for whom this name server is a replica controller.
  * Created by abhigyan on 2/26/14.
  *
+ * @param <NodeIDType>
  */
-public class ReplicaController implements Replicable, ReconfiguratorInterface, Shutdownable {
+public class ReplicaController<NodeIDType> implements Replicable, ReconfiguratorInterface, Shutdownable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 
   /**
    * ID of this node
    */
-  private final NodeId<String> nodeID;
+  private final NodeIDType nodeID;
 
   /**
    * nio server
@@ -65,7 +65,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
 
 
-  private final ConcurrentHashMap<NodeId<String>, Double> nsRequestRates = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<NodeIDType, Double> nsRequestRates = new ConcurrentHashMap<>();
 
   /** Algorithm for replicating name records.*/
   private ReplicationFrameworkInterface replicationFrameworkInterface;
@@ -73,7 +73,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   /**
    * constructor object
    */
-  public ReplicaController(NodeId<String> nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+  public ReplicaController(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
                            ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                            MongoRecords mongoRecords) {
     this.nodeID = nodeID;
@@ -96,7 +96,7 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
   /**
    * BEGIN: getter methods for ReplicaController elements ***
    */
-  public NodeId<String> getNodeID() {
+  public NodeIDType getNodeID() {
     return nodeID;
   }
 
@@ -133,20 +133,38 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
    */
   /**
    * ****BEGIN: miscellaneous methods needed by replica controller module ***
+   * @param name
+   * @param nameServers
+   * @return 
    */
   // FIXME: Code like this really needs an explanation!!
-  public boolean isSmallestNodeRunning(String name, Set<NodeId<String>> nameServers) {
+  public boolean isSmallestNodeRunning(String name, Set<NodeIDType> nameServers) {
     Random r = new Random(name.hashCode());
-    ArrayList<NodeId<String>> x1 = new ArrayList<NodeId<String>>(nameServers);
-    Collections.sort(x1);
+    ArrayList<NodeIDType> x1 = new ArrayList<NodeIDType>(nameServers);
+    Collections.sort(x1, NodeIDComparator);
     Collections.shuffle(x1, r);
-    for (NodeId<String> x : x1) {
+    for (NodeIDType x : x1) {
       if (gnsNodeConfig.getPingLatency(x) < 9000L)
         return x.equals(nodeID);
     }
     return false;
-
   }
+  
+   
+  public static Comparator<Object> NodeIDComparator = new Comparator<Object>() {
+ 
+            @Override
+	    public int compare(Object object1, Object object2) {
+ 
+	      String objectName1 = object1.toString();
+	      String objectName2 = object2.toString();
+ 
+	      //ascending order
+	      return objectName1.compareTo(objectName2);
+ 
+	    }
+ 
+	};
 
   /**
    * Returns the version number of next group of active replicas, whose current version number is 'activeVersion'.
@@ -304,10 +322,10 @@ public class ReplicaController implements Replicable, ReconfiguratorInterface, S
     if (Config.debuggingEnabled) GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
             "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID()) +
             "\tNewNoad: " + nsLoad.getLoadValue() + "\t");
-    nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
+    nsRequestRates.put((NodeIDType)nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
 
-  public ConcurrentHashMap<NodeId<String>, Double> getNsRequestRates() {
+  public ConcurrentHashMap<NodeIDType, Double> getNsRequestRates() {
     return nsRequestRates;
   }
 

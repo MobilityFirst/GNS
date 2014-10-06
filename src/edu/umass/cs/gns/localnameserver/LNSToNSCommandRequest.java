@@ -8,7 +8,6 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -30,7 +29,7 @@ public class LNSToNSCommandRequest {
       // that is the active server for that GUID
       // because the code at the name server assumes it can look up the info for that record locally on the server.
       // We pick a name server based on that record name using the active name servers info in the cache.
-      NodeId<String> serverID = pickNameServer(getUsefulRecordName(packet.getCommand()), handler);
+      String serverID = pickNameServer(getUsefulRecordName(packet.getCommand()), handler);
       GNS.getLogger().info("LNS" + LocalNameServer.getAddress() + " transmitting CommandPacket " + incomingJSON + " to " + serverID);
       handler.sendToNS(incomingJSON, serverID);
     } else {
@@ -64,20 +63,20 @@ public class LNSToNSCommandRequest {
    * @param guid
    * @return
    */
-  private static NodeId<String> pickNameServer(String guid, ClientRequestHandlerInterface handler) {
+  private static String pickNameServer(String guid, ClientRequestHandlerInterface handler) {
     if (guid != null) {
       CacheEntry cacheEntry = handler.getCacheEntry(guid);
       // PRoBABLY WILL NEED SOMETHING IN HERE TO FORCE IT TO UPDATE THE ActiveNameServers
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
-        NodeId<String> id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
+        String id = (String) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
           
-          GNS.getLogger().info("@@@@@@@ Picked NS" + id.get() + " for record " + guid);
+          GNS.getLogger().info("@@@@@@@ Picked NS" + id.toString() + " for record " + guid);
           return id;
         }
       }
       GNS.getLogger().warning("!?!?!?!?!?!?!?! NO SERVER FOR NS for record " + guid);
     }
-    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNodeIDs());
+    return (String) handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNodeIDs());
   }
 }

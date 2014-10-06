@@ -1,10 +1,8 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gns.gigapaxos.PaxosManager;
+import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import org.json.JSONObject;
 
 import java.util.Set;
@@ -31,19 +29,18 @@ public class TestPaxosManager extends AbstractPaxosManager {
   }
 
   @Override
-  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeId<String>> nodeIDs,
-                                     Replicable paxosInterface) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set nodeIDs, Replicable paxosInterface) {
     return paxosManager.createPaxosInstance(paxosIDNoVersion, version, nodeIDs, paxosInterface);
   }
-
+  
   @Override
-  public Set<NodeId<String>> getPaxosNodeIDs(String paxosIDNoVersion) {
+  public Set getPaxosNodeIDs(String paxosIDNoVersion) {
     return paxosManager.getPaxosNodeIDs(paxosIDNoVersion);
   }
 
   @Override
   public String propose(String paxosIDNoVersion, String value) {
-    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, false);
+    RequestPacket requestPacket = new RequestPacket(-1, value, false);
 //    try {
 //      GNS.getLogger().info(" Size of value: " + value.length() + "\trequestpacket size " + requestPacket.toJSONObject().toString().length());
 //      GNS.getLogger().info(" String value: " + value);
@@ -56,7 +53,7 @@ public class TestPaxosManager extends AbstractPaxosManager {
 
   @Override
   public String proposeStop(String paxosIDNoVersion, String value, short version) {
-    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, true);
+    RequestPacket requestPacket = new RequestPacket(-1, value, true);
     return paxosManager.proposeStop(paxosIDNoVersion, requestPacket.toString(), version);
   }
 
@@ -69,4 +66,6 @@ public class TestPaxosManager extends AbstractPaxosManager {
   public void resetAll() {
     paxosManager.resetAll();
   }
+
+  
 }

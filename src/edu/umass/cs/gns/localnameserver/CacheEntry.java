@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -32,7 +31,7 @@ import org.json.JSONException;
  *
  * @author abhigyan
  */
-public class CacheEntry implements Comparable<CacheEntry> {
+public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
 
   /**
    * The GUID containing the key value pair.
@@ -55,11 +54,11 @@ public class CacheEntry implements Comparable<CacheEntry> {
   /**
    * A list of primary name servers for the name
    */
-  private HashSet<NodeId<String>> replicaControllers;
+  private HashSet<NodeIDType> replicaControllers;
   /**
    * A list of Active Nameservers for the name.
    */
-  private Set<NodeId<String>> activeNameServers;
+  private Set<NodeIDType> activeNameServers;
 
   /**
    * Constructs a cache entry for a name from a list of replica controllers and a list of active replicas.
@@ -68,7 +67,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @param replicaControllers
    * @param activeNameServers
    */
-  public CacheEntry(String name, HashSet<NodeId<String>> replicaControllers, Set<NodeId<String>> activeNameServers) {
+  public CacheEntry(String name, HashSet<NodeIDType> replicaControllers, Set<NodeIDType> activeNameServers) {
     this.name = name;
     this.replicaControllers = replicaControllers;
     this.activeNameServers = activeNameServers;
@@ -104,7 +103,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
       }
     }
     // Also update this (WHY do we cache this if it never changes)?
-    this.replicaControllers = (HashSet<NodeId<String>>) ConsistentHashing.getReplicaControllerSet(name);
+    this.replicaControllers = (HashSet<NodeIDType>) ConsistentHashing.getReplicaControllerSet(name);
 //    this.activeNameServer = packet.getActiveNameServers();
   }
 
@@ -114,8 +113,8 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @param name
    * @param primaryNameServers
    */
-  public CacheEntry(String name, Set<NodeId<String>> primaryNameServers) {
-    this(name, (HashSet<NodeId<String>>) primaryNameServers, primaryNameServers);
+  public CacheEntry(String name, Set<NodeIDType> primaryNameServers) {
+    this(name, (HashSet<NodeIDType>) primaryNameServers, primaryNameServers);
   }
 
   /**
@@ -124,7 +123,8 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * @param packet
    */
   public CacheEntry(RequestActivesPacket packet) {
-    this(packet.getName(), (HashSet<NodeId<String>>) ConsistentHashing.getReplicaControllerSet(packet.getName()), packet.getActiveNameServers());
+    this(packet.getName(), (HashSet) ConsistentHashing.getReplicaControllerSet(packet.getName()),
+            packet.getActiveNameServers());
   }
 
   public synchronized void updateCacheEntry(DNSPacket packet) {
@@ -170,7 +170,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   /**
    * @return the primaryNameServer
    */
-  public synchronized HashSet<NodeId<String>> getReplicaControllers() {
+  public synchronized HashSet<NodeIDType> getReplicaControllers() {
     return replicaControllers;
   }
 
@@ -181,7 +181,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     return timeToLiveInSeconds;
   }
 
-  public synchronized Set<NodeId<String>> getActiveNameServers() {
+  public synchronized Set<NodeIDType> getActiveNameServers() {
     return activeNameServers;
   }
 
@@ -274,12 +274,12 @@ public class CacheEntry implements Comparable<CacheEntry> {
     entry.append("\n    TimestampAddress: " + timeStampHashToString(timestampAddress, timeToLiveInSeconds * 1000));
     entry.append("\n    PrimaryNS:[");
     boolean first = true;
-    for (NodeId<String> id : replicaControllers) {
+    for (NodeIDType id : replicaControllers) {
       if (first) {
-        entry.append(id.get());
+        entry.append(id.toString());
         first = false;
       } else {
-        entry.append(", " + id.get());
+        entry.append(", " + id.toString());
       }
     }
     entry.append("]");
@@ -287,7 +287,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     entry.append("\n    ActiveNS:[");
     if (activeNameServers != null) {
       first = true;
-      for (NodeId<String> id : activeNameServers) {
+      for (NodeIDType id : activeNameServers) {
         if (first) {
           entry.append(id);
           first = false;

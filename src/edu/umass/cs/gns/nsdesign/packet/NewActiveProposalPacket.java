@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +17,7 @@ import java.util.Set;
  * @author abhigyan
  *
  */
-public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
+public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddress {
 
   private final static String NAME = "name";
 
@@ -38,12 +37,12 @@ public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
   /**
    * node which proposed this message.
    */
-  NodeId<String> proposingNode;
+  NodeIDType proposingNode;
 
   /**
    * current set of actives of this node.
    */
-  Set<NodeId<String>> newActives;
+  Set<NodeIDType> newActives;
 
   /**
    * Verion number of this new set of active name servers.
@@ -60,7 +59,7 @@ public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
    * @param newActives current set of actives of this node.
    * @param version Version number for this new set of active name servers.
    */
-  public NewActiveProposalPacket(String name, NodeId<String> proposingNode, Set<NodeId<String>> newActives, int version) {
+  public NewActiveProposalPacket(String name, NodeIDType proposingNode, Set<NodeIDType> newActives, int version) {
     super(null);
     this.type = PacketType.NEW_ACTIVE_PROPOSE;
     this.name = name;
@@ -74,16 +73,16 @@ public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);
 
-    this.proposingNode = new NodeId<String>(json.getString(PROPOSING_NODE));
+    this.proposingNode = (NodeIDType)json.get(PROPOSING_NODE);
 
     String actives = json.getString(NEW_ACTIVES);
 
-    this.newActives = new HashSet<NodeId<String>>();
+    this.newActives = new HashSet<NodeIDType>();
 
     String[] activeSplit = actives.split(":");
 
     for (String x : activeSplit) {
-      newActives.add(new NodeId<String>(x));
+      newActives.add((NodeIDType) x);
     }
 
     this.version = json.getInt(VERSION);
@@ -106,12 +105,12 @@ public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
 
     // convert array to string
     StringBuilder sb = new StringBuilder();
-    for (NodeId<String> x : newActives) {
+    for (NodeIDType x : newActives) {
       if (sb.length() == 0) {
-        sb.append(x.get());
+        sb.append(x.toString());
       } else {
         sb.append(":");
-        sb.append(x.get());
+        sb.append(x.toString());
       }
     }
     String actives = sb.toString();
@@ -126,11 +125,11 @@ public class NewActiveProposalPacket extends BasicPacketWithLnsAddress {
     return name;
   }
 
-  public NodeId<String> getProposingNode() {
+  public NodeIDType getProposingNode() {
     return proposingNode;
   }
 
-  public Set<NodeId<String>> getProposedActiveNameServers() {
+  public Set<NodeIDType> getProposedActiveNameServers() {
     return newActives;
   }
 

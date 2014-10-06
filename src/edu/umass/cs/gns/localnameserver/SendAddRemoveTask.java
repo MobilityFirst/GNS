@@ -11,7 +11,6 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
@@ -33,13 +32,14 @@ import java.util.TimerTask;
  * User: abhigyan
  * Date: 8/9/13
  * Time: 4:59 PM
+ * @param <NodeIDType>
  */
-public class SendAddRemoveTask extends TimerTask {
+public class SendAddRemoveTask<NodeIDType> extends TimerTask {
 
   private final String name;
   private final BasicPacket packet;
   private final int lnsRequestID;
-  private final HashSet<NodeId<String>> replicaControllersQueried;
+  private final HashSet<NodeIDType> replicaControllersQueried;
   private int timeoutCount = -1;
   private final long requestRecvdTime;
   private final ClientRequestHandlerInterface handler;
@@ -49,7 +49,7 @@ public class SendAddRemoveTask extends TimerTask {
     this.handler = handler;
     this.packet = packet;
     this.lnsRequestID = lnsRequestID;
-    this.replicaControllersQueried = new HashSet<NodeId<String>>();
+    this.replicaControllersQueried = new HashSet<NodeIDType>();
     this.requestRecvdTime = requestRecvdTime;
   }
 
@@ -65,7 +65,7 @@ public class SendAddRemoveTask extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-      NodeId<String> nameServerID = selectNS();
+      NodeIDType nameServerID = selectNS();
 
       sendToNS(nameServerID);
 
@@ -120,11 +120,11 @@ public class SendAddRemoveTask extends TimerTask {
     return false;
   }
 
-  private NodeId<String> selectNS() {
-    return handler.getClosestReplicaController(getName(), replicaControllersQueried);
+  private NodeIDType selectNS() {
+    return (NodeIDType) handler.getClosestReplicaController(getName(), replicaControllersQueried);
   }
 
-  private void sendToNS(NodeId<String> nameServerID) {
+  private void sendToNS(NodeIDType nameServerID) {
 
     if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
       if (Config.debuggingEnabled) {
@@ -149,18 +149,17 @@ public class SendAddRemoveTask extends TimerTask {
     // create the packet that we'll send to the primary
 
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("Sending request to node: " + nameServerID.get());
+      GNS.getLogger().info("Sending request to node: " + nameServerID.toString());
     }
 
     // and send it off
     try {
       JSONObject jsonToSend = getPacket().toJSONObject();
-      handler.sendToNS(jsonToSend, nameServerID);
-
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.get() + " Name:" + getName() + " Id:" + getLnsRequestID()
+        GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.toString() + " Name:" + getName() + " Id:" + getLnsRequestID()
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }
+      handler.sendToNS(jsonToSend, nameServerID);
     } catch (JSONException e) {
       e.printStackTrace();
     }

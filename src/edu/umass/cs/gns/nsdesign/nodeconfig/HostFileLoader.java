@@ -16,42 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
+ * 
  * @author westy
  */
 public class HostFileLoader {
 
   private static Long INVALID_FILE_VERSION = -1L;
   private static Long fileVersion = INVALID_FILE_VERSION;
-
-  /**
-   * A tuple of NodeId and hostname.
-   */
-  public static class HostSpec {
-
-    private final NodeId<String> id;
-    private final String name;
-    private final Integer startPort;
-
-    public HostSpec(String id, String name, Integer startPort) {
-      this.id = new NodeId(id);
-      this.name = name;
-      this.startPort = startPort;
-    }
-
-    public NodeId<String> getId() {
-      return id;
-    }
-
-    public String getName() {
-      return name;
-    }
-
-    public Integer getStartPort() {
-      return startPort;
-    }
-
-  }
 
   /**
    * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.

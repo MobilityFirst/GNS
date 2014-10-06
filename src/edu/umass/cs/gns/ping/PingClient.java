@@ -10,7 +10,6 @@ package edu.umass.cs.gns.ping;
 import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -25,8 +24,9 @@ import java.util.concurrent.ConcurrentMap;
  * The PingServer class handles the flip side of this protocol.
  * 
  * @author westy
+ * @param <NodeIDType>
  */
-public class PingClient {
+public class PingClient<NodeIDType> {
 
   private DatagramSocket clientSocket;
   private final Object monitor = new Object();
@@ -56,7 +56,7 @@ public class PingClient {
    * @return the round trip time or INVALID_INTERVAL if the request times out
    * @throws IOException 
    */
-  public long sendPing(NodeId<String> nodeId) throws IOException, InterruptedException {
+  public long sendPing(NodeIDType nodeId) throws IOException, InterruptedException {
     InetAddress IPAddress = gnsNodeConfig.getNodeAddress(nodeId);
     int port = gnsNodeConfig.getNSPingPort(nodeId);
     byte[] sendData;
@@ -182,11 +182,11 @@ public class PingClient {
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
-    NodeId<String> nodeID = new NodeId<String>(0);
+    String nodeID = "0";
     GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
     PingClient pingClient = new PingClient(gnsNodeConfig1);
     while (true) {
-      GNS.getLogger().info("RTT = " + pingClient.sendPing(new NodeId<String>(0)));
+      GNS.getLogger().info("RTT = " + pingClient.sendPing("0"));
       Thread.sleep(1000);
     }
   }

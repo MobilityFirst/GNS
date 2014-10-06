@@ -22,7 +22,6 @@ import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -44,8 +43,9 @@ import java.util.Set;
  * representation.
  *
  * @author westy, Abhigyan
+ * @param <NodeIDType>
  */
-public class MongoRecords implements NoSQLRecords {
+public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   private static final String DBROOTNAME = "GNS";
   public static final String DBNAMERECORD = "NameRecord";
@@ -62,7 +62,7 @@ public class MongoRecords implements NoSQLRecords {
    *
    * @param nodeID nodeID of name server
    */
-  public MongoRecords(NodeId<String> nodeID) {
+  public MongoRecords(NodeIDType nodeID) {
     this(nodeID, -1);
   }
 
@@ -72,11 +72,11 @@ public class MongoRecords implements NoSQLRecords {
    * @param nodeID nodeID of name server
    * @param port port at which mongo is running. if port = -1, mongo connects to default port.
    */
-  public MongoRecords(NodeId<String> nodeID, int port) {
+  public MongoRecords(NodeIDType nodeID, int port) {
     init(nodeID, port);
   }
 
-  private void init(NodeId<String> nodeID, int mongoPort) {
+  private void init(NodeIDType nodeID, int mongoPort) {
     MongoCollectionSpec.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
     MongoCollectionSpec.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
     // add location as another index
@@ -86,7 +86,7 @@ public class MongoRecords implements NoSQLRecords {
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
-      dbName = DBROOTNAME + "-" + nodeID.get().replace('.', '-');
+      dbName = DBROOTNAME + "-" + nodeID.toString().replace('.', '-');
 //      MongoClient mongoClient;
       if (mongoPort > 0) {
         mongoClient = new MongoClient("localhost", mongoPort);
@@ -281,7 +281,7 @@ public class MongoRecords implements NoSQLRecords {
                 break;
               case LIST_STRING:
                 valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(getWithDotNotation(userKey, bson).toString())));
-                //valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(bson.get(userKey).toString())));
+                //valuesMap.putAsArray(userKey, JSONUtils.JSONArrayToResultValue(new JSONArray(bson.toString(userKey).toString())));
                 break;
               default:
                 GNS.getLogger().severe("ERROR: Error: User keys field " + userKey + " is not a known type:" + valuesMapKeys.get(i).type());
@@ -805,9 +805,9 @@ public class MongoRecords implements NoSQLRecords {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
     } else if (args.length == 3) {
-      queryTest(new NodeId<String>(args[0]), args[1], args[2], null);
+      queryTest(args[0], args[1], args[2], null);
     } else if (args.length == 4) {
-      queryTest(new NodeId<String>(args[0]), args[1], args[2], args[3]);
+      queryTest(args[0], args[1], args[2], args[3]);
     } else {
     }
     // important to include this!!
@@ -833,12 +833,12 @@ public class MongoRecords implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
 //  //test code
-  private static void queryTest(NodeId<String> nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
+  private static void queryTest(Object nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
-    Set<NodeId<String>> nameServerIDs = new HashSet<NodeId<String>>();
-    nameServerIDs.add(new NodeId<String>(0));
-    nameServerIDs.add(new NodeId<String>(1));
-    nameServerIDs.add(new NodeId<String>(2));
+    Set nameServerIDs = new HashSet();
+    nameServerIDs.add("0");
+    nameServerIDs.add("1");
+    nameServerIDs.add("2");
     ConsistentHashing.reInitialize(3, nameServerIDs);
     MongoRecords instance = new MongoRecords(nodeID, -1);
     System.out.println("***ALL RECORDS***");

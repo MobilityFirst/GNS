@@ -10,8 +10,6 @@ package edu.umass.cs.gns.ping;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
-
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.io.IOException;
 import java.net.PortUnreachableException;
 
@@ -20,24 +18,25 @@ import java.net.PortUnreachableException;
  * Uses PingClient to send out ping requests.
  *
  * @author westy
+ * @param <NodeIDType>
  */
-public class PingManager implements Shutdownable {
+public class PingManager<NodeIDType> implements Shutdownable {
 
   // Since we don't have ids for LNSs anymore this represents and the LNS in our table.
-  public static final NodeId<String> LOCALNAMESERVERID = new NodeId<String>(Integer.MAX_VALUE);
+  public static final String LOCALNAMESERVERID = "LOCALNS";
 
   private final static int TIME_BETWEEN_PINGS = 30000;
-  private final NodeId<String> nodeId;
+  private final NodeIDType nodeId;
   private final PingClient pingClient;
   private final PingServer pingServer;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
-  private final SparseMatrix<NodeId<String>, Integer, Long> pingTable; // the place we store all the sampled rtt values
+  private final SparseMatrix<NodeIDType, Integer, Long> pingTable; // the place we store all the sampled rtt values
   private final GNSNodeConfig gnsNodeConfig;
   private Thread managerThread;
 
   private final boolean debug = false;
 
-  public PingManager(NodeId<String> nodeId, GNSNodeConfig gnsNodeConfig) {
+  public PingManager(NodeIDType nodeId, GNSNodeConfig gnsNodeConfig) {
     this.nodeId = nodeId;
     this.gnsNodeConfig = gnsNodeConfig;
     this.pingClient = new PingClient(gnsNodeConfig);
@@ -73,20 +72,20 @@ public class PingManager implements Shutdownable {
       Thread.sleep(TIME_BETWEEN_PINGS);
       long t0 = System.currentTimeMillis();
       // Note that we're only pinging other NameServers here, not LNSs (they don't have IDs anyway).
-      for (NodeId<String> id : gnsNodeConfig.getNodeIDs()) {
+      for (Object id : gnsNodeConfig.getNodeIDs()) {
         try {
           if (!id.equals(nodeId)) {
             if (debug) {
-              GNS.getLogger().fine("Send from " + nodeId.get() + " to " + id);
+              GNS.getLogger().fine("Send from " + nodeId.toString() + " to " + id);
             }
             long rtt = pingClient.sendPing(id);
             if (debug) {
-              GNS.getLogger().fine("From " + nodeId.get() + " to " + id + " RTT = " + rtt);
+              GNS.getLogger().fine("From " + nodeId.toString() + " to " + id + " RTT = " + rtt);
             }
-            pingTable.put(id, windowSlot, rtt);
+            pingTable.put((NodeIDType) id, windowSlot, rtt);
             //pingTable[id][windowSlot] = rtt;
             // update the configuration file info with the current average... the reason we're here
-            gnsNodeConfig.updatePingLatency(id, nodeAverage(id));
+            gnsNodeConfig.updatePingLatency(id, nodeAverage((NodeIDType) id));
           }
         } catch (PortUnreachableException e) {
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
@@ -95,7 +94,7 @@ public class PingManager implements Shutdownable {
         }
       }
       long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
-      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId.get() + "\t");
+      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId.toString() + "\t");
       if (debug) {
         GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
       }
@@ -110,12 +109,12 @@ public class PingManager implements Shutdownable {
    * @param node
    * @return
    */
-  public long nodeAverage(NodeId<String> node) {
+  public long nodeAverage(NodeIDType node) {
     // calculate the average ignoring bad samples
     int count = WINDOWSIZE; // tracks the number of good samples
     double total = 0;
     for (int j = 0; j < WINDOWSIZE; j++) {
-      //System.out.println("PINGTABLE: Node: " + node + " Time: " + j + " = " + pingTable.get(node, j));
+      //System.out.println("PINGTABLE: Node: " + node + " Time: " + j + " = " + pingTable.toString(node, j));
       if (pingTable.get(node, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
         total = total + pingTable.get(node, j);
       } else {
@@ -136,21 +135,21 @@ public class PingManager implements Shutdownable {
    * @param node
    * @return
    */
-  public String tableToString(NodeId<String> node) {
+  public String tableToString(NodeIDType node) {
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
-    for (NodeId<String> otherNode : gnsNodeConfig.getNodeIDs()) {
+    for (Object otherNode : gnsNodeConfig.getNodeIDs()) {
       result.append(String.format("%4s", otherNode));
       if (!otherNode.equals(node)) {
         result.append(" = ");
-        result.append(String.format("%d", nodeAverage(otherNode)));
+        result.append(String.format("%d", nodeAverage((NodeIDType) otherNode)));
         result.append(" : ");
         // not print out all the samples... just do it in array order 
         // maybe do it in time order someday if we want to be cute
         for (int j = 0; j < WINDOWSIZE; j++) {
-          if (pingTable.get(otherNode, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
-            result.append(String.format("%3d", pingTable.get(otherNode, j)));
+          if (pingTable.get((NodeIDType) otherNode, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
+            result.append(String.format("%3d", pingTable.get((NodeIDType) otherNode, j)));
           } else {
             result.append("  X");
           }
@@ -177,7 +176,7 @@ public class PingManager implements Shutdownable {
 
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
-    NodeId<String> nodeID = new NodeId<String>(0);
+    String nodeID = "0";
     GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
     new PingManager(nodeID, gnsNodeConfig1).startPinging();
   }

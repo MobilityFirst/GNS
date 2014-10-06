@@ -13,20 +13,21 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
+import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
 
 /**
 @author V. Arun
  */
 public class TESTPaxosConfig {
 	public static final boolean DEBUG = PaxosManager.DEBUG;
-	public static final boolean MEMORY_TESTING=true;
+	public static final boolean MEMORY_TESTING=false;
 	public static final boolean DISK_ACCESS_TESTING=true;
 
 	public static final int MAX_TEST_REQS = 1000000;
 	private static final int RANDOM_SEED = 3142;
 	private static final double NODE_INCLUSION_PROB = 0.6;
+
+	public static final boolean DISABLE_LOGGING = true;
 
 	public static final int MILLION = 1000000;
 
@@ -43,27 +44,27 @@ public class TESTPaxosConfig {
 	public static final int MAX_CONFIG_GROUPS = 10;
 	
 	/**************** Number of paxos groups *******************/
-	public static final int NUM_GROUPS = 100000;  // NUM_GROUPS could be set to much greater than MAX_CONFIG_GROUPS
+	public static final int NUM_GROUPS = 10000;  // NUM_GROUPS could be set to much greater than MAX_CONFIG_GROUPS
 	/***********************************************************/
 
 	/**************** Load parameters *******************/
 	public static final int NUM_CLIENTS = 10; // 1;// 4 default
-	public static final int NUM_REQUESTS = 1000; // 20;  // 40000 default
+	public static final int NUM_REQUESTS = 400000; // 20;  // 40000 default
 	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
-	public static final double TOTAL_LOAD = 1000; // 2000 reqs/sec default (across all clients)
+	public static final double TOTAL_LOAD = 8000; // 2000 reqs/sec default (across all clients)
 	/***********************************************************/
 
-	private static final SampleNodeConfig<NodeId<String>> nodeConfig = new SampleNodeConfig<NodeId<String>>();
+	public static final int DEFAULT_INIT_PORT = SampleNodeConfig.DEFAULT_START_PORT;
+	
+	private static final SampleNodeConfig nodeConfig = new SampleNodeConfig(DEFAULT_INIT_PORT);
 	//private static final TreeSet<Integer> nodes = new TreeSet<Integer>();
-	static {for(int i=TEST_START_NODE_ID; i<TEST_START_NODE_ID+NUM_NODES; i++) nodeConfig.addLocal(new NodeId<String>(i));}
+	static {for(int i=TEST_START_NODE_ID; i<TEST_START_NODE_ID+NUM_NODES; i++) nodeConfig.addLocal(i);}
 
-	private static final HashMap<String, NodeId<String>[]> groups = new HashMap<String, NodeId<String>[]>();
+	private static final HashMap<String,int[]> groups = new HashMap<String,int[]>();
 	static {setDefaultGroups(MAX_CONFIG_GROUPS);}
 	//static {setRandomGroups(MAX_CONFIG_GROUPS);}
 
-	private static final NodeId[] defaultGroup = {new NodeId<String>(TEST_START_NODE_ID), 
-          new NodeId<String>(TEST_START_NODE_ID+1), 
-          new NodeId<String>(TEST_START_NODE_ID+2)};
+	private static final int[] defaultGroup = {TEST_START_NODE_ID, TEST_START_NODE_ID+1, TEST_START_NODE_ID+2};
 	public static final int TEST_CLIENT_ID = 200;
 
 	private static boolean reply_to_client = true;
@@ -72,7 +73,7 @@ public class TESTPaxosConfig {
 	
 	static{assert(NUM_CLIENTS <= MAX_CONFIG_GROUPS);} // all tests should be with at most MAX_CONFIG_GROUPS
 
-	private static ArrayList<NodeId<String>> failedNodes = new ArrayList<NodeId<String>>();
+	private static ArrayList<Integer> failedNodes = new ArrayList<Integer>();
 	//static {crash(TEST_START_NODE_ID);} // by default, first node is always crashed
 
 	private static boolean[] committed = new boolean[MAX_TEST_REQS];
@@ -82,7 +83,7 @@ public class TESTPaxosConfig {
 	public static void setCleanDB(boolean b) {clean_db=b;}
 	public static boolean getCleanDB() {return clean_db;}
 
-	public static Set<NodeId<String>> getNodes() {return nodeConfig.getNodes();}
+	public static Set<Integer> getNodes() {return nodeConfig.getNodes();}
 
 	public static void setSendReplyToClient(boolean b) {reply_to_client=b;}
 	public static boolean getSendReplyToClient() {return reply_to_client;}
@@ -126,8 +127,8 @@ public class TESTPaxosConfig {
 		for(int i=0; i<Math.min(MAX_CONFIG_GROUPS, numGroups); i++) {
 			groups.put(TEST_GUID_PREFIX+i, defaultGroup);
 			if(i==0) continue;// first group is always default group
-			TreeSet<NodeId<String>> members = new TreeSet<NodeId<String>>();
-			for(NodeId<String> id : TESTPaxosConfig.getNodes()) {
+			TreeSet<Integer> members = new TreeSet<Integer>();
+			for(int id : TESTPaxosConfig.getNodes()) {
 				if(r.nextDouble() > NODE_INCLUSION_PROB) {
 					members.add(id);
 				}
@@ -135,24 +136,24 @@ public class TESTPaxosConfig {
 			TESTPaxosConfig.setGroup(TESTPaxosConfig.getGroupName(i), members);
 		}
 	}
-	public static void setGroup(String groupID, Set<NodeId<String>> members) {
-		NodeId<String>[] array = new NodeId[members.size()];
-		int j=0; for(NodeId<String> id : members) array[j++] = id;
+	public static void setGroup(String groupID, Set<Integer> members) {
+		int[] array = new int[members.size()];
+		int j=0; for(int id : members) array[j++] = id;
 		groups.put(groupID, array);
 	}
 
-	public static void setGroup(String groupID, NodeId<String>[] members) {
+	public static void setGroup(String groupID, int[] members) {
 		groups.put(groupID, members);
 	}
-	public static NodeId<String>[] getDefaultGroup() {
+	public static int[] getDefaultGroup() {
 		return defaultGroup;
 	}
-	public static NodeId<String>[] getGroup(String groupID) {
-		NodeId<String>[] members = groups.get(groupID);
+	public static int[] getGroup(String groupID) {
+		int[] members = groups.get(groupID);
 		return members!=null ? members : defaultGroup;
 	}
-	public static NodeId<String>[] getGroup(int groupID) {
-		NodeId<String>[] members = groups.get(TEST_GUID_PREFIX+groupID);
+	public static int[] getGroup(int groupID) {
+		int[] members = groups.get(TEST_GUID_PREFIX+groupID);
 		return members!=null ? members : defaultGroup;
 	}
 	public static String getGroupName(int groupID) {
@@ -161,35 +162,31 @@ public class TESTPaxosConfig {
 	public static Collection<String> getGroups() {
 		return groups.keySet();
 	}
-	public static void createGroup(String groupID, NodeId<String>[] members) {
+	public static void createGroup(String groupID, int[] members) {
 		if(groups.size() <= MAX_CONFIG_GROUPS) groups.put(groupID, members);
 	}
 
 	public static SampleNodeConfig getNodeConfig() {
 		return nodeConfig;
 	}
-	public synchronized static void crash(NodeId<String> nodeID) {
+	public synchronized static void crash(int nodeID) {
 		TESTPaxosConfig.failedNodes.add(nodeID);
 	}
-	public synchronized static void recover(NodeId<String> nodeID) {
-		TESTPaxosConfig.failedNodes.remove(nodeID);
+	public synchronized static void recover(int nodeID) {
+		TESTPaxosConfig.failedNodes.remove(new Integer(nodeID));
 	}
-	public synchronized static boolean isCrashed(NodeId<String>nodeID) {
+	public synchronized static boolean isCrashed(int nodeID) {
 		return TESTPaxosConfig.failedNodes.contains(nodeID);
 	}
-	public synchronized static void setRecovered(NodeId<String> id, String paxosID, boolean b) {
-                //FIXME: removed this comparison which doesn't make sense for string NodeIds
-		//assert(id.compareTo(new NodeId<String>(MAX_NODE_ID)) < 0) : " id = "+id + ", MAX_NODE_ID = " + MAX_NODE_ID;
+	public synchronized static void setRecovered(int id, String paxosID, boolean b) {
+		assert(id < MAX_NODE_ID) : " id = "+id + ", MAX_NODE_ID = " + MAX_NODE_ID;
 		if(paxosID.equals(TEST_GUID)) {
-                  // FIXME OR NOT: this will break if the id isn't an integer string
-                  recovered[Integer.parseInt(id.get())] = b;
+			recovered[id] = b;
 		}
 	}
-	public synchronized static boolean getRecovered(NodeId<String> id, String paxosID) {
-                //FIXME: removed this comparison which doesn't make sense for string NodeIds
-		//assert(id.compareTo(new NodeId<String>(MAX_NODE_ID)) < 0);
-                // FIXME OR NOT: this will break if the id isn't an integer string
-		if(paxosID.equals(TEST_GUID)) return recovered[Integer.parseInt(id.get())];
+	public synchronized static boolean getRecovered(int id, String paxosID) {
+		assert(id < MAX_NODE_ID);
+		if(paxosID.equals(TEST_GUID)) return recovered[id];
 		else return true;
 	}
 
@@ -208,7 +205,7 @@ public class TESTPaxosConfig {
 	public static void testAssert(boolean b) { assert(!TEST_ASSERT_ENABLED || b);}
 
 	// Checks if the IP specified for the id argument is local
-	public static boolean findMyIP(NodeId<String> myID) throws SocketException {
+	public static boolean findMyIP(int myID) throws SocketException {
 		Enumeration<NetworkInterface> netfaces = NetworkInterface.getNetworkInterfaces();
 		ArrayList<InetAddress> myIPs = new ArrayList<InetAddress>();
 		while(netfaces.hasMoreElements()) {
@@ -232,10 +229,10 @@ public class TESTPaxosConfig {
 	}
 
 	public static void main(String[] args) {
-		assert(!TESTPaxosConfig.isCrashed(new NodeId<String>(100)));
-		TESTPaxosConfig.crash(new NodeId<String>(100));
-		assert(TESTPaxosConfig.isCrashed(new NodeId<String>(100)));
-		TESTPaxosConfig.recover(new NodeId<String>(100));
-		assert(!TESTPaxosConfig.isCrashed(new NodeId<String>(100)));
+		assert(!TESTPaxosConfig.isCrashed(100));
+		TESTPaxosConfig.crash(100);
+		assert(TESTPaxosConfig.isCrashed(100));
+		TESTPaxosConfig.recover(100);
+		assert(!TESTPaxosConfig.isCrashed(100));
 	}
 }

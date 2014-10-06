@@ -96,7 +96,9 @@ public class AccountAccess {
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowSubGuids) {
     QueryResult accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-    //GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
+    if (Intercessor.debuggingEnabled) {
+      GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
+    }
     if (accountResult.isError()) {
       if (allowSubGuids) {
         // if allowSubGuids is true assume this is a guid that is "owned" by an account guid so
@@ -212,13 +214,13 @@ public class AccountAccess {
 
   /**
    * Adds an account guid.
-   * 
+   *
    * @param host
    * @param name
    * @param guid
    * @param publicKey
    * @param password
-   * @return 
+   * @return
    */
   public static CommandResponse addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
     CommandResponse response;
@@ -266,7 +268,7 @@ public class AccountAccess {
 
   /**
    * Performs the account verification for a given guid using the verification code.
-   * 
+   *
    * @param guid
    * @param code
    * @return
@@ -680,7 +682,7 @@ public class AccountAccess {
     }
     return false;
   }
-  
+
   //
   public static String Version = "$Revision$";
 }

@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -45,6 +44,11 @@ public class Util {
   public static final double movingAverage(long sample, double historicalAverage, double alpha) {
     return movingAverage((double) sample, historicalAverage, alpha);
   }
+  
+  public static String refreshKey(String id) {
+		return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
+	}
+
 
   public static int roundToInt(double d) {
     return (int) Math.round(d);
@@ -93,19 +97,19 @@ public class Util {
     }
     return set;
   }
-
-  public static Set<NodeId<String>> arrayToNodeIdSet(NodeId[] array) {
-    TreeSet<NodeId<String>> set = new TreeSet<NodeId<String>>();
+  
+  public static Set arrayToNodeIdSet(Object[] array) {
+    TreeSet set = new TreeSet();
     for (int i = 0; i < array.length; i++) {
       set.add(array[i]);
     }
     return set;
   }
 
-  public static Set<String> nodeIdSetToStringSet(Set<NodeId<String>> set) {
+  public static Set<String> nodeIdSetToStringSet(Set set) {
     Set<String> result = new HashSet<String>();
-    for (NodeId<String> id : set) {
-      result.add(id.get());
+    for (Object id : set) {
+      result.add(id.toString());
     }
     return result;
   }
@@ -119,10 +123,10 @@ public class Util {
     return array;
   }
 
-  public static NodeId<String>[] setToNodeIdArray(Set<NodeId<String>> set) {
-    NodeId[] array = new NodeId[set.size()];
+  public static Object[] setToNodeIdArray(Set set) {
+    Object[] array = new Object[set.size()];
     int i = 0;
-    for (NodeId<String> id : set) {
+    for (Object id : set) {
       array[i++] = id;
     }
     return array;
@@ -146,6 +150,17 @@ public class Util {
     }
     return array;
   }
+  
+  public static Integer[] intToIntegerArray(int[] array) {
+		if(array==null) return null;
+		else if(array.length==0) return new Integer[0];
+		Integer[] retarray = new Integer[array.length];
+		int i=0;
+		for(int member : array) {
+			retarray[i++] = member; 
+		}
+		return retarray;
+	}
 
   public static Integer[] objectToIntegerArray(Object[] objects) {
     if (objects == null) {
@@ -170,20 +185,20 @@ public class Util {
     return s;
   }
 
-  public static NodeId[] stringToNodeIdArray(String string) {
+  public static Object[] stringToNodeIdArray(String string) {
     string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
     String[] tokens = string.split(",");
-    NodeId<String>[] array = new NodeId[tokens.length];
+    Object[] array = new Object[tokens.length];
     for (int i = 0; i < array.length; i++) {
-      array[i] = new NodeId(tokens[i]);
+      array[i] = tokens[i];
     }
     return array;
   }
 
-  public static String arrayOfNodeIdsToString(NodeId[] array) {
+  public static String arrayOfNodeIdsToString(Object[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
-      s += array[i].get();
+      s += array[i].toString();
       s += (i < array.length - 1 ? "," : "]");
     }
     return s;
@@ -195,15 +210,15 @@ public class Util {
    * @param nodeIds
    * @return a string
    */
-  public static String setOfNodeIdToString(Set<NodeId<String>> nodeIds) {
+  public static String setOfNodeIdToString(Set nodeIds) {
     StringBuilder sb = new StringBuilder();
     boolean first = true;
-    for (NodeId<String> x : nodeIds) {
+    for (Object x : nodeIds) {
       if (first) {
-        sb.append(x.get());
+        sb.append(x.toString());
         first = false;
       } else {
-        sb.append(":" + x.get());
+        sb.append(":" + x.toString());
       }
     }
     return sb.toString();
@@ -215,11 +230,11 @@ public class Util {
    * @param string
    * @return a Set of NodeIds
    */
-  public static Set<NodeId<String>> stringToSetOfNodeId(String string) {
-    Set<NodeId<String>> nodeIds = new HashSet<NodeId<String>>();
+  public static Set stringToSetOfNodeId(String string) {
+    Set nodeIds = new HashSet();
     String[] tokens = string.split(":");
     for (String s : tokens) {
-      nodeIds.add(new NodeId<String>(s));
+      nodeIds.add(s);
     }
     return nodeIds;
   }
@@ -234,4 +249,17 @@ public class Util {
     }
     return sb.toString();
   }
+  
+  // cute little hack to show us where
+  private String stackTraceToString() {
+    StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+    return (stackTrace.length > 2 ? stackTrace[2].toString() + "\n   " : "")
+            + (stackTrace.length > 3 ? stackTrace[3].toString() + "\n   " : "")
+            + (stackTrace.length > 4 ? stackTrace[4].toString() + "\n   " : "")
+            + (stackTrace.length > 5 ? stackTrace[5].toString() + "\n   " : "")
+            + (stackTrace.length > 6 ? stackTrace[6].toString() + "\n   " : "")
+            + (stackTrace.length > 7 ? stackTrace[7].toString() + "\n   " : "")
+            + (stackTrace.length > 8 ? stackTrace[8].toString() + "\n" : "");
+  }
+
 }

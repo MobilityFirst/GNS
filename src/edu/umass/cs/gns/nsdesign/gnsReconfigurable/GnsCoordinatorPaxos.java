@@ -2,9 +2,8 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.*;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -25,10 +24,10 @@ import java.util.Set;
  *
  * Created by abhigyan on 3/28/14.
  */
-public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
+public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
-  private NodeId<String> nodeID;
+  private NodeIdType nodeID;
   // this is the app object
   private Replicable paxosInterface;
 
@@ -39,7 +38,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
   private InterfaceJSONNIOTransport nioTransport;
 
-  public GnsCoordinatorPaxos(NodeId<String> nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public GnsCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                              Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
 
@@ -48,7 +47,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
 
     if (Config.multiPaxos) {
       this.paxosInterface = new TestReplicable(paxosInterface);
-      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager(nodeID,
+      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIdType>(nodeID,
               nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
               this.paxosInterface, paxosConfig));
     } else {
@@ -78,7 +77,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
         // call propose
         case UPDATE: // updates need coordination
           UpdatePacket update = new UpdatePacket(request);
-          update.setNameServerId(nodeID);
+          update.setNameServerID(nodeID);
           String paxosID = paxosManager.propose(update.getName(), update.toString());
           if (paxosID == null) {
             callHandleDecision = update.toJSONObject();
@@ -133,7 +132,7 @@ public class GnsCoordinatorPaxos extends ActiveReplicaCoordinator{
           // Why is this necessary? Let's say closest name server to a LNS in the previous replica set was quite far, but
           // in the new replica set the closest name server is very near to LNS. If we do not inform the LNS of
           // current active replica set, it will continue sending requests to the far away name server.
-          Set<NodeId<String>> nodeIds = paxosManager.getPaxosNodeIDs(name);
+          Set<NodeIdType> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
             RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);

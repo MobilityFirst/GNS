@@ -6,8 +6,8 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import org.json.JSONException;
@@ -41,15 +41,11 @@ public class Packet {
   public final static String PACKET_TYPE = "type";
   //Type of packets
 
-  public enum PacketType {
+  public enum PacketType implements IntegerPacketType {
 
-    // SPECIAL CASES FOR DNS PACKETS WHICH USE ONE PACKET FOR ALL THESE
-    // these 3 are here for completeness and instrumentation - DNS packets currently don't include a packet type field
-    DNS(-1),
-    DNS_RESPONSE(-2),
-    DNS_ERROR_RESPONSE(-3),
+    DNS(1),
     // Add
-    ADD_RECORD(1),
+    ADD_RECORD(2),
     CONFIRM_ADD(3),
     ACTIVE_ADD(4), // on an add request replica controller sends to active replica
     ACTIVE_ADD_CONFIRM(5), // after adding name, active replica confirms to replica controller
@@ -113,7 +109,13 @@ public class Packet {
     TEST_PING(222),
     TEST_PONG(223),
     
-    TEST_NOOP(224);
+    TEST_NOOP(224),
+    
+    // SPECIAL CASES FOR DNS_SUBTYPE_QUERY PACKETS WHICH USE ONE PACKET FOR ALL THESE
+    // these 3 are here for completeness and instrumentation
+    DNS_SUBTYPE_QUERY(-1),
+    DNS_SUBTYPE_RESPONSE(-2),
+    DNS_SUBTYPE_ERROR_RESPONSE(-3);
 
     private int number;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
@@ -131,6 +133,7 @@ public class Packet {
       this.number = number;
     }
 
+    @Override
     public int getInt() {
       return number;
     }
@@ -140,14 +143,14 @@ public class Packet {
     }
   }
 
-  public static PacketType getDNSPacketType(DNSPacket dnsPacket) throws JSONException {
+  public static PacketType getDNSPacketSubType(DNSPacket dnsPacket) throws JSONException {
 
     if (dnsPacket.isQuery()) { // Query
-      return PacketType.DNS;
+      return PacketType.DNS_SUBTYPE_QUERY;
     } else if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
-      return PacketType.DNS_RESPONSE;
+      return PacketType.DNS_SUBTYPE_RESPONSE;
     } else if (dnsPacket.containsAnyError()) {
-      return PacketType.DNS_ERROR_RESPONSE;
+      return PacketType.DNS_SUBTYPE_ERROR_RESPONSE;
     }
     return null;
   }
@@ -158,12 +161,11 @@ public class Packet {
   }
 
   public static PacketType getPacketType(JSONObject json) throws JSONException {
-    //System.out.println("*****PACKETTYPE****:: " + json.getInt(PACKET_TYPE) + " : " + PacketType.getPacketType(json.getInt(PACKET_TYPE)));
     if (Packet.hasPacketTypeField(json)) {
       return getPacketType(json.getInt(PACKET_TYPE));
+    } else {
+      throw new JSONException("Packet missing packet type field:" + json.toString());
     }
-    // why... why not just put the type in the packet like all the other ones do?
-    return PacketType.DNS;
   }
 
   public static boolean hasPacketTypeField(JSONObject json) {
@@ -287,7 +289,7 @@ public class Packet {
    * @param json JsonObject representing the packet
    * @throws java.io.IOException *
    */
-  public static void sendUDPPacket(GNSNodeConfig gnsNodeConfig, NodeId<String> id, DatagramSocket socket, JSONObject json, GNS.PortType type)
+  public static void sendUDPPacket(GNSNodeConfig gnsNodeConfig, Object id, DatagramSocket socket, JSONObject json, GNS.PortType type)
           throws IOException {
     InetAddress address = gnsNodeConfig.getNodeAddress(id);
     int port = getPort(gnsNodeConfig, id, type);
@@ -337,7 +339,7 @@ public class Packet {
    * @param nameServerId Name server id //
    * @param portType	GNS port type*
    */
-  public static int getPort(GNSNodeConfig gnsNodeConfig, NodeId<String> nameServerId, GNS.PortType portType) {
+  public static int getPort(GNSNodeConfig gnsNodeConfig, Object nameServerId, GNS.PortType portType) {
     switch (portType) {
       case NS_TCP_PORT:
         return gnsNodeConfig.getNSTcpPort(nameServerId);
@@ -360,7 +362,7 @@ public class Packet {
    * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
    * @throws java.io.IOException *
    */
-  public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, NodeId<String> nameserverId, GNS.PortType portType) throws IOException {
+  public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, Object nameserverId, GNS.PortType portType) throws IOException {
     int port = getPort(gnsNodeConfig, nameserverId, portType);
     if (port == -1) {
       GNS.getLogger().warning("sendTCPPacket:: FAIL, BAD PORT! to: " + nameserverId + " json: " + json.toString());
@@ -411,9 +413,9 @@ public class Packet {
    * @param json JSONObject representing the packet
    * @param portType Type of port to connect *
    */
-   public static void multicastUDP(GNSNodeConfig gnsNodeConfig, Set<NodeId<String>> nameServerIds, JSONObject json, 
+   public static void multicastUDP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, 
            GNS.PortType portType, int excludeNameServerId, DatagramSocket socket) {
-    for (NodeId<String> id : nameServerIds) {
+    for (Object id : nameServerIds) {
       if (id.equals(excludeNameServerId)) {
         continue;
       }
@@ -436,7 +438,7 @@ public class Packet {
    * @param numRetry Number of re-try if the connection fails before successfully sending the packet.
    * @param portType Type of port to connect *
    */
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set<NodeId<String>> nameServerIds, JSONObject json, int numRetry, GNS.PortType portType) {
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry, GNS.PortType portType) {
     multicastTCP(gnsNodeConfig, nameServerIds, json, numRetry, portType, -1);
   }
 
@@ -450,7 +452,7 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServerId Id of name server which is excluded from multicast *
    */
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set<NodeId<String>> nameServerIds, JSONObject json, int numRetry, 
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry, 
           GNS.PortType portType, int excludeNameServerId) {
     multicastTCP(gnsNodeConfig, nameServerIds, json, numRetry, portType, new HashSet<Integer>(Arrays.asList(excludeNameServerId)));
   }
@@ -465,10 +467,10 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServers *
    */
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set<NodeId<String>> nameServerIds, JSONObject json, int numRetry, 
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry, 
           GNS.PortType portType, Set<Integer> excludeNameServers) {
     int tries;
-    for (NodeId<String> id : nameServerIds) {
+    for (Object id : nameServerIds) {
       if (excludeNameServers != null && excludeNameServers.contains(id)) {
         continue;
       }
@@ -501,12 +503,12 @@ public class Packet {
    * @return Returns the <i>Socket</i> over which the packet was transmitted. Returns <i>null</i> if no connection was successful in
    * sending the packet. *
    */
-  public static Socket sendTCPPacketToClosestNameServer(GNSNodeConfig gnsNodeConfig, Set<NodeId<String>> nameServerIds, JSONObject json,
+  public static Socket sendTCPPacketToClosestNameServer(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json,
           int numRetry, GNS.PortType portType) {
 
     int attempt = 0;
-    Set<NodeId<String>> excludeNameServer = new HashSet<NodeId<String>>();
-    NodeId<String> id;
+    Set excludeNameServer = new HashSet();
+    Object id;
 
     do {
       attempt++;
