@@ -20,7 +20,6 @@ import edu.umass.cs.gns.util.MultiArrayMap;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.*;
@@ -32,6 +31,7 @@ import java.util.logging.Logger;
 
 /**
 @author V. Arun
+ * @param <NodeIDType>
  */
 
 /* PaxosManager is the primary interface to create
@@ -96,7 +96,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); //GNS.getLogger();;
 
 	public PaxosManager(NodeIDType id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, Replicable pi, PaxosConfig pc) {
-		this.myID = Integer.valueOf(id.toString()); // FIXME: Assumes NodeIDType can be case to String and back
+		this.myID = id.hashCode(); // FIXME: Assumes NodeIDType can be case to String and back
 		this.myApp = pi;
 		this.FD = new FailureDetection(this.myID, nc, niot, pc);
 		this.pinstances = new MultiArrayMap<String,PaxosInstanceStateMachine>(PINSTANCES_CAPACITY, LEVELS);

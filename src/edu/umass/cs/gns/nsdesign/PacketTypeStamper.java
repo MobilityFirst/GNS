@@ -109,20 +109,19 @@ public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<
 
       @Override
       public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
       }
     };
 
     PacketTypeStamper packetTypeStamper = new PacketTypeStamper(jsonnioTransport, type1);
     JSONObject sample = new JSONObject();
     sample.put("Apple", "Banana");
-    packetTypeStamper.sendToID("100", sample);
+    packetTypeStamper.sendToID("100", sample);  
     packetTypeStamper.sendToAddress(null, sample);
     System.out.println("TEST SUCCESS.");
   }
 
   @Override
   public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    nio.addPacketDemultiplexer(pd);
   }
 }
