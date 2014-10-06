@@ -4,8 +4,6 @@ import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
 /**  
@@ -28,7 +26,7 @@ public abstract class PaxosPacket implements PacketInterface {
 	protected String paxosID=null;
 	protected short version=-1;
 
-	public enum PaxosPacketType implements IntegerPacketType {
+	public enum PaxosPacketType {
 		RESPONSE ("RESPONSE", 0),
 		REQUEST ("REQUEST", 1),
 		PREPARE ("PREPARE", 2),
@@ -72,7 +70,7 @@ public abstract class PaxosPacket implements PacketInterface {
 		}
 		/**************** END static code block to ensure correct initialization **************/
 
-		public int getInt() {
+		public int getNumber() {
 			return number;
 		}
 		public String getLabel() {
@@ -127,7 +125,7 @@ public abstract class PaxosPacket implements PacketInterface {
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject json = new JSONObject();
 		Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET); // tells Packet that this is a PaxosPacket
-		json.put(PaxosPacket.PAXOS_PACKET_TYPE, this.packetType.getInt()); // the specific type of PaxosPacket
+		json.put(PaxosPacket.PAXOS_PACKET_TYPE, this.packetType.getNumber()); // the specific type of PaxosPacket
 		json.put(PaxosPacket.PAXOS_ID, this.paxosID);
 		json.put(PaxosPacket.PAXOS_VERSION, this.version);
 

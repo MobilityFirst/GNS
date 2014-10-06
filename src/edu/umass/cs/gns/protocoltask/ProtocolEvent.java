@@ -20,5 +20,5 @@ public interface ProtocolEvent<EventType, KeyType>
 
 	public Object getMessage();
 
-	public void setKey(KeyType key); // getKey already enforced by Keayble
+	public void setKey(KeyType key);
 }

@@ -12,10 +12,9 @@ import edu.umass.cs.gns.nio.InterfaceNodeConfig;
  */
 public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType> {
 
-	public static final int DEFAULT_START_PORT = 2000;
 	private boolean local = false;
-	private HashMap<NodeIDType,InetAddress> nmap=new HashMap<NodeIDType,InetAddress>();;
-	private int defaultPort=DEFAULT_START_PORT;
+	HashMap<NodeIDType,InetAddress> nmap=new HashMap<NodeIDType,InetAddress>();;
+	int defaultPort=2000;
 
 	public SampleNodeConfig(int dp) {
 		defaultPort = dp;
@@ -34,7 +33,7 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
 	 * latter case, the explicit set of node IDs will be used.
 	 */
 	@SuppressWarnings("unchecked")
-	public void localSetup(int nNodes) {
+	public void localSetup(Integer nNodes) {
 		local = true;
 		for(Integer i=0; i<nNodes; i++) {
 			this.add((NodeIDType)i, getLocalAddress());
@@ -51,7 +50,7 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
 	}
 
 	@Override
-	public boolean containsNodeInfo(NodeIDType ID) {
+	public boolean nodeExists(NodeIDType ID) {
 		return nmap.containsKey(ID);
 	}
 
@@ -71,7 +70,7 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
 	@Override
 	public int getNodePort(NodeIDType ID) {
 		int maxPort = 65536;
-		int port = ID!=null ? ((defaultPort + ID.hashCode()) % maxPort) : 0;
+		int port = (defaultPort + ID.hashCode()) % maxPort;
 		if(port < 0) port = (port + maxPort) % maxPort;
 		return port;
 	}

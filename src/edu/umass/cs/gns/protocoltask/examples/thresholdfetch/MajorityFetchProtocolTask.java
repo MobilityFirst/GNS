@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.protocoltask.examples.thresholdfetch;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -12,18 +10,19 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
+import edu.umass.cs.gns.nsdesign.nodeconfig.NodeId;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
-import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.gns.protocoltask.examples.PingPongPacket;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
+import edu.umass.cs.gns.protocoltask.json.ThresholdProtocolTask;
 import edu.umass.cs.gns.util.Util;
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
 
 /* This protocol task waits for responses from a majority of nodes in 
@@ -34,98 +33,101 @@ import edu.umass.cs.gns.util.Util;
  * sender as having responded and does not retry ("restart") the 
  * request to that node anymore.
  */
-public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Packet.PacketType, String> {
+public class MajorityFetchProtocolTask extends ThresholdProtocolTask<NodeId<String>, Packet.PacketType, Long> {
 
-	private String key = null;
+  private Long key = null;
 
-	private final int[] nodes;
-	private final Integer myID;
+  private final  NodeId<String>[] nodes;
+  private final NodeId<String> myID;
 
-	private static Packet.PacketType[] types = {Packet.PacketType.TEST_PONG};
+  private Logger log = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName()) : GNS.getLogger();
 
-	private Logger log =  NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName()) : GNS.getLogger();
+  public MajorityFetchProtocolTask(NodeId<String> id, Set<NodeId<String>> nodes) {
+    super(nodes, nodes.size() % 2 == 0 ? nodes.size() : nodes.size() + 1);
+    this.nodes = Util.setToNodeIdArray(nodes);
+    this.myID = id;
+  }
 
-	public MajorityFetchProtocolTask(int id, Set<Integer> nodes) {
-		super(nodes, nodes.size()%2==0 ? nodes.size() : nodes.size()+1);
-		this.nodes = Util.setToIntArray(nodes);
-		this.myID = id;
-	}
+  /**
+   * *************************Start of overridden methods ****************************************
+   */
+  @Override
+  public Long getKey() {
+    return this.key;
+  }
 
-	/***************************Start of overridden methods *****************************************/
-	@Override
-	public String getKey() {return this.key;}
+  @Override
+  public Long refreshKey() {
+    return (this.key = ((long) this.myID.hashCode()) << 32 + (int) (Math.random() * Integer.MAX_VALUE));
+  }
 
-	@Override
-	public String refreshKey() {
-		return (this.key = (this.key + (int)(Math.random()*Integer.MAX_VALUE)));
-	}
+  @Override
+  public boolean handleEvent(ProtocolEvent<Packet.PacketType, Long> event) {
 
-	@Override
-	public boolean handleEvent(ProtocolEvent<Packet.PacketType,String> event) {
+    JSONObject msg = null;
+    try {
+      msg = ((ProtocolPacket) event.getMessage()).toJSONObject();
+    } catch (JSONException je) {
+      je.printStackTrace();
+      return false;
+    }
+    boolean responded = false;
+    try {
+      switch (Packet.getPacketType(msg)) {
+        case TEST_PONG:
+          responded = handlePingPong(new PingPongPacket(msg));
+          break;
+        default:
+          throw new RuntimeException("Unrecognizable message type: " + Packet.getPacketType(msg));
+      }
+    } catch (JSONException je) {
+      je.printStackTrace();
+    }
+    return responded;
+  }
 
-		JSONObject msg = null;
-		try {
-			msg = ((ProtocolPacket<?,?>)event.getMessage()).toJSONObject();
-		} catch(JSONException je) {
-			je.printStackTrace();
-			return false;
-		}
-		boolean responded = false;
-		try {
-			switch(Packet.getPacketType(msg)) {
-			case TEST_PONG:
-				responded = handlePingPong(new PingPongPacket(msg));
-				break;
-			default:
-				throw new RuntimeException("Unrecognizable message type: " + Packet.getPacketType(msg));
-			}
-		} catch(JSONException je) {
-			je.printStackTrace();
-		}
-		return responded;
-	}
+  @Override
+  public MessagingTask[] start() {
+    PingPongPacket ppp = new PingPongPacket(this.myID, this.myID, Packet.PacketType.TEST_PING);
+    log.info("Node" + myID + " starting protocol task with nodeIDs " + Util.arrayOfNodeIdsToString(nodes));
+    return new MessagingTask(nodes, ppp).toArray();
+  }
 
-	@Override
-	public MessagingTask[] start() {
-		PingPongPacket ppp = new PingPongPacket(this.myID, Packet.PacketType.TEST_PING);
-		log.info("Node"+myID+" starting protocol task with nodeIDs " + Util.arrayToString(nodes));
-		return new MessagingTask(nodes, ppp).toArray();
-	}
-	
-	@Override
-	public GenericMessagingTask<Integer,?>[] handleThresholdEvent(
-			ProtocolTask<Integer, PacketType, String>[] ptasks) {
-		ProtocolExecutor.cancel(this);
-		return null;
-	}
+  @Override
+  public GenericMessagingTask<NodeId<String>, ?>[] handleThresholdEvent(
+          ProtocolTask<NodeId<String>, PacketType, Long>[] ptasks) {
+    ProtocolExecutor.cancel(this);
+    return null;
+  }
 
-	@Override
-	public MessagingTask[] restart() {
-		return start();
-	}
-	/***************************End of overridden methods *****************************************/
+  @Override
+  public MessagingTask[] restart() {
+    return start();
+  }
 
-	/***************************Private or testing methods below *********************************/
-	private boolean handlePingPong(PingPongPacket ppp) {
-		return handlePong(ppp);
-	}
-	private boolean handlePong(PingPongPacket pong) {
-		assert(Integer.valueOf(pong.getInitiator())==this.myID);
-		pong.incrCounter();
-		int sender = Integer.valueOf(pong.flip(this.myID));
-		log.info("Node"+myID+" protocol task received pong from " + sender + ": " + pong);
-		return true;
-	}
+  /**
+   * *************************End of overridden methods ****************************************
+   */
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		System.out.println("Not unit-testable. Run ExampleNode instead.");
-	}
+  /**
+   * *************************Private or testing methods below ********************************
+   */
+  private boolean handlePingPong(PingPongPacket ppp) {
+    return handlePong(ppp);
+  }
 
-	@Override
-	public Set<Packet.PacketType> getEventTypes() {
-		return new HashSet<Packet.PacketType>(Arrays.asList(types));//types;
-	}
+  private boolean handlePong(PingPongPacket pong) {
+    assert (pong.getInitiator().equals(this.myID));
+    pong.incrCounter();
+    NodeId<String> sender = pong.flip(this.myID);
+    log.info("Node" + myID + " protocol task received pong from " + sender + ": " + pong);
+    return true;
+  }
+
+  /**
+   * @param args
+   */
+  public static void main(String[] args) {
+    System.out.println("Not unit-testable. Run ExampleNode instead.");
+  }
 }

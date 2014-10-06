@@ -55,9 +55,8 @@ public class GenericMessagingTask<NodeIDType, MessageType> {
 		mtasks[0] = mtask1; mtasks[1] = mtask2;
 		return mtasks;
 	}
-	@SuppressWarnings("unchecked")
-	public GenericMessagingTask<NodeIDType,?>[] toArray() {
-		GenericMessagingTask<NodeIDType,?>[] mtasks = new GenericMessagingTask[1];
+	public GenericMessagingTask<?,?>[] toArray() {
+		GenericMessagingTask<?,?>[] mtasks = new GenericMessagingTask[1];
 		mtasks[0] = this;
 		return mtasks;
 	}
