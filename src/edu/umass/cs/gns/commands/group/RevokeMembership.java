@@ -26,6 +26,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RevokeMembership extends GnsCommand {
 
   public RevokeMembership(CommandModule module) {

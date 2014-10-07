@@ -10,13 +10,9 @@ package edu.umass.cs.gns.commands.account;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
-import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.clientsupport.UpdateOperation;
-import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;
@@ -49,9 +45,6 @@ public class RegisterAccount extends GnsCommand {
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) { 
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
       String name = json.getString(NAME);
       String guid = json.optString(GUID, null);
       String publicKey = json.getString(PUBLICKEY);
@@ -67,15 +60,8 @@ public class RegisterAccount extends GnsCommand {
       } else {
         return result;
       }
-   // }
   }
   
-//  @Override
-//  public String execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
-//          JSONException, NoSuchAlgorithmException, SignatureException {
-
-//  }
-
   @Override
   public String getCommandDescription() {
     return "Creates a GUID associated with the the human readable name "

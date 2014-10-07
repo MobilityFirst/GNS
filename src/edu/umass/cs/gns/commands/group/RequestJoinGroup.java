@@ -23,6 +23,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RequestJoinGroup extends GnsCommand {
 
   public RequestJoinGroup(CommandModule module) {

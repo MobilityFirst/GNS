@@ -164,6 +164,15 @@ public class GuidInfo {
   }
 
   /**
+   * Sets the public key.
+   * 
+   * @param publicKey 
+   */
+  public void setPublicKey(String publicKey) {
+    this.publicKey = publicKey;
+  }
+
+  /**
    * Returns the type. Currently an unused feature.
    *
    * @return

@@ -26,6 +26,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class GrantMembership extends GnsCommand {
 
   public GrantMembership(CommandModule module) {

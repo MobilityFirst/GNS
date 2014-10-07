@@ -8,8 +8,11 @@
 package edu.umass.cs.gns.commands.account;
 
 import edu.umass.cs.gns.clientsupport.AccountAccess;
+import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.FieldMetaData;
+import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import java.security.InvalidKeyException;
@@ -23,36 +26,34 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class VerifyAccount extends GnsCommand {
+public class ResetKey extends GnsCommand {
 
-  public VerifyAccount(CommandModule module) {
+  public ResetKey(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, CODE};
+    return new String[]{GUID, PUBLICKEY, PASSWORD};
   }
 
   @Override
   public String getCommandName() {
-    return VERIFYACCOUNT;
+    return RESETKEY;
   }
 
   @Override
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
       String guid = json.getString(GUID);
-      String code = json.getString(CODE);
-      return AccountAccess.verifyAccount(guid, code);
-    //}
+      String publicKey = json.getString(PUBLICKEY);
+      String password = json.getString(PASSWORD);
+      return AccountAccess.resetPublicKey(guid, password, publicKey);
   }
 
   @Override
   public String getCommandDescription() {
-    return "Handles the completion of the verification process for a guid by supplying the correct code.";
+    return "Resets the publickey for the account guid.";
+
   }
 }

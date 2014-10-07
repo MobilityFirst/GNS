@@ -20,7 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Stores the Human Readable Name (HRN), GUID and public key for an account plus
+ * Stores the Human Readable Name (HRN), GUID for an account plus
  * other stuff we need to keep like a password, aliases and additional guids.
  * 
  * This class handles the conversion to and from JSON objects as well as 
@@ -28,7 +28,7 @@ import java.util.Set;
  * 
  * The account can have multiple aliases which are extra HRNs. The account can
  * also have additional associated GUIDs. For certain things we also keep an encrypted
- * password. The primary authentication mechanism is the public key.
+ * password.
  *
  * @author westy
  */
@@ -56,7 +56,7 @@ public class AccountInfo {
   private String verificationCode;
 
   /**
-   * Stores the guid and associated human readable name, public key and
+   * Stores the guid and associated human readable name and
    * other information for an Account guid.
    *
    * This class handles the conversion to and from JSON objects as well as 

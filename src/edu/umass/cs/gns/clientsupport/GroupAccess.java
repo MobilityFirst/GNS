@@ -9,7 +9,7 @@ import edu.umass.cs.gns.util.NSResponseCode;
  * GroupAccess provides an interface to the group information in the GNS.
  *
  * The members of a group are stored in a record in each guid whose key is the GROUP string.
- * There is also a "reverse" link stored in each guid which is the groups that the guid is a member of.
+ * There is also a "reverse" link (GROUPS) stored in each guid which is the groups that the guid is a member of.
  * The reverse link means that we can check for membership of a guid without going to a different NS.
  *
  * @author westy

@@ -24,6 +24,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@Deprecated
 public class RetrieveGroupLeaveRequests extends GnsCommand {
 
   public RetrieveGroupLeaveRequests(CommandModule module) {

@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.client.util.Base64;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
@@ -13,6 +14,8 @@ import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ThreadUtils;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.json.JSONException;
 
 import java.text.ParseException;
@@ -298,7 +301,52 @@ public class AccountAccess {
     } else {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
     }
+  }
 
+  public static CommandResponse resetPublicKey(String guid, String password, String publicKey) {
+    AccountInfo accountInfo;
+    if ((accountInfo = lookupAccountInfoFromGuid(guid)) == null) {
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Not an account guid");
+    }
+    if (verifyPassword(accountInfo, password)) {
+      GuidInfo guidInfo;
+      if ((guidInfo = lookupGuidInfo(guid)) == null) {
+        return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read guid info");
+      } else {
+        guidInfo.setPublicKey(publicKey);
+        guidInfo.noteUpdate();
+        if (updateGuidInfoNoAuthentication(guidInfo)) {
+          return new CommandResponse(Defs.OKRESPONSE + " " + "Public key has been updated.");
+        } else {
+          return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update guid info");
+        }
+      }
+    } else {
+      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Password mismatch");
+    }
+  }
+
+  private static boolean verifyPassword(AccountInfo accountInfo, String password) {
+    try {
+      MessageDigest md = MessageDigest.getInstance("SHA-256");
+      md.update((password + SALT + accountInfo.getPrimaryName()).getBytes());
+      return accountInfo.getPassword().equals(encryptPassword(password, accountInfo.getPrimaryName()));
+    } catch (NoSuchAlgorithmException e) {
+      GNS.getLogger().warning("Problem hashing password:" + e);
+      return false;
+    }
+  }
+
+  //Code is duplicated in the client and in the php code:
+  //function encryptPassword($password, $username) {
+  //	return base64_encode(hash('sha256', $password . "42shabiz" . $username, true));
+  //}
+  private static final String SALT = "42shabiz";
+
+  private static String encryptPassword(String password, String alias) throws NoSuchAlgorithmException {
+    MessageDigest md = MessageDigest.getInstance("SHA-256");
+    md.update((password + SALT + alias).getBytes());
+    return Base64.encodeToString(md.digest(), false);
   }
 
   /**
