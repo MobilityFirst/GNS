@@ -15,6 +15,8 @@ public class ClientUtils {
   
   /**
    * Uses a hash function to generate a GUID from a public key string.
+   * This code is duplicated in client so if you 
+   * change it you should change it there as well.
    * 
    * @param publicKey
    * @return 
