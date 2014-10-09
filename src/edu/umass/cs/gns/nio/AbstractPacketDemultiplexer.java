@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.gns.nsdesign.Config;
+import java.util.logging.Level;
 
 /**
  * @author V. Arun
@@ -62,18 +63,14 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
   }
 
   // This method will be invoked by NIO
-  protected boolean handleJSONObjectSuper(JSONObject jsonObject)
-          throws JSONException {
+  protected boolean handleJSONObjectSuper(JSONObject jsonObject) throws JSONException {
     InterfacePacketDemultiplexer pd = this.demuxMap.get(JSONPacket.getPacketType(jsonObject));
     Tasker tasker = new Tasker(jsonObject, pd != null ? pd : this);
-    boolean handled
-            = this.demuxTypes.containsKey(JSONPacket.getPacketType(jsonObject));
+    boolean handled = this.demuxTypes.containsKey(JSONPacket.getPacketType(jsonObject));
     if (handled) {
       executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
     } else {
-      if (Config.debuggingEnabled) {
-        log.warning("!!!!!!!!!!!!! Ignoring packet type: " + JSONPacket.getPacketType(jsonObject));
-      }
+      log.log(Level.WARNING, "!!!!!!!!!!!!! Ignoring packet type: {0}", JSONPacket.getPacketType(jsonObject));
     }
     return handled;
   }

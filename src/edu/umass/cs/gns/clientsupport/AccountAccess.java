@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.client.util.Base64;
+import edu.umass.cs.gns.util.Base64;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.main.GNS;
