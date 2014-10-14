@@ -126,7 +126,10 @@ public class NIOTransport<NodeIDType> implements Runnable {
   // Maps id to socket address
   private InterfaceNodeConfig<NodeIDType> nodeConfig = null;
 
-  /* An id corresponds to a socket address as specified in NodeConfig */
+  /** Usually an id that corresponds to a socket address as specified in NodeConfig. 
+   * Note that myID can also <code>null</code> be which means wildcard address or
+   * it can be a InetSocket address in the case of Local Name Servers 
+   */
   protected NodeIDType myID;
 
   private boolean started = false;
@@ -219,11 +222,27 @@ public class NIOTransport<NodeIDType> implements Runnable {
   }
 
   protected InetAddress getNodeAddress() {
-    return this.myID != null ? this.nodeConfig.getNodeAddress(myID) : getListeningAddress();
+    if (this.myID == null) {
+      return this.getListeningAddress();
+    } else if (this.myID instanceof InetSocketAddress) {
+      // FIXME: Is there a better way to special case this for Local Name Servers which 
+      // explicitly set their address and port?
+      return ((InetSocketAddress) this.myID).getAddress();
+    } else {
+      return this.nodeConfig.getNodeAddress(myID);
+    }
   }
 
   protected int getNodePort() {
-    return this.myID != null ? this.nodeConfig.getNodePort(myID) : this.getListeningPort();
+    if (this.myID == null) {
+      return this.getListeningPort();
+    } else if (this.myID instanceof InetSocketAddress) {
+      // FIXME: Is there a better way to special case this for Local Name Servers which 
+      // explicitly set their address and port?
+      return ((InetSocketAddress) this.myID).getPort();
+    } else {
+      return this.nodeConfig.getNodePort(myID);
+    }
   }
 
   /**
@@ -696,10 +715,10 @@ public class NIOTransport<NodeIDType> implements Runnable {
 
     InetSocketAddress isa;
 
-    //FIXME: make this a little less hackish
     if (this.myID == null) {
       isa = new InetSocketAddress((InetAddress) null, 0);
-    // special case for Local Name Servers
+      // FIXME: Is there a better way to special case this for Local Name Servers which 
+      // explicitly set their address and port?
     } else if (myID instanceof InetSocketAddress) {
       isa = (InetSocketAddress) myID;
       log.info("LNS listening on " + isa + " for NIOTransport");
