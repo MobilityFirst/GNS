@@ -286,7 +286,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     socketChannel.configureBlocking(false);
     socketChannel.socket().setKeepAlive(true);
 
-		// Register the new SocketChannel with our Selector, indicating
+    // Register the new SocketChannel with our Selector, indicating
     // we'd like to be notified when there's data waiting to be read
     socketChannel.register(this.selector, SelectionKey.OP_READ);
   }
@@ -310,7 +310,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     try {
       numRead = socketChannel.read(this.readBuffer);
     } finally {
-			// The remote forcibly or cleanly closed the connection.
+      // The remote forcibly or cleanly closed the connection.
       // cancel the selection key and close the channel.
       if (numRead == -1) {
         cleanup(key, socketChannel);
@@ -406,7 +406,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
         }
         queue.remove(0);
       }
-			// We wrote away all data, so we're no longer interested in
+      // We wrote away all data, so we're no longer interested in
       // writing on this socket. Switch back to waiting for data.
       if (queue.isEmpty()) {
         return true;
@@ -699,23 +699,15 @@ public class NIOTransport<NodeIDType> implements Runnable {
     //FIXME: make this a little less hackish
     if (this.myID == null) {
       isa = new InetSocketAddress((InetAddress) null, 0);
-//                } else if (myID instanceof NodeId) {
-//		// Bind the server socket to the specified address and port
-//                  isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
-//                                              this.nodeConfig.getNodePort(this.myID));
-    } else if (myID instanceof String) {
-      // Bind the server socket to the specified address and port
-      isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
-              this.nodeConfig.getNodePort(this.myID));
-      log.info("NS listening on " + isa + " for NIOTransport");
+    // special case for Local Name Servers
     } else if (myID instanceof InetSocketAddress) {
       isa = (InetSocketAddress) myID;
       log.info("LNS listening on " + isa + " for NIOTransport");
     } else {
-      throw new IOException("Unknown type for Node id " + myID.getClass());
+      isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
+              this.nodeConfig.getNodePort(this.myID));
     }
     serverChannel.socket().bind(isa);
-    
 
     // Register the server socket channel, indicating an interest in
     // accepting new connections
@@ -770,7 +762,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     NIOInstrumenter.incrInitiated();
     putSockAddrToSockChannel(isa, socketChannel); // synchronized
 
-		// Queue a channel registration since the caller is not the
+    // Queue a channel registration since the caller is not the
     // selecting thread. As part of the registration we'll register
     // an interest in connection events. These are raised when a channel
     // is ready to complete connection establishment.
@@ -790,7 +782,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     SocketAddress isa = socketChannel.getRemoteAddress();
     boolean connected = false;
 
-		// Finish the connection. If the connection operation failed
+    // Finish the connection. If the connection operation failed
     // this will raise an IOException.
     try {
       connected = socketChannel.finishConnect();
