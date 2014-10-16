@@ -126,9 +126,10 @@ public class NIOTransport<NodeIDType> implements Runnable {
   // Maps id to socket address
   private InterfaceNodeConfig<NodeIDType> nodeConfig = null;
 
-  /** Usually an id that corresponds to a socket address as specified in NodeConfig. 
+  /**
+   * Usually an id that corresponds to a socket address as specified in NodeConfig.
    * Note that myID can also <code>null</code> be which means wildcard address or
-   * it can be a InetSocket address in the case of Local Name Servers 
+   * it can be a InetSocket address in the case of Local Name Servers
    */
   protected NodeIDType myID;
 
@@ -224,10 +225,6 @@ public class NIOTransport<NodeIDType> implements Runnable {
   protected InetAddress getNodeAddress() {
     if (this.myID == null) {
       return this.getListeningAddress();
-    } else if (this.myID instanceof InetSocketAddress) {
-      // FIXME: Is there a better way to special case this for Local Name Servers which 
-      // explicitly set their address and port?
-      return ((InetSocketAddress) this.myID).getAddress();
     } else {
       return this.nodeConfig.getNodeAddress(myID);
     }
@@ -236,10 +233,6 @@ public class NIOTransport<NodeIDType> implements Runnable {
   protected int getNodePort() {
     if (this.myID == null) {
       return this.getListeningPort();
-    } else if (this.myID instanceof InetSocketAddress) {
-      // FIXME: Is there a better way to special case this for Local Name Servers which 
-      // explicitly set their address and port?
-      return ((InetSocketAddress) this.myID).getPort();
     } else {
       return this.nodeConfig.getNodePort(myID);
     }
@@ -717,11 +710,6 @@ public class NIOTransport<NodeIDType> implements Runnable {
 
     if (this.myID == null) {
       isa = new InetSocketAddress((InetAddress) null, 0);
-      // FIXME: Is there a better way to special case this for Local Name Servers which 
-      // explicitly set their address and port?
-    } else if (myID instanceof InetSocketAddress) {
-      isa = (InetSocketAddress) myID;
-      log.info("LNS listening on " + isa + " for NIOTransport");
     } else {
       isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
               this.nodeConfig.getNodePort(this.myID));

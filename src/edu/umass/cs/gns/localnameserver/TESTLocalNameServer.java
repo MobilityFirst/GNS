@@ -37,7 +37,7 @@ public class TESTLocalNameServer {
     StartLocalNameServer.debuggingEnabled = false;
     StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null);
 
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, GNSNodeConfig.BOGUS_NULL_NAME_SERVER_ID);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, GNSNodeConfig.LOCAL_NAME_SERVER_ID);
 
     for (Object nameServerID: gnsNodeConfig.getNodeIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));

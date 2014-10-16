@@ -10,6 +10,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -20,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * This class parses a hosts file to gather information about each name server (not local) server in the system.
- * 
+ *
  * Also has support for checking to see if the hosts file changes. When that happens the host info is
  * reloaded and the <code>ConsistentHashing.reInitialize</code> method is called.
  *
@@ -29,16 +30,17 @@ import java.util.concurrent.ConcurrentMap;
  * Arun: FIXME: Unclear why we
  * have both NSNodeConfig and GNSNodeConfig. The former should be retrievable
  * from here.
+ *
  * @param <NodeIDType>
  */
 public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType>, Shutdownable {
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final String INVALID_NAME_SERVER_ID = "Invalid";
-  public static final String BOGUS_NULL_NAME_SERVER_ID = "_BOGUS_NULL_NAME_SERVER_ID_";
   public static final int INVALID_PORT = -1;
+  public static final String LOCAL_NAME_SERVER_ID = "LocalNameServer";
 
-  private NodeIDType nodeID = (NodeIDType) INVALID_NAME_SERVER_ID; // this will be BOGUS_NULL_NAME_SERVER_ID for Local Name Servers
+  private NodeIDType nodeID = (NodeIDType) INVALID_NAME_SERVER_ID; // this will be LOCAL_NAME_SERVER_ID for Local Name Servers
   private final String hostsFile;
 
   /**
@@ -107,7 +109,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
     // some idiot checking of the given Id
     HostInfo nodeInfo = newHostInfoMapping.get(this.nodeID);
-    if (!this.nodeID.equals(BOGUS_NULL_NAME_SERVER_ID) && nodeInfo == null) {
+    if (!GNSNodeConfig.LOCAL_NAME_SERVER_ID.equals(this.nodeID) // special case for Local Name Server 
+            && nodeInfo == null) {
       throw new IOException("NodeId not found in hosts file:" + this.nodeID.toString());
     }
     // ok.. things are cool... actually update (do we need to lock this)
@@ -186,8 +189,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
 
   /**
    * Returns the complete set of IDs that existed before the latest change.
-   * 
-   * @return 
+   *
+   * @return
    */
   public Set<NodeIDType> getPreviousNodeIDs() {
     return ImmutableSet.copyOf(previousHostInfoMapping.keySet());
@@ -270,6 +273,10 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    */
   @Override
   public InetAddress getNodeAddress(NodeIDType id) {
+    // handle special case for LNS node
+    if (id instanceof InetSocketAddress) {
+      return ((InetSocketAddress)id).getAddress();
+    }
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? null : nodeInfo.getIpAddress();
   }
@@ -303,20 +310,21 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
   public boolean nodeExists(NodeIDType ID) {
     return getNodeIDs().contains(ID);
   }
-  
-  
-  
 
   /**
    * Returns the TCP port of a nameserver.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
-   * @param ID
+   * @param id
    * @return
    */
   @Override
-  public int getNodePort(NodeIDType ID) {
-    return this.getNSTcpPort(ID);
+  public int getNodePort(NodeIDType id) {
+      // handle special case for LNS node
+    if (id instanceof InetSocketAddress) {
+      return ((InetSocketAddress)id).getPort();
+    }
+    return this.getNSTcpPort(id);
   }
 
   /**
@@ -349,7 +357,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    */
   public NodeIDType getClosestServer(Set<NodeIDType> serverIds, Set<NodeIDType> excludeServers) {
     if (serverIds == null) {
-      return (NodeIDType)INVALID_NAME_SERVER_ID;
+      return (NodeIDType) INVALID_NAME_SERVER_ID;
     }
     // If the local server is one of the server ids and not excluded return it.
     if (serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
@@ -357,7 +365,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
 
     long lowestLatency = Long.MAX_VALUE;
-    NodeIDType nameServerID = (NodeIDType)INVALID_NAME_SERVER_ID;
+    NodeIDType nameServerID = (NodeIDType) INVALID_NAME_SERVER_ID;
     for (NodeIDType serverId : serverIds) {
       if (excludeServers != null && excludeServers.contains(serverId)) {
         continue;

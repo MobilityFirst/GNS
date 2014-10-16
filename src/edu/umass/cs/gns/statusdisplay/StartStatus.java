@@ -44,7 +44,8 @@ public class StartStatus {
     try {
       CommandLine parser = initializeOptions(args);
       String nsFile = parser.getOptionValue("nsfile");
-      nodeConfig = new GNSNodeConfig(nsFile, GNSNodeConfig.BOGUS_NULL_NAME_SERVER_ID);
+      // probably will fail...
+      nodeConfig = new GNSNodeConfig(nsFile, GNSNodeConfig.LOCAL_NAME_SERVER_ID);
     } catch (Exception e) {
       e.printStackTrace();
       System.exit(1);

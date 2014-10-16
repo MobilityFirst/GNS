@@ -5,7 +5,6 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-import edu.umass.cs.gns.util.ConsistentHashing;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -551,10 +550,11 @@ public class StartLocalNameServer {
 
     try {
       GNSNodeConfig gnsNodeConfig;
-      gnsNodeConfig = new GNSNodeConfig(nsFile, GNSNodeConfig.BOGUS_NULL_NAME_SERVER_ID);
+      InetSocketAddress LNSID = new InetSocketAddress(address, port);
+      gnsNodeConfig = new GNSNodeConfig(nsFile, GNSNodeConfig.LOCAL_NAME_SERVER_ID);
 
       //Start local name server
-      new LocalNameServer(new InetSocketAddress(address, port), gnsNodeConfig);
+      new LocalNameServer(LNSID, gnsNodeConfig);
     } catch (Exception e) {
       e.printStackTrace();
     }
