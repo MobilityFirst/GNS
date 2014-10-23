@@ -2,11 +2,15 @@
  * Copyright (C) 2014
  * University of Massachusetts
  * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ * Based on code written by: Emmanuel Cecchet
  */
 package edu.umass.cs.gns.localnameserver.gnamed;
 
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.util.ThreadUtils;
 import java.io.IOException;
 import java.io.InterruptedIOException;
@@ -16,20 +20,27 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import org.xbill.DNS.SimpleResolver;
 
 /**
- * This class defines a UdpDnsServer that serves DNS requests through UDP
+ * This class defines a UdpDnsServer that serves DNS requests through UDP.
  *
- * @author <a href="mailto:cecchet@cs.umass.edu">Emmanuel Cecchet</a>
+ * DNS requests can be handled just by the GNS server or by the GNS server
+ * with a DNS server as a fallback.
+ * When using DNS as a fallback we send out parallel requests and whichever returns
+ * first is returned to the client as the answer.
+ *
+ * @author Westy
  * @version 1.0
  */
-public class UdpDnsServer extends Thread {
+public class UdpDnsServer extends Thread implements Shutdownable {
 
   private final SimpleResolver dnsServer;
   DatagramSocket sock;
+  ExecutorService executor = null;
   String dnsServerIP; // just stored for informational purposes
-  //private GnsCredentials gnsCredentials;
 
   /**
    * Creates a new <code>UDPServer</code> object bound to the given IP/port
@@ -48,13 +59,17 @@ public class UdpDnsServer extends Thread {
     this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
     this.dnsServerIP = dnsServerIP;
     this.sock = new DatagramSocket(port, addr);
+    executor = Executors.newFixedThreadPool(5);
   }
 
   @Override
   public void run() {
-    GNS.getLogger().info("LNS Node at " + LocalNameServer.getAddress().getHostString() 
-            + " starting local DNS Server on port " + sock.getLocalPort() 
+    GNS.getLogger().info("LNS Node at " + LocalNameServer.getAddress().getHostString()
+            + " starting local DNS Server on port " + sock.getLocalPort()
             + (dnsServer != null ? " with fallback DNS server at " + dnsServerIP : ""));
+    if (NameResolution.debuggingEnabled) {
+      GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.localnameserver.gnamed.NameResolution *********");
+    }
     while (true) {
       try {
         final short udpLength = 512;
@@ -68,15 +83,19 @@ public class UdpDnsServer extends Thread {
           } catch (InterruptedIOException e) {
             continue;
           }
-          new NameResolutionThread(sock, incomingPacket, incomingData, dnsServer).start();
+          executor.execute(new LookupWorker(sock, incomingPacket, incomingData, dnsServer));
         }
       } catch (IOException e) {
         GNS.getLogger().severe("Error in UDP Server (will sleep for 3 seconds and try again): " + e);
         ThreadUtils.sleep(3000);
       }
-      // sleep 3 seconds and try again
-      
     }
   }
 
+  @Override
+  public void shutdown() {
+    if (executor != null) {
+      executor.shutdown();
+    }
+  }
 }

@@ -2,6 +2,8 @@
  * Copyright (C) 2014
  * University of Massachusetts
  * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
  */
 package edu.umass.cs.gns.localnameserver.gnamed;
 
@@ -26,12 +28,17 @@ import org.xbill.DNS.SimpleResolver;
 
 //import edu.umass.cs.gns.client.UniversalGnsClient;
 /**
- * This class defines a NameResolutionThread.
+ * This class defines a LookupWorker which handles a single query.
  *
- * @author <a href="mailto:manu@frogthinker.org">Emmanuel Cecchet</a>
+ * DNS requests can be handled just by the GNS server or by the GNS server
+ * with a DNS server as a fallback.
+ * When using DNS as a fallback we send out parallel requests and whichever returns
+ * first is returned to the client as the answer.
+ *
+ * @author westy
  * @version 1.0
  */
-public class NameResolutionThread extends Thread {
+public class LookupWorker implements Runnable {
 
   private final SimpleResolver dnsServer;
   private final DatagramSocket socket;
@@ -39,14 +46,14 @@ public class NameResolutionThread extends Thread {
   private final byte[] incomingData;
 
   /**
-   * Creates a new <code>NameResolutionThread</code> object
+   * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
    *
    * @param socket
    * @param incomingPacket
    * @param incomingData
    * @param dnsServer (might be null meaning don't send requests to a DNS server)
    */
-  public NameResolutionThread(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver dnsServer) {
+  public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver dnsServer) {
     this.socket = socket;
     this.incomingPacket = incomingPacket;
     this.incomingData = incomingData;
@@ -70,7 +77,7 @@ public class NameResolutionThread extends Thread {
       sendResponse(NameResolution.formErrorMessage(incomingData).toWire());
       return;
     }
-    // Try to get a response from the GNS or DNS servers.
+    // THE MEAT IS IN HERE. Try to get a response from the GNS or DNS servers.
     response = generateReply(query);
     if (response == null) { // means we don't need to do anything
       return;
@@ -89,7 +96,7 @@ public class NameResolutionThread extends Thread {
 
   /**
    * Queries DNS and/or GNS servers for DNS records.
-   * 
+   *
    * Note: a null return value means that the caller doesn't need to do
    * anything. Currently this only happens if this is an AXFR request over TCP.
    */
@@ -108,16 +115,18 @@ public class NameResolutionThread extends Thread {
     if ((errorMessage = NameResolution.checkForErroneousQueries(query)) != null) {
       return errorMessage;
     }
-    
+
     // If we're not consulting the DNS server as well just send the query to GNS.
     if (dnsServer == null) {
       return NameResolution.forwardToGnsServer(query);
     }
 
     // Otherwise we make two tasks to check the DNS and GNS in parallel
-    List<NameResolutionWorker> tasks = Arrays.asList(
-            new NameResolutionWorker(NameResolutionWorker.WorkerClass.DNS, query, dnsServer),
-            new NameResolutionWorker(NameResolutionWorker.WorkerClass.GNS, query));
+    List<GnsDnsLookupTask> tasks = Arrays.asList(
+            // Create DNS lookup task
+            new GnsDnsLookupTask(query, dnsServer),
+            // Creeate GNS lookup task
+            new GnsDnsLookupTask(query));
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
     // the altenative. Plus it's cool and trendy to use futures.
@@ -130,7 +139,7 @@ public class NameResolutionThread extends Thread {
     Message successResponse = null;
     Message errorResponse = null;
     // loop throught the tasks getting results as they complete
-    for (NameResolutionWorker task : tasks) { // this is just doing things twice btw
+    for (GnsDnsLookupTask task : tasks) { // this is just doing things twice btw
       try {
         Message result = completionService.take().get();
         if (result.getHeader().getRcode() == Rcode.NOERROR) {
@@ -141,9 +150,13 @@ public class NameResolutionThread extends Thread {
           errorResponse = result;
         }
       } catch (ExecutionException e) {
-
+        if (NameResolution.debuggingEnabled) {
+          GNS.getLogger().warning("Problem handling lookup task: " + e);
+        }
       } catch (InterruptedException e) {
-
+        if (NameResolution.debuggingEnabled) {
+          GNS.getLogger().warning("Lookup task interrupted: " + e);
+        }
       }
     }
     if (successResponse != null) {
@@ -155,11 +168,11 @@ public class NameResolutionThread extends Thread {
       return NameResolution.errorMessage(query, Rcode.NXDOMAIN);
     }
   }
-  
+
   /**
    * Returns a response to the sender.
-   * 
-   * @param responseBytes 
+   *
+   * @param responseBytes
    */
   private void sendResponse(byte[] responseBytes) {
     DatagramPacket outgoingPacket = new DatagramPacket(responseBytes, responseBytes.length, incomingPacket.getAddress(), incomingPacket.getPort());

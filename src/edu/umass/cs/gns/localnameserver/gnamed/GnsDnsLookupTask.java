@@ -12,11 +12,11 @@ import org.xbill.DNS.Message;
 import org.xbill.DNS.SimpleResolver;
 
 /**
- * Implements a callable that we can use to implement parallel GNS and DNS lookups.
+ * Implements the callable that we use to implement parallel GNS and DNS lookups.
  * 
  * @author westy
  */
-public class NameResolutionWorker implements Callable {
+public class GnsDnsLookupTask implements Callable {
 
   enum WorkerClass {
 
@@ -26,16 +26,27 @@ public class NameResolutionWorker implements Callable {
   private final WorkerClass workerClass;
   private final Message query;
   private Message response;
-  private SimpleResolver dnsServer; // will be null for GNS worker
+  private final SimpleResolver dnsServer; // will be null for GNS worker
 
-  NameResolutionWorker(WorkerClass workerClass, Message query) {
-    this.workerClass = workerClass;
+  /**
+   * Creates a worker task that handles a query using the GNS.
+   * 
+   * @param query 
+   */
+  GnsDnsLookupTask(Message query) {
+    this.workerClass = WorkerClass.GNS;
     this.query = query;
     this.dnsServer = null;
   }
   
-  NameResolutionWorker(WorkerClass workerClass, Message query, SimpleResolver dnsServer) {
-    this.workerClass = workerClass;
+  /**
+   * Creates a worker task that handles a query using the DNS
+   * 
+   * @param query 
+   * @param dnsServer
+   */
+  GnsDnsLookupTask(Message query, SimpleResolver dnsServer) {
+    this.workerClass = WorkerClass.DNS;
     this.query = query;
     this.dnsServer = dnsServer;
   }

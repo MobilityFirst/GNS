@@ -65,11 +65,16 @@ public class LocalNameServer implements Shutdownable {
    * Ping manager object for pinging other nodes and updating ping latencies in
    */
   private static PingManager pingManager;
-  
+
   /**
    * We keep a pointer to the gnsNodeConfig so we can shut it down.
    */
   private static GNSNodeConfig gnsNodeConfig;
+
+  /**
+   * We keep a pointer to the udpDnsServer so we can shut it down.
+   */
+  private static UdpDnsServer udpDnsServer;
 
   /**
    * @return the nameServerLoads
@@ -81,7 +86,6 @@ public class LocalNameServer implements Shutdownable {
   public static PingManager getPingManager() {
     return pingManager;
   }
-  
 
   /**
    **
@@ -109,7 +113,7 @@ public class LocalNameServer implements Shutdownable {
             StartLocalNameServer.loadDependentRedirection,
             StartLocalNameServer.replicationFramework
     );
-    
+
     GNS.getLogger().info("Parameter values: " + parameters.toString());
     requestHandler = new BasicClientRequestHandler(address, gnsNodeConfig, parameters);
 
@@ -154,9 +158,11 @@ public class LocalNameServer implements Shutdownable {
 
     try {
       if (StartLocalNameServer.dnsGnsOnly) {
-        new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, null).start();
+        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, null);
+        udpDnsServer.start();
       } else {
-        new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8").start();
+        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8");
+        udpDnsServer.start();
       }
     } catch (BindException e) {
       GNS.getLogger().warning("LNS unable to run DNS Service (needs root permissions): " + e);
@@ -451,7 +457,12 @@ public class LocalNameServer implements Shutdownable {
 
   @Override
   public void shutdown() {
-    this.gnsNodeConfig.shutdown();
+    if (udpDnsServer != null) {
+      udpDnsServer.shutdown();
+    }
+    if (gnsNodeConfig != null) {
+      gnsNodeConfig.shutdown();
+    }
   }
 
 }

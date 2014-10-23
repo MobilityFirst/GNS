@@ -35,6 +35,13 @@ public class NameResolution {
 
   public static final boolean debuggingEnabled = true;
 
+  /** 
+   * Sends the query to the DNS server.
+   * 
+   * @param dnsServer
+   * @param query
+   * @return A message with either a good response or an error.
+   */
   public static Message forwardToDnsServer(SimpleResolver dnsServer, Message query) {
     try {
       Message dnsResponse = dnsServer.send(query);
@@ -56,6 +63,12 @@ public class NameResolution {
     return errorMessage(query, Rcode.NXDOMAIN);
   }
 
+  /**
+   * Sends the query to the GNS server.
+   * 
+   * @param query
+   * @return A message with either a good response or an error.
+   */
   public static Message forwardToGnsServer(Message query) {
     // check for queries we can't handle
     int type = query.getQuestion().getType();
@@ -160,7 +173,42 @@ public class NameResolution {
     }
   }
 
-  public static Message buildErrorMessage(Header header, int rcode, Record question) {
+
+  /**
+   * Forms an error message from an incoming packet.
+   * 
+   * @param in
+   * @return the error message
+   */
+  public static Message formErrorMessage(byte[] in) {
+    Header header;
+    try {
+      header = new Header(in);
+    } catch (IOException e) {
+      return null;
+    }
+    return buildErrorMessage(header, Rcode.FORMERR, null);
+  }
+
+  /**
+   * Forms an error message from a query and response code.
+   * 
+   * @param query
+   * @param rcode
+   * @return the error message
+   */
+  public static Message errorMessage(Message query, int rcode) {
+    return buildErrorMessage(query.getHeader(), rcode, query.getQuestion());
+  }
+  
+  /**
+   * Creates an error message from a header, response code and a record.
+   * @param header
+   * @param rcode
+   * @param question
+   * @return the error message
+   */
+  private static Message buildErrorMessage(Header header, int rcode, Record question) {
     Message response = new Message();
     response.setHeader(header);
     for (int i = 0; i < 4; i++) {
@@ -173,20 +221,14 @@ public class NameResolution {
     return response;
   }
 
-  public static Message formErrorMessage(byte[] in) {
-    Header header;
-    try {
-      header = new Header(in);
-    } catch (IOException e) {
-      return null;
-    }
-    return buildErrorMessage(header, Rcode.FORMERR, null);
-  }
-
-  public static Message errorMessage(Message query, int rcode) {
-    return buildErrorMessage(query.getHeader(), rcode, query.getQuestion());
-  }
-
+  /**
+   * Builds a pretty string showing the query and response. 
+   * Used for debugging purposes.
+   * 
+   * @param query
+   * @param response
+   * @return 
+   */
   public static String queryAndResponseToString(Message query, Message response) {
     StringBuilder result = new StringBuilder();
     result.append(query.getQuestion().getName());
