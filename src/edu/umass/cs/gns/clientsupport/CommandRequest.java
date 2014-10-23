@@ -34,7 +34,7 @@ public class CommandRequest {
 
   /**
    * Handles command packets coming in from the client.
-   * 
+   *
    * @param incomingJSON
    * @param handler
    * @throws JSONException
@@ -61,7 +61,7 @@ public class CommandRequest {
         try {
           CommandResponse returnValue = executeCommand(command, jsonFormattedCommand);
           // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
-          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue, 
+          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
                   handler.getReceivedRequests(), handler.getRequestsPerSecond());
           if (Config.debuggingEnabled) {
             GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
@@ -84,7 +84,9 @@ public class CommandRequest {
       command.remove(SIGNATURE);
       String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
       //String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
-      GNS.getLogger().fine("######## WITHOUT SIGNATURE: " + commandSansSignature);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("########CANONICAL JSON: " + commandSansSignature);
+      }
       command.put(SIGNATURE, signature);
       command.put(SIGNATUREFULLMESSAGE, commandSansSignature);
     }
@@ -92,7 +94,7 @@ public class CommandRequest {
 
   /**
    * Executes the given command with the parameters supplied in the JSONObject.
-   * 
+   *
    * @param command
    * @param json
    * @return

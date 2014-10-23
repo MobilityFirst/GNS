@@ -15,13 +15,15 @@ import java.util.HashMap;
  */
 public class Config {
 
-  /** First version number for a GUID. */
+  /**
+   * First version number for a GUID.
+   */
   public static final short FIRST_VERSION = 1;
-
+  
   public static final String NO_COORDINATOR_STATE_MARKER = "NoCoordinatorState";
-
+  
   private static final String DEFAULTPAXOSLOGPATHNAME = "paxosLog";
-
+  
   private static boolean initialized = false;
 
   /**
@@ -29,14 +31,14 @@ public class Config {
    * logging used for debugging won't be generated in many cases.
    */
   public static boolean debuggingEnabled = true;
-  
+
   // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?
-  public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/"; 
+  public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/";  
   
-  public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS"; 
-
+  public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS";  
+  
   public static int workerThreadCount = 5;
-
+  
   public static DataStoreType dataStore = DataStoreType.MONGO;
   public static int mongoPort = 27017;
 
@@ -44,7 +46,6 @@ public class Config {
   public static int failureDetectionTimeoutSec = 30000;
   public static int failureDetectionPingSec = 10000;
   public static String paxosLogFolder = DEFAULTPAXOSLOGPATHNAME;
-
 
   // parameter related to replication of records
   public static double normalizingConstant = 0.5;
@@ -71,15 +72,19 @@ public class Config {
   public static boolean dummyGNS = false; // should be set to false except when running experiments
   public static boolean singleNS = false; // only one replica of a name, as well as of its replica controller
   public static boolean readCoordination = false; // order read requests via paxos. this option give linearizable
-                                                  // consistency semantics for a name
+  // consistency semantics for a name
   public static boolean eventualConsistency = false;
-
+  
   public static synchronized void initialize(HashMap<String, String> allValues) {
-    if (initialized) return;
-
+    if (initialized) {
+      return;
+    }
+    
     initialized = true;
-    if (allValues == null) return;
-
+    if (allValues == null) {
+      return;
+    }
+    
     if (allValues.containsKey(NSParameterNames.PRIMARY_REPLICAS)) {
       GNS.numPrimaryReplicas = Integer.parseInt(allValues.get(NSParameterNames.PRIMARY_REPLICAS));
     }
@@ -95,26 +100,24 @@ public class Config {
     if (allValues.containsKey(NSParameterNames.STAT_CONSOLE_OUTPUT_LEVEL)) {
       GNS.statConsoleOutputLevel = allValues.get(NSParameterNames.STAT_CONSOLE_OUTPUT_LEVEL);
     }
-
+    
     if (allValues.containsKey(NSParameterNames.WORKER_THREAD_COUNT)) {
       workerThreadCount = Integer.parseInt(allValues.get(NSParameterNames.WORKER_THREAD_COUNT));
     }
-
-
+    
     if (allValues.containsKey(NSParameterNames.NORMALIZING_CONSTANT)) {
       normalizingConstant = Double.parseDouble(allValues.get(NSParameterNames.NORMALIZING_CONSTANT));
     }
-
 
     // paxos parameters
     if (allValues.containsKey(NSParameterNames.PAXOS_LOG_FOLDER)) {
       paxosLogFolder = allValues.get(NSParameterNames.PAXOS_LOG_FOLDER);
     }
-
+    
     if (allValues.containsKey(NSParameterNames.FAILURE_DETECTION_MSG_INTERVAL)) {
       failureDetectionPingSec = Integer.parseInt(allValues.get(NSParameterNames.FAILURE_DETECTION_MSG_INTERVAL));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.FAILURE_DETECTION_TIMEOUT_INTERVAL)) {
       failureDetectionTimeoutSec = Integer.parseInt(allValues.get(NSParameterNames.FAILURE_DETECTION_TIMEOUT_INTERVAL));
     }
@@ -127,47 +130,47 @@ public class Config {
     } else if (allValues.containsKey(NSParameterNames.RANDOM)) {
       replicationFrameworkType = ReplicationFrameworkType.RANDOM;
     }
-
+    
     if (allValues.containsKey(NSParameterNames.REPLICATION_INTERVAL)) {
       analysisIntervalSec = Integer.parseInt(allValues.get(NSParameterNames.REPLICATION_INTERVAL));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.NORMALIZING_CONSTANT)) {
       normalizingConstant = Double.parseDouble(allValues.get(NSParameterNames.NORMALIZING_CONSTANT));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.MIN_REPLICA)) {
-      minReplica =  Integer.parseInt(allValues.get(NSParameterNames.MIN_REPLICA));
+      minReplica = Integer.parseInt(allValues.get(NSParameterNames.MIN_REPLICA));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.MAX_REPLICA)) {
-      maxReplica =  Integer.parseInt(allValues.get(NSParameterNames.MAX_REPLICA));
+      maxReplica = Integer.parseInt(allValues.get(NSParameterNames.MAX_REPLICA));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.MAX_REQ_RATE)) {
-      maxReqRate =  Double.parseDouble(allValues.get(NSParameterNames.MAX_REQ_RATE));
+      maxReqRate = Double.parseDouble(allValues.get(NSParameterNames.MAX_REQ_RATE));
     }
 
     // data-store parameters
     if (allValues.containsKey(NSParameterNames.DATA_STORE)) {
       String ds = allValues.get(NSParameterNames.DATA_STORE);
-      if (DataStoreType.IN_CORE_JSON.getClassName().equals(ds))
+      if (DataStoreType.IN_CORE_JSON.getClassName().equals(ds)) {
         dataStore = DataStoreType.IN_CORE_JSON;
-      else if (DataStoreType.MONGO.getClassName().equals(ds))
+      } else if (DataStoreType.MONGO.getClassName().equals(ds)) {
         dataStore = DataStoreType.MONGO;
-      else if (DataStoreType.CASSANDRA.getClassName().equals(ds))
+      } else if (DataStoreType.CASSANDRA.getClassName().equals(ds)) {
         dataStore = DataStoreType.CASSANDRA;
-      else throw new IllegalArgumentException();
+      } else {
+        throw new IllegalArgumentException();
+      }
     }
-
+    
     if (allValues.containsKey(NSParameterNames.MONGO_PORT)) {
       mongoPort = Integer.parseInt(allValues.get(NSParameterNames.MONGO_PORT));
     }
 
     // Testing-related parameters
-
     // singleNS option must be read after GNS.numPrimaryReplicas is read.
-
     if (allValues.containsKey(NSParameterNames.READ_COORDINATION)) {
       readCoordination = Boolean.parseBoolean(allValues.get(NSParameterNames.READ_COORDINATION));
     }
@@ -178,19 +181,19 @@ public class Config {
       }
       GNS.getLogger().info("Emulating ping latency at name server: emulatePingLatencies = " + emulatePingLatencies);
     }
-
+    
     if (allValues.containsKey(NSParameterNames.NO_PAXOS_LOG)) {
       noPaxosLog = Boolean.parseBoolean(allValues.get(NSParameterNames.NO_PAXOS_LOG));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.DEBUG_MODE)) {
       debuggingEnabled = Boolean.parseBoolean(allValues.get(NSParameterNames.DEBUG_MODE));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.MULTI_PAXOS)) {
       multiPaxos = Boolean.parseBoolean(allValues.get(NSParameterNames.MULTI_PAXOS));
     }
-
+    
     if (allValues.containsKey(NSParameterNames.DUMMY_GNS)) {
       dummyGNS = Boolean.parseBoolean(allValues.get(NSParameterNames.DUMMY_GNS));
     }
@@ -198,8 +201,13 @@ public class Config {
       GNS.numPrimaryReplicas = 1;
       Config.minReplica = 1;
       singleNS = true;
-      if (Config.debuggingEnabled) GNS.getLogger().fine("Number of primary: " + GNS.numPrimaryReplicas + " \tSingleNS\t" + singleNS);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().fine("Number of primary: " + GNS.numPrimaryReplicas + " \tSingleNS\t" + singleNS);
+      }
+    }
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.nsdesign.Config *********");
     }
   }
-
+  
 }

@@ -50,7 +50,7 @@ public class NSAccessSupport {
       return false;
     }
     if (debuggingEnabled) {
-      GNS.getLogger().info("NS: User " + guidInfo.getName() + " signature:" + signature + " message: " + message);
+      GNS.getLogger().info("NS: User " + guidInfo.getName() + " public key:" + guidInfo.getPublicKey() + " signature:" + signature + " message: " + message);
     }
     KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyString);
