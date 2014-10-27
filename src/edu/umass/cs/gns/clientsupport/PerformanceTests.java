@@ -54,7 +54,7 @@ public class PerformanceTests {
     if ((accountGuid = AccountAccess.lookupGuid(ACCOUNTNAME)) == null) {
       // if not we use the method  below which bypasses the normal email verification requirement
       // but first we create a GUID from our public key
-      accountGuid = ClientUtils.createGuidFromPublicKey(PUBLICKEY);
+      accountGuid = ClientUtils.createGuidFromPublicKey(PUBLICKEY.getBytes());
       AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false);
     }
     times = new HashMap<String, ArrayList<Double>>();
@@ -89,7 +89,7 @@ public class PerformanceTests {
     for (int i = 0; i < count; i++) {
       String name = "RTT-" + Util.randomString(6);
       String publicKey = name + "-KEY";
-      String guid = ClientUtils.createGuidFromPublicKey(publicKey);
+      String guid = ClientUtils.createGuidFromPublicKey(publicKey.getBytes());
       AccountAccess.addGuid(info, name, guid, publicKey);
       result.add(guid);
     }

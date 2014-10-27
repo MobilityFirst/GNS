@@ -46,8 +46,8 @@ public class CommandRequest {
       GNS.getLogger().fine("######## COMMAND PACKET RECEIVED: " + incomingJSON);
     }
     final CommandPacket packet = new CommandPacket(incomingJSON);
-    // Set the host field. Used by the help command and email module.
-    commandModule.setHost(packet.getSenderAddress());
+    // FIXME: Don't do this every time. Set the host field. Used by the help command and email module. 
+    commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":8080");
     final JSONObject jsonFormattedCommand = packet.getCommand();
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand);

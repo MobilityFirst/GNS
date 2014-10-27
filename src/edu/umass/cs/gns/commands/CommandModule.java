@@ -33,7 +33,7 @@ import java.util.List;
 public class CommandModule {
 
   private TreeSet<GnsCommand> commands;
-  private String host;
+  private String httpHost;
   private boolean adminMode = false;
 
   /**
@@ -159,12 +159,12 @@ public class CommandModule {
     return true;
   }
 
-  public String getHost() {
-    return host;
+  public String getHTTPHost() {
+    return httpHost;
   }
 
-  public void setHost(String host) {
-    this.host = host;
+  public void setHTTPHost(String host) {
+    this.httpHost = host;
   }
 
   public boolean isAdminMode() {

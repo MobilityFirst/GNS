@@ -23,6 +23,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import edu.umass.cs.gns.util.Base64;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -52,12 +53,12 @@ public class RegisterAccount extends NSCommand {
   public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String name = json.getString(NAME);
-    String guid = json.optString(GUID, null);
+    //String guid = json.optString(GUID, null);
     String publicKey = json.getString(PUBLICKEY);
     String password = json.optString(PASSWORD, null);
-    if (guid == null) {
-      guid = ClientUtils.createGuidFromPublicKey(publicKey);
-    }
+    byte[] publicKeyBytes = Base64.decode(publicKey); 
+    String guid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
+ 
     String result = null;
     result = NSAccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password, 
             activeReplica, lnsAddress);

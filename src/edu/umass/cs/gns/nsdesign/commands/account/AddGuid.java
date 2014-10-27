@@ -28,6 +28,7 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.util.Base64;
 import java.net.InetSocketAddress;
 
 /**
@@ -55,11 +56,14 @@ public class AddGuid extends NSCommand {
   public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     String name = json.getString(NAME);
-    String accountGuid = json.getString(GUID);
+    String accountGuid = json.getString(ACCOUNT_GUID);
     String publicKey = json.getString(PUBLICKEY);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
+    
+    byte[] publicKeyBytes = Base64.decode(publicKey);
+    String newGuid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
+    
     GuidInfo accountGuidInfo;
     if ((accountGuidInfo = NSAccountAccess.lookupGuidInfo(accountGuid, activeReplica, lnsAddress)) == null) {
       return BADRESPONSE + " " + BADGUID + " " + accountGuid;

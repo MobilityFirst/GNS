@@ -136,7 +136,7 @@ public class GnsHttpServer {
    */
  private static String processQuery(String host, String action, String queryString) {
    // Set the host field. Used by the help command. Find a better way to to do this?
-   commandModule.setHost(host);
+   commandModule.setHTTPHost(host);
    // Convert the URI into a JSONObject, stuffing in some extra relevant fields like
    // the signature, and the message signed.
     String fullString = action + QUERYPREFIX + queryString; // for signature check

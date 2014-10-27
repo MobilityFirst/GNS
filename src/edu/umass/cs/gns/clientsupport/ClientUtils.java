@@ -18,12 +18,11 @@ public class ClientUtils {
    * This code is duplicated in client so if you 
    * change it you should change it there as well.
    * 
-   * @param publicKey
+   * @param keyBytes
    * @return 
    */
-  public static String createGuidFromPublicKey(String publicKey) {
-    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(publicKey.getBytes());
+  public static String createGuidFromPublicKey(byte[] keyBytes) {
+    byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(keyBytes);
     return ByteUtils.toHex(publicKeyDigest);
   }
-  
 }

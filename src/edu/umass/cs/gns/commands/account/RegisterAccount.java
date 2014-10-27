@@ -15,6 +15,7 @@ import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.util.Base64;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -46,13 +47,13 @@ public class RegisterAccount extends GnsCommand {
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
       String name = json.getString(NAME);
-      String guid = json.optString(GUID, null);
+      //String guid = json.getString(GUID);
       String publicKey = json.getString(PUBLICKEY);
       String password = json.optString(PASSWORD, null);
-      if (guid == null) {
-        guid = ClientUtils.createGuidFromPublicKey(publicKey);
-      }
-      CommandResponse result = AccountAccess.addAccountWithVerification(module.getHost(), name, guid, publicKey, password);
+      byte[] publicKeyBytes = Base64.decode(publicKey);
+      String guid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
+      
+      CommandResponse result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey, password);
       if (result.getReturnValue().equals(OKRESPONSE)) {
         // set up the default read access
         FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);

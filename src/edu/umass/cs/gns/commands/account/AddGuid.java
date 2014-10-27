@@ -12,15 +12,14 @@ import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
-import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
-import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.localnameserver.httpserver.Defs;
+import edu.umass.cs.gns.util.Base64;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -40,7 +39,7 @@ public class AddGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, GUID, PUBLICKEY, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{NAME, ACCOUNT_GUID, PUBLICKEY, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -55,11 +54,15 @@ public class AddGuid extends GnsCommand {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {
       String name = json.getString(NAME);
-      String accountGuid = json.getString(GUID);
+      String accountGuid = json.getString(ACCOUNT_GUID);
+      //String newGuid = json.getString(GUID);
       String publicKey = json.getString(PUBLICKEY);
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
-      String newGuid = ClientUtils.createGuidFromPublicKey(publicKey);
+      
+      byte[] publicKeyBytes = Base64.decode(publicKey);
+      String newGuid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
+      
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);

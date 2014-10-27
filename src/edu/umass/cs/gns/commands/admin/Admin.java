@@ -42,7 +42,7 @@ public class Admin extends GnsCommand {
   public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String passkey = json.getString(PASSKEY);
-    if (module.getHost().equals(passkey)) {
+    if (module.getHTTPHost().equals(passkey)) {
       module.setAdminMode(true);
       return new CommandResponse(OKRESPONSE);
     } else if ("off".equals(passkey)) {

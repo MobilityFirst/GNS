@@ -14,6 +14,7 @@ import edu.umass.cs.gns.commands.CommandModule;
  *
  * @author westy
  */
+@Deprecated
 public class RegisterAccountWithoutGuidOrPassword extends RegisterAccount {
 
   public RegisterAccountWithoutGuidOrPassword(CommandModule module) {
