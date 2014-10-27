@@ -22,9 +22,9 @@ public enum SystemParameter {
           "Determines if email authentication is used."),
   SIGNATURE(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableSignatureVerification",
           "Determines if query and field authentication using signatures and ACLS is enabled."),
-  MAXGUIDS(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXGUIDS",
+  MAXGUIDS(ParameterType.Integer, "edu.umass.cs.gns.localnameserver.httpserver.Defs", "MAXGUIDS",
           "Puts a limit on the number of guids an account can have."),
-  MAXALIASES(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXALIASES",
+  MAXALIASES(ParameterType.Integer, "edu.umass.cs.gns.localnameserver.httpserver.Defs", "MAXALIASES",
           "Puts a limit on the number of alias an account can have.");
 
   //
