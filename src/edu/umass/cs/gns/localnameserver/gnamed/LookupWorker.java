@@ -177,9 +177,7 @@ public class LookupWorker implements Runnable {
   private void sendResponse(byte[] responseBytes) {
     DatagramPacket outgoingPacket = new DatagramPacket(responseBytes, responseBytes.length, incomingPacket.getAddress(), incomingPacket.getPort());
     try {
-      synchronized (socket) {
-        socket.send(outgoingPacket);
-      }
+      socket.send(outgoingPacket);
     } catch (IOException e) {
       GNS.getLogger().severe("Failed to send response" + e);
     }
