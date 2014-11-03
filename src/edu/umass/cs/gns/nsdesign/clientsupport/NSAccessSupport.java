@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 
 /**
@@ -41,27 +42,31 @@ public class NSAccessSupport {
   // try this for now
   private static final Set<String> WORLDREADABLEFIELDS = new HashSet<String>(Arrays.asList(GroupAccess.JOINREQUESTS, GroupAccess.LEAVEREQUESTS));
 
-  public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, 
+          InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
     if (!GNS.enableSignatureVerification) {
       return true;
     }
-    byte[] publickeyString = Base64.decode(guidInfo.getPublicKey());
-    if (publickeyString == null) { // bogus public key
+    byte[] publickeyBytes = Base64.decode(guidInfo.getPublicKey());
+    if (publickeyBytes == null) { // bogus public key
+      if (debuggingEnabled) {
+        GNS.getLogger().info("&&&&Base 64 decoding is bogus!!!");
+      }
       return false;
     }
     if (debuggingEnabled) {
       GNS.getLogger().info("NS: User " + guidInfo.getName() + " public key:" + guidInfo.getPublicKey() + " signature:" + signature + " message: " + message);
     }
-    KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
-    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyString);
+    KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
+    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
     Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
     sig.initVerify(publicKey);
-    sig.update(message.getBytes());
+    sig.update(message.getBytes("UTF-8"));
     boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
     if (debuggingEnabled) {
-      GNS.getLogger().fine("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
+      GNS.getLogger().info("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     }
     return result;
   }
