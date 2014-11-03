@@ -23,6 +23,7 @@ import java.net.UnknownHostException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.xbill.DNS.SimpleResolver;
+import org.xbill.DNS.Cache;
 
 /**
  * This class defines a UdpDnsServer that serves DNS requests through UDP.
@@ -38,6 +39,7 @@ import org.xbill.DNS.SimpleResolver;
 public class UdpDnsServer extends Thread implements Shutdownable {
 
   private final SimpleResolver dnsServer;
+  private final Cache dnsCache;
   DatagramSocket sock;
   ExecutorService executor = null;
   String dnsServerIP; // just stored for informational purposes
@@ -57,6 +59,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
    */
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP) throws SecurityException, SocketException, UnknownHostException {
     this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
+    this.dnsCache = dnsServerIP != null ? new Cache() : null;
     this.dnsServerIP = dnsServerIP;
     this.sock = new DatagramSocket(port, addr);
     executor = Executors.newFixedThreadPool(5);
@@ -83,7 +86,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
           } catch (InterruptedIOException e) {
             continue;
           }
-          executor.execute(new LookupWorker(sock, incomingPacket, incomingData, dnsServer));
+          executor.execute(new LookupWorker(sock, incomingPacket, incomingData, dnsServer, dnsCache));
         }
       } catch (IOException e) {
         GNS.getLogger().severe("Error in UDP Server (will sleep for 3 seconds and try again): " + e);

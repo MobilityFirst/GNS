@@ -25,6 +25,8 @@ import org.xbill.DNS.Flags;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.Rcode;
 import org.xbill.DNS.SimpleResolver;
+import org.xbill.DNS.Cache;
+import org.xbill.DNS.SetResponse;
 
 //import edu.umass.cs.gns.client.UniversalGnsClient;
 /**
@@ -41,6 +43,7 @@ import org.xbill.DNS.SimpleResolver;
 public class LookupWorker implements Runnable {
 
   private final SimpleResolver dnsServer;
+  private final Cache dnsCache;
   private final DatagramSocket socket;
   private final DatagramPacket incomingPacket;
   private final byte[] incomingData;
@@ -58,8 +61,25 @@ public class LookupWorker implements Runnable {
     this.incomingPacket = incomingPacket;
     this.incomingData = incomingData;
     this.dnsServer = dnsServer;
+    this.dnsCache = null;
   }
 
+  /**
+   * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
+   *
+   * @param socket
+   * @param incomingPacket
+   * @param incomingData
+   * @param dnsServer (might be null meaning don't send requests to a DNS server)
+   * @param dnsCache (might be null meaning don't send requests to a DNS server)
+   */
+  public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver dnsServer, Cache dnsCache) {
+    this.socket = socket;
+    this.incomingPacket = incomingPacket;
+    this.incomingData = incomingData;
+    this.dnsServer = dnsServer;
+    this.dnsCache = dnsCache;
+  }
   /**
    * @see java.lang.Thread#run()
    */
@@ -121,6 +141,16 @@ public class LookupWorker implements Runnable {
       return NameResolution.forwardToGnsServer(query);
     }
 
+    // Lookup in the local cache before performing GNS/DNS lookup
+    if (dnsCache != null) {
+      Message tempQuery = (Message) query.clone();
+      Message result = NameResolution.lookupDnsCache(tempQuery, dnsCache);
+      if (result.getHeader().getRcode() == Rcode.NOERROR) {
+        GNS.getLogger().info("Responding the request from cache " + NameResolution.queryAndResponseToString(query, result));
+        return result;
+      }
+    }
+
     // Otherwise we make two tasks to check the DNS and GNS in parallel
     List<GnsDnsLookupTask> tasks = Arrays.asList(
             // Create DNS lookup task
@@ -160,6 +190,15 @@ public class LookupWorker implements Runnable {
       }
     }
     if (successResponse != null) {
+      // Cache the successful response
+      try {
+        SetResponse addMsgResponse = dnsCache.addMessage(successResponse);
+        if (!addMsgResponse.isSuccessful()) {
+          GNS.getLogger().warning("Failed to add an entry to cache");
+        }
+      } catch (NullPointerException e) {
+        GNS.getLogger().warning("Failed to add an entry to cache" + e );
+      }
       return successResponse;
     } else if (errorResponse != null) {
       // currently this is returning the second error response... do we care?
@@ -178,6 +217,7 @@ public class LookupWorker implements Runnable {
     DatagramPacket outgoingPacket = new DatagramPacket(responseBytes, responseBytes.length, incomingPacket.getAddress(), incomingPacket.getPort());
     try {
       socket.send(outgoingPacket);
+      GNS.getLogger().fine("Response sent to " + incomingPacket.getAddress().toString() + " " + incomingPacket.getPort());
     } catch (IOException e) {
       GNS.getLogger().severe("Failed to send response" + e);
     }

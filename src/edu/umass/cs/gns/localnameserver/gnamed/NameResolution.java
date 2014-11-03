@@ -14,18 +14,8 @@ import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import org.xbill.DNS.ARecord;
-import org.xbill.DNS.DClass;
-import org.xbill.DNS.Flags;
-import org.xbill.DNS.Header;
-import org.xbill.DNS.Message;
-import org.xbill.DNS.Name;
-import org.xbill.DNS.Opcode;
-import org.xbill.DNS.Rcode;
-import org.xbill.DNS.Record;
-import org.xbill.DNS.Section;
-import org.xbill.DNS.SimpleResolver;
-import org.xbill.DNS.Type;
+import org.xbill.DNS.*;
+import java.util.Iterator;
 
 /**
  *
@@ -130,6 +120,53 @@ public class NameResolution {
   }
 
   /**
+   * Looking up the local dns server cache
+   *
+   * @param query
+   * @return
+   */
+  public static Message lookupDnsCache(Message query, Cache dnsCache) {
+      // check for queries we can't handle
+      int type = query.getQuestion().getType();
+      // Was the query legitimate or implemented?
+      if (!Type.isRR(type) && type != Type.ANY) {
+          return errorMessage(query, Rcode.NOTIMP);
+      }
+      // extract the domain (guid) and field from the query
+      final String fieldName = Type.string(query.getQuestion().getType());
+      final Name requestedName = query.getQuestion().getName();
+      byte[] byteName = requestedName.toWire();
+      final String lookupName = requestedName.toString();
+
+      if (debuggingEnabled) {
+          GNS.getLogger().fine("Looking up local name server cache for field " + fieldName + " in domain " + lookupName);
+      }
+
+      SetResponse lookupresult = dnsCache.lookupRecords(requestedName, query.getQuestion().getType(), Credibility.NORMAL);
+      if (lookupresult.isSuccessful()) {
+          Message response = new Message(query.getHeader().getID());
+          response.getHeader().setFlag(Flags.QR);
+          if (query.getHeader().getFlag(Flags.RD)) {
+              response.getHeader().setFlag(Flags.RA);
+          }
+          response.addRecord(query.getQuestion(), Section.QUESTION);
+          response.getHeader().setFlag(Flags.AA);
+
+          // Write the response
+          for (RRset rrset : lookupresult.answers()) {
+              GNS.getLogger().fine(rrset.toString() + "\n");
+              Iterator<Record> rrItr = rrset.rrs();
+              while (rrItr.hasNext()) {
+                  response.addRecord(rrItr.next(), Section.ANSWER);
+              }
+          }
+          return response;
+      } else {
+          return errorMessage(query, Rcode.NOTIMP);
+      }
+  }
+
+  /**
    * Returns a Message with and error in it if the query is not good.
    *
    * @param query
@@ -217,7 +254,7 @@ public class NameResolution {
     if (rcode == Rcode.SERVFAIL) {
       response.addRecord(question, Section.QUESTION);
     }
-    header.setRcode(rcode);
+    response.getHeader().setRcode(rcode);
     return response;
   }
 
