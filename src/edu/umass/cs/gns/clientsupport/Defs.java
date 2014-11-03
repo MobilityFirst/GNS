@@ -129,7 +129,7 @@ public class Defs {
   public final static String EVERYONE = "+ALL+";
   public final static String EMPTY = "+EMPTY+";
   //
-  public static final String RASALGORITHM = "RSA";
+  public static final String RSAALGORITHM = "RSA";
   public static final String SIGNATUREALGORITHM = "SHA1withRSA";
   public final static String NEWLINE = System.getProperty("line.separator");
   // This one is special, used for the action part of the command

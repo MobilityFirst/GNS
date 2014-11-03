@@ -14,6 +14,7 @@ import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ThreadUtils;
+import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.json.JSONException;
@@ -21,6 +22,8 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Provides the basic interface to GNS accounts.
@@ -329,9 +332,12 @@ public class AccountAccess {
   private static boolean verifyPassword(AccountInfo accountInfo, String password) {
     try {
       MessageDigest md = MessageDigest.getInstance("SHA-256");
-      md.update((password + SALT + accountInfo.getPrimaryName()).getBytes());
+      md.update((password + SALT + accountInfo.getPrimaryName()).getBytes("UTF-8"));
       return accountInfo.getPassword().equals(encryptPassword(password, accountInfo.getPrimaryName()));
     } catch (NoSuchAlgorithmException e) {
+      GNS.getLogger().warning("Problem hashing password:" + e);
+      return false;
+    } catch (UnsupportedEncodingException e) {
       GNS.getLogger().warning("Problem hashing password:" + e);
       return false;
     }
@@ -343,9 +349,10 @@ public class AccountAccess {
   //}
   private static final String SALT = "42shabiz";
 
-  private static String encryptPassword(String password, String alias) throws NoSuchAlgorithmException {
+  private static String encryptPassword(String password, String alias) throws NoSuchAlgorithmException, 
+          UnsupportedEncodingException {
     MessageDigest md = MessageDigest.getInstance("SHA-256");
-    md.update((password + SALT + alias).getBytes());
+    md.update((password + SALT + alias).getBytes("UTF-8"));
     return Base64.encodeToString(md.digest(), false);
   }
 

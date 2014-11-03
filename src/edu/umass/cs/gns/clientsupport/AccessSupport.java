@@ -48,7 +48,7 @@ public class AccessSupport {
     if (encodedPublicKey == null) { // bogus signature
       return false;
     }
-    KeyFactory keyFactory = KeyFactory.getInstance(RASALGORITHM);
+    KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
     X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
