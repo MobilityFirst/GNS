@@ -20,7 +20,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import org.xbill.DNS.Flags;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.Rcode;
@@ -47,22 +46,6 @@ public class LookupWorker implements Runnable {
   private final DatagramSocket socket;
   private final DatagramPacket incomingPacket;
   private final byte[] incomingData;
-
-  /**
-   * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
-   *
-   * @param socket
-   * @param incomingPacket
-   * @param incomingData
-   * @param dnsServer (might be null meaning don't send requests to a DNS server)
-   */
-  public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver dnsServer) {
-    this.socket = socket;
-    this.incomingPacket = incomingPacket;
-    this.incomingData = incomingData;
-    this.dnsServer = dnsServer;
-    this.dnsCache = null;
-  }
 
   /**
    * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
@@ -141,7 +124,7 @@ public class LookupWorker implements Runnable {
       return NameResolution.forwardToGnsServer(query);
     }
 
-    // Lookup in the local cache before performing GNS/DNS lookup
+    // Otherwise as a first step before performing GNS/DNS lookup we check our own local cache.
     if (dnsCache != null) {
       Message tempQuery = (Message) query.clone();
       Message result = NameResolution.lookupDnsCache(tempQuery, dnsCache);
