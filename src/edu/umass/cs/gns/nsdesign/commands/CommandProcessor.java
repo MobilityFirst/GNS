@@ -14,14 +14,13 @@ import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 
 /**
@@ -66,7 +65,10 @@ public class CommandProcessor {
       return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
     } catch (FailedDBOperationException e) {
       return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
+    } catch (UnsupportedEncodingException e) {
+      return BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e;
     }
+    
   }
   
 }

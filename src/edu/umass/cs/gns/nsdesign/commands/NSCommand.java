@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nsdesign.commands;
 
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -57,8 +58,9 @@ public abstract class NSCommand implements Comparable<NSCommand> {
 
   public abstract String getCommandName();
 
-  public abstract String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException;
+  public abstract String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) 
+          throws InvalidKeyException, InvalidKeySpecException, JSONException, NoSuchAlgorithmException, SignatureException,
+          FailedDBOperationException, UnsupportedEncodingException;
 
   /**
    * Get the description of the command

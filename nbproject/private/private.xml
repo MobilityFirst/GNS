@@ -23,6 +23,7 @@
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/AddAlias.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/build.properties</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/CommandResponse.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/gnamed/GnsDnsLookupTask.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/nbbuild.xml</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/admin/ConnectionCheck.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/AddGuid.java</file>
@@ -50,6 +51,7 @@
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/CommandDefs.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/replicaCoordination/multipaxos/PaxosInstanceStateMachine.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/Packet.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/gnamed/NameResolution.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/Read.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/account/RegisterAccount.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/commands/NSCommandModule.java</file>
@@ -62,6 +64,7 @@
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RegisterAccountWithoutPassword.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/admin/GetParameter.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/gigapaxos/DefaultPaxosInterfaceApp.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/gnamed/UdpDnsServer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/AccountInfo.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/JSONMessageExtractor.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/httpserver/RedirectServer.java</file>
@@ -71,6 +74,7 @@
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/account/RegisterAccountWithoutGuidOrPassword.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/admin/Dump.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/aws/support/examples/Sudo.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/gnamed/LookupWorker.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/httpserver/GnsHttpServer.java</file>
         </group>
     </open-files>

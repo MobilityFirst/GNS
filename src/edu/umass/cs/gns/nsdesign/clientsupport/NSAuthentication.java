@@ -15,6 +15,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.util.NSResponseCode;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -29,7 +30,8 @@ public class NSAuthentication {
 
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String reader, String signature, 
           String message, MetaDataTypeName access, GnsReconfigurable gnsApp, InetSocketAddress lnsAddress) 
-          throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, FailedDBOperationException {
+          throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException, 
+          FailedDBOperationException, UnsupportedEncodingException {
     GuidInfo guidInfo;
     GuidInfo readerGuidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, gnsApp, lnsAddress)) == null) {

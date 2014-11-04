@@ -15,13 +15,12 @@ import edu.umass.cs.gns.nsdesign.clientsupport.NSAccessSupport;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAccountAccess;
 import edu.umass.cs.gns.nsdesign.commands.NSCommand;
 import edu.umass.cs.gns.nsdesign.commands.NSCommandModule;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -48,8 +47,9 @@ public class RemoveGuid extends NSCommand {
   }
 
   @Override
-  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
+  public String execute(JSONObject json, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) 
+          throws InvalidKeyException, InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
+          SignatureException, FailedDBOperationException, UnsupportedEncodingException {
     String guidToRemove = json.getString(GUID);
     String accountGuid = json.optString(ACCOUNT_GUID, null);
     String signature = json.getString(SIGNATURE);
