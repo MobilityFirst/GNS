@@ -14,8 +14,10 @@ import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import org.xbill.DNS.ARecord;
+import org.xbill.DNS.CNAMERecord;
 import org.xbill.DNS.Cache;
 import org.xbill.DNS.Credibility;
 import org.xbill.DNS.DClass;
@@ -150,14 +152,13 @@ public class NameResolution {
       // extract the domain (guid) and field from the query
       final String fieldName = Type.string(query.getQuestion().getType());
       final Name requestedName = query.getQuestion().getName();
-      byte[] byteName = requestedName.toWire();
       final String lookupName = requestedName.toString();
 
       if (debuggingEnabled) {
-          GNS.getLogger().fine("Looking up local name server cache for field " + fieldName + " in domain " + lookupName);
+          GNS.getLogger().fine("Looking up name in cache: " + lookupName);
       }
 
-      SetResponse lookupresult = dnsCache.lookupRecords(requestedName, query.getQuestion().getType(), Credibility.NORMAL);
+      SetResponse lookupresult = dnsCache.lookupRecords(requestedName, Type.ANY, Credibility.NORMAL);
       if (lookupresult.isSuccessful()) {
           Message response = new Message(query.getHeader().getID());
           response.getHeader().setFlag(Flags.QR);
@@ -166,13 +167,35 @@ public class NameResolution {
           }
           response.addRecord(query.getQuestion(), Section.QUESTION);
           response.getHeader().setFlag(Flags.AA);
-
+          ArrayList<Name> cnameNames = new ArrayList<Name>();
           // Write the response
           for (RRset rrset : lookupresult.answers()) {
               GNS.getLogger().fine(rrset.toString() + "\n");
               Iterator<Record> rrItr = rrset.rrs();
               while (rrItr.hasNext()) {
-                  response.addRecord(rrItr.next(), Section.ANSWER);
+                  Record curRecord = rrItr.next();
+                  response.addRecord(curRecord, Section.ANSWER);
+                  if (curRecord.getType() == Type.CNAME) {
+                      cnameNames.add(((CNAMERecord)curRecord).getAlias());
+                  }
+              }
+          }
+          if (cnameNames.size() == 0) {
+              return response;
+          }
+          // For all CNAMES in the response, add their A records
+          for (Name cname: cnameNames) {
+              GNS.getLogger().fine("Looking up CNAME in cache: " + cname.toString());
+              SetResponse lookUpResult = dnsCache.lookupRecords(cname, Type.ANY, Credibility.NORMAL);
+              if (lookUpResult.isSuccessful()) {
+                  for (RRset rrset : lookUpResult.answers()) {
+                      GNS.getLogger().fine(rrset.toString() + "\n");
+                      Iterator<Record> rrItr = rrset.rrs();
+                      while (rrItr.hasNext()) {
+                          Record curRecord = rrItr.next();
+                          response.addRecord(curRecord, Section.ANSWER);
+                      }
+                  }
               }
           }
           return response;

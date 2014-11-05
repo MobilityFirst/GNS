@@ -26,6 +26,9 @@ import org.xbill.DNS.Rcode;
 import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.Cache;
 import org.xbill.DNS.SetResponse;
+import org.xbill.DNS.RRset;
+import org.xbill.DNS.Section;
+import org.xbill.DNS.Credibility;
 
 //import edu.umass.cs.gns.client.UniversalGnsClient;
 /**
@@ -177,10 +180,19 @@ public class LookupWorker implements Runnable {
       try {
         SetResponse addMsgResponse = dnsCache.addMessage(successResponse);
         if (!addMsgResponse.isSuccessful()) {
-          GNS.getLogger().warning("Failed to add an entry to cache");
+          RRset[] answers = successResponse.getSectionRRsets(Section.ANSWER);
+          boolean isAuth = successResponse.getHeader().getFlag(Flags.AA);
+          int qClass = successResponse.getQuestion().getDClass();
+          for(int i = 0; i < answers.length; i++) {
+            if (answers[i].getDClass() != qClass)
+              continue;
+            int cred = getCred(Section.ANSWER, isAuth);
+            dnsCache.addRRset(answers[i], cred);
+            GNS.getLogger().info("Records added to cache " + answers[i].toString());
+          }
         }
       } catch (NullPointerException e) {
-        GNS.getLogger().warning("Failed to add an entry to cache" + e );
+        GNS.getLogger().warning("Failed to add a dns response to cache" + e );
       }
       return successResponse;
     } else if (errorResponse != null) {
@@ -206,4 +218,21 @@ public class LookupWorker implements Runnable {
     }
   }
 
+  private final int
+  getCred(int section, boolean isAuth) {
+    if (section == Section.ANSWER) {
+      if (isAuth)
+        return Credibility.AUTH_ANSWER;
+      else
+        return Credibility.NONAUTH_ANSWER;
+    } else if (section == Section.AUTHORITY) {
+      if (isAuth)
+        return Credibility.AUTH_AUTHORITY;
+      else        return Credibility.NONAUTH_AUTHORITY;
+    } else if (section == Section.ADDITIONAL) {
+      return Credibility.ADDITIONAL;
+    } else {
+        throw new IllegalArgumentException("getCred: invalid section");
+    }
+  }
 }
