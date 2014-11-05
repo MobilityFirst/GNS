@@ -136,10 +136,10 @@ public class LookupWorker implements Runnable {
 
     // Otherwise we make two tasks to check the DNS and GNS in parallel
     List<GnsDnsLookupTask> tasks = Arrays.asList(
+            // Create GNS lookup task
+            new GnsDnsLookupTask(query),
             // Create DNS lookup task
-            new GnsDnsLookupTask(query, dnsServer),
-            // Creeate GNS lookup task
-            new GnsDnsLookupTask(query));
+            new GnsDnsLookupTask(query, dnsServer));
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
     // the altenative. Plus it's cool and trendy to use futures.
