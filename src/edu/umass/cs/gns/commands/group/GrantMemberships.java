@@ -52,7 +52,7 @@ public class GrantMemberships extends GnsCommand {
      if (GroupAccess.grantMembership(guid, new ResultValue(members), guid, signature, message)) {
       return new CommandResponse(OKRESPONSE);
     } else {
-      return new CommandResponse(BADRESPONSE + " " + GENERICEERROR);
+      return new CommandResponse(BADRESPONSE + " " + GENERICERROR);
     }
   }
 

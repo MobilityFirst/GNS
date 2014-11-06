@@ -27,8 +27,8 @@ import java.io.Serializable;
 public enum NSResponseCode implements Serializable{
 
   NO_ERROR(0, "", false),
-  ERROR(1, Defs.GENERICEERROR, true),
-  ERROR_INVALID_ACTIVE_NAMESERVER(2, Defs.GENERICEERROR, true),
+  ERROR(1, Defs.GENERICERROR, true),
+  ERROR_INVALID_ACTIVE_NAMESERVER(2, Defs.GENERICERROR, true),
   // these four following are access or signature errors
   SIGNATURE_ERROR(3, Defs.BADSIGNATURE, true),
   ACCESS_ERROR(4, Defs.ACCESSDENIED, true),

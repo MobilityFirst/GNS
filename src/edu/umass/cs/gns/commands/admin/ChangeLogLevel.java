@@ -53,7 +53,7 @@ public class ChangeLogLevel extends GnsCommand {
           return new CommandResponse(BADRESPONSE);
         }
       } catch (IllegalArgumentException e) {
-        return new CommandResponse(BADRESPONSE + " " + GENERICEERROR + " Bad level " + levelString);
+        return new CommandResponse(BADRESPONSE + " " + GENERICERROR + " Bad level " + levelString);
       }
     }
     return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());

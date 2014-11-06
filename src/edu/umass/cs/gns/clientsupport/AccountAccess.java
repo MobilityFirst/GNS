@@ -490,7 +490,7 @@ public class AccountAccess {
     } catch (JSONException e) {
       return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());
     } catch (GnsRuntimeException e) {
-      return new CommandResponse(BADRESPONSE + " " + GENERICEERROR + " " + e.getMessage());
+      return new CommandResponse(BADRESPONSE + " " + GENERICERROR + " " + e.getMessage());
     }
   }
 

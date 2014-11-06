@@ -51,7 +51,7 @@ public class RequestLeaveGroup extends GnsCommand {
     if (!GroupAccess.requestLeaveGroup(guid, member, member, signature, message).isAnError()) {
       return new CommandResponse(OKRESPONSE);
     } else {
-      return new CommandResponse(BADRESPONSE + " " + GENERICEERROR);
+      return new CommandResponse(BADRESPONSE + " " + GENERICERROR);
     }
   }
 

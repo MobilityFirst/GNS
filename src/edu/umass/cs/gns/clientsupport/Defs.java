@@ -123,7 +123,7 @@ public class Defs {
   public final static String TOMANYGUIDS = "+TOMANYGUIDS+";
   public final static String UPDATEERROR = "+UPDATEERROR+";
   public final static String SELECTERROR = "+SELECTERROR+";
-  public final static String GENERICEERROR = "+GENERICEERROR+";
+  public final static String GENERICERROR = "+GENERICERROR+";
   //
   public final static String ALLFIELDS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
