@@ -72,10 +72,17 @@ public class HostFileLoader {
   private static HostSpec parseHostline(String line) throws IOException {
     String[] tokens = line.split("\\s+");
     if (tokens.length > 1) {
-      String id = tokens[0];
+      String idString = tokens[0];
       Integer port = tokens.length > 2 ? Integer.parseInt(tokens[2]) : null;
       hostFileHasNumbers = true;
-      return new HostSpec(id, tokens[1], port);
+      // Parse as an Integer if we can otherwise a String.
+      Object nodeID = -1;
+      try {
+        nodeID = Integer.parseInt(idString);
+      } catch (NumberFormatException e) {
+        nodeID = idString;
+      }
+      return new HostSpec(nodeID, tokens[1], port);
     } else if (tokens.length == 1) {
       if (hostFileHasNumbers) {
         throw new IOException("Can't mix format with IDs provided and not provided:" + line);

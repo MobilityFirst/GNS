@@ -5,8 +5,6 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.nsdesign.TestPaxosManager;
-import edu.umass.cs.gns.nsdesign.TestReplicable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.GroupChangeCompletePacket;
@@ -41,17 +39,16 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
 
-    if (Config.multiPaxos) {
-      GNS.getLogger().info("Using multiPaxos");
-      this.paxosInterface = new TestReplicable(paxosInterface);
-      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.gigapaxos.PaxosManager(nodeID,
-              nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
-              this.paxosInterface, paxosConfig));
+    if (!Config.useOldPaxos) {
+      GNS.getLogger().info("Using gigapaxos");
+      this.paxosInterface = paxosInterface;
+      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager(nodeID, nodeConfig, 
+              new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
+              this.paxosInterface, paxosConfig);
     } else {
       GNS.getLogger().info("Using standard Paxos");
       this.paxosInterface = paxosInterface;
       paxosConfig.setConsistentHashCoordinatorOrder(true);
-	  // FIXME NodeId: Makes no to cast generic type to NodeIDType
       this.paxosManager = new PaxosManager(nodeID, nodeConfig,
               new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
@@ -60,7 +57,6 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
   }
 
   private void createPrimaryPaxosInstances() {
-	  // FIXME NodeId: Makes no to cast generic type to NodeIDType
     HashMap<String, Set> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
     for (String groupID : groupIDsMembers.keySet()) {
       GNS.getLogger().info("Creating paxos instances: " + groupID + "\t" + groupIDsMembers.get(groupID));

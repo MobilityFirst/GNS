@@ -70,7 +70,7 @@ public class NSParameterNames {
   public static final String VARIATION = "variation";
   public static final String NO_PAXOS_LOG = "noPaxosLog";
   public static final String EVENTUAL_CONSISTENCY = "eventualConsistency";
-  public static final String MULTI_PAXOS = "multipaxos";
+  public static final String USE_OLD_PAXOS = "oldpaxos";
   public static final String HELP_HEADER = "NOTE: Options whose description starts with [EXP] are needed only during " +
           "experiments and can be ignored otherwise.";
   public static final String HELP_FOOTER = "";
@@ -166,7 +166,7 @@ public class NSParameterNames {
     Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "[EXP] Emulate a packet delay equal to ping delay in between two servers");
     Option variation = new Option(VARIATION, true, "[EXP] During emulation, what fraction of random variation to add to delay");
     Option noPaxosLog = new Option(NO_PAXOS_LOG, false, "[EXP] Do not create paxos logs (supported by paxos package, not by multipaxos package)");
-    Option multipaxos = new Option(MULTI_PAXOS, false, "Use multipaxos package (otherwise paxos package is used)");
+    Option multipaxos = new Option(USE_OLD_PAXOS, false, "Use multipaxos package (otherwise paxos package is used)");
     Option dummyGNS = new Option(DUMMY_GNS, false, "[EXP] Use a dummy GNS app instead of actual GNS");
 
     Options commandLineOptions = new Options();

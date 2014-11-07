@@ -16,8 +16,8 @@ public class HostSpec<NodeIDType> {
   private final String name;
   private final Integer startPort;
 
-  public HostSpec(String id, String name, Integer startPort) {
-    this.id = (NodeIDType) id;
+  public HostSpec(NodeIDType id, String name, Integer startPort) {
+    this.id = id;
     this.name = name;
     this.startPort = startPort;
   }

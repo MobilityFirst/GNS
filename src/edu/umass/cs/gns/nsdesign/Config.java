@@ -65,7 +65,7 @@ public class Config {
   public static int beehiveWorkloadSize = 11000;
 
   // testing related parameters
-  public static boolean multiPaxos = false; // option to use multipaxos package
+  public static boolean useOldPaxos = false; // option to use older paxos package (default is to use gigpaxos)
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
   public static boolean noPaxosLog = false;
@@ -190,8 +190,8 @@ public class Config {
       debuggingEnabled = Boolean.parseBoolean(allValues.get(NSParameterNames.DEBUG_MODE));
     }
     
-    if (allValues.containsKey(NSParameterNames.MULTI_PAXOS)) {
-      multiPaxos = Boolean.parseBoolean(allValues.get(NSParameterNames.MULTI_PAXOS));
+    if (allValues.containsKey(NSParameterNames.USE_OLD_PAXOS)) {
+      useOldPaxos = Boolean.parseBoolean(allValues.get(NSParameterNames.USE_OLD_PAXOS));
     }
     
     if (allValues.containsKey(NSParameterNames.DUMMY_GNS)) {

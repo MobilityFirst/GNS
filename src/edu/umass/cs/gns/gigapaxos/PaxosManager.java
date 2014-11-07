@@ -111,8 +111,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 		// Networking is needed for replaying messages during recovery
 		//if (niot.getClass().equals(JSONNIOTransport.class)) {
-			niot.addPacketDemultiplexer(new PaxosPacketDemultiplexer(this)); // so paxos packets will come to me.
-			if (!((JSONNIOTransport) niot).isStarted()) (new Thread(((JSONNIOTransport) niot))).start();
+		niot.addPacketDemultiplexer(new PaxosPacketDemultiplexer(this)); // so paxos packets will come to me.
+                // WESTY REMOVED THIS BECAUSE niot is NOT A JSONNIOTransport
+		//if (!((JSONNIOTransport) niot).isStarted()) (new Thread(((JSONNIOTransport) niot))).start();
 		//}
 		initiateRecovery();
 	}
