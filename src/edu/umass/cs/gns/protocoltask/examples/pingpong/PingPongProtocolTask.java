@@ -92,7 +92,6 @@ public class PingPongProtocolTask extends PingPongServer {
 		PingPongPacket ppp =
 				new PingPongPacket(this.myID,
 						Packet.PacketType.TEST_PING);
-		// ppp.setKey(getKey()); // automatically done by ProtocolExecutor
 		log.info("Node" + myID + " starting protocol task with nodeIDs " +
 				Util.arrayOfIntToString(nodes));
 		return new MessagingTask(nodes, ppp).toArray();

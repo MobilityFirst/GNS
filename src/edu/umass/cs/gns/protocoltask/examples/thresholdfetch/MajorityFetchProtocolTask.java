@@ -15,7 +15,6 @@ import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
-import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.gns.protocoltask.examples.PingPongPacket;
@@ -46,9 +45,11 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 	private Logger log =  NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName()) : GNS.getLogger();
 
 	public MajorityFetchProtocolTask(int id, Set<Integer> nodes) {
-		super(nodes, nodes.size()%2==0 ? nodes.size() : nodes.size()+1);
+		super(nodes, nodes.size()/2+1);
 		this.nodes = Util.setToIntArray(nodes);
 		this.myID = id;
+		log.info("Node" + myID + " constructing protocol task with nodeIDs " +
+				nodes);
 	}
 
 	/***************************Start of overridden methods *****************************************/
@@ -57,7 +58,8 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 
 	@Override
 	public String refreshKey() {
-		return (this.key = (this.key + (int)(Math.random()*Integer.MAX_VALUE)));
+		return (this.key =
+				(this.myID.toString() + (int) (Math.random() * Integer.MAX_VALUE)));
 	}
 
 	@Override
@@ -95,7 +97,7 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 	@Override
 	public GenericMessagingTask<Integer,?>[] handleThresholdEvent(
 			ProtocolTask<Integer, PacketType, String>[] ptasks) {
-		ProtocolExecutor.cancel(this);
+		// do nothing, default is to cancel anyway
 		return null;
 	}
 

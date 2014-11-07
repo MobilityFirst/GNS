@@ -46,9 +46,9 @@ public abstract class ProtocolPacket<NodeIDType,EventType> implements ThresholdP
 
 	@Override
 	public NodeIDType getSender() {return this.sender;}
-	public void setSender(NodeIDType id) {this.sender = id;}
+	protected void setSender(NodeIDType id) {this.sender = id;}
 	public NodeIDType getInitiator() {return this.initiator;}
-	public NodeIDType flip(NodeIDType rcvr) { // flip sender and rcvr
+	protected NodeIDType flip(NodeIDType rcvr) { // flip sender and rcvr
 		NodeIDType prevSender = this.sender; 
 		this.sender = rcvr;
 		return prevSender;

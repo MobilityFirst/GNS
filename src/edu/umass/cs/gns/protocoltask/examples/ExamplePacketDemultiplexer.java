@@ -23,6 +23,8 @@ public class ExamplePacketDemultiplexer extends AbstractPacketDemultiplexer {
 
 	ExamplePacketDemultiplexer(ExampleNode n) {
 		this.node = n;
+		this.register(Packet.PacketType.TEST_PING);
+		this.register(Packet.PacketType.TEST_PONG);
 	}
 
 	@Override

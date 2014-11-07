@@ -27,7 +27,6 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 
 	private static final long RTX_DELAY = 1000; // ms
 	private static final int BACKOFF_FACTOR = 2;
-	private static final boolean RTX_ENABLED = false;
 
 	//private final NodeIDType myID;
 	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
@@ -84,13 +83,11 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 						log.warning("Node " + this.nioTransport.getMyID() +
 								" messenger experiencing congestion, this is bad but not disastrous (yet)");
 					}
-					/*
 					@SuppressWarnings("unchecked")
 					Retransmitter rtxTask =
 							new Retransmitter((NodeIDType)(mtask.recipients[r]), jsonMsg,
 									RTX_DELAY);
 					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore future
-					*/
 				}
 				else {
 					log.severe("Node " + this.nioTransport.getMyID() + " sent " + sent +

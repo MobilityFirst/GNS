@@ -40,7 +40,7 @@ public class PingPongPacket extends ProtocolPacket<Integer, Packet.PacketType> {
 	}
 
 	public Integer flip(int rcvr) { // flip sender/reciever and ping/pong type
-		if (this.getType() == Packet.PacketType.TEST_PING)
+		if (this.getType() == Packet.PacketType.TEST_PING) 
 			this.setType(Packet.PacketType.TEST_PONG);
 		else if (this.getType() == Packet.PacketType.TEST_PONG)
 			this.setType(Packet.PacketType.TEST_PING);

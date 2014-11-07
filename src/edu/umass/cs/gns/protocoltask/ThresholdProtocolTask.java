@@ -2,10 +2,8 @@ package edu.umass.cs.gns.protocoltask;
 
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
-import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.gns.util.Waitfor;
 
@@ -30,12 +28,12 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 	private boolean thresholdHandlerInvoked=false;
 
 	public ThresholdProtocolTask(Set<NodeIDType> nodes) { // default all
-		this.waitfor = new Waitfor<NodeIDType>(nodes.toArray());
+		this.waitfor = new Waitfor<NodeIDType>(nodes);
 		this.threshold = nodes.size();
 	}
 
 	public ThresholdProtocolTask(Set<NodeIDType> nodes, int threshold) {
-		this.waitfor = new Waitfor<NodeIDType>(nodes.toArray());
+		this.waitfor = new Waitfor<NodeIDType>(nodes);
 		this.threshold = threshold;
 	}
 
@@ -57,7 +55,7 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 		boolean validResponse = this.handleEvent(event);
 		assert (event.getMessage() instanceof ProtocolPacket);
 		if (validResponse)
-			this.waitfor.updateHeardFrom(((ThresholdProtocolEvent<NodeIDType,EventType,KeyType>)event).getSender());
+			this.waitfor.updateHeardFrom(((ThresholdProtocolEvent<NodeIDType,?,?>)event).getSender());
 		GenericMessagingTask<NodeIDType,?>[] mtasks = null;
 		if (this.waitfor.getHeardCount() >= this.threshold && testAndInvokeThresholdHandler()) {
 			// got valid responses from threshold nodes
@@ -68,37 +66,34 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 		return mtasks;
 	}
 
-	public GenericMessagingTask<Integer,?>[] fix(GenericMessagingTask<Integer,?>[] mtasks) {
+	public GenericMessagingTask<NodeIDType,?>[] fix(GenericMessagingTask<NodeIDType,?>[] mtasks) {
 		if (mtasks == null || mtasks.length == 0 || mtasks[0] == null ||
 				mtasks[0].msgs == null || mtasks[0].msgs.length == 0 ||
 				mtasks[0].msgs[0] == null)
 			return mtasks;
-		MessagingTask[] fixed = new MessagingTask[mtasks.length];
 		for (int i = 0; i < mtasks.length; i++) {
-			fixed[i] = (MessagingTask) fix(mtasks[i]);
+			mtasks[i] = fix(mtasks[i]);
 		}
-		return fixed;
+		return mtasks;
 	}
-
-	public GenericMessagingTask<Integer,?> fix(GenericMessagingTask<Integer,?> mtask) {
+	
+	public GenericMessagingTask<NodeIDType,?> fix(GenericMessagingTask<NodeIDType,?> mtask) {
 		if (mtask == null || mtask.msgs == null || mtask.msgs.length == 0)
 			return null;
-		return new GenericMessagingTask<Integer,Object>(fix(this.waitfor.getMembersHeardFrom(),
+		return new GenericMessagingTask<NodeIDType,Object>(fix(this.waitfor.getMembersHeardFrom(),
 				mtask.recipients), mtask.msgs);
 	}
 
-	private Object[] fix(Object[] filter, Object[] original) {
-		if (filter == null || filter.length == 0)
+	private Object[] fix(Set<NodeIDType> filter, Object[] original) {
+		if (filter == null || filter.size() == 0)
 			return original;
 		TreeSet<NodeIDType> filtered = new TreeSet<NodeIDType>();
 		for (Object obji : original) {
 			@SuppressWarnings("unchecked")
 			NodeIDType i = (NodeIDType)obji;
 			boolean toFilter = false;
-			for (Object objj : filter) {
-				@SuppressWarnings("unchecked")
-				NodeIDType j = (NodeIDType)objj;
-				if (i == j)
+			for (NodeIDType objj : filter) {
+				if (i.equals(objj))
 					toFilter = true;
 			}
 			if (!toFilter)

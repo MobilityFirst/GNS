@@ -8,16 +8,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
-import edu.umass.cs.gns.reconfiguration.json.WaitAckStartEpoch;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.EpochFinalState;
 import edu.umass.cs.gns.util.MultiArrayMap;
 
 /**
@@ -62,9 +58,9 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())
 					: GNS.getLogger();
 
-	public ProtocolExecutor(JSONMessenger<NodeIDType> m) {
-		this.messenger = m;
-		this.myID = m.getMyID();
+	public ProtocolExecutor(JSONMessenger<NodeIDType> messenger) {
+		this.messenger = messenger;
+		this.myID = messenger.getMyID();
 		this.executor.scheduleWithFixedDelay(new TooManyTasksWarner(), 0,
 				TOO_MANY_TASKS_CHECK_PERIOD, TimeUnit.SECONDS);
 	}

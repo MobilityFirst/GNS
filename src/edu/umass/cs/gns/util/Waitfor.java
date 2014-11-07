@@ -1,76 +1,61 @@
 package edu.umass.cs.gns.util;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
 @author V. Arun
  */
-public class Waitfor<NodeType> {
+public class Waitfor<NodeIDType> {
 
-	private final Object[] members;
-	private final boolean[] responded;
+	private final Set<NodeIDType> members;
+	private final Set<NodeIDType> responded;
 	private int heardCount=0;
 	private long initTime=0; // to calculate how long we have been waiting
 	private int retransmissionCount=0;
 	
-	public Waitfor(Object[] m) {
-		this.members = m;
-		responded = new boolean[m.length];
+	public Waitfor(NodeIDType[] m) {
+		this.members = new HashSet<NodeIDType>();
+		for(NodeIDType node : m) this.members.add(node);
+		this.responded = new HashSet<NodeIDType>();
 		initialize();
 	}
-	public Waitfor(Set<NodeType> m) {
-		this.members = m.toArray();
-		responded = new boolean[m.size()];
+	public Waitfor(Set<NodeIDType> m) {
+		this.members = m;
+		this.responded = new HashSet<NodeIDType>();
 		initialize();
 	}
 	private void initialize() {
 		this.initTime = System.currentTimeMillis();
-		for(int i=0; i< this.members.length; i++) {
-			responded[i] = false;
-		}
 	}
 	
-	public boolean updateHeardFrom(NodeType node) {
+	public boolean updateHeardFrom(NodeIDType node) {
 		boolean changed=false;
-		int index = this.getIndex(node);
-		if(index>=0 && index <this.members.length) {
-			if(!responded[index]) {
-				changed = true;
-				heardCount++;
-			}
-			responded[index]=true;
+		if(!this.responded.contains(node)) {
+			changed = true;
+			this.heardCount++;
 		}
+		this.responded.add(node);
 		return changed;
 	}
 	
 	public boolean heardFromMajority() {
-		if(this.heardCount > this.members.length/2) return true;
+		if(this.responded.size() > this.members.size()/2) return true;
 		return false;
 	}
-	public boolean alreadyHeardFrom(NodeType node) {
-		int index = this.getIndex(node);
-		if(index>=0 && index <this.members.length) {
-			if(responded[index]) return true; 
-		}
-		return false;
+	public boolean alreadyHeardFrom(NodeIDType node) {
+		return this.responded.contains(node);
 	}
 	public int getHeardCount() {return this.heardCount;}
 	
-	public boolean contains(NodeType node) {
-		return getIndex(node) >= 0;
+	public boolean contains(NodeIDType node) {
+		return this.members.contains(node);
 	}
-	public Object[] getMembers() {
+	public Set<NodeIDType> getMembers() {
 		return this.members;
 	}
-	public Object[] getMembersHeardFrom() {
-		Object[] membersHF = new Object[this.heardCount];
-		int i=0;
-		for(Object memberObj : this.getMembers()) {
-			@SuppressWarnings("unchecked")
-			NodeType member = (NodeType)memberObj;
-			if(alreadyHeardFrom(member)) membersHF[i++] = member;
-		}
-		return membersHF;
+	public Set<NodeIDType> getMembersHeardFrom() {
+		return this.responded;
 	}
 	public long totalWaitTime() {
 		return (int)System.currentTimeMillis() - this.initTime;
@@ -78,13 +63,7 @@ public class Waitfor<NodeType> {
 	public void setInitTime() {
 		this.initTime = (int)System.currentTimeMillis();
 	}
-	private int getIndex(NodeType node) {
-		int index = -1;
-		for(int i=0; i<this.members.length; i++) {
-			if(this.members[i] == node) index = i;
-		}
-		return index;
-	}
+
 	public void incrRetransmissonCount() {
 		this.retransmissionCount++;
 	}
@@ -93,10 +72,10 @@ public class Waitfor<NodeType> {
 	}
 	public String toString() {
 		String s="{Members: [ ";
-		for(int i=0; i<members.length; i++) s+=members[i] + " ";
+		for(NodeIDType node : this.members) s+=node;
 		s+="], Responded: [";
-		for(int i=0; i<members.length; i++) {
-			if(responded[i]) s+=members[i] + " ";
+		for(NodeIDType node : this.responded) {
+			s+=node;
 		}
 		s+="]}";
 		return s;
@@ -110,8 +89,8 @@ public class Waitfor<NodeType> {
 		Waitfor<Integer> wfor = new Waitfor<Integer>(members);
 		assert(!wfor.contains(32));
 		assert(wfor.contains(9));
-		assert(wfor.getMembers()==members);
-		assert(wfor.getIndex(4)==2);
+		for(int i : members) assert(wfor.contains(i));
+		assert(wfor.contains(4));
 		assert(wfor.updateHeardFrom(9));
 		assert(!wfor.heardFromMajority());
 		assert(wfor.updateHeardFrom(23));
