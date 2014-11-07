@@ -16,6 +16,7 @@ import org.json.JSONObject;
  * We also use this to do automatic group GUID maintenence.
  *
  * @author westy
+ * @param <NodeIDType>
  */
 public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
 
@@ -40,7 +41,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   private final static String OTHERVALUE = "otherValue";
   private final static String QUERY = "query";
   private final static String LNSQUERYID = "lnsQueryId";
-  //private final static String NSID = "nsid";
   private final static String NSQUERYID = "nsQueryId";
   private final static String SELECT_OPERATION = "operation";
   private final static String GROUP_BEHAVIOR = "group";
@@ -53,7 +53,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   private Object otherValue;
   private String query;
   private int lnsQueryId = -1; // used by the local name server to maintain state
-  //private NodeIDType nsID; // the name server handling this request (if this is -1 the packet hasn't made it to the NS yet)
   private int nsQueryId = -1; // used by the name server to maintain state
   private SelectOperation selectOperation;
   private GroupBehavior groupBehavior;
@@ -79,7 +78,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     this.key = key;
     this.value = value;
     this.otherValue = otherValue;
-    //this.nsID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupBehavior;
     this.query = null;
@@ -102,7 +100,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
-    //this.nsID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.selectOperation = selectOperation;
     this.groupBehavior = groupOperation;
     this.key = null;

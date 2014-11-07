@@ -28,9 +28,9 @@ public class NameServerLoadPacket<NodeIDType> extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put("reportingNodeID", reportingNodeID.toString());
+    json.put("reportingNodeID", reportingNodeID);
     json.put("lV", getLoadValue());
-    json.put("requestingNodeID", requestingNodeID.toString());
+    json.put("requestingNodeID", requestingNodeID);
     return json;
   }
 

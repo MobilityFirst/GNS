@@ -114,23 +114,9 @@ public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndL
     json.put(NAME, getName());
     json.put(VOTE, getVote());
     json.put(UPDATE, getUpdate());
-    //json.put(NAMESERVER_ID, getNameServerID().toString());
-    //json.put(LOCAL_NAMESERVER_ID, getLocalnameserverID());
     return json;
   }
 
-//  /**
-//   * @return the localnameserverID
-//   */
-//  public int getLocalnameserverID() {
-//    return localnameserverID;
-//  }
-  /**
-   * @return the nameserverID
-   */
-//  public NodeIDType getNameServerID() {
-//    return nameserverID;
-//  }
   /**
    * @return the name
    */
@@ -157,6 +143,5 @@ public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndL
    */
   public int getUniqueID() {
     throw new UnsupportedOperationException();
-//    return uniqueID;
   }
 }

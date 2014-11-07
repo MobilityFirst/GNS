@@ -29,14 +29,12 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
   private final static String GUIDS = "guids";
   private final static String LNSQUERYID = "lnsQueryId";
   private final static String NSQUERYID = "nsQueryId";
-  //private final static String NAMESERVER = "ns";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
   
   private int id;
   private int lnsQueryId;
   private int nsQueryId;
-  //private NodeIDType nameServer;
   private JSONArray records;
   private JSONArray guids;
   private ResponseCode responseCode;
@@ -55,7 +53,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
     this.id = id;
     this.lnsQueryId = lnsQueryId;
     this.nsQueryId = nsQueryId;
-    //this.nameServer = nameServer;
     this.records = records;
     this.guids = guids;
     this.responseCode = responseCode;

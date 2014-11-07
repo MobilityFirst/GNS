@@ -408,10 +408,14 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    */
   public static void main(String[] args) throws Exception {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, "sammy");
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, 1);
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());
-    System.out.println(gnsNodeConfig.getNSTcpPort("frank"));
+    System.out.println(gnsNodeConfig.getNSTcpPort(2));
+    System.out.println(gnsNodeConfig.getNodeAddress(0));
+    System.out.println(gnsNodeConfig.getNodePort(0));
+    
+    System.exit(0);
   }
 
   @Override

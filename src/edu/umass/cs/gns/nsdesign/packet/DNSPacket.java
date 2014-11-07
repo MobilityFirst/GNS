@@ -266,7 +266,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
       json.put(KEYS, keys);
     }
     json.put(GUID, guid);
-    json.put(SOURCE_ID, sourceId.toString());
+    json.put(SOURCE_ID, sourceId);
     if (returnFormat != null) {
       json.put(RETURN_FORMAT, returnFormat.name());
     }

@@ -29,8 +29,6 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
-  //private final static String LOCALNAMESERVERID = "local";
-  //private final static String NAME_SERVER_ID = "nsID";
   private final static String SOURCE_ID = "sourceId";
    /**
    * This is the source ID of a packet that should be returned to the intercessor of the LNS.
@@ -53,16 +51,6 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    */
   private final String name;
 
-//  /**
-//   * Id of local nameserver sending this request *
-//   */
-//  private int localNameServerID;
-
-
-//  /**
-//   * Id of name server who received this request from client
-//   */
-//  private NodeIDType nameServerID;
    /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
@@ -84,8 +72,6 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     this.sourceId = sourceId;
     this.requestID = requestId;
     this.name = name;
-    //this.localNameServerID = localNameServerID;
-    //this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID; // this field will be set by name server after it received the packet
   }
 
   /**
@@ -106,8 +92,6 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
-    //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
-    //this.nameServerID = new NodeIDType(json.getString(NAME_SERVER_ID));
   }
 
   /**
@@ -121,12 +105,10 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, sourceId.toString());
+    json.put(SOURCE_ID, sourceId);
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(NAME, getName());
-    //json.put(LOCALNAMESERVERID, getLocalNameServerID());
-    //json.put(NAME_SERVER_ID, nameServerID.toString());
     return json;
   }
 
@@ -148,28 +130,6 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   public String getName() {
     return name;
   }
-
-
-//  /**
-//   * @return the primaryNameserverId
-//   */
-//  public int getLocalNameServerID() {
-//    return localNameServerID;
-//  }
-//
-//
-//  public void setLocalNameServerID(int localNameServerID) {
-//    this.localNameServerID = localNameServerID;
-//  }
-
-
-//  public NodeIDType getNameServerID() {
-//    return nameServerID;
-//  }
-//
-//  public void setNameServerID(NodeIDType nameServerID) {
-//    this.nameServerID = nameServerID;
-//  }
 
   public NodeIDType getSourceId() {
     return sourceId;

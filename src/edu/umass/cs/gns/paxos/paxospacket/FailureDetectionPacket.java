@@ -31,7 +31,7 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
   public FailureDetectionPacket(JSONObject json) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
     this.senderNodeID = (NodeIDType) json.get("sender");
-    this.responderNodeID = (NodeIDType) json.getString("responder");
+    this.responderNodeID = (NodeIDType) json.get("responder");
     this.status = json.getBoolean("status");
   }
 
@@ -45,8 +45,8 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, packetType);
     json.put("status", status);
-    json.put("sender", senderNodeID.toString());
-    json.put("responder", responderNodeID.toString());
+    json.put("sender", senderNodeID);
+    json.put("responder", responderNodeID);
     return json;
   }
 

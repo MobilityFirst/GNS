@@ -173,7 +173,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
-    json.put(SOURCE_ID, sourceId.toString());
+    json.put(SOURCE_ID, sourceId);
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getLNSRequestID());
     json.put(RECORDKEY, getRecordKey());

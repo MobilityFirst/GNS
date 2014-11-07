@@ -66,7 +66,7 @@ public class SendCurrentStatePacket2<NodeIDType> extends PaxosPacket {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
     this.sendingNodeID = (NodeIDType) json.get(SENDING_NODE_ID);
     if (json.has(NODE_IDS)) {
-      this.nodeIDs = Util.stringToSetOfNodeId(NODE_IDS);
+      this.nodeIDs = Util.stringToSetOfNodeId(json.getString(NODE_IDS));
     } else this.nodeIDs = null;
     this.currentBallot = new Ballot(json.getString(CURRENT_BALLOT));
     this.slotNumber = json.getInt(SLOT_NUMBER);
@@ -77,7 +77,7 @@ public class SendCurrentStatePacket2<NodeIDType> extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put(SENDING_NODE_ID, sendingNodeID.toString());
+    json.put(SENDING_NODE_ID, sendingNodeID);
     if (nodeIDs != null) {
       json.put(NODE_IDS, Util.setOfNodeIdToString(nodeIDs));
     }

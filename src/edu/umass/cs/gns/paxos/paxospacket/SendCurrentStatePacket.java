@@ -68,7 +68,7 @@ public class SendCurrentStatePacket<NodeIDType> extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put("sendingNodeID", sendingNodeID.toString());
+    json.put("sendingNodeID", sendingNodeID);
     String ballot = "";
     if (currentBallot != null) {
       ballot = currentBallot.toString();

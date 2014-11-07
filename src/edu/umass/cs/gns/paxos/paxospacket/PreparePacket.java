@@ -73,8 +73,8 @@ public class PreparePacket<NodeIDType> extends PaxosPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
-    json.put("coordinatorID", coordinatorID.toString());
-    json.put("receiverID", receiverID.toString());
+    json.put("coordinatorID", coordinatorID);
+    json.put("receiverID", receiverID);
     json.put("ballot", ballot.toString());
     json.put("slotNumber", slotNumber);
     if (this.packetType == PaxosPacketType.PREPARE_REPLY.getInt()) {

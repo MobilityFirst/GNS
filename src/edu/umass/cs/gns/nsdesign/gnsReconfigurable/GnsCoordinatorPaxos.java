@@ -55,7 +55,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
 //              nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
 //              this.paxosInterface, paxosConfig));
     } else {
-      GNS.getLogger().info("Using standard Paxos");
+      GNS.getLogger().info("Using old Paxos (not gigapaxos)");
       this.paxosInterface = paxosInterface;
       this.paxosManager = new PaxosManager(nodeID, nodeConfig,
               new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), this.paxosInterface, paxosConfig);

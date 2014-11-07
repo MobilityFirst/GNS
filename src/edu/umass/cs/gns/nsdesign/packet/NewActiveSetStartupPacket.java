@@ -71,7 +71,14 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
    *
    * @param name
    * @param primarySender
+   * @param activeSender
    * @param newActives
+   * @param oldActives
+   * @param oldActiveVersion
+   * @param newActiveVersion
+   * @param type1
+   * @param previousValue
+   * @param previousValueCorrect
    */
   public NewActiveSetStartupPacket(String name,
           NodeIDType primarySender, NodeIDType activeSender, Set<NodeIDType> newActives,
@@ -99,7 +106,7 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
     this.uniqueID = json.getInt(ID);
     this.name = json.getString(NAME);
     this.primarySender = (NodeIDType)json.getString(PRIMARY_SENDER);
-    this.activeSender = (NodeIDType) json.getString(ACTIVE_SENDER);
+    this.activeSender = (NodeIDType)json.getString(ACTIVE_SENDER);
     //FIXME: Use utility function here
     String actives = json.getString(NEW_ACTIVES);
     this.newActives = new HashSet<NodeIDType>();
@@ -134,8 +141,8 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
     Packet.putPacketType(json, getType());
     json.put(ID, uniqueID);
     json.put(NAME, name);
-    json.put(PRIMARY_SENDER, primarySender.toString());
-    json.put(ACTIVE_SENDER, activeSender.toString());
+    json.put(PRIMARY_SENDER, primarySender);
+    json.put(ACTIVE_SENDER, activeSender);
 
     String actives = convertArrayToString(newActives);
     json.put(NEW_ACTIVES, actives);

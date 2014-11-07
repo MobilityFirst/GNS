@@ -49,7 +49,7 @@ public class AcceptPacket<NodeIDType> extends PaxosPacket {
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = this.pValue.toJSONObject();
-    json.put(NODE, nodeID.toString());
+    json.put(NODE, nodeID);
     json.put(SLOT, slotNumberAtReplica);
     json.put(PaxosPacket.PACKET_TYPE_FIELD_NAME, this.packetType);
     return json;

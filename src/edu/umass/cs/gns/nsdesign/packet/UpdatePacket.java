@@ -310,7 +310,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json); // include the signature info and other info
     json.put(REQUESTID, requestID);
-    json.put(SOURCE_ID, sourceId.toString());
+    json.put(SOURCE_ID, sourceId);
     json.put(LocalNSREQUESTID, LNSRequestID);
     json.put(NAME, name);
     if (recordKey != null) {
@@ -395,17 +395,6 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   public ValuesMap getUserJSON() {
     return userJSON;
   }
-//
-//  /**
-//   * @return the nameServerId
-//   */
-//  public NodeIDType getNameServerID() {
-//    return nameServerId;
-//  }
-//
-//  public void setNameServerId(NodeIDType nameServerId) {
-//    this.nameServerId = nameServerId;
-//  }
 
   public NodeIDType getSourceId() {
     return sourceId;

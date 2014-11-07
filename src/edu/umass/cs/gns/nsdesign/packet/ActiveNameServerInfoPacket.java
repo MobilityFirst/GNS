@@ -123,7 +123,7 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(PRIMARY_NAMESERVER, primaryNameServer.toString());
+    json.put(PRIMARY_NAMESERVER, primaryNameServer);
     json.put(LOCAL_NAMESERVER, getLocalNameServer());
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());

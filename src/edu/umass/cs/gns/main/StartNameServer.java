@@ -118,16 +118,17 @@ public class StartNameServer {
       printUsage(NSParameterNames.getAllOptions());
       System.exit(2);
     }
-    Integer nodeID = -1;
-    try {
-      nodeID = Integer.parseInt(allValues.get(NSParameterNames.ID));
-    } catch (NumberFormatException e) {
-      System.out.println("NodeID should be an integer: " + NSParameterNames.ID);
-      printUsage(NSParameterNames.getAllOptions());
-      System.exit(2);
-    }
+    // FIXME: Put this back when we get Integer node IDs working again
+//    Integer nodeID = -1;
+//    try {
+//      nodeID = Integer.parseInt(allValues.get(NSParameterNames.ID));
+//    } catch (NumberFormatException e) {
+//      System.out.println("NodeID should be an integer: " + NSParameterNames.ID);
+//      printUsage(NSParameterNames.getAllOptions());
+//      System.exit(2);
+//    }
     
-    //String nodeID = allValues.get(NSParameterNames.ID);
+    String nodeID = allValues.get(NSParameterNames.ID);
     
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), nodeID);
 

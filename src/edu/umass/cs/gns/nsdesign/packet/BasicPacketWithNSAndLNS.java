@@ -14,6 +14,7 @@ import org.json.JSONObject;
  * but can be GNSNodeConfig.INVALID_NAME_SERVER_ID.
  *
  * @author westy
+ * @param <NodeIDType>
  */
 public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
@@ -58,7 +59,7 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
-    json.put(NAMESERVER_ID, nameServerID.toString());
+    json.put(NAMESERVER_ID, nameServerID);
     if (lnsAddress != null) {
       json.put(LNS_ADDRESS, lnsAddress.getHostString());
       json.put(LNS_PORT, lnsAddress.getPort());

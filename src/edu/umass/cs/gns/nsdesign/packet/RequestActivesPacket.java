@@ -28,18 +28,12 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   public static final String NAME = "name";
   public static final String ACTIVES = "actives";
   public static final String LNS_REQ_ID = "lnsreqid";
-  //public static final String NSID = "nsid";
 
   /**
    * Name for which the active replicas are being requested
    */
   private final String name;
-
-//  /**
-//   * Name server that received request from LNS.
-//   */
-//  private final NodeIDType nsID;
-
+  
   /**
    * Active name servers for the name. This field is populated when name server
    * sends a reply to a local name server.
@@ -56,7 +50,6 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     this.name = name;
     this.type = PacketType.REQUEST_ACTIVES;
     this.lnsRequestID = lnsRequestID;
-    //this.nsID = nsID;
   }
 
   public RequestActivesPacket(JSONObject json) throws JSONException {
@@ -66,7 +59,6 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     this.activeNameServers = json.has(ACTIVES) ? Util.stringToSetOfNodeId(json.getString(ACTIVES)) : null;
     this.type = PacketType.REQUEST_ACTIVES;
     this.lnsRequestID = json.getInt(LNS_REQ_ID);
-    //this.nsID = new NodeIDType(json.getString(NSID));
   }
 
   @Override
@@ -79,7 +71,6 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
       json.put(ACTIVES, Util.setOfNodeIdToString(activeNameServers));
     }
     json.put(LNS_REQ_ID, lnsRequestID);
-    //json.put(NSID, nsID.toString());
     return json;
   }
 

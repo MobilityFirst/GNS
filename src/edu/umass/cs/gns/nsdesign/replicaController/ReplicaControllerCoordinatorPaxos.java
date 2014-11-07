@@ -46,7 +46,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
               new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
     } else {
-      GNS.getLogger().info("Using standard Paxos");
+      GNS.getLogger().info("Using old Paxos (not gigapaxos)");
       this.paxosInterface = paxosInterface;
       paxosConfig.setConsistentHashCoordinatorOrder(true);
       this.paxosManager = new PaxosManager(nodeID, nodeConfig,
