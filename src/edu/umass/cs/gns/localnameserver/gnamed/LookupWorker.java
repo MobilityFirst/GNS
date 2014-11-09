@@ -137,12 +137,14 @@ public class LookupWorker implements Runnable {
       }
     }
 
+    // Create a clone of the query for duplicating the request to GNS and DNS
+    Message dnsQuery = (Message) query.clone();
     // Otherwise we make two tasks to check the DNS and GNS in parallel
     List<GnsDnsLookupTask> tasks = Arrays.asList(
             // Create GNS lookup task
             new GnsDnsLookupTask(query),
             // Create DNS lookup task
-            new GnsDnsLookupTask(query, dnsServer));
+            new GnsDnsLookupTask(dnsQuery, dnsServer));
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
     // the altenative. Plus it's cool and trendy to use futures.
