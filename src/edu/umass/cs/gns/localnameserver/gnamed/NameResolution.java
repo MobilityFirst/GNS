@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.CNAMERecord;
@@ -87,7 +88,9 @@ public class NameResolution {
     // extract the domain (guid) and field from the query
     final String fieldName = Type.string(query.getQuestion().getType());
     final Name requestedName = query.getQuestion().getName();
-    final String domainName = requestedName.toString();
+    final byte[] rawName = requestedName.toWire();
+    final String domainName = querytoStringForGNS(rawName);
+
     if (debuggingEnabled) {
       GNS.getLogger().fine("Trying GNS lookup for field " + fieldName + " in domain " + domainName);
     }
@@ -152,7 +155,8 @@ public class NameResolution {
       // extract the domain (guid) and field from the query
       final String fieldName = Type.string(query.getQuestion().getType());
       final Name requestedName = query.getQuestion().getName();
-      final String lookupName = requestedName.toString();
+      final byte[] rawName = requestedName.toWire();
+      final String lookupName = querytoStringForGNS(rawName);
 
       if (debuggingEnabled) {
           GNS.getLogger().fine("Looking up name in cache: " + lookupName);
@@ -251,7 +255,7 @@ public class NameResolution {
 
   /**
    * Forms an error message from an incoming packet.
-   * 
+   *
    * @param in
    * @return the error message
    */
@@ -267,7 +271,7 @@ public class NameResolution {
 
   /**
    * Forms an error message from a query and response code.
-   * 
+   *
    * @param query
    * @param rcode
    * @return the error message
@@ -275,7 +279,7 @@ public class NameResolution {
   public static Message errorMessage(Message query, int rcode) {
     return buildErrorMessage(query.getHeader(), rcode, query.getQuestion());
   }
-  
+
   /**
    * Creates an error message from a header, response code and a record.
    * @param header
@@ -297,12 +301,12 @@ public class NameResolution {
   }
 
   /**
-   * Builds a pretty string showing the query and response. 
+   * Builds a pretty string showing the query and response.
    * Used for debugging purposes.
-   * 
+   *
    * @param query
    * @param response
-   * @return 
+   * @return
    */
   public static String queryAndResponseToString(Message query, Message response) {
     StringBuilder result = new StringBuilder();
@@ -330,4 +334,48 @@ public class NameResolution {
     return result.toString();
   }
 
+  /**
+   * Creates a string out of raw bytes[] from qname section
+   * of the DNS query message. This routine, when used, adds
+   * '.' at the end for using it for GNS lookups.
+   *
+   * @param qname
+   * @return questionString
+   */
+  public static String querytoStringForGNS(byte[] qname) {
+    return querytoStringForGNS(qname, false);
+  }
+
+  /**
+   * Creates a string out of raw bytes[] from qname section
+   * of the DNS query message.
+   *
+   * @param qname
+   * @param omitFinalDot
+   * @return questionString
+   */
+  public static String querytoStringForGNS(byte[] qname, boolean omitFinalDot) {
+    int curPos = 0;
+    int labelSize = 0;
+    int totalSize = qname.length - 1;
+    byte[] subName;
+    StringBuilder sb = new StringBuilder();
+    while (curPos < totalSize) {
+      labelSize = (int)qname[curPos];
+      if (labelSize == 0) {
+        break;
+      }
+      subName = Arrays.copyOfRange(qname, curPos + 1, curPos + labelSize + 1);
+      sb.append(new String(subName));
+      curPos += (labelSize + 1);
+      if (curPos == totalSize) {
+        if (!omitFinalDot) {
+          sb.append(".");
+        }
+        break;
+      }
+      sb.append(".");
+    }
+    return sb.toString();
+  }
 }
