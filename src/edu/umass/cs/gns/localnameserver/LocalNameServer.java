@@ -165,7 +165,7 @@ public class LocalNameServer implements Shutdownable {
         udpDnsServer.start();
       }
     } catch (BindException e) {
-      GNS.getLogger().warning("LNS unable to run DNS Service (needs root permissions): " + e);
+      GNS.getLogger().warning("Not running DNS Service because it needs root permission! If you want DNS run the LNS using sudo.");
     }
 
   }
