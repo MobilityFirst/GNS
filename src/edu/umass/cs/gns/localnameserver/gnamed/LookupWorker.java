@@ -16,7 +16,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -148,7 +148,7 @@ public class LookupWorker implements Runnable {
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
     // the altenative. Plus it's cool and trendy to use futures.
-    Executor executor = Executors.newFixedThreadPool(2);
+    ExecutorService executor = Executors.newFixedThreadPool(2);
     ExecutorCompletionService<Message> completionService = new ExecutorCompletionService<Message>(executor);
     List<Future<Message>> futures = new ArrayList<Future<Message>>(2);
     for (Callable<Message> task : tasks) {
@@ -177,6 +177,8 @@ public class LookupWorker implements Runnable {
         }
       }
     }
+    // Shutdown the executor threadpool
+    executor.shutdown();
     if (successResponse != null) {
       // Cache the successful response
       try {
