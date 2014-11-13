@@ -204,7 +204,8 @@ public class AccountAccess {
     return null;
   }
   private static final String VERIFY_COMMAND = "account_verify";
-  private static final String EMAIL_BODY = "This is an automated message informing you that an account has been created for %s on the GNS server.\n"
+  private static final String EMAIL_BODY = "This is an automated message informing you that an account has been created for %s on the GNS server.\n\n"
+          + "This is the verification code: %s\n\n"
           + "To verify this account you can enter this query into a browser:\n\n"
           + "http://%s/" + GNS.GNS_URL_PATH + "/verifyAccount?guid=%s&code=%s\n\n"
           + "or enter this command into the GNS CLI that you used to create the account:\n\n"
@@ -241,7 +242,7 @@ public class AccountAccess {
         accountInfo.noteUpdate();
         if (updateAccountInfoNoAuthentication(accountInfo)) {
           boolean emailOK = Email.email("GNS Account Verification", name,
-                  String.format(EMAIL_BODY, name, host, guid, verifyCode, name, verifyCode));
+                  String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
           boolean adminEmailOK = Email.email("GNS Account Notification",
                   Email.ACCOUNT_CONTACT_EMAIL,
                   String.format(ADMIN_NOTICE, name, host, guid));
