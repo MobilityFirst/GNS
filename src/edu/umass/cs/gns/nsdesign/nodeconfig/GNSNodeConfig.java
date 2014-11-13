@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.nodeconfig;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.util.ConsistentHashing;
@@ -424,5 +425,10 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
       timerTask.cancel();
     }
   }
+
+@Override
+public NodeIDType valueOf(String nodeAsString) {
+	throw new RuntimeException("Method not yet implemented");
+}
 
 }

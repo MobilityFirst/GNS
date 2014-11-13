@@ -20,7 +20,7 @@ public class TESTPaxosReplicable implements Replicable {
 	private static final boolean DEBUG=PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null ;
-	private InterfaceJSONNIOTransport niot = null;
+	private InterfaceJSONNIOTransport<Integer> niot = null;
 
 	private HashMap<String,PaxosState> allState = new HashMap<String,PaxosState>();
 	private class PaxosState {
@@ -32,7 +32,7 @@ public class TESTPaxosReplicable implements Replicable {
 	}
 	private static Logger log = Logger.getLogger(TESTPaxosReplicable.class.getName()); // GNS.getLogger();
 
-	TESTPaxosReplicable(JSONNIOTransport nio) { // app uses nio only to send, not receive, so it doesn't care to set a PacketDemultiplexer
+	TESTPaxosReplicable(JSONNIOTransport<Integer> nio) { // app uses nio only to send, not receive, so it doesn't care to set a PacketDemultiplexer
 		try {
 			md = MessageDigest.getInstance("SHA");
 			setNIOTransport(nio);
@@ -46,7 +46,7 @@ public class TESTPaxosReplicable implements Replicable {
 	public void shutdown() {
 		this.allState.clear();
 	}
-	public void setNIOTransport(InterfaceJSONNIOTransport nio) {
+	public void setNIOTransport(InterfaceJSONNIOTransport<Integer> nio) {
 		niot = nio;
 	}
 	@Override
@@ -76,7 +76,7 @@ public class TESTPaxosReplicable implements Replicable {
 			state.putState=false;
 			this.notify();
 			assert(requestPacket.requestID>=0) : requestPacket.toString();
-			if(niot!=null && requestPacket.getReplyToClient()) {
+			if(niot!=null && requestPacket.getReplyToClient() && TESTPaxosConfig.getSendReplyToClient()) {
 				if(DEBUG) log.info("App sending response to client " + requestPacket.clientID + ": " + reqJson);
 				niot.sendToID(requestPacket.clientID, reqJson);
 			}
@@ -95,14 +95,14 @@ public class TESTPaxosReplicable implements Replicable {
 	}
 
 	@Override
-	public String getState(String paxosID) {
+	public synchronized String getState(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state!=null) return state.value;
 		return null;
 	}
 
 	@Override
-	public boolean updateState(String paxosID, String value) {
+	public synchronized boolean updateState(String paxosID, String value) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state==null) state = new PaxosState();
 		state.value = value;
@@ -136,7 +136,7 @@ public class TESTPaxosReplicable implements Replicable {
 		this.wait();
 	}
 	public synchronized void waitToFinish(String paxosID, int slot) throws InterruptedException {
-		PaxosState state = this.allState.get(paxosID);
-		while(state.seqnum<slot) this.wait();
+		PaxosState state = null;
+		while((state = this.allState.get(paxosID))==null || state.seqnum<slot) this.wait();
 	}
 }

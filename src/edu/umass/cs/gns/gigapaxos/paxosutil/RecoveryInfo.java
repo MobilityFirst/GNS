@@ -1,5 +1,9 @@
 package edu.umass.cs.gns.gigapaxos.paxosutil;
 
+import java.util.Set;
+
+import edu.umass.cs.gns.util.Util;
+
 /**
 @author V. Arun
  */
@@ -10,27 +14,27 @@ package edu.umass.cs.gns.gigapaxos.paxosutil;
 	public class RecoveryInfo {
 		final String paxosID;
 		final short version;
-		final int[] members;
+		final Set<String> members;
 		private String state=null;
 
-		public RecoveryInfo(String id, short ver, int[] group) {
+		public RecoveryInfo(String id, short ver, String[] group) {
 			this.paxosID = id;
 			this.version = ver;
-			this.members = group;
+			this.members = Util.arrayOfNodeIdsToStringSet(group);
 		}
-		public RecoveryInfo(String id, short ver, int[] group, String state) {
+		public RecoveryInfo(String id, short ver, String[] group, String state) {
 			this.paxosID = id;
 			this.version = ver;
-			this.members = group;
+			this.members = Util.arrayOfNodeIdsToStringSet(group);
 			this.state=state;
 		}
 		public String getPaxosID() {return paxosID;}
 		public short getVersion() {return version;}
-		public int[] getMembers() {return members;}
+		public Set<String> getMembers() {return members;}
 		public String getState() {return this.state;}
 		public String toString() {
 			String s="", group="[";
-			for(int i=0; i<members.length; i++) group+=members[i] + " ";
+			for(String member : this.members) group+=member + " ";
 			group+="]";
 			s+= "[ " + paxosID + ", " + version + ", " + group + ", " + this.state + " ]";
 			return s;

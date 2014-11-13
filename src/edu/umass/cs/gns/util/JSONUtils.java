@@ -10,6 +10,8 @@ import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.nsdesign.Config;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -310,5 +312,42 @@ public class JSONUtils {
     }
     return json;
   }
-
+  
+  /* Arun to Westy: A lot of the above methods seem redundant.
+   * JSON does a nice job of handling collections and maps.
+   */
+  public static String toString(Collection<?> collection) {
+	  JSONArray jsonArray = new JSONArray(collection);
+	  return jsonArray.toString();
+  }
+  
+  public static String[] jsonToStringArray(String jsonString) throws JSONException {
+	  JSONArray jsonArray = new JSONArray(jsonString);
+	  String[] stringArray = new String[jsonArray.length()];
+	  for(int i=0; i<jsonArray.length(); i++) {
+		  stringArray[i] = jsonArray.getString(i);
+	  }
+	  return stringArray;
+  }
+  
+  public static String toString(int[] array) {
+	  return toString(Util.arrayOfIntToStringSet(array));
+  }
+  
+  public static void main(String[] args) {
+	  Integer[] intArray = {3, 21, 43, 11};
+	  Set<Integer> intSet = new HashSet<Integer>(Arrays.asList(intArray));
+	  System.out.println(toString(intSet));
+	  String[] strArray = {"hello", "world", "one,", ",comma,"};
+	  Set<String> strSet = new HashSet<String>(Arrays.asList(strArray));
+	  System.out.println(toString(strSet));
+	  try {
+		for(String s : jsonToStringArray(toString(strSet))) {
+			assert(strSet.contains(s));
+			System.out.println(s);
+		  }
+	} catch (JSONException e) {
+		e.printStackTrace();
+	}
+  }
 }

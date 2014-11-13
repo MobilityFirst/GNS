@@ -1,31 +1,31 @@
 package edu.umass.cs.gns.gigapaxos.scratch;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import org.junit.Test;
+
 
 /**
 @author V. Arun
  */
 public class Scratchpad {
+	public static int multiply(int x, int y) {
+		return x * y;
+	}
+	
+	@Test
+	public void testMultiply() {
+		assert(Scratchpad.multiply(3, 4)==3*4);
+	}
 
-	private Integer processing = new Integer(0);
-	
-	private void setProcessing(boolean b) {
-		synchronized(processing) {
-			if(b) processing++; else processing--; 
-			processing.notify();
-		}
-	}
-	private boolean getProcessing() {
-		synchronized(processing) {
-			return processing>0;
-		}
-	}
-	
 	public static void main(String[] args) {
-		Scratchpad sp = new Scratchpad();
-		sp.setProcessing(true);
-		sp.setProcessing(false);
-	
-		Scratchpad sc2 = new Scratchpad();
-		System.out.println(sc2.getProcessing());
+		System.out.println(Integer.valueOf("3"));
+		try {
+			System.out.println(InetAddress.getByName("128.1.1.1"));
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

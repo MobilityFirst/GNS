@@ -12,7 +12,6 @@ import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.Util;
@@ -33,7 +32,7 @@ public class TESTPaxosClient {
 	protected static synchronized double getAvgLatency() {return totalLatency*1.0/numRequests;}
 	protected synchronized static void resetLatencyComputation() {totalLatency=0; numRequests=0;}
 
-	private final JSONNIOTransport niot;
+	private final JSONNIOTransport<Integer> niot;
 	private final int myID;
 	private int reqCount=0;
 	private int replyCount=0;
@@ -89,7 +88,7 @@ public class TESTPaxosClient {
 
 	protected TESTPaxosClient(int id) throws IOException {
 		this.myID = id;
-		niot = new JSONNIOTransport(myID, TESTPaxosConfig.getNodeConfig(), 
+		niot = new JSONNIOTransport<Integer>(myID, TESTPaxosConfig.getNodeConfig(), 
 				new JSONMessageExtractor(new PacketDemultiplexerDefault()));
 		niot.addPacketDemultiplexer(new ClientPacketDemultiplexer(this));
 		new Thread(niot).start();

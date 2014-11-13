@@ -176,6 +176,14 @@ public class Util {
     return array;
   }
 
+  public static Set<String> arrayOfIntToStringSet(int[] array) {
+	  Set<String> set = new HashSet<String>();
+	  for(Integer member : array) {
+		  set.add(member.toString());
+	  }
+	  return set;
+  }
+  
   public static String arrayOfIntToString(int[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
@@ -195,13 +203,12 @@ public class Util {
     return array;
   }
 
-  public static String arrayOfNodeIdsToString(Object[] array) {
-    String s = "[";
-    for (int i = 0; i < array.length; i++) {
-      s += array[i].toString();
-      s += (i < array.length - 1 ? "," : "]");
-    }
-    return s;
+  public static Set<String> arrayOfNodeIdsToStringSet(Object[] array) {
+	  Set<String> set = new HashSet<String>();
+	  for(Object member : array) {
+		  set.add(member.toString());
+	  }
+	  return set;
   }
 
   /**
@@ -262,4 +269,9 @@ public class Util {
             + (stackTrace.length > 8 ? stackTrace[8].toString() + "\n" : "");
   }
 
+  public static void main(String[] args) {
+	  int[] members = {23, 44, 53, 21};
+	  System.out.println(Util.arrayOfIntToString(members));
+	  System.out.println(Util.arrayOfIntToStringSet(members));
+  }
 }

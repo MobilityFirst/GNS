@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nio;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
@@ -79,7 +78,7 @@ import java.util.logging.Logger;
 public class NIOTransport<NodeIDType> implements Runnable {
 
   public static final boolean DEBUG = false;
-  public static final boolean LOCAL_LOGGER = false;
+  public static final boolean LOCAL_LOGGER = true;
 
   private static final double LOG_SAMPLING_FRACTION = 0.1;
 
@@ -796,7 +795,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     } catch (IOException e) {
       // Cancel the channel's registration with our selector
       log.warning("Node " + this.myID + " failed to connect to " + isa);
-      // FIXME: Should probably drop outstanding data here
+      // FIXME: Should probably also drop outstanding data here
       this.cleanup(key, socketChannel);
     }
 

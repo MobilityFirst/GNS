@@ -58,7 +58,7 @@ public class PaxosAcceptor {
 	private int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
 	private int ballotCoord=-1;
 	private boolean stopped=false;
-	private int minCommittedFrontierSlot=-1; 
+	private int minCommittedFrontierSlot=-1; // slot up to which accepted are garbage-collected
 
 	/* The two maps below are of type NullIfEmptyMap as testing shows that
 	 * storing null maps as opposed to empty maps yields an overall 
@@ -132,16 +132,13 @@ public class PaxosAcceptor {
 		 * carry over across a view change.
 		 */
 		preply = new PrepareReplyPacket(prepare.coordinatorID, prepare.receiverID, this.getBallot(), 
-				pruneAcceptedProposals(this.acceptedProposals.getMap(), prepare.firstUndecidedSlot), 
-				this.minCommittedFrontierSlot);
+				pruneAcceptedProposals(this.acceptedProposals.getMap(), prepare.firstUndecidedSlot)
+				);
 		return preply;
 	}
-	/* This method is a utility method and is also called by PaxosInstanceStateMachine. The
-	 * reason it is not static is because we actually do need it to be synchronized. We 
-	 * don't want any more requests to be accepted while this method is being invoked by
-	 * PaxosInstanceStateMachine.
-	 */
-	protected synchronized Map<Integer,PValuePacket> pruneAcceptedProposals(Map<Integer,PValuePacket> acceptedMap, int minSlot) {
+	
+	// prunes accepted pvalues below those requested by coordinator
+	private synchronized Map<Integer,PValuePacket> pruneAcceptedProposals(Map<Integer,PValuePacket> acceptedMap, int minSlot) {
 		Iterator<Integer> slotIterator = acceptedMap.keySet().iterator();
 		while(slotIterator.hasNext()) {
 			if(slotIterator.next() < minSlot) slotIterator.remove();

@@ -27,7 +27,7 @@ public class TESTPaxosConfig {
 	private static final int RANDOM_SEED = 3142;
 	private static final double NODE_INCLUSION_PROB = 0.6;
 
-	public static final boolean DISABLE_LOGGING = true;
+	public static final boolean DISABLE_LOGGING = false;
 
 	public static final int MILLION = 1000000;
 
@@ -44,19 +44,19 @@ public class TESTPaxosConfig {
 	public static final int MAX_CONFIG_GROUPS = 10;
 	
 	/**************** Number of paxos groups *******************/
-	public static final int NUM_GROUPS = 10000;  // NUM_GROUPS could be set to much greater than MAX_CONFIG_GROUPS
+	public static final int NUM_GROUPS = 1;  // NUM_GROUPS could be set to much greater than MAX_CONFIG_GROUPS
 	/***********************************************************/
 
 	/**************** Load parameters *******************/
 	public static final int NUM_CLIENTS = 10; // 1;// 4 default
-	public static final int NUM_REQUESTS = 400000; // 20;  // 40000 default
+	public static final int NUM_REQUESTS = 2000; // 20;  // 40000 default
 	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
-	public static final double TOTAL_LOAD = 8000; // 2000 reqs/sec default (across all clients)
+	public static final double TOTAL_LOAD = 1000; // 2000 reqs/sec default (across all clients)
 	/***********************************************************/
 
 	public static final int DEFAULT_INIT_PORT = SampleNodeConfig.DEFAULT_START_PORT;
 	
-	private static final SampleNodeConfig nodeConfig = new SampleNodeConfig(DEFAULT_INIT_PORT);
+	private static final SampleNodeConfig<Integer> nodeConfig = new SampleNodeConfig<Integer>(DEFAULT_INIT_PORT);
 	//private static final TreeSet<Integer> nodes = new TreeSet<Integer>();
 	static {for(int i=TEST_START_NODE_ID; i<TEST_START_NODE_ID+NUM_NODES; i++) nodeConfig.addLocal(i);}
 
@@ -73,7 +73,7 @@ public class TESTPaxosConfig {
 	
 	static{assert(NUM_CLIENTS <= MAX_CONFIG_GROUPS);} // all tests should be with at most MAX_CONFIG_GROUPS
 
-	private static ArrayList<Integer> failedNodes = new ArrayList<Integer>();
+	private static ArrayList<Object> failedNodes = new ArrayList<Object>();
 	//static {crash(TEST_START_NODE_ID);} // by default, first node is always crashed
 
 	private static boolean[] committed = new boolean[MAX_TEST_REQS];
@@ -166,7 +166,7 @@ public class TESTPaxosConfig {
 		if(groups.size() <= MAX_CONFIG_GROUPS) groups.put(groupID, members);
 	}
 
-	public static SampleNodeConfig getNodeConfig() {
+	public static SampleNodeConfig<Integer> getNodeConfig() {
 		return nodeConfig;
 	}
 	public synchronized static void crash(int nodeID) {
@@ -175,7 +175,7 @@ public class TESTPaxosConfig {
 	public synchronized static void recover(int nodeID) {
 		TESTPaxosConfig.failedNodes.remove(new Integer(nodeID));
 	}
-	public synchronized static boolean isCrashed(int nodeID) {
+	public synchronized static boolean isCrashed(Object nodeID) {
 		return TESTPaxosConfig.failedNodes.contains(nodeID);
 	}
 	public synchronized static void setRecovered(int id, String paxosID, boolean b) {

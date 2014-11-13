@@ -2,7 +2,8 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -93,6 +94,11 @@ public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
     if (nodeExists(ID)) return  nodesInfo.get(ID).getPort();
     return -1;  //To change body of implemented methods use File | Settings | File Templates.
   }
+
+@Override
+public Integer valueOf(String nodeAsString) {
+	return Integer.valueOf(nodeAsString);
+}
 }
 
 

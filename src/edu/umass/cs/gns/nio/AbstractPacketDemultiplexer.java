@@ -13,7 +13,6 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
-import edu.umass.cs.gns.nsdesign.Config;
 import java.util.logging.Level;
 
 /**
@@ -21,6 +20,7 @@ import java.util.logging.Level;
  */
 public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemultiplexer {
 
+	private static final boolean NON_BLOCKING_PROCESSING = false;
   /**
    * ******************************** Start of new, untested parts **************************
    */
@@ -30,8 +30,8 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
           = new HashMap<Integer, Boolean>();
   private final HashMap<Integer, InterfacePacketDemultiplexer> demuxMap
           = new HashMap<Integer, InterfacePacketDemultiplexer>();
-  private final Logger log
-          = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(NIOTransport.class.getName())
+  private static final Logger log
+          = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(AbstractPacketDemultiplexer.class.getName())
                   : GNS.getLogger();
 
   public void register(IntegerPacketType type) {
@@ -68,9 +68,10 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
     Tasker tasker = new Tasker(jsonObject, pd != null ? pd : this);
     boolean handled = this.demuxTypes.containsKey(JSONPacket.getPacketType(jsonObject));
     if (handled) {
-      executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
+    	if(NON_BLOCKING_PROCESSING) tasker.run(); // tasker better be really quick
+    	else executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);  
     } else {
-      log.log(Level.WARNING, "!!!!!!!!!!!!! Ignoring packet type: {0}", JSONPacket.getPacketType(jsonObject));
+      log.log(Level.WARNING, "Ignoring unknown packet type: {0}", JSONPacket.getPacketType(jsonObject));
     }
     return handled;
   }

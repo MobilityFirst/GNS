@@ -2,9 +2,9 @@ package edu.umass.cs.gns.test.nioclient;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.NIOTransport;
-import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,6 +74,11 @@ class DBClient {
       public int getNodePort(Integer ID) {
         return myPort;
       }
+
+	@Override
+	public Integer valueOf(String nodeAsString) {
+		return Integer.valueOf(nodeAsString);
+	}
     }, new JSONMessageExtractor(demux));
     new Thread(nioTransport).start();
   }

@@ -14,17 +14,16 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public final int coordinatorID;
 	public final Ballot ballot;
 	public final int receiverID;
-	public  final int acceptorGCSlot;
 	public final Map<Integer, PValuePacket> accepted;
+	//public  final int acceptorGCSlot; // not quite final--see toJSONObjectImpl()
 
-
-	public PrepareReplyPacket(int coordinatorID, int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted, int slotNumber) {
+	public PrepareReplyPacket(int coordinatorID, int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted) {
 		super(accepted==null || accepted.isEmpty() ? (PaxosPacket)null : accepted.values().iterator().next());
 		this.coordinatorID = coordinatorID;
 		this.receiverID = receiverID;
 		this.ballot = ballot;
 		this.accepted = accepted==null ? new HashMap<Integer,PValuePacket>() : accepted;
-		this.acceptorGCSlot = slotNumber;
+		//this.acceptorGCSlot = getMinSlot(accepted);
 		this.packetType = PaxosPacketType.PREPARE_REPLY;
 	}
 
@@ -36,7 +35,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 		this.coordinatorID = json.getInt("coordinatorID");
 		this.receiverID = json.getInt("receiverID");
 		this.ballot = new Ballot(json.getString("ballot"));
-		this.acceptorGCSlot = json.getInt("slotNumber");
+		//this.acceptorGCSlot = json.getInt("slotNumber");
 		this.accepted = parseJsonForAccepted(json);
 	}
 
@@ -61,10 +60,28 @@ public class PrepareReplyPacket extends PaxosPacket {
 		json.put("coordinatorID", coordinatorID);
 		json.put("receiverID", receiverID);
 		json.put("ballot", ballot.toString());
-		json.put("slotNumber", acceptorGCSlot);
+		/* We need to recompute min slot because PaxosInstanceStateMachine
+		 * may have added new accepted pvalues (from disk) to the public
+		 * field this.accepted. The alternative would be to make the 
+		 * acceptedGCSlot field private.
+		 */
+		//json.put("slotNumber", getMinSlot(this.accepted));
 		assert(this.packetType == PaxosPacketType.PREPARE_REPLY);
 		addAcceptedToJSON(json);
 		return json;
+	}
+
+	public int getMinSlot() {
+		return getMinSlot(this.accepted);
+	}
+	private int getMinSlot(Map<Integer,PValuePacket> acceptedMap) {
+		int minSlot = Integer.MAX_VALUE;
+		if(acceptedMap!=null && !acceptedMap.isEmpty()) {
+			for(Integer curSlot : acceptedMap.keySet()) {
+				if(curSlot < minSlot) minSlot = curSlot;
+			}
+		} else minSlot = -1;
+		return minSlot;
 	}
 
 	private void addAcceptedToJSON(JSONObject json) throws JSONException{

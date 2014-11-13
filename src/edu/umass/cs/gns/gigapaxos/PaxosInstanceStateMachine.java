@@ -137,7 +137,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private final Object paxosID; // App ID or "GUID". Object to allow easy testing across byte[] and String
 	private final short version;
 	private final int myID;
-	private final PaxosManager paxosManager;
+	private final PaxosManager<?> paxosManager;
 	private final Replicable clientRequestHandler;
 
 	/************ Non-final paxos state that is changeable after creation *******************/
@@ -149,7 +149,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private static Logger log = Logger.getLogger(PaxosInstanceStateMachine.class.getName()); // GNS.getLogger();
 
 	PaxosInstanceStateMachine(String groupId, short version, int id, Set<Integer> gms, 
-			Replicable app, PaxosManager pm, HotRestoreInfo hri) {
+			Replicable app, PaxosManager<?> pm, HotRestoreInfo hri) {
 
 		/**************** final assignments ***********************
 		 * A paxos instance is born with a paxosID, version
@@ -190,7 +190,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	protected int[] getMembers() {return this.groupMembers;}
 	protected int getNodeID() {return this.myID;}
 	protected Replicable getApp() {return this.clientRequestHandler;}
-	protected PaxosManager getPaxosManager() {return this.paxosManager;}
+	protected PaxosManager<?> getPaxosManager() {return this.paxosManager;}
 	public String toString() {return this.getNodeState() + " " + (this.paxosState!=null ? this.paxosState.toString():"null") +
 			(this.coordinator.exists()?this.coordinator.toString():"null");}
 
@@ -291,7 +291,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			assert(false) : "Paxos instance received an unrecognizable packet: " + msg;
 		}
 		mtasks[1] = mtask;
-
+		
 		PaxosInstrumenter.update("handlePaxosMessage", methodEntryTime);
 
 		this.checkIfTrapped(msg, mtasks[1]); // just to print a warning if needed

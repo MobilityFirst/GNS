@@ -14,6 +14,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Messenger;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,6 +36,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -117,6 +119,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return (this.cursorConn = this.dataSource.getConnection());
 	}
 
+	@Override
+	public void putCheckpointState(String paxosID, short version,
+			int[] group, int slot, Ballot ballot, String state, int acceptedGCSlot) {
+		this.putCheckpointState(paxosID, version, Util.arrayOfIntToStringSet(group), slot, ballot, state, acceptedGCSlot);
+	}
+
 	/* The entry point for checkpointing. Puts given checkpoint state 
 	 * for paxosID. 'state' could be anything that allows PaxosInterface 
 	 * to later restore the corresponding state. For example, 'state' 
@@ -124,7 +132,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * of all of its state. It could of course be the stringified form 
 	 * of the actual state if the state is at most MAX_STATE_SIZE. 
 	 */
-	public void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int acceptedGCSlot) {
+	public void putCheckpointState(String paxosID, short version, Set<String> group, int slot, Ballot ballot, String state, int acceptedGCSlot) {
 		if(isClosed() || DISABLE_LOGGING) return;
 
 		long t1=System.currentTimeMillis(),t2=0;
@@ -137,7 +145,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setShort(1, version);
-			insertCP.setString(2, Util.arrayToIntSet(group).toString());
+			//insertCP.setString(2, Util.arrayToIntSet(group).toString());
+			insertCP.setString(2, JSONUtils.toString(group)); 
 			insertCP.setInt(3, slot);
 			insertCP.setInt(4, ballot.ballotNumber);
 			insertCP.setInt(5, ballot.coordinatorID);
@@ -157,7 +166,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		 */
 		this.deleteOutdatedMessages(paxosID, slot, ballot.ballotNumber, ballot.coordinatorID, acceptedGCSlot);
 		// why can't insertCP.toString() return the query string? :/
-		log.info("Node " + this.myID + " DB inserted checkpoint ("+paxosID+","+Util.arrayToIntSet(group).toString()+","+
+		log.info("Node " + this.myID + " DB inserted checkpoint ("+paxosID+","+JSONUtils.toString(group)+","+
 				slot+","+ballot+","+((state.length() < TRUNCATED_STATE_SIZE) ? state: state.substring(0, 
 					TRUNCATED_STATE_SIZE))+","+acceptedGCSlot+ "); took " + (t2-t1) + "ms; garbage collection took " +
 				(System.currentTimeMillis()-t2)+"ms");
@@ -174,11 +183,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 					"(packet_type="+PaxosPacketType.DECISION.getInt() + " and slot<"+(slot-MAX_OLD_DECISIONS)+") or " +
 					"(packet_type="+PaxosPacketType.PREPARE.getInt() + " and (ballotnum<"+ballotnum + 
 					" or (ballotnum="+ballotnum + " and coordinator<"+coordinator+"))) or" +
-					"(packet_type="+PaxosPacketType.ACCEPT.getInt() + " and slot<="+Math.min(acceptedGCSlot, slot)+")"; 
+					"(packet_type="+PaxosPacketType.ACCEPT.getInt() + " and slot<="+Math.min(acceptedGCSlot, slot)+")";
 			conn = getDefaultConn();
 			dstmt = conn.prepareStatement(dcmd);
 			dstmt.execute();
 			conn.commit();
+			//if(DEBUG) 
+				log.info("Node " + this.myID + " DB deleted up to slot " + acceptedGCSlot);
 		} catch(SQLException sqle) {
 			log.severe("SQLException while deleting outdated messages for " + paxosID); sqle.printStackTrace();
 		} finally {cleanup(pstmt,checkpointRS);cleanup(dstmt); cleanup(conn);}
@@ -287,6 +298,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		try {
 			while(this.getProcessing()) wait();
 		} catch(InterruptedException ie) {ie.printStackTrace();}
+		this.stop();
 	}
 
 	/**
@@ -387,13 +399,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				String paxosID = stateRS.getString(1);
 				short version = stateRS.getShort(2);
 				String members = stateRS.getString(3);
-				String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
-				int[] group = new int[pieces.length];
-				for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
-				allPaxosInstances.add(new RecoveryInfo(paxosID, version, group));
+				String[] pieces = JSONUtils.jsonToStringArray(members);
+				//String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
+				//int[] group = new int[pieces.length];
+				//for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
+				allPaxosInstances.add(new RecoveryInfo(paxosID, version, pieces));
 			}
-		} catch(SQLException sqle) {
-			log.severe("SQLException while getting all paxos IDs " + " : " + sqle);
+		} catch(SQLException | JSONException e) {
+			log.severe((e instanceof SQLException ? "SQL" : "JSON")+
+				"Exception while getting all paxos IDs " + " : " + e);
 		} finally {cleanup(pstmt,stateRS);cleanup(conn);}
 		return allPaxosInstances;
 	}
@@ -411,13 +425,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			while(stateRS!=null && stateRS.next()) {
 				short version = stateRS.getShort(1);
 				String members = stateRS.getString(2);
-				String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
-				int[] group = new int[pieces.length];
-				for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
-				pri = new RecoveryInfo(paxosID, version, group);
+				String[] pieces = JSONUtils.jsonToStringArray(members);
+				//String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
+				//int[] group = new int[pieces.length];
+				//for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
+				pri = new RecoveryInfo(paxosID, version, pieces);
 			}
-		} catch(SQLException sqle) {
-			log.severe("SQLException while getting all paxos IDs " + " : " + sqle);
+		} catch(SQLException | JSONException e) {
+			log.severe((e instanceof SQLException ?"SQL":"JSON")+
+				"Exception while getting all paxos IDs " + " : " + e);
 		} finally {cleanup(pstmt,stateRS);cleanup(conn);}
 		return pri;
 	}
@@ -445,14 +461,16 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				String paxosID = cursorRset.getString(1);
 				short version = cursorRset.getShort(2);
 				String members = cursorRset.getString(3);
-				String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
-				int[] group = new int[pieces.length];
-				for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
+				String[] pieces = JSONUtils.jsonToStringArray(members);
+				//String[] pieces = members.replaceAll("\\[|\\]", "").split(",");
+				//int[] group = new int[pieces.length];
+				//for(int i=0; i<group.length; i++) group[i] = Integer.parseInt(pieces[i].trim());
 				String state = (readState ? cursorRset.getString(4) : null);
-				pri = new RecoveryInfo(paxosID, version, group, state);
+				pri = new RecoveryInfo(paxosID, version, pieces, state);
 			}
-		} catch(SQLException sqle) {
-			log.severe("SQLException in readNextCheckpoint: " + " : " + sqle);
+		} catch(SQLException | JSONException e) {
+			log.severe((e instanceof SQLException ? "SQL":"JSON")+
+				"Exception in readNextCheckpoint: " + " : " + e);
 		}
 		return pri;
 	}
@@ -534,7 +552,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			assert(!messagesRS.isClosed());
 			while(messagesRS.next()) {
 				String msg = messagesRS.getString(1); 
-				PaxosPacket packet = getPaxosPacket(msg);
+				PaxosPacket packet = DerbyPaxosLogger.getPaxosPacket(msg);
 				messages.add(packet);
 			}
 		} catch(SQLException sqle) {
@@ -701,6 +719,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			default:
 				assert(false);
 			}
+			// set as recovery packet
+			if(paxosPacket!=null) PaxosPacket.setRecovery(paxosPacket);
 		} catch(JSONException e) {
 			log.severe("Could not parse as JSON: " + msg); e.printStackTrace();
 		}
@@ -883,7 +903,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			String state = getCheckpointState(s);
 			Ballot b = getCheckpointBallot(s);
 			int slot = getCheckpointSlot(s);
-			print += (s + " " + Util.arrayToIntSet(pri.getMembers()) + " " + slot  + " " + b + " " + state+"\n");
+			print += (s + " " + (pri.getMembers()) + " " + slot  + " " + b + " " + state+"\n");
 			ArrayList<PaxosPacket> loggedMsgs = getLoggedMessages(paxosID);
 			if(loggedMsgs!=null) for(PaxosPacket pkt : loggedMsgs) print += (pkt+"\n");
 		}
@@ -891,7 +911,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 	protected boolean isInserted(String paxosID, int[] group, int slot, Ballot ballot, String state) {
 		return 
-				(getCheckpointState(paxosID, "members").equals(Util.arrayToIntSet(group).toString())) &&
+				(getCheckpointState(paxosID, "members").equals(JSONUtils.toString(group).toString())) &&
 				(getCheckpointState(paxosID, "slot").equals(""+slot)) &&
 				(getCheckpointState(paxosID, "ballotnum").equals(""+ballot.ballotNumber)) &&
 				(getCheckpointState(paxosID, "coordinator").equals(""+ballot.coordinatorID)) &&
@@ -902,6 +922,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		String cmd = "select paxos_id, message from " + getMTable() + " where paxos_id='" +paxosID+"' " +
 				" and slot="+slot+" and ballotnum="+ballotnum+" and coordinator="+coordinator +" and message=?";
 		boolean logged = false;
+
 		try {
 			conn = this.getDefaultConn();
 			pstmt = conn.prepareStatement(cmd);
@@ -975,10 +996,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 					pstmt = conn.prepareStatement(cmd);
 				}
 				PaxosPacket packet = packets[i];
-				String packetString=null;
+				String packetString=packet.toString();
+				/*
 				try {
 					packetString = PaxosPacket.setRecovery(packet);
 				} catch(JSONException je) {je.printStackTrace(); continue;}
+				*/
 				int[] sb = AbstractPaxosLogger.getSlotBallot(packet);
 
 				pstmt.setString(1, packet.getPaxosID());
@@ -1014,8 +1037,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 */
 	public static void main(String[] args) {
 		DerbyPaxosLogger logger = new DerbyPaxosLogger(23,null,null);
-		//DerbyPaxosLogger logger1 = new DerbyPaxosLogger(23,null,null);
-		//System.out.println("Current database state for paxos0:\n" + logger.toString("paxos0"));
 
 		int[] group = {32, 43, 54};
 		String paxosID = "paxos0";
@@ -1037,7 +1058,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		System.out.println("Average time to read " + size + " checkpoints = " + df.format(avg_read_time));
 
 		try {
-			int numPackets =65536;
+			int numPackets =1024; //65536;
 			System.out.println("\nStarting " + numPackets + " message logs: ");
 
 			PaxosPacket[] packets = new PaxosPacket[numPackets];
@@ -1066,7 +1087,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				if(j%3==2) i++;
 				packets[j].putPaxosID(paxosID, (short)0);
 				long t1 = System.currentTimeMillis();
-				///////////////////////////////////////////logger.log(packets[j]);
+				///////////////////////////////////////////logger.log(packets[j]); // replaced with batch logging
 				long t2 = System.currentTimeMillis();
 				time += t2-t1;
 				if(j>0 && (j%k==0 || j%million==0)) {System.out.println("[" + j+" : " + df.format(((double)time)/j) + "ms] "); k*=2;}
@@ -1075,18 +1096,19 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			long t1=System.currentTimeMillis();
 			logger.logBatch(packets);
 			System.out.println("Average log time = " + Util.df((System.currentTimeMillis() - t1)*1.0/packets.length));
-			System.exit(1);
 
 			System.out.print("Checking logged messages...");
 			for(int j=0; j<packets.length;j++) {
 				if(AUTO_COMMIT) assert(logger.isLogged(packets[j])) : packets[j];
+				if(j%100==0) System.out.print(j + " ");
 			}
 			System.out.println("checked");
 
-			int newSlot = 2;
+			int newSlot = 200;
+			int gcSlot = 100;
 			Ballot newBallot = new Ballot(0,2);
-			logger.putCheckpointState(paxosID, (short)0, group, 2, newBallot, "Hello World",0);
-			System.out.println("Printing logger state after checkpointing:");
+			logger.putCheckpointState(paxosID, (short)0, group, newSlot, newBallot, "Hello World",gcSlot);
+			System.out.println("Invoking initiateReadCheckpoints after checkpointing:");
 			logger.initiateReadCheckpoints(true);
 			RecoveryInfo pri=null;
 			while((pri = logger.readNextCheckpoint(true))!=null) {
@@ -1095,16 +1117,27 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			System.out.print("Checking deletion of logged messages...");
 			for(int j=0; j<packets.length;j++) {
 				int[] sbc = AbstractPaxosLogger.getSlotBallot(packets[j]);
-				if(!((sbc[0] <= newSlot && sbc[0]>=0) || ((sbc[1]<newBallot.ballotNumber || 
-						(sbc[1]==newBallot.ballotNumber && sbc[2]<newBallot.coordinatorID) )))) {
-					assert(logger.isLogged(packets[j]));
+				PaxosPacket.PaxosPacketType type = (packets[j].getType());
+				if(type==PaxosPacket.PaxosPacketType.ACCEPT) {
+					if(sbc[0] <= gcSlot) assert(!logger.isLogged(packets[j]));
+					else assert(logger.isLogged(packets[j]));
+				}
+				else if(type==PaxosPacket.PaxosPacketType.PREPARE) {
+					if((sbc[1] < newBallot.ballotNumber || 
+							(sbc[1]==newBallot.ballotNumber && sbc[2]<newBallot.coordinatorID))) {
+						assert(!logger.isLogged(packets[j])) : packets[j].toString();
+					} else assert(logger.isLogged(packets[j]));
+				}
+				else if(type==PaxosPacket.PaxosPacketType.DECISION) {
+					if(sbc[0] < newSlot - MAX_OLD_DECISIONS) assert(!logger.isLogged(packets[j]));
+					else assert(logger.isLogged(packets[j]));
 				}
 			}
 			System.out.println("checked");
 			logger.closeGracefully();
 			System.out.println("SUCCESS: No exceptions or assertion violations were triggered. " +
 					"Average log time over " + numPackets + " packets = " + ((double)time)/numPackets+" ms");
-			System.exit(1);
+			//System.exit(1);
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

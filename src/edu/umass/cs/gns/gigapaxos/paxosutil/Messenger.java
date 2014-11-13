@@ -10,7 +10,6 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
@@ -54,13 +53,15 @@ public class Messenger {
 			for(int r=0; r<mtask.recipients.length; r++) {
 				if(mtask.msgs[m]==null) {assert(false); continue;}
 				JSONObject jsonMsg = mtask.msgs[m].toJSONObject();
+				int length = jsonMsg.toString().length();
 				int sent = nioTransport.sendToID(mtask.recipients[r], jsonMsg);
-				if(sent==jsonMsg.length()) {
-					if(PaxosManager.DEBUG) log.finest("Node "+this.myID+" sent " + PaxosPacket.getPaxosPacketType(jsonMsg) + 
+				if(sent==length) {
+					if(PaxosManager.DEBUG) log.info("Node "+this.myID+" sent " + PaxosPacket.getPaxosPacketType(jsonMsg) + 
 							" to node " + mtask.recipients[r] + ": " + jsonMsg);
-				} else if (sent < jsonMsg.length()) {
+				} else if (sent < length) {
 					if(NIOTransport.sampleLog())
 						log.warning("Node "+this.myID+" messenger experiencing congestion, this is bad but not disastrous (yet)");
+					log.info("-----------------congestion:" + sent + " : " + length);
 					if(RTX_ENABLED) {
 						Retransmitter rtxTask = new Retransmitter(mtask.recipients[r], jsonMsg, RTX_DELAY);
 						execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
@@ -68,6 +69,11 @@ public class Messenger {
 				}
 			}
 		}
+	}
+	
+	public void stop() {
+		this.execpool.shutdownNow();
+		this.nioTransport.stop();
 	}
 
 	/* We need this because NIO may drop messages when congested. Thankfully, 

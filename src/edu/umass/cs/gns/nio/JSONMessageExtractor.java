@@ -178,6 +178,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		public void run() {
 			for (final AbstractPacketDemultiplexer pd : pedemuxs) {
 				try {
+					if(pd instanceof PacketDemultiplexerDefault) continue;
 					// the handler turns true if it handled the message
 					if (pd.handleJSONObjectSuper(json))	return;
 				} catch(JSONException je) {

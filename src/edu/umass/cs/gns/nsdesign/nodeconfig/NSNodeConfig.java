@@ -3,6 +3,8 @@ package edu.umass.cs.gns.nsdesign.nodeconfig;
 import java.net.InetAddress;
 import java.util.Set;
 
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+
 /**
  * Implements node config interface that we will use for coordination among name servers.
  *
@@ -39,5 +41,10 @@ public class NSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType>
   public int getNodePort(NodeIDType ID) {
     return gnsNodeConfig.getNSTcpPort(ID);
   }
+
+@Override
+public NodeIDType valueOf(String nodeAsString) {
+	throw new RuntimeException("Method not yet implemented");
+}
 
 }

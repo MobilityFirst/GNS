@@ -3,7 +3,6 @@ package edu.umass.cs.gns.gigapaxos;
 import java.io.IOException;
 
 import edu.umass.cs.gns.nio.JSONNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.util.Util;
@@ -18,7 +17,7 @@ public class TESTPaxosNode {
 	//public static final int NUM_GROUPS = TESTPaxosConfig.MAX_CONFIG_GROUPS;
 
 	private final int myID;
-	private PaxosManager pm=null;
+	private PaxosManager<Integer> pm=null;
 	private TESTPaxosReplicable app=null;
 
 	// A server must have an id
@@ -29,11 +28,11 @@ public class TESTPaxosNode {
 		// only for testing so app can send back response; in general, app should have its own NIO
 		app.setNIOTransport(pm.getNIOTransport()); 
 	}
-	public PaxosManager startPaxosManager(int id, Replicable app) {
+	public PaxosManager<Integer> startPaxosManager(int id, Replicable app) {
 		try {
-			this.pm = new PaxosManager(id, TESTPaxosConfig.getNodeConfig(), 
-					new JSONNIOTransport(id, TESTPaxosConfig.getNodeConfig(), 
-							new JSONMessageExtractor(new PacketDemultiplexerDefault())), app, null);
+			this.pm = new PaxosManager<Integer>(id, TESTPaxosConfig.getNodeConfig(), 
+					new JSONNIOTransport<Integer>(id, TESTPaxosConfig.getNodeConfig(), 
+							new PacketDemultiplexerDefault(), true), app, null);
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -42,7 +41,7 @@ public class TESTPaxosNode {
 	public void close() {this.pm.close();}
 
 	protected Replicable getApp() {return app;}
-	protected PaxosManager getPaxosManager() {return pm;}
+	protected PaxosManager<Integer> getPaxosManager() {return pm;}
 	protected String getAppState(String paxosID) {return app.getState(paxosID);}
 
 	protected void crash() {

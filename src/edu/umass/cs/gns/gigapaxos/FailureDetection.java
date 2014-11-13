@@ -11,10 +11,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.FailureDetectionPacket;
 
@@ -36,7 +36,7 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.FailureDetectionPacket;
  * Testability: This class is not yet unit-testable. Both PaxosManager 
  * and TESTPaxosMain test this class. 
  */
-public class FailureDetection {
+public class FailureDetection<NodeIDType> {
 	// final static 
 	private static final double MAX_FAILURE_DETECTION_TRAFFIC = 1/100.0; // 1 ping per 100ms total at each node
 	private static final double PING_PERTURBATION_FACTOR = 0.25; // pings randomly spaced within inter_ping_period_millis times this factor
@@ -48,23 +48,27 @@ public class FailureDetection {
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
-	private final int myID;
-	private final InterfaceJSONNIOTransport nioTransport;
+	private final NodeIDType myID;
+	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
 
 	// non-final 
-	private Set<Integer> monitoredNodes;  // other nodes to which keepalives will be sent
-	private HashMap<Integer,Long> lastHeardFrom;
-	private HashMap<Integer,ScheduledFuture<PingTask>> futures;
+	private Set<NodeIDType> monitoredNodes;  // other nodes to which keepalives will be sent
+	private HashMap<NodeIDType,Long> lastHeardFrom;
+	private HashMap<NodeIDType,ScheduledFuture<PingTask>> futures;
 
 	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
 
-	FailureDetection(int id, InterfaceNodeConfig nc, InterfaceJSONNIOTransport niot, PaxosConfig pc) {
+	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot, PaxosConfig pc) {
 		nioTransport = niot;
 		myID = id;
-		lastHeardFrom = new HashMap<Integer,Long>();
-		monitoredNodes = new TreeSet<Integer>();
-		futures = new HashMap<Integer,ScheduledFuture<PingTask>>();
+		lastHeardFrom = new HashMap<NodeIDType,Long>();
+		monitoredNodes = new TreeSet<NodeIDType>();
+		futures = new HashMap<NodeIDType,ScheduledFuture<PingTask>>();
 		initialize(pc);  // this line needs to be commented for paxos tests to make sense
+	}
+	
+	public void close() {
+		this.execpool.shutdownNow();
 	}
 	// FIXME: Should really not be taking this from outside
 	private void initialize(PaxosConfig pc) {
@@ -90,7 +94,7 @@ public class FailureDetection {
 		 * because there is no way to just change their period midway.
 		 */
 		if(adjusted) {
-			for(int id : this.monitoredNodes) {
+			for(NodeIDType id : this.monitoredNodes) {
 				unMonitor(id);
 				monitor(id);
 			}
@@ -100,18 +104,18 @@ public class FailureDetection {
 	/* Synchronized because we don't want monitoredNodes 
 	 * getting concurrently read by pingAll().
 	 */
-	public void monitor(int[] nodes) {
+	public void monitor(NodeIDType[] nodes) {
 		for(int i=0; i<nodes.length; i++) {
 			monitor(nodes[i]);
 		}
 	}
-	public void monitor(Set<Integer> nodes) {
-		for(int id : nodes) {
+	public void monitor(Set<NodeIDType> nodes) {
+		for(NodeIDType id : nodes) {
 			monitor(id);
 		}
 	}
-	/* Used only during testing */
-	public synchronized void unMonitor(int id) {
+
+	private synchronized void unMonitor(NodeIDType id) {
 		boolean wasPresent = this.monitoredNodes.remove(id); 
 		if(wasPresent && this.futures.containsKey(id)) {
 			ScheduledFuture<PingTask> pingTask = futures.get(id);
@@ -121,7 +125,8 @@ public class FailureDetection {
 	}
 	/* Synchronized as it touches monitoredNodes.
 	 */
-	public synchronized void monitor(int id)  {
+	@SuppressWarnings("unchecked")
+	public synchronized void monitor(NodeIDType id)  {
 		if(!this.monitoredNodes.contains(id)) this.monitoredNodes.add(id);
 		try {
 			if(!this.futures.containsKey(id)) {
@@ -129,10 +134,10 @@ public class FailureDetection {
 				/* Not sure how to remove the warnings below. The compiler doesn't seem to like 
 				 * ScheduledFuture<PingTask> and spews a cryptic message.
 				 */
-				ScheduledFuture future = execpool.scheduleAtFixedRate(pingTask, 
+				ScheduledFuture<?> future = execpool.scheduleAtFixedRate(pingTask, 
 						(long)(PING_PERTURBATION_FACTOR*node_detection_timeout_millis*Math.random()), 
 						FailureDetection.inter_ping_period_millis, TimeUnit.MILLISECONDS);
-				futures.put(id, future);
+				futures.put(id, (ScheduledFuture<FailureDetection<NodeIDType>.PingTask>)future);
 			}
 		} catch(JSONException e) {
 			log.severe("Can not create ping packet at node " + this.myID + " to monitor node " + id);
@@ -140,18 +145,18 @@ public class FailureDetection {
 		}
 	}
 
-	protected void receive(FailureDetectionPacket fdp) {
+	protected void receive(FailureDetectionPacket<NodeIDType> fdp) {
 		log.finest("Node " + this.myID + " received ping from node " + fdp.senderNodeID);
 		this.heardFrom(fdp.senderNodeID);
 	}
 	/* protected in order to allow paxos instances to provide useful liveliness 
 	 * information through the paxos manager.
 	 */
-	protected synchronized void heardFrom(int id) {
+	protected synchronized void heardFrom(NodeIDType id) {
 		this.lastHeardFrom.put(id, System.currentTimeMillis());
 	}
 
-	protected synchronized boolean isNodeUp(int id) {
+	protected synchronized boolean isNodeUp(NodeIDType id) {
 		Long lastHeard = 0L;
 		if(id==this.myID) return true;
 		if((lastHeard = this.lastHeardFrom.get(id))!=null && 
@@ -169,18 +174,18 @@ public class FailureDetection {
 		return true;
 	}
 
-	private JSONObject getPingPacket(int id) throws JSONException {
-		FailureDetectionPacket fdp = new FailureDetectionPacket(myID, id, true);
+	private JSONObject getPingPacket(NodeIDType id) throws JSONException {
+		FailureDetectionPacket<NodeIDType> fdp = new FailureDetectionPacket<NodeIDType>(myID, id, true);
 		JSONObject fdpJson = fdp.toJSONObject();
 		return fdpJson;
 	}
 
 	private class PingTask implements Runnable {
-		private final int destID;
+		private final NodeIDType destID;
 		private final JSONObject pingJson;
-		private final InterfaceJSONNIOTransport nioTransport;
+		private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
 
-		PingTask(int id, JSONObject fdpJson, InterfaceJSONNIOTransport niot) {
+		PingTask(NodeIDType id, JSONObject fdpJson, InterfaceJSONNIOTransport<NodeIDType> niot) {
 			destID = id;
 			pingJson = fdpJson;
 			nioTransport = niot;
@@ -200,11 +205,20 @@ public class FailureDetection {
 			}
 		}
 	}
+	
+	private class Adjuster implements Runnable {
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+		}
+		
+	}
 
 	/* Currently unused. Will be useful for cleaning up
 	 * ping tasks that fail because of exceptions.
 	 */
-	private synchronized void cleanupFailedPingTask(int id) {
+	private synchronized void cleanupFailedPingTask(NodeIDType id) {
 		ScheduledFuture<PingTask> pingTask = this.futures.get(id);
 		if(pingTask!=null) {
 			pingTask.cancel(true);
@@ -214,7 +228,7 @@ public class FailureDetection {
 	}
 
 	// Used only for testing
-	protected InterfaceJSONNIOTransport getNIOTransport() {
+	protected InterfaceJSONNIOTransport<NodeIDType> getNIOTransport() {
 		return this.nioTransport;
 	}
 	/**

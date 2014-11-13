@@ -2,7 +2,7 @@ package edu.umass.cs.gns.reconfiguration;
 
 import java.util.Set;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
 /**
 @author V. Arun

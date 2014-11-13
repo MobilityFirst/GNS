@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.nio;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.InterfaceNodeConfig;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
@@ -250,9 +248,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
    * all NIO sends actually happen. Do NOT add more gunk to this method.
    */
   private int sendUnderlying(NodeIDType id, byte[] data) throws IOException {
-    if (DEBUG) {
-      GNS.getLogger().info("Send to: " + id + " json: " + new String(data));
-    }
+    if (DEBUG) log.info("Send to: " + id + " json: " + new String(data));
     return this.send(id, data);
   }
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -20,6 +21,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Messenger;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.gns.util.Util;
 
 /**
  * @author V. Arun
@@ -83,7 +85,8 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 	public ArrayList<RecoveryInfo> getAllPaxosInstances() {
 		ArrayList<RecoveryInfo> allPaxosInstances = new ArrayList<RecoveryInfo>();
 		for(String paxosID : this.checkpoints.keySet()) {
-			allPaxosInstances.add(new RecoveryInfo(paxosID, this.checkpoints.get(paxosID).version, this.checkpoints.get(paxosID).group));
+			allPaxosInstances.add(new RecoveryInfo(paxosID, this.checkpoints.get(paxosID).version, 
+				Util.arrayOfIntToStringSet(this.checkpoints.get(paxosID).group).toArray(new String[0])));
 		}
 		return allPaxosInstances; 
 	}
@@ -259,4 +262,12 @@ public class DummyPaxosLogger extends AbstractPaxosLogger {
 		assert(false) : "Method not implemented";
 		return false;
 	}
+
+	@Override
+	public void putCheckpointState(String paxosID, short version,
+			Set<String> group, int slot, Ballot ballot, String state, int gcSlot) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

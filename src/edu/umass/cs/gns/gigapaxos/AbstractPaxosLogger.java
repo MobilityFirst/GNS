@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -46,7 +47,6 @@ public abstract class AbstractPaxosLogger {
 
 	private final BatchLogger batchLogger;
 	private final Messenger messenger;
-	//private Timer timer = new Timer(); // for checkpointing, so single thread is fine
 	private final CCheckpointer collapsingCheckpointer;
 
 	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class.getName()); // GNS.getLogger();
@@ -78,7 +78,6 @@ public abstract class AbstractPaxosLogger {
 			logger.batchLogger.enqueue(logMTask); // batchLogger will also send
 		} else {
 			messenger.send(logMTask); // no logging, send right away
-
 		}
 	}
 	// Will log and execute a decision. The former need not happen before the latter.
@@ -150,6 +149,11 @@ public abstract class AbstractPaxosLogger {
 		s+="---------------END log------------------";
 		return s;
 	}
+	
+	protected void stop() {
+		this.batchLogger.stop();
+		this.collapsingCheckpointer.stop();
+	}
 
 	private static void addLogger(AbstractPaxosLogger logger) {
 		synchronized(AbstractPaxosLogger.instances) {
@@ -181,6 +185,7 @@ public abstract class AbstractPaxosLogger {
 	public abstract SlotBallotState getSlotBallotState(String paxosID);
 	public abstract SlotBallotState getSlotBallotState(String paxosID, short version, boolean matchVersion);
 	public abstract void putCheckpointState(String paxosID, short version, int[] group, int slot, Ballot ballot, String state, int gcSlot);
+	public abstract void putCheckpointState(String paxosID, short version, Set<String> group, int slot, Ballot ballot, String state, int gcSlot);
 	public abstract  StatePacket getStatePacket(String paxosID);
 
 	// recovery methods
@@ -241,6 +246,7 @@ public abstract class AbstractPaxosLogger {
 		private final Messenger messenger;
 		private final ArrayList<LogMessagingTask> logMessages = new ArrayList<LogMessagingTask>();
 		private boolean processing = false;
+		private boolean stopped = false;
 
 		BatchLogger(AbstractPaxosLogger lgr, Messenger msgr) {
 			this.logger = lgr;
@@ -250,12 +256,12 @@ public abstract class AbstractPaxosLogger {
 			while(true) {
 				synchronized(this.logMessages) {
 					try {
-						while(this.logMessages.isEmpty()) this.logMessages.wait();
-
+						while(this.logMessages.isEmpty() && !isStopped()) this.logMessages.wait();
+						if(isStopped()) break;
 					} catch(InterruptedException ie) {ie.printStackTrace();}
 				}
 				LogMessagingTask[] lmTasks = this.dequeueAll();
-				assert(lmTasks.length>0);
+				assert(lmTasks.length>0 || isStopped());
 				PaxosPacket[] packets = new PaxosPacket[lmTasks.length];
 				for(int i=0; i<lmTasks.length; i++) {
 					packets[i] = lmTasks[i].logMsg;
@@ -313,7 +319,18 @@ public abstract class AbstractPaxosLogger {
 		}
 		private synchronized boolean getProcessing() {return this.processing;}
 		private synchronized void setProcessing(boolean b) {this.processing=b;}
-
+		
+		private synchronized boolean stop() {
+			boolean old = this.stopped;
+			this.stopped = true;
+			synchronized(this.logMessages) {
+				this.logMessages.notify();
+			}
+			return !old;
+		}
+		private synchronized boolean isStopped() {
+			return this.stopped;
+		}
 	}
 
 
@@ -341,6 +358,8 @@ public abstract class AbstractPaxosLogger {
 	private class CCheckpointer implements Runnable {
 		private final HashMap<String,CheckpointTask> checkpoints = new HashMap<String,CheckpointTask>();
 		private boolean processing = false;
+		private boolean stopped = false;
+
 		private void enqueue(CheckpointTask newCP) {
 			synchronized(checkpoints) {
 				CheckpointTask oldCP = checkpoints.get(newCP.paxosID);
@@ -390,8 +409,8 @@ public abstract class AbstractPaxosLogger {
 			while(true) {
 				synchronized(this.checkpoints) {
 					try {
-						while(this.checkpoints.isEmpty()) this.checkpoints.wait();
-
+						while(this.checkpoints.isEmpty() && !isStopped()) this.checkpoints.wait();
+						if(isStopped()) break;
 					} catch(InterruptedException ie) {ie.printStackTrace();}
 				}
 				CheckpointTask checkpointTask = this.dequeue();
@@ -401,6 +420,17 @@ public abstract class AbstractPaxosLogger {
 				this.setProcessing(false);
 				synchronized(this) {this.notifyAll();}
 			}
+		}
+		public synchronized boolean stop() {
+			boolean old = this.stopped;
+			this.stopped = true;
+			synchronized(this.checkpoints) {
+				this.checkpoints.notify();
+			}
+			return !old;
+		}
+		private synchronized boolean isStopped() {
+			return this.stopped;
 		}
 	}
 
