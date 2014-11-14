@@ -263,12 +263,15 @@ public class AccountAccess {
     }
     return response;
   }
+  
+  private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
   private static final String SECRET = "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
           + "o0u6BXRBZBrcH8r2NSbqpOoWfvcxeSC7wSiOiVHN7fW0eFotdFz0fiKjHj3h0ri";
 
   private static String createVerificationCode(String name) {
-    return ByteUtils.toHex(SHA1HashFunction.getInstance().hash(name + SECRET));
+    // Take the first N bytes of the array for our code
+    return ByteUtils.toHex(Arrays.copyOf(SHA1HashFunction.getInstance().hash(name + SECRET), VERIFICATION_CODE_LENGTH));
   }
 
   private static final long TWO_HOURS_IN_MILLESECONDS = 60 * 60 * 1000 * 2;
