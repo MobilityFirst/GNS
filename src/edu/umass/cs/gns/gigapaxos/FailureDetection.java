@@ -66,6 +66,9 @@ public class FailureDetection<NodeIDType> {
 		futures = new HashMap<NodeIDType,ScheduledFuture<PingTask>>();
 		initialize(pc);  // this line needs to be commented for paxos tests to make sense
 	}
+	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot) {
+		this(id,niot,null);
+	}
 	
 	public void close() {
 		this.execpool.shutdownNow();
@@ -79,12 +82,12 @@ public class FailureDetection<NodeIDType> {
 		coordinator_failure_detection_timeout = 2*node_detection_timeout_millis;
 	}
 	// makes sure that FD params are reasonable
-	private synchronized void adjustFDParams() {
+	private synchronized boolean adjustFDParams() {
 		boolean adjusted = false;
 		int numMonitored = this.monitoredNodes.size();
 		double load = ((double)numMonitored)/inter_ping_period_millis;
 		if(load > MAX_FAILURE_DETECTION_TRAFFIC) {
-			inter_ping_period_millis = (long)(numMonitored/MAX_FAILURE_DETECTION_TRAFFIC);
+			inter_ping_period_millis = (long)(numMonitored/MAX_FAILURE_DETECTION_TRAFFIC+1); // +1 to be strictly below
 			node_detection_timeout_millis = inter_ping_period_millis*2;
 			coordinator_failure_detection_timeout = node_detection_timeout_millis*3;
 			assert(inter_ping_period_millis>0); // just to make sure we didn't accidentally (int) cast it 0 above :)
@@ -96,9 +99,10 @@ public class FailureDetection<NodeIDType> {
 		if(adjusted) {
 			for(NodeIDType id : this.monitoredNodes) {
 				unMonitor(id);
-				monitor(id);
+				monitor(id); // single-depth recursive call to adjustFDParams
 			}
 		}
+		return adjusted;
 	}
 
 	/* Synchronized because we don't want monitoredNodes 
@@ -143,8 +147,9 @@ public class FailureDetection<NodeIDType> {
 			log.severe("Can not create ping packet at node " + this.myID + " to monitor node " + id);
 			e.printStackTrace();
 		}
+		adjustFDParams(); // check to adjust every time monitor is invoked
 	}
-
+	
 	protected void receive(FailureDetectionPacket<NodeIDType> fdp) {
 		log.finest("Node " + this.myID + " received ping from node " + fdp.senderNodeID);
 		this.heardFrom(fdp.senderNodeID);
@@ -206,15 +211,6 @@ public class FailureDetection<NodeIDType> {
 		}
 	}
 	
-	private class Adjuster implements Runnable {
-
-		@Override
-		public void run() {
-			// TODO Auto-generated method stub
-		}
-		
-	}
-
 	/* Currently unused. Will be useful for cleaning up
 	 * ping tasks that fail because of exceptions.
 	 */

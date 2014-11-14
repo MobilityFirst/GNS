@@ -3,8 +3,6 @@ package edu.umass.cs.gns.gigapaxos.scratch;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import org.junit.Test;
-
 
 /**
 @author V. Arun
@@ -14,7 +12,6 @@ public class Scratchpad {
 		return x * y;
 	}
 	
-	@Test
 	public void testMultiply() {
 		assert(Scratchpad.multiply(3, 4)==3*4);
 	}

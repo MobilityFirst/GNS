@@ -9,13 +9,21 @@ import java.util.Set;
 /**
  * @author V. Arun
  */
+/*
+ * This class maintains a map of NodeIDType objects
+ * to integers, and provides some convenience methods
+ * to go back and forth between collections of the
+ * two kinds. It is synchronized because PaxosManager
+ * and Messenger (used by the BatchLogger thread in
+ * AbstractPaxosLogger) use this class.
+ */
 public class IntegerMap<NodeIDType> {
 	private HashMap<Integer, NodeIDType> nodeMap =
 			new HashMap<Integer, NodeIDType>();
 
-	// put maps NodeIDType to int and stores the map
+	// put(NodeIDType) maps NodeIDType to int and stores the mapping
 	public int put(NodeIDType node) {
-		assert(node != null);
+		assert (node != null);
 		int id = getID(node);
 		assert (!this.nodeMap.containsKey(id) || this.nodeMap.get(id).equals(
 			node));
@@ -23,17 +31,17 @@ public class IntegerMap<NodeIDType> {
 		return id;
 	}
 
-	// get maps int to NodeIDType
-	public NodeIDType get(int id) {
+	// get(int) maps int to NodeIDType
+	public synchronized NodeIDType get(int id) {
 		NodeIDType node = this.nodeMap.get(id);
 		if (node == null) {
 			System.out.println("!!!!!!!!Unable to get " + id);
-			assert(false); // FIXME: What to do here?
+			assert (false); // FIXME: What to do here?
 		}
 		return node;
 	}
 
-	public Set<Integer> put(Set<NodeIDType> nodes) {
+	public synchronized Set<Integer> put(Set<NodeIDType> nodes) {
 		Set<Integer> intNodes = new HashSet<Integer>();
 		for (NodeIDType node : nodes) {
 			intNodes.add(put(node));
@@ -41,10 +49,19 @@ public class IntegerMap<NodeIDType> {
 		return intNodes;
 	}
 
-	public Set<NodeIDType> get(Set<Integer> intNodes) {
+	public synchronized Set<NodeIDType> get(Set<Integer> intNodes) {
 		Set<NodeIDType> nodes = new HashSet<NodeIDType>();
 		for (int id : intNodes) {
 			nodes.add(get(id));
+		}
+		return nodes;
+	}
+
+	public synchronized Set<NodeIDType> getIntArrayAsNodeSet(int[] members) {
+		Set<NodeIDType> nodes = new HashSet<NodeIDType>();
+		for (int member : members) {
+			NodeIDType node = this.nodeMap.get(member);
+			nodes.add(node);
 		}
 		return nodes;
 	}
@@ -57,15 +74,15 @@ public class IntegerMap<NodeIDType> {
 	private Integer getID(NodeIDType node) {
 		if (node == null) return null;
 		/*
-		 * Relies on the following assumptions 
-		 * 1) an Integer's hashcode is the integer value 
+		 * Relies on the following assumptions
+		 * 1) an Integer's hashcode is the integer value
 		 * itself, not a different integer value
 		 * 
 		 * 2) a String's hashcode does not change in the
-		 * lifetime of a JVM. We do *not* need the 
-		 * assumption that the hashcode not change 
+		 * lifetime of a JVM. We do *not* need the
+		 * assumption that the hashcode not change
 		 * across reboots or be the same on different
-		 * machines (which would be a bad assumption 
+		 * machines (which would be a bad assumption
 		 * anyway).
 		 */
 		return node.hashCode();

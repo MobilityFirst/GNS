@@ -7,9 +7,6 @@ import org.json.JSONObject;
 
 
 public final class StatePacket extends PaxosPacket{
-	private final static String SLOT="SLOT";
-	private final static String BALLOT="BALLOT";
-	private final static String STATE="STATE";
 
 	public final Ballot ballot;
 	public final int slotNumber;
@@ -28,17 +25,17 @@ public final class StatePacket extends PaxosPacket{
 		super(json);
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_STATE); // coz class is final
 		this.packetType = PaxosPacketType.CHECKPOINT_STATE;
-		this.slotNumber = json.getInt(SLOT);
-		this.ballot = new Ballot(json.getString(BALLOT));
-		this.state = json.getString(STATE);
+		this.slotNumber = json.getInt(PaxosPacket.Keys.SLOT.toString());
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
+		this.state = json.getString(PaxosPacket.Keys.STATE.toString());
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(SLOT, this.slotNumber);
-		json.put(BALLOT, this.ballot.ballotNumber+":"+this.ballot.coordinatorID);
-		json.put(STATE, this.state);
+		json.put(PaxosPacket.Keys.SLOT.toString(), this.slotNumber);
+		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), this.ballot.ballotNumber+":"+this.ballot.coordinatorID);
+		json.put(PaxosPacket.Keys.STATE.toString(), this.state);
 		return json;
 	}
 

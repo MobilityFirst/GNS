@@ -17,11 +17,13 @@ public final class AcceptReplyPacket extends PaxosPacket {
 
     public final int committedSlot;
 
+    /*
     protected static final  String NODE_ID = "node";
     private static final  String BALLOT_NUMBER = "ballot";
     private static final  String SLOT_NUMBER = "slot";
     private static final  String COMMITTED_SLOT = "committed_slot";
-
+    */
+    
     public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber, int committedSlot) {
     	super((PaxosPacket)null);
         this.packetType = PaxosPacketType.ACCEPT_REPLY;
@@ -35,20 +37,20 @@ public final class AcceptReplyPacket extends PaxosPacket {
     	super(jsonObject);
     	assert(PaxosPacket.getPaxosPacketType(jsonObject)==PaxosPacketType.ACCEPT_REPLY); // coz class is final
         this.packetType = PaxosPacketType.ACCEPT_REPLY;
-        this.nodeID = jsonObject.getInt(NODE_ID);
-        this.ballot = new Ballot(jsonObject.getString(BALLOT_NUMBER));
-        this.slotNumber = jsonObject.getInt(SLOT_NUMBER);
-        this.committedSlot = jsonObject.getInt(COMMITTED_SLOT);
+        this.nodeID = jsonObject.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
+        this.ballot = new Ballot(jsonObject.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
+        this.slotNumber = jsonObject.getInt(PaxosPacket.Keys.SLOT.toString());
+        this.committedSlot = jsonObject.getInt(PaxosPacket.Keys.COMMITTED_SLOT.toString());
     }
 
 
     @Override
     public JSONObject toJSONObjectImpl() throws JSONException {
         JSONObject json= new JSONObject();
-        json.put(NODE_ID, nodeID);
-        json.put(BALLOT_NUMBER, ballot.toString());
-        json.put(SLOT_NUMBER, slotNumber);
-        json.put(COMMITTED_SLOT, this.committedSlot);
+        json.put(PaxosPacket.NodeIDKeys.SENDER_NODE.toString(), nodeID);
+        json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
+        json.put(PaxosPacket.Keys.SLOT.toString(), slotNumber);
+        json.put(PaxosPacket.Keys.COMMITTED_SLOT.toString(), this.committedSlot);
         return json;
     }
 

@@ -59,11 +59,9 @@ public class TESTPaxosReplicable implements Replicable {
 			if(state==null) state = new PaxosState();
 			if(state.seqnum==-1) state.seqnum = requestPacket.slot;
 
-			if(!TESTPaxosConfig.getSendReplyToClient()) {
-				log.info("Testing: PaxosID " + paxosID + " executing request with slot " + 
+			if(DEBUG) log.info("Node"+this.niot.getMyID() + " " + paxosID + " executing request with slot " + 
 					requestPacket.slot + ", id = " + requestPacket.requestID + " with value " + 
 					requestPacket.requestValue +"; seqnum="+ state.seqnum+": prev_state_value="+state.value);
-			}
 
 			state.value = requestPacket.requestValue + (digest(state.value));
 			if(state.putState) state.seqnum = requestPacket.slot;
@@ -79,6 +77,8 @@ public class TESTPaxosReplicable implements Replicable {
 			if(niot!=null && requestPacket.getReplyToClient() && TESTPaxosConfig.getSendReplyToClient()) {
 				if(DEBUG) log.info("App sending response to client " + requestPacket.clientID + ": " + reqJson);
 				niot.sendToID(requestPacket.clientID, reqJson);
+			} else {
+				if(DEBUG) log.info("Node"+this.niot.getMyID()+" not sending reply to client: "  + reqJson);
 			}
 		} catch(JSONException je) {je.printStackTrace();}
 		catch(IOException ioe) {ioe.printStackTrace();}

@@ -110,7 +110,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	private static Logger log = Logger.getLogger(DerbyPaxosLogger.class.getName()); // GNS.getLogger();
 
-	DerbyPaxosLogger(int id, String dbPath, Messenger messenger) {
+	DerbyPaxosLogger(int id, String dbPath, Messenger<?> messenger) {
 		super(id, dbPath, messenger);
 		initialize(); // will set up db, connection, tables, etc. as needed
 	}
@@ -1073,7 +1073,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				ProposalPacket prop = new ProposalPacket(i, req);
 				PValuePacket pvalue = new PValuePacket(ballot, prop);
 				AcceptPacket accept = new AcceptPacket(nodeID, pvalue, -1);
-				pvalue = pvalue.makeDecision(-1);
+				pvalue = pvalue.makeDecision(-1, 2);
 				PreparePacket prepare = new PreparePacket(coordinator, nodeID, new Ballot(i, ballot.coordinatorID));
 				if(j%3==0) { // prepare
 					packets[j] = prepare;

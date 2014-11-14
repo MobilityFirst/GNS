@@ -1,18 +1,19 @@
 package edu.umass.cs.gns.gigapaxos.multipaxospacket;
 
-import java.util.ArrayList;
-
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
  */
 public class FindReplicaGroupPacket extends PaxosPacket {
-	private static final String NODE_ID="NODE_ID";
-	private static final String GROUP="GROUP";
+	
+	//private static final String NODE_ID="NODE_ID";
+	//private static final String GROUP="GROUP";
 
 	public final int nodeID; // node ID sending the request
 	public final int[] group;
@@ -32,28 +33,27 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 	public FindReplicaGroupPacket(JSONObject msg) throws JSONException {
 		super(msg);
 		this.packetType = PaxosPacketType.FIND_REPLICA_GROUP;
-		this.nodeID = msg.getInt(NODE_ID);
-		ArrayList<Integer> members = new ArrayList<Integer>();
-		if(msg.has(GROUP)) {
-			String[] tokens = msg.getString(GROUP).split("\\s");
-			for(String token : tokens) {
-				try {
-					members.add(Integer.parseInt(token));
-				} catch (NumberFormatException nfe) {nfe.printStackTrace();}
+		this.nodeID = msg.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
+		JSONArray jsonGroup = null;
+		if(msg.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {
+			jsonGroup = msg.getJSONArray(PaxosPacket.NodeIDKeys.GROUP.toString());
+		}
+		if(jsonGroup.length()>0) {
+			this.group = new int[jsonGroup.length()];
+			for(int i=0; i<jsonGroup.length(); i++) {
+				this.group[i] = Integer.valueOf(jsonGroup.getString(i));
 			}
 		}
-		if(members.size()>0) this.group = new int[members.size()];
-		else this.group=null;
+		else this.group = null;
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(NODE_ID, this.nodeID);
+		json.put(PaxosPacket.NodeIDKeys.SENDER_NODE.toString(), this.nodeID);
 		if(this.group!=null && this.group.length>0) {
-			String numbers = "";
-			for(int i=0; i<this.group.length; i++) numbers += this.group[i] + " ";
-			json.put(GROUP, numbers);
+			JSONArray jsonGroup = new JSONArray(Util.arrayToIntSet(group));
+			json.put(PaxosPacket.NodeIDKeys.GROUP.toString(), jsonGroup);
 		}
 		return json;
 	}
@@ -64,16 +64,16 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 			PaxosPacketType msgType = PaxosPacketType.getPaxosPacketType(msg.getInt(PaxosPacket.PAXOS_PACKET_TYPE));
 			switch(msgType) {
 			case ACCEPT:
-				id = msg.getInt(AcceptPacket.NODE);
+				id = msg.getInt(AcceptPacket.Keys.SENDER_NODE.toString());
 				break;
 			case ACCEPT_REPLY:
-				id = msg.getInt(AcceptReplyPacket.NODE_ID);
+				id = msg.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
 				break;
 			case PREPARE:
-				id = msg.getInt(PreparePacket.COORDINATOR);
+				id = msg.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
 				break;
 			case DECISION: 
-				id = (new Ballot(msg.getString(PValuePacket.BALLOT))).coordinatorID;
+				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()))).coordinatorID;
 				break;
 			}
 		}

@@ -4,6 +4,8 @@ package edu.umass.cs.gns.gigapaxos.paxosutil;
  */
 
 public class Ballot implements Comparable<Ballot>{
+	private static final String SEPARATOR = ":";
+
 	public final int ballotNumber;
 	public final int coordinatorID;
 
@@ -41,9 +43,23 @@ public class Ballot implements Comparable<Ballot>{
 	public int hashCode() {
 		return (100+ballotNumber)*(100+ballotNumber) + coordinatorID;
 	}
+	
+	public static String getBallotCoordString(String ballotString) {
+		String[] pieces = ballotString.split(SEPARATOR);
+		if(pieces.length==2 && pieces[1] != null) return pieces[1];
+		return null;
+	}
+	public static Integer getBallotNumString(String ballotString) {
+		String[] pieces = ballotString.split(SEPARATOR);
+		if(pieces.length==2 && pieces[0]!=null) return Integer.parseInt(pieces[0].trim());
+		return null;
+	}
+
 
 	@Override
 	public   String toString() {return ballotNumber + ":" + coordinatorID;}
-	public static String getBallotString(int bnum, int coord) {return bnum+":"+coord;}
-
+	public static String getBallotString(int bnum, int coord) {return bnum+SEPARATOR+coord;}
+	public static String getBallotString(int ballotnum, Object ballotCoord) {
+		return ballotnum + SEPARATOR + ballotCoord.toString();
+	}
 }

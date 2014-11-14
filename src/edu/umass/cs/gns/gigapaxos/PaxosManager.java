@@ -16,10 +16,10 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.*;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.util.MultiArrayMap;
+import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
@@ -70,7 +70,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	// final
 	private final AbstractPaxosLogger paxosLogger;  // logging
 	private final FailureDetection<NodeIDType> FD;  // failure detection
-	private final Messenger messenger;  // messaging
+	private final Messenger<NodeIDType> messenger;  // messaging
 	private final int myID;
 	private final Replicable myApp; // default app for all paxosIDs
 
@@ -78,8 +78,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private final MultiArrayMap<String,PaxosInstanceStateMachine> pinstances; // paxos instance mapping
 	private final HashMap<String, PaxosInstanceStateMachine> corpses; // stopped paxos instances about to be incinerated
 	protected final HashMap<String, ActivePaxosState> activePaxii; // active paxos instances, hopefully small in number
-	private final IntegerMap<NodeIDType> nodeMap = new IntegerMap<NodeIDType>();
-	private final InterfaceNodeConfig<NodeIDType> nodeConfig;
+	private final IntegerMap<NodeIDType> integerMap = new IntegerMap<NodeIDType>();
+	private final Stringifiable<NodeIDType> unstringer;
 
 	// non-final
 	private boolean hasRecovered = false;
@@ -97,25 +97,29 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); //GNS.getLogger();;
 
-	public PaxosManager(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc, InterfaceJSONNIOTransport<NodeIDType> niot, Replicable pi, PaxosConfig pc) {
-		this.myID = this.nodeMap.put(id);//id.hashCode(); 
-		this.nodeConfig = nc;
+	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> unstringer, 
+			InterfaceJSONNIOTransport<NodeIDType> niot, Replicable pi, 
+			PaxosConfig pc /*best to leave pc null*/) {
+		this.myID = this.integerMap.put(id);//id.hashCode(); 
+		this.unstringer = unstringer;
 		this.myApp = pi;
 		this.FD = new FailureDetection<NodeIDType>(id, niot, pc);
 		this.pinstances = new MultiArrayMap<String,PaxosInstanceStateMachine>(PINSTANCES_CAPACITY);
 		this.corpses = new HashMap<String,PaxosInstanceStateMachine>();
 		this.activePaxii = new HashMap<String,ActivePaxosState>();
-		this.messenger = new Messenger(this.myID, niot);
+		this.messenger = new Messenger<NodeIDType>(niot, this.integerMap);
 		this.paxosLogger = new DerbyPaxosLogger(this.myID, (pc!=null?pc.getPaxosLogFolder():null), this.messenger);
 
 		timer.schedule(new Deactivator(), DEACTIVATION_PERIOD); // periodically remove active state for idle paxii
-
 		if(TESTPaxosConfig.getCleanDB()) {while(!this.paxosLogger.removeAll());}
+		niot.addPacketDemultiplexer(new PaxosPacketDemultiplexer<NodeIDType>(this, this.integerMap, unstringer)); // so paxos packets will come to me.
 
-		niot.addPacketDemultiplexer(new PaxosPacketDemultiplexer(this)); // so paxos packets will come to me.
 		initiateRecovery();
 	}
-
+	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc, 
+			InterfaceJSONNIOTransport<NodeIDType> niot, Replicable pi) {
+		this(id, nc, niot, pi, null);
+	}
 	/* We need to be careful with pause/unpause and createPaxosInstance as there are potential
 	 * cyclic dependencies. The call chain is as below, where "info" is the information needed
 	 * to create a paxos instance. The notation"->?" means the call may or may not happen, 
@@ -148,7 +152,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID, (hasRecovered && hri==null), tryRestore); 
 		if(pism!=null) return false;
 
-		pism = new PaxosInstanceStateMachine(paxosID, version, id, this.nodeMap.put(gms), app!=null?app:this.myApp, this, hri);
+		pism = new PaxosInstanceStateMachine(paxosID, version, id, this.integerMap.put(gms), app!=null?app:this.myApp, this, hri);
 		pinstances.put(paxosID, pism);
 		if(this.hasRecovered()) assert(this.getInstance(paxosID,false,false)!=null);
 		/* Note: rollForward can not be done inside the instance as we 
@@ -179,7 +183,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				FindReplicaGroupPacket findGroup = new FindReplicaGroupPacket(jsonMsg);
 				processFindReplicaGroup(findGroup);
 				break;
-			default:
+			default:  // paxos protocol messages
 				assert(jsonMsg.has(PaxosPacket.PAXOS_ID));
 				String paxosID = jsonMsg.getString(PaxosPacket.PAXOS_ID);
 				PaxosInstanceStateMachine pism = this.getInstance(paxosID); // exact match including version
@@ -220,12 +224,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		}
 		return retval;
 	}
-	// FIXME: Need to change AbstractPaxosManager
-	public String proposeStop(String paxosID, String value, int version) {
-		assert(false) : "Version should be short, not int";
-		System.exit(1);
-		return null;
-	}
+
 	public String proposeStop(String paxosID, String value, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if(pism!=null && pism.getVersion()==version) {
@@ -244,35 +243,28 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 	private static synchronized void closeAll() {{closed=true;}}
 	private static synchronized boolean allClosed() {{return closed;}}
+	private boolean isClosed() {return allClosed();}
 
 	public void close() {
 		log.info("Node " + myID + " invoking closeAll");
-		closeAll();
-		waitToFinishAll();
-		this.paxosLogger.close();
-		
-		this.FD.close();
+		closeAll(); // sets closed flag to prevent any more packet processing
+		waitToFinishAll(); // waits for ongoing packet processing to finish
+		log.info("PM"+this.myID+" done with waitToFinishAll");
+		this.paxosLogger.close(); 
+		log.info("APLogger"+this.myID+" closed");
+		this.FD.close(); 
 		this.messenger.stop();
 		this.timer.cancel();
 	}
-	private boolean isClosed() {return allClosed();}
 
 	public static long getDeactivationPeriod() {return DEACTIVATION_PERIOD;}
 
 	/********************* End of public methods ***********************/
 
-	protected Set<String> getNodesAsStringSet(int[] members) {
-		Set<String> nodes = new HashSet<String>();
-		for(int member : members) {
-			NodeIDType node = this.nodeMap.get(member);
-			nodes.add(node.toString());
-		}
-		return nodes;
-	}
 	protected Set<NodeIDType> getNodesFromStringSet(Set<String> strNodes) {
 		Set<NodeIDType> nodes = new HashSet<NodeIDType>();
 		for(String strNode : strNodes) {
-			nodes.add(this.nodeConfig.valueOf(strNode));
+			nodes.add(this.unstringer.valueOf(strNode));
 		}
 		return nodes;
 	}
@@ -409,7 +401,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			log.severe("OVERLOAD: Restarting overloaded coordinator node " + this.myID + "of " + pism.getPaxosID());
 			pism.forceStop();
 			this.pinstances.remove(pism.getPaxosID());
-			this.recover(pism.getPaxosID(), pism.getVersion(), pism.getNodeID(), this.nodeMap.get(Util.arrayToIntSet(pism.getMembers())), pism.getApp(), true);
+			this.recover(pism.getPaxosID(), pism.getVersion(), pism.getNodeID(), this.integerMap.get(Util.arrayToIntSet(pism.getMembers())), pism.getApp(), true);
 		}
 	}
 	// Checkpoint and go to sleep on disk. Currently not used.
@@ -472,7 +464,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				//if(DEBUG) 
 				log.info("Node"+myID+" successfully hot restored paused instance " + paxosID);
 				restored = this.createPaxosInstance(hri.paxosID, hri.version, myID, 
-						this.nodeMap.get(Util.arrayToIntSet(hri.members)), this.myApp, hri, false);
+						this.integerMap.get(Util.arrayToIntSet(hri.members)), this.myApp, hri, false);
 			}
 			else log.fine("Node"+myID+" unable to hot restore instance " + paxosID);
 		}
@@ -521,12 +513,16 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		}
 	}
 
-	protected void heardFrom(int id) {this.FD.heardFrom(this.nodeMap.get(id));}
-	protected boolean isNodeUp(int id) {return (FD!=null ? FD.isNodeUp(this.nodeMap.get(id)) :false);}
+	/* The two methods, heardFrom and isNodeUp, below are the only ones that
+	 * invoke nodeMap.get(int). They are only invoked after the corresponding
+	 * NodeIDType is already inserted in the map.
+	 */
+	protected void heardFrom(int id) {this.FD.heardFrom(this.integerMap.get(id));}
+	protected boolean isNodeUp(int id) {return (FD!=null ? FD.isNodeUp(this.integerMap.get(id)) :false);}
 	private boolean isNodeUp(NodeIDType id) {return (FD!=null ? FD.isNodeUp(id) :false);}
 	protected boolean lastCoordinatorLongDead(int id) {return (FD!=null ? FD.lastCoordinatorLongDead(id) : true);}
 	protected AbstractPaxosLogger getPaxosLogger() {return paxosLogger;}
-	protected Messenger getMessenger() {return this.messenger;}
+	protected Messenger<NodeIDType> getMessenger() {return this.messenger;}
 
 	/****************** Start of methods to gracefully finish processing **************/
 	private static synchronized void setProcessing(boolean b) {
@@ -542,14 +538,6 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		} catch(InterruptedException ie) {ie.printStackTrace();}
 	}
 	/****************** End of methods to gracefully finish processing **************/
-
-	/* monitor means start sending the node(s) pings.
-	 * We don't expect anything in return. It should 
-	 * really be called amAlive instead of monitor.
-	 */
-	//private void monitor(Set<NodeIDType> nodes) {FD.monitor((nodes));}
-	/* Stop sending pings to the node */
-	//private void unMonitor(NodeIDType id) {FD.unMonitor((id));}
 
 	private void printLog(String paxosID) {
 		System.out.println("State for " + paxosID + ": Checkpoint: " + this.paxosLogger.getStatePacket(paxosID));
@@ -579,7 +567,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				// kill lower versions if any and create new paxos instance
 				if(pism.getVersion()-findGroup.getVersion()<0) this.kill(pism);
 				this.createPaxosInstance(findGroup.getPaxosID(), findGroup.getVersion(), 
-						this.myID, this.nodeMap.get(Util.arrayToIntSet(findGroup.group)), myApp, null, false);
+						this.myID, this.integerMap.get(Util.arrayToIntSet(findGroup.group)), myApp, null, false);
 			}
 		}
 		try {
@@ -659,7 +647,6 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	protected synchronized void waitRecover() throws InterruptedException {wait();}
 	protected InterfaceJSONNIOTransport<NodeIDType> getNIOTransport() {return this.FD.getNIOTransport();}
 
-	@Test
 	public static void main(String[] args) {
 		int nNodes = 3;
 		TreeSet<Integer> gms = new TreeSet<Integer>();

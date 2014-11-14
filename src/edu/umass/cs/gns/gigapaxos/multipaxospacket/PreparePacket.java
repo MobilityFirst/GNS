@@ -7,7 +7,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
 
 
 public final class PreparePacket extends PaxosPacket {
-	protected final static String COORDINATOR="coordinatorID";
+	//protected final static String COORDINATOR="coordinatorID";
 
 	public final int coordinatorID;
 	public final Ballot ballot;
@@ -47,7 +47,6 @@ public final class PreparePacket extends PaxosPacket {
 
 	public PreparePacket fixPreparePacketReceiver(int rcvrID) {
 		PreparePacket prepare = (this.receiverID!=rcvrID ? new PreparePacket(rcvrID, this) : this);
-		//prepare.putPaxosID(this.getPaxosID(), this.version);
 		return prepare;
 	}
 
@@ -55,11 +54,11 @@ public final class PreparePacket extends PaxosPacket {
 		super(json);
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE); // coz class is final
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.coordinatorID = json.getInt(COORDINATOR);
-		this.receiverID = json.getInt("receiverID");
-		this.ballot = new Ballot(json.getString("ballot"));
-		this.firstUndecidedSlot = json.getInt("slotNumber");
-		this.recovery = json.getBoolean(RECOVERY);
+		this.coordinatorID = json.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
+		this.receiverID = json.getInt(PaxosPacket.NodeIDKeys.RECEIVER.toString());
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
+		this.firstUndecidedSlot = json.getInt(PaxosPacket.Keys.FIRST_UNDECIDED_SLOT.toString());
+		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
 	}
 
 
@@ -67,11 +66,11 @@ public final class PreparePacket extends PaxosPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException
 	{
 		JSONObject json = new JSONObject();
-		json.put(COORDINATOR, coordinatorID);
-		json.put("receiverID", receiverID);
-		json.put("ballot", ballot.toString());
-		json.put("slotNumber", firstUndecidedSlot);
-		json.put(RECOVERY, recovery);
+		json.put(PaxosPacket.NodeIDKeys.COORDINATOR.toString(), coordinatorID);
+		json.put(PaxosPacket.NodeIDKeys.RECEIVER.toString(), receiverID);
+		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
+		json.put(PaxosPacket.Keys.FIRST_UNDECIDED_SLOT.toString(), firstUndecidedSlot);
+		json.put(PaxosPacket.Keys.RECOVERY.toString(), recovery);
 
 		return json;
 	}

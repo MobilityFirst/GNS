@@ -651,7 +651,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		// extract next in-order decision
 		while((inorderDecision = this.paxosState.putAndRemoveNextExecutable(loggedDecision))!=null) { 
 			if(DEBUG) log.info(this.getNodeState() + " in-order commit: "+inorderDecision); 
-			if(inorderDecision.ballot.coordinatorID==this.myID && !inorderDecision.isRecovery()) 
+			if(!inorderDecision.isRecovery() && (inorderDecision.ballot.coordinatorID==this.myID ||
+					inorderDecision.getDecisionIssuer()==this.myID)) 
 				inorderDecision.setReplyToClient(true); // used only for testing
 
 			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
@@ -659,7 +660,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			String pid = this.getPaxosID();
 			while(!executed) {
 				executed = this.clientRequestHandler.handleDecision(pid, 
-						inorderDecision.toString(), false);
+						inorderDecision.toString(), inorderDecision.isRecovery());
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
 			} execCount++;
 
@@ -889,7 +890,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		for(Iterator<PValuePacket> pvalueIterator = missingDecisions.iterator(); pvalueIterator.hasNext();) {
 			PValuePacket pvalue = pvalueIterator.next();
 			if(!syncReply.missingSlotNumbers.contains(pvalue.slot)) pvalueIterator.remove(); // filter non-missing
-			assert(!pvalue.isRecovery());
+			assert(!pvalue.isRecovery()); // pvalues received over the network automatically have RECOVERY flag reset
 		}
 		MessagingTask unicasts = missingDecisions.isEmpty() ? null : new MessagingTask(syncReply.nodeID, 
 				MessagingTask.toPaxosPacketArray(missingDecisions.toArray()));

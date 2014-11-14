@@ -39,7 +39,6 @@ public class TESTPaxosClient {
 	private int noopCount=0;
 	private int executedCount=0;
 	private int preRecoveryExecutedCount=0;
-	
 
 	private ConcurrentHashMap<Integer,RequestPacket> requests = new ConcurrentHashMap<Integer,RequestPacket>();
 
@@ -59,6 +58,8 @@ public class TESTPaxosClient {
 	private synchronized void setPreRecoveryCount(int prc) {if(this.executedCount==0) this.preRecoveryExecutedCount=prc;}
 	private synchronized int getPreRecoveryCount() {return this.preRecoveryExecutedCount;}
 
+	synchronized void close() {this.niot.stop();}
+	
 	private class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer {
 		private final TESTPaxosClient client;
 		private ClientPacketDemultiplexer(TESTPaxosClient tpc) {
@@ -249,7 +250,9 @@ public class TESTPaxosClient {
 					Util.df(numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)) + "\n" +
 					"Total no-op count (overall) = " + TESTPaxosClient.getTotalNoopCount() +"\n" +
 					"Average response time of just the second run (not overall) = " + TESTPaxosClient.getAvgLatency());
-			System.exit(1);
+			for(TESTPaxosClient client : clients) {
+				client.close();
+			}
 		} catch(Exception e) {
 			e.printStackTrace();
 		}

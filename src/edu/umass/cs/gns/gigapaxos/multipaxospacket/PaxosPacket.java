@@ -13,6 +13,22 @@ import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
  */
 public abstract class PaxosPacket implements PacketInterface {
 
+	public static enum Keys {PAXOS_PACKET_TYPE, PAXOS_ID, PAXOS_VERSION, 
+		SLOT, MEDIAN_COMMITTED_SLOT, ACCEPTED_MAP, RECOVERY, COMMITTED_SLOT, 
+		STATE, MAX_SLOT, MISSING, IS_MISSING_TOO_MUCH, FIRST_UNDECIDED_SLOT
+	}
+	/* These are keys involving NodeIDType that need to be "fixed" by 
+	 * Messenger just before sending and by PaxosPacketDemultiplexer
+	 * just after being received. The former fix involves a
+	 * int->NodeIDType->String conversion and the latter involves a
+	 * String->NodeIDType->int conversion. The former requires 
+	 * IntegerMap<NodeIDType> and the latter requires 
+	 * Stringifiable<NodeIDTpe>.
+	 */
+	public static enum NodeIDKeys {SENDER_NODE, BALLOT, COORDINATOR, 
+		RECEIVER, GROUP, FORWARDER_ID, DECISION_ISSUER
+	}
+	
 	public static final String PAXOS_PACKET_TYPE = "PAXOS_PACKET_TYPE"; // Name of packet type field in JSON representation
 	public static final String PAXOS_ID = "PAXOS_ID";
 	public static final String PAXOS_VERSION = "PAXOS_VERSION";

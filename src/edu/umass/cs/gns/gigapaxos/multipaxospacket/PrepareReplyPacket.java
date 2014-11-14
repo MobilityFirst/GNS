@@ -15,7 +15,6 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public final Ballot ballot;
 	public final int receiverID;
 	public final Map<Integer, PValuePacket> accepted;
-	//public  final int acceptorGCSlot; // not quite final--see toJSONObjectImpl()
 
 	public PrepareReplyPacket(int coordinatorID, int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted) {
 		super(accepted==null || accepted.isEmpty() ? (PaxosPacket)null : accepted.values().iterator().next());
@@ -23,7 +22,6 @@ public class PrepareReplyPacket extends PaxosPacket {
 		this.receiverID = receiverID;
 		this.ballot = ballot;
 		this.accepted = accepted==null ? new HashMap<Integer,PValuePacket>() : accepted;
-		//this.acceptorGCSlot = getMinSlot(accepted);
 		this.packetType = PaxosPacketType.PREPARE_REPLY;
 	}
 
@@ -32,17 +30,16 @@ public class PrepareReplyPacket extends PaxosPacket {
 		super(json);
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE_REPLY);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.coordinatorID = json.getInt("coordinatorID");
-		this.receiverID = json.getInt("receiverID");
-		this.ballot = new Ballot(json.getString("ballot"));
-		//this.acceptorGCSlot = json.getInt("slotNumber");
+		this.coordinatorID = json.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
+		this.receiverID = json.getInt(PaxosPacket.NodeIDKeys.RECEIVER.toString());
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
 		this.accepted = parseJsonForAccepted(json);
 	}
 
 	private HashMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json) throws JSONException {
 		HashMap<Integer, PValuePacket> accepted = new HashMap<Integer, PValuePacket>();
-		if (json.has("accepted")) {
-			JSONArray jsonArray = json.getJSONArray("accepted");
+		if (json.has(PaxosPacket.Keys.ACCEPTED_MAP.toString())) {
+			JSONArray jsonArray = json.getJSONArray(PaxosPacket.Keys.ACCEPTED_MAP.toString());
 			for (int i = 0; i < jsonArray.length(); i++) {
 				JSONObject element = jsonArray.getJSONObject(i);
 				PValuePacket pval = new PValuePacket(element);
@@ -57,15 +54,9 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException
 	{
 		JSONObject json = new JSONObject();
-		json.put("coordinatorID", coordinatorID);
-		json.put("receiverID", receiverID);
-		json.put("ballot", ballot.toString());
-		/* We need to recompute min slot because PaxosInstanceStateMachine
-		 * may have added new accepted pvalues (from disk) to the public
-		 * field this.accepted. The alternative would be to make the 
-		 * acceptedGCSlot field private.
-		 */
-		//json.put("slotNumber", getMinSlot(this.accepted));
+		json.put(PaxosPacket.NodeIDKeys.COORDINATOR.toString(), coordinatorID);
+		json.put(PaxosPacket.NodeIDKeys.RECEIVER.toString(), receiverID);
+		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
 		assert(this.packetType == PaxosPacketType.PREPARE_REPLY);
 		addAcceptedToJSON(json);
 		return json;
@@ -90,7 +81,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 			for (PValuePacket pValue : accepted.values()) {
 				jsonArray.put(pValue.toJSONObject());
 			}
-			json.put("accepted", jsonArray);
+			json.put(PaxosPacket.Keys.ACCEPTED_MAP.toString(), jsonArray);
 		}
 	}
 

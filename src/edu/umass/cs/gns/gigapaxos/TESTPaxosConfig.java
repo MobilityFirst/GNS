@@ -49,9 +49,9 @@ public class TESTPaxosConfig {
 
 	/**************** Load parameters *******************/
 	public static final int NUM_CLIENTS = 10; // 1;// 4 default
-	public static final int NUM_REQUESTS = 2000; // 20;  // 40000 default
+	public static final int NUM_REQUESTS = 5000; // 20;  // 40000 default
 	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
-	public static final double TOTAL_LOAD = 1000; // 2000 reqs/sec default (across all clients)
+	public static final double TOTAL_LOAD = 500; // 2000 reqs/sec default (across all clients)
 	/***********************************************************/
 
 	public static final int DEFAULT_INIT_PORT = SampleNodeConfig.DEFAULT_START_PORT;

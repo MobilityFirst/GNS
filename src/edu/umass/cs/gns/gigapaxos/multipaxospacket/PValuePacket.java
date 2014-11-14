@@ -13,18 +13,18 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
  */
 
 public class PValuePacket extends ProposalPacket {
-	protected static final String BALLOT = "ballot";
-	private static final String MCSLOT = "slotCommitted@Majority";
 
 	public final Ballot ballot;
 	public final boolean recovery;
 	private int majorityCommittedSlot; // for garbage collection, similar to that in AcceptPacket
+	private int decisionIssuer=-1; // issuer of the decision that in general may be different from the ballot coordinator
 	
 	public PValuePacket(Ballot b, ProposalPacket p) {
     	super(p);
 		this.ballot = b;
 		this.majorityCommittedSlot=-1;
 		// packetType inherited, not assigned until DECISION or PREEMPTED
+		this.decisionIssuer = b.coordinatorID;
 		this.recovery = false;
 	}
 	// Meant for super calling by inheritors
@@ -34,13 +34,16 @@ public class PValuePacket extends ProposalPacket {
 		this.majorityCommittedSlot = pvalue.majorityCommittedSlot;
 		this.packetType = pvalue.getType();
 		this.recovery = false; //pvalue.recovery;
+		this.decisionIssuer = pvalue.decisionIssuer;
 	}
 
-	public PValuePacket makeDecision(int mcSlot) {
+	public PValuePacket makeDecision(int mcSlot, int issuer) {
 		this.packetType = PaxosPacketType.DECISION;
 		this.majorityCommittedSlot = mcSlot;
+		this.decisionIssuer = issuer;
 		return new PValuePacket(this); // can't modify recovery, so new
 	}
+	public int getDecisionIssuer() {return this.decisionIssuer;}
 	public PValuePacket preempt() {
 		this.packetType = PaxosPacketType.PREEMPTED; // preemption does not change final fields, unlike getDecisionPacket
 		return this;
@@ -58,18 +61,20 @@ public class PValuePacket extends ProposalPacket {
 
 	public PValuePacket(JSONObject json) throws JSONException{
 		super(json);
-		this.ballot = new Ballot(json.getString(BALLOT));
-		this.majorityCommittedSlot = json.getInt(MCSLOT);
-		this.recovery = json.getBoolean(RECOVERY);
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
+		this.majorityCommittedSlot = json.getInt(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString());
+		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
+		this.decisionIssuer = json.getInt(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString());
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		json.put(BALLOT, ballot.toString());
-		json.put(MCSLOT, this.majorityCommittedSlot);
-		json.put(RECOVERY, recovery);
+		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
+		json.put(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString(), this.majorityCommittedSlot);
+		json.put(PaxosPacket.Keys.RECOVERY.toString(), recovery);
+		json.put(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString(), this.decisionIssuer);
 		return json;
 	}
 

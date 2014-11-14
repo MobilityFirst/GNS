@@ -19,11 +19,6 @@ public final class SyncDecisionsPacket extends PaxosPacket{
 	public final ArrayList<Integer> missingSlotNumbers;
 	public final boolean missingTooMuch; // can be computed from missingSlotNumbers, but can also be specified explicitly by sender
 
-	private final static String NODE = "NODE_ID";
-	private final static String MAX_SLOT = "MAX_SLOT";
-	private final static String MISSING = "MISSING";
-	private final static String FLAG = "MISSING_TOO_MUCH";
-
 	public SyncDecisionsPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
 		super((PaxosPacket)null);
 		this.missingTooMuch = flag;
@@ -35,12 +30,12 @@ public final class SyncDecisionsPacket extends PaxosPacket{
 
 	public SyncDecisionsPacket(JSONObject json) throws JSONException{
 		super(json);
-		this.nodeID = json.getInt(NODE);
-		this.maxDecisionSlot = json.getInt(MAX_SLOT);
-		if (json.has(MISSING))
-			missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));
+		this.nodeID = json.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
+		this.maxDecisionSlot = json.getInt(PaxosPacket.Keys.MAX_SLOT.toString());
+		if (json.has(PaxosPacket.Keys.MISSING.toString()))
+			missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(PaxosPacket.Keys.MISSING.toString()));
 		else missingSlotNumbers = null;
-		this.missingTooMuch = json.getBoolean(FLAG);
+		this.missingTooMuch = json.getBoolean(PaxosPacket.Keys.IS_MISSING_TOO_MUCH.toString());
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.SYNC_DECISIONS || PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_REQUEST); // coz class is final
 		this.packetType = PaxosPacketType.SYNC_DECISIONS;
 	}
@@ -48,11 +43,11 @@ public final class SyncDecisionsPacket extends PaxosPacket{
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(NODE, nodeID);
-		json.put(MAX_SLOT, maxDecisionSlot);
-		json.put(FLAG,missingTooMuch);
+		json.put(PaxosPacket.NodeIDKeys.SENDER_NODE.toString(), nodeID);
+		json.put(PaxosPacket.Keys.MAX_SLOT.toString(), maxDecisionSlot);
+		json.put(PaxosPacket.Keys.IS_MISSING_TOO_MUCH.toString(),missingTooMuch);
 		if (missingSlotNumbers!= null && missingSlotNumbers.size()>0)
-			json.put(MISSING, new JSONArray(missingSlotNumbers));
+			json.put(PaxosPacket.Keys.MISSING.toString(), new JSONArray(missingSlotNumbers));
 		return json;
 	}
 }

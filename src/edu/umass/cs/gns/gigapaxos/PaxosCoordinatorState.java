@@ -33,7 +33,7 @@ import edu.umass.cs.gns.util.NullIfEmptyMap;
 @author V. Arun
  */
 public class PaxosCoordinatorState  {
-	private static final String NO_OP = RequestPacket.NO_OP;
+	private static final String NO_OP = RequestPacket.Keys.NO_OP.toString();
 	private static final String STOP = "STOP";
 	private static final int PREPARE_TIMEOUT = 60000; // ms, should be int, not long
 	private static final int ACCEPT_TIMEOUT = 60000; // ms
@@ -448,7 +448,7 @@ public class PaxosCoordinatorState  {
 			if(waitfor.heardFromMajority()) {
 				// phase2b success
 				acceptedByMajority=true;
-				decision = ifNotTooDelayed(pstate.pValuePacket.makeDecision(getMajorityCommittedSlot()));
+				decision = ifNotTooDelayed(pstate.pValuePacket.makeDecision(getMajorityCommittedSlot(), this.myBallotCoord));
 				assert(!decision.isRecovery());
 				this.myProposals.remove(decision.slot);
 			} else 	pstate.pValuePacket.addDebugInfo("r");
@@ -632,7 +632,7 @@ public class PaxosCoordinatorState  {
 		if(pvalue!=null) proposalPacket = new ProposalPacket(curSlot, pvalue.makeNoop());
 		else proposalPacket = new ProposalPacket(curSlot, new RequestPacket(0,0,NO_OP,false));
 		PValuePacket noop = new PValuePacket(new Ballot(this.myBallotNum, this.myBallotCoord), proposalPacket);
-		return noop.makeDecision(this.getMajorityCommittedSlot());
+		return noop.makeDecision(this.getMajorityCommittedSlot(), this.myBallotCoord);
 	}
 	private PValuePacket makeNoopPValue(PValuePacket pvalue) {
 		return this.makeNoopPValue(pvalue.slot, pvalue);

@@ -1,13 +1,13 @@
-package edu.umass.cs.gns.gigapaxos;
+package edu.umass.cs.gns.gigapaxos.deprecated;
 
 import java.security.MessageDigest;
 import java.util.HashMap;
-import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.gigapaxos.TESTPaxosConfig;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
 
 /**
@@ -30,11 +30,10 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 		protected int numExecuted=0;
 		protected HashMap<Integer,String> committed = new HashMap<Integer,String>();
 	}
-	private static Logger log = Logger.getLogger(DefaultPaxosInterfaceApp.class.getName()); // GNS.getLogger();
 
 	DefaultPaxosInterfaceApp() {
 		try {
-			this.md = MessageDigest.getInstance("SHA");
+			md = MessageDigest.getInstance("SHA");
 		} catch(Exception e) {e.printStackTrace();}
 	}
 	@Override
