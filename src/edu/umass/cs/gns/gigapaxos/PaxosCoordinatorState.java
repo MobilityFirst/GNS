@@ -653,7 +653,7 @@ public class PaxosCoordinatorState  {
 		for(int i=0; i<this.nodeSlotNumbers.length; i++) {
 			if(this.nodeSlotNumbers[i] > maxSlot) maxSlot = this.nodeSlotNumbers[i];
 		}
-		return maxSlot+1; // the first adopted slot is the GC slot plus 1
+		return maxSlot; // the first adopted slot is the GC slot plus 1
 	}
 	private PValuePacket ifNotTooDelayed(PValuePacket pvalue) {
 		return pvalue.hasTakenTooLong() && !pvalue.recovery? this.makeNoopPValue(pvalue) : pvalue;
