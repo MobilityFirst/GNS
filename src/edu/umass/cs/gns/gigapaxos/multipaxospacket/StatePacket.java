@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.gigapaxos.multipaxospacket;
 
 import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,6 +38,10 @@ public final class StatePacket extends PaxosPacket{
 		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), this.ballot.ballotNumber+":"+this.ballot.coordinatorID);
 		json.put(PaxosPacket.Keys.STATE.toString(), this.state);
 		return json;
+	}
+	
+	public static StatePacket getStatePacket(SlotBallotState sbs) {
+		return new StatePacket(new Ballot(sbs.ballotnum, sbs.coordinator), sbs.slot, sbs.state);
 	}
 
 }

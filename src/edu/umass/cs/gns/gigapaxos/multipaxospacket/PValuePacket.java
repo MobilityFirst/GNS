@@ -15,7 +15,8 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
 public class PValuePacket extends ProposalPacket {
 
 	public final Ballot ballot;
-	public final boolean recovery;
+	
+	private boolean recovery;
 	private int majorityCommittedSlot; // for garbage collection, similar to that in AcceptPacket
 	private int decisionIssuer=-1; // issuer of the decision that in general may be different from the ballot coordinator
 	
@@ -25,7 +26,7 @@ public class PValuePacket extends ProposalPacket {
 		this.majorityCommittedSlot=-1;
 		// packetType inherited, not assigned until DECISION or PREEMPTED
 		this.decisionIssuer = b.coordinatorID;
-		this.recovery = false;
+		this.recovery = false; // true only when created from json
 	}
 	// Meant for super calling by inheritors
 	protected PValuePacket(PValuePacket pvalue) {
@@ -33,10 +34,19 @@ public class PValuePacket extends ProposalPacket {
 		this.ballot = pvalue.ballot;
 		this.majorityCommittedSlot = pvalue.majorityCommittedSlot;
 		this.packetType = pvalue.getType();
-		this.recovery = false; //pvalue.recovery;
+		this.recovery = false; // true only when created from json
 		this.decisionIssuer = pvalue.decisionIssuer;
 	}
 
+	public PValuePacket(JSONObject json) throws JSONException{
+		super(json);
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
+		this.majorityCommittedSlot = json.getInt(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString());
+		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
+		this.packetType = PaxosPacket.getPaxosPacketType(json);
+		this.decisionIssuer = json.getInt(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString());
+	}
+	
 	public PValuePacket makeDecision(int mcSlot, int issuer) {
 		this.packetType = PaxosPacketType.DECISION;
 		this.majorityCommittedSlot = mcSlot;
@@ -52,6 +62,9 @@ public class PValuePacket extends ProposalPacket {
 	public boolean isRecovery() {
 		return this.recovery;
 	}
+	public void setRecovery() {
+		this.recovery = true;
+	}
 	/* A convenience method for when we really need a RequestPacket, not a deeper
 	 * inherited PaxosPacket, e.g., when forwarding a preempted pvalue to the
 	 * current, new coordinator to re-propose. Else, we would need to explicitly
@@ -59,24 +72,14 @@ public class PValuePacket extends ProposalPacket {
 	 */
 	public RequestPacket getRequestPacket() {return new RequestPacket(this);}
 
-	public PValuePacket(JSONObject json) throws JSONException{
-		super(json);
-		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
-		this.majorityCommittedSlot = json.getInt(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString());
-		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
-		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.decisionIssuer = json.getInt(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString());
-	}
-
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
 		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
 		json.put(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString(), this.majorityCommittedSlot);
-		json.put(PaxosPacket.Keys.RECOVERY.toString(), recovery);
+		json.put(PaxosPacket.Keys.RECOVERY.toString(), this.recovery);
 		json.put(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString(), this.decisionIssuer);
 		return json;
 	}
-
 }
 

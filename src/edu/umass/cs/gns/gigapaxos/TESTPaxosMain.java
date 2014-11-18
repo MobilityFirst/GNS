@@ -107,7 +107,6 @@ public class TESTPaxosMain {
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
 
-
 			long t2=System.currentTimeMillis();
 
 			TESTPaxosClient.printOutput(clients);	
@@ -115,13 +114,21 @@ public class TESTPaxosMain {
 					Util.df(numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)) + "\n" +
 					"Total no-op count (overall) = " + TESTPaxosClient.getTotalNoopCount() +"\n" +
 					"Average response time of just the second run (not overall) = " + TESTPaxosClient.getAvgLatency());
+			/*
 			for(int i=0; i<3; i++) {
 				PaxosManager.waitToFinishAll(); //static
+				System.out.println(i + ": after PM.waitToFinishAll()");
 				AbstractPaxosLogger.waitToFinishAll(); //static
+				System.out.println(i + ": after APL.waitToFinishAll()");
 				Thread.sleep(1000);
 			}
-			for(TESTPaxosNode node : tpMain.nodes.values()) node.close(); // can only close after all nodes have finished
+			*/
+			for(TESTPaxosNode node : tpMain.nodes.values()) {
+				node.close(); // can only close after all nodes have finished
+			}
+			System.out.println("after node.close() all");
 			for(TESTPaxosClient client : clients) client.close();
+			System.out.println("after client.close() all");
 			System.out.println(PaxosInstrumenter.getStats());
 		} catch(Exception e) {e.printStackTrace();System.exit(1);}
 	}

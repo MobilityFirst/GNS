@@ -117,8 +117,7 @@ public class PaxosCoordinator {
 				/* Can ignore return value of preActiveProposals below as handleAcceptReplyHigherBallot 
 				 * returns true only if there are no proposals at this coordinator.
 				 */
-				//if(DEBUG) 
-				log.info("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + 
+				if(DEBUG) log.info("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + 
 						acceptReply.slotNumber + ", " + acceptReply.getPaxosID());
 				assert(preemptedPValue.ballot.compareTo(acceptReply.ballot) < 0);
 				if(pcs.preemptedFully()) {

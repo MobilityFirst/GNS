@@ -10,9 +10,6 @@ public final class AcceptPacket extends PValuePacket {
 	public final int nodeID; // sender nodeID
 	public final int majorityCommittedSlot; 	// slot number up to which a majority have committed
 
-	//protected static final String NODE = "node";
-	//private static final String SLOT = "slotCommitted@Majority";
-
 	public AcceptPacket(int nodeID, PValuePacket pValue, int slotNumber) {
 		super(pValue);
 		this.packetType = PaxosPacketType.ACCEPT;
@@ -35,7 +32,6 @@ public final class AcceptPacket extends PValuePacket {
 		JSONObject json = super.toJSONObjectImpl();
 		json.put(Keys.SENDER_NODE.toString(), nodeID);
 		json.put(Keys.MAJORITY_COMMITTED_SLOT.toString(), majorityCommittedSlot);
-		json.put(RECOVERY, this.recovery);
 		return json;
 	}
 }

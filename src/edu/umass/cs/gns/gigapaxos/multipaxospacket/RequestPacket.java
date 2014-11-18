@@ -12,8 +12,8 @@ public class RequestPacket extends PaxosPacket {
 	/* These are rather specific to RequestPacket or for
 	 * debugging, so they are here as opposed to PaxosPacket.
 	 */
-	public static enum Keys {NO_OP, CLIENT_INFO, CREATE_TIME,
-		RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, 
+	public static enum Keys {NO_OP, IS_STOP, CLIENT_INFO, CREATE_TIME,
+		RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID,
 		DEBUG_INFO
 	}
 	private static final long MAX_AGREEMENT_TIME = 30000;
@@ -116,8 +116,8 @@ public class RequestPacket extends PaxosPacket {
 		this.receiptTime = json.getLong(Keys.RECEIPT_TIME.toString());
 		this.replyToClient = json.getBoolean(Keys.REPLY_TO_CLIENT.toString());
 		this.forwardCount = (json.has(Keys.FORWARD_COUNT.toString()) ? json.getInt(Keys.FORWARD_COUNT.toString()) : 0);
-		this.forwarderID = (json.has(PaxosPacket.NodeIDKeys.FORWARDER_ID.toString()) ? 
-				json.getInt(PaxosPacket.NodeIDKeys.FORWARDER_ID.toString()) : -1);
+		this.forwarderID = (json.has(RequestPacket.Keys.FORWARDER_ID.toString()) ? 
+				json.getInt(RequestPacket.Keys.FORWARDER_ID.toString()) : -1);
 		this.debugInfo = (json.has(Keys.DEBUG_INFO.toString()) ? json.getString(Keys.DEBUG_INFO.toString()) : "");
 	}
 
@@ -133,7 +133,8 @@ public class RequestPacket extends PaxosPacket {
 		json.put(Keys.RECEIPT_TIME.toString(), this.receiptTime);
 		json.put(Keys.REPLY_TO_CLIENT.toString(), replyToClient);
 		json.put(Keys.FORWARD_COUNT.toString(), this.forwardCount);
-		json.put(PaxosPacket.NodeIDKeys.FORWARDER_ID.toString(), this.forwarderID);
+		json.put(RequestPacket.Keys.FORWARDER_ID.toString(), this.forwarderID);
+		json.put(Keys.IS_STOP.toString(), this.stop);
 		if(DEBUG) json.put(Keys.DEBUG_INFO.toString(), this.debugInfo);
 		return json;
 	}

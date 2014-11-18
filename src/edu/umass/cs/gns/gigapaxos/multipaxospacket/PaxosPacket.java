@@ -8,63 +8,59 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
-/**  
-@author V. Arun. 
+
+/**
+ * @author V. Arun.
  */
 public abstract class PaxosPacket implements PacketInterface {
 
-	public static enum Keys {PAXOS_PACKET_TYPE, PAXOS_ID, PAXOS_VERSION, 
-		SLOT, MEDIAN_COMMITTED_SLOT, ACCEPTED_MAP, RECOVERY, COMMITTED_SLOT, 
-		STATE, MAX_SLOT, MISSING, IS_MISSING_TOO_MUCH, FIRST_UNDECIDED_SLOT
+	public static enum Keys {
+		PAXOS_PACKET_TYPE, PAXOS_ID, PAXOS_VERSION, SLOT, MEDIAN_COMMITTED_SLOT, ACCEPTED_MAP, RECOVERY, COMMITTED_SLOT, STATE, MAX_SLOT, MISSING, IS_MISSING_TOO_MUCH, FIRST_UNDECIDED_SLOT
 	}
-	/* These are keys involving NodeIDType that need to be "fixed" by 
+
+	/*
+	 * These are keys involving NodeIDType that need to be "fixed" by
 	 * Messenger just before sending and by PaxosPacketDemultiplexer
 	 * just after being received. The former fix involves a
 	 * int->NodeIDType->String conversion and the latter involves a
-	 * String->NodeIDType->int conversion. The former requires 
-	 * IntegerMap<NodeIDType> and the latter requires 
+	 * String->NodeIDType->int conversion. The former requires
+	 * IntegerMap<NodeIDType> and the latter requires
 	 * Stringifiable<NodeIDTpe>.
 	 */
-	public static enum NodeIDKeys {SENDER_NODE, BALLOT, COORDINATOR, 
-		RECEIVER, GROUP, FORWARDER_ID, DECISION_ISSUER
+	public static enum NodeIDKeys {
+		SENDER_NODE, BALLOT, COORDINATOR, RECEIVER, GROUP, DECISION_ISSUER
 	}
-	
-	public static final String PAXOS_PACKET_TYPE = "PAXOS_PACKET_TYPE"; // Name of packet type field in JSON representation
+
+	public static final String PAXOS_PACKET_TYPE = "PAXOS_PACKET_TYPE"; // Name of packet type field in JSON
+																		// representation
 	public static final String PAXOS_ID = "PAXOS_ID";
 	public static final String PAXOS_VERSION = "PAXOS_VERSION";
-	
-	protected static final String RECOVERY = "RECOVERY"; // macro used by prepare, accept, pvalue
 
-	/* Every PaxosPacket has a minimum of the following three fields.
-	 * The fields paxosID and version are preserved across 
-	 * inheritances, e.g., ProposalPacket gets them from the 
-	 * corresponding RequestPacket it is extending. 
+	/*
+	 * Every PaxosPacket has a minimum of the following three fields.
+	 * The fields paxosID and version are preserved across
+	 * inheritances, e.g., ProposalPacket gets them from the
+	 * corresponding RequestPacket it is extending.
 	 */
 	protected PaxosPacketType packetType;
-	protected String paxosID=null;
-	protected short version=-1;
+	protected String paxosID = null;
+	protected short version = -1;
 
 	public enum PaxosPacketType implements IntegerPacketType {
-		RESPONSE ("RESPONSE", 0),
-		REQUEST ("REQUEST", 1),
-		PREPARE ("PREPARE", 2),
-		ACCEPT ("ACCEPT", 3),
-		RESEND_ACCEPT ("RESEND_ACCEPT", 4), 
-		PROPOSAL ("PROPOSAL", 5),
-		DECISION ("DECISION", 6),
-		PREPARE_REPLY ("PREPARE_REPLY", 7),
-		ACCEPT_REPLY ("ACCEPT_REPLY", 8),
-		FAILURE_DETECT ("FAILURE_DETECT", 9),
-		PREEMPTED ("PREEMPTED", 13),
-		CHECKPOINT_STATE ("CHECKPOINT_STATE", 21),
-		CHECKPOINT_REQUEST ("CHECKPOINT_REQUEST", 23),
-		SYNC_REQUEST ("SYNC_REQUEST", 31),
-		SYNC_DECISIONS ("SYNC_DECISIONS", 32), 
-		FIND_REPLICA_GROUP ("FIND_REPLICA_GROUP", 33),
-		NO_TYPE ("NO_TYPE", 9999);
+		RESPONSE("RESPONSE", 0), REQUEST("REQUEST", 1), PREPARE("PREPARE", 2), ACCEPT(
+				"ACCEPT", 3), RESEND_ACCEPT("RESEND_ACCEPT", 4), PROPOSAL(
+				"PROPOSAL", 5), DECISION("DECISION", 6), PREPARE_REPLY(
+				"PREPARE_REPLY", 7), ACCEPT_REPLY("ACCEPT_REPLY", 8), FAILURE_DETECT(
+				"FAILURE_DETECT", 9), PREEMPTED("PREEMPTED", 13), CHECKPOINT_STATE(
+				"CHECKPOINT_STATE", 21), CHECKPOINT_REQUEST(
+				"CHECKPOINT_REQUEST", 23), SYNC_REQUEST("SYNC_REQUEST", 31), SYNC_DECISIONS(
+				"SYNC_DECISIONS", 32), FIND_REPLICA_GROUP("FIND_REPLICA_GROUP",
+				33), NO_TYPE("NO_TYPE", 9999);
 
-		private static HashMap<String,PaxosPacketType> labels = new HashMap<String,PaxosPacketType>();
-		private static HashMap<Integer,PaxosPacketType> numbers = new HashMap<Integer,PaxosPacketType>();
+		private static HashMap<String, PaxosPacketType> labels =
+				new HashMap<String, PaxosPacketType>();
+		private static HashMap<Integer, PaxosPacketType> numbers =
+				new HashMap<Integer, PaxosPacketType>();
 
 		private final String label;
 		private final int number;
@@ -76,67 +72,80 @@ public abstract class PaxosPacket implements PacketInterface {
 
 		/************** BEGIN static code block to ensure correct initialization **************/
 		static {
-			for(PaxosPacketType type : PaxosPacketType.values()) {
-				if(!PaxosPacketType.labels.containsKey(type.label) && !PaxosPacketType.numbers.containsKey(type.number)) {
+			for (PaxosPacketType type : PaxosPacketType.values()) {
+				if (!PaxosPacketType.labels.containsKey(type.label) &&
+						!PaxosPacketType.numbers.containsKey(type.number)) {
 					PaxosPacketType.labels.put(type.label, type);
 					PaxosPacketType.numbers.put(type.number, type);
-				} else {
-					assert(false) : "Duplicate or inconsistent enum type";
-					throw new RuntimeException("Duplicate or inconsistent enum type");
+				}
+				else {
+					assert (false) : "Duplicate or inconsistent enum type";
+					throw new RuntimeException(
+							"Duplicate or inconsistent enum type");
 				}
 			}
 		}
+
 		/**************** END static code block to ensure correct initialization **************/
 
 		public int getInt() {
 			return number;
 		}
+
 		public String getLabel() {
 			return label;
 		}
+
 		public String toString() {
 			return getLabel();
 		}
+
 		public static PaxosPacketType getPaxosPacketType(int type) {
 			return PaxosPacketType.numbers.get(type);
 		}
+
 		public static PaxosPacketType getPaxosPacketType(String type) {
 			return PaxosPacketType.labels.get(type);
 		}
 	}
 
-	public static PaxosPacketType getPaxosPacketType(JSONObject json) throws JSONException {
+	public static PaxosPacketType getPaxosPacketType(JSONObject json)
+			throws JSONException {
 		return PaxosPacketType.getPaxosPacketType(json.getInt(PaxosPacket.PAXOS_PACKET_TYPE));
 	}
 
 	public abstract JSONObject toJSONObjectImpl() throws JSONException;
 
-	/* PaxosPacket has no no-arg constructor for a good reason. All
-	 * classes extending PaxosPacket must in their constructors 
+	/*
+	 * PaxosPacket has no no-arg constructor for a good reason. All
+	 * classes extending PaxosPacket must in their constructors
 	 * invoke super(JSONObject) or super(PaxosPacket) as a PaxosPacket
-	 * is typically created only in one of those two ways. If a 
+	 * is typically created only in one of those two ways. If a
 	 * PaxosPacket is being created from nothing, the child should
-	 * explicitly acknowledge that fact by invoking 
+	 * explicitly acknowledge that fact by invoking
 	 * super((PaxosPacket)null), thereby acknowledging that paxosID
-	 * is not set and is not meant to be set. Otherwise it is all 
-	 * too easy to forget to stamp a paxosID into a PaxosPacket. 
-	 * This is problematic when we create a new PaxosPacket 
-	 * internally and consume it internally within a paxos instance. 
-	 * A PaxosPacket that is coming in and, by consequence, any 
-	 * PaxosPacket that has been sent out of a paxos instance will 
+	 * is not set and is not meant to be set. Otherwise it is all
+	 * too easy to forget to stamp a paxosID into a PaxosPacket.
+	 * This is problematic when we create a new PaxosPacket
+	 * internally and consume it internally within a paxos instance.
+	 * A PaxosPacket that is coming in and, by consequence, any
+	 * PaxosPacket that has been sent out of a paxos instance will
 	 * have a good paxosID, so we don't need to worry about those.
 	 */
 	protected PaxosPacket(PaxosPacket pkt) {
-		if(pkt!=null) {
+		if (pkt != null) {
 			this.paxosID = pkt.paxosID;
 			this.version = pkt.version;
 		}
 	}
+
 	protected PaxosPacket(JSONObject json) throws JSONException {
 		// Need to call Packet.putPacketType only when going to (not from) JSON
-		if(json!=null) {
-			if(json.has(PaxosPacket.PAXOS_ID)) this.paxosID = json.getString(PaxosPacket.PAXOS_ID);
-			if(json.has(PaxosPacket.PAXOS_VERSION)) this.version = (short)json.getInt(PaxosPacket.PAXOS_VERSION);
+		if (json != null) {
+			if (json.has(PaxosPacket.PAXOS_ID))
+				this.paxosID = json.getString(PaxosPacket.PAXOS_ID);
+			if (json.has(PaxosPacket.PAXOS_VERSION))
+				this.version = (short) json.getInt(PaxosPacket.PAXOS_VERSION);
 		}
 	}
 
@@ -147,34 +156,35 @@ public abstract class PaxosPacket implements PacketInterface {
 		json.put(PaxosPacket.PAXOS_ID, this.paxosID);
 		json.put(PaxosPacket.PAXOS_VERSION, this.version);
 
-		// copy over child fields, can also call child first and copy parent fields 
+		// copy over child fields, can also call child first and copy parent fields
 		JSONObject child = toJSONObjectImpl();
-		for(String name : JSONObject.getNames(child)) {
+		for (String name : JSONObject.getNames(child)) {
 			json.put(name, child.get(name));
 		}
 
 		return json;
 	}
-	public PaxosPacketType getType() {return this.packetType;}
+
+	public PaxosPacketType getType() {
+		return this.packetType;
+	}
 
 	public void putPaxosID(String pid, short v) {
 		this.paxosID = pid;
 		this.version = v;
 	}
+
 	public String getPaxosID() {
 		return this.paxosID;
 	}
+
 	public short getVersion() {
 		return this.version;
 	}
-	
-	public static String setRecovery(PaxosPacket packet) throws JSONException {
-		JSONObject json = packet.toJSONObject();
-		json.put(RECOVERY, true);
-		return json.toString();
-	}
+
 	public static boolean isRecovery(JSONObject json) throws JSONException {
-		return json.has(RECOVERY) ? json.getBoolean(RECOVERY) : false;
+		return json.has(PaxosPacket.Keys.RECOVERY.toString()) ? json.getBoolean(PaxosPacket.Keys.RECOVERY.toString())
+				: false;
 	}
 
 	@Override
@@ -185,5 +195,48 @@ public abstract class PaxosPacket implements PacketInterface {
 			e.printStackTrace();
 			return null;
 		}
-	}	
+	}
+
+	/************* Type-specific methods below *******************/
+	public static PaxosPacket markRecovered(PaxosPacket packet) {
+		PaxosPacket.PaxosPacketType type = packet.getType();
+		switch (type) {
+		case PREPARE:
+			((PreparePacket) packet).setRecovery();
+			break;
+		case ACCEPT:
+			((AcceptPacket) packet).setRecovery();
+			break;
+		case DECISION:
+			((PValuePacket) packet).setRecovery();
+			break;
+		}
+		return packet;
+	}
+
+	/**
+	 * Returns a PaxosPacket if parseable from a string.
+	 * 
+	 * @throws JSONException
+	 */
+	public static PaxosPacket getPaxosPacket(String msg) throws JSONException {
+		PaxosPacket paxosPacket = null;
+		JSONObject jsonMsg = new JSONObject(msg);
+		PaxosPacketType type = PaxosPacket.getPaxosPacketType(jsonMsg);
+		switch (type) {
+		case PREPARE:
+			paxosPacket = new PreparePacket(jsonMsg);
+			break;
+		case ACCEPT:
+			paxosPacket = new AcceptPacket(jsonMsg);
+			break;
+		case DECISION:
+			paxosPacket = new PValuePacket(jsonMsg);
+			break;
+		default:
+			assert (false);
+		}
+		return paxosPacket;
+	}
+	/************* End of type-specific methods *******************/
 }

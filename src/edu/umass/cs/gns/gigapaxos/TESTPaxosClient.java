@@ -21,6 +21,7 @@ import edu.umass.cs.gns.util.Util;
  */
 public class TESTPaxosClient {
 	private static final long INITIAL_WARMUP_DELAY = 1000;
+	private static final int MAX_UNRESPONDED = 10;
 	private static final long createTime = System.currentTimeMillis();
 	private static final int random = (int)(Math.random()*TESTPaxosConfig.NUM_GROUPS);
 
@@ -143,9 +144,9 @@ public class TESTPaxosClient {
 		return clients;
 	}
 	protected static void sendTestRequests(int numReqs, TESTPaxosClient[] clients) throws JSONException, IOException{
-		System.out.println("\nInitiating test sending " + numReqs*TESTPaxosConfig.NUM_CLIENTS + 
+		System.out.print("\nInitiating test sending " + numReqs*TESTPaxosConfig.NUM_CLIENTS + 
 				" requests using " + TESTPaxosConfig.NUM_CLIENTS + " clients at an aggregate load of "+
-				TESTPaxosConfig.TOTAL_LOAD + " reqs/sec");
+				TESTPaxosConfig.TOTAL_LOAD + " reqs/sec...");
 		double interRequestInterval = 0;
 		for(int i=0; i<numReqs; i++) {
 			try {
@@ -166,10 +167,10 @@ public class TESTPaxosClient {
 				}
 			} catch(InterruptedException e) {e.printStackTrace();}
 		}
+		System.out.println("done sending requests");
 	}
 
 	protected static void waitForResponses(TESTPaxosClient[] clients) {
-		//waitForResponses(clients, true);
 		for(int i=0; i<TESTPaxosConfig.NUM_CLIENTS; i++) {
 			while(clients[i].requests.size()>0) {
 				if(clients[i].getReplyCount()%1==0) {
@@ -185,15 +186,26 @@ public class TESTPaxosClient {
 				} catch(InterruptedException e) {e.printStackTrace();}
 				System.out.println("Current aggregate throughput = "+ Util.df(getTotalThroughput(clients)));
 			}
-			//assert(clients[i].requests.isEmpty());
 		}
 	}
 	private static String getWaiting(TESTPaxosClient client) {
 		String s="[";
+		int count=0;
 		for(RequestPacket req : client.requests.values()) {
-			s += req.getPaxosID()+":"+req.requestID + " , ";
+			s += req.getPaxosID()+("("+TESTPaxosReplicable.AllApps.numRSMs(req.getPaxosID())+"RSM_states_match="+
+					TESTPaxosReplicable.AllApps.statesMatch(req.getPaxosID())+")") +
+					":"+req.requestID + " , ";
+			if(count++>=MAX_UNRESPONDED) break;
 		}
 		s+="]";
+		count = 0;
+		for(RequestPacket req : client.requests.values()) {
+			String match = TESTPaxosReplicable.AllApps.statesMatch(req.getPaxosID());
+			if(match.contains("true") && match.contains("null")) {
+				s += TESTPaxosReplicable.AllApps.toString(req.getPaxosID());
+				if(count++>=MAX_UNRESPONDED) break;
+			}
+		}
 		return s;
 	}
 
@@ -207,7 +219,6 @@ public class TESTPaxosClient {
 
 	protected static void printOutput(TESTPaxosClient[] clients) {
 		for(int i=0; i<TESTPaxosConfig.NUM_CLIENTS; i++) {
-			//if(clients[i].getRequestCount()<=clients[i].getExecutedCount()) {
 			if(clients[i].requests.isEmpty()) {
 				System.out.println("\n\nSUCCESS! Execution count = "+clients[i].getExecutedCount() + "; requests issued = "
 						+clients[i].getRequestCount() + "; requests turned to no-ops = " + clients[i].getNoopCount()+

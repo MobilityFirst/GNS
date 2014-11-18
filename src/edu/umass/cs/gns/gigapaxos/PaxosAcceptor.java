@@ -54,7 +54,7 @@ public class PaxosAcceptor {
 	 */
 	public static final boolean ACCEPTED_PROPOSALS_ON_DISK=DerbyPaxosLogger.isLoggingEnabled(); 
 
-	private int slot=0;
+	private int _slot=0;
 	private int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
 	private int ballotCoord=-1;
 	private boolean stopped=false;
@@ -75,13 +75,13 @@ public class PaxosAcceptor {
 	PaxosAcceptor(int b, int c, int s, HotRestoreInfo hri) {
 		this.ballotNum = b;
 		this.ballotCoord = c;
-		this.slot = s;
+		this._slot = s;
 		if(hri!=null) this.hotRestore(hri);
 	}
 	protected synchronized boolean hotRestore(HotRestoreInfo hri) {
 		this.ballotNum = hri.accBallot.ballotNumber;
 		this.ballotCoord = hri.accBallot.coordinatorID;
-		this.slot = hri.accSlot;
+		this._slot = hri.accSlot;
 		this.minCommittedFrontierSlot = hri.accGCSlot;
 		return true;
 	}
@@ -98,7 +98,7 @@ public class PaxosAcceptor {
 	protected synchronized void forceStop() {stop();}
 
 	protected synchronized int getGCSlot() {return this.minCommittedFrontierSlot;}
-	protected synchronized int getSlot() {return slot;}
+	protected synchronized int getSlot() {return _slot;}
 	protected synchronized Ballot getBallot() {return new Ballot(ballotNum, ballotCoord);}
 	protected synchronized String getBallotStr() {return Ballot.getBallotString(ballotNum, ballotCoord);}
 	protected synchronized String getBallotSlot() {return getBallot()+", "+getSlot();}
@@ -217,7 +217,7 @@ public class PaxosAcceptor {
 	/********************** Start of private methods ***************************/
 	private synchronized void executed(int s, boolean stop) {
 		if(s==this.getSlot()) {
-			this.slot++; 
+			this._slot++; 
 			if(stop) {this.stop();}
 		} else assert false : ("YIKES! Asked to execute " + s + " when expecting " + this.getSlot());
 	}
@@ -319,7 +319,7 @@ public class PaxosAcceptor {
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) {
+	public static void testMemory() {
 		Handler[] handlers = Logger.getLogger( "" ).getHandlers();
 		for ( int index = 0; index < handlers.length; index++ ) {
 			handlers[index].setLevel( Level.WARNING );
@@ -352,5 +352,15 @@ public class PaxosAcceptor {
 					" million *inactive* acceptor paxos instances with 1GB memory.");
 		} catch(Exception e) {e.printStackTrace();}
 	}
+	
+	private void testAcceptor() {
+		int ballotnum = 22;
+		int ballotCoord = 1;
+		int slot = 7;
+		PaxosAcceptor acceptor = new PaxosAcceptor(ballotnum, ballotCoord, slot, null);
+	}
 
+	public static void main(String[] args) {
+		testMemory();
+	}
 }

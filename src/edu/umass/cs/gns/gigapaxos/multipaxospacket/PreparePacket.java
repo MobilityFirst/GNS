@@ -13,7 +13,8 @@ public final class PreparePacket extends PaxosPacket {
 	public final Ballot ballot;
 	public  final int firstUndecidedSlot;
 	public final int receiverID;
-	public final boolean recovery;
+	
+	private boolean recovery;
 
 	public PreparePacket(int coordinatorID, int receiverID, Ballot b) {
 		super((PaxosPacket)null);
@@ -77,5 +78,8 @@ public final class PreparePacket extends PaxosPacket {
 	
 	public boolean isRecovery() {
 		return this.recovery;
+	}
+	public void setRecovery() {
+		this.recovery = true;
 	}
 }

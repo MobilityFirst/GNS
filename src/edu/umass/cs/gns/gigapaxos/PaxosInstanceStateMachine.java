@@ -308,7 +308,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 */
 	private boolean initiateRecovery(AbstractPaxosLogger paxosLogger) {
 		String pid=this.getPaxosID();
-		SlotBallotState slotBallot = paxosLogger.getSlotBallotState(pid, this.getVersion(), true); // only place where version is checked
+		SlotBallotState slotBallot = paxosLogger.getSlotBallotState(pid, this.getVersion()); // only place where version is checked
 		if(!TESTPaxosConfig.MEMORY_TESTING) log.info(this.getNodeState()+
 				" recovered state: "+ (slotBallot!=null ? slotBallot.state:"NULL"));
 
@@ -516,6 +516,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		if(ballot==null) {return null;}// can happen only if acceptor is stopped. 
 
 		this.garbageCollectAccepted(accept.majorityCommittedSlot); 
+		if(accept.isRecovery()) return null; // recovery ACCEPTS do not need any reply
 
 		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.myID, ballot, accept.slot, this.paxosState.getSlot()-1);
 		AcceptPacket toLog = (accept.ballot.compareTo(ballot)>=0 ? accept : null); // lower ballot => no logging, only accept reply
@@ -573,7 +574,9 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				(committedPValue +" >= " + acceptReply +", hasTakenTooLong="+committedPValue.hasTakenTooLong());
 			if(!committedPValue.isNoop()) {
 				// forward only if not already a no-op
-				unicastPreempted = new MessagingTask(acceptReply.ballot.coordinatorID, committedPValue.makeNoop()); 
+				unicastPreempted = new MessagingTask(acceptReply.ballot.coordinatorID, 
+					committedPValue.makeNoop().setForwarderID(myID)); 
+				committedPValue.addDebugInfo("f");
 			}
 			log.info(this.getNodeState() + " forwarding preempted request as no-op to node " + 
 					acceptReply.ballot.coordinatorID + ": " + committedPValue);
@@ -917,7 +920,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			this.coordinator.isActive() ? "[coordinator]" : "[preactive-coordinator]" ) + " has no state (yet) for " + syncReply);
 		int checkpointSlot = this.paxosManager.getPaxosLogger().getCheckpointSlot(getPaxosID());
 		StatePacket statePacket = (checkpointSlot>=syncReply.missingSlotNumbers.get(0) ? 
-				this.paxosManager.getPaxosLogger().getStatePacket(this.getPaxosID()) : null);
+				StatePacket.getStatePacket(this.paxosManager.getPaxosLogger().getSlotBallotState(this.getPaxosID())) : null);
 		if(statePacket!=null) log.info(this.getNodeState() + " sending checkpoint to node " + syncReply.nodeID +": " + statePacket);
 		return statePacket!=null ? new MessagingTask(syncReply.nodeID, statePacket) : null;
 	}

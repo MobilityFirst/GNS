@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.gigapaxos;
 
 import java.io.IOException;
+import java.util.Set;
 
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
@@ -61,10 +62,12 @@ public class TESTPaxosNode {
 			for(int id: TESTPaxosConfig.getGroup(groupID)) {
 				boolean created = false;
 				if(myID==id) {
-					System.out.print(groupID + ":" + Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)) + " ");
+					Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID));
+					System.out.print(groupID + ":" + group + " ");
 					created = this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-							Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)), null);
+							group, null);
 					if(!created) System.out.println(":  not created (probably coz it is pre-existing)");
+					TESTPaxosReplicable.AllApps.addGroup(groupID, group);
 				}
 			}
 		}	
@@ -78,8 +81,10 @@ public class TESTPaxosNode {
 		for(int i=TESTPaxosConfig.MAX_CONFIG_GROUPS; i<numGroups; i++) {
 			String groupID = TESTPaxosConfig.TEST_GUID_PREFIX+i;
 			for(int id: TESTPaxosConfig.getDefaultGroup()) {
+				Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)); 
 				if(id==myID) this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-						Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)), null);
+						group, null);
+				TESTPaxosReplicable.AllApps.addGroup(groupID, group);
 			}
 			if(i%j==0 && ((j*=2)>1) || (i%100000==0)) {
 				System.out.print(i+" ");

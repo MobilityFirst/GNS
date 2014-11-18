@@ -17,13 +17,6 @@ public final class AcceptReplyPacket extends PaxosPacket {
 
     public final int committedSlot;
 
-    /*
-    protected static final  String NODE_ID = "node";
-    private static final  String BALLOT_NUMBER = "ballot";
-    private static final  String SLOT_NUMBER = "slot";
-    private static final  String COMMITTED_SLOT = "committed_slot";
-    */
-    
     public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber, int committedSlot) {
     	super((PaxosPacket)null);
         this.packetType = PaxosPacketType.ACCEPT_REPLY;

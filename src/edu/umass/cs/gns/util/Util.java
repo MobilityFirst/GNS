@@ -192,6 +192,11 @@ public class Util {
     }
     return s;
   }
+  
+  public static boolean contains(int member, int[] array) {
+	  for(int i=0; i<array.length; i++) if(array[i]==member) return true;
+	  return false;
+  }
 
   public static Object[] stringToNodeIdArray(String string) {
     string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
