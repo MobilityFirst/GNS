@@ -31,6 +31,7 @@ public class StartLocalNameServer {
   public static final String PORT = "port";
   public static final String NS_FILE = "nsfile";
   public static final String DNS_GNS_ONLY = "dnsGnsOnly";
+  public static final String DNS_ONLY = "dnsOnly";
   public static final String CACHE_SIZE = "cacheSize";
   public static final String PRIMARY = "primary";
   public static final String LOCATION = "location";
@@ -68,6 +69,7 @@ public class StartLocalNameServer {
   public static final String STAT_CONSOLE_OUTPUT_LEVEL = "statConsoleOutputLevel";
   public static final String EMULATE_PING_LATENCIES = "emulatePingLatencies";
   public static final String VARIATION = "variation";
+  public static final String GNS_SERVER_IP = "gnsServerIP";
 
   // size of cache at local name server
   public static int cacheSize = 1000;
@@ -108,6 +110,16 @@ public class StartLocalNameServer {
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
   public static boolean dnsGnsOnly = false;
+
+  /**
+   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
+   */
+  public static boolean dnsOnly = false;
+
+  /**
+   * Name of the GNS server to forward GNS requests for Local Name server
+   */
+  public static String gnsServerIP;
 
 //  Abhigyan: parameters related to retransmissions.
 //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
@@ -160,6 +172,7 @@ public class StartLocalNameServer {
     Option experimentMode = new Option(EXPERIMENT_MODE, "[EXP] Run in experiment mode. May execute some code that is needed only during experiments");
 
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
+    Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
 
     Option syntheticWorkload = new Option(ZIPF, "[EXP] Use Zipf distribution to generate workload");
 
@@ -189,6 +202,10 @@ public class StartLocalNameServer {
 
     Option emulatePingLatencies = new Option(EMULATE_PING_LATENCIES, "[EXP] Emulate a packet delay equal to ping delay in between two servers");
     Option variation = new Option(VARIATION, true, "[EXP] During emulation, what fraction of random variation to add to delay");
+
+    Option gnsServerIP = OptionBuilder.withArgName("address").hasArg()
+            .withDescription("Address")
+            .create(GNS_SERVER_IP);
 
     Option address = OptionBuilder.withArgName("address").hasArg()
             .withDescription("Address")
@@ -257,6 +274,8 @@ public class StartLocalNameServer {
     commandLineOptions.addOption(port);
     commandLineOptions.addOption(nsFile);
     commandLineOptions.addOption(dnsGnsOnly);
+    commandLineOptions.addOption(dnsOnly);
+    commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(regularWorkload);
     commandLineOptions.addOption(mobileWorkload);
     commandLineOptions.addOption(workloadFile);
@@ -495,6 +514,18 @@ public class StartLocalNameServer {
       if (allValues.containsKey(DNS_GNS_ONLY)) {
         dnsGnsOnly = Boolean.parseBoolean(allValues.get(DNS_GNS_ONLY));
       }
+
+      if (allValues.containsKey(DNS_ONLY)) {
+        dnsOnly = Boolean.parseBoolean(allValues.get(DNS_ONLY));
+        if (allValues.containsKey(GNS_SERVER_IP)) {
+          gnsServerIP = allValues.get(GNS_SERVER_IP);
+        } else {
+          gnsServerIP = null;
+        }
+      } else {
+        gnsServerIP = null;
+      }
+
       if (allValues.containsKey(EXPERIMENT_MODE)) {
         experimentMode = Boolean.parseBoolean(allValues.get(EXPERIMENT_MODE));
       }
@@ -547,6 +578,9 @@ public class StartLocalNameServer {
     GNS.getLogger().info("Experiment Mode: " + experimentMode);
     GNS.getLogger().info("DNS GNS Only: " + dnsGnsOnly);
     GNS.getLogger().info("Debug Mode: " + debuggingEnabled);
+    if (!dnsGnsOnly) {
+      GNS.getLogger().info("GNS Server IP: " + gnsServerIP);
+    }
 
     try {
       GNSNodeConfig gnsNodeConfig;

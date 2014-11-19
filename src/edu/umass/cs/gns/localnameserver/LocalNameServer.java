@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Intercessor;
+import edu.umass.cs.gns.localnameserver.gnamed.DnsTranslator;
 import edu.umass.cs.gns.localnameserver.gnamed.UdpDnsServer;
 import edu.umass.cs.gns.localnameserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
@@ -76,6 +77,10 @@ public class LocalNameServer implements Shutdownable {
    */
   private static UdpDnsServer udpDnsServer;
 
+  /**
+   * We keep a pointer to the dnsTranslator so we can shut it down.
+   */
+  private static DnsTranslator dnsTranslator;
   /**
    * @return the nameServerLoads
    */
@@ -158,10 +163,18 @@ public class LocalNameServer implements Shutdownable {
 
     try {
       if (StartLocalNameServer.dnsGnsOnly) {
-        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, null);
+        dnsTranslator = new DnsTranslator(Inet4Address.getByName("0.0.0.0"), 53);
+        dnsTranslator.start();
+      } else if (StartLocalNameServer.dnsOnly) {
+        if (StartLocalNameServer.gnsServerIP == null) {
+          GNS.getLogger().severe("FAILED TO START DNS SERVER: GNS Server IP is missing or invalid");
+          return;
+        }
+        GNS.getLogger().warning("gns server IP" + StartLocalNameServer.gnsServerIP);
+        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", StartLocalNameServer.gnsServerIP);
         udpDnsServer.start();
       } else {
-        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8");
+        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null);
         udpDnsServer.start();
       }
     } catch (BindException e) {
@@ -459,6 +472,9 @@ public class LocalNameServer implements Shutdownable {
   public void shutdown() {
     if (udpDnsServer != null) {
       udpDnsServer.shutdown();
+    }
+    if (dnsTranslator != null) {
+      dnsTranslator.shutdown();
     }
     if (gnsNodeConfig != null) {
       gnsNodeConfig.shutdown();

@@ -73,11 +73,38 @@ public class NameResolution {
 
   /**
    * Sends the query to the GNS server.
-   * 
+   *
    * @param query
    * @return A message with either a good response or an error.
    */
-  public static Message forwardToGnsServer(Message query) {
+  public static Message forwardToGnsServer(SimpleResolver gnsServer, Message query) {
+    try {
+      Message dnsResponse = gnsServer.send(query);
+      if (debuggingEnabled) {
+        GNS.getLogger().fine("DNS response " + Rcode.string(dnsResponse.getHeader().getRcode()) + " with "
+                + dnsResponse.getSectionArray(Section.ANSWER).length + " answer, "
+                + dnsResponse.getSectionArray(Section.AUTHORITY).length + " authoritative and "
+                + dnsResponse.getSectionArray(Section.ADDITIONAL).length + " additional records");
+      }
+      if (isReasonableResponse(dnsResponse)) {
+        if (debuggingEnabled) {
+          GNS.getLogger().fine("Outgoing response from DNS: " + dnsResponse.toString());
+        }
+        return dnsResponse;
+      }
+    } catch (IOException e) {
+      GNS.getLogger().warning("DNS resolution failed for " + query + ": " + e);
+    }
+    return errorMessage(query, Rcode.NXDOMAIN);
+  }
+
+  /**
+   * Lookup the query in the GNS server.
+   *
+   * @param query
+   * @return A message with either a good response or an error.
+   */
+  public static Message lookupGnsServer(Message query) {
     // check for queries we can't handle
     int type = query.getQuestion().getType();
     // Was the query legitimate or implemented?
@@ -95,8 +122,8 @@ public class NameResolution {
       GNS.getLogger().fine("Trying GNS lookup for field " + fieldName + " in domain " + domainName);
     }
 
+    GNS.getLogger().fine("GNS lookup: Field " + fieldName + " in domain " + domainName);
     String guid = AccountAccess.lookupGuid(domainName);
-
     if (guid == null) {
       if (debuggingEnabled) {
         GNS.getLogger().fine("GNS lookup: Domain " + domainName + " not found, returning NXDOMAIN result.");

@@ -45,6 +45,7 @@ import org.xbill.DNS.Credibility;
 public class LookupWorker implements Runnable {
 
   private final SimpleResolver dnsServer;
+  private final SimpleResolver gnsServer;
   private final Cache dnsCache;
   private final DatagramSocket socket;
   private final DatagramPacket incomingPacket;
@@ -57,14 +58,16 @@ public class LookupWorker implements Runnable {
    * @param incomingPacket
    * @param incomingData
    * @param dnsServer (might be null meaning don't send requests to a DNS server)
-   * @param dnsCache (might be null meaning don't send requests to a DNS server)
+   * @param gnsServer (might be null gns requests are resolved locally)
+   * @param dnsCache (might be null meaning DNS responses are not cached)
    */
-  public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver dnsServer, Cache dnsCache) {
+  public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver gnsServer,SimpleResolver dnsServer, Cache dnsCache) {
     this.socket = socket;
     this.incomingPacket = incomingPacket;
     this.incomingData = incomingData;
     this.dnsServer = dnsServer;
     this.dnsCache = dnsCache;
+    this.gnsServer = gnsServer;
   }
   /**
    * @see java.lang.Thread#run()
@@ -124,7 +127,7 @@ public class LookupWorker implements Runnable {
 
     // If we're not consulting the DNS server as well just send the query to GNS.
     if (dnsServer == null) {
-      return NameResolution.forwardToGnsServer(query);
+      return NameResolution.lookupGnsServer(query);
     }
 
     // Otherwise as a first step before performing GNS/DNS lookup we check our own local cache.
@@ -139,12 +142,21 @@ public class LookupWorker implements Runnable {
 
     // Create a clone of the query for duplicating the request to GNS and DNS
     Message dnsQuery = (Message) query.clone();
-    // Otherwise we make two tasks to check the DNS and GNS in parallel
-    List<GnsDnsLookupTask> tasks = Arrays.asList(
-            // Create GNS lookup task
-            new GnsDnsLookupTask(query),
-            // Create DNS lookup task
-            new GnsDnsLookupTask(dnsQuery, dnsServer));
+    List<GnsDnsLookupTask> tasks;
+    if (gnsServer == null) {
+      // We make two tasks to check the DNS and GNS in parallel
+      tasks = Arrays.asList(
+              // Create GNS lookup task
+              new GnsDnsLookupTask(query),
+              // Create DNS lookup task
+              new GnsDnsLookupTask(dnsQuery, dnsServer));
+    } else {
+      tasks = Arrays.asList(
+              // Create GNS lookup task
+              new GnsDnsLookupTask(query, gnsServer, true /* isGNS */),
+              // Create DNS lookup task
+              new GnsDnsLookupTask(dnsQuery, dnsServer, false /* isGNS */));
+    }
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
     // the altenative. Plus it's cool and trendy to use futures.

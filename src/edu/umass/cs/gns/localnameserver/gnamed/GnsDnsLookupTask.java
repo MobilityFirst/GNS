@@ -20,13 +20,13 @@ public class GnsDnsLookupTask implements Callable {
 
   enum WorkerClass {
 
-    DNS, GNS
+    DNS, GNS, GNSLOCAL
   }
 
   private final WorkerClass workerClass;
   private final Message query;
   private Message response;
-  private final SimpleResolver dnsServer; // will be null for GNS worker
+  private final SimpleResolver nameServer; // It is used for both dnsServer and gnsServer
 
   /**
    * Creates a worker task that handles a query using the GNS.
@@ -34,9 +34,9 @@ public class GnsDnsLookupTask implements Callable {
    * @param query 
    */
   GnsDnsLookupTask(Message query) {
-    this.workerClass = WorkerClass.GNS;
+    this.workerClass = WorkerClass.GNSLOCAL;
     this.query = query;
-    this.dnsServer = null;
+    this.nameServer = null;
   }
   
   /**
@@ -48,17 +48,36 @@ public class GnsDnsLookupTask implements Callable {
   GnsDnsLookupTask(Message query, SimpleResolver dnsServer) {
     this.workerClass = WorkerClass.DNS;
     this.query = query;
-    this.dnsServer = dnsServer;
+    this.nameServer = dnsServer;
+  }
+
+  /**
+   * Creates a worker task that handles a query using the DNS
+   *
+   * @param query
+   * @param nameServer
+   */
+  GnsDnsLookupTask(Message query, SimpleResolver nameServer, Boolean isGNS) {
+    if (isGNS) {
+      this.workerClass = WorkerClass.GNS;
+    } else {
+      this.workerClass = WorkerClass.DNS;
+    }
+    this.query = query;
+    this.nameServer = nameServer;
   }
 
   @Override
   public Message call() {
     switch (workerClass) {
       case DNS:
-        response = NameResolution.forwardToDnsServer(dnsServer, query);
+        response = NameResolution.forwardToDnsServer(nameServer, query);
         break;
       case GNS:
-        response = NameResolution.forwardToGnsServer(query);
+        response = NameResolution.forwardToGnsServer(nameServer, query);
+        break;
+      case GNSLOCAL:
+        response = NameResolution.lookupGnsServer(query);
         break;
     }
     return response;
@@ -67,5 +86,4 @@ public class GnsDnsLookupTask implements Callable {
   public Message getResponse() {
     return response;
   }
-  
 }
