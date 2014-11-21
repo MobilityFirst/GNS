@@ -50,22 +50,6 @@ public abstract class AbstractPaxosLogger {
 	protected static boolean firstConnect = true; // coz db needs a create=true flag just once
 	protected static boolean closeCalled = false;
 
-	protected static synchronized boolean firstClose() {
-		boolean tmp = !closeCalled;
-		closeCalled = true;
-		return tmp;
-	}
-
-	protected static synchronized boolean isCloseCalled() {
-		return closeCalled;
-	}
-
-	protected static boolean isFirstConnect() {
-		boolean b = firstConnect;
-		firstConnect = false;
-		return b;
-	}
-
 	private final BatchLogger batchLogger;
 	private final Messenger<?> messenger;
 	private final CCheckpointer collapsingCheckpointer;
@@ -174,17 +158,6 @@ public abstract class AbstractPaxosLogger {
 		return logger.remove(paxosID);
 	}
 
-	public static void waitToFinishAll() {
-		for (AbstractPaxosLogger logger : AbstractPaxosLogger.instances) {
-			logger.batchLogger.waitToFinish();
-			System.out.println(logger + ": after batchLogger.waitToFinish");
-			logger.collapsingCheckpointer.waitToFinish();
-			System.out.println(logger + ": after collapsingCheckpointer.waitToFinish");
-			logger.waitToFinish();
-			System.out.println(logger + ": after logger.waitToFinish");
-		}
-	}
-
 	public static final String listToString(ArrayList<PaxosPacket> list) {
 		String s = "\n---------------BEGIN log------------------\n";
 		int count = 0;
@@ -207,12 +180,12 @@ public abstract class AbstractPaxosLogger {
 		this.collapsingCheckpointer.stop();
 	}
 	
-	protected void closeSuper() {
+	protected void close() {
 		this.setAboutToClose(); // stop accepting new log/checkpoint requests
 		this.batchLogger.waitToFinish(); // wait for ongoing messages to be logged
 		this.collapsingCheckpointer.waitToFinish(); // wait for ongoing checkpoints 
 		this.stop(); // stop the logger and checkpointer threads
-		this.close(); // call close implementation
+		this.closeImpl(); // call close implementation
 	}
 
 	private static void addLogger(AbstractPaxosLogger logger) {
@@ -265,9 +238,9 @@ public abstract class AbstractPaxosLogger {
 	// close and cleanup methods
 	public abstract void closeReadAll(); // closes the recovery cursor 
 
-	public abstract void waitToFinish(); // waits for ongoing writes to finish
+	//public abstract void waitToFinish(); // waits for ongoing writes to finish
 
-	public abstract void close(); // closes connections to the database
+	public abstract void closeImpl(); // closes connections to the database
 
 	public abstract boolean remove(String paxosID); // removes all paxosID state
 
@@ -373,6 +346,7 @@ public abstract class AbstractPaxosLogger {
 					}
 				}
 			}
+			if(DEBUG) log.info("batchLogger"+myID+" thread stopping");
 		}
 
 		private void enqueue(LogMessagingTask lmTask) {
@@ -550,6 +524,7 @@ public abstract class AbstractPaxosLogger {
 					this.notifyAll();
 				}
 			}
+			if(DEBUG) log.info("CCheckpointer"+myID+" thread stopping");
 		}
 
 		public synchronized boolean stop() {
@@ -565,6 +540,18 @@ public abstract class AbstractPaxosLogger {
 			return this.stopped;
 		}
 	}
+
+	/*
+	protected static synchronized boolean firstClose() {
+		boolean tmp = !closeCalled;
+		closeCalled = true;
+		return tmp;
+	}
+
+	protected static synchronized boolean isCloseCalled() {
+		return closeCalled;
+	}
+	*/
 
 	/******************************** End of private utility classes ****************************/
 

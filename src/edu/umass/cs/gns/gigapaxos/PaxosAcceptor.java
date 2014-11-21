@@ -353,7 +353,7 @@ public class PaxosAcceptor {
 		} catch(Exception e) {e.printStackTrace();}
 	}
 	
-	private void testAcceptor() {
+	private static void testAcceptor() {
 		int ballotnum = 22;
 		int ballotCoord = 1;
 		int slot = 7;
@@ -362,5 +362,6 @@ public class PaxosAcceptor {
 
 	public static void main(String[] args) {
 		testMemory();
+		testAcceptor();
 	}
 }

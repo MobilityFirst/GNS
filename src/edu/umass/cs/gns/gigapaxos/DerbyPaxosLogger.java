@@ -88,22 +88,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_OLD_DECISIONS =
 			PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 	private static final boolean CLOB_OPTION = false;
+	
+	private static final ArrayList<DerbyPaxosLogger> instances = 
+			new ArrayList<DerbyPaxosLogger>();
 
 	private ComboPooledDataSource dataSource = null;
 	private Connection defaultConn = null;
 	private Connection cursorConn = null;
 
 	private boolean closed = true;
-	private boolean processing = false;
-
-	private synchronized boolean getProcessing() {
-		return this.processing;
-	}
-
-	private synchronized void setProcessing(boolean b) {
-		this.processing = b;
-		if (!b) notify();
-	}
 
 	protected static boolean isLoggingEnabled() {
 		return !DISABLE_LOGGING;
@@ -126,9 +119,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	DerbyPaxosLogger(int id, String dbPath, Messenger<?> messenger) {
 		super(id, dbPath, messenger);
+		addDerbyLogger(this);
 		initialize(); // will set up db, connection, tables, etc. as needed
 	}
-
+	
 	private synchronized Connection getDefaultConn() throws SQLException {
 		return dataSource.getConnection();
 	}
@@ -234,7 +228,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setShort(1, version);
-			// insertCP.setString(2, Util.arrayToIntSet(group).toString());
 			insertCP.setString(2, JSONUtils.toString(group));
 			insertCP.setInt(3, slot);
 			insertCP.setInt(4, ballot.ballotNumber);
@@ -306,8 +299,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			dstmt = conn.prepareStatement(dcmd);
 			dstmt.execute();
 			conn.commit();
-			// if(DEBUG)
-			log.info("Node " + this.myID + " DB deleted up to slot " +
+			if(DEBUG) log.info("Node " + this.myID + " DB deleted up to slot " +
 					acceptedGCSlot);
 		} catch (SQLException sqle) {
 			log.severe("SQLException while deleting outdated messages for " +
@@ -329,7 +321,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		if (isClosed() || DISABLE_LOGGING) return false;
 
 		boolean logged = false;
-		// if(duplicateOrOutdated(paxosID, slot, ballotnum, coordinator, type, message)) return false;
 
 		String cmd =
 				"insert into " + getMTable() + " values (?, ?, ?, ?, ?, ?, ?)";
@@ -378,16 +369,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 */
 	@Override
 	public synchronized boolean pause(String paxosID, String serializedState) {
-		if (isCloseCalled() || DISABLE_LOGGING)
+		if (isClosed() || DISABLE_LOGGING)
 			return false;
-		else this.setProcessing(true);
 
 		boolean paused = false;
 		String insertCmd =
 				"insert into " + getPTable() +
 						" (serialized, paxos_id) values (?,?)";
-		// String updateCmd = "update " + getPTable() + " set serialized=? where paxos_id=?";
-		// this.deletePaused(paxosID); // ignore return value
 		String cmd = insertCmd; // this.unpause(paxosID)!=null ? updateCmd : insertCmd;
 		PreparedStatement insertP = null;
 		Connection conn = null;
@@ -407,15 +395,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			cleanup(conn);
 		}
 		;
-		this.setProcessing(false);
 		return paused;
 	}
 
 	@Override
 	public synchronized HotRestoreInfo unpause(String paxosID) {
-		if (isCloseCalled() || DISABLE_LOGGING)
+		if (isClosed() || DISABLE_LOGGING)
 			return null;
-		else this.setProcessing(true);
 
 		HotRestoreInfo hri = null;
 		PreparedStatement pstmt = null;
@@ -425,7 +411,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			conn = this.getDefaultConn();
 			pstmt =
 					this.getPreparedStatement(conn, getPTable(), paxosID,
-						"serialized"); // conn.prepareStatement(cmd);
+						"serialized"); 
 			rset = pstmt.executeQuery();
 			while (rset.next()) {
 				assert (hri == null); // exactly onece
@@ -441,7 +427,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		}
 		;
 		if (hri != null) this.deletePaused(paxosID); // unpause will also delete paused state
-		this.setProcessing(false);
 		return hri;
 	}
 
@@ -468,16 +453,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		;
 	}
 
-	@Override
-	public synchronized void waitToFinish() {
-		try {
-			while (this.getProcessing())
-				wait();
-		} catch (InterruptedException ie) {
-			ie.printStackTrace();
-		}
-		this.stop();
-	}
 
 	/**
 	 * Gets current checkpoint. There can be only one checkpoint for a
@@ -488,7 +463,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return this.getCheckpointState(paxosID, "state");
 	}
 
-	private synchronized String getCheckpointState(String paxosID, String column) {
+	private String getCheckpointState(String paxosID, String column) {
 		if (isClosed()) return null;
 
 		String state = null;
@@ -531,7 +506,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	/* Methods to get slot, ballotnum, and coordinator of checkpoint */
-	public synchronized SlotBallotState getSlotBallotState(String paxosID,
+	public SlotBallotState getSlotBallotState(String paxosID,
 			short version, boolean matchVersion) {
 		if (isClosed()) return null;
 
@@ -567,12 +542,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return versionMismatch ? null : sb;
 	}
 
-	public synchronized SlotBallotState getSlotBallotState(String paxosID) {
+	public SlotBallotState getSlotBallotState(String paxosID) {
 		return this.getSlotBallotState(paxosID, (short) 0, false);
 	}
 
 	@Override
-	public synchronized SlotBallotState getSlotBallotState(String paxosID,
+	public SlotBallotState getSlotBallotState(String paxosID,
 			short version) {
 		return this.getSlotBallotState(paxosID, version, true);
 	}
@@ -597,7 +572,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return statePacket;
 	}
 
-	public synchronized RecoveryInfo getRecoveryInfo(String paxosID) {
+	public RecoveryInfo getRecoveryInfo(String paxosID) {
 		if (isClosed()) return null;
 
 		RecoveryInfo pri = null;
@@ -792,7 +767,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * Acceptors remove decisions right after executing them. So they need to fetch
 	 * logged decisions from the disk to handle synchronization requests.
 	 */
-	public ArrayList<PValuePacket> getLoggedDecisions(String paxosID,
+	public synchronized ArrayList<PValuePacket> getLoggedDecisions(String paxosID,
 			int minSlot, int maxSlot) {
 		ArrayList<PaxosPacket> list =
 				this.getLoggedMessages(paxosID, " and packet_type=" +
@@ -811,7 +786,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * pressure. This allows us to remove accepted proposals once they have
 	 * been committed.
 	 */
-	public Map<Integer, PValuePacket> getLoggedAccepts(String paxosID,
+	public synchronized Map<Integer, PValuePacket> getLoggedAccepts(String paxosID,
 			int firstSlot) {
 		ArrayList<PaxosPacket> list =
 				this.getLoggedMessages(paxosID, " and packet_type=" +
@@ -875,19 +850,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return removedCP && removedM;
 	}
 
-	public synchronized boolean removeAll() {
+	public boolean removeAll() {
 		return this.remove(null);
 	}
 
-	public void close() {
+	public void closeImpl() {
 		log.info("Node " + this.myID + " closing DB");
-		/*
-		 * The check using the static "testAndSet" method firstClose()
-		 * below ensures that closeGracefully() is called exactly
-		 * once across all instances of this logger.
-		 */
-		if (!firstClose()) return;
-		this.closeGracefully();
+		this.setClosed(true);
+		// can not close derby until all instances are done
+		if(allClosed()) this.closeGracefully();
 	}
 
 	/**
@@ -919,7 +890,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		 * like below within any instance will end up ungracefully
 		 * shutting down the DB for all instances.
 		 */
-		waitToFinishAll();
 
 		if (FRAMEWORK.equals("embedded")) {
 			try {
@@ -944,7 +914,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				}
 			}
 		}
-		setClosed(true);
 		try {
 			// Close statements
 			this.cleanup(logMsgStmt);
@@ -970,11 +939,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	/***************** End of public methods ********************/
 
+	// synchronized coz it should be called just onece
 	private synchronized boolean initialize() {
 		if (!isClosed()) return true;
 		if (/* !loadDriver() || */!connectDB() || !createTables())
 			return false;
-		setClosed(false);
+		setClosed(false); // setting open
 		return true;
 	}
 
@@ -987,7 +957,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * table is advanced. The test for "old" is based on the slot, ballotnum,
 	 * and coordinator fields, so they are indexed.
 	 */
-	private synchronized boolean createTables() {
+	private boolean createTables() {
 		boolean createdCheckpoint = false, createdMessages = false, createdPTable =
 				false;
 		String cmdC =
@@ -1105,7 +1075,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				PROTOCOL +
 						this.logDirectory +
 						DATABASE +
-						(!dbDirectoryExists() /* && isFirstConnect() */? ";create=true"
+						(!dbDirectoryExists() ? ";create=true"
 								: "");
 
 		try {
@@ -1142,6 +1112,21 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return connected;
 	}
 
+	private static void addDerbyLogger(DerbyPaxosLogger derbyLogger) {
+		synchronized(DerbyPaxosLogger.instances) {
+			if(!DerbyPaxosLogger.instances.contains(derbyLogger)) 
+				DerbyPaxosLogger.instances.add(derbyLogger);
+		}
+	}
+
+	private static boolean allClosed() {
+		synchronized(DerbyPaxosLogger.instances) {
+			for(DerbyPaxosLogger logger : instances) {
+				if(!logger.isClosed()) return false;
+			}
+			return true;
+		}
+	}
 	private synchronized boolean isClosed() {
 		return closed;
 	}
@@ -1354,7 +1339,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * Gets a map of all paxosIDs and their corresponding group members.
 	 * Used only for testing.
 	 */
-	public synchronized ArrayList<RecoveryInfo> getAllPaxosInstances() {
+	public ArrayList<RecoveryInfo> getAllPaxosInstances() {
 		if (isClosed()) return null;
 
 		ArrayList<RecoveryInfo> allPaxosInstances =

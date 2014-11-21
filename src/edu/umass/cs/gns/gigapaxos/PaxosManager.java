@@ -63,7 +63,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private static final int PINSTANCES_CAPACITY = 2000000;
 	private static final boolean CRASH_AND_RECOVER_ME_OPTION = false;
 	private static final boolean HIBERNATE_OPTION = false;
-	private static final boolean PAUSE_OPTION = true;
+	private static final boolean PAUSE_OPTION = false;//true;
 	private static final long DEACTIVATION_PERIOD = 30000; // 30s default
 	private static final boolean ONE_PASS_RECOVERY = true;
 	private static final int MAX_POKE_RATE = 1000; // per sec
@@ -682,12 +682,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return (FD != null ? FD.isNodeUp(this.integerMap.get(id)) : false);
 	}
 
-	private boolean isNodeUp(NodeIDType id) {
-		return (FD != null ? FD.isNodeUp(id) : false);
-	}
-
 	protected boolean lastCoordinatorLongDead(int id) {
-		return (FD != null ? FD.lastCoordinatorLongDead(id) : true);
+		return (FD != null ? FD.lastCoordinatorLongDead(this.integerMap.get(id)) : true);
 	}
 
 	protected AbstractPaxosLogger getPaxosLogger() {

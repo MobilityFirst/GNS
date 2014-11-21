@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
+import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 
 /**
  * @author V. Arun
@@ -159,10 +160,10 @@ public class TESTPaxosReplicable implements Replicable {
 			this.notify();
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
 			if (niot != null && (requestPacket.getReplyToClient() || true)) {
-				//if (DEBUG)
-					log.info("App sending response to client " +
+				if (DEBUG) log.info("App sending response to client " +
 							requestPacket.clientID + ": " + reqJson);
 				niot.sendToID(requestPacket.clientID, reqJson);
+				RequestInstrumenter.remove(requestPacket.requestID);
 			}
 			else {
 				if (DEBUG)

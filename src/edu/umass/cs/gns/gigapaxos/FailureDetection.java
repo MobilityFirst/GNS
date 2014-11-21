@@ -45,6 +45,7 @@ public class FailureDetection<NodeIDType> {
 	private static long node_detection_timeout_millis = 6000; // ms
 	private static long inter_ping_period_millis = node_detection_timeout_millis/2;
 	private static long coordinator_failure_detection_timeout = 3*node_detection_timeout_millis; // run for coordinator even if not next-in-line 
+	private static final long initTime = System.currentTimeMillis();
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
@@ -162,23 +163,17 @@ public class FailureDetection<NodeIDType> {
 	}
 
 	protected synchronized boolean isNodeUp(NodeIDType id) {
-		Long lastHeard = 0L;
 		if(id==this.myID) return true;
-		if((lastHeard = this.lastHeardFrom.get(id))!=null && 
-				((System.currentTimeMillis() - lastHeard) < node_detection_timeout_millis)) {
-				return true;
-		}
-		return false;
+		return ((System.currentTimeMillis() - lastHeardTime(id)) < node_detection_timeout_millis);
 	}
-	protected synchronized boolean lastCoordinatorLongDead(int id) {
-		Long lastHeard = 0L;
-		long now = System.currentTimeMillis();
-		if((lastHeard = this.lastHeardFrom.get(id))!=null) {
-			return (now - lastHeard) > FailureDetection.coordinator_failure_detection_timeout;
-		}
-		return true;
+	protected synchronized boolean lastCoordinatorLongDead(NodeIDType id) {
+		return ((System.currentTimeMillis() - lastHeardTime(id)) > FailureDetection.coordinator_failure_detection_timeout);
 	}
-
+	private long lastHeardTime(NodeIDType id) {
+		Long lastHeard = this.lastHeardFrom.get(id);
+		if(lastHeard==null) lastHeard = initTime;
+		return lastHeard;
+	}
 	private JSONObject getPingPacket(NodeIDType id) throws JSONException {
 		FailureDetectionPacket<NodeIDType> fdp = new FailureDetectionPacket<NodeIDType>(myID, id, true);
 		JSONObject fdpJson = fdp.toJSONObject();

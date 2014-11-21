@@ -14,7 +14,7 @@ public class RequestPacket extends PaxosPacket {
 	 */
 	public static enum Keys {NO_OP, IS_STOP, CLIENT_INFO, CREATE_TIME,
 		RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID,
-		DEBUG_INFO
+		DEBUG_INFO, REQUEST_ID
 	}
 	private static final long MAX_AGREEMENT_TIME = 30000;
 	private static final int MAX_FORWARD_COUNT = 3;
