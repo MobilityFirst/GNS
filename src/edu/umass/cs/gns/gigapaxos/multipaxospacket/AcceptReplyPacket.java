@@ -25,6 +25,10 @@ public final class AcceptReplyPacket extends PaxosPacket {
         this.ballot = ballot;
         this.slotNumber = slotNumber;
         this.committedSlot = committedSlot;
+    }    
+    public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber, int committedSlot, AcceptPacket accept) {
+    	this(nodeID, ballot, slotNumber, committedSlot);
+    	this.setRequestID(accept.requestID);
     }
  
     public AcceptReplyPacket(JSONObject jsonObject) throws  JSONException{

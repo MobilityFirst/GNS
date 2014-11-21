@@ -524,7 +524,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		this.garbageCollectAccepted(accept.majorityCommittedSlot); 
 		if(accept.isRecovery()) return null; // recovery ACCEPTS do not need any reply
 
-		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.myID, ballot, accept.slot, this.paxosState.getSlot()-1);
+		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.myID, ballot, accept.slot, this.paxosState.getSlot()-1, accept);
 		AcceptPacket toLog = (accept.ballot.compareTo(ballot)>=0 ? accept : null); // lower ballot => no logging, only accept reply
 		MessagingTask mtask = toLog!=null ? new LogMessagingTask(accept.nodeID, acceptReply, toLog) :
 			new MessagingTask(accept.nodeID, acceptReply);
