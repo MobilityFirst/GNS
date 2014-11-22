@@ -837,14 +837,29 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * But this policy should somehow take into account whether nodes
 	 * are up or down. Otherwise, paxos will be stuck if both the 
 	 * current and the next-in-line coordinator are both dead.
+	 * 
+	 * It is important to choose the coordinator in a deterministic
+	 * way when recovering, e.g., the lowest numbered node. Otherwise
+	 * different nodes may have different impressions of who the 
+	 * coordinator is with unreliable failure detectors, but no one
+	 * other than the current coordinator may actually ever run
+	 * for coordinator. E.g., with three nodes 100, 101, 102, if
+	 * 102 thinks 101 is the coordinator, and the other two start
+	 * by assuming 100 is the coordinator, then 102's accept 
+	 * replies will keep preempting 100's accepts but 101 may 
+	 * never run for coordinator as it has no reason to think
+	 * there is any problem with 100.
 	 */
-	private int getNextCoordinator(int ballotnum, int[] members) {
+	private int getNextCoordinator(int ballotnum, int[] members, boolean recovery) {
 		for(int i=1; i<members.length; i++) assert(members[i-1] < members[i]);
+		if(recovery) return members[0];
 		for(int i=0; i<members.length;i++) {
 			if(this.paxosManager!=null && this.paxosManager.isNodeUp(members[i])) return members[i];
-			//else log.info("Node"+members[i] + " not up");
 		}
 		return roundRobinCoordinator(ballotnum); 
+	}
+	private int getNextCoordinator(int ballotnum, int[] members) {
+		return this.getNextCoordinator(ballotnum, members, false);
 	}
 	private int roundRobinCoordinator(int ballotnum) {
 		return this.getMembers()[ballotnum % this.getMembers().length];
