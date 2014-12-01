@@ -150,7 +150,7 @@ public class Update {
    * @throws JSONException 
    */
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
-    if (packet.getReturnTo().equals(DNSPacket.LOCAL_SOURCE_ID)) {
+    if (packet.getReturnTo().equals(handler.getGnsNodeConfig().INVALID_NAME_SERVER_ID)) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       
       LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());

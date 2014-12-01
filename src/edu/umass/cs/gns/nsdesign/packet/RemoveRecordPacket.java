@@ -30,11 +30,6 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
   private final static String SOURCE_ID = "sourceId";
-   /**
-   * This is the source ID of a packet that should be returned to the intercessor of the LNS.
-   * Otherwise the sourceId field contains the number of the NS who made the request.
-   */
-  public final static String LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
 
   /**
    * Unique identifier used by the entity making the initial request to confirm
@@ -69,7 +64,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   public RemoveRecordPacket(NodeIDType sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
     super(GNSNodeConfig.INVALID_NAME_SERVER_ID, lnsAddress);
     this.type = Packet.PacketType.REMOVE_RECORD;
-    this.sourceId = sourceId;
+    this.sourceId = sourceId != null ? sourceId : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.requestID = requestId;
     this.name = name;
   }

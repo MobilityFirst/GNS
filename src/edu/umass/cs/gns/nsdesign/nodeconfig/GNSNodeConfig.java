@@ -37,11 +37,13 @@ import java.util.concurrent.ConcurrentMap;
 public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType>, Shutdownable {
 
   public static final long INVALID_PING_LATENCY = -1L;
-  public static final String INVALID_NAME_SERVER_ID = "Invalid";
+  public static final String INVALID_NAME_SERVER_ID_STRING = "Invalid";
+  public static final Integer INVALID_NAME_SERVER_ID_INTEGER = -1;
   public static final int INVALID_PORT = -1;
   public static final String LOCAL_NAME_SERVER_ID = "LocalNameServer";
 
-  private NodeIDType nodeID = (NodeIDType) INVALID_NAME_SERVER_ID; // this will be LOCAL_NAME_SERVER_ID for Local Name Servers
+  public static Object INVALID_NAME_SERVER_ID;
+  private NodeIDType nodeID;
   private final String hostsFile;
 
   /**
@@ -51,14 +53,6 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
   private ConcurrentMap<NodeIDType, HostInfo> hostInfoMapping;
   // keep this around
   private ConcurrentMap<NodeIDType, HostInfo> previousHostInfoMapping;
-
-  // Currently only used by GNSINstaller
-  /**
-   * Creates an empty GNSNodeConfig
-   */
-  public GNSNodeConfig() {
-    hostsFile = null;
-  }
 
   /**
    * Creates a GNSNodeConfig and initializes it from a name server host file.
@@ -70,6 +64,11 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
   public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
     this.nodeID = nameServerID;
     this.hostsFile = hostsFile;
+    if (nameServerID instanceof String) {
+      this.INVALID_NAME_SERVER_ID = INVALID_NAME_SERVER_ID_STRING;
+    } else {
+      this.INVALID_NAME_SERVER_ID = INVALID_NAME_SERVER_ID_INTEGER;
+    }
     if (isOldStyleFile(hostsFile)) {
       throw new UnsupportedOperationException("THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: " + hostsFile);
       //initFromOldStyleFile(hostsFile, nameServerID);
@@ -82,6 +81,15 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
               + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
     }
     startCheckingForUpdates();
+  }
+
+  // Currently only used by GNSINstaller
+  /**
+   * Creates an empty GNSNodeConfig
+   */
+  public GNSNodeConfig() {
+    this.nodeID = (NodeIDType) INVALID_NAME_SERVER_ID_STRING;
+    hostsFile = null;
   }
 
   /**
@@ -276,7 +284,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
   public InetAddress getNodeAddress(NodeIDType id) {
     // handle special case for LNS node
     if (id instanceof InetSocketAddress) {
-      return ((InetSocketAddress)id).getAddress();
+      return ((InetSocketAddress) id).getAddress();
     }
     HostInfo nodeInfo = hostInfoMapping.get(id);
     return (nodeInfo == null) ? null : nodeInfo.getIpAddress();
@@ -321,9 +329,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    */
   @Override
   public int getNodePort(NodeIDType id) {
-      // handle special case for LNS node
+    // handle special case for LNS node
     if (id instanceof InetSocketAddress) {
-      return ((InetSocketAddress)id).getPort();
+      return ((InetSocketAddress) id).getPort();
     }
     return this.getNSTcpPort(id);
   }
@@ -348,6 +356,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
     return -1;
   }
+
   /**
    * Returns the Name Server (not including Local Name Servers) with lowest latency.
    *
@@ -435,7 +444,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     System.out.println(gnsNodeConfig.getNSTcpPort(2));
     System.out.println(gnsNodeConfig.getNodeAddress(0));
     System.out.println(gnsNodeConfig.getNodePort(0));
-    
+
     System.exit(0);
   }
 
@@ -446,9 +455,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
   }
 
-@Override
-public NodeIDType valueOf(String nodeAsString) {
-	throw new RuntimeException("Method not yet implemented");
-}
+  @Override
+  public NodeIDType valueOf(String nodeAsString) {
+    throw new RuntimeException("Method not yet implemented");
+  }
 
 }

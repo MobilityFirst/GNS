@@ -39,12 +39,6 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   private final static String RESPONDER = "rspndr";
   private final static String RETURN_FORMAT = "format";
 
-  /**
-   *
-   * This is the source ID of a packet that should be returned to the intercessor of the LNS.
-   * Otherwise the sourceId field contains the number of the NS who made the request.
-   */
-  public final static String LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
   /*
    * The header, guid, key and lnsId are called the Question section because
    * they are all that is necessary for a query.
@@ -113,7 +107,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     this.guid = guid;
     this.key = key;
     this.keys = keys;
-    this.sourceId = sourceId;
+    this.sourceId = sourceId != null ? sourceId : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.responder = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.returnFormat = returnFormat;
   }

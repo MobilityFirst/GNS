@@ -153,7 +153,7 @@ public class LocalNameServer implements Shutdownable {
 
     if (parameters.isExperimentMode()) {
       GNS.getLogger().info("Starting experiment ..... ");
-      new StartExperiment().startMyTest(GNSNodeConfig.INVALID_NAME_SERVER_ID, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
+      new StartExperiment().startMyTest(getGnsNodeConfig().INVALID_NAME_SERVER_ID.toString(), StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
       // name server loads initialized.
       if (parameters.isLoadDependentRedirection()) {
@@ -376,14 +376,14 @@ public class LocalNameServer implements Shutdownable {
    * @return Best name server among serverIDs given.
    * ***********************************************************
    */
-  public static String selectBestUsingLatencyPlusLoad(Set<String> serverIDs) {
+  public static Object selectBestUsingLatencyPlusLoad(Set<Object> serverIDs) {
     if (serverIDs == null || serverIDs.size() == 0) {
-      return GNSNodeConfig.INVALID_NAME_SERVER_ID;
+      return gnsNodeConfig.INVALID_NAME_SERVER_ID;
     }
-    String selectServer = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    Object selectServer = gnsNodeConfig.INVALID_NAME_SERVER_ID;
     // select server whose latency + load is minimum
     double selectServerLatency = Double.MAX_VALUE;
-    for (String x : serverIDs) {
+    for (Object x : serverIDs) {
       if (requestHandler.getGnsNodeConfig().getPingLatency(x) > 0) {
         double totallatency = 5 * getNameServerLoads().get(x) + (double) requestHandler.getGnsNodeConfig().getPingLatency(x);
         if (totallatency < selectServerLatency) {

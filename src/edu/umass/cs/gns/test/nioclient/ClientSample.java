@@ -64,7 +64,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         String firstValue = "firstValue-"+ Util.randomString(10) ;
         ResultValue rv = new ResultValue();
         rv.add(firstValue);
-        AddRecordPacket addRecordPacket = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv,
+        AddRecordPacket addRecordPacket = new AddRecordPacket(null, ++reqCount, name, key, rv,
                 null, 0);
         dbClient.sendRequest(addRecordPacket.toJSONObject());
         waitForResponse();
@@ -80,7 +80,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         int tryCount = 0;
         while (tryCount < maxTries) {
           try {
-            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, 
+            DNSPacket dnsPacket = new DNSPacket(null, ++reqCount, name, key, null, 
                    ColumnFieldType.LIST_STRING, null, null, null);
             dbClient.sendRequest(dnsPacket.toJSONObject());
             waitForResponse();
@@ -107,7 +107,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         String secondValue = "secondValue" + Util.randomString(10);
         rv = new ResultValue();
         rv.add(secondValue);
-        UpdatePacket updatePacket = new UpdatePacket(UpdatePacket.LOCAL_SOURCE_ID, ++reqCount, name, key, rv, null, 0, UpdateOperation.SINGLE_FIELD_REPLACE_ALL,
+        UpdatePacket updatePacket = new UpdatePacket(null, ++reqCount, name, key, rv, null, 0, UpdateOperation.SINGLE_FIELD_REPLACE_ALL,
                 null, 0, null, null, null);
         dbClient.sendRequest(updatePacket.toJSONObject());
         waitForResponse();
@@ -124,7 +124,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         String valueRead = null;
         while (tryCount < maxTries) {
           try {
-            DNSPacket dnsPacket = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, ++reqCount, name, key, null, 
+            DNSPacket dnsPacket = new DNSPacket(null, ++reqCount, name, key, null, 
                     ColumnFieldType.LIST_STRING,
                     null, null, null);
             dbClient.sendRequest(dnsPacket.toJSONObject());
@@ -149,7 +149,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         GNS.getLogger().info("SUCCESS: Name lookup returned updated value");
 
         // remove name
-        RemoveRecordPacket removePacket = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, ++reqCount, name, null);
+        RemoveRecordPacket removePacket = new RemoveRecordPacket(null, ++reqCount, name, null);
         dbClient.sendRequest(removePacket.toJSONObject());
         waitForResponse();
         confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);

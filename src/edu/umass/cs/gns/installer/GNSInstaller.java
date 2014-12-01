@@ -428,10 +428,6 @@ public class GNSInstaller {
         nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
         ids.add(info.getNsId());
       }
-//      if (info.isCreateLNS() != HostInfo.NULL_ID) {
-//        nodeConfig.addHostInfo(info.isCreateLNS(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
-//        ids.add(info.isCreateLNS());
-//      }
     }
     // now we send out packets telling all the hosts where to send their status updates
     StatusListener.sendOutServerInitPackets(nodeConfig, ids);

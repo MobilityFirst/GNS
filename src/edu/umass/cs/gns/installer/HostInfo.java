@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
  * Information about instances that have started
  */
 public class HostInfo {
-  public static final String NULL_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+  public static final String NULL_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID_STRING;
   private final String id;
   private final String hostname;
   private String nsId;

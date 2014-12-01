@@ -194,7 +194,7 @@ public class Intercessor implements IntercessorInterface {
     }
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(DNSPacket.LOCAL_SOURCE_ID, id, name, field, fields,
+    DNSPacket queryrecord = new DNSPacket(null, id, name, field, fields,
             returnFormat, reader, signature, message);
     JSONObject json;
     try {
@@ -261,7 +261,7 @@ public class Intercessor implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket pkt = new AddRecordPacket(AddRecordPacket.LOCAL_SOURCE_ID, id, name, field, value, LocalNameServer.getAddress(), GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket pkt = new AddRecordPacket(null, id, name, field, value, LocalNameServer.getAddress(), GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -291,7 +291,7 @@ public class Intercessor implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket pkt = new RemoveRecordPacket(RemoveRecordPacket.LOCAL_SOURCE_ID, id, name, LocalNameServer.getAddress());
+    RemoveRecordPacket pkt = new RemoveRecordPacket(null, id, name, LocalNameServer.getAddress());
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -432,7 +432,7 @@ public class Intercessor implements IntercessorInterface {
       }
     }
     UpdatePacket packet = new UpdatePacket(
-            UpdatePacket.LOCAL_SOURCE_ID, // means it came from Intercessor
+            null, // means it came from Intercessor
             id,
             name,
             key,

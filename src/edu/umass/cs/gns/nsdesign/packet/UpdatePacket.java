@@ -61,11 +61,6 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   private final static String OPERATION = "operation";
   private final static String ARGUMENT = "argument";
 
-  /**
-   * This is the source ID of a packet that should be returned to the intercessor of the LNS.
-   * Otherwise the sourceId field contains the number of the NS who made the request.
-   */
-  public final static String LOCAL_SOURCE_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
   //
   // We have two ids in here. First one (requestID) is used by the entity making the initial request (often the intercessor).
   // Second (LNSRequestID) is used by the LNS to keep track of it's update records.
@@ -242,7 +237,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     // include the signature info
     super(nameServerId, lnsAddress, writer, signature, message);
     this.type = Packet.PacketType.UPDATE;
-    this.sourceId = sourceId;
+    this.sourceId = sourceId != null ? sourceId : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
     this.name = name;

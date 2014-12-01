@@ -18,6 +18,7 @@ import java.net.InetSocketAddress;
  * Arun: Edited to make member fields private. FIXME: Need to change
  * the name to StampAndSend or something to reflect that this class is
  * actually sending the packet.
+ * @param <NodeIDType>
  */
 public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
 
@@ -99,7 +100,7 @@ public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<
 
       @Override
       public String getMyID() {
-        return GNSNodeConfig.INVALID_NAME_SERVER_ID;
+        return GNSNodeConfig.INVALID_NAME_SERVER_ID.toString();
       }
 
       @Override
