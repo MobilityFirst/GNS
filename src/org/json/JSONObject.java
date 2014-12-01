@@ -233,6 +233,7 @@ public class JSONObject {
      *  the JSONObject.
      * @throws JSONException 
      */
+    @SuppressWarnings("unchecked")
     public JSONObject(Map map) {
         this.map = new HashMap();
         if (map != null) {
@@ -944,6 +945,7 @@ public class JSONObject {
     }
 
 
+    @SuppressWarnings("unchecked")
     private void populateMap(Object bean) {
         Class klass = bean.getClass();
 
@@ -1086,6 +1088,7 @@ public class JSONObject {
      * @throws JSONException If the value is non-finite number
      *  or if the key is null.
      */
+    @SuppressWarnings("unchecked")
     public JSONObject put(String key, Object value) throws JSONException {
         if (key == null) {
             throw new JSONException("Null key.");

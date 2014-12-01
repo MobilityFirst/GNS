@@ -364,6 +364,7 @@ public class CassandraRecords implements NoSQLRecords {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void insert(String tableName, String guid, JSONObject json) {
     CollectionSpec spec = getCollectionSpec(tableName);
     if (spec != null) {

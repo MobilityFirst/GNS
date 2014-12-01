@@ -122,8 +122,7 @@ public class CommandModule {
 
   public String allCommandDescriptions(CommandDescriptionFormat format) {
     StringBuilder result = new StringBuilder();
-    int cnt = 1;
-    List<GnsCommand> commandList = new ArrayList(commands);
+    List<GnsCommand> commandList = new ArrayList<>(commands);
     // First sort by name
     Collections.sort(commandList, CommandNameComparator);
     // The sort them by package

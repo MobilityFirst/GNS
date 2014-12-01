@@ -135,7 +135,7 @@ public class LNSListenerAdmin extends Thread {
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              Set<String> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
+              Set<Object> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
               // clear the cache
               LocalNameServer.invalidateCache();

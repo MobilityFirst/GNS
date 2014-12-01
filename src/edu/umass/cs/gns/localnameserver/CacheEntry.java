@@ -102,7 +102,6 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
         this.timestampAddress.put(fieldKey, System.currentTimeMillis());
       }
     }
-    // Also update this (WHY do we cache this if it never changes)?
     this.replicaControllers = (HashSet<NodeIDType>) ConsistentHashing.getReplicaControllerSet(name);
 //    this.activeNameServer = packet.getActiveNameServers();
   }

@@ -166,6 +166,7 @@ public class CommandLine implements Serializable
      * @return Values of the argument if option is set, and has an argument,
      * otherwise null.
      */
+    @SuppressWarnings("unchecked")
     public String[] getOptionValues(String opt)
     {
         List values = new ArrayList();
@@ -295,6 +296,7 @@ public class CommandLine implements Serializable
      *
      * @return remaining items passed in but not parsed as an array
      */
+    @SuppressWarnings("unchecked")
     public String[] getArgs()
     {
         String[] answer = new String[args.size()];
@@ -341,6 +343,7 @@ public class CommandLine implements Serializable
      *
      * @param arg the unrecognised option/argument.
      */
+    @SuppressWarnings("unchecked")
     void addArg(String arg)
     {
         args.add(arg);
@@ -351,6 +354,7 @@ public class CommandLine implements Serializable
      *
      * @param opt the processed option
      */
+    @SuppressWarnings("unchecked")
     void addOption(Option opt)
     {
         options.add(opt);
@@ -372,6 +376,7 @@ public class CommandLine implements Serializable
      *
      * @return an array of the processed {@link Option}s.
      */
+    @SuppressWarnings("unchecked")
     public Option[] getOptions()
     {
         Collection processed = options;

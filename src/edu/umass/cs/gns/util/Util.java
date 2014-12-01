@@ -243,7 +243,7 @@ public class Util {
    * @return a Set of NodeIds
    */
   public static Set stringToSetOfNodeId(String string) {
-    Set nodeIds = new HashSet();
+    Set<Object> nodeIds = new HashSet();
     String[] tokens = string.split(":");
     for (String s : tokens) {
       nodeIds.add(s);

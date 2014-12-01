@@ -682,7 +682,7 @@ public class AWSEC2 {
    * @return 
    */
   public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord ami, String instanceName,
-          String keyName, String script, Map tags, String elasticIP) {
+          String keyName, String script, Map<String,String> tags, String elasticIP) {
     return createAndInitInstance(ec2, region, ami, instanceName, keyName, script, tags, elasticIP, DEFAULTREACHABILITYWAITTIME);
   }
 
@@ -700,7 +700,7 @@ public class AWSEC2 {
    * @return 
    */
   public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord ami, String instanceName,
-          String keyName, String script, Map tags, String elasticIP, int timeout) {
+          String keyName, String script, Map<String,String> tags, String elasticIP, int timeout) {
 
     try {
       // set the region (AKA endpoint)
@@ -788,7 +788,7 @@ public class AWSEC2 {
     String installScript = "#!/bin/bash\n"
             + "cd /home/ec2-user\n"
             + "yum --quiet --assumeyes update\n";
-    HashMap tags = new HashMap();
+    HashMap<String,String> tags = new HashMap<>();
     tags.put("runset", new Date().toString());
 
     createAndInitInstance(ec2, region, AMIRecord.getAMI(AMIRecordType.Amazon_Linux_AMI_2013_03_1, region), "Test Instance", keyName, installScript, tags, "23.21.120.250");

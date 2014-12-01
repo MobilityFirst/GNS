@@ -55,42 +55,19 @@ public class Admintercessor {
   /**
    * This is where dump response records are collected while we're waiting for all them to come in.
    */
-  private static ConcurrentMap<Integer, Map<String, TreeSet<NameRecord>>> dumpStorage;
+  private static ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpStorage;
   /**
    * This is where the final dump response results are put once we see the sentinel packet.
    */
-  private static ConcurrentMap<Integer, Map<String, TreeSet<NameRecord>>> dumpResult;
+  private static ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpResult;
 
   static {
     randomID = new Random();
-    dumpStorage = new ConcurrentHashMap<Integer, Map<String, TreeSet<NameRecord>>>(10, 0.75f, 3);
-    dumpResult = new ConcurrentHashMap<Integer, Map<String, TreeSet<NameRecord>>>(10, 0.75f, 3);
+    dumpStorage = new ConcurrentHashMap<Integer, Map<Object, TreeSet<NameRecord>>>(10, 0.75f, 3);
+    dumpResult = new ConcurrentHashMap<Integer, Map<Object, TreeSet<NameRecord>>>(10, 0.75f, 3);
     adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
   }
-
-//  /**
-//   * Returns the local server ID associate with the Admintercessor.
-//   * 
-//   * @return
-//   */
-//  public static int getLocalServerID() {
-//    return localServerID;
-//  }
-
-//  /**
-//   * Sets the local server ID associate with the Admintercessor.
-//   * 
-//   * @param localServerID
-//   */
-//  public static void setLocalServerID(int localServerID) {
-//    Admintercessor.localServerID = localServerID;
-//
-//    GNS.getLogger().info("Local server id: " + localServerID
-//            + " Address: " + LocalNameServer.getGnsNodeConfig().getNodeAddress(localServerID)
-//            + " Port: " + GNS.DEFAULT_LNS_TCP_PORT);
-//            //+ " Port: " + LocalNameServer.getGnsNodeConfig().getLNSTcpPort(localServerID));
-//  }
-
+  
   /**
    * Clears the database and reinitializes all indices.
    *
@@ -285,19 +262,6 @@ public class Admintercessor {
     }
   }
 
-//  private static ServerSocket getAdminResponseSocket() {
-//    GNS.getLogger().finer("Waiting for responses dump");
-//    ServerSocket adminSocket;
-//    try {
-//      adminSocket = new ServerSocket(LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID));
-//    } catch (Exception e) {
-//      GNS.getLogger().severe("Error creating admin response socket on port " + 
-//              LocalNameServer.getGnsNodeConfig().getLNSAdminResponsePort(localServerID) + " : " + e);
-//      return null;
-//    }
-//    return adminSocket;
-//  }
-
   // DUMP
 
   /**
@@ -311,7 +275,7 @@ public class Admintercessor {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
-    Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
+    Map<Object, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
       return new CommandResponse(formatDumpRecords(result));
@@ -329,7 +293,7 @@ public class Admintercessor {
           dumpMonitor.wait(timeoutExpiredMs - System.currentTimeMillis());
           if (System.currentTimeMillis() >= timeoutExpiredMs) {
             // we timed out... only got partial results{
-            Map<String, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
+            Map<Object, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
             if (recordsMap != null) { // can be null if we timed out before getting any responses
               dumpResult.put(id, recordsMap);
               dumpStorage.remove(id);
@@ -345,19 +309,19 @@ public class Admintercessor {
     }
   }
 
-  private static String formatDumpRecords(Map<String, TreeSet<NameRecord>> recordsMap) {
+  private static String formatDumpRecords(Map<Object, TreeSet<NameRecord>> recordsMap) {
     // now process all the records we received
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getNodeIDs());
+    Set<Object> missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getNodeIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + Util.setOfNodeIdToString(missingIDs));
       result.append(LINE_SEPARATOR);
     }
     // process all the entries into a nice string
-    for (Map.Entry<String, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
+    for (Map.Entry<Object, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
       result.append("Nameserver: " + entry.getKey().toString() +
               " (" + LocalNameServer.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
@@ -398,14 +362,15 @@ public class Admintercessor {
             DumpRequestPacket dumpResponse = new DumpRequestPacket(json);
             int id = dumpResponse.getId();
             // grab or make a new recordsMap
-            Map<String, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
+            Map<Object, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
             if (recordsMap == null) {
-              recordsMap = new TreeMap<String, TreeSet<NameRecord>>();
+              recordsMap = new TreeMap<Object, TreeSet<NameRecord>>();
               dumpStorage.put(id, recordsMap);
             }
             // pull the records out of the dump response and put them in dumpStorage
             JSONArray jsonArray = dumpResponse.getJsonArray();
-            String serverID = (String) dumpResponse.getPrimaryNameServer();
+            // ServerID can now be a String or and Integer
+            Object serverID = dumpResponse.getPrimaryNameServer();
             TreeSet<NameRecord> records = new TreeSet<NameRecord>();
             for (int i = 0; i < jsonArray.length(); i++) {
               records.add(new NameRecord(null, jsonArray.getJSONObject(i)));
@@ -448,7 +413,7 @@ public class Admintercessor {
       return null;
     }
     waitForDumpResponse(id);
-    Map<String, TreeSet<NameRecord>> result = dumpResult.get(id);
+    Map<Object, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
 
     if (result != null) {

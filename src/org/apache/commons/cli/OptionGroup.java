@@ -48,6 +48,7 @@ public class OptionGroup implements Serializable
      * @param option the option to add to this group
      * @return this option group with the option added
      */
+    @SuppressWarnings("unchecked")
     public OptionGroup addOption(Option option)
     {
         // key   - option name

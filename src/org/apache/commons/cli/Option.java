@@ -463,6 +463,7 @@ public class Option implements Cloneable, Serializable
      *
      * @since 1.0.1
      */
+    @SuppressWarnings("unchecked")
     private void add(String value)
     {
         if ((numberOfArgs > 0) && (values.size() > (numberOfArgs - 1)))
@@ -527,6 +528,7 @@ public class Option implements Cloneable, Serializable
      * @return the values of this Option as a String array 
      * or null if there are no values
      */
+    @SuppressWarnings("unchecked")
     public String[] getValues()
     {
         return hasNoValues() ? null : (String[]) values.toArray(new String[values.size()]);
@@ -634,6 +636,7 @@ public class Option implements Cloneable, Serializable
      *
      * @throws RuntimeException
      */
+    @SuppressWarnings("unchecked")
     public Object clone()
     {
         try

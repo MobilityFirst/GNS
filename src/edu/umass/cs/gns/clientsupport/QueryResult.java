@@ -19,6 +19,7 @@ import java.util.Iterator;
  * has some instrumentation for round trip times and what server responded.
  * 
  * @author westy
+ * @param <NodeIDType>
  */
 public class QueryResult<NodeIDType> implements Serializable{
 
@@ -37,7 +38,7 @@ public class QueryResult<NodeIDType> implements Serializable{
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private NodeIDType responder;
+  private final NodeIDType responder;
 
   /**
    * Creates a "normal" (non-error) QueryResult.

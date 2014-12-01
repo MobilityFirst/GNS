@@ -284,7 +284,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
 
   /**
    * Returns the ping latency between two servers.
-   * Will return -1 if the node doesn't exist.
+   * Will return INVALID_PING_LATENCY if the node doesn't exist.
    *
    * @param id Server id
    * @return
@@ -328,6 +328,26 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     return this.getNSTcpPort(id);
   }
 
+  /**
+   * **
+   * Returns port number for the specified port type. Return -1 if the specified port type does not exist.
+   *
+   * @param nameServerId Name server id //
+   * @param portType	GNS port type*
+   */
+  public int getPort(NodeIDType nameServerId, GNS.PortType portType) {
+    switch (portType) {
+      case NS_TCP_PORT:
+        return getNSTcpPort(nameServerId);
+      case NS_UDP_PORT:
+        return getNSUdpPort(nameServerId);
+      case NS_ADMIN_PORT:
+        return getNSAdminRequestPort(nameServerId);
+      case NS_PING_PORT:
+        return getNSPingPort(nameServerId);
+    }
+    return -1;
+  }
   /**
    * Returns the Name Server (not including Local Name Servers) with lowest latency.
    *

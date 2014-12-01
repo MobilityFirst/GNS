@@ -503,6 +503,8 @@ public class HelpFormatter
      * @param options The command line Options
      *
      */
+    //FIXME: Punt on the warnings for now
+     @SuppressWarnings("unchecked")
     public void printUsage(PrintWriter pw, int width, String app, Options options)
     {
         // initialise the string buffer
@@ -568,6 +570,7 @@ public class HelpFormatter
      * @param group the group to append
      * @see #appendOption(StringBuffer,Option,boolean)
      */
+    @SuppressWarnings("unchecked")
     private void appendOptionGroup(final StringBuffer buff, final OptionGroup group)
     {
         if (!group.isRequired())
@@ -711,6 +714,7 @@ public class HelpFormatter
      *
      * @return the StringBuffer with the rendered Options contents.
      */
+    @SuppressWarnings("unchecked")
     protected StringBuffer renderOptions(StringBuffer sb, int width, Options options, int leftPad, int descPad)
     {
         final String lpad = createPadding(leftPad);

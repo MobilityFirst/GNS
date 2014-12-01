@@ -81,8 +81,8 @@ import java.util.concurrent.ConcurrentMap;
  * <b>Internal Design:</b> This class uses a generic <code>HashMap</code> to store fields that are currently in
  * memory. The keys and values of the hash map are the field names (string) and their values respectively.
  * Using a generic <code>HashMap</code> has the advantage that we can store different types of objects in the
- same hash map. While reading a field, we need type conversion to toString the actual object.
- <p/>
+ * same hash map. While reading a field, we need type conversion to toString the actual object.
+ * <p/>
  * In designing this class, we first thought of defining a class field for every field in the record.
  * This design would allocate pointers for all fields in the record every time a <code>ReplicaControllerRecord</code>
  * object is created. We chose the <code>HashMap</code> design for its efficiency, as it only creates those fields
@@ -101,6 +101,7 @@ import java.util.concurrent.ConcurrentMap;
  * <p/>
  * The design of this class is similar to the design of {@link edu.umass.cs.gns.nsdesign.recordmap.NameRecord} class.
  *
+ * @param <NodeIDType>
  * @see edu.umass.cs.gns.nsdesign.recordmap.NameRecord
  * @see edu.umass.cs.gns.nsdesign.replicaController.ReplicaController
  * @see edu.umass.cs.gns.nsdesign.recordmap.RecordMapInterface
@@ -154,7 +155,7 @@ public class ReplicaControllerRecord<NodeIDType> {
     hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     hashMap.put(ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     if (Config.debuggingEnabled) {
-      GNS.getLogger().finer("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((HashSet<NodeIDType>) hashMap.get(ACTIVE_NAMESERVERS)));
+      GNS.getLogger().finer("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((HashSet<Object>) hashMap.get(ACTIVE_NAMESERVERS)));
     }
     hashMap.put(OLD_ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
 
@@ -195,7 +196,7 @@ public class ReplicaControllerRecord<NodeIDType> {
 
     if (Config.debuggingEnabled) {
       GNS.getLogger().finer("@@@@@@@@@ RCR experiment ACTIVE_NAMESERVERS: "
-              + Util.setOfNodeIdToString((HashSet<NodeIDType>) hashMap.get(ACTIVE_NAMESERVERS)));
+              + Util.setOfNodeIdToString((HashSet<Object>) hashMap.get(ACTIVE_NAMESERVERS)));
     }
   }
 
@@ -224,9 +225,9 @@ public class ReplicaControllerRecord<NodeIDType> {
     this.replicaControllerDB = replicaControllerDB;
 
     if (Config.debuggingEnabled) {
-      HashSet<NodeIDType> activeNameServers = (HashSet<NodeIDType>) hashMap.get(ACTIVE_NAMESERVERS);
       GNS.getLogger().finer("@@@@@@@@@ RCR from database ACTIVE_NAMESERVERS: "
-              + ((activeNameServers != null) ? Util.setOfNodeIdToString(activeNameServers) : "is null"));
+              + ((hashMap.get(ACTIVE_NAMESERVERS) != null)
+                      ? Util.setOfNodeIdToString((HashSet<Object>) hashMap.get(ACTIVE_NAMESERVERS)) : "is null"));
     }
   }
 
@@ -942,6 +943,7 @@ public class ReplicaControllerRecord<NodeIDType> {
 
   // make this query:
   // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
+  @SuppressWarnings("unchecked")
   private static void test() throws FieldNotFoundException, Exception {
     Config.movingAverageWindowSize = 10;
     Object nodeID = "4";

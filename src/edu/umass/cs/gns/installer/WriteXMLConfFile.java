@@ -117,6 +117,7 @@ public class WriteXMLConfFile {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String argv[]) {
     ConcurrentHashMap<String, HostInfo> idTable = new ConcurrentHashMap();
     idTable.put("0", new HostInfo("0", "host1", null));

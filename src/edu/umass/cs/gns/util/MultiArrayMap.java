@@ -61,6 +61,8 @@ public class MultiArrayMap<KeyType,ValueType extends Keyable<KeyType>> {
 		if(!inserted) {hMap.put(key, value); inserted=true;}
 	}
 
+        //FIXME: Not sure if there is a way to avoid the warning here
+        @SuppressWarnings("unchecked")
 	public synchronized ValueType get(KeyType key) {
 		Object[] array = getArray(key);
 		int index = getIndex(key, array);
@@ -138,6 +140,8 @@ public class MultiArrayMap<KeyType,ValueType extends Keyable<KeyType>> {
 	/**
 	 * @param args
 	 */
+        //FIXME: Punt on the warnings for now
+        @SuppressWarnings("unchecked")
 	public static void main(String[] args) {
 		int million = 1000000;
 		int size = (int)(8.2*million);

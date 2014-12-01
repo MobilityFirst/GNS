@@ -65,6 +65,7 @@ public class Options implements Serializable
      * @param group the OptionGroup that is to be added
      * @return the resulting Options instance
      */
+    @SuppressWarnings("unchecked")
     public Options addOptionGroup(OptionGroup group)
     {
         Iterator options = group.getOptions().iterator();
@@ -95,6 +96,7 @@ public class Options implements Serializable
      *
      * @return a Collection of OptionGroup instances.
      */
+    @SuppressWarnings("unchecked")
     Collection getOptionGroups()
     {
         return new HashSet(optionGroups.values());
@@ -139,6 +141,7 @@ public class Options implements Serializable
      * @param opt the option that is to be added
      * @return the resulting Options instance
      */
+    @SuppressWarnings("unchecked")
     public Options addOption(Option opt)
     {
         String key = opt.getKey();
@@ -169,6 +172,7 @@ public class Options implements Serializable
      *
      * @return read-only Collection of {@link Option} objects in this descriptor
      */
+    @SuppressWarnings("unchecked")
     public Collection getOptions()
     {
         return Collections.unmodifiableCollection(helpOptions());
@@ -179,6 +183,7 @@ public class Options implements Serializable
      *
      * @return the List of Options
      */
+    @SuppressWarnings("unchecked")
     List helpOptions()
     {
         return new ArrayList(shortOpts.values());

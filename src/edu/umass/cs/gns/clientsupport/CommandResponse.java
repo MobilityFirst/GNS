@@ -6,6 +6,7 @@ import edu.umass.cs.gns.util.NSResponseCode;
 /**
  * Encapsulates the response values and instrumentation that we pass back from the 
  * Local Name Server to the client.
+ * @param <NodeIDType>
  */
 public class CommandResponse<NodeIDType> {
 

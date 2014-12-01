@@ -244,7 +244,7 @@ public class EC2Runner {
       AmazonEC2 ec2 = new AmazonEC2Client(credentials);
       String nodeName = "GNS Node " + idString;
       System.out.println("Starting install for " + nodeName + " in " + region.name() + " as part of run set " + runSetName);
-      HashMap tags = new HashMap();
+      HashMap<String,String> tags = new HashMap<>();
       tags.put("runset", runSetName);
       tags.put("id", idString);
       StatusModel.getInstance().queueUpdate(id, "Creating instance");

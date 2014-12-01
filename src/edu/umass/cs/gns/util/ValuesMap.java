@@ -235,7 +235,7 @@ public class ValuesMap extends JSONObject {
     json.put("occupation", "rocket scientist");
     json.put("location", "work");
     json.put("ip address", "127.0.0.1");
-    json.put("friends", new ArrayList(Arrays.asList("Joe", "Sam", "Billy")));
+    json.put("friends", new ArrayList<String>(Arrays.asList("Joe", "Sam", "Billy")));
     JSONObject subJson = new JSONObject();
     subJson.put("sammy", "green");
     JSONObject subsubJson = new JSONObject();
@@ -246,12 +246,12 @@ public class ValuesMap extends JSONObject {
     ValuesMap valuesMap = new ValuesMap(json);
     putWithDotNotation(valuesMap, "flapjack.sally.right", "crank");
     System.out.println(valuesMap);
-    putWithDotNotation(valuesMap, "flapjack.sammy", new ArrayList(Arrays.asList("One", "Ready", "Frap")));
+    putWithDotNotation(valuesMap, "flapjack.sammy", new ArrayList<String>(Arrays.asList("One", "Ready", "Frap")));
     System.out.println(valuesMap);
     JSONObject moreJson = new JSONObject();
     moreJson.put("name", "dog");
     moreJson.put("flyer", "shattered");
-    moreJson.put("crash", new ArrayList(Arrays.asList("Tango", "Sierra", "Alpha")));
+    moreJson.put("crash", new ArrayList<String>(Arrays.asList("Tango", "Sierra", "Alpha")));
     putWithDotNotation(valuesMap, "flapjack", moreJson);
     System.out.println(valuesMap);
 

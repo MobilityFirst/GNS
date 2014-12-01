@@ -69,7 +69,7 @@ public class AWSStatusCheck {
     sdb = new AmazonSimpleDBClient(credentials);
   }
   private static ArrayList<String> endpoints =
-          new ArrayList(Arrays.asList(
+          new ArrayList<>(Arrays.asList(
           "ec2.us-east-1.amazonaws.com",
           "ec2.us-west-1.amazonaws.com",
           "ec2.us-west-2.amazonaws.com",

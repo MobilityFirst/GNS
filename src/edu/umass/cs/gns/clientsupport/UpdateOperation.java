@@ -213,12 +213,12 @@ public enum UpdateOperation {
         }
       case SINGLE_FIELD_APPEND_OR_CREATE:
       case SINGLE_FIELD_APPEND:
-        Set singles; // use a hash to remove duplicates
+        Set<Object> singles; // use a hash to remove duplicates
         // check for a null list don't use the current values if it is
         if (valuesListHasNullFirstElement(valuesList)) {
-          singles = new HashSet();
+          singles = new HashSet<>();
         } else {
-          singles = new HashSet(valuesList);
+          singles = new HashSet<>(valuesList);
         }
         singles.addAll(newValues);
         // clear the old values and
