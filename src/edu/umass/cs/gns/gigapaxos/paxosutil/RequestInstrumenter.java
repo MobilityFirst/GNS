@@ -38,7 +38,7 @@ public class RequestInstrumenter {
 	}
 	
 	public synchronized static String remove(int requestID) {
-		//if(DEBUG) 
+		if(DEBUG) 
 			log.info(requestID + " :\n" + (map.containsKey(requestID) ? map.get(requestID) : ""));
 		return map.remove(requestID);
 	}

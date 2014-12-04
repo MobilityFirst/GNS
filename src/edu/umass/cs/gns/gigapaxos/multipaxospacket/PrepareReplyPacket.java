@@ -11,15 +11,13 @@ import java.util.Map;
 
 public class PrepareReplyPacket extends PaxosPacket {
 
-	public final int coordinatorID;
 	public final Ballot ballot;
-	public final int receiverID;
+	public final int acceptor;
 	public final Map<Integer, PValuePacket> accepted;
 
-	public PrepareReplyPacket(int coordinatorID, int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted) {
+	public PrepareReplyPacket(int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted) {
 		super(accepted==null || accepted.isEmpty() ? (PaxosPacket)null : accepted.values().iterator().next());
-		this.coordinatorID = coordinatorID;
-		this.receiverID = receiverID;
+		this.acceptor = receiverID;
 		this.ballot = ballot;
 		this.accepted = accepted==null ? new HashMap<Integer,PValuePacket>() : accepted;
 		this.packetType = PaxosPacketType.PREPARE_REPLY;
@@ -30,8 +28,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 		super(json);
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE_REPLY);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.coordinatorID = json.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
-		this.receiverID = json.getInt(PaxosPacket.NodeIDKeys.RECEIVER.toString());
+		this.acceptor = json.getInt(PaxosPacket.NodeIDKeys.ACCEPTOR.toString());
 		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
 		this.accepted = parseJsonForAccepted(json);
 	}
@@ -54,8 +51,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException
 	{
 		JSONObject json = new JSONObject();
-		json.put(PaxosPacket.NodeIDKeys.COORDINATOR.toString(), coordinatorID);
-		json.put(PaxosPacket.NodeIDKeys.RECEIVER.toString(), receiverID);
+		json.put(PaxosPacket.NodeIDKeys.ACCEPTOR.toString(), acceptor);
 		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
 		assert(this.packetType == PaxosPacketType.PREPARE_REPLY);
 		addAcceptedToJSON(json);
@@ -84,5 +80,4 @@ public class PrepareReplyPacket extends PaxosPacket {
 			json.put(PaxosPacket.Keys.ACCEPTED_MAP.toString(), jsonArray);
 		}
 	}
-
 }

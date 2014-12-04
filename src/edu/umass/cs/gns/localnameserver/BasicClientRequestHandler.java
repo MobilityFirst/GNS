@@ -324,7 +324,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public String getCacheLogString(String preamble) {
     StringBuilder cacheTable = new StringBuilder();
-    List<CacheEntry> list = new ArrayList<>(cache.asMap().values());
+    List<CacheEntry> list = new ArrayList(cache.asMap().values());
     Collections.sort(list, new CacheComparator());
     for (CacheEntry entry : list) {
       cacheTable.append("\n");
@@ -352,7 +352,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public Set<NodeIDType> getReplicaControllers(String name) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : ConsistentHashing.getReplicaControllerSet(name);
+    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name);
   }
 
   /**

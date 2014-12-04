@@ -27,10 +27,11 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
-import edu.umass.cs.gns.gigapaxos.paxosutil.PaxosInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MatchKeyable;
+import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
@@ -137,7 +138,6 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private final int[] groupMembers; // final coz group changes => new paxos instance
 	private final Object paxosID; // App ID or "GUID". Object to allow easy testing across byte[] and String
 	private final short version;
-	private final int myID;
 	private final PaxosManager<?> paxosManager;
 	private final Replicable clientRequestHandler;
 
@@ -159,15 +159,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 */
 		this.paxosID = PAXOS_ID_AS_STRING ? groupId : groupId.getBytes();
 		this.version = version;
-		this.myID = id;
 		this.clientRequestHandler = app;
 		this.paxosManager = pm;
-
-		// Copy set gms to array groupMembers
-		assert(gms.size()>0);
-		this.groupMembers = new int[gms.size()];
-		int index=0; for(int i : gms) this.groupMembers[index++] = i; 
-		Arrays.sort(this.groupMembers); 
+		assert(gms!=null && gms.size()>0);
+		Arrays.sort(this.groupMembers = Util.setToIntArray(gms)); 
 		/**************** End of final assignments *******************/
 
 		/* All non-final state is store in PaxosInstanceState (for acceptors)
@@ -178,11 +173,11 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		else if(hri!=null) hotRestore(hri);
 		else testingNoRecovery(); // used only for testing size
 
-		getActiveState(); // initialize active state, so that we can be deactivated if idle
+		createActiveState(); // initialize active state, so that we can be deactivated if idle
 
 		if(!TESTPaxosConfig.MEMORY_TESTING && hri==null) 
-			log.info("Initialized paxos " + (this.paxosState.getBallotCoord()==this.myID ? 
-				"COORDINATOR":"instance") + " for " + groupId + " at node " + myID + " with a total of " +
+			log.info("Initialized paxos " + (this.paxosState.getBallotCoord()==this.getMyID() ? 
+				"COORDINATOR":"instance") + " for " + groupId + " at node " + this.getMyID() + " with a total of " +
 				groupMembers.length + " members. " + this.paxosState.toString() +this.coordinator.toString());
 	}
 	public String getKey() {return this.getPaxosID();}
@@ -190,9 +185,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 
 	protected String getPaxosID() {return (paxosID instanceof String ? (String)paxosID : new String((byte[])paxosID)); }
 	protected int[] getMembers() {return this.groupMembers;}
-	protected int getNodeID() {return this.myID;}
+	protected int getNodeID() {return this.getMyID();}
 	protected Replicable getApp() {return this.clientRequestHandler;}
 	protected PaxosManager<?> getPaxosManager() {return this.paxosManager;}
+	protected int getMyID() {return (this.paxosManager!=null ? this.paxosManager.getMyID() : -1);}
 	public String toString() {return this.getNodeState() + " " + (this.paxosState!=null ? this.paxosState.toString():"null") +
 			(this.coordinator.exists()?this.coordinator.toString():"null");}
 
@@ -214,6 +210,12 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		if(DEBUG) assert(this.paxosManager.getPaxosLogger().getSlotBallotState(getPaxosID())==null);
 		return true;
 	}
+	protected void setActive() {
+		this.paxosState.setActive();
+	}
+	protected boolean isActive() {
+		return this.paxosState.isActive();
+	}
 
 	protected void handlePaxosMessage(JSONObject msg) throws JSONException {
 		long methodEntryTime = System.currentTimeMillis();
@@ -226,14 +228,14 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 * can not change any disk state.
 		 */
 		if(this.paxosState.isStopped()) return;
-		if(TESTPaxosConfig.isCrashed(this.myID)) return; // Tester says I have crashed
+		if(TESTPaxosConfig.isCrashed(this.getMyID())) return; // Tester says I have crashed
 		boolean recovery = PaxosPacket.isRecovery(msg); // recovery means we won't message any replies
 		/* The reason we should not process regular messages until this instance has 
 		 * rolled forward is that it might respond to a prepare with a list of 
 		 * accepts fetched from disk that may be inconsistent with its acceptor state.
 		 */
-		if(!this.paxosManager.hasRecovered(getPaxosID()) && !recovery) return; // don't process regular messages until ready for rollForward
-		this.getActiveState(true); 
+		if(!this.paxosManager.hasRecovered(this) && !recovery) return; // don't process regular messages until ready for rollForward
+		this.markActiveState(); 
 
 		PaxosPacketType msgType = PaxosPacket.getPaxosPacketType(msg);
 		if(DEBUG) log.info(getNodeState() + " received " + PaxosPacket.getPaxosPacketType(msg) + ": " + msg);
@@ -294,7 +296,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		}
 		mtasks[1] = mtask;
 		
-		PaxosInstrumenter.update("handlePaxosMessage", methodEntryTime);
+		DelayProfiler.update("handlePaxosMessage", methodEntryTime);
 
 		this.checkIfTrapped(msg, mtasks[1]); // just to print a warning if needed
 		if(!recovery) {this.sendMessagingTask(mtasks);} 
@@ -318,7 +320,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		if(slotBallot!=null && slotBallot.state!=null) this.clientRequestHandler.updateState(pid, slotBallot.state);
 
 		this.coordinator = new PaxosCoordinator(); // just a shell class to wrap coordinator state
-		if(slotBallot==null && roundRobinCoordinator(0)==myID) this.coordinator.makeCoordinator(0, myID, 
+		if(slotBallot==null && roundRobinCoordinator(0)==this.getMyID()) this.coordinator.makeCoordinator(0, this.getMyID(), 
 				getMembers(), 0, true); // initial coordinator assumed, not prepared
 		/* Note: We don't have to create coordinator state here. It will get created if 
 		 * needed when the first external (non-recovery) packet is received. But we 
@@ -340,7 +342,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 	private boolean hotRestore(HotRestoreInfo hri) {
 		assert(this.paxosState==null && this.coordinator==null); // called from constructor only
-		if(DEBUG) log.info("Node"+myID + " hot restoring with " + hri);
+		if(DEBUG) log.info("Node"+this.getMyID() + " hot restoring with " + hri);
 		this.coordinator = new PaxosCoordinator();
 		this.coordinator.hotRestore(hri);
 		this.paxosState = new PaxosAcceptor(hri.accBallot.ballotNumber,
@@ -357,7 +359,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		if(this.paxosState!=null && this.paxosState.isStopped() && 
 				mtask.msgs[0].getType()!=PaxosPacketType.DECISION &&
 				mtask.msgs[0].getType()!=PaxosPacketType.CHECKPOINT_STATE) return;
-		if(TESTPaxosConfig.isCrashed(myID)) return; 
+		if(TESTPaxosConfig.isCrashed(this.getMyID())) return; 
 
 		if(DEBUG) log.info(this.getNodeState() + " sending: " + mtask.toString());
 		mtask.putPaxosIDVersion(this.getPaxosID(), this.getVersion());
@@ -405,7 +407,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 */
 	private MessagingTask handleRequest(RequestPacket msg) throws JSONException {
 		if(DEBUG) log.info(this.getNodeState() + " Phase0/CLIENT_REQUEST: " + msg);
-		RequestInstrumenter.received(msg, msg.clientID, myID);
+		RequestInstrumenter.received(msg, msg.clientID, this.getMyID());
 		return handleProposal(new ProposalPacket(0, msg));
 	}
 
@@ -422,7 +424,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private MessagingTask handleProposal(ProposalPacket proposal) throws JSONException {
 		MessagingTask mtask=null; // could be multicast or unicast to coordinator.
 		if(proposal.getForwardCount()==0) proposal.setReceiptTime(); // first receipt into the system
-		else RequestInstrumenter.received(proposal, proposal.getForwarderID(), myID);
+		else RequestInstrumenter.received(proposal, proposal.getForwarderID(), this.getMyID());
 		if(this.coordinator.exists(this.paxosState.getBallot())) { // propose to all
 			if(DEBUG) log.info(this.getNodeState() + " issuing Phase2a/ACCEPT after " + (System.currentTimeMillis() - 
 					proposal.getCreateTime()) + " ms : " + (this.coordinator.isActive() ? 
@@ -431,12 +433,12 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			proposal.addDebugInfo("a");
 			multicastAccept = this.coordinator.propose(this.groupMembers, proposal); 
 			mtask = multicastAccept!=null ? new MessagingTask(this.groupMembers, multicastAccept) : null; // multicast accept to all
-			if(multicastAccept!=null) RequestInstrumenter.sent(multicastAccept, this.myID, -1);
+			if(multicastAccept!=null) RequestInstrumenter.sent(multicastAccept, this.getMyID(), -1);
 		}
 		else { // else unicast to current coordinator
 			if(DEBUG) log.info(this.getNodeState()+" is not the coordinator, forwarding to " + 
 					this.paxosState.getBallotCoord() + " : " + proposal);
-			mtask = new MessagingTask(this.paxosState.getBallotCoord(), proposal.setForwarderID(myID)); // unicast to coordinator
+			mtask = new MessagingTask(this.paxosState.getBallotCoord(), proposal.setForwarderID(this.getMyID())); // unicast to coordinator
 			if(proposal.isPingPonging()) {
 				log.warning(this.getNodeState() + " dropping ping-ponging proposal: " + proposal);
 				mtask = this.checkRunForCoordinator(true);
@@ -458,10 +460,9 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * Return: Send prepare reply with proposal values previously
 	 * accepted to the sender (the received ballot's coordinator).
 	 */
-	private MessagingTask handlePrepare(PreparePacket rcvdPrepare) throws JSONException{
-		this.paxosManager.heardFrom(rcvdPrepare.coordinatorID); // FD optimization, not necessary
-		PreparePacket prepare = rcvdPrepare.fixPreparePacketReceiver(this.myID); // coz receivers in multicast packets are meaningless
-		PrepareReplyPacket prepareReply = this.paxosState.handlePrepare(prepare, this.getNodeState());  
+	private MessagingTask handlePrepare(PreparePacket prepare) throws JSONException{
+		this.paxosManager.heardFrom(prepare.ballot.coordinatorID); // FD optimization, not necessary
+		PrepareReplyPacket prepareReply = this.paxosState.handlePrepare(prepare, this.paxosManager.getMyID());  
 		if(prepareReply==null) return null; // can happen only if acceptor is stopped
 		if(prepare.isRecovery()) return null; // no need to get accepted pvalues from disk during recovery as networking is disabled anyway
 
@@ -475,7 +476,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			}
 		}
 
-		LogMessagingTask mtask = new LogMessagingTask(prepareReply.coordinatorID, prepareReply, (PaxosPacket)prepare);
+		LogMessagingTask mtask = new LogMessagingTask(prepareReply.ballot.coordinatorID, prepareReply, (PaxosPacket)prepare);
 		return mtask;
 	}
 
@@ -493,7 +494,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * (proposed) to all replicas.
 	 */
 	private MessagingTask handlePrepareReply(PrepareReplyPacket prepareReply) {
-		this.paxosManager.heardFrom(prepareReply.receiverID); // FD optimization, not necessary
+		this.paxosManager.heardFrom(prepareReply.acceptor); // FD optimization, not necessary
 		MessagingTask mtask=null;
 		ArrayList<ProposalPacket> preActiveProposals=null;
 		ArrayList<AcceptPacket> acceptList = null;
@@ -517,18 +518,19 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * Action: Send back current or updated ballot to the ballot's coordinator. 
 	 */
 	private MessagingTask handleAccept(AcceptPacket accept) throws JSONException {
-		RequestInstrumenter.received(accept, accept.nodeID, myID);
-		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept); 
+		RequestInstrumenter.received(accept, accept.sender, this.getMyID());
+		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept, this.getMyID()); 
 		if(ballot==null) {return null;}// can happen only if acceptor is stopped. 
 
 		this.garbageCollectAccepted(accept.majorityCommittedSlot); 
 		if(accept.isRecovery()) return null; // recovery ACCEPTS do not need any reply
 
-		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.myID, ballot, accept.slot, this.paxosState.getSlot()-1, accept);
+		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.getMyID(), ballot, accept.slot, 
+				lastCheckpointSlot(this.paxosState.getSlot()-1), accept);
 		AcceptPacket toLog = (accept.ballot.compareTo(ballot)>=0 ? accept : null); // lower ballot => no logging, only accept reply
-		MessagingTask mtask = toLog!=null ? new LogMessagingTask(accept.nodeID, acceptReply, toLog) :
-			new MessagingTask(accept.nodeID, acceptReply);
-		RequestInstrumenter.sent(acceptReply, myID, accept.nodeID);
+		MessagingTask mtask = toLog!=null ? new LogMessagingTask(accept.sender, acceptReply, toLog) :
+			new MessagingTask(accept.sender, acceptReply);
+		RequestInstrumenter.sent(acceptReply, this.getMyID(), accept.sender);
 
 		return mtask;
 	}
@@ -554,7 +556,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * unicast to the preempting coordinator. Null if neither.
 	 */
 	private MessagingTask handleAcceptReply(AcceptReplyPacket acceptReply) {
-		RequestInstrumenter.received(acceptReply, acceptReply.nodeID, myID);
+		RequestInstrumenter.received(acceptReply, acceptReply.acceptor, this.getMyID());
 		PValuePacket committedPValue = this.coordinator.handleAcceptReply(this.groupMembers, acceptReply);
 		if(committedPValue==null) return null;
 
@@ -583,7 +585,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			if(!committedPValue.isNoop()) {
 				// forward only if not already a no-op
 				unicastPreempted = new MessagingTask(acceptReply.ballot.coordinatorID, 
-					committedPValue.makeNoop().setForwarderID(myID)); 
+					committedPValue.makeNoop().setForwarderID(this.getMyID())); 
 				committedPValue.addDebugInfo("f");
 			}
 			log.info(this.getNodeState() + " forwarding preempted request as no-op to node " + 
@@ -601,29 +603,34 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * 	
 	 */
 	private MessagingTask handleCommittedRequest(PValuePacket committed) {
-		RequestInstrumenter.received(committed, committed.getDecisionIssuer(), myID);
+		RequestInstrumenter.received(committed, committed.getDecisionIssuer(), this.getMyID());
 
 		// Log, extract from or add to acceptor, and execute the request at the app
 		if(!committed.isRecovery()) 
-			AbstractPaxosLogger.logAndExecute(this.paxosManager.getPaxosLogger(), committed, this);
-		else this.extractExecuteAndCheckpoint(committed);
+			AbstractPaxosLogger.logDecision(this.paxosManager.getPaxosLogger(), committed, this);
+		this.extractExecuteAndCheckpoint(committed);
 
 		TESTPaxosConfig.commit(committed.requestID); 
 
-		if(this.paxosState.getSlot() < committed.slot) if(DEBUG) log.info(this.getNodeState() + " expecting " + 
+		if(this.paxosState.getSlot() - committed.slot < 0) if(DEBUG) log.info(this.getNodeState() + " expecting " + 
 				this.paxosState.getSlot() + " recieved out-of-order commit: "+committed);
 
 		return null; //this.fixLongDecisionGaps(committed);
 	}
-	private ActivePaxosState getActiveState(boolean active) {
-		return this.paxosManager.getActiveState(active, getPaxosID());
+
+	private ActivePaxosState createActiveState() {		
+		return (this.paxosManager != null ? this.paxosManager.getActiveState(
+				false, getPaxosID()) : null);
 	}
-	private ActivePaxosState getActiveState() {return getActiveState(false);}
+	private ActivePaxosState markActiveState() {		
+		return (this.paxosManager != null ? this.paxosManager.getActiveState(
+				true, getPaxosID()) : null);
+	}
 	// Invoked by handleCommittedRequest above ...
 	private MessagingTask fixLongDecisionGaps(PValuePacket committed) {
 		if(committed==null) return null;
 
-		ActivePaxosState activeState = getActiveState(true);
+		ActivePaxosState activeState = markActiveState();
 
 		MessagingTask fixGapsRequest=null;
 		if((committed.slot - this.paxosState.getSlot() > SYNC_THRESHOLD) && activeState.canSync()) {
@@ -663,8 +670,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		// extract next in-order decision
 		while((inorderDecision = this.paxosState.putAndRemoveNextExecutable(loggedDecision))!=null) { 
 			if(DEBUG) log.info(this.getNodeState() + " in-order commit: "+inorderDecision); 
-			if(!inorderDecision.isRecovery() && (inorderDecision.ballot.coordinatorID==this.myID ||
-					inorderDecision.getDecisionIssuer()==this.myID)) 
+			if(!inorderDecision.isRecovery() && (inorderDecision.ballot.coordinatorID==this.getMyID())) 
 				inorderDecision.setReplyToClient(true); // used only for testing
 
 			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
@@ -681,13 +687,13 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				AbstractPaxosLogger.checkpoint(this.paxosManager.getPaxosLogger(), pid, this.version, 
 						this.groupMembers, inorderDecision.slot, this.paxosState.getBallot(), 
 						this.clientRequestHandler.getState(pid), this.paxosState.getGCSlot());
-				log.info(PaxosInstrumenter.getStats());
+				log.info(DelayProfiler.getStats());
 			}
 			if(inorderDecision.isStopRequest()) this.paxosManager.kill(this);
 		}
 		this.paxosState.assertSlotInvariant();
 		assert(loggedDecision==null || this.paxosState.getSlot()!=loggedDecision.slot); // otherwise it would've been executed
-		if(loggedDecision!=null && !loggedDecision.isRecovery()) PaxosInstrumenter.update("EECNoSync", methodEntryTime, execCount);
+		if(loggedDecision!=null && !loggedDecision.isRecovery()) DelayProfiler.update("EEC", methodEntryTime, execCount);
 		return this.fixLongDecisionGaps(loggedDecision);
 	}
 	// Like extractExecuteAndCheckpoint but invoked upon checkpoint transfer
@@ -721,7 +727,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				checkpointed = true;
 				log.info(this.getNodeState() + " forcing checkpoint at slot " + this.paxosState.getSlot() + 
 						"; garbage collected accepts upto slot " + this.paxosState.getGCSlot() + "; max committed slot = " + 
-						this.paxosState.getMaxCommittedSlot() + (this.paxosState.getBallotCoord()==myID ? 
+						this.paxosState.getMaxCommittedSlot() + (this.paxosState.getBallotCoord()==this.getMyID() ? 
 								"; maxCommittedFrontier="+this.coordinator.getMajorityCommittedSlot() : ""));
 				this.forceStop();
 			}
@@ -783,11 +789,11 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 *   OR forceRun
 		 */
 		if((!this.coordinator.exists(curBallot) && !this.coordinator.ranRecently() && 
-				(curBallot.coordinatorID==this.myID // can happen during recovery
+				(curBallot.coordinatorID==this.getMyID() // can happen during recovery
 				|| 
 				(!this.paxosManager.isNodeUp(curBallot.coordinatorID) 
 						&& 
-						(this.myID==getNextCoordinator(curBallot.ballotNumber+1, this.groupMembers) 
+						(this.getMyID()==getNextCoordinator(curBallot.ballotNumber+1, this.groupMembers) 
 						|| 
 						paxosManager.lastCoordinatorLongDead(curBallot.coordinatorID)))))
 						|| forceRun) 
@@ -808,18 +814,19 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			 * than the typical node failure detection timeout). 
 			 */
 			log.info(getNodeState() + " decides to run for coordinator as node " + curBallot.coordinatorID + 
-					(curBallot.coordinatorID!=myID ? " appears to be dead" : " has not yet initialized its coordinator"));
-			Ballot newBallot = new Ballot(curBallot.ballotNumber+1, this.myID); 
+					(curBallot.coordinatorID!=this.getMyID() ? " appears to be dead" : 
+						" has not yet initialized its coordinator"));
+			Ballot newBallot = new Ballot(curBallot.ballotNumber+1, this.getMyID()); 
 			if(this.coordinator.makeCoordinator(newBallot.ballotNumber, newBallot.coordinatorID, 
 					this.groupMembers, this.paxosState.getSlot(), false)!=null) {
-				multicastPrepare = new MessagingTask(this.groupMembers, new PreparePacket(this.myID, this.myID, newBallot));
+				multicastPrepare = new MessagingTask(this.groupMembers, new PreparePacket(newBallot));
 			}
 		} else if(this.coordinator.waitingTooLong()) { // just "re-run" by resending  prepare
 			TESTPaxosConfig.testAssert(false);
 			log.warning(this.getNodeState() + " resending timed out PREPARE; this is only needed under high congestion");
 			Ballot newBallot = this.coordinator.remakeCoordinator(groupMembers);
 			if(newBallot!=null) multicastPrepare = new MessagingTask(this.groupMembers, 
-					new PreparePacket(this.myID, this.myID, newBallot));
+					new PreparePacket(newBallot));
 		} else if(!this.paxosManager.isNodeUp(curBallot.coordinatorID) && !this.coordinator.exists(curBallot)) { // not my job
 			log.info(getNodeState() + " thinks current coordinator " + curBallot.coordinatorID + " is"+
 					(paxosManager.lastCoordinatorLongDead(curBallot.coordinatorID)?" *long* ":" ") +
@@ -830,7 +837,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 	private String getBallots() {return "[C:("+(this.coordinator!=null ? this.coordinator.getBallotStr():"null")+
 			"), A:("+(this.paxosState!=null ? this.paxosState.getBallotSlot():"null")+")]";}
-	private String getNodeState() {return "Node "+this.myID+ " "+ this.getBallots() + ", " + this.getPaxosID();}
+	private String getNodeState() {return "Node "+this.getMyID()+ " "+ this.getBallots() + ", " + this.getPaxosID();}
 
 	/* Computes the next coordinator as the node with the smallest ID 
 	 * that is still up. We could plug in any deterministic policy here.
@@ -883,10 +890,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		if(missingSlotNumbers==null || missingSlotNumbers.isEmpty()) return null;
 
 		int maxDecision = this.paxosState.getMaxCommittedSlot();
-		SyncDecisionsPacket srp =  new SyncDecisionsPacket(this.myID,maxDecision, missingSlotNumbers, 
+		SyncDecisionsPacket srp =  new SyncDecisionsPacket(this.getMyID(),maxDecision, missingSlotNumbers, 
 				maxDecision-this.paxosState.getSlot() >= MAX_SYNC_GAP);
 
-		MessagingTask mtask = coordinatorID!=this.myID ? new MessagingTask(coordinatorID, srp) :
+		MessagingTask mtask = coordinatorID!=this.getMyID() ? new MessagingTask(coordinatorID, srp) :
 			new MessagingTask(otherGroupMembers(), srp); // send sync request to coordinator or multicast to all but me
 		return mtask;
 	}
@@ -896,7 +903,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		int[] others = new int[this.groupMembers.length-1];
 		int j=0;
 		for(int i=0; i<this.groupMembers.length;i++) {
-			if(this.groupMembers[i]!=this.myID) others[j++] = this.groupMembers[i];
+			if(this.groupMembers[i]!=this.getMyID()) others[j++] = this.groupMembers[i];
 		}
 		return others;
 	}
@@ -909,8 +916,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 */
 	private MessagingTask handleSyncDecisionsPacket(SyncDecisionsPacket syncReply) throws JSONException {
 		int minMissingSlot = syncReply.missingSlotNumbers.get(0); 
-		if(this.paxosState.getSlot() <= minMissingSlot) return null; // I am worse than you
-		else if (minMissingSlot < this.lastCheckpointSlot()) return handleCheckpointRequest(syncReply); //sync reply = checkpoint request.
+		if(this.paxosState.getSlot() - minMissingSlot <= 0) return null; // I am worse than you
+		else if (minMissingSlot - lastCheckpointSlot(this.paxosState.getSlot()) < 0) return handleCheckpointRequest(syncReply); //sync reply = checkpoint request.
 
 		// Else get decisions from database (as we are unlikely to have most of them in memory)
 		ArrayList<PValuePacket> missingDecisions = 
@@ -925,7 +932,13 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		log.info(this.getNodeState() + " sending missing decisions to node " + syncReply.nodeID +": " + unicasts);
 		return unicasts;
 	}
-	private int lastCheckpointSlot() {return this.paxosState.getSlot() - (this.paxosState.getSlot()%INTER_CHECKPOINT_INTERVAL);}
+
+	private static int lastCheckpointSlot(int slot) {
+		int lcp = slot - slot%INTER_CHECKPOINT_INTERVAL;
+		if(lcp < 0 && ((lcp -= INTER_CHECKPOINT_INTERVAL) > 0)) // wraparound-arithmetic
+				lcp = lastCheckpointSlot(Integer.MAX_VALUE);
+		return lcp;
+	}
 
 	/* Event: Received a request for a recent checkpoint presumably
 	 * from a replica that has recovered after a long down time. 
@@ -940,7 +953,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 * If the state is tiny, this will double the state fetching overhead as we 
 		 * are doing two database reads.
 		 */
-		assert(syncReply.missingSlotNumbers.get(0) < this.lastCheckpointSlot());
+		assert(syncReply.missingSlotNumbers.get(0) - lastCheckpointSlot(this.paxosState.getSlot()) < 0);
 		if(this.paxosState.getSlot()==0) log.warning(this.getNodeState() + (!this.coordinator.exists() ? "[acceptor]" : 
 			this.coordinator.isActive() ? "[coordinator]" : "[preactive-coordinator]" ) + " has no state (yet) for " + syncReply);
 		int checkpointSlot = this.paxosManager.getPaxosLogger().getCheckpointSlot(getPaxosID());
@@ -959,7 +972,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private void testingNoRecovery() {
 		int initSlot = 0;
 		this.coordinator = new PaxosCoordinator();
-		if(this.groupMembers[0]==this.myID) coordinator.makeCoordinator(0, this.groupMembers[0], groupMembers, initSlot, true);
+		if(this.groupMembers[0]==this.getMyID()) coordinator.makeCoordinator(0, this.groupMembers[0], groupMembers, initSlot, true);
 		this.paxosState = new PaxosAcceptor(0, this.groupMembers[0],initSlot,null);
 	}
 

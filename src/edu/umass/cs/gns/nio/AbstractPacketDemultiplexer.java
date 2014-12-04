@@ -64,6 +64,7 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
 
   // This method will be invoked by NIO
   protected boolean handleJSONObjectSuper(JSONObject jsonObject) throws JSONException {
+	NIOInstrumenter.rcvdJSONPacket(jsonObject);
     InterfacePacketDemultiplexer pd = this.demuxMap.get(JSONPacket.getPacketType(jsonObject));
     Tasker tasker = new Tasker(jsonObject, pd != null ? pd : this);
     boolean handled = this.demuxTypes.containsKey(JSONPacket.getPacketType(jsonObject));

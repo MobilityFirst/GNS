@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.gigapaxos;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
+
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PValuePacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
@@ -14,11 +15,14 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Messenger;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.Util;
+
 import org.json.JSONException;
 
 import javax.sql.DataSource;
+
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
@@ -88,6 +92,9 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_OLD_DECISIONS =
 			PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 	private static final boolean CLOB_OPTION = false;
+	
+	// FIXME: Replace field name string constants with enums
+	//private static enum Fields {PAXOS_ID, SLOT, BALLOTNUM, COORDINATOR, PACKET_TYPE, STATE, MESSAGE}; 
 	
 	private static final ArrayList<DerbyPaxosLogger> instances = 
 			new ArrayList<DerbyPaxosLogger>();
@@ -272,29 +279,45 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				"ms; garbage collection took " +
 				(System.currentTimeMillis() - t2) + "ms");
 	}
+	
+	// Forms the constraint field < limit while handling wraparounds
+	private static String getIntegerLTConstraint(String field, int limit) {
+		return "("+(limit > Integer.MIN_VALUE/2 ? field + " < " + limit :
+			(field + " < " + limit + " || " + field + " > " + Integer.MAX_VALUE/2)) +")";
+	}
+	// Forms the constraint field > limit while handling wraparounds
+	private static String getIntegerGTEConstraint(String field, int limit) {
+		return "("+(limit < Integer.MAX_VALUE/2 ? field + " >= " + limit :
+			(field + " >= " + limit + " || " + field + " < " + Integer.MIN_VALUE/2)) +")";
+	}
 
 	/* Called by putCheckpointState to delete logged messages from before the checkpoint. */
 	private void deleteOutdatedMessages(String paxosID, int slot,
 			int ballotnum, int coordinator, int acceptedGCSlot) {
 		if (isClosed()) return;
-		if (slot < PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL) return; // an optimization to avoid GC at slot 0
+		if (slot==0) return; // a hack to avoid GC at slot 0
 
 		PreparedStatement pstmt = null, dstmt = null;
 		ResultSet checkpointRS = null;
 		Connection conn = null;
 		try {
+			// The following are for handling integer wraparound arithmetic
+			int minLoggedAccept = (acceptedGCSlot - slot <= 0 ? acceptedGCSlot+1 : slot+1);
+			int minLoggedDecision = slot - MAX_OLD_DECISIONS;
+			String decisionConstraint = getIntegerLTConstraint("slot", minLoggedDecision);
+			String acceptConstraint = getIntegerLTConstraint("slot", minLoggedAccept);
+			String ballotnumConstraint = getIntegerLTConstraint("ballotnum", ballotnum);
+			
 			// Create delete command using the slot, ballot, and gcSlot
-			String dcmd =
-					"delete from " + getMTable() + " where paxos_id='" +
-							paxosID + "' and " + "(packet_type=" +
-							PaxosPacketType.DECISION.getInt() + " and slot<" +
-							(slot - MAX_OLD_DECISIONS) + ") or " +
-							"(packet_type=" + PaxosPacketType.PREPARE.getInt() +
-							" and (ballotnum<" + ballotnum + " or (ballotnum=" +
-							ballotnum + " and coordinator<" + coordinator +
-							"))) or" + "(packet_type=" +
-							PaxosPacketType.ACCEPT.getInt() + " and slot<=" +
-							Math.min(acceptedGCSlot, slot) + ")";
+			String dcmd = "delete from " + getMTable() + " where paxos_id='"
+					+ paxosID + "' and " + "(packet_type="
+					+ PaxosPacketType.DECISION.getInt() + " and "
+					+ decisionConstraint + ") or " + "(packet_type="
+					+ PaxosPacketType.PREPARE.getInt() + " and ("
+					+ ballotnumConstraint + " or (ballotnum=" + ballotnum
+					+ " and coordinator<" + coordinator + "))) or"
+					+ "(packet_type=" + PaxosPacketType.ACCEPT.getInt()
+					+ " and " + acceptConstraint + ")";
 			conn = getDefaultConn();
 			dstmt = conn.prepareStatement(dcmd);
 			dstmt.execute();
@@ -767,12 +790,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * Acceptors remove decisions right after executing them. So they need to fetch
 	 * logged decisions from the disk to handle synchronization requests.
 	 */
-	public synchronized ArrayList<PValuePacket> getLoggedDecisions(String paxosID,
-			int minSlot, int maxSlot) {
-		ArrayList<PaxosPacket> list =
-				this.getLoggedMessages(paxosID, " and packet_type=" +
-						PaxosPacketType.DECISION.getInt() + " and slot>=" +
-						minSlot + " and slot<" + maxSlot);
+	public synchronized ArrayList<PValuePacket> getLoggedDecisions(
+			String paxosID, int minSlot, int maxSlot) {
+		if (maxSlot - minSlot <= 0)
+			return null;
+		ArrayList<PaxosPacket> list = this.getLoggedMessages(paxosID,
+				" and packet_type=" + PaxosPacketType.DECISION.getInt()
+						+ " and " + getIntegerGTEConstraint("slot", minSlot)
+						+ " and " + getIntegerLTConstraint("slot", maxSlot)); // wraparound-arithmetic
 		assert (list != null);
 		ArrayList<PValuePacket> decisions = new ArrayList<PValuePacket>();
 		for (PaxosPacket p : list)
@@ -786,23 +811,24 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * pressure. This allows us to remove accepted proposals once they have
 	 * been committed.
 	 */
-	public synchronized Map<Integer, PValuePacket> getLoggedAccepts(String paxosID,
-			int firstSlot) {
-		ArrayList<PaxosPacket> list =
-				this.getLoggedMessages(paxosID, " and packet_type=" +
-						PaxosPacketType.ACCEPT.getInt() + " and slot>" +
-						firstSlot);
-		TreeMap<Integer, PValuePacket> accepted =
-				new TreeMap<Integer, PValuePacket>();
+	public synchronized Map<Integer, PValuePacket> getLoggedAccepts(
+			String paxosID, int firstSlot) {
+		long t1 = System.currentTimeMillis();
+		// fetch all accepts and then weed out those below firstSlot
+		ArrayList<PaxosPacket> list = this.getLoggedMessages(paxosID,
+				" and packet_type=" + PaxosPacketType.ACCEPT.getInt()); 
+		TreeMap<Integer, PValuePacket> accepted = new TreeMap<Integer, PValuePacket>();
 		for (PaxosPacket p : list) {
 			int slot = AbstractPaxosLogger.getSlotBallot(p)[0];
 			AcceptPacket accept = (AcceptPacket) p;
-			if (slot >= 0 &&
-					(!accepted.containsKey(slot) || accepted.get(slot).ballot.compareTo(accept.ballot) < 0))
+			if ((slot - firstSlot >= 0)
+					&& /* wraparound-arithmetic */
+					(!accepted.containsKey(slot) || accepted.get(slot).ballot
+							.compareTo(accept.ballot) < 0))
 				accepted.put(slot, accept);
 		}
+		DelayProfiler.update("getLoggedAccepts", t1);
 		return accepted;
-
 	}
 
 	/**
@@ -976,7 +1002,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 						"version smallint, slot int, ballotnum int, coordinator int, packet_type int, message varchar(" +
 						MAX_LOG_MESSAGE_SIZE +
 						")/*, primary key(paxos_id, slot, ballotnum, coordinator, packet_type)*/)";
-		// FIXME: How to batch while avoiding duplicate key exceptions with indexing??? Aargh!
+		/* We create a non-unique-key index below instead of (unique) primary 
+		 * key (commented out above) as otherwise we will get duplicate key
+		 * exceptions during batch inserts.
+		 */
 		String cmdMI =
 				"create index messages_index on " + getMTable() +
 						"(paxos_id,packet_type,slot,ballotnum,coordinator)";
@@ -1060,31 +1089,48 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		return f.exists() && f.isDirectory();
 	}
 
+	/* This method will connect to the DB while creating it if
+	 * it did not already exist. This method is not really 
+	 * needed but exists only because otherwise c3p0 throws
+	 * unsuppressable warnings about DB already existing
+	 * no matter how you use it. So we now create the DB
+	 * separately and always invoke c3p0 without the 
+	 * create flag (default false).
+	 */
+	private boolean existsDB(String dbCreation, Properties props) throws SQLException {
+		try {
+			Class.forName(DRIVER).newInstance();
+		} catch (InstantiationException | IllegalAccessException
+				| ClassNotFoundException e) {
+			e.printStackTrace();
+			return false;
+		}
+		Connection conn = DriverManager.getConnection(PROTOCOL
+				+ this.logDirectory + DATABASE
+				+ (!this.dbDirectoryExists() ? ";create=true" : ""));
+		cleanup(conn);
+		return true;
+	}
+
 	private boolean connectDB() {
 		boolean connected = false;
 		int connAttempts = 0, maxAttempts = 1;
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
-		// providing a user name and PASSWORD is optional in the embedded
-		// and derbyclient frameworks
+		// providing a user name and PASSWORD is optional in embedded derby
 		props.put("user", DerbyPaxosLogger.USER + this.myID);
 		props.put("password", DerbyPaxosLogger.PASSWORD);
-		System.setProperty("derby.system.home", this.logDirectory); // doesn't seem to work
-
-		String dbCreation =
-				PROTOCOL +
-						this.logDirectory +
-						DATABASE +
-						(!dbDirectoryExists() ? ";create=true"
-								: "");
+		String dbCreation = PROTOCOL + this.logDirectory + DATABASE;
 
 		try {
+			if(!this.existsDB(dbCreation, props)) dbCreation += ";create=true";
 			dataSource =
 					(ComboPooledDataSource) setupDataSourceC3P0(dbCreation,
 						props);
 		} catch (SQLException e) {
-			log.severe("Could not build pooled data source");
+			log.severe("Could not create pooled data source to DB " + dbCreation);
 			e.printStackTrace();
+			return false;
 		}
 
 		while (!connected && connAttempts < maxAttempts) {
@@ -1417,7 +1463,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				AcceptPacket accept = new AcceptPacket(nodeID, pvalue, -1);
 				pvalue = pvalue.makeDecision(-1, 2);
 				PreparePacket prepare =
-						new PreparePacket(coordinator, nodeID, new Ballot(i,
+						new PreparePacket(new Ballot(i,
 								ballot.coordinatorID));
 				if (j % 3 == 0) { // prepare
 					packets[j] = prepare;

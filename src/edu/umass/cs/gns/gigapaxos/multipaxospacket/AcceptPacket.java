@@ -7,13 +7,13 @@ import org.json.JSONObject;
 public final class AcceptPacket extends PValuePacket {
 	protected static enum Keys {SENDER_NODE, MAJORITY_COMMITTED_SLOT};
 	
-	public final int nodeID; // sender nodeID
+	public final int sender; // sender nodeID
 	public final int majorityCommittedSlot; 	// slot number up to which a majority have committed
 
 	public AcceptPacket(int nodeID, PValuePacket pValue, int slotNumber) {
 		super(pValue);
 		this.packetType = PaxosPacketType.ACCEPT;
-		this.nodeID = nodeID;
+		this.sender = nodeID;
 		this.majorityCommittedSlot = slotNumber;
 	}
 
@@ -21,7 +21,7 @@ public final class AcceptPacket extends PValuePacket {
 		super(json);
 		assert(PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.ACCEPT); // coz class is final
 		this.packetType = PaxosPacketType.ACCEPT;
-		this.nodeID = json.getInt(Keys.SENDER_NODE.toString());
+		this.sender = json.getInt(Keys.SENDER_NODE.toString());
 		this.majorityCommittedSlot = json.getInt(Keys.MAJORITY_COMMITTED_SLOT.toString());
 		this.paxosID = json.getString(PaxosPacket.PAXOS_ID);
 	}
@@ -30,7 +30,7 @@ public final class AcceptPacket extends PValuePacket {
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		json.put(Keys.SENDER_NODE.toString(), nodeID);
+		json.put(Keys.SENDER_NODE.toString(), sender);
 		json.put(Keys.MAJORITY_COMMITTED_SLOT.toString(), majorityCommittedSlot);
 		return json;
 	}

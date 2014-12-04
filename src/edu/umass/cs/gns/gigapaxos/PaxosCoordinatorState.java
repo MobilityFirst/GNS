@@ -238,8 +238,8 @@ public class PaxosCoordinatorState  {
 		}
 
 		// The replica already answered my ballot request.
-		else if(!Util.contains(prepareReply.receiverID, members) || 
-			this.waitforMyBallot.alreadyHeardFrom(prepareReply.receiverID)) return true;
+		else if(!Util.contains(prepareReply.acceptor, members) || 
+			this.waitforMyBallot.alreadyHeardFrom(prepareReply.acceptor)) return true;
 
 		return false;
 	}
@@ -278,7 +278,7 @@ public class PaxosCoordinatorState  {
 				this.carryoverProposals.put(pvalue.slot, pvalue);
 			} else if (pvalue.ballot.compareTo(existing.ballot) == 0) {assert(pvalue.requestValue.equals(existing.requestValue));}
 		}
-		waitforMyBallot.updateHeardFrom(prepareReply.receiverID);
+		waitforMyBallot.updateHeardFrom(prepareReply.acceptor);
 		if(DEBUG) log.finest("Waitfor = " + waitforMyBallot.toString());
 		if(this.waitforMyBallot.heardFromMajority()) {
 			acceptedByMajority = true;
@@ -309,7 +309,7 @@ public class PaxosCoordinatorState  {
 		 */
 		NullIfEmptyMap<Integer,ProposalStateAtCoordinator> preActives = this.myProposals;
 		this.myProposals = new NullIfEmptyMap<Integer,ProposalStateAtCoordinator>();
-		for (int curSlot = maxMinCarryoverSlot; curSlot <= maxCarryoverSlot; curSlot++) {
+		for (int curSlot = maxMinCarryoverSlot; curSlot - maxCarryoverSlot <= 0; curSlot++) { // wrapround-arithmetic
 			if(this.carryoverProposals.containsKey(curSlot)) { // received pvalues dominate preactive proposals
 				this.myProposals.put(curSlot, 
 						new ProposalStateAtCoordinator(members, this.carryoverProposals.get(curSlot)));
@@ -359,7 +359,7 @@ public class PaxosCoordinatorState  {
 				if(psac1.pValuePacket.isStopRequest() && // 1 is stop
 						!psac2.pValuePacket.isStopRequest() && // other is not stop
 						!psac2.pValuePacket.requestValue.equals(NO_OP) && // other is not noop
-						psac1.pValuePacket.slot < psac2.pValuePacket.slot)  // other has a higher slot
+						psac1.pValuePacket.slot - psac2.pValuePacket.slot < 0)  // other has a higher slot
 				{
 					if(psac1.pValuePacket.ballot.compareTo(psac2.pValuePacket.ballot) > 0) { // stop ballot > other ballot
 						// convert request (psac2) to stop (psac1)
@@ -440,7 +440,7 @@ public class PaxosCoordinatorState  {
 	protected synchronized PValuePacket handleAcceptReplyMyBallot(int[] members, AcceptReplyPacket acceptReply) {
 		assert((acceptReply.ballot.compareTo(new Ballot(this.myBallotNum, this.myBallotCoord)) == 0));
 		assert(!this.myProposals.containsKey(acceptReply.slotNumber) ||  
-				this.myProposals.get(acceptReply.slotNumber).waitfor.contains(acceptReply.nodeID));
+				this.myProposals.get(acceptReply.slotNumber).waitfor.contains(acceptReply.acceptor));
 		// Current ballot, makes sense to process now
 		recordSlotNumber(members, acceptReply); // useful for garbage collection
 
@@ -452,12 +452,12 @@ public class PaxosCoordinatorState  {
 		 * I must have some waitfor state for it.
 		 */
 		if(pstate!=null && ((waitfor=pstate.waitfor) != null)) { 
-			waitfor.updateHeardFrom(acceptReply.nodeID);
+			waitfor.updateHeardFrom(acceptReply.acceptor);
 			if(DEBUG) log.info("Node " + this.myBallotCoord + " updated waitfor to: " + waitfor+" for "+pstate.pValuePacket);
 			if(waitfor.heardFromMajority()) {
 				// phase2b success
 				acceptedByMajority=true;
-				decision = ifNotTooDelayed(pstate.pValuePacket.makeDecision(getMajorityCommittedSlot(), this.myBallotCoord));
+				decision = (pstate.pValuePacket.makeDecision(getMajorityCommittedSlot(), this.myBallotCoord));
 				assert(!decision.isRecovery());
 				this.myProposals.remove(decision.slot);
 			} else 	pstate.pValuePacket.addDebugInfo("r");
@@ -487,7 +487,7 @@ public class PaxosCoordinatorState  {
 	 */
 	protected synchronized PValuePacket handleAcceptReplyHigherBallot(AcceptReplyPacket acceptReply) {
 		assert(!this.myProposals.containsKey(acceptReply.slotNumber) ||  
-				this.myProposals.get(acceptReply.slotNumber).waitfor.contains(acceptReply.nodeID));
+				this.myProposals.get(acceptReply.slotNumber).waitfor.contains(acceptReply.acceptor));
 		// Stop coordinating this specific proposal.
 		ProposalStateAtCoordinator psac = this.myProposals.remove(acceptReply.slotNumber);
 		PValuePacket preempted= (psac!=null ? psac.pValuePacket.preempt() : null);
@@ -572,7 +572,7 @@ public class PaxosCoordinatorState  {
 		assert(this.nodeSlotNumbers!=null);
 		boolean updated = false;
 		for(int i=0; i<members.length; i++) {
-			if(members[i] == preply.receiverID) {
+			if(members[i] == preply.acceptor) {
 				if(this.nodeSlotNumbers[i] < preply.getMinSlot()) {
 					this.nodeSlotNumbers[i] = preply.getMinSlot(); // starting slot is GCSlot+1
 					updated = true;
@@ -590,7 +590,7 @@ public class PaxosCoordinatorState  {
 		assert(this.nodeSlotNumbers!=null);
 		boolean updated = false;
 		for(int i=0; i<members.length; i++) {
-			if(members[i] == acceptReply.nodeID) {
+			if(members[i] == acceptReply.acceptor) {
 				if(this.nodeSlotNumbers[i] < acceptReply.committedSlot) {
 					this.nodeSlotNumbers[i] = acceptReply.committedSlot;
 					updated = true;
@@ -630,7 +630,7 @@ public class PaxosCoordinatorState  {
 		return copy[medianMinus];
 	}
 	private boolean noGaps(int x, int y, NullIfEmptyMap<Integer,ProposalStateAtCoordinator> map) {
-		for(int i=x; i<y; i++) {
+		for(int i=x; i - y < 0; i++) { // wraparound-arithmetic
 			if(map.get(i) == null) return false;
 		}
 		return true;
@@ -649,7 +649,7 @@ public class PaxosCoordinatorState  {
 	private int getMaxPValueSlot(NullIfEmptyMap<Integer, PValuePacket> pvalues) {
 		int maxSlot = -1; // this is maximum slot for which some adtoped (=in-progress) request has been found
 		for (int cur: pvalues.keySet()) {
-			if (cur > maxSlot) maxSlot = cur;
+			if (cur - maxSlot > 0) maxSlot = cur; // wraparound-arithmetic
 		}
 		return maxSlot;
 	}
@@ -660,14 +660,10 @@ public class PaxosCoordinatorState  {
 	private int getMaxMinCarryoverSlot() {
 		int maxSlot=Integer.MIN_VALUE;
 		for(int i=0; i<this.nodeSlotNumbers.length; i++) {
-			if(this.nodeSlotNumbers[i] > maxSlot) maxSlot = this.nodeSlotNumbers[i];
+			if(this.nodeSlotNumbers[i] - maxSlot > 0) maxSlot = this.nodeSlotNumbers[i]; // wraparound-arithmetic
 		}
-		return maxSlot; // the first adopted slot is the GC slot plus 1
+		return maxSlot; 
 	}
-	private PValuePacket ifNotTooDelayed(PValuePacket pvalue) {
-		return pvalue.hasTakenTooLong() && !pvalue.isRecovery()? this.makeNoopPValue(pvalue) : pvalue;
-	}
-
 
 	/********************* End of stand-alone utility methods *************************/
 
@@ -766,7 +762,7 @@ public class PaxosCoordinatorState  {
 		assert(inserted);
 
 		// Test prepare replies are ignored before prepare has been sent
-		PrepareReplyPacket preply = new PrepareReplyPacket(myID, 10, new Ballot(29, 42), null);
+		PrepareReplyPacket preply = new PrepareReplyPacket(10, new Ballot(29, 42), null);
 		assert(pcs.waitforMyBallot==null); // prepare not sent yet
 		assert(pcs.canIgnorePrepareReply(preply, members));
 
@@ -777,9 +773,9 @@ public class PaxosCoordinatorState  {
 		assert(ballot.ballotNumber==ballotnum && ballot.coordinatorID==myID);
 
 		// Test lower ballot prepare replies are ignored
-		preply = new PrepareReplyPacket(myID, 10, new Ballot(ballot.ballotNumber-1, ballot.coordinatorID), null);
+		preply = new PrepareReplyPacket(10, new Ballot(ballot.ballotNumber-1, ballot.coordinatorID), null);
 		assert(pcs.canIgnorePrepareReply(preply, members));
-		preply = new PrepareReplyPacket(myID, 10, new Ballot(ballot.ballotNumber, ballot.coordinatorID-1), null);
+		preply = new PrepareReplyPacket(10, new Ballot(ballot.ballotNumber, ballot.coordinatorID-1), null);
 		assert(pcs.canIgnorePrepareReply(preply, members));
 		// Do not test !canIgnorePrepareReply yet
 
@@ -787,7 +783,7 @@ public class PaxosCoordinatorState  {
 		assert(!pcs.isActive());
 
 		Ballot preplyBallot = new Ballot(ballot.ballotNumber, ballot.coordinatorID);
-		preply = new PrepareReplyPacket(myID, 10, preplyBallot, null);
+		preply = new PrepareReplyPacket(10, preplyBallot, null);
 		assert(!Util.contains(10, members));
 		assert(pcs.canIgnorePrepareReply(preply, members)); // coz 10 is not in members
 
@@ -802,7 +798,7 @@ public class PaxosCoordinatorState  {
 		HashMap<Integer,PValuePacket> accepted = new HashMap<Integer,PValuePacket>(); 
 		accepted.put(pvalues[0].slot, pvalues[0]);
 		System.out.println("Combining " + accepted);
-		preply = new PrepareReplyPacket(myID, members[2], preplyBallot, accepted);
+		preply = new PrepareReplyPacket(members[2], preplyBallot, accepted);
 		assert(!pcs.canIgnorePrepareReply(preply, members)); // finally a legitimate reply
 		assert(!pcs.isPrepareAcceptedByMajority(preply, members) && pcs.waitforMyBallot.alreadyHeardFrom(members[2])); 
 		assert(pcs.canIgnorePrepareReply(preply, members)); // no duplicates
@@ -815,7 +811,7 @@ public class PaxosCoordinatorState  {
 		accepted.put(pvalues[2].slot, pvalues[2]);
 		assert(pvalues[0].ballot.compareTo(pvalues[1].ballot) < 0);
 		System.out.println("Combining " + accepted);
-		preply = new PrepareReplyPacket(myID, members[0], preplyBallot, accepted);
+		preply = new PrepareReplyPacket(members[0], preplyBallot, accepted);
 		assert(!pcs.isPrepareAcceptedByMajority(preply, members) && pcs.canIgnorePrepareReply(preply, members)); // legitimate self-reply followed by duplicate
 
 		// prepare by members[4] including stop
@@ -827,15 +823,15 @@ public class PaxosCoordinatorState  {
 		accepted.put(pvalues[3].slot, pvalues[3]);
 		accepted.put(pvalues[4].slot, pvalues[4]);
 		accepted.put(pvalues[5].slot, pvalues[5]);
-		preply = new PrepareReplyPacket(myID, members[4], preplyBallot, accepted);
+		preply = new PrepareReplyPacket(members[4], preplyBallot, accepted);
 		assert(!pcs.isPrepareAcceptedByMajority(preply, members) && pcs.canIgnorePrepareReply(preply, members)); 
 
 		for(int i=0; i<members.length; i+=2) { // members 0, 2, 4, ...
-			preply = new PrepareReplyPacket(myID, members[i], preplyBallot, null);
+			preply = new PrepareReplyPacket(members[i], preplyBallot, null);
 			assert(!pcs.isPrepareAcceptedByMajority(preply, members) || (i==members.length-1 && (members.length%2==1)));
 		}
 		if(members.length%2==0) { // one more if even group size
-			preply = new PrepareReplyPacket(myID, members[members.length-1], preplyBallot, null);			
+			preply = new PrepareReplyPacket(members[members.length-1], preplyBallot, null);			
 			assert(pcs.isPrepareAcceptedByMajority(preply, members));
 		}
 		assert(pcs.waitforMyBallot.heardFromMajority());

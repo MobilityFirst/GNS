@@ -7,7 +7,8 @@ import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
-import edu.umass.cs.gns.gigapaxos.paxosutil.PaxosInstrumenter;
+import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
+import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.Util;
 
 /**
@@ -101,8 +102,7 @@ public class TESTPaxosMain {
 			long t1=System.currentTimeMillis();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
-			Thread.sleep(1000);
-			System.out.println("Average response time of first run = " + TESTPaxosClient.getAvgLatency());
+			System.out.println("Average response time of first run = " + Util.df(TESTPaxosClient.getAvgLatency()) + "ms");
 			TESTPaxosClient.resetLatencyComputation();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
@@ -110,26 +110,15 @@ public class TESTPaxosMain {
 			long t2=System.currentTimeMillis();
 
 			TESTPaxosClient.printOutput(clients);	
-			System.out.println("Average throughput (overall) (req/sec) = " + 
-					Util.df(numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)) + "\n" +
+			System.out.println("Average throughput (overall) = " + 
+					Util.df(2*numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)) + " reqs/sec\n" +
 					"Total no-op count (overall) = " + TESTPaxosClient.getTotalNoopCount() +"\n" +
-					"Average response time of just the second run (not overall) = " + TESTPaxosClient.getAvgLatency());
-			/*
-			for(int i=0; i<3; i++) {
-				PaxosManager.waitToFinishAll(); //static
-				System.out.println(i + ": after PM.waitToFinishAll()");
-				AbstractPaxosLogger.waitToFinishAll(); //static
-				System.out.println(i + ": after APL.waitToFinishAll()");
-				Thread.sleep(1000);
-			}
-			*/
-			for(TESTPaxosNode node : tpMain.nodes.values()) {
-				node.close(); // can only close after all nodes have finished
-			}
-			System.out.println("after node.close() all");
+					"Average response time of just the second run (not overall) = " + 
+					Util.df(TESTPaxosClient.getAvgLatency())+"ms");
+			for(TESTPaxosNode node : tpMain.nodes.values()) node.close(); 
 			for(TESTPaxosClient client : clients) client.close();
-			System.out.println("after client.close() all");
-			System.out.println(PaxosInstrumenter.getStats());
+			System.out.println(DelayProfiler.getStats());
+			System.out.println(NIOInstrumenter.getJSONStats());
 		} catch(Exception e) {e.printStackTrace();System.exit(1);}
 	}
 }

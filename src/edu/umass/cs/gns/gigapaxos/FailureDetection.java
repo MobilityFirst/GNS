@@ -45,7 +45,7 @@ public class FailureDetection<NodeIDType> {
 	private static long node_detection_timeout_millis = 6000; // ms
 	private static long inter_ping_period_millis = node_detection_timeout_millis/2;
 	private static long coordinator_failure_detection_timeout = 3*node_detection_timeout_millis; // run for coordinator even if not next-in-line 
-	private static final long initTime = System.currentTimeMillis();
+	private static final long initTime = System.currentTimeMillis() - node_detection_timeout_millis;
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);

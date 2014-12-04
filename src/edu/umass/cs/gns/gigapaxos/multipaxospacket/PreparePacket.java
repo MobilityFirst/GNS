@@ -7,19 +7,14 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
 
 
 public final class PreparePacket extends PaxosPacket {
-	//protected final static String COORDINATOR="coordinatorID";
 
-	public final int coordinatorID;
 	public final Ballot ballot;
-	public  final int firstUndecidedSlot;
-	public final int receiverID;
+	public  final int firstUndecidedSlot; // not really necessary
 	
-	private boolean recovery;
+	private boolean recovery; // non-final because AbstractPaxosLogger.rollForward needs to set it
 
-	public PreparePacket(int coordinatorID, int receiverID, Ballot b) {
+	public PreparePacket(Ballot b) {
 		super((PaxosPacket)null);
-		this.coordinatorID = coordinatorID;
-		this.receiverID = receiverID;
 		this.ballot = b;
 		this.packetType = PaxosPacketType.PREPARE;
 		this.firstUndecidedSlot = -1;
@@ -28,35 +23,16 @@ public final class PreparePacket extends PaxosPacket {
 
 	public PreparePacket(int coordinatorID, int receiverID, Ballot ballot, int slotNumber) {
 		super((PaxosPacket)null);
-		this.coordinatorID = coordinatorID;
-		this.receiverID = receiverID;
 		this.ballot = ballot;
 		this.firstUndecidedSlot = slotNumber;
 		this.packetType = PaxosPacketType.PREPARE;
 		this.recovery = false;
 	}
 	
-	private PreparePacket(int rcvrID, PreparePacket prepare) {
-		super(prepare);
-		this.coordinatorID = prepare.coordinatorID;
-		this.receiverID = rcvrID;
-		this.ballot = prepare.ballot;
-		this.firstUndecidedSlot = prepare.firstUndecidedSlot;
-		this.packetType = PaxosPacketType.PREPARE;
-		this.recovery = prepare.recovery;
-	}
-
-	public PreparePacket fixPreparePacketReceiver(int rcvrID) {
-		PreparePacket prepare = (this.receiverID!=rcvrID ? new PreparePacket(rcvrID, this) : this);
-		return prepare;
-	}
-
 	public PreparePacket(JSONObject json) throws JSONException{
 		super(json);
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE); // coz class is final
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.coordinatorID = json.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
-		this.receiverID = json.getInt(PaxosPacket.NodeIDKeys.RECEIVER.toString());
 		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
 		this.firstUndecidedSlot = json.getInt(PaxosPacket.Keys.FIRST_UNDECIDED_SLOT.toString());
 		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
@@ -67,8 +43,6 @@ public final class PreparePacket extends PaxosPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException
 	{
 		JSONObject json = new JSONObject();
-		json.put(PaxosPacket.NodeIDKeys.COORDINATOR.toString(), coordinatorID);
-		json.put(PaxosPacket.NodeIDKeys.RECEIVER.toString(), receiverID);
 		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
 		json.put(PaxosPacket.Keys.FIRST_UNDECIDED_SLOT.toString(), firstUndecidedSlot);
 		json.put(PaxosPacket.Keys.RECOVERY.toString(), recovery);

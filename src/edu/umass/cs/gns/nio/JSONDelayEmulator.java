@@ -25,7 +25,7 @@ public class JSONDelayEmulator {
 	private static double VARIATION = 0.1; // 10% variation in latency
 	private static boolean USE_CONFIG_FILE_INFO = false; // Enable this after figuring out how to use config file
 	private static long DEFAULT_DELAY = 100; // 100ms
-	private static GNSNodeConfig gnsNodeConfig = null; // node config object to toString ping latencies for emulation.
+	private static GNSNodeConfig<Object> gnsNodeConfig = null; // node config object to toString ping latencies for emulation.
 
 
 	private static final Timer timer = new Timer();
@@ -72,7 +72,7 @@ public class JSONDelayEmulator {
 		JSONDelayEmulator.EMULATE_DELAYS = true;
 	}
 
-	public static void emulateConfigFileDelays(GNSNodeConfig gnsNodeConfig, double variation) {
+	public static void emulateConfigFileDelays(GNSNodeConfig<Object> gnsNodeConfig, double variation) {
 		JSONDelayEmulator.EMULATE_DELAYS = true;
 		JSONDelayEmulator.VARIATION = variation;
 		JSONDelayEmulator.USE_CONFIG_FILE_INFO = true;

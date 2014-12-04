@@ -243,7 +243,7 @@ public class Util {
    * @return a Set of NodeIds
    */
   public static Set stringToSetOfNodeId(String string) {
-    Set<Object> nodeIds = new HashSet();
+    Set nodeIds = new HashSet();
     String[] tokens = string.split(":");
     for (String s : tokens) {
       nodeIds.add(s);
@@ -260,6 +260,15 @@ public class Util {
       sb.append(CHARACTERS.charAt(rnd.nextInt(CHARACTERS.length())));
     }
     return sb.toString();
+  }
+  
+  public void assertEnabled() {
+	  try {
+		  assert(false);
+	  } catch(Exception e) {
+		  return;
+	  }
+	  throw new RuntimeException("Asserts not enabled; exiting");
   }
   
   // cute little hack to show us where

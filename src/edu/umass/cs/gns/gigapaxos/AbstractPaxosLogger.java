@@ -18,9 +18,9 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Messenger;
-import edu.umass.cs.gns.gigapaxos.paxosutil.PaxosInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.gns.util.DelayProfiler;
 
 /**
  * @author V. Arun
@@ -93,15 +93,11 @@ public abstract class AbstractPaxosLogger {
 	}
 
 	// Will log and execute a decision. The former need not happen before the latter.
-	public static final void logAndExecute(AbstractPaxosLogger logger,
+	public static final void logDecision(AbstractPaxosLogger logger,
 			PValuePacket decision, PaxosInstanceStateMachine pism) {
 		if(logger.isAboutToClose()) return;
 
 		logger.batchLogger.enqueue(new LogMessagingTask(decision));
-
-		long t1 = System.currentTimeMillis();
-		pism.sendMessagingTask(pism.extractExecuteAndCheckpoint(decision));
-		if (!decision.isRecovery()) PaxosInstrumenter.update("EEC", t1);
 	}
 
 	// Designed to offload checkpointing to its own task so that the paxos instance can move on.
@@ -326,7 +322,7 @@ public abstract class AbstractPaxosLogger {
 				long t1 = System.currentTimeMillis();
 				this.logger.logBatch(packets); // the main point of this class
 				this.setProcessing(false);
-				PaxosInstrumenter.update("log", t1, packets.length);
+				DelayProfiler.update("log", t1, packets.length);
 
 				synchronized (this) {
 					notify(); // notify waitToFinish
@@ -540,18 +536,6 @@ public abstract class AbstractPaxosLogger {
 			return this.stopped;
 		}
 	}
-
-	/*
-	protected static synchronized boolean firstClose() {
-		boolean tmp = !closeCalled;
-		closeCalled = true;
-		return tmp;
-	}
-
-	protected static synchronized boolean isCloseCalled() {
-		return closeCalled;
-	}
-	*/
 
 	/******************************** End of private utility classes ****************************/
 

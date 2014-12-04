@@ -25,10 +25,10 @@ import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
  */
 public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
 
+	public static final String SENT_TIME = "SENT_TIME"; 
 	private static final long RTX_DELAY = 1000; // ms
 	private static final int BACKOFF_FACTOR = 2;
 
-	//private final NodeIDType myID;
 	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
 	private final ScheduledExecutorService execpool =
 			Executors.newScheduledThreadPool(5);
@@ -39,7 +39,6 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 
 	public JSONMessenger(InterfaceJSONNIOTransport<NodeIDType> niot) {
 		assert (niot != null);
-		//myID = niot.getMyID(); // needed only for debug printing
 		nioTransport = niot;
 	}
 
@@ -70,7 +69,8 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 					log.fine("Messenger received non-JSON object: " + msg);
 					jsonMsg = ((ProtocolPacket<?,?>)msg).toJSONObject();
 				}
-
+				jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
+				
 				int length = jsonMsg.toString().length();
 				@SuppressWarnings("unchecked")
 				int sent = nioTransport.sendToID((NodeIDType)(mtask.recipients[r]), jsonMsg);

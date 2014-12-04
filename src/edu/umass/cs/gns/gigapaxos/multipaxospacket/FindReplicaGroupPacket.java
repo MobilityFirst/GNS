@@ -75,6 +75,8 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 			case DECISION: 
 				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()))).coordinatorID;
 				break;
+			default:
+					break;
 			}
 		}
 		return id;

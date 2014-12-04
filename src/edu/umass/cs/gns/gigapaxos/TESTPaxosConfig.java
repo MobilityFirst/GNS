@@ -19,6 +19,7 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
 @author V. Arun
  */
 public class TESTPaxosConfig {
+		
 	public static final boolean DEBUG = PaxosManager.DEBUG;
 	public static final boolean MEMORY_TESTING=false; 
 	public static final boolean DISK_ACCESS_TESTING=true;
@@ -27,7 +28,7 @@ public class TESTPaxosConfig {
 	private static final int RANDOM_SEED = 3142;
 	private static final double NODE_INCLUSION_PROB = 0.6;
 
-	public static final boolean DISABLE_LOGGING = false;  // default true
+	public static final boolean DISABLE_LOGGING = false;  // default false
 
 	public static final int MILLION = 1000000;
 
@@ -49,9 +50,9 @@ public class TESTPaxosConfig {
 
 	/**************** Load parameters *******************/
 	public static final int NUM_CLIENTS = 10; // 1;// 4 default
-	public static final int NUM_REQUESTS = 10000; // 20;  // 40000 default
+	public static final int NUM_REQUESTS = 5000; // 20;  // 40000 default
 	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
-	public static final double TOTAL_LOAD = 1000; // 2000 reqs/sec default (across all clients)
+	public static final double TOTAL_LOAD = 500; // 2000 reqs/sec default (across all clients)
 	/***********************************************************/
 
 	public static final int DEFAULT_INIT_PORT = SampleNodeConfig.DEFAULT_START_PORT;
@@ -229,10 +230,5 @@ public class TESTPaxosConfig {
 	}
 
 	public static void main(String[] args) {
-		assert(!TESTPaxosConfig.isCrashed(100));
-		TESTPaxosConfig.crash(100);
-		assert(TESTPaxosConfig.isCrashed(100));
-		TESTPaxosConfig.recover(100);
-		assert(!TESTPaxosConfig.isCrashed(100));
 	}
 }

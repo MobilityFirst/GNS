@@ -128,7 +128,7 @@ public class PaxosCoordinator {
 		}
 		else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
 			committedPValue = pcs.handleAcceptReplyMyBallot(members, acceptReply);
-		} else assert(false):"YIKES! Acceptor "+acceptReply.nodeID+" replied without updating its ballot";
+		} else assert(false):"YIKES! Acceptor "+acceptReply.acceptor+" replied without updating its ballot";
 		return committedPValue!=null ? committedPValue : preemptedPValue; // both could be null too
 	}
 

@@ -15,9 +15,11 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.*;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
+import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MultiArrayMap;
 import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.Util;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -186,7 +188,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		 * first need to update the instance map here so that networking
 		 * (trivially sending message to self) works.
 		 */
-		rollForward(paxosID);
+		rollForward(paxosID); 
 		if (!TESTPaxosConfig.isCrashed(this.myID)) this.FD.monitor(gms);
 		return true;
 	}
@@ -348,7 +350,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		if (pism == null &&
 				((tryHotRestore && this.unpause(paxosID)) || (tryRestore && this.restore(paxosID))))
 			pism = pinstances.get(paxosID);
-		PaxosInstrumenter.update("getInstance", methodEntryTime);
+		DelayProfiler.update("getInstance", methodEntryTime);
 		return pism;
 	}
 
@@ -431,16 +433,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return this.hasRecovered;
 	}
 
-	protected boolean hasRecovered(String paxosID) {
-		boolean recovered = false;
-		if (ONE_PASS_RECOVERY && this.hasRecovered())
-			recovered = true;
-		else if (!ONE_PASS_RECOVERY) {
-			ActivePaxosState activeState = this.getActiveState(false, paxosID);
-			assert (activeState != null); // FIXME: just to test if this ever happens
-			recovered = activeState != null && activeState.hasRecovered();
-		}
-		return recovered;
+	protected boolean hasRecovered(PaxosInstanceStateMachine pism) {
+		if (ONE_PASS_RECOVERY)
+			return this.hasRecovered();
+		else // !ONE_PASS_RECOVERY
+			return (pism != null && pism.isActive());
 	}
 
 	private synchronized void pokeAll() {
@@ -577,7 +574,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			paused = pism.tryPause();
 			if (paused) {
 				this.pinstances.remove(pism.getPaxosID());
-				PaxosInstrumenter.update("pause", pauseInitTime);
+				DelayProfiler.update("pause", pauseInitTime);
 				if (DEBUG)
 					log.info("Node " + this.myID + " sucessfully paused " +
 							pism.getPaxosID());
@@ -642,14 +639,13 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				log.info("Node " + this.myID + " " + paxosID +
 						" about to roll forward: ");
 			AbstractPaxosLogger.rollForward(paxosLogger, paxosID, messenger);
-			ActivePaxosState activeState = this.getActiveState(false, paxosID);
-			if (activeState != null) activeState.setRecovered();
 			PaxosInstanceStateMachine pism =
 					(this.getInstance(paxosID, true, false));
+			pism.setActive();
 			assert (this.getInstance(paxosID, false, false) != null);
 			if (pism != null) pism.sendTestPaxosMessageToSelf();
 		}
-		TESTPaxosConfig.setRecovered(this.myID, paxosID, true);
+		TESTPaxosConfig.setRecovered(this.myID, paxosID, true); // testing
 	}
 
 	private PaxosInstanceStateMachine recover(String paxosID, short version,
@@ -796,9 +792,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		log.info("Node " + myID + " deactivated " + count +
 				" idle instances; total #actives = " + activePaxii.size() +
 				"; average_getInstance_delay = " +
-				Util.mu(PaxosInstrumenter.get("getInstance")) +
+				Util.mu(DelayProfiler.get("getInstance")) +
 				"; average_pause_delay = " +
-				Util.mu(PaxosInstrumenter.get("pause")));
+				Util.mu(DelayProfiler.get("pause")));
 	}
 
 	private Object[] getActivePaxosIDs() {
@@ -853,6 +849,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			timer.schedule(new Deactivator(), PaxosManager.DEACTIVATION_PERIOD);
 		}
 	}
+	
+	protected int getMyID() {
+		return this.myID;
+	}
 
 	/************************* Testing methods below ***********************************/
 	protected synchronized void waitRecover() throws InterruptedException {
@@ -899,25 +899,6 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			System.out.println("Initiated all " + nNodes +
 					" paxos managers with failure detectors, sleeping for a few seconds..\n");
 			Thread.sleep(1000);
-
-			/*
-			 * Check if nodes find each other up. They may find
-			 * each other down as failure detection pings may not
-			 * have started yet.
-			 */
-			for (int i = 0; i < nNodes; i++) {
-				for (int j = 0; j < nNodes; j++) {
-					if (i != j) {
-						System.out.println("Testing: Node " +
-								members[i] +
-								" finds node " +
-								members[j] +
-								" " +
-								(pms[i].isNodeUp(new Integer(members[j])) ? "up"
-										: "down"));
-					}
-				}
-			}
 
 			// We don't really test with multiple groups as they are independent, but this is useful for memory testing
 			int paxosGroups = 2;
@@ -1032,6 +1013,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				for (int i = 0; i < nNodes; i++) {
 					if (apps[i].getNumCommitted(GUIDs[0]) >= maxRecoverySlot +
 							numReqs) done = true;
+					else System.out.println(apps[i].getNumCommitted(GUIDs[0]) + " " + maxRecoverySlot + " " + numReqs);
+
 				}
 				if (done) break;
 				Thread.sleep(1000);
@@ -1102,7 +1085,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 					"; numExceptions=" +
 					numExceptions +
 					"; average message log time=" +
-					df.format(PaxosInstrumenter.get("logDelay")) +
+					df.format(DelayProfiler.get("logDelay")) +
 					"ms.\n" +
 					"\nNote that it is possible for the test to be successful even if the number of consistently\n" +
 					"executed requests is less than the number of received requests as paxos only guarantees\n" +
