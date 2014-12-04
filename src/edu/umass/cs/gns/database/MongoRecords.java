@@ -82,6 +82,13 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     // add location as another index
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME, "2d"));
+    // The good thing is that indexes are not required for 2dsphere fields, but they will make things faster
+    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
+//    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
+//            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "geoLocationHome", "2dsphere"));
+//    MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
+//            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "geoLocationWork", "2dsphere"));
     MongoCollectionSpec.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
     try {

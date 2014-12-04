@@ -167,6 +167,7 @@ public class Defs {
   public final static String SIGNATUREFULLMESSAGE = "_signatureFullMessage_";
   // Blessed field names
   public static final String LOCATION_FIELD_NAME = "geoLocation";
+  public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   public static final String ACL_FIELD_NAME = "ACL";
 
