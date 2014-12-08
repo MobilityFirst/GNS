@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.nsdesign.nodeconfig;
 
 import java.net.InetAddress;
@@ -11,8 +17,7 @@ import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 /**
  * @author V. Arun
  */
-public class SampleNodeConfig<NodeIDType> implements
-		InterfaceNodeConfig<NodeIDType> {
+public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType> {
 
 	public static final int DEFAULT_START_PORT = 2000;
 	private boolean local = false;

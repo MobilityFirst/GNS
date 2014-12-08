@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
@@ -50,7 +49,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
 
   private ActiveReplicaCoordinator appCoordinator; // coordinates app's requests
 
-  private ActiveReplica<?,?> activeReplica; // reconfiguration logic
+  private ActiveReplica<?, ?> activeReplica; // reconfiguration logic
 
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
 
@@ -161,7 +160,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
       paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
       paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);
       replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
-              new NSNodeConfig(gnsNodeConfig), replicaController, paxosConfig);
+              gnsNodeConfig, replicaController, paxosConfig);
     }
     GNS.getLogger().info(nodeID.toString() + " Replica controller coordinator initialized");
 
@@ -176,7 +175,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
     return appCoordinator;
   }
 
-  public ActiveReplica<?,?> getActiveReplica() {
+  public ActiveReplica<?, ?> getActiveReplica() {
     return activeReplica;
   }
 

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.NSNodeConfig;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.*;
@@ -78,10 +77,10 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     } else if (Config.singleNS) {  // coordinator for testing only
       this.coordinator = new DefaultGnsCoordinator(nodeID, this.activeReplicaApp);
     } else if(Config.eventualConsistency) {  // coordinator for testing only
-      this.coordinator = new GnsCoordinatorEventual(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
+      this.coordinator = new GnsCoordinatorEventual(nodeID, nioServer, gnsNodeConfig,
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
     } else { // this is the actual coordinator
-      this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, new NSNodeConfig(gnsNodeConfig),
+      this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, gnsNodeConfig,
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
     }
 //    SendRequestLoadTask requestLoadTask = new SendRequestLoadTask(activeReplicaApp, this);

@@ -81,6 +81,8 @@ public class LocalNameServer implements Shutdownable {
    * We keep a pointer to the dnsTranslator so we can shut it down.
    */
   private static DnsTranslator dnsTranslator;
+  
+  private LNSListenerAdmin lnsListenerAdmin;
   /**
    * @return the nameServerLoads
    */
@@ -120,15 +122,15 @@ public class LocalNameServer implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    requestHandler = new BasicClientRequestHandler(address, gnsNodeConfig, parameters);
+    this.requestHandler = new BasicClientRequestHandler(address, gnsNodeConfig, parameters);
 
     if (!parameters.isExperimentMode()) {
       // intercessor for regular GNS use
       Intercessor.init(requestHandler);
-      intercessor = new Intercessor();
+      this.intercessor = new Intercessor();
     } else {
       // intercessor for four simple DB operations: add, remove, write, read only.
-      intercessor = new DBClientIntercessor(-1, GNS.DEFAULT_LNS_DBCLIENT_PORT,
+      this.intercessor = new DBClientIntercessor(-1, GNS.DEFAULT_LNS_DBCLIENT_PORT,
               new LNSPacketDemultiplexer(requestHandler));
     }
 
@@ -140,12 +142,12 @@ public class LocalNameServer implements Shutdownable {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
       GNS.getLogger().info("LNS running at " + LocalNameServer.getAddress() + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
-      pingManager = new PingManager(PingManager.LOCALNAMESERVERID, gnsNodeConfig);
+      this.pingManager = new PingManager(PingManager.LOCALNAMESERVERID, gnsNodeConfig);
       pingManager.startPinging();
     }
 
     // After starting PingManager because it accesses PingManager.
-    new LNSListenerAdmin().start();
+    (this.lnsListenerAdmin = new LNSListenerAdmin()).start();
 
     if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
@@ -478,6 +480,12 @@ public class LocalNameServer implements Shutdownable {
     }
     if (gnsNodeConfig != null) {
       gnsNodeConfig.shutdown();
+    }
+    if (pingManager != null) {
+      pingManager.shutdown();
+    }
+    if (lnsListenerAdmin != null) {
+      lnsListenerAdmin.shutdown();
     }
   }
 

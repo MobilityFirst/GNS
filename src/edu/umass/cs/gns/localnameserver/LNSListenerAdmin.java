@@ -7,6 +7,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
@@ -32,7 +33,7 @@ import java.util.logging.Level;
  *
  * @author Westy
  */
-public class LNSListenerAdmin extends Thread {
+public class LNSListenerAdmin extends Thread implements Shutdownable {
 
   /**
    * Socket over which active name server request arrive *
@@ -161,9 +162,9 @@ public class LNSListenerAdmin extends Thread {
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
                 } else {
-                incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
-                //incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
-                Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
+                  incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                  //incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
+                  Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
@@ -187,10 +188,10 @@ public class LNSListenerAdmin extends Thread {
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
                 } else {
-                // send it to the server that can handle it
-                incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
-                //incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
-                Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
+                  // send it to the server that can handle it
+                  incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                  //incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
+                  Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
@@ -243,6 +244,15 @@ public class LNSListenerAdmin extends Thread {
       // it came from another LNS
       Packet.sendTCPPacket(packet.toJSONObject(), address);
       //Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), packet.toJSONObject(), senderId, GNS.PortType.LNS_ADMIN_PORT);
+    }
+  }
+
+  @Override
+  public void shutdown() {
+    try {
+      this.serverSocket.close();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
   }
 }
