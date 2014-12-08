@@ -112,7 +112,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     }
     new Thread(gnsNiot).start();
 
-    return new GnsMessenger(GNSNodeConfig.INVALID_NAME_SERVER_ID, gnsNiot, executorService);
+    return new GnsMessenger(null, gnsNiot, executorService);
   }
 
   /**
@@ -376,7 +376,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
       }
       return (NodeIDType) x;
     } catch (Exception e) {
-      return (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+      return null;
     }
   }
 

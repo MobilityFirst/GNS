@@ -42,7 +42,7 @@ class GenerateAddRequest<NodeIDType> extends TimerTask {
 
     ResultValue newValue = new ResultValue();
     newValue.add(Util.randomString(objectSizeKB));
-    AddRecordPacket packet = new AddRecordPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, requestCount, name, "EdgeRecord", newValue, null, ttl);
+    AddRecordPacket packet = new AddRecordPacket(null, requestCount, name, "EdgeRecord", newValue, null, ttl);
 
     if (activeNameServers != null) packet.setActiveNameServers(activeNameServers);
 

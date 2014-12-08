@@ -27,7 +27,7 @@ class GenerateRemoveRequest extends TimerTask {
   @Override
   public void run() {
 
-    RemoveRecordPacket packet = new RemoveRecordPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, requestCount, name, null);
+    RemoveRecordPacket packet = new RemoveRecordPacket(null, requestCount, name, null);
 
     try {
       packetDemultiplexer.handleJSONObject(packet.toJSONObject());

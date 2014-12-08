@@ -155,7 +155,7 @@ public class LocalNameServer implements Shutdownable {
 
     if (parameters.isExperimentMode()) {
       GNS.getLogger().info("Starting experiment ..... ");
-      new StartExperiment().startMyTest(getGnsNodeConfig().INVALID_NAME_SERVER_ID.toString(), StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
+      new StartExperiment().startMyTest(null, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
       // name server loads initialized.
       if (parameters.isLoadDependentRedirection()) {
@@ -380,9 +380,9 @@ public class LocalNameServer implements Shutdownable {
    */
   public static Object selectBestUsingLatencyPlusLoad(Set<Object> serverIDs) {
     if (serverIDs == null || serverIDs.size() == 0) {
-      return gnsNodeConfig.INVALID_NAME_SERVER_ID;
+      return null;
     }
-    Object selectServer = gnsNodeConfig.INVALID_NAME_SERVER_ID;
+    Object selectServer = null;
     // select server whose latency + load is minimum
     double selectServerLatency = Double.MAX_VALUE;
     for (Object x : serverIDs) {

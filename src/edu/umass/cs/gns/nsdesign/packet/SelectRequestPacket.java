@@ -72,7 +72,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param otherValue
    */
   public SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
-    super(GNSNodeConfig.INVALID_NAME_SERVER_ID, lnsAddress);
+    super(null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
@@ -96,7 +96,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param minRefreshInterval
    */
   private SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
-    super(GNSNodeConfig.INVALID_NAME_SERVER_ID, lnsAddress);
+    super(null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
@@ -156,7 +156,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @throws org.json.JSONException
    */
   public SelectRequestPacket(JSONObject json) throws JSONException {
-    super((NodeIDType)json.get(NAMESERVER_ID),
+    super((NodeIDType)json.opt(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));

@@ -43,7 +43,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
    * Indicates if this is supposed to go back to an Intercessor at the LNS or another server.
    */
   private NodeIDType returnTo;
-  
+
   /**
    * Constructs a new ConfirmUpdatePacket with the given parameters.
    *
@@ -90,13 +90,13 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_ADD, (NodeIDType) packet.getSourceId(), 
+    this(Packet.PacketType.CONFIRM_ADD, (NodeIDType) packet.getSourceId(),
             packet.getRequestID(), packet.getLNSRequestID(), code);
 
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_REMOVE, (NodeIDType) packet.getSourceId(), 
+    this(Packet.PacketType.CONFIRM_REMOVE, (NodeIDType) packet.getSourceId(),
             packet.getRequestID(), packet.getLNSRequestID(), code);
   }
 
@@ -108,7 +108,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
    */
   public ConfirmUpdatePacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.returnTo = (NodeIDType) json.get(RETURNTO);
+    this.returnTo = json.has(RETURNTO) ? (NodeIDType) json.get(RETURNTO) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy
@@ -125,7 +125,9 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(RETURNTO, returnTo);
+    if (returnTo != null) {
+      json.put(RETURNTO, returnTo);
+    }
     json.put(REQUESTID, requestID);
     json.put(LNSREQUESTID, LNSRequestID);
     // store it as an int in the JSON to keep the byte counting folks happy
@@ -149,7 +151,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
   public NSResponseCode getResponseCode() {
     return responseCode;
   }
-  
+
   public boolean isSuccess() {
     return responseCode == NSResponseCode.NO_ERROR;
   }

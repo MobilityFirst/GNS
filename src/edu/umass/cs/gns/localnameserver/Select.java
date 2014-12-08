@@ -42,7 +42,7 @@ public class Select {
       CacheEntry cacheEntry = handler.getCacheEntry(guid);
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
         Object id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
-        if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+        if (id != null) {
           return id;
         }
       }

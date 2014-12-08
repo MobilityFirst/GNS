@@ -62,9 +62,9 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param lnsAddress
    */
   public RemoveRecordPacket(NodeIDType sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
-    super(GNSNodeConfig.INVALID_NAME_SERVER_ID, lnsAddress);
+    super(null, lnsAddress);
     this.type = Packet.PacketType.REMOVE_RECORD;
-    this.sourceId = sourceId != null ? sourceId : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.sourceId = sourceId != null ? sourceId : null;
     this.requestID = requestId;
     this.name = name;
   }
@@ -76,14 +76,14 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @throws org.json.JSONException
    */
   public RemoveRecordPacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.get(NAMESERVER_ID),
+    super((NodeIDType) json.opt(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = (NodeIDType) json.get(SOURCE_ID);
+    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);

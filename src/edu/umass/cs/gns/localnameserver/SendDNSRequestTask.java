@@ -226,7 +226,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   }
 
   private void sendLookupToNS(NodeIDType ns) {
-    if (!ns.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (ns != null) {
       nameserversQueried.add(ns);
 
       DNSRequestInfo reqInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);

@@ -518,7 +518,7 @@ public class ReplicaControllerRecord<NodeIDType> {
 
     for (int i = 1; i <= numReplica; i++) {
       int highestVotes = -1;
-      NodeIDType highestVotedReplicaID = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+      NodeIDType highestVotedReplicaID = null;
 
       for (Map.Entry<NodeIDType, Integer> entry : getNameServerVotesMap().entrySet()) {
         NodeIDType nameServerId = entry.getKey();
@@ -541,7 +541,7 @@ public class ReplicaControllerRecord<NodeIDType> {
         }
       }
       //Checks whether a new replica was available to be added
-      if (!highestVotedReplicaID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+      if (highestVotedReplicaID != null) {
         result.add(highestVotedReplicaID);
       } else {
         break;

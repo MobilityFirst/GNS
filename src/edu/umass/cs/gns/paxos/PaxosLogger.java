@@ -100,7 +100,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
   /**
    * Node ID of this node
    */
-  private NodeIDType nodeID = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+  private NodeIDType nodeID = null;
 
   /**
    * This is the paxos manager object for which logger is doing the logging.
@@ -627,7 +627,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
   }
 
   private void handleLoggedMessage(LoggingCommand cmd) {
-    if (!cmd.getDest().equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (cmd.getDest() != null) {
       paxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
     }
   }
@@ -1598,7 +1598,7 @@ class LoggingCommand<NodeIDType> {
   private String paxosID;
   private JSONObject logJson;
   private int actionAfterLog;
-  private NodeIDType dest = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+  private NodeIDType dest = null;
   private JSONObject sendJson;
 
   public LoggingCommand(String paxosID, JSONObject logJson, int actionAfterLog) {

@@ -41,7 +41,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
   private final static String NAME = "name";
   private final static String RECORDKEY = "recordkey";
   private final static String VALUE = "value";
-  //private final static String NAMESERVER_ID = "ns_ID";
   private final static String SOURCE_ID = "sourceId";
   private final static String TIME_TO_LIVE = "ttlAddress";
   private final static String ACTIVE_NAMESERVERS = "actives";
@@ -85,7 +84,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
 //   */
 //  private NodeIDType nameServerID;
   /**
-   * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
+   * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, null) that means go back the Intercessor otherwise
    * it came from another server.
    */
   private final NodeIDType sourceId;
@@ -113,16 +112,16 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
    * @param ttl TTL of name record.
    */
   public AddRecordPacket(NodeIDType sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
-    super((NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID, lnsAddress);
+    super(null, lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
-    this.sourceId = sourceId != null ? sourceId : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.sourceId = sourceId != null ? sourceId : null;
     this.requestID = requestID;
     this.recordKey = recordKey;
     this.name = name;
     this.value = value;
     //this.localNameServerID = localNameServerID;
     this.ttl = ttl;
-    //this.nameServerID = GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    //this.nameServerID = null;
     this.activeNameServers = null;
   }
 
@@ -133,7 +132,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
    * @throws org.json.JSONException
    */
   public AddRecordPacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.get(NAMESERVER_ID),
+    super((NodeIDType) json.opt(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
@@ -141,7 +140,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = (NodeIDType) json.get(SOURCE_ID);
+    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = json.getString(RECORDKEY);

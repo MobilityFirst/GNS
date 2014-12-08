@@ -64,7 +64,7 @@ public class GnsReconLookup {
     }
     // if all replicas are coordinating on a read request, then check if this node should reply to client.
     // whether coordination is done or not, only the replica receiving client's request replies to the client.
-    if (!dnsPacket.getResponder().equals(GNSNodeConfig.INVALID_NAME_SERVER_ID) && // -1 means that we are not coordinating with other replicas upon reads.
+    if (dnsPacket.getResponder() != null && // null means that we are not coordinating with other replicas upon reads.
             // so this replica should reply to client
             !dnsPacket.getResponder().equals(gnsApp.getNodeID())) {
       return;

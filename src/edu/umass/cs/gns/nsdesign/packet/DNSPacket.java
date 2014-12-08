@@ -60,7 +60,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    */
   private final ArrayList<String> keys;
   /**
-   * This is the id of the source of the request, -1 (AKA LOCAL_SOURCE_ID) means the client is the intercessor
+   * This is the id of the source of the request, null means the client is the intercessor
    * of the LNS handling the request. Otherwise it will be the ID of a NameServer.
    */
   private NodeIDType sourceId;
@@ -84,7 +84,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   /**
    * For response packets this is the node that responded
    */
-  private NodeIDType responder = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+  private NodeIDType responder = null;
 
   /**
    * Constructs a packet for querying a name server for name information.
@@ -107,8 +107,8 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     this.guid = guid;
     this.key = key;
     this.keys = keys;
-    this.sourceId = sourceId != null ? sourceId : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
-    this.responder = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.sourceId = sourceId != null ? sourceId : null;
+    this.responder = null;
     this.returnFormat = returnFormat;
   }
 
@@ -152,7 +152,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     this.sourceId = sourceId;
     this.recordValue = entireRecord;
     this.ttl = TTL;
-    this.responder = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.responder = null;
     this.returnFormat = null;
   }
 
@@ -182,9 +182,9 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     } else {
       this.keys = null;
     }
-    this.sourceId = (NodeIDType) json.get(SOURCE_ID);
+    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     // read the optional responder if it is there
-    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : null;
     this.returnFormat = json.has(RETURN_FORMAT) ? ColumnFieldType.valueOf(json.getString(RETURN_FORMAT)) : null;
 
     // These will only be present in non-error response packets
@@ -260,12 +260,14 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
       json.put(KEYS, keys);
     }
     json.put(GUID, guid);
-    json.put(SOURCE_ID, sourceId);
+    if (sourceId != null) {
+      json.put(SOURCE_ID, sourceId);
+    }
     if (returnFormat != null) {
       json.put(RETURN_FORMAT, returnFormat.name());
     }
     // this goes in with query (if it's not empty) in case it's an error response and we want to know the reponder
-    if (!responder.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (responder != null) {
       json.put(RESPONDER, responder.toString());
     }
     // response section

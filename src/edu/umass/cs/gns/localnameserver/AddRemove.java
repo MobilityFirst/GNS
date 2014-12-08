@@ -45,7 +45,7 @@ public class AddRemove {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
     int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), GNSNodeConfig.INVALID_NAME_SERVER_ID, addRecordPacket);
+    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket);
     LocalNameServer.addRequestInfo(lnsReqID, info);
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
@@ -69,7 +69,7 @@ public class AddRemove {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
     int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), GNSNodeConfig.INVALID_NAME_SERVER_ID, removeRecord);
+    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), null, removeRecord);
     LocalNameServer.addRequestInfo(lnsReqID, info);
 
     SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, handler, removeRecord, removeRecord.getName(),

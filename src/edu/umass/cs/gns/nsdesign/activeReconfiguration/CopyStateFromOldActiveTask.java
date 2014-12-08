@@ -86,7 +86,7 @@ public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
       NodeIDType oldActive = (NodeIDType) activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
               oldActivesQueried);
 
-      if (oldActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+      if (oldActive == null) {
         // this will happen after all actives have been tried at least once.
         GNS.getLogger().severe(" Exception ERROR:  No More Actives Left To Query. Cancel Task!!! " + packet + " Actives queried: " + oldActivesQueried);
         activeReplica.getOngoingStateTransferRequests().remove(requestID);

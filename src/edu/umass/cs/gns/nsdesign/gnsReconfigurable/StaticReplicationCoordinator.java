@@ -87,8 +87,7 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
           Set replicaControllers = ConsistentHashing.getReplicaControllerSet(update.getName());
           int selectIndex = r.nextInt(GNS.numPrimaryReplicas);
           int count = 0;
-          // FIXME: THIS WAS ASSUMING THAT A NODE NAMED 0 WOULD EXIST
-          NodeIDType selectNode = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+          NodeIDType selectNode = null;
           //int selectNode = 0;
           for (Object x: replicaControllers) {
             if (count == selectIndex) {

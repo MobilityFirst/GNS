@@ -88,7 +88,7 @@ public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndL
    ***********************************************************
    */
   public NameServerSelectionPacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.get(NAMESERVER_ID),
+    super((NodeIDType) json.opt(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);

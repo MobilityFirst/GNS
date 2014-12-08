@@ -21,7 +21,7 @@ public class SendLoadMonitorPacketTask<NodeIDType> extends TimerTask {
 
   public SendLoadMonitorPacketTask(NodeIDType nsID) {
     nameServerID = nsID;
-    nsLoad = new NameServerLoadPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, nsID, 0);
+    nsLoad = new NameServerLoadPacket(null, nsID, 0);
   }
 
   @Override

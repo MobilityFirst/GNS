@@ -44,7 +44,7 @@ public class StatusPanel extends JPanel implements ActionListener {
     Box box = Box.createVerticalBox();
     TreeSet<StatusEntry> entries = new TreeSet(StatusModel.getInstance().getEntries());
     // add the header
-    StatusPane pane = new StatusPane(GNSNodeConfig.INVALID_NAME_SERVER_ID);
+    StatusPane pane = new StatusPane(null);
     pane.setAlignmentX(Component.LEFT_ALIGNMENT);
     box.add(pane);
     for (StatusEntry entry : entries) {

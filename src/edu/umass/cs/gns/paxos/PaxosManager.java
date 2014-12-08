@@ -273,7 +273,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
     }
     try {
       if (debugMode) GNS.getLogger().fine(" Proposing to  " + replica.getPaxosID());
-      replica.handleIncomingMessage(new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, 
+      replica.handleIncomingMessage(new RequestPacket(null, value, 
               PaxosPacketType.REQUEST, true).toJSONObject(), PaxosPacketType.REQUEST.getInt());
     } catch (JSONException e) {
       e.printStackTrace();
@@ -283,7 +283,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
   @Override
   public String propose(String paxosIDNoVersion, String value) {
-    RequestPacket requestPacket = new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, value, PaxosPacketType.REQUEST, false);
+    RequestPacket requestPacket = new RequestPacket(null, value, PaxosPacketType.REQUEST, false);
 //    return propose(paxosIDNoVersion,new RequestPacket(0, value, PaxosPacketType.REQUEST, false));
     PaxosReplicaInterface replica = paxosInstances.get(paxosIDNoVersion);
     if (replica == null) {

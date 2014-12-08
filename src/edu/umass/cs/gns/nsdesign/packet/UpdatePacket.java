@@ -148,8 +148,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
           ResultValue newValue, ResultValue oldValue, int argument, UpdateOperation operation, InetSocketAddress lnsAddress, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, null, operation, lnsAddress,
-            (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID, ttl,
-            writer, signature, message);
+            null, ttl, writer, signature, message);
   }
 
   /**
@@ -170,8 +169,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   public UpdatePacket(NodeIDType sourceId, int requestID, String name, ValuesMap userJSON, UpdateOperation operation, InetSocketAddress lnsAddress, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, null, null, null, -1, userJSON, operation, lnsAddress,
-            (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID, ttl,
-            writer, signature, message);
+            null, ttl, writer, signature, message);
   }
 
   /**
@@ -197,8 +195,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
           ResultValue newValue, ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation, InetSocketAddress lnsAddress, int ttl,
           String writer, String signature, String message) {
     this(sourceId, requestID, -1, name, recordKey, newValue, oldValue, argument, userJSON, operation, lnsAddress,
-            (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID, ttl,
-            writer, signature, message);
+            null, ttl, writer, signature, message);
   }
 
   /**
@@ -237,7 +234,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     // include the signature info
     super(nameServerId, lnsAddress, writer, signature, message);
     this.type = Packet.PacketType.UPDATE;
-    this.sourceId = sourceId != null ? sourceId : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.sourceId = sourceId != null ? sourceId : null;
     this.requestID = requestID;
     this.LNSRequestID = LNSRequestID;
     this.name = name;
@@ -260,11 +257,11 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    */
   public UpdatePacket(JSONObject json) throws JSONException {
     // include the address and signature info
-    super(json.get(NAMESERVER_ID),
+    super(json.opt(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
             json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
-    this.sourceId = (NodeIDType) json.get(SOURCE_ID);
+    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
 //    this.NSRequestID = json.getInt(NameServerREQUESTID);
@@ -423,7 +420,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     ResultValue x = new ResultValue();
     x.add("12345678");
     //
-    UpdatePacket up = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 32234234, 123, "12322323",
+    UpdatePacket up = new UpdatePacket(null, 32234234, 123, "12322323",
             "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
 

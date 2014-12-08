@@ -59,7 +59,7 @@ public class SendRequestLoadTask<NodeIDType> extends TimerTask{
       double reqRate = (curReqCount - prevReqCount) * 1000.0 / (curTime - prevRunTime);
       GNS.getStatLogger().info("\tRequestRate\tnode\t" + activeReplica.getNodeID() + "\treqRate\t"
               + reqRate + "\t");
-      NameServerLoadPacket nsLoad = new NameServerLoadPacket(activeReplica.getNodeID(), GNSNodeConfig.INVALID_NAME_SERVER_ID, reqRate);
+      NameServerLoadPacket nsLoad = new NameServerLoadPacket(activeReplica.getNodeID(), null, reqRate);
 
       try {
         JSONObject sendJson = nsLoad.toJSONObject();

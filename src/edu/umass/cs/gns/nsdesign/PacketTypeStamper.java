@@ -100,7 +100,7 @@ public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<
 
       @Override
       public String getMyID() {
-        return GNSNodeConfig.INVALID_NAME_SERVER_ID.toString();
+        return null;
       }
 
       @Override

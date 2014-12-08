@@ -86,7 +86,7 @@ public class StopActiveSetTask<NodeIDType> extends TimerTask {
               + oldActiveNameServers);
     } else {
       NodeIDType selectedOldActive = (NodeIDType) rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
-      if (selectedOldActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+      if (selectedOldActive == null) {
         rc.getOngoingStopActiveRequests().remove(this.requestID);
         GNS.getLogger().severe("Exception ERROR: Old Actives not stopped and no more old active left to query. "
                 + "Old Active name servers queried: " + oldActivesQueried + ". Old Version " + oldVersion + " Name: "

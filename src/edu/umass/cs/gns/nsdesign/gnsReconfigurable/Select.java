@@ -224,7 +224,7 @@ public class Select {
   private static void sendReponsePacketToLNS(int id, int lnsQueryId, InetSocketAddress address, Set<String> guids,
           GnsReconfigurable replica) throws JSONException {
     SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
-            -1, GNSNodeConfig.INVALID_NAME_SERVER_ID, new JSONArray(guids));
+            -1, null, new JSONArray(guids));
     try {
       replica.getNioServer().sendToAddress(address, response.toJSONObject());
     } catch (IOException f) {

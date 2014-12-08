@@ -37,7 +37,7 @@ public class TESTLocalNameServer {
     StartLocalNameServer.debuggingEnabled = false;
     StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null);
 
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, GNSNodeConfig.LOCAL_NAME_SERVER_ID);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, true);
 
     for (Object nameServerID: gnsNodeConfig.getNodeIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
@@ -48,14 +48,14 @@ public class TESTLocalNameServer {
     int numRequests = 1000;
     for (int i = 0; i < numRequests; i++) {
       // send 1 lookup with invalid response
-      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, i, "abcd", 
+      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(null, i, "abcd", 
               "EdgeRecord", null,
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
-      UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 0, 0, "abcd", "EdgeRecord",
+      UpdatePacket updateAddressPacket = new UpdatePacket(null, 0, 0, "abcd", "EdgeRecord",
               newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, Integer.toString(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);
@@ -63,14 +63,14 @@ public class TESTLocalNameServer {
     int numNames = 1000;
     for (int i = 0; i < numNames; i++) {
       // send 1 lookup with invalid response
-      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, i, "abcd"+i, 
+      new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(new DNSPacket(null, i, "abcd"+i, 
               "EdgeRecord", null,
               ColumnFieldType.LIST_STRING, null, null, null).toJSONObjectQuestion());
 
       // send 1 update with invalid response
       ResultValue newValue = new ResultValue();
       newValue.add(Util.randomString(10));
-      UpdatePacket updateAddressPacket = new UpdatePacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, 0, 0, "abcd"+i, "EdgeRecord",
+      UpdatePacket updateAddressPacket = new UpdatePacket(null, 0, 0, "abcd"+i, "EdgeRecord",
               newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, Integer.toString(i), GNS.DEFAULT_TTL_SECONDS, null, null, null);
       new LNSPacketDemultiplexer(LocalNameServer.getRequestHandler()).handleJSONObject(updateAddressPacket.toJSONObject());
       Thread.sleep(5);

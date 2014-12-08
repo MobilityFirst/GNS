@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.util;
+
 /**
-@author V. Arun
+ * @author V. Arun
  * @param <ObjectType>
  */
 /* Stringifiable means that ObjectType can be converted
@@ -9,11 +10,15 @@ package edu.umass.cs.gns.util;
  * just need a valueOf method for the reverse conversion.
  */
 public interface Stringifiable<ObjectType> {
-        /**
-         * Converts the string value back to the ObjectType. Performs the
-         * reverse of the toString() method for things that are Stringifiable.
-         * @param strValue
-         * @return 
-         */
-	public ObjectType valueOf(String strValue); 
+
+  /**
+   *
+   * Converts a string representation of a node id into the appropriate node id type.
+   * Put another way, this performs the reverse of the toString() method for 
+   * things that are Stringifiable.
+   *
+   * @param strValue
+   * @return
+   */
+  public ObjectType valueOf(String strValue);
 }

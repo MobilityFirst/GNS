@@ -88,7 +88,7 @@ public class StartActiveSetTask<NodeIDType> extends TimerTask {
           // send request to a new active replica
           NodeIDType selectedActive = (NodeIDType) replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
                   newActivesQueried);
-          if (selectedActive.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+          if (selectedActive == null) {
             terminateTask = true;
             GNS.getLogger().severe("ERROR: No more active left to query. Active name servers queried: "
                     + newActivesQueried + " Actives not started.");

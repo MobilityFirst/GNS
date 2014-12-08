@@ -95,7 +95,7 @@ public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterf
       count++;
 
     }
-    return (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    return null;
   }
 
 

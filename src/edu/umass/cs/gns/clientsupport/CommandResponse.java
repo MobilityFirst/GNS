@@ -48,7 +48,7 @@ public class CommandResponse<NodeIDType> {
    * @param returnValue
    */
   public CommandResponse(String returnValue) {
-    this(returnValue, NSResponseCode.NO_ERROR, -1, (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID);
+    this(returnValue, NSResponseCode.NO_ERROR, -1, null);
   }
 
   /**

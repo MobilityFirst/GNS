@@ -93,7 +93,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
     this.requestCnt = json.getLong(REQUESTCNT);
     //
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
-    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : null;
   }
 
   /**
@@ -118,7 +118,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
       json.put(LNSROUNDTRIPTIME, LNSRoundTripTime);
     }
     // instrumentation
-    if (!responder.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (responder != null) {
       json.put(RESPONDER, responder.toString());
     }
     return json;

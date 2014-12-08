@@ -57,7 +57,7 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
    * @param localNameServer 
    */
   public DumpRequestPacket(int id, InetSocketAddress lnsAddress) {
-    this(id, lnsAddress, (NodeIDType)GNSNodeConfig.INVALID_NAME_SERVER_ID, new JSONArray(), null);
+    this(id, lnsAddress, null, new JSONArray(), null);
   }
 
   /**
@@ -66,7 +66,7 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
    * @param tagName 
    */
   public DumpRequestPacket(int id, InetSocketAddress lnsAddress, String tagName) {
-    this(id, lnsAddress, (NodeIDType)GNSNodeConfig.INVALID_NAME_SERVER_ID, new JSONArray(), tagName);
+    this(id, lnsAddress, null, new JSONArray(), tagName);
   }
 
   /**

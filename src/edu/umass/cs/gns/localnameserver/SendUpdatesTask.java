@@ -173,8 +173,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   private void sendToNS(NodeIDType nameServerID) {
 
-    if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
-
+    if (nameServerID == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + Util.setOfNodeIdToString(activesQueried));
       }

@@ -49,7 +49,7 @@ public class Update {
     UpdatePacket updatePacket = new UpdatePacket(json);
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), GNSNodeConfig.INVALID_NAME_SERVER_ID, updatePacket);
+    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), null, updatePacket);
     handler.addRequestInfo(lnsReqID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
     SendUpdatesTask updateTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
@@ -150,7 +150,7 @@ public class Update {
    * @throws JSONException 
    */
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
-    if (packet.getReturnTo().equals(handler.getGnsNodeConfig().INVALID_NAME_SERVER_ID)) {
+    if (packet.getReturnTo() == null) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       
       LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());

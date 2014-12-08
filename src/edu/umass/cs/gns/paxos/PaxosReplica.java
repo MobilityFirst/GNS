@@ -1437,7 +1437,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
    */
   private void proposeNoopInSlot(int slot, Ballot b) throws JSONException {
     ProposalPacket proposalPacket = new ProposalPacket(slot,
-            new RequestPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, PaxosReplica.NO_OP, PaxosPacketType.REQUEST, false),
+            new RequestPacket(null, PaxosReplica.NO_OP, PaxosPacketType.REQUEST, false),
             PaxosPacketType.PROPOSAL, 0);
     initCommander(new PValuePacket(b, proposalPacket));
     if (debugMode) {
@@ -1682,7 +1682,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
     }
 
     // create prepare packet
-    PreparePacket prepare = new PreparePacket(nodeID, GNSNodeConfig.INVALID_NAME_SERVER_ID, ballotScout, PaxosPacketType.PREPARE);
+    PreparePacket prepare = new PreparePacket(nodeID, null, ballotScout, PaxosPacketType.PREPARE);
 
     for (NodeIDType i : nodeIDs) {
       prepare.setReceiverID(i);
@@ -1884,7 +1884,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
    * a new ballot.
    */
   public void checkCoordinatorFailure() {
-    NodeIDType coordinatorID = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    NodeIDType coordinatorID = null;
     try {
       acceptorLock.lock();
 
@@ -1923,7 +1923,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
       GNS.getLogger().fine(paxosID + "C\t" + nodeID + " Node failed:" + packet.responderNodeID);
     }
 
-    NodeIDType coordinatorID = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    NodeIDType coordinatorID = null;
     try {
       acceptorLock.lock();
       if (acceptorBallot != null) {
@@ -2192,14 +2192,14 @@ class UpdateBallotTask<NodeIDType> extends TimerTask {
     if (pr.isAcceptorBallotUpdated(ballot)) {
       throw new RuntimeException();
     }
-    NodeIDType node = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
-    while (node.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    NodeIDType node = null;
+    while (node == null) {
       if (count < nodes.size() && paxosManager.isNodeUp(nodes.get(count))) {
         node = nodes.get(count);
       }
       count += 1;
     }
-    if (!node.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (node != null) {
       paxosManager.sendMessage(node, json, replica.getPaxosID());
     }
   }

@@ -53,7 +53,8 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
   private String getFinalString(String queryStatus, String name, long latency, int numTransmissions,
           NodeIDType nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
           long curTime, String eventCodes) {
-    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" + nameServerID.toString() + "\t"
+    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" 
+            + (nameServerID != null ? nameServerID.toString() : "LNS") + "\t"
             + address.toString() + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + curTime + "\t" + eventCodes;
   }
 

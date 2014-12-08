@@ -17,7 +17,6 @@ import java.net.UnknownHostException;
  * Information about instances that have started
  */
 public class HostInfo {
-  public static final String NULL_ID = GNSNodeConfig.INVALID_NAME_SERVER_ID_STRING;
   private final String id;
   private final String hostname;
   private String nsId;
@@ -25,7 +24,7 @@ public class HostInfo {
   private final Point2D location;
 
   public HostInfo(String hostname, String nsId, boolean createLNS, Point2D location) {
-    this.id = NULL_ID;
+    this.id = null;
     this.hostname = hostname;
     this.nsId = nsId;
     this.createLNS = createLNS;
@@ -37,7 +36,7 @@ public class HostInfo {
     this.id = id;
     this.hostname = hostname;
     this.location = location;
-    this.nsId = NULL_ID;
+    this.nsId = null;
     this.createLNS = false;
   }
   

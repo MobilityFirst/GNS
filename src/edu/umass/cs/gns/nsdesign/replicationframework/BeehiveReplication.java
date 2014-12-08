@@ -116,7 +116,7 @@ public class BeehiveReplication {
     }
 
     if (allServers.isEmpty()) {
-      return GNSNodeConfig.INVALID_NAME_SERVER_ID;
+      return null;
     }
 
     if (allServers.contains((String) gnsNodeConfig.getClosestServer())) {
@@ -142,7 +142,7 @@ public class BeehiveReplication {
         return x;
       }
     }
-    return GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    return null;
   }
 
   public static void main(String[] args) throws IOException {

@@ -112,7 +112,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
    * @throws org.json.JSONException
    */
   public SelectResponsePacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.get(NAMESERVER_ID),
+    super((NodeIDType) json.opt(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {;
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));

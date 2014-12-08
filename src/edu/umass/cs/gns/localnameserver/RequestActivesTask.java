@@ -68,11 +68,11 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
 
       // next primary to be queried
       NodeIDType primaryID = (NodeIDType) LocalNameServer.getClosestReplicaController(name, nameServersQueried);
-      if (primaryID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+      if (primaryID == null) {
         // we clear this set to resend requests to the same set of name servers
         nameServersQueried.clear();
         primaryID = (NodeIDType) LocalNameServer.getClosestReplicaController(name, nameServersQueried);
-        if (primaryID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+        if (primaryID == null) {
           GNS.getLogger().severe("No primary NS available. name = " + name);
           throw  new CancelExecutorTaskException();
         }

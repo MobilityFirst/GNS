@@ -11,7 +11,7 @@ import org.json.JSONObject;
 
 /**
  * Provides packet with an and a NameServerID and LNS address. Address can be null. NameServerID can't be null
- * but can be GNSNodeConfig.INVALID_NAME_SERVER_ID.
+ * but can be null.
  *
  * @author westy
  * @param <NodeIDType>
@@ -22,12 +22,11 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
   public final static String LNS_ADDRESS = "lnsAddress";
   public final static String LNS_PORT = "lnsPort";
 
-  
   public final static int INVALID_PORT = -1;
-  
+
   /**
    * ID of name server receiving the message.
-   * Often if this is GNSNodeConfig.INVALID_NAME_SERVER_ID if the packet hasn't made it to the NS yet.
+   * Often if this is null if the packet hasn't made it to the NS yet.
    */
   private NodeIDType nameServerID;
   //
@@ -59,25 +58,28 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
-    json.put(NAMESERVER_ID, nameServerID);
+    if (nameServerID != null) {
+      json.put(NAMESERVER_ID, nameServerID);
+    }
     if (lnsAddress != null) {
       json.put(LNS_ADDRESS, lnsAddress.getHostString());
       json.put(LNS_PORT, lnsAddress.getPort());
     }
   }
-  
+
   /**
    * Get the id of the name server (usually the one that is handling this packet).
-   * 
-   * @return 
+   *
+   * @return
    */
   public NodeIDType getNameServerID() {
     return nameServerID;
   }
-  
+
   /**
    * Sets the id of the name server (usually the one that is handling this packet).
-   * @param nameServerID 
+   *
+   * @param nameServerID
    */
   public void setNameServerID(NodeIDType nameServerID) {
     this.nameServerID = nameServerID;
@@ -100,5 +102,5 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
   public void setLnsAddress(InetSocketAddress lnsAddress) {
     this.lnsAddress = lnsAddress;
   }
-  
+
 }

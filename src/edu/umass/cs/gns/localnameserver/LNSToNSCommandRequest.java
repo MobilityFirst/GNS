@@ -69,7 +69,7 @@ public class LNSToNSCommandRequest {
       // PRoBABLY WILL NEED SOMETHING IN HERE TO FORCE IT TO UPDATE THE ActiveNameServers
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
         String id = (String) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
-        if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+        if (id != null) {
           
           GNS.getLogger().info("@@@@@@@ Picked NS" + id.toString() + " for record " + guid);
           return id;

@@ -585,7 +585,7 @@ public class StartLocalNameServer {
     try {
       GNSNodeConfig gnsNodeConfig;
       InetSocketAddress LNSID = new InetSocketAddress(address, port);
-      gnsNodeConfig = new GNSNodeConfig(nsFile, GNSNodeConfig.LOCAL_NAME_SERVER_ID);
+      gnsNodeConfig = new GNSNodeConfig(nsFile, true);
 
       //Start local name server
       new LocalNameServer(LNSID, gnsNodeConfig);

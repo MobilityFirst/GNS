@@ -93,6 +93,6 @@ public class LocationBasedReplication<NodeIDType> implements ReplicationFramewor
       count++;
 
     }
-    return (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    return null;
   }
 }

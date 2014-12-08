@@ -126,7 +126,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
 
   private void sendToNS(NodeIDType nameServerID) {
 
-    if (nameServerID.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (nameServerID == null) {
       if (Config.debuggingEnabled) {
         GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried "
                 + Util.setOfNodeIdToString(replicaControllersQueried));

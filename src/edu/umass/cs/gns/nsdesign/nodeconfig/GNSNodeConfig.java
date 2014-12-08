@@ -17,6 +17,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -37,13 +39,11 @@ import java.util.concurrent.ConcurrentMap;
 public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType>, Shutdownable {
 
   public static final long INVALID_PING_LATENCY = -1L;
-  public static final String INVALID_NAME_SERVER_ID_STRING = "Invalid";
-  public static final Integer INVALID_NAME_SERVER_ID_INTEGER = -1;
   public static final int INVALID_PORT = -1;
-  public static final String LOCAL_NAME_SERVER_ID = "LocalNameServer";
+  //public static final Object INVALID_NAME_SERVER_ID;
 
-  public static Object INVALID_NAME_SERVER_ID;
   private NodeIDType nodeID;
+  private boolean isLocalNameServer = false;
   private final String hostsFile;
 
   /**
@@ -54,21 +54,24 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
   // keep this around
   private ConcurrentMap<NodeIDType, HostInfo> previousHostInfoMapping;
 
+  public GNSNodeConfig(String hostsFile, boolean isLocalNameServer) throws IOException {
+    this(hostsFile, null);
+  }
+
   /**
    * Creates a GNSNodeConfig and initializes it from a name server host file.
    * This supports the new hosts.txt style format.
    *
    * @param hostsFile
-   * @param nameServerID
+   * @param nameServerID - specify null to mean the local name server
    */
   public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
-    this.nodeID = nameServerID;
-    this.hostsFile = hostsFile;
-    if (nameServerID instanceof String) {
-      this.INVALID_NAME_SERVER_ID = INVALID_NAME_SERVER_ID_STRING;
-    } else {
-      this.INVALID_NAME_SERVER_ID = INVALID_NAME_SERVER_ID_INTEGER;
+    if (nameServerID == null) {
+      this.isLocalNameServer = true;
     }
+    this.nodeID = nameServerID;
+
+    this.hostsFile = hostsFile;
     if (isOldStyleFile(hostsFile)) {
       throw new UnsupportedOperationException("THE USE OF OLD STYLE NODE INFO FILES IS NOT LONGER SUPPORTED. FIX THIS FILE: " + hostsFile);
       //initFromOldStyleFile(hostsFile, nameServerID);
@@ -88,7 +91,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    * Creates an empty GNSNodeConfig
    */
   public GNSNodeConfig() {
-    this.nodeID = (NodeIDType) INVALID_NAME_SERVER_ID_STRING;
+    this.nodeID = invalidNameServerID();
     hostsFile = null;
   }
 
@@ -245,7 +248,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    * Returns port number for the specified port type. Return -1 if the specified port type does not exist.
    *
    * @param nameServerId Name server id //
-   * @param portType	GNS port type*
+   * @param portType	GNS port type
+   *
    * @return the port
    */
   public int getPort(NodeIDType nameServerId, GNS.PortType portType) {
@@ -292,7 +296,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    */
   public NodeIDType getClosestServer(Set<NodeIDType> serverIds, Set<NodeIDType> excludeServers) {
     if (serverIds == null) {
-      return (NodeIDType) INVALID_NAME_SERVER_ID;
+      return invalidNameServerID();
     }
     // If the local server is one of the server ids and not excluded return it.
     if (serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
@@ -300,7 +304,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
 
     long lowestLatency = Long.MAX_VALUE;
-    NodeIDType nameServerID = (NodeIDType) INVALID_NAME_SERVER_ID;
+    NodeIDType nameServerID = invalidNameServerID();
     for (NodeIDType serverId : serverIds) {
       if (excludeServers != null && excludeServers.contains(serverId)) {
         continue;
@@ -313,6 +317,19 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
 
     return nameServerID;
+  }
+
+  public NodeIDType invalidNameServerID() {
+    switch (getNodeIDType()) {
+      case String:
+        return (NodeIDType) "Invalid";
+      case Integer:
+        return (NodeIDType) new Integer(-1);
+      case InetAddress:
+        return (NodeIDType) InetAddress.getLoopbackAddress(); // as good as anything
+      default:
+        throw new IllegalArgumentException("Bad NodeIDType");
+    }
   }
 
   /**
@@ -330,12 +347,47 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     System.exit(0);
   }
 
-
+  @SuppressWarnings("unchecked")
   @Override
-  public NodeIDType valueOf(String nodeAsString) {
-    throw new RuntimeException("Method not yet implemented");
+  /**
+   * Converts a string representation of a node id into the appropriate node id type.
+   */
+  public NodeIDType valueOf(String nodeAsString) throws IllegalArgumentException {
+    switch (getNodeIDType()) {
+      case String:
+        return (NodeIDType) nodeAsString;
+      case Integer:
+        return (NodeIDType) (Integer.valueOf(nodeAsString.trim()));
+      case InetAddress:
+        try {
+          return (NodeIDType) (InetAddress.getByName(nodeAsString.trim()));
+        } catch (UnknownHostException e) {
+          throw new IllegalArgumentException("Cannot parse node as an InetAddress");
+        }
+      default:
+        throw new IllegalArgumentException("Bad NodeIDType");
+    }
   }
-  
+
+  /**
+   * Returns the appropriate NodeIDClass corresponding to the NodeIDType.
+   *
+   * @return NodeIDClass enum
+   */
+  private NodeIDClass getNodeIDType() {
+    NodeIDType node = null;
+    Iterator<NodeIDType> nodeIter = this.hostInfoMapping.keySet().iterator();
+    if (nodeIter.hasNext() && (node = nodeIter.next()) != null) {
+      return NodeIDClass.valueOf(String.class.getSimpleName());
+    }
+    throw new IllegalArgumentException("Cannot determine node id class");
+  }
+
+  private enum NodeIDClass {
+
+    String, Integer, InetAddress
+  }
+
   ///
   /// READING AND RECHECKING OF HOSTS FILE
   ///
@@ -364,10 +416,11 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
               spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT, 0, 0, 0));
     }
     // some idiot checking of the given Id
-    HostInfo nodeInfo = newHostInfoMapping.get(this.nodeID);
-    if (!GNSNodeConfig.LOCAL_NAME_SERVER_ID.equals(this.nodeID) // special case for Local Name Server 
-            && nodeInfo == null) {
-      throw new IOException("NodeId not found in hosts file:" + this.nodeID.toString());
+    if (!isLocalNameServer) {
+      HostInfo nodeInfo = newHostInfoMapping.get(this.nodeID);
+      if (nodeInfo == null) {
+        throw new IOException("NodeId not found in hosts file:" + this.nodeID.toString());
+      }
     }
     // ok.. things are cool... actually update (do we need to lock this)
     hostInfoMapping = newHostInfoMapping;
@@ -404,8 +457,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
 
   }
-  
-  
+
   /**
    * Returns true if the file is the old style (has lots of fields).
    *
@@ -428,7 +480,6 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
       return false;
     }
   }
-
 
   /**
    * Adds a HostInfo object to the list maintained by this config instance.
@@ -457,13 +508,12 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     GNS.getLogger().fine(nodeInfo.toString());
     hostInfoMapping.put(id, nodeInfo);
   }
-  
+
   @Override
   public void shutdown() {
     if (timerTask != null) {
       timerTask.cancel();
     }
   }
-
 
 }

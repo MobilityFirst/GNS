@@ -27,7 +27,7 @@ public class GenerateLookupRequest extends TimerTask {
 
   @Override
   public void run() {
-    DNSPacket queryRecord = new DNSPacket(GNSNodeConfig.INVALID_NAME_SERVER_ID, lookupCount, name, 
+    DNSPacket queryRecord = new DNSPacket(null, lookupCount, name, 
             "EdgeRecord", null,
             ColumnFieldType.LIST_STRING, null, null, null);
     queryRecord.getHeader().setId(lookupCount);

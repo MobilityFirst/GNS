@@ -16,7 +16,7 @@ import java.util.Set;
 
 /**
  * This class implements the packet transmitted between local nameserver and a primary nameserver to toString information
- about the current active nameserver set.
+ * about the current active nameserver set.
  *
  * @author Hardeep Uppal
  * @param <NodeIDType>
@@ -82,7 +82,7 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
    */
   public ActiveNameServerInfoPacket(int localNameServer, String name, String recordKey) {
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
-    this.primaryNameServer = (NodeIDType) GNSNodeConfig.INVALID_NAME_SERVER_ID;
+    this.primaryNameServer = null;
     this.localNameServer = localNameServer;
     this.recordKey = recordKey;
     this.name = name;
@@ -104,7 +104,7 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
     }
 
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
-    this.primaryNameServer = (NodeIDType) json.get(PRIMARY_NAMESERVER);
+    this.primaryNameServer = json.has(PRIMARY_NAMESERVER) ? (NodeIDType) json.get(PRIMARY_NAMESERVER) : null;
     this.localNameServer = json.getInt(LOCAL_NAMESERVER);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
@@ -123,7 +123,9 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(PRIMARY_NAMESERVER, primaryNameServer);
+    if (primaryNameServer != null) {
+      json.put(PRIMARY_NAMESERVER, primaryNameServer);
+    }
     json.put(LOCAL_NAMESERVER, getLocalNameServer());
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());

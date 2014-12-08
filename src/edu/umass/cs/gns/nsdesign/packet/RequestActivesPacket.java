@@ -53,7 +53,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   }
 
   public RequestActivesPacket(JSONObject json) throws JSONException {
-    super((NodeIDType)json.get(NAMESERVER_ID),
+    super((NodeIDType)json.opt(NAMESERVER_ID),
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.name = json.getString(NAME);
     this.activeNameServers = json.has(ACTIVES) ? Util.stringToSetOfNodeId(json.getString(ACTIVES)) : null;

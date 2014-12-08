@@ -47,7 +47,7 @@ public class StatusPane extends JPanel {
     idLabel.setPreferredSize(new Dimension(40, height));
     ipAddressLabel = new JLabel();
     ipAddressLabel.setPreferredSize(new Dimension(ADDRESSWIDTH, height));
-    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (id != null) {
       progressBar = new JProgressBar();
       progressBar.setPreferredSize(new Dimension(PROGRESSWIDTH, height));
     } else {
@@ -65,19 +65,19 @@ public class StatusPane extends JPanel {
 //    jLabel5 = new JLabel();
 //    jLabel5.setPreferredSize(new Dimension(30, height));
 
-    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (id != null) {
       idLabel.setText(id.toString());
     } else {
       idLabel.setText("#");
     }
 
-    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (id != null) {
       ipAddressLabel.setText("<host name unknown>");
     } else {
       ipAddressLabel.setText("Host Name");
     }
 
-    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (id != null) {
       stateLabel.setText("State");
       statusLabel.setText("Status");
       progressBarHeaderLabel.setText("");
@@ -91,7 +91,7 @@ public class StatusPane extends JPanel {
 //    jLabel5.setText("Z");
     add(idLabel);
     add(ipAddressLabel);
-    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (id != null) {
       StatusEntry entry = StatusModel.getInstance().getEntry((String) id);
       if (entry.getState() != StatusEntry.State.RUNNING && entry.getState() != StatusEntry.State.TERMINATED
               && entry.getState() != StatusEntry.State.ERROR) {
@@ -111,7 +111,7 @@ public class StatusPane extends JPanel {
 
   @Override
   public void paintComponent(Graphics g) {
-    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (id != null) {
       StatusEntry entry = StatusModel.getInstance().getEntry((String) id);
       idLabel.setText(id.toString());
       stateLabel.setText(entry.getState().name());
@@ -123,7 +123,7 @@ public class StatusPane extends JPanel {
       //timeLabel.setText(Format.formatDateTimeOnlyMilleUTC(entry.getTime()));
       timeLabel.setText(entry.getTime().toString());
     }
-    if (!id.equals(GNSNodeConfig.INVALID_NAME_SERVER_ID)) {
+    if (id != null) {
       progressBar.setIndeterminate(true);
     }
 
