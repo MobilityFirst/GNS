@@ -14,16 +14,22 @@
         <group>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/MongoRecordMap.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/Select.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/LocalNameServer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/MongoRecords.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/util/Stringifiable.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/localnameserver/BasicClientRequestHandler.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/ping/PingServer.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/NameRecord.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/recordmap/RecordMapInterface.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/build.xml</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/Defs.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/SelectHandler.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/nodeconfig/GNSNodeConfig.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/packet/SelectRequestPacket.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nsdesign/gnsReconfigurable/Select.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/build.properties</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/clientsupport/FieldAccess.java</file>
+            <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/nio/InterfaceNodeConfig.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/commands/data/SelectQuery.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/src/edu/umass/cs/gns/database/MongoRecordCursor.java</file>
             <file>file:/Users/westy/Documents/Code/GNS/nbbuild.xml</file>

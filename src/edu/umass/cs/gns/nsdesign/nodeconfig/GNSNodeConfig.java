@@ -342,6 +342,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    *
    * @param nameServerId Name server id //
    * @param portType	GNS port type*
+   * @return the port
    */
   public int getPort(NodeIDType nameServerId, GNS.PortType portType) {
     switch (portType) {
