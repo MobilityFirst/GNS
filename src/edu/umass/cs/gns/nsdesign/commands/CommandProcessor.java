@@ -28,6 +28,7 @@ import java.net.InetSocketAddress;
  * @author westy
  */
 @Deprecated
+@SuppressWarnings("unchecked")
 public class CommandProcessor {
   
   private static final NSCommandModule commandModule = new NSCommandModule();
@@ -39,6 +40,7 @@ public class CommandProcessor {
              + " command result: " + returnValue );
     gnsReconfigurable.getNioServer().sendToAddress(packet.getLnsAddress(), packet.toJSONObject());
   }
+  
   
   public static String processCommand(JSONObject json, GnsReconfigurableInterface gnsReconfigurable, InetSocketAddress lnsAddress) {
     // not sure if this is the best way to do this

@@ -70,7 +70,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
    * @param configFile Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
-  public NameServer(NodeIDType nodeID, String configFile, GNSNodeConfig gnsNodeConfig) throws IOException {
+  public NameServer(NodeIDType nodeID, String configFile, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
 
     // load options given in config file in a java properties object
     Properties prop = new Properties();
@@ -100,7 +100,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
    * @param configParameters Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
    */
-  public NameServer(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
+  public NameServer(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
     init(nodeID, configParameters, gnsNodeConfig);
   }
 
@@ -113,7 +113,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
    * NIOTransport will create an additional listening thread. threadPoolExecutor will create a few more shared
    * pool of threads.
    */
-  private void init(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig gnsNodeConfig) throws IOException {
+  private void init(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
     // set to false to cancel non-periodic delayed tasks upon shutdown
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 

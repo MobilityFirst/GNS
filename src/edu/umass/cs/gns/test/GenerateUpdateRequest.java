@@ -3,7 +3,6 @@ package edu.umass.cs.gns.test;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
@@ -16,10 +15,10 @@ import java.util.TimerTask;
 */
 class GenerateUpdateRequest extends TimerTask {
 
-  private int updateCount;
-  private String name;
-  private LNSPacketDemultiplexer packetDemultiplexer;
-  private int objectSizeBytes;
+  private final int updateCount;
+  private final String name;
+  private final LNSPacketDemultiplexer packetDemultiplexer;
+  private final int objectSizeBytes;
 
   public GenerateUpdateRequest(String name, int updateCount, int objectSizeBytes, LNSPacketDemultiplexer packetDemultiplexer) {
 
@@ -40,7 +39,7 @@ class GenerateUpdateRequest extends TimerTask {
     try {
       packetDemultiplexer.handleJSONObject(updateAddressPacket.toJSONObject());
     } catch (JSONException e) {
-      e.printStackTrace();
+       GNS.getLogger().severe("Problem handling update request:" + e);
     }
   }
 }

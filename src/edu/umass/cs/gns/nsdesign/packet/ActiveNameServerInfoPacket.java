@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONArray;
 import org.json.JSONException;

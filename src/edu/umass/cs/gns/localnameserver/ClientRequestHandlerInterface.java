@@ -235,13 +235,6 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    */
   public void sendToAddress(JSONObject json, String address, int port);
   
-  /**
-   * 
-   * @param name
-   * @param nodeIDs
-   * @return 
-   */
-  public int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs); 
   
   // STATS MAP
   

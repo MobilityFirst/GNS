@@ -55,7 +55,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   /**
    * Configuration for all nodes in GNS *
    */
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   private PingManager pingManager;
 
@@ -67,7 +67,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
    * @param nioServer
    * @param mongoRecords
    */
-  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
           MongoRecords mongoRecords) {
     this.nodeID = nodeID;
 
@@ -96,7 +96,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   }
 
   @Override
-  public GNSNodeConfig getGNSNodeConfig() {
+  public GNSNodeConfig<NodeIDType> getGNSNodeConfig() {
     return gnsNodeConfig;
   }
 

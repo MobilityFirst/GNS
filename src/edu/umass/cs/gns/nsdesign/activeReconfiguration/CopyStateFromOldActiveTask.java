@@ -4,7 +4,6 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -12,6 +11,7 @@ import org.json.JSONException;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.TimerTask;
 
 /**
@@ -24,16 +24,16 @@ import java.util.TimerTask;
  */
 public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
 
-  private ActiveReplica<?,?> activeReplica;
+  private final ActiveReplica<NodeIDType,?> activeReplica;
 
-  private NewActiveSetStartupPacket packet;
+  private final NewActiveSetStartupPacket packet;
 
-  private HashSet<NodeIDType> oldActivesQueried;
+  private final Set<NodeIDType> oldActivesQueried;
 
-  private int requestID;
+  private final int requestID;
 
-  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica<?,?> activeReplica) throws JSONException {
-    this.oldActivesQueried = new HashSet<NodeIDType>();
+  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica<NodeIDType,?> activeReplica) throws JSONException {
+    this.oldActivesQueried = new HashSet<>();
     this.activeReplica = activeReplica;
     // first, store the original packet in hash map
     this.requestID = activeReplica.getOngoingStateTransferRequests().put(packet);
@@ -83,8 +83,7 @@ public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
       }
 
       // select old active to send request to
-      NodeIDType oldActive = (NodeIDType) activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(),
-              oldActivesQueried);
+      NodeIDType oldActive = (NodeIDType) activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(), oldActivesQueried);
 
       if (oldActive == null) {
         // this will happen after all actives have been tried at least once.

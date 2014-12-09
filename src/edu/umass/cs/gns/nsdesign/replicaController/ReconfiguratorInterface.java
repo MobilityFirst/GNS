@@ -8,7 +8,7 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 @author V. Arun
  */
 public interface ReconfiguratorInterface<NodeIDType> {
-	public GNSNodeConfig getGnsNodeConfig();
+	public GNSNodeConfig<NodeIDType> getGnsNodeConfig();
 
 	public ConcurrentHashMap<NodeIDType, Double> getNsRequestRates();
 

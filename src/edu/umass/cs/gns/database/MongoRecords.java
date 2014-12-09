@@ -840,7 +840,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
   //  //test code
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings("unchecked") /// because it's static
   private static void queryTest(Object nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
     Set nameServerIDs = new HashSet();

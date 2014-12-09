@@ -23,7 +23,7 @@ public interface GnsReconfigurableInterface<NodeIDType> extends Replicable, Reco
 
   BasicRecordMap getDB();
 
-  GNSNodeConfig getGNSNodeConfig();
+  GNSNodeConfig<NodeIDType> getGNSNodeConfig();
 
   InterfaceJSONNIOTransport getNioServer();
 

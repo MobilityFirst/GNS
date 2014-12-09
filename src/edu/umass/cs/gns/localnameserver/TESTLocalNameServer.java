@@ -31,7 +31,8 @@ public class TESTLocalNameServer {
   private static final Timer t = new Timer();
   
   private static GNSNodeConfig gnsNodeConfig;
-
+  
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws IOException, JSONException, InterruptedException {
     String configFile = "scripts/8nodeslocal/name-server-info";
     GNS.fileLoggingLevel = GNS.consoleOutputLevel = "SEVERE";

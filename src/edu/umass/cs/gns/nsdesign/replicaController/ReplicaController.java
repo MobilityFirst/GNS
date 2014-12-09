@@ -58,7 +58,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
    */
   private final BasicRecordMap replicaControllerDB;
 
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap();
 
@@ -73,7 +73,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   /**
    * constructor object
    */
-  public ReplicaController(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+  public ReplicaController(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
                            ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                            MongoRecords mongoRecords) {
     this.nodeID = nodeID;
@@ -116,7 +116,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     return ongoingStartActiveRequests;
   }
 
-  public GNSNodeConfig getGnsNodeConfig() {
+  public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
     return gnsNodeConfig;
   }
 

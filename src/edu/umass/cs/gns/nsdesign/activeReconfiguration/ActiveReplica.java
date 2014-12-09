@@ -40,7 +40,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
 
   /** Configuration for all nodes in GNS **/
-  private GNSNodeConfig gnsNodeConfig;
+  private GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   /* FIXME: Arun: There needs to be detailed documentation of why you 
    * need UniqueIDHashMap.
@@ -57,7 +57,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
   /* FIXME: Arun: Really bizarre to pass a ScheduledThreadPoolExecutor in the constructor. Why
    * can't this class use an internal executor of its own? 
    */
-  public ActiveReplica(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig,
+  public ActiveReplica(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig,
                        InterfaceJSONNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                        AppType reconfigurableApp) {
     this.nodeID = nodeID;
@@ -145,7 +145,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     return scheduledThreadPoolExecutor;
   }
 
-  public GNSNodeConfig getGnsNodeConfig() {
+  public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
     return gnsNodeConfig;
   }
 

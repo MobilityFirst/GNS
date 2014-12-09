@@ -396,9 +396,9 @@ public class NameRecord implements Comparable<NameRecord> {
       ArrayList<Object> updatedValues = new ArrayList<Object>();
       if (userJSON != null) {
         // full userJSON update
-        Iterator<String> keyIter = userJSON.keys();
+        Iterator<?> keyIter =  userJSON.keys();
         while (keyIter.hasNext()) {
-          String key = keyIter.next();
+          String key = (String) keyIter.next();
           try {
             updatedFields.add(new ColumnField(key, ColumnFieldType.USER_JSON));
             updatedValues.add(userJSON.get(key));

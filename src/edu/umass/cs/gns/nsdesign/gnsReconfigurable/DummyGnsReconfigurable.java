@@ -34,7 +34,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
   private final InterfaceJSONNIOTransport nioServer;
 
   /** Configuration for all nodes in GNS **/
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   /**
    * Pings all nodes periodically and updates ping latencies to all name servers in
@@ -42,7 +42,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
    */
   private PingManager pingManager;
 
-  public DummyGnsReconfigurable(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig,
+  public DummyGnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig,
                            InterfaceJSONNIOTransport nioServer) {
     GNS.getLogger().info("Starting DUMMY gns .... NodeID: " + nodeID);
     this.nodeID = nodeID;
@@ -207,7 +207,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
   }
 
   @Override
-  public GNSNodeConfig getGNSNodeConfig() {
+  public GNSNodeConfig<NodeIDType> getGNSNodeConfig() {
     throw new UnsupportedOperationException();
   }
 

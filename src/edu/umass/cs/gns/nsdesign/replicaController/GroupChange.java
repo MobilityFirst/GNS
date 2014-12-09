@@ -7,12 +7,14 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.GroupChangeCompletePacket;
+import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
+import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
+import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.GroupChangeIdentifier;
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;

@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.clientsupport.CommandResponse;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;

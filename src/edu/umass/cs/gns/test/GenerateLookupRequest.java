@@ -2,7 +2,6 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import org.json.JSONException;
 import org.json.JSONObject;

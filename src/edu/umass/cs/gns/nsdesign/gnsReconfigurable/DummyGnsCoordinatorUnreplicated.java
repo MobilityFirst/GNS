@@ -27,9 +27,9 @@ public class DummyGnsCoordinatorUnreplicated<NodeIDType> extends ActiveReplicaCo
 
   private ConcurrentHashMap<String, Short>  nameAndGroupVersion = new ConcurrentHashMap<String, Short>();
   
-  private GNSNodeConfig gnsNodeConfig;
+  private GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
-  public DummyGnsCoordinatorUnreplicated(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig, Replicable replicable) {
+  public DummyGnsCoordinatorUnreplicated(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, Replicable replicable) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
     this.replicable = replicable;

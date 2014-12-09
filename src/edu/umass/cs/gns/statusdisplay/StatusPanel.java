@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.statusdisplay;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;

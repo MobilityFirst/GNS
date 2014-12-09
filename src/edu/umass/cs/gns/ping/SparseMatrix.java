@@ -15,10 +15,13 @@ import java.util.HashMap;
  * than nested hashmaps, but this is simple.
  *
  * @author westy
+ * @param <U>
+ * @param <V>
+ * @param <T>
  */
 public class SparseMatrix<U, V, T> {
 
-  HashMap<U, HashMap<V, T>> rows = new HashMap<U, HashMap<V, T>>();
+  HashMap<U, HashMap<V, T>> rows = new HashMap<>();
 
   T defaultValue;
 

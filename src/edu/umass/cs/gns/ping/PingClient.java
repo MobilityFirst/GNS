@@ -35,11 +35,11 @@ public class PingClient<NodeIDType> {
   // Records the send time of each request
   private final ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
   private final Random randomID = new Random();
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
   private Thread receiveThread;
   private boolean shutdown = false;
 
-  public PingClient(GNSNodeConfig gnsNodeConfig) {
+  public PingClient(GNSNodeConfig<NodeIDType> gnsNodeConfig) {
     this.gnsNodeConfig = gnsNodeConfig;
     try {
       clientSocket = new DatagramSocket();
@@ -180,6 +180,7 @@ public class PingClient<NodeIDType> {
     return shutdown;
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     String nodeID = "0";

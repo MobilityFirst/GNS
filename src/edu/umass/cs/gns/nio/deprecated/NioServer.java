@@ -28,6 +28,7 @@ import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 
 @Deprecated
+@SuppressWarnings("unchecked")
 public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTransport<NodeIDType> {
 
   public static String Version = "$Revision: 838 $";
@@ -64,7 +65,7 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
 
   private boolean emulateDelay = false;
   private double variation = 0.1;
-  private GNSNodeConfig gnsNodeConfig = null;
+  private GNSNodeConfig<NodeIDType> gnsNodeConfig = null;
 
   public NioServer(NodeIDType ID, ByteStreamToJSONObjects worker, InterfaceNodeConfig nodeConfig) throws IOException {
     
@@ -114,7 +115,7 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
   /**
    * After this method is called, we emulate an additional delay in packets sent to all nodes.
    */
-  public void emulateConfigFileDelays(GNSNodeConfig gnsNodeConfig, double variation) {
+  public void emulateConfigFileDelays(GNSNodeConfig<NodeIDType> gnsNodeConfig, double variation) {
     this.emulateDelay = true;
     this.variation = variation;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -128,7 +129,7 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
           wakeup = newPendingData;
           newPendingData = false;
 
-          for (Object nodeId : gnsNodeConfig.getNodeIDs()) 
+          for (NodeIDType nodeId : gnsNodeConfig.getNodeIDs()) 
             if (pendingChangeByNode.containsKey(nodeId) && pendingChangeByNode.get(nodeId)) {
               this.pendingChanges.add(new ChangeRequest(connectedIDs.get(nodeId), ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
               //this.pendingChanges.add(new ChangeRequest(connectedIDs[i], ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));

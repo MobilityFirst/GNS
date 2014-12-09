@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithLnsAddress;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import java.net.InetSocketAddress;

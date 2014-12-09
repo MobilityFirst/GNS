@@ -95,7 +95,6 @@ public class LNSUpdateHandler {
                 + " for " + name + " / " + key + ": " + packet.toJSONObject());
       }
       activeReplica.getNioServer().sendToAddress(lnsAddress, packet.toJSONObject());
-      //Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), packet.toJSONObject(), recipientId, GNS.PortType.DEFAULT_LNS_TCP_PORT);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {

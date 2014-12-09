@@ -513,7 +513,7 @@ public class ReplicaControllerRecord<NodeIDType> {
    *
    * @param numReplica Number of name servers to be selected.
    */
-  public Set<NodeIDType> getHighestVotedReplicaID(ReconfiguratorInterface rc, GNSNodeConfig gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
+  public Set<NodeIDType> getHighestVotedReplicaID(ReconfiguratorInterface rc, GNSNodeConfig<NodeIDType> gnsNodeConfig, int numReplica) throws FieldNotFoundException { //
     Set<NodeIDType> result = new HashSet<NodeIDType>();
 
     for (int i = 1; i <= numReplica; i++) {

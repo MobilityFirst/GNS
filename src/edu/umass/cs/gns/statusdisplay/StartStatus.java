@@ -19,6 +19,7 @@ import org.apache.commons.cli.ParseException;
  *
  * @author westy
  */
+@SuppressWarnings("unchecked")
 public class StartStatus {
 
   private static Options commandLineOptions;

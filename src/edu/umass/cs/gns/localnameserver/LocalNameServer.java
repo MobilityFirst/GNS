@@ -38,8 +38,9 @@ import java.util.concurrent.TimeUnit;
  * This class represents the functions of a Local Name Server.
  *
  * @author abhigyan
+ * @param <NodeIDType>
  */
-public class LocalNameServer implements Shutdownable {
+public class LocalNameServer<NodeIDType>  implements Shutdownable {
 
   /**
    * The address of the name server. Replaces nodeId.
@@ -73,22 +74,23 @@ public class LocalNameServer implements Shutdownable {
   /**
    * Ping manager object for pinging other nodes and updating ping latencies in
    */
+  // this one is static because it has a get method that is static
   private static PingManager pingManager;
 
   /**
    * We keep a pointer to the gnsNodeConfig so we can shut it down.
    */
-  private static GNSNodeConfig gnsNodeConfig;
+  private GNSNodeConfig gnsNodeConfig;
 
   /**
    * We keep a pointer to the udpDnsServer so we can shut it down.
    */
-  private static UdpDnsServer udpDnsServer;
+  private UdpDnsServer udpDnsServer;
 
   /**
    * We keep a pointer to the dnsTranslator so we can shut it down.
    */
-  private static DnsTranslator dnsTranslator;
+  private DnsTranslator dnsTranslator;
   
   private LNSListenerAdmin lnsListenerAdmin;
   /**
@@ -109,7 +111,7 @@ public class LocalNameServer implements Shutdownable {
    * @param nodeID Local Name Server Id
    * @throws IOException
    */
-  public LocalNameServer(InetSocketAddress address, GNSNodeConfig gnsNodeConfig) throws IOException, InterruptedException {
+  public LocalNameServer(InetSocketAddress address, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException, InterruptedException {
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
     // set aaddress first because constructor for BasicClientRequestHandler reads 'nodeID' value.
     this.address = address;
@@ -164,10 +166,6 @@ public class LocalNameServer implements Shutdownable {
       GNS.getLogger().info("Starting experiment ..... ");
       new StartExperiment().startMyTest(null, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
-      // name server loads initialized.
-      if (parameters.isLoadDependentRedirection()) {
-        initializeNameServerLoadMonitoring();
-      }
     }
 
     try {
@@ -360,6 +358,7 @@ public class LocalNameServer implements Shutdownable {
    * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
    *
    */
+  
   public static Object getClosestReplicaController(String name, Set nameServersQueried) {
     return requestHandler.getClosestReplicaController(name, nameServersQueried);
   }
@@ -385,6 +384,7 @@ public class LocalNameServer implements Shutdownable {
    * @return Best name server among serverIDs given.
    * ***********************************************************
    */
+  @SuppressWarnings("unchecked")
   public static Object selectBestUsingLatencyPlusLoad(Set<Object> serverIDs) {
     if (serverIDs == null || serverIDs.size() == 0) {
       return null;
@@ -402,10 +402,6 @@ public class LocalNameServer implements Shutdownable {
       }
     }
     return selectServer;
-  }
-
-  public static int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
-    return requestHandler.getDefaultCoordinatorReplica(name, nodeIDs);
   }
 
   /**
@@ -447,24 +443,6 @@ public class LocalNameServer implements Shutdownable {
    */
   public static String getNameRecordStatsMapLogString() {
     return requestHandler.getNameRecordStatsMapLogString();
-  }
-
-  // MONITOR NAME SERVER LOADS
-  private void initializeNameServerLoadMonitoring() {
-    nameServerLoads = new ConcurrentHashMap<String, Double>();
-    Set<String> nameServerIDs = requestHandler.getGnsNodeConfig().getNodeIDs();
-    for (String x : nameServerIDs) {
-      nameServerLoads.put(x, 0.0);
-    }
-    Random r = new Random();
-    for (String x : nameServerIDs) {
-      SendLoadMonitorPacketTask loadMonitorTask = new SendLoadMonitorPacketTask(x);
-      long interval = StartLocalNameServer.nameServerLoadMonitorIntervalSeconds * 1000;
-      // Query NS at different times to avoid synchronization among local name servers.
-      // synchronization may cause oscillations in name server loads.
-      long offset = (long) (r.nextDouble() * interval);
-      requestHandler.getExecutorService().scheduleAtFixedRate(loadMonitorTask, offset, interval, TimeUnit.MILLISECONDS);
-    }
   }
 
   public static void handleNameServerLoadPacket(JSONObject json) throws JSONException {

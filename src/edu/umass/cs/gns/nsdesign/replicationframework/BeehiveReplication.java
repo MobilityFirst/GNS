@@ -2,11 +2,16 @@ package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Util;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 
 /**
  *
@@ -105,6 +110,7 @@ public class BeehiveReplication {
    * server whose ID is greater than current name server's ID. I think this approximates a replica that will be chosen
    * using DHT routing.
    */
+  @SuppressWarnings("unchecked") //FIXME: deal with GNSNodeConfig generic
   public static Object getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<String> activeNameServers, Set nameserverQueried) {
     ArrayList<String> allServers = new ArrayList<String>();
     if (activeNameServers != null) {

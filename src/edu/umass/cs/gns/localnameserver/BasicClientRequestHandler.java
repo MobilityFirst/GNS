@@ -101,12 +101,13 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     this.tcpTransport = initTransport();
   }
 
+  @SuppressWarnings("unchecked") // calls a static method
   private InterfaceJSONNIOTransport initTransport() throws IOException {
     GNS.getLogger().info("LNS listener started.");
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
-//    if (parameters.isEmulatePingLatencies()) {
-//      JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
-//    }
+    if (parameters.isEmulatePingLatencies()) {
+      JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
+    }
     new Thread(gnsNiot).start();
 
     return new GnsMessenger(null, gnsNiot, executorService);
@@ -407,22 +408,6 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     }
   }
 
-  @Override
-  public int getDefaultCoordinatorReplica(String name, Set<Integer> nodeIDs) {
-    if (nodeIDs == null || nodeIDs.isEmpty()) {
-      return -1;
-    }
-    Random r = new Random(name.hashCode());
-    ArrayList<Integer> x1 = new ArrayList<Integer>(nodeIDs);
-    Collections.sort(x1);
-    Collections.shuffle(x1, r);
-    for (int x : x1) {
-      return x;
-    }
-    return x1.get(0);
-    //    return  x1.toString(count);
-  }
-
   // STATS MAP
   @Override
   public NameRecordStats getStats(String name) {
@@ -430,6 +415,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @Override
+  @SuppressWarnings("unchecked") // don't understand why there is a warning here!
   public Set<String> getNameRecordStatsKeySet() {
     return nameRecordStatsMap.keySet();
   }

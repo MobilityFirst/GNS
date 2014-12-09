@@ -24,6 +24,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@SuppressWarnings("unchecked")
 public class StatusListener extends Thread {
 
   public static final String MESSAGE = "message";

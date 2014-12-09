@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +15,7 @@ import java.util.concurrent.TimeUnit;
  * load in deciding whether to choose this node as an active replica.
  *
  * Created by abhigyan on 5/20/14.
+ * @param <NodeIDType>
  */
 public class SendRequestLoadTask<NodeIDType> extends TimerTask{
 

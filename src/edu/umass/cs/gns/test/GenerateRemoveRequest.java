@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import org.json.JSONException;
 
@@ -12,9 +12,9 @@ import java.util.TimerTask;
 */
 class GenerateRemoveRequest extends TimerTask {
 
-  private int requestCount;
-  private String name;
-  private LNSPacketDemultiplexer packetDemultiplexer;
+  private final int requestCount;
+  private final String name;
+  private final LNSPacketDemultiplexer packetDemultiplexer;
 
   public GenerateRemoveRequest(String name, int count, LNSPacketDemultiplexer packetDemultiplexer) {
 
@@ -32,7 +32,7 @@ class GenerateRemoveRequest extends TimerTask {
     try {
       packetDemultiplexer.handleJSONObject(packet.toJSONObject());
     } catch (JSONException e) {
-      e.printStackTrace();
+      GNS.getLogger().severe("Problem handling remove request:" + e);
     }
   }
 }

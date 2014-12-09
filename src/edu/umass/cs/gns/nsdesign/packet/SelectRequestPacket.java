@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;

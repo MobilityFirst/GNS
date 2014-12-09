@@ -27,22 +27,23 @@ public class PingManager<NodeIDType> implements Shutdownable {
 
   private final static int TIME_BETWEEN_PINGS = 30000;
   private final NodeIDType nodeId;
-  private final PingClient pingClient;
-  private final PingServer pingServer;
+  private final PingClient<NodeIDType> pingClient;
+  private final PingServer<NodeIDType> pingServer;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
   private final SparseMatrix<NodeIDType, Integer, Long> pingTable; // the place we store all the sampled rtt values
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
   private Thread managerThread;
 
   private final boolean debug = false;
 
-  public PingManager(NodeIDType nodeId, GNSNodeConfig gnsNodeConfig) {
+  
+  public PingManager(NodeIDType nodeId, GNSNodeConfig<NodeIDType> gnsNodeConfig) {
     this.nodeId = nodeId;
     this.gnsNodeConfig = gnsNodeConfig;
-    this.pingClient = new PingClient(gnsNodeConfig);
-    this.pingServer = new PingServer(nodeId, gnsNodeConfig);
+    this.pingClient = new PingClient<NodeIDType>(gnsNodeConfig);
+    this.pingServer = new PingServer<NodeIDType>(nodeId, gnsNodeConfig);
     new Thread(pingServer).start();
-    this.pingTable = new SparseMatrix(GNSNodeConfig.INVALID_PING_LATENCY);
+    this.pingTable = new SparseMatrix<NodeIDType, Integer, Long>(GNSNodeConfig.INVALID_PING_LATENCY);
 
   }
 
@@ -72,7 +73,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
       Thread.sleep(TIME_BETWEEN_PINGS);
       long t0 = System.currentTimeMillis();
       // Note that we're only pinging other NameServers here, not LNSs (they don't have IDs anyway).
-      for (Object id : gnsNodeConfig.getNodeIDs()) {
+      for (NodeIDType id : gnsNodeConfig.getNodeIDs()) {
         try {
           if (!id.equals(nodeId)) {
             if (debug) {
@@ -139,7 +140,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
-    for (Object otherNode : gnsNodeConfig.getNodeIDs()) {
+    for (NodeIDType otherNode : gnsNodeConfig.getNodeIDs()) {
       result.append(String.format("%4s", otherNode));
       if (!otherNode.equals(node)) {
         result.append(" = ");
@@ -174,6 +175,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
     GNS.getLogger().warning("Ping shutdown  complete.");
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     String nodeID = "0";

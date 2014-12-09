@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.NSResponseCode;
 
 /**

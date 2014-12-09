@@ -25,11 +25,11 @@ import java.net.InetAddress;
 public class PingServer<NodeIDType> extends Thread{
 
   private final NodeIDType nodeID;
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
-  public PingServer(final NodeIDType nodeID, final GNSNodeConfig gnsNodeConfig) {
+  public PingServer(final NodeIDType nodeID, final GNSNodeConfig<NodeIDType> gnsNodeConfig) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
   }
@@ -84,6 +84,7 @@ public class PingServer<NodeIDType> extends Thread{
     return shutdown;
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     String nodeID = "0";

@@ -8,7 +8,6 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
@@ -51,12 +50,7 @@ public class LNSQueryHandler {
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
-    // activeReplica.getGNSNodeConfig() is a hack to getArray the first LNS
-    // We need a means to find the closes LNS
     sendQueryInternal(id, lnsAddress, name, key, activeReplica);
-//    for (int server : ConsistentHashing.getReplicaControllerSet(name)) {
-//      sendQueryInternal(id, server, name, key, activeReplica);
-//    }
     // now we wait until the packet comes back
     waitForResponsePacket(id);
     QueryResult result = queryResultMap.get(id);
@@ -74,7 +68,6 @@ public class LNSQueryHandler {
       GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + lnsAddress
               + " for " + name + " / " + key + ": " + json);
       activeReplica.getNioServer().sendToAddress(lnsAddress, json);
-      //Packet.sendTCPPacket(activeReplica.getGNSNodeConfig(), json, recipientId, GNS.PortType.LNS_TCP_PORT);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {
