@@ -33,7 +33,7 @@ public class Select {
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID.toString());
     }
-    LocalNameServer.sendToNS(outgoingJSON, serverID);
+    handler.sendToNS(outgoingJSON, serverID);
   }
 
   private static Object pickNameServer(String guid, ClientRequestHandlerInterface handler) {

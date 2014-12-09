@@ -18,14 +18,10 @@ import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.test.StartExperiment;
 import edu.umass.cs.gns.test.nioclient.DBClientIntercessor;
-import org.json.JSONException;
-import org.json.JSONObject;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This class represents the functions of a Local Name Server.
@@ -33,7 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author abhigyan
  * @param <NodeIDType>
  */
-public class LocalNameServer<NodeIDType>  implements Shutdownable {
+public class LocalNameServer<NodeIDType> implements Shutdownable {
 
   // FIXME: Future code cleanup note: The ClientRequestHandlerInterface and the IntercessorInterface
   // are closely related. Both encapsulate some functionality in the LocalNameServer that we might want to 
@@ -57,8 +53,6 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
     return intercessor;
   }
 
-  private static ConcurrentHashMap<String, Double> nameServerLoads;
-
   /**
    * Ping manager object for pinging other nodes and updating ping latencies in
    */
@@ -81,13 +75,7 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
   private DnsTranslator dnsTranslator;
   
   private LNSListenerAdmin lnsListenerAdmin;
-  /**
-   * @return the nameServerLoads
-   */
-  public static ConcurrentHashMap<String, Double> getNameServerLoads() {
-    return nameServerLoads;
-  }
-
+ 
   public static PingManager getPingManager() {
     return pingManager;
   }
@@ -192,117 +180,12 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
   public static void invalidateCache() {
     requestHandler.invalidateCache();
   }
-  
-  // LOCATING REPLICA CONTROLLERS
-  /**
-   **
-   * Return a Set containing ids of primary replica for <i>name</i>
-   *
-   * @param name
-   * @return
-   */
-  public static Set getReplicaControllers(String name) {
-    return requestHandler.getReplicaControllers(name);
-  }
-
-  /**
-   **
-   * Returns the closest primary name server for <i>name</i>.
-   *
-   * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
-   *
-   */
-  
-  public static Object getClosestReplicaController(String name, Set nameServersQueried) {
-    return requestHandler.getClosestReplicaController(name, nameServersQueried);
-  }
-
-  // SENDING
-  /**
-   * Send packet to NS after all packet
-   *
-   * @param json
-   * @param ns
-   */
-  public static void sendToNS(JSONObject json, Object ns) {
-    requestHandler.sendToNS(json, ns);
-  }
-
-  /**
-   * *******************END: methods for monitoring load at name servers. *******************************
-   */
-  /**
-   * ************************************************************
-   * Returns closest server including ping-latency and server-load.
-   *
-   * @return Best name server among serverIDs given.
-   * ***********************************************************
-   */
-  @SuppressWarnings("unchecked")
-  public static Object selectBestUsingLatencyPlusLoad(Set<Object> serverIDs) {
-    if (serverIDs == null || serverIDs.size() == 0) {
-      return null;
-    }
-    Object selectServer = null;
-    // select server whose latency + load is minimum
-    double selectServerLatency = Double.MAX_VALUE;
-    for (Object x : serverIDs) {
-      if (requestHandler.getGnsNodeConfig().getPingLatency(x) > 0) {
-        double totallatency = 5 * getNameServerLoads().get(x) + (double) requestHandler.getGnsNodeConfig().getPingLatency(x);
-        if (totallatency < selectServerLatency) {
-          selectServer = x;
-          selectServerLatency = totallatency;
-        }
-      }
-    }
-    return selectServer;
-  }
 
   /**
    * Prints local name server cache (and sorts it for convenience)
    */
   public static String getCacheLogString(String preamble) {
     return requestHandler.getCacheLogString(preamble);
-  }
-
-  // STATS MAP
-  public static NameRecordStats getStats(String name) {
-    return requestHandler.getStats(name);
-  }
-
-  public static Set<String> getNameRecordStatsKeySet() {
-    return requestHandler.getNameRecordStatsKeySet();
-  }
-
-  public static void incrementLookupRequest(String name) {
-    requestHandler.incrementLookupRequest(name);
-  }
-
-  public static void incrementUpdateRequest(String name) {
-    requestHandler.incrementUpdateRequest(name);
-  }
-
-  public static void incrementLookupResponse(String name) {
-    requestHandler.incrementLookupResponse(name);
-  }
-
-  public static void incrementUpdateResponse(String name) {
-    requestHandler.incrementUpdateResponse(name);
-  }
-
-  /**
-   **
-   * Prints name record statistic
-   *
-   */
-  public static String getNameRecordStatsMapLogString() {
-    return requestHandler.getNameRecordStatsMapLogString();
-  }
-
-  public static void handleNameServerLoadPacket(JSONObject json) throws JSONException {
-//    NameServerLoadPacket nsLoad = new NameServerLoadPacket(json);
-//    LocalNameServer.nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
-    throw new UnsupportedOperationException();
   }
 
   @Override

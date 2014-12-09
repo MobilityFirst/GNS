@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * Created by abhigyan on 4/12/14.
  */
+@SuppressWarnings("unchecked")
 public class LNSTestRequests {
 
   /**
@@ -30,11 +31,11 @@ public class LNSTestRequests {
   /**
    * Sends a request to change the group of active replicas of a name.
    */
-  public static void sendGroupChangeRequest(JSONObject jsonObject) throws JSONException {
+  public static void sendGroupChangeRequest(JSONObject jsonObject, ClientRequestHandlerInterface handler) throws JSONException {
     GNS.getLogger().fine("Sending group change packet: " + jsonObject);
     NewActiveProposalPacket packet = new NewActiveProposalPacket(jsonObject);
     packet.setLnsAddress(LocalNameServer.getNodeAddress());
-    LocalNameServer.sendToNS(packet.toJSONObject(), packet.getProposingNode());
+    handler.sendToNS(packet.toJSONObject(), packet.getProposingNode());
     trackGroupChange.put(new GroupChangeIdentifier(packet.getName(), packet.getVersion()), System.currentTimeMillis());
   }
 

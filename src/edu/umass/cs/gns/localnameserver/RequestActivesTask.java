@@ -68,11 +68,11 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
       }
 
       // next primary to be queried
-      NodeIDType primaryID = (NodeIDType) LocalNameServer.getClosestReplicaController(name, nameServersQueried);
+      NodeIDType primaryID = handler.getClosestReplicaController(name, nameServersQueried);
       if (primaryID == null) {
         // we clear this set to resend requests to the same set of name servers
         nameServersQueried.clear();
-        primaryID = (NodeIDType) LocalNameServer.getClosestReplicaController(name, nameServersQueried);
+        primaryID = handler.getClosestReplicaController(name, nameServersQueried);
         if (primaryID == null) {
           GNS.getLogger().severe("No primary NS available. name = " + name);
           throw  new CancelExecutorTaskException();
@@ -106,7 +106,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
     try
     {
       JSONObject sendJson = packet.toJSONObject();
-      LocalNameServer.sendToNS(sendJson, primaryID);
+      handler.sendToNS(sendJson, primaryID);
       if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID.toString()
               + "\tname\t" + name);
     } catch (JSONException e)

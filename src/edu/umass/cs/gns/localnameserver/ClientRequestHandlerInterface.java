@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.util.Set;
 import org.json.JSONObject;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import org.json.JSONException;
 
 /**
  **
@@ -283,6 +284,9 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    */
   public int getRequestsPerSecond();
   
+  public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs);
+  
+  public void handleNameServerLoadPacket(JSONObject json) throws JSONException;
   
 }
   

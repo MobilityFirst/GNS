@@ -96,13 +96,13 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
       int nameCount = 0;
       int allNames = 0;
       long t0 = System.currentTimeMillis();
-      for (String name : LocalNameServer.getNameRecordStatsKeySet()) {
+      for (String name : handler.getNameRecordStatsKeySet()) {
         allNames++;
         if (StartLocalNameServer.debuggingEnabled) {
           GNS.getLogger().fine(" BEGIN VOTING: " + name);
         }
         try {
-          NameRecordStats stats = LocalNameServer.getStats(name);
+          NameRecordStats stats = handler.getStats(name);
 
           vote = stats.getVotes();
           update = stats.getUpdateVotes();
@@ -119,12 +119,12 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
           nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, handler.getNodeAddress());
 
           // send to all primaries.
-          Set<NodeIDType> primaryNameServers = LocalNameServer.getReplicaControllers(name);
+          Set<NodeIDType> primaryNameServers = handler.getReplicaControllers(name);
           if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().info("Primary name servers = " + primaryNameServers + " name = " + name);
           }
           for (NodeIDType primary : primaryNameServers) {
-            LocalNameServer.sendToNS(nsSelectionPacket.toJSONObject(), primary);
+            handler.sendToNS(nsSelectionPacket.toJSONObject(), primary);
           }
           Thread.sleep(100); // rate limit the sending of votes. if we do limit rate, there will be a period
           // where all resources are used for sending votes, which will affect other traffic at LNS.
@@ -140,10 +140,9 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
 
   private NodeIDType selectNSToVoteFor() {
     if (StartLocalNameServer.loadDependentRedirection) {
-      Set<Object> allNS = LocalNameServer.getGnsNodeConfig().getNodeIDs();
-      return (NodeIDType) LocalNameServer.selectBestUsingLatencyPlusLoad(allNS);
+      return handler.selectBestUsingLatencyPlusLoad(handler.getGnsNodeConfig().getNodeIDs());
     } else {
-      return (NodeIDType) LocalNameServer.getGnsNodeConfig().getClosestServer();
+      return handler.getGnsNodeConfig().getClosestServer();
     }
   }
 

@@ -86,7 +86,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
           Update.handlePacketConfirmUpdate(json, handler);
           break;
         case NAME_SERVER_LOAD:
-          LocalNameServer.handleNameServerLoadPacket(json);
+          handler.handleNameServerLoadPacket(json);
           break;
         // Add/remove // these have been converted to use handler
         case ADD_RECORD:
@@ -114,7 +114,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
         // Requests sent only during testing
         case NEW_ACTIVE_PROPOSE:
-          LNSTestRequests.sendGroupChangeRequest(json);
+          LNSTestRequests.sendGroupChangeRequest(json, handler);
           break;
         case GROUP_CHANGE_COMPLETE:
           LNSTestRequests.handleGroupChangeComplete(json);
