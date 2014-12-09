@@ -1,8 +1,9 @@
 package edu.umass.cs.gns.test.basictest;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
+
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -27,26 +28,26 @@ public class Test1Name extends Thread {
     // add a name
     String initialValue = "ABCD";
 
-    NSResponseCode response = Intercessor.sendAddRecord(name, key, getResultValue(initialValue));
+    NSResponseCode response = LocalNameServer.getIntercessor().sendAddRecord(name, key, getResultValue(initialValue));
     assert response == NSResponseCode.NO_ERROR: "Error in adding record";
 
     // do a lookup and check if same value is returned
-    QueryResult result = Intercessor.sendQueryBypassingAuthentication(name, key);
+    QueryResult result = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, key);
 
     assert (result.getArray(key).get(0)).equals(initialValue);
 
     // do an update
     String value = "PQRS";
-    response = Intercessor.sendUpdateRecordBypassingAuthentication(name, key,
+    response = LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(name, key,
             value, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL);
     assert response == NSResponseCode.NO_ERROR: "Error in updating record";
 
     // check if same value is returned
-    result = Intercessor.sendQueryBypassingAuthentication(name, key);
+    result = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, key);
     assert (result.getArray(key).get(0)).equals(value);
 
     // remove the record
-    response = Intercessor.sendRemoveRecord(name);
+    response = LocalNameServer.getIntercessor().sendRemoveRecord(name);
     assert response == NSResponseCode.NO_ERROR;
 
     GNS.getStatLogger().info("Basic test for 1 name successful. Local name server exiting.");

@@ -63,7 +63,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
     try {
       switch (Packet.getPacketType(json)) {
         case DNS:
-          DNSPacket dnsPacket = new DNSPacket(json);
+          DNSPacket dnsPacket = new DNSPacket(json, handler.getGnsNodeConfig());
           Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
           switch (incomingPacketType) {
             // Lookup // these have been converted to use handler

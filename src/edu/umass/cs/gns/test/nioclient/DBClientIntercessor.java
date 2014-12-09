@@ -1,10 +1,26 @@
 package edu.umass.cs.gns.test.nioclient;
 
-import edu.umass.cs.gns.localnameserver.*;
+import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nio.*;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.gns.nio.JSONMessageExtractor;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.NIOTransport;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.ADD_RECORD;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_ADD;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_REMOVE;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_UPDATE;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.DNS;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.REMOVE_RECORD;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.UPDATE;
+import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -35,14 +51,14 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
 
   private UniqueIDHashMap uniqueIDHashMap = new UniqueIDHashMap(); // map from request ID to packets
 
+  private InterfaceNodeConfig nodeConfig;
   private NIOTransport nioTransport;
 
   private AbstractPacketDemultiplexer lnsDemux;
 
   public DBClientIntercessor(int ID, final int port, AbstractPacketDemultiplexer lnsDemux) throws IOException {
     this.lnsDemux = lnsDemux;
-
-    this.nioTransport  = new NIOTransport(ID, new InterfaceNodeConfig<Integer>() {
+    this.nodeConfig = new InterfaceNodeConfig<Integer>() {
       @Override
       public boolean nodeExists(Integer ID) {
         throw new UnsupportedOperationException();
@@ -68,12 +84,17 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
         return port;
       }
 
-	@Override
-	public Integer valueOf(String nodeAsString) {
-		return Integer.valueOf(nodeAsString);
-	}
-    }, new JSONMessageExtractor(this));
+      @Override
+      public Integer valueOf(String nodeAsString) {
+        return Integer.valueOf(nodeAsString);
+      }
+    };
+    this.nioTransport = new NIOTransport(ID, nodeConfig, new JSONMessageExtractor(this));
     new Thread(nioTransport).start();
+  }
+
+  public InterfaceNodeConfig getNodeConfig() {
+    return nodeConfig;
   }
 
   // incoming packets from client
@@ -102,7 +123,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           outgoingJson = updatePacket.toJSONObject();
           break;
         case DNS:
-          DNSPacket dnsPacket = new DNSPacket(incomingJson);
+          DNSPacket dnsPacket = new DNSPacket(incomingJson, nodeConfig);
           dnsPacket.getHeader().setId(intercessorRequestID);
           outgoingJson = dnsPacket.toJSONObjectQuestion();
           break;
@@ -111,14 +132,18 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
     } catch (JSONException e) {
       e.printStackTrace();
     }
-    if (outgoingJson != null) lnsDemux.handleJSONObject(outgoingJson);
+    if (outgoingJson != null) {
+      lnsDemux.handleJSONObject(outgoingJson);
+    }
     return true;
   }
 
   // incoming packets from LNS
   @Override
   public void handleIncomingPacket(JSONObject incomingJson) {
-    if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
+    if (StartLocalNameServer.debuggingEnabled) {
+      GNS.getLogger().fine("Intercessor received response ... " + incomingJson);
+    }
     int origReqID;
     JSONObject origJson = null; // json sent by client
     JSONObject outgoingJson = null;
@@ -126,7 +151,9 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
       switch (Packet.getPacketType(incomingJson)) {
         case CONFIRM_ADD:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
-          if (origJson==null) break;
+          if (origJson == null) {
+            break;
+          }
           origReqID = new AddRecordPacket(origJson).getRequestID();
           ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
@@ -134,7 +161,9 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           break;
         case CONFIRM_REMOVE:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
-          if (origJson==null) break;
+          if (origJson == null) {
+            break;
+          }
           origReqID = new RemoveRecordPacket(origJson).getRequestID();
           confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
@@ -142,17 +171,21 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           break;
         case CONFIRM_UPDATE:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
-          if (origJson==null) break;
+          if (origJson == null) {
+            break;
+          }
           origReqID = new UpdatePacket(origJson).getRequestID();
           confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
           break;
         case DNS:
-          origJson = (JSONObject) uniqueIDHashMap.remove(new DNSPacket(incomingJson).getQueryId());
-          if (origJson==null) break;
-          origReqID = new DNSPacket(origJson).getQueryId();
-          DNSPacket dnsPacket = new DNSPacket(incomingJson);
+          origJson = (JSONObject) uniqueIDHashMap.remove(new DNSPacket(incomingJson, nodeConfig).getQueryId());
+          if (origJson == null) {
+            break;
+          }
+          origReqID = new DNSPacket(origJson, nodeConfig).getQueryId();
+          DNSPacket dnsPacket = new DNSPacket(incomingJson, nodeConfig);
           dnsPacket.getHeader().setId(origReqID);
           outgoingJson = dnsPacket.toJSONObject();
           break;
@@ -177,7 +210,9 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
   }
 
   public static void main(String[] args) throws IOException, JSONException, InterruptedException {
-    /** This is a test for DBClientIntercessor and DBClient using a fake local name server. **/
+    /**
+     * This is a test for DBClientIntercessor and DBClient using a fake local name server. *
+     */
 
     // restrict logging level to INFO to see only meaningful messages
     GNS.consoleOutputLevel = GNS.statConsoleOutputLevel = GNS.fileLoggingLevel = GNS.statFileLoggingLevel = "INFO";
@@ -200,8 +235,4 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
     System.exit(0);
   }
 
-
 }
-
-
-

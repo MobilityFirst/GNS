@@ -10,6 +10,7 @@ import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,15 +29,16 @@ public class DNSRequestInfo extends RequestInfo{
   private int nameserverID;
 
   private boolean cacheHit = false;
+  
+  private Stringifiable unstringer;
 
   /**************************************************************
    * Constructs a QueryInfo object with the following parameters
    * @param lnsReqId Query id
    * @param name Host/Domain name
-   * @param time System time when query was transmitted
    * @param nameserverID Response name server ID
    **************************************************************/
-  public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket incomingPacket) {
+  public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket incomingPacket, Stringifiable unstringer) {
     this.requestType = Packet.PacketType.DNS;
     this.lnsReqID = lnsReqId;
     this.name = name;
@@ -45,6 +47,7 @@ public class DNSRequestInfo extends RequestInfo{
     this.incomingPacket = incomingPacket;
     this.numLookupActives = 0;
     this.nameserverID = nameserverID;
+    this.unstringer = unstringer;
   }
 
   public synchronized void setNameserverID(int nameserverID1) {
@@ -86,7 +89,7 @@ public class DNSRequestInfo extends RequestInfo{
   @Override
   public synchronized JSONObject getErrorMessage() {
     try {
-      DNSPacket dnsPacketOut = new DNSPacket(incomingPacket.toJSONObjectQuestion());
+      DNSPacket dnsPacketOut = new DNSPacket(incomingPacket.toJSONObjectQuestion(), unstringer);
       dnsPacketOut.getHeader().setResponseCode(NSResponseCode.ERROR);
       dnsPacketOut.getHeader().setQRCode(DNSRecordType.RESPONSE);
       return dnsPacketOut.toJSONObject();

@@ -37,11 +37,12 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
   private boolean readCoordination = false;
 
   private InterfaceJSONNIOTransport nioTransport;
+  private InterfaceNodeConfig nodeConfig;
 
   public GnsCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                              Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
-
+    this.nodeConfig = nodeConfig;
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
 
@@ -128,7 +129,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator{
 
         // no coordination needed for these requests
         case DNS:
-          DNSPacket dnsPacket = new DNSPacket(request);
+          DNSPacket dnsPacket = new DNSPacket(request, nodeConfig);
           String name = dnsPacket.getGuid();
 
           // Send the current set of active replicas for this name to the LNS to keep it updated of the

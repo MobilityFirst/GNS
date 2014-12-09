@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 
@@ -47,12 +48,12 @@ public class GroupAccess {
    */
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
+    NSResponseCode groupResponse = LocalNameServer.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
-      Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
+      LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
               UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
     }
     return groupResponse;
@@ -69,13 +70,13 @@ public class GroupAccess {
    * @return
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message) {
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null, 1,
+    NSResponseCode groupResponse = LocalNameServer.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
-        Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
+        LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
                 UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
       }
     }
@@ -93,12 +94,12 @@ public class GroupAccess {
    * @return
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message) {
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
+    NSResponseCode groupResponse = LocalNameServer.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
-      Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
+      LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
               UpdateOperation.SINGLE_FIELD_REMOVE);
     }
     return groupResponse;
@@ -115,13 +116,13 @@ public class GroupAccess {
    * @return
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message) {
-    NSResponseCode groupResponse = Intercessor.sendUpdateRecord(guid, GROUP, members, null, 1,
+    NSResponseCode groupResponse = LocalNameServer.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
-        Intercessor.sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
+        LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
                 UpdateOperation.SINGLE_FIELD_REMOVE);
       }
     }
@@ -138,7 +139,7 @@ public class GroupAccess {
    * @return
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message) {
-    QueryResult result = Intercessor.sendQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(GROUP));
     } else {
@@ -156,7 +157,7 @@ public class GroupAccess {
    * @return
    */
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message) {
-    QueryResult result = Intercessor.sendQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(GROUPS));
     } else {
@@ -189,7 +190,7 @@ public class GroupAccess {
   @Deprecated
   public static NSResponseCode requestJoinGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
+    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, memberGuid, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
@@ -206,7 +207,7 @@ public class GroupAccess {
   @Deprecated
   public static NSResponseCode requestLeaveGroup(String guid, String memberGuid, String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
+    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, memberGuid, null, -1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
   }
 
@@ -221,7 +222,7 @@ public class GroupAccess {
    */
   @Deprecated
   public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message) {
-    QueryResult result = Intercessor.sendQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(JOINREQUESTS));
     } else {
@@ -240,7 +241,7 @@ public class GroupAccess {
    */
   @Deprecated
   public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message) {
-    QueryResult result = Intercessor.sendQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(LEAVEREQUESTS));
     } else {
@@ -262,8 +263,8 @@ public class GroupAccess {
   public static boolean grantMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
     if (!addToGroup(guid, requests, writer, signature, message).isAnError()) {
-      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message).isAnError()) {
-      if (!Intercessor.sendUpdateRecord(guid, JOINREQUESTS, requests, null, -1,
+      //if (!LocalNameServer.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message).isAnError()) {
+      if (!LocalNameServer.getIntercessor().sendUpdateRecord(guid, JOINREQUESTS, requests, null, -1,
               UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
         return true;
       }
@@ -285,8 +286,8 @@ public class GroupAccess {
   public static boolean revokeMembership(String guid, ResultValue requests, String writer, String signature, String message) {
 
     if (!removeFromGroup(guid, requests, writer, signature, message).isAnError()) {
-      //if (!Intercessor.sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
-      if (!Intercessor.sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, -1,
+      //if (!LocalNameServer.getIntercessor().sendUpdateRecord(guid, GROUP, requests, null, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
+      if (!LocalNameServer.getIntercessor().sendUpdateRecord(guid, LEAVEREQUESTS, requests, null, -1,
               UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message).isAnError()) {
         return true;
       }

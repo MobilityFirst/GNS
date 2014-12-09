@@ -34,6 +34,7 @@ class DBClient {
   private final InetAddress lnsAddress;
   private final int lnsPort;
   private final int myPort;
+  private InterfaceNodeConfig nodeConfig;
   private final NIOTransport nioTransport;
 
   /**
@@ -49,7 +50,7 @@ class DBClient {
     this.lnsAddress = lnsAddress;
     this.lnsPort = lnsPort;
     this.myPort = myPort;
-    this.nioTransport = new NIOTransport(0, new InterfaceNodeConfig<Integer>() {
+    this.nodeConfig = new InterfaceNodeConfig<Integer>() {
       @Override
       public boolean nodeExists(Integer ID) {
         throw new UnsupportedOperationException();
@@ -79,8 +80,13 @@ class DBClient {
 	public Integer valueOf(String nodeAsString) {
 		return Integer.valueOf(nodeAsString);
 	}
-    }, new JSONMessageExtractor(demux));
+    };
+    this.nioTransport = new NIOTransport(0, nodeConfig, new JSONMessageExtractor(demux));
     new Thread(nioTransport).start();
+  }
+
+  public InterfaceNodeConfig getNodeConfig() {
+    return nodeConfig;
   }
 
   /**

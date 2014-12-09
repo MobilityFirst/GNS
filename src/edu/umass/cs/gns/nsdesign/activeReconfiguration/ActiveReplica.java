@@ -73,7 +73,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
 
     if (Config.singleNS && Config.dummyGNS) {  // coordinator for testing only
-      this.coordinator = new DummyGnsCoordinatorUnreplicated(nodeID, this.activeReplicaApp);
+      this.coordinator = new DummyGnsCoordinatorUnreplicated(nodeID, gnsNodeConfig, this.activeReplicaApp);
     } else if (Config.singleNS) {  // coordinator for testing only
       this.coordinator = new DefaultGnsCoordinator(nodeID, this.activeReplicaApp);
     } else if(Config.eventualConsistency) {  // coordinator for testing only

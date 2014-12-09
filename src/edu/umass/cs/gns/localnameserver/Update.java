@@ -153,7 +153,7 @@ public class Update {
     if (packet.getReturnTo() == null) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       
-      LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
+      LocalNameServer.getIntercessorInterface().handleIncomingPacket(packet.toJSONObject());
     } else {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo().toString() + 
               ":" + packet.toJSONObject().toString());

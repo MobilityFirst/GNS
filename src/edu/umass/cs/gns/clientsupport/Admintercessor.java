@@ -309,6 +309,7 @@ public class Admintercessor {
     }
   }
 
+  @SuppressWarnings("unchecked")
   private static String formatDumpRecords(Map<Object, TreeSet<NameRecord>> recordsMap) {
     // now process all the records we received
 

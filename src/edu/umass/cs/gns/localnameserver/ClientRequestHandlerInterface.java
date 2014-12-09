@@ -41,7 +41,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * 
    * @return 
    */
-  public GNSNodeConfig getGnsNodeConfig();
+  public GNSNodeConfig<NodeIDType> getGnsNodeConfig();
   
   /**
    * Returns that set of parameters used to control the handlers behavior.

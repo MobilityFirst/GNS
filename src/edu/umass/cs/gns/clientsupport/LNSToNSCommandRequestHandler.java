@@ -42,8 +42,8 @@ public class LNSToNSCommandRequestHandler {
   
   private static CommandResponse sendCommandHelper(int id, LNSToNSCommandPacket commandPacket) {
     try {
-      GNS.getLogger().info("Sending CommandPacket #" + id + " to Intercessor");
-      Intercessor.injectPacketIntoLNSQueue(commandPacket.toJSONObject());
+      GNS.getLogger().info("Sending CommandPacket #" + id + " to LocalNameServer.getIntercessor()");
+      LocalNameServer.getIntercessor().injectPacketIntoLNSQueue(commandPacket.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring JSON error while sending Command request: " + e);
       e.printStackTrace();
@@ -55,7 +55,7 @@ public class LNSToNSCommandRequestHandler {
   }
   
   /**
-   * Typically called by the Intercessor to handle incoming (returning from NS) CommandRequest packets.
+   * Typically called by the LocalNameServer.getIntercessor() to handle incoming (returning from NS) CommandRequest packets.
    * 
    * @param json 
    */

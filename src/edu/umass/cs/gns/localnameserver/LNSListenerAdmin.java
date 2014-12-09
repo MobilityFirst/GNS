@@ -8,7 +8,6 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
 import edu.umass.cs.gns.ping.PingManager;

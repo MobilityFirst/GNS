@@ -48,42 +48,38 @@ import java.util.ArrayList;
 public class Intercessor implements IntercessorInterface {
   
   /* Used by the wait/notify calls */
-  private static final Object monitor = new Object();
+  private final Object monitor = new Object();
   /* Used by update confirmation */
-  private static final Object monitorUpdate = new Object();
+  private final Object monitorUpdate = new Object();
   /**
    * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
    * multiple value returns.
    */
-  private static final ConcurrentMap<Integer, QueryResult> queryResultMap;
-  private static final Random randomID;
+  private final ConcurrentMap<Integer, QueryResult> queryResultMap;
+  private final Random randomID;
 
-  //public static Transport transport;
-  private static final ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
+  //public  Transport transport;
+  private final ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
   // Instrumentation
-  private static final ConcurrentMap<Integer, Long> queryTimeStamp;
+  private final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  public static boolean debuggingEnabled = false;
+  public boolean debuggingEnabled = false;
 
-  static {
+   {
     randomID = new Random();
     queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
     queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
 
-  // local instance of LNSPacketDemultiplexer class.
-  private static LNSPacketDemultiplexer lnsPacketDemultiplexer;
+  private LNSPacketDemultiplexer lnsPacketDemultiplexer;
+  private ClientRequestHandlerInterface handler;
 
-  /**
-   * Initializes the Intercessor.
-   * 
-   * @param handler
-   */
-  public static void init(ClientRequestHandlerInterface handler) {
+  public Intercessor(ClientRequestHandlerInterface handler) {
+    this.handler = handler;
     lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
   }
-
+  
   /**
    * This is invoked to receive packets. It updates the appropriate map
    * for the id and notifies the appropriate monitor to wake the
@@ -110,7 +106,7 @@ public class Intercessor implements IntercessorInterface {
           }
           break;
         case DNS:
-          DNSPacket dnsResponsePacket = new DNSPacket(json);
+          DNSPacket dnsResponsePacket = new DNSPacket(json, handler.getGnsNodeConfig());
           id = dnsResponsePacket.getQueryId();
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
@@ -164,7 +160,7 @@ public class Intercessor implements IntercessorInterface {
    * @param returnFormat
    * @return
    */
-  public static QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  public  QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
   }
   
@@ -184,11 +180,11 @@ public class Intercessor implements IntercessorInterface {
    * @param returnFormat
    * @return 
    */
-  public static QueryResult sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  public  QueryResult sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
   }
   
-  private static QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {  
+  private  QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {  
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending query: " + name + " " + field);
     }
@@ -244,7 +240,7 @@ public class Intercessor implements IntercessorInterface {
    * @param field
    * @return 
    */
-  public static QueryResult sendQueryBypassingAuthentication(String name, String field) {
+  public  QueryResult sendQueryBypassingAuthentication(String name, String field) {
     return sendQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
 
@@ -256,7 +252,7 @@ public class Intercessor implements IntercessorInterface {
    * @param value
    * @return
    */
-  public static NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
+  public  NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
@@ -286,7 +282,7 @@ public class Intercessor implements IntercessorInterface {
    * @param name
    * @return
    */
-  public static NSResponseCode sendRemoveRecord(String name) {
+  public  NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
@@ -321,7 +317,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return
    */
-  public static NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue,
+  public  NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     return sendUpdateRecord(name, key,
@@ -346,7 +342,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return
    */
-  public static NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
+  public  NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
@@ -372,7 +368,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return
    */
-  public static NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
+  public  NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
     sendUpdateRecordHelper(id, name, null, null, null, -1, userJSON, operation, writer, signature, message);
@@ -396,7 +392,7 @@ public class Intercessor implements IntercessorInterface {
    * @param operation
    * @return
    */
-  public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
+  public  NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
     // currently don't support the argument parameter
     return sendUpdateRecord(name, key, newValue, oldValue, -1, operation, null, null, null);
@@ -412,13 +408,13 @@ public class Intercessor implements IntercessorInterface {
    * @param operation
    * @return
    */
-  public static NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
+  public  NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
     // currently don't support the argument parameter
     return sendUpdateRecord(name, key, newValue, oldValue, -1, operation, null, null, null);
   }
 
-  private static void sendUpdateRecordHelper(int id, String name, String key, ResultValue newValue,
+  private  void sendUpdateRecordHelper(int id, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {
 
@@ -451,7 +447,7 @@ public class Intercessor implements IntercessorInterface {
     }
   }
 
-  private static int nextUpdateRequestID() {
+  private  int nextUpdateRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -459,7 +455,7 @@ public class Intercessor implements IntercessorInterface {
     return id;
   }
 
-  private static int nextQueryRequestID() {
+  private  int nextQueryRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -467,7 +463,7 @@ public class Intercessor implements IntercessorInterface {
     return id;
   }
 
-  private static void waitForUpdateConfirmationPacket(int sequenceNumber) {
+  private  void waitForUpdateConfirmationPacket(int sequenceNumber) {
     try {
       synchronized (monitorUpdate) {
         while (!updateSuccessResult.containsKey(sequenceNumber)) {
@@ -486,7 +482,7 @@ public class Intercessor implements IntercessorInterface {
    *
    * @param jsonObject
    */
-  public static void injectPacketIntoLNSQueue(JSONObject jsonObject) {
+  public  void injectPacketIntoLNSQueue(JSONObject jsonObject) {
 
     boolean isPacketTypeFound = lnsPacketDemultiplexer.handleJSONObject(jsonObject);
     if (isPacketTypeFound == false) {

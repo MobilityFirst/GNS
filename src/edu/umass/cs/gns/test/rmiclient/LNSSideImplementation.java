@@ -1,8 +1,9 @@
 package edu.umass.cs.gns.test.rmiclient;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
+
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -13,7 +14,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
 /**
- * Implements client RMI interface. This is a wrapper class around Intercessor and uses it to send requests
+ * Implements client RMI interface. This is a wrapper class around LocalNameServer.getIntercessor() and uses it to send requests
  * to GNS.
  *
  * Multiple instance of this class cannot run on same machine, as they bind to rmiregistry using the same name.
@@ -29,22 +30,22 @@ public class LNSSideImplementation implements ClientRMIInterface {
   public LNSSideImplementation() {}
   @Override
   public NSResponseCode sendAddRecord(String name, String key, ResultValue value) throws RemoteException {
-    return Intercessor.sendAddRecord(name, key, value);
+    return LocalNameServer.getIntercessor().sendAddRecord(name, key, value);
   }
 
   @Override
   public NSResponseCode sendRemoveRecord(String name) throws RemoteException {
-    return Intercessor.sendRemoveRecord(name);
+    return LocalNameServer.getIntercessor().sendRemoveRecord(name);
   }
 
   @Override
   public QueryResult sendQueryBypassingAuthentication(String name, String key) throws RemoteException {
-    return Intercessor.sendQueryBypassingAuthentication(name, key);
+    return LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, key);
   }
 
   @Override
   public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue, String oldValue, UpdateOperation operation) throws RemoteException {
-    return Intercessor.sendUpdateRecordBypassingAuthentication(name, key, newValue, oldValue, operation);
+    return LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(name, key, newValue, oldValue, operation);
   }
 
   public static void startServer() {

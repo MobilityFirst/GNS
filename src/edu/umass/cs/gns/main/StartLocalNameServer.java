@@ -583,12 +583,8 @@ public class StartLocalNameServer {
     }
 
     try {
-      GNSNodeConfig gnsNodeConfig;
-      InetSocketAddress LNSID = new InetSocketAddress(address, port);
-      gnsNodeConfig = new GNSNodeConfig(nsFile, true);
-
       //Start local name server
-      new LocalNameServer(LNSID, gnsNodeConfig);
+      new LocalNameServer(new InetSocketAddress(address, port), new GNSNodeConfig(nsFile, true));
     } catch (Exception e) {
       e.printStackTrace();
     }

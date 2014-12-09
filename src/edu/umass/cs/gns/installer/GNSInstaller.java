@@ -372,6 +372,7 @@ public class GNSInstaller {
     RSync.upload(userName, hostname, keyFileName, nsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
   }
 
+  @SuppressWarnings("unchecked")
   // Probably unnecessary at this point.
   private static void updateNodeConfigAndSendOutServerInit() {
     GNSNodeConfig nodeConfig = new GNSNodeConfig();

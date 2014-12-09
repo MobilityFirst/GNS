@@ -45,10 +45,12 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
 
   // if true, reads are coordinated as well.
   private boolean readCoordination = false;
+  private InterfaceNodeConfig nodeConfig;
 
   public StaticReplicationCoordinator(NodeIDType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
                                       Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
+    this.nodeConfig = nodeConfig;
     this.paxosInterface = paxosInterface;
     this.readCoordination = readCoordination;
     paxosConfig.setConsistentHashCoordinatorOrder(true);
@@ -140,7 +142,7 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
         case DNS: // todo send latest actives to client with this request.
 
           if (readCoordination) {
-            DNSPacket dnsPacket = new DNSPacket(request);
+            DNSPacket dnsPacket = new DNSPacket(request, nodeConfig);
             if (dnsPacket.isQuery()) {
               dnsPacket.setResponder(nodeID);
               paxosID = paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(dnsPacket.getGuid()), dnsPacket.toString());

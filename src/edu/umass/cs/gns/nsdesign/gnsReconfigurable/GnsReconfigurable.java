@@ -128,7 +128,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests
-          DNSPacket dnsPacket = new DNSPacket(json);
+          DNSPacket dnsPacket = new DNSPacket(json, gnsNodeConfig);
           if (!dnsPacket.isQuery()) {
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {

@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -68,9 +69,9 @@ public class FieldAccess {
     String resultString;
     QueryResult result;
     if (field != null) {
-      result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
+      result = LocalNameServer.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
     } else {
-      result = Intercessor.sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
+      result = LocalNameServer.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
     }
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
@@ -110,7 +111,7 @@ public class FieldAccess {
 
     String resultString;
     // Note the use of ColumnFieldType.LIST_STRING in the sendQuery call which implies old data format.
-    QueryResult result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -140,7 +141,7 @@ public class FieldAccess {
   public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -166,7 +167,7 @@ public class FieldAccess {
   public static CommandResponse lookupOne(String guid, String field, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -205,7 +206,7 @@ public class FieldAccess {
   public static CommandResponse lookupOneMultipleValues(String guid, String reader, String signature, String message) {
 
     String resultString;
-    QueryResult result = Intercessor.sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -244,7 +245,7 @@ public class FieldAccess {
           UpdateOperation operation,
           String writer, String signature, String message) {
 
-    return Intercessor.sendUpdateRecord(guid, key, value, oldValue, argument,
+    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, key, value, oldValue, argument,
             operation, writer, signature, message);
   }
 
@@ -264,7 +265,7 @@ public class FieldAccess {
    */
   public static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
           String writer, String signature, String message) {
-    return Intercessor.sendUpdateUserJSON(guid, new ValuesMap(json), operation, writer, signature, message);
+    return LocalNameServer.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(json), operation, writer, signature, message);
   }
 
   /**
@@ -283,7 +284,7 @@ public class FieldAccess {
    * @return 
    */
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message) {
-    return Intercessor.sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
+    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
   }
 
   /**

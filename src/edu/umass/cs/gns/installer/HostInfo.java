@@ -8,7 +8,6 @@
 
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.awt.geom.Point2D;
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
@@ -25,9 +26,12 @@ public class DummyGnsCoordinatorUnreplicated<NodeIDType> extends ActiveReplicaCo
   private Replicable replicable;
 
   private ConcurrentHashMap<String, Short>  nameAndGroupVersion = new ConcurrentHashMap<String, Short>();
+  
+  private GNSNodeConfig gnsNodeConfig;
 
-  public DummyGnsCoordinatorUnreplicated(NodeIDType nodeID, Replicable replicable) {
+  public DummyGnsCoordinatorUnreplicated(NodeIDType nodeID, GNSNodeConfig gnsNodeConfig, Replicable replicable) {
     this.nodeID = nodeID;
+    this.gnsNodeConfig = gnsNodeConfig;
     this.replicable = replicable;
   }
 
@@ -73,7 +77,7 @@ public class DummyGnsCoordinatorUnreplicated<NodeIDType> extends ActiveReplicaCo
           request = null;
           break;
         case DNS:
-          DNSPacket dnsPacket = new DNSPacket(request);
+          DNSPacket dnsPacket = new DNSPacket(request, gnsNodeConfig);
           if (!nameAndGroupVersion.contains(dnsPacket.getGuid())) {
             noCoordinatorState = true;
           }

@@ -8,10 +8,10 @@ package edu.umass.cs.gns.nsdesign.packet;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.util.ArrayList;
 import org.json.JSONException;
@@ -166,7 +166,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    * @param json JSONObject that represents a DNS packet
    * @throws org.json.JSONException
    */
-  public DNSPacket(JSONObject json) throws JSONException {
+  public DNSPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
             json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
@@ -182,9 +182,9 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     } else {
       this.keys = null;
     }
-    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
+    this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
     // read the optional responder if it is there
-    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : null;
+    this.responder = json.has(RESPONDER) ? unstringer.valueOf(json.getString(RESPONDER)) : null;
     this.returnFormat = json.has(RETURN_FORMAT) ? ColumnFieldType.valueOf(json.getString(RETURN_FORMAT)) : null;
 
     // These will only be present in non-error response packets

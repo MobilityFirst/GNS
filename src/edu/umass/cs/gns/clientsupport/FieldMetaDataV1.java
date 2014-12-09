@@ -7,6 +7,7 @@ package edu.umass.cs.gns.clientsupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.util.HashSet;
 import java.util.Set;
@@ -58,7 +59,7 @@ public class FieldMetaDataV1 {
    */
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature, String message) {
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    QueryResult result = Intercessor.sendQuery(guid, metaDataKey, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, metaDataKey, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new HashSet<String>(result.getArray(metaDataKey).toStringSet());
     } else {
@@ -79,7 +80,7 @@ public class FieldMetaDataV1 {
    * @return  
    */
   public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
+    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
             writer, signature, message);
   }
 
@@ -100,7 +101,7 @@ public class FieldMetaDataV1 {
   public static void add(MetaDataTypeName type, String guid, String key, String value) {
 
     String metaDataKey = makeFieldMetaDataKey(type, key);
-    Intercessor.sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+    LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, metaDataKey, value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }
 
   /**
@@ -116,7 +117,7 @@ public class FieldMetaDataV1 {
    * @return
    */
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return Intercessor.sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
+    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
   //

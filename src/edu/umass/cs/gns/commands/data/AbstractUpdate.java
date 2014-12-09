@@ -14,6 +14,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -53,7 +54,7 @@ public abstract class AbstractUpdate extends GnsCommand {
     NSResponseCode responseCode;
     if (field == null) {
       // full JSON object update
-      if (!(responseCode = Intercessor.sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
+      if (!(responseCode = LocalNameServer.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
               getUpdateOperation(), writer, signature, message)).isAnError()) {
          return new CommandResponse(OKRESPONSE);
       } else {

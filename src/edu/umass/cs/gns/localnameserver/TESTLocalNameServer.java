@@ -29,6 +29,8 @@ public class TESTLocalNameServer {
   private static final HashMap<Object, JSONNIOTransport> nsNiots = new HashMap<>();
 
   private static final Timer t = new Timer();
+  
+  private static GNSNodeConfig gnsNodeConfig;
 
   public static void main(String[] args) throws IOException, JSONException, InterruptedException {
     String configFile = "scripts/8nodeslocal/name-server-info";
@@ -37,7 +39,7 @@ public class TESTLocalNameServer {
     StartLocalNameServer.debuggingEnabled = false;
     StartLocalNameServer.startLNSConfigFile(InetAddress.getLocalHost().getHostName(), 24398, configFile, null, null);
 
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, true);
+    gnsNodeConfig = new GNSNodeConfig(configFile, true);
 
     for (Object nameServerID: gnsNodeConfig.getNodeIDs()) {
       JSONMessageExtractor worker = new JSONMessageExtractor(new TestPacketDemux(nameServerID));
@@ -93,7 +95,7 @@ public class TESTLocalNameServer {
   }
 
   public static void handleLookup(Object nodeID, JSONObject json) throws JSONException, IOException {
-    DNSPacket dnsPacket = new DNSPacket(json);
+    DNSPacket dnsPacket = new DNSPacket(json, gnsNodeConfig);
     dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     send(nodeID, dnsPacket.getLnsAddress(), dnsPacket.toJSONObjectForErrorResponse(), getDelay());

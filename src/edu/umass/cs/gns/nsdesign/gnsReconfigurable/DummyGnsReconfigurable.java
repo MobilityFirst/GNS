@@ -97,7 +97,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
         case DNS:
-          executeLookupLocal(new DNSPacket(json), noCoordinationState);
+          executeLookupLocal(new DNSPacket(json, gnsNodeConfig), noCoordinationState);
           break;
         case UPDATE:
           executeUpdateLocal(new UpdatePacket(json),noCoordinationState);

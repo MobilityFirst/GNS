@@ -8,6 +8,7 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.util.Base64;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
@@ -22,8 +23,6 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Provides the basic interface to GNS accounts.
@@ -101,8 +100,8 @@ public class AccountAccess {
    * @return
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowSubGuids) {
-    QueryResult accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-    if (Intercessor.debuggingEnabled) {
+    QueryResult accountResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+    if (LocalNameServer.getIntercessor().debuggingEnabled) {
       GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
     }
     if (accountResult.isError()) {
@@ -111,7 +110,7 @@ public class AccountAccess {
         // we look  up the owning account guid
         guid = lookupPrimaryGuid(guid);
         if (guid != null) {
-          accountResult = Intercessor.sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+          accountResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
         }
       }
     }
@@ -138,7 +137,7 @@ public class AccountAccess {
    */
   public static String lookupPrimaryGuid(String guid) {
 
-    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(guid, PRIMARY_GUID);
+    QueryResult guidResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, PRIMARY_GUID);
     if (!guidResult.isError()) {
       return (String) guidResult.getArray(PRIMARY_GUID).get(0);
     } else {
@@ -157,7 +156,7 @@ public class AccountAccess {
    */
   public static String lookupGuid(String name) {
 
-    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(name, HRN_GUID);
+    QueryResult guidResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, HRN_GUID);
     if (!guidResult.isError()) {
       return (String) guidResult.getArray(HRN_GUID).get(0);
     } else {
@@ -175,7 +174,7 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfo(String guid) {
 
-    QueryResult guidResult = Intercessor.sendQueryBypassingAuthentication(guid, GUID_INFO);
+    QueryResult guidResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, GUID_INFO);
     if (!guidResult.isError()) {
       try {
         return new GuidInfo(guidResult.getArray(GUID_INFO).toResultValueString());
@@ -382,7 +381,7 @@ public class AccountAccess {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
-      if (!Intercessor.sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!LocalNameServer.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -390,14 +389,14 @@ public class AccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (!Intercessor.sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
+        if (!LocalNameServer.getIntercessor().sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          Intercessor.sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.SINGLE_FIELD_CREATE);
+          LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
-          Intercessor.sendRemoveRecord(name);
+          LocalNameServer.getIntercessor().sendRemoveRecord(name);
           return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
         }
       } else {
@@ -418,11 +417,11 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid());
     // Then remove the HRN link
-    if (!Intercessor.sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
-      Intercessor.sendRemoveRecord(accountInfo.getPrimaryGuid());
+    if (!LocalNameServer.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
+      LocalNameServer.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
-        Intercessor.sendRemoveRecord(alias);
+        LocalNameServer.getIntercessor().sendRemoveRecord(alias);
       }
       // getArray rid of all subguids
       for (String guid : accountInfo.getGuids()) {
@@ -466,11 +465,11 @@ public class AccountAccess {
       accountInfo.noteUpdate();
 
       // First try to create the HRN to insure that that name does not already exist
-      if (!Intercessor.sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!LocalNameServer.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // update the account info
         if (updateAccountInfoNoAuthentication(accountInfo)) {
           // add the GUID_INFO link
-          Intercessor.sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
+          LocalNameServer.getIntercessor().sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
           // added this step to insure that the pervious step happened.
           // probably should add a timeout here
           GuidInfo newGuidInfo = null;
@@ -483,7 +482,7 @@ public class AccountAccess {
             throw new GnsRuntimeException("Unable to locate guid info structure.");
           }
           // add a link the new GUID to primary GUID
-          Intercessor.sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
+          LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
         }
@@ -551,9 +550,9 @@ public class AccountAccess {
     // First remove any group links
     GroupAccess.cleanupGroupsForDelete(guid.getGuid());
     // Then remove the guid record
-    if (!Intercessor.sendRemoveRecord(guid.getGuid()).isAnError()) {
+    if (!LocalNameServer.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
       // remove reverse record
-      Intercessor.sendRemoveRecord(guid.getName());
+      LocalNameServer.getIntercessor().sendRemoveRecord(guid.getName());
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
@@ -588,7 +587,7 @@ public class AccountAccess {
    */
   public static CommandResponse addAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message) {
     // insure that that name does not already exist
-    if (Intercessor.sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
+    if (LocalNameServer.getIntercessor().sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       // roll this back
       accountInfo.removeAlias(alias);
       return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + alias);
@@ -597,7 +596,7 @@ public class AccountAccess {
     accountInfo.noteUpdate();
     if (updateAccountInfo(accountInfo, writer, signature, message).isAnError()) {
       // back out if we got an error
-      Intercessor.sendRemoveRecord(alias);
+      LocalNameServer.getIntercessor().sendRemoveRecord(alias);
       accountInfo.removeAlias(alias);
       return new CommandResponse(BADRESPONSE + " " + BADALIAS);
     } else {
@@ -622,7 +621,7 @@ public class AccountAccess {
     }
     // remove the NAME -> GUID record
     NSResponseCode responseCode;
-    if ((responseCode = Intercessor.sendRemoveRecord(alias)).isAnError()) {
+    if ((responseCode = LocalNameServer.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
     accountInfo.removeAlias(alias);
@@ -692,7 +691,7 @@ public class AccountAccess {
 
   private static NSResponseCode updateAccountInfo(AccountInfo accountInfo, String writer, String signature, String message) {
     try {
-      NSResponseCode response = Intercessor.sendUpdateRecord(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+      NSResponseCode response = LocalNameServer.getIntercessor().sendUpdateRecord(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
               accountInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
       return response;
     } catch (JSONException e) {
@@ -705,7 +704,7 @@ public class AccountAccess {
     try {
       ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
-      if (!Intercessor.sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+      if (!LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
               newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
         return true;
       }
@@ -718,7 +717,7 @@ public class AccountAccess {
   private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message) {
 
     try {
-      NSResponseCode response = Intercessor.sendUpdateRecord(guidInfo.getGuid(), GUID_INFO,
+      NSResponseCode response = LocalNameServer.getIntercessor().sendUpdateRecord(guidInfo.getGuid(), GUID_INFO,
               guidInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
       return response;
     } catch (JSONException e) {
@@ -732,7 +731,7 @@ public class AccountAccess {
     try {
       ResultValue newvalue;
       newvalue = guidInfo.toDBFormat();
-      if (!Intercessor.sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
+      if (!LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
               newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
         return true;
       }

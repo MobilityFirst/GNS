@@ -73,7 +73,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   /**
    * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   private final InterfaceJSONNIOTransport tcpTransport;
 
@@ -89,7 +89,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   long receivedRequests = 0;
 
-  public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
+  public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -102,14 +102,11 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   private InterfaceJSONNIOTransport initTransport() throws IOException {
-
-    // IS THIS USED ANYWHERE?
-    //new LNSListenerUDP(gnsNodeConfig, this).start();
     GNS.getLogger().info("LNS listener started.");
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
-    if (parameters.isEmulatePingLatencies()) {
-      JSONDelayEmulator.emulateConfigFileDelays(getGnsNodeConfig(), parameters.getVariation());
-    }
+//    if (parameters.isEmulatePingLatencies()) {
+//      JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
+//    }
     new Thread(gnsNiot).start();
 
     return new GnsMessenger(null, gnsNiot, executorService);
@@ -124,7 +121,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @Override
-  public GNSNodeConfig getGnsNodeConfig() {
+  public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
     return gnsNodeConfig;
   }
 

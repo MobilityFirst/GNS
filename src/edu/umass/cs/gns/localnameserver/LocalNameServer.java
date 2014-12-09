@@ -59,6 +59,14 @@ public class LocalNameServer implements Shutdownable {
    * A local name server forwards the final response for all requests to intercessor.
    */
   private static IntercessorInterface intercessor;
+  
+  public static Intercessor getIntercessor() {
+    return (Intercessor)intercessor;
+  }
+  
+  public static IntercessorInterface getIntercessorInterface() {
+    return intercessor;
+  }
 
   private static ConcurrentHashMap<String, Double> nameServerLoads;
 
@@ -126,8 +134,7 @@ public class LocalNameServer implements Shutdownable {
 
     if (!parameters.isExperimentMode()) {
       // intercessor for regular GNS use
-      Intercessor.init(requestHandler);
-      this.intercessor = new Intercessor();
+      this.intercessor = new Intercessor(requestHandler);
     } else {
       // intercessor for four simple DB operations: add, remove, write, read only.
       this.intercessor = new DBClientIntercessor(-1, GNS.DEFAULT_LNS_DBCLIENT_PORT,
@@ -440,10 +447,6 @@ public class LocalNameServer implements Shutdownable {
    */
   public static String getNameRecordStatsMapLogString() {
     return requestHandler.getNameRecordStatsMapLogString();
-  }
-
-  public static IntercessorInterface getIntercessor() {
-    return intercessor;
   }
 
   // MONITOR NAME SERVER LOADS

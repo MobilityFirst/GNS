@@ -59,7 +59,7 @@ public class Lookup {
           throws JSONException, UnknownHostException {
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("LNS DNS Request:" + json);
     int lnsReqId = handler.getUniqueRequestID();
-    DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, dnsPacket.getGuid(), -1, dnsPacket);
+    DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, dnsPacket.getGuid(), -1, dnsPacket, handler.getGnsNodeConfig());
     handler.addRequestInfo(lnsReqId, requestInfo);
     handler.incrementLookupRequest(dnsPacket.getGuid()); // important: used to count votes for names.
     SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqId, handler, dnsPacket);
@@ -172,7 +172,7 @@ public class Lookup {
   public static void sendDNSResponseBackToSource(DNSPacket packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == null) {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
-      LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
+      LocalNameServer.getIntercessorInterface().handleIncomingPacket(packet.toJSONObject());
     } else {
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());

@@ -9,7 +9,6 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;

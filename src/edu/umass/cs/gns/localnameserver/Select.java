@@ -60,7 +60,7 @@ public class Select {
     }
     SelectInfo info = handler.getSelectInfo(packet.getLnsQueryId());
     // send a response back to the client
-    LocalNameServer.getIntercessor().handleIncomingPacket(packet.toJSONObject());
+    LocalNameServer.getIntercessorInterface().handleIncomingPacket(packet.toJSONObject());
     handler.removeSelectInfo(packet.getLnsQueryId());
   }
 }

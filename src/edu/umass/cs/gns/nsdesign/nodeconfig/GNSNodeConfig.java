@@ -40,9 +40,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final int INVALID_PORT = -1;
-  //public static final Object INVALID_NAME_SERVER_ID;
 
-  private NodeIDType nodeID;
+  private NodeIDType nodeID; // if this is null you should check isLocalNameServer; otherwise it might be invalid
   private boolean isLocalNameServer = false;
   private final String hostsFile;
 
@@ -91,7 +90,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    * Creates an empty GNSNodeConfig
    */
   public GNSNodeConfig() {
-    this.nodeID = invalidNameServerID();
+    this.nodeID = null;
     hostsFile = null;
   }
 
@@ -292,11 +291,11 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
    *
    * @param serverIds
    * @param excludeServers
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
+   * @return id of closest server or null if one can't be found
    */
   public NodeIDType getClosestServer(Set<NodeIDType> serverIds, Set<NodeIDType> excludeServers) {
     if (serverIds == null) {
-      return invalidNameServerID();
+      return null;
     }
     // If the local server is one of the server ids and not excluded return it.
     if (serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
@@ -304,7 +303,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
 
     long lowestLatency = Long.MAX_VALUE;
-    NodeIDType nameServerID = invalidNameServerID();
+    NodeIDType nameServerID = null;
     for (NodeIDType serverId : serverIds) {
       if (excludeServers != null && excludeServers.contains(serverId)) {
         continue;
@@ -319,22 +318,10 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     return nameServerID;
   }
 
-  public NodeIDType invalidNameServerID() {
-    switch (getNodeIDType()) {
-      case String:
-        return (NodeIDType) "Invalid";
-      case Integer:
-        return (NodeIDType) new Integer(-1);
-      case InetAddress:
-        return (NodeIDType) InetAddress.getLoopbackAddress(); // as good as anything
-      default:
-        throw new IllegalArgumentException("Bad NodeIDType");
-    }
-  }
-
   /**
    * Tests *
    */
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws Exception {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, 1);
@@ -411,8 +398,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     previousHostInfoMapping = hostInfoMapping;
     // Create a new one so we don't hose the old one if the new file is bogus
     ConcurrentMap<NodeIDType, HostInfo> newHostInfoMapping = new ConcurrentHashMap<NodeIDType, HostInfo>(16, 0.75f, 8);
-    for (HostSpec spec : hosts) {
-      newHostInfoMapping.put((NodeIDType) spec.getId(), new HostInfo(spec.getId(), spec.getName(),
+    for (HostSpec<NodeIDType> spec : hosts) {
+      newHostInfoMapping.put(spec.getId(), new HostInfo(spec.getId(), spec.getName(),
               spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT, 0, 0, 0));
     }
     // some idiot checking of the given Id
@@ -514,6 +501,11 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     if (timerTask != null) {
       timerTask.cancel();
     }
+  }
+
+  @Override
+  public String toString() {
+    return "GNSNodeConfig{" + "nodeID=" + nodeID + ", isLocalNameServer=" + isLocalNameServer + '}';
   }
 
 }

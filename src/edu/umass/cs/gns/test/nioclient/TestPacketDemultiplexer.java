@@ -3,6 +3,7 @@ package edu.umass.cs.gns.test.nioclient;
 import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -24,15 +25,18 @@ import java.util.TimerTask;
  *
  * Created by abhigyan on 6/20/14.
  */
-public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer{
+public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   private Timer t = new Timer();
   private IntercessorInterface intercessor;
+  private InterfaceNodeConfig nodeConfig;
 
-  public TestPacketDemultiplexer() { }
+  public TestPacketDemultiplexer() {
+  }
 
-  public void setIntercessor(IntercessorInterface intercessor) {
+  public void setIntercessor(DBClientIntercessor intercessor) {
     this.intercessor = intercessor;
+    this.nodeConfig = intercessor.getNodeConfig();
   }
 
   @Override
@@ -53,7 +57,7 @@ public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer{
           response = ConfirmUpdatePacket.createSuccessPacket(new UpdatePacket(json)).toJSONObject();
           break;
         case DNS:
-          DNSPacket dnsPacket = new DNSPacket(json);
+          DNSPacket dnsPacket = new DNSPacket(json, nodeConfig);
           dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
           dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
           ResultValue value = new ResultValue();
@@ -67,7 +71,9 @@ public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer{
     } catch (JSONException e) {
       e.printStackTrace();
     }
-    if (response != null) sendWithDelay(response);
+    if (response != null) {
+      sendWithDelay(response);
+    }
     return isPacketTypeFound;
   }
 

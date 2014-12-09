@@ -135,7 +135,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
                     + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
                     + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
           }
-          Lookup.sendDNSResponseBackToSource(new DNSPacket(requestInfo.getErrorMessage()), handler);
+          Lookup.sendDNSResponseBackToSource(new DNSPacket(requestInfo.getErrorMessage(), handler.getGnsNodeConfig()), handler);
           requestInfo.setSuccess(false);
           requestInfo.setFinishTime();
           requestInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);

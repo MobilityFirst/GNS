@@ -311,6 +311,7 @@ public class Packet {
    * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
    * @throws java.io.IOException *
    */
+  @SuppressWarnings("unchecked")
   public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, Object nameserverId, GNS.PortType portType) throws IOException {
     int port = gnsNodeConfig.getPort(nameserverId, portType);
     if (port == -1) {
@@ -427,6 +428,7 @@ public class Packet {
    * @return Returns the <i>Socket</i> over which the packet was transmitted. Returns <i>null</i> if no connection was successful in
    * sending the packet. *
    */
+  @SuppressWarnings("unchecked")
   public static Socket sendTCPPacketToClosestNameServer(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json,
           int numRetry, GNS.PortType portType) {
 

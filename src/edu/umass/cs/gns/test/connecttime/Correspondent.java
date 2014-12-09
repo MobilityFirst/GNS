@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.test.connecttime;
 
-import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
@@ -84,7 +83,7 @@ public class Correspondent<NodeIDType> implements Runnable{
       // 3. if does not match, sleep and repeat.
 
       long t0 = System.currentTimeMillis();
-      QueryResult result = Intercessor.sendQueryBypassingAuthentication(name, key);
+      QueryResult result = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, key);
       connectTime += System.currentTimeMillis() - t0;
 
       String valueFromGns = null;
