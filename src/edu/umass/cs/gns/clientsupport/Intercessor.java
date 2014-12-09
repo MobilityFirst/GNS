@@ -45,7 +45,7 @@ import java.util.ArrayList;
  *
  * @author westy
  */
-public class Intercessor implements IntercessorInterface {
+public class Intercessor<NodeIDType> implements IntercessorInterface {
   
   /* Used by the wait/notify calls */
   private final Object monitor = new Object();
@@ -58,7 +58,7 @@ public class Intercessor implements IntercessorInterface {
   private final ConcurrentMap<Integer, QueryResult> queryResultMap;
   private final Random randomID;
 
-  //public  Transport transport;
+  //public Transport transport;
   private final ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
   // Instrumentation
   private final ConcurrentMap<Integer, Long> queryTimeStamp;
@@ -73,9 +73,9 @@ public class Intercessor implements IntercessorInterface {
   }
 
   private LNSPacketDemultiplexer lnsPacketDemultiplexer;
-  private ClientRequestHandlerInterface handler;
+  private ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public Intercessor(ClientRequestHandlerInterface handler) {
+  public Intercessor(ClientRequestHandlerInterface<NodeIDType> handler) {
     this.handler = handler;
     lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
   }
@@ -106,7 +106,7 @@ public class Intercessor implements IntercessorInterface {
           }
           break;
         case DNS:
-          DNSPacket dnsResponsePacket = new DNSPacket(json, handler.getGnsNodeConfig());
+          DNSPacket<NodeIDType> dnsResponsePacket = new DNSPacket<NodeIDType>(json, handler.getGnsNodeConfig());
           id = dnsResponsePacket.getQueryId();
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
@@ -116,7 +116,7 @@ public class Intercessor implements IntercessorInterface {
                       + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
             }
             synchronized (monitor) {
-              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), dnsResponsePacket.getResponder()));
+              queryResultMap.put(id, new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(), dnsResponsePacket.getResponder()));
               monitor.notifyAll();
             }
           } else {
@@ -126,7 +126,7 @@ public class Intercessor implements IntercessorInterface {
                       + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             }
             synchronized (monitor) {
-              queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), dnsResponsePacket.getResponder()));
+              queryResultMap.put(id, new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(), dnsResponsePacket.getResponder()));
               monitor.notifyAll();
             }
           }
@@ -160,7 +160,7 @@ public class Intercessor implements IntercessorInterface {
    * @param returnFormat
    * @return
    */
-  public  QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  public QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
   }
   
@@ -180,17 +180,17 @@ public class Intercessor implements IntercessorInterface {
    * @param returnFormat
    * @return 
    */
-  public  QueryResult sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  public QueryResult sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
   }
   
-  private  QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {  
+  private QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {  
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending query: " + name + " " + field);
     }
     int id = nextQueryRequestID();
 
-    DNSPacket queryrecord = new DNSPacket(null, id, name, field, fields,
+    DNSPacket<NodeIDType> queryrecord = new DNSPacket<NodeIDType>(null, id, name, field, fields,
             returnFormat, reader, signature, message);
     JSONObject json;
     try {
@@ -240,7 +240,7 @@ public class Intercessor implements IntercessorInterface {
    * @param field
    * @return 
    */
-  public  QueryResult sendQueryBypassingAuthentication(String name, String field) {
+  public QueryResult sendQueryBypassingAuthentication(String name, String field) {
     return sendQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
 
@@ -252,12 +252,12 @@ public class Intercessor implements IntercessorInterface {
    * @param value
    * @return
    */
-  public  NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
+  public NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket pkt = new AddRecordPacket(null, id, name, field, value, LocalNameServer.getAddress(), GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value, LocalNameServer.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -282,12 +282,12 @@ public class Intercessor implements IntercessorInterface {
    * @param name
    * @return
    */
-  public  NSResponseCode sendRemoveRecord(String name) {
+  public NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket pkt = new RemoveRecordPacket(null, id, name, LocalNameServer.getAddress());
+    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<NodeIDType>(null, id, name, LocalNameServer.getNodeAddress());
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -317,7 +317,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return
    */
-  public  NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue,
+  public NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     return sendUpdateRecord(name, key,
@@ -342,7 +342,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return
    */
-  public  NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
+  public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
@@ -368,7 +368,7 @@ public class Intercessor implements IntercessorInterface {
    * @param message
    * @return
    */
-  public  NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
+  public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {
     int id = nextUpdateRequestID();
     sendUpdateRecordHelper(id, name, null, null, null, -1, userJSON, operation, writer, signature, message);
@@ -392,7 +392,7 @@ public class Intercessor implements IntercessorInterface {
    * @param operation
    * @return
    */
-  public  NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
+  public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
     // currently don't support the argument parameter
     return sendUpdateRecord(name, key, newValue, oldValue, -1, operation, null, null, null);
@@ -408,13 +408,13 @@ public class Intercessor implements IntercessorInterface {
    * @param operation
    * @return
    */
-  public  NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
+  public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
     // currently don't support the argument parameter
     return sendUpdateRecord(name, key, newValue, oldValue, -1, operation, null, null, null);
   }
 
-  private  void sendUpdateRecordHelper(int id, String name, String key, ResultValue newValue,
+  private void sendUpdateRecordHelper(int id, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {
 
@@ -427,7 +427,7 @@ public class Intercessor implements IntercessorInterface {
         GNS.getLogger().finer("Sending single field update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
       }
     }
-    UpdatePacket packet = new UpdatePacket(
+    UpdatePacket<NodeIDType> packet = new UpdatePacket<NodeIDType>(
             null, // means it came from Intercessor
             id,
             name,
@@ -436,7 +436,7 @@ public class Intercessor implements IntercessorInterface {
             oldValue,
             argument,
             userJSON,
-            operation, LocalNameServer.getAddress(), GNS.DEFAULT_TTL_SECONDS,
+            operation, LocalNameServer.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS,
             writer, signature, message);
     try {
       JSONObject json = packet.toJSONObject();
@@ -447,7 +447,7 @@ public class Intercessor implements IntercessorInterface {
     }
   }
 
-  private  int nextUpdateRequestID() {
+  private int nextUpdateRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -455,7 +455,7 @@ public class Intercessor implements IntercessorInterface {
     return id;
   }
 
-  private  int nextQueryRequestID() {
+  private int nextQueryRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -463,7 +463,7 @@ public class Intercessor implements IntercessorInterface {
     return id;
   }
 
-  private  void waitForUpdateConfirmationPacket(int sequenceNumber) {
+  private void waitForUpdateConfirmationPacket(int sequenceNumber) {
     try {
       synchronized (monitorUpdate) {
         while (!updateSuccessResult.containsKey(sequenceNumber)) {
@@ -482,7 +482,7 @@ public class Intercessor implements IntercessorInterface {
    *
    * @param jsonObject
    */
-  public  void injectPacketIntoLNSQueue(JSONObject jsonObject) {
+  public void injectPacketIntoLNSQueue(JSONObject jsonObject) {
 
     boolean isPacketTypeFound = lnsPacketDemultiplexer.handleJSONObject(jsonObject);
     if (isPacketTypeFound == false) {

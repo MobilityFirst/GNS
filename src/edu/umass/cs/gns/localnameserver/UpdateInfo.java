@@ -21,8 +21,10 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
   private NodeIDType nameserverID;
 
   private final BasicPacket basicPacket;
+  
+  private ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet) {
+  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface<NodeIDType> handler) {
     this.lnsReqID = lnsRequestID;
     this.name = name;
     this.startTime = System.currentTimeMillis();
@@ -30,6 +32,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
     this.numLookupActives = 0;
     this.basicPacket = packet;
     this.requestType = packet.getType();
+    this.handler = handler;
   }
 
   public synchronized void setNameserverID(NodeIDType nameserverID) {
@@ -46,7 +49,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
     } else if (requestType.equals(Packet.PacketType.UPDATE)) {
       success += "-Update";
     }
-    return getFinalString(success, name, getResponseLatency(), 0, nameserverID, LocalNameServer.getAddress(),
+    return getFinalString(success, name, getResponseLatency(), 0, nameserverID, handler.getNodeAddress(),
             getLnsReqID(), numLookupActives, System.currentTimeMillis(), getEventCodesString());
   }
 

@@ -68,7 +68,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("LNS Node " + LocalNameServer.getAddress() + " starting Admin Server on port " + serverSocket.getLocalPort());
+    GNS.getLogger().info("LNS Node " + LocalNameServer.getNodeAddress() + " starting Admin Server on port " + serverSocket.getLocalPort());
     while (true) {
       Socket socket;
       JSONObject incomingJSON;
@@ -102,7 +102,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             int id = dumpRequestPacket.getId();
             GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
             //dumpRequestPacket.setId(id);
-            //dumpRequestPacket.setLnsAddress(LocalNameServer.getAddress()); // done before it gets here
+            //dumpRequestPacket.setLnsAddress(LocalNameServer.getNodeAddress()); // done before it gets here
             JSONObject json = dumpRequestPacket.toJSONObject();
             Set<String> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
@@ -133,7 +133,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             case DELETEALLRECORDS:
             // Clears the database and reinitializes all indices.
             case RESETDB:
-              GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getAddress() + ") "
+              GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
               Set<Object> serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
@@ -141,7 +141,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               LocalNameServer.invalidateCache();
               break;
             case CLEARCACHE:
-              GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getAddress() + ") Clearing Cache as requested");
+              GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getNodeAddress() + ") Clearing Cache as requested");
               LocalNameServer.invalidateCache();
               break;
             case DUMPCACHE:
@@ -161,7 +161,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
                 } else {
-                incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
                 //incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
                 Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
@@ -188,7 +188,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
                 } else {
                 // send it to the server that can handle it
-                incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                incomingPacket.setLnsAddress(new InetSocketAddress(LocalNameServer.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
                 //incomingPacket.setLocalNameServerId(LocalNameServer.getNodeID()); // so the receiver knows where to return it
                 Packet.sendTCPPacket(LocalNameServer.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
                 }
@@ -205,7 +205,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               GNS.getLogger().info("Changing log level to " + level.getName());
               GNS.getLogger().setLevel(level);
               // send it on to the NSs
-              GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getAddress() + ") "
+              GNS.getLogger().fine("LNSListenerAdmin (" + LocalNameServer.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
               serverIds = LocalNameServer.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(LocalNameServer.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);

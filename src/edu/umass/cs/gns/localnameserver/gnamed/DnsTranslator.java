@@ -51,7 +51,7 @@ public class DnsTranslator extends Thread implements Shutdownable {
 
   @Override
   public void run() {
-    GNS.getLogger().info("LNS Node at " + LocalNameServer.getAddress().getHostString()
+    GNS.getLogger().info("LNS Node at " + LocalNameServer.getNodeAddress().getHostString()
             + " starting local DNS Translator server on port " + port);
     if (NameResolution.debuggingEnabled) {
       GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.localnameserver.gnamed.NameResolution *********");

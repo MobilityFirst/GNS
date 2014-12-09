@@ -37,7 +37,7 @@ public class LNSToNSCommandRequestHandler {
    */
   public static CommandResponse sendCommandRequest(JSONObject command) {
     int id = nextRequestID();
-    return sendCommandHelper(id, new LNSToNSCommandPacket(id, LocalNameServer.getAddress(), command)); 
+    return sendCommandHelper(id, new LNSToNSCommandPacket(id, LocalNameServer.getNodeAddress(), command)); 
   }
   
   private static CommandResponse sendCommandHelper(int id, LNSToNSCommandPacket commandPacket) {

@@ -122,7 +122,7 @@ public class Lookup {
       // create objects to be passed to PendingTasks
       SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(requestInfo.getLnsReqID(), handler, requestInfo.getIncomingPacket());
 
-      PendingTasks.addToPendingRequests(requestInfo, queryTaskObject, handler.getParameters().getQueryTimeout());
+      PendingTasks.addToPendingRequests(requestInfo, queryTaskObject, handler.getParameters().getQueryTimeout(), handler);
 
       if (handler.getParameters().isDebugMode()) GNS.getLogger().fine(" Scheduled lookup task.");
 

@@ -30,7 +30,8 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
   /**
    * Time interval in ms between transmitting votes *
    */
-  private long voteIntervalMillis;
+  private final long voteIntervalMillis;
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   /**
    * ************************************************************
@@ -42,9 +43,10 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
    * votes
    ************************************************************
    */
-  public NameServerVoteThread(long voteIntervalMillis) {
+  public NameServerVoteThread(long voteIntervalMillis, ClientRequestHandlerInterface<NodeIDType> handler) {
     super("NameServerVoteThread");
     this.voteIntervalMillis = voteIntervalMillis;
+    this.handler = handler;
 
   }
 
@@ -87,9 +89,9 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
       int update;
       NameServerSelectionPacket nsSelectionPacket;
       NodeIDType nsToVoteFor = selectNSToVoteFor(); // name server selection does not depend on name
-      GNS.getLogger().info("LNS ID" + LocalNameServer.getAddress() + " Closest NS " + nsToVoteFor.toString());
+      GNS.getLogger().info("LNS ID" + handler.getNodeAddress() + " Closest NS " + nsToVoteFor.toString());
       if (StartLocalNameServer.debuggingEnabled) {
-        GNS.getLogger().fine(" NameRecordStats Key Set Size: " + LocalNameServer.getNameRecordStatsKeySet().size());
+        GNS.getLogger().fine(" NameRecordStats Key Set Size: " + handler.getNameRecordStatsKeySet().size());
       }
       int nameCount = 0;
       int allNames = 0;
@@ -114,7 +116,7 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
           if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine("\tVoteSent\t" + name + "\t" + vote + "\t" + update + "\t");
           }
-          nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, LocalNameServer.getAddress());
+          nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, handler.getNodeAddress());
 
           // send to all primaries.
           Set<NodeIDType> primaryNameServers = LocalNameServer.getReplicaControllers(name);

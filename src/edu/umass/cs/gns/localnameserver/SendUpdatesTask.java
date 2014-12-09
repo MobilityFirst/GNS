@@ -45,9 +45,9 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
-  private final ClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface handler, UpdatePacket updatePacket) {
+  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler, UpdatePacket updatePacket) {
     // based on request info.
     this.lnsReqID = lnsReqID;
     this.handler = handler;
@@ -72,7 +72,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       // IF we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
-        requestNewActives();
+        requestNewActives(handler);
         // Cancel the task now. 
         // When the new actives are received, a new task in place of this task will be rescheduled.
         throw new CancelExecutorTaskException();
@@ -142,12 +142,12 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   }
 
-  private void requestNewActives() {
+  private void requestNewActives(ClientRequestHandlerInterface handler) {
     // remove update info from LNS
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) {   // probably NS sent response
       SendUpdatesTask newTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
-      PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout());
+      PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
       }

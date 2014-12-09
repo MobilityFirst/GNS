@@ -77,7 +77,7 @@ public class DNSRequestInfo extends RequestInfo{
     str.append("\t0");
     str.append("\t" + nameserverID);
     //str.append("\t" + LocalNameServer.getNodeID());
-    str.append("\t" + LocalNameServer.getAddress());
+    str.append("\t" + LocalNameServer.getNodeAddress());
     str.append("\t" + startTime);
     str.append("\t" + numLookupActives);
     str.append("\t[]");

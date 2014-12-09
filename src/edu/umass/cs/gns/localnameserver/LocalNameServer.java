@@ -14,10 +14,6 @@ import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.test.StartExperiment;
@@ -28,11 +24,8 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This class represents the functions of a Local Name Server.
@@ -41,11 +34,6 @@ import java.util.concurrent.TimeUnit;
  * @param <NodeIDType>
  */
 public class LocalNameServer<NodeIDType>  implements Shutdownable {
-
-  /**
-   * The address of the name server. Replaces nodeId.
-   */
-  private static InetSocketAddress address;
 
   // FIXME: Future code cleanup note: The ClientRequestHandlerInterface and the IntercessorInterface
   // are closely related. Both encapsulate some functionality in the LocalNameServer that we might want to 
@@ -108,13 +96,10 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
    **
    * Constructs a local name server and assigns it a node id.
    *
-   * @param nodeID Local Name Server Id
    * @throws IOException
    */
-  public LocalNameServer(InetSocketAddress address, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException, InterruptedException {
+  public LocalNameServer(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException, InterruptedException {
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
-    // set aaddress first because constructor for BasicClientRequestHandler reads 'nodeID' value.
-    this.address = address;
     // keep a copy of this so we can shut it down later
     this.gnsNodeConfig = gnsNodeConfig;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
@@ -132,7 +117,7 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    this.requestHandler = new BasicClientRequestHandler(address, gnsNodeConfig, parameters);
+    this.requestHandler = new BasicClientRequestHandler(nodeAddress, gnsNodeConfig, parameters);
 
     if (!parameters.isExperimentMode()) {
       // intercessor for regular GNS use
@@ -150,7 +135,7 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
     if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      GNS.getLogger().info("LNS running at " + LocalNameServer.getAddress() + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
+      GNS.getLogger().info("LNS running at " + LocalNameServer.getNodeAddress() + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
       this.pingManager = new PingManager(PingManager.LOCALNAMESERVERID, gnsNodeConfig);
       pingManager.startPinging();
     }
@@ -159,7 +144,7 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
     (this.lnsListenerAdmin = new LNSListenerAdmin()).start();
 
     if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
-      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis).start();
+      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis, requestHandler).start();
     }
 
     if (parameters.isExperimentMode()) {
@@ -191,154 +176,23 @@ public class LocalNameServer<NodeIDType>  implements Shutdownable {
   }
 
   /**
-   * Returns the host address of this LN server.
+   * Returns the host nodeAddress of this LN server.
    *
    * @return
    */
-  public static InetSocketAddress getAddress() {
-    return address;
-  }
-
-  /**
-   * Should really only be used for testing code.
-   *
-   * @return
-   */
-  public static ClientRequestHandlerInterface getRequestHandler() {
-    return requestHandler;
-  }
-
-  /**
-   * @return the executorService
-   */
-  public static ScheduledThreadPoolExecutor getExecutorService() {
-    return requestHandler.getExecutorService();
+  public static InetSocketAddress getNodeAddress() {
+    return requestHandler.getNodeAddress();
   }
 
   public static GNSNodeConfig getGnsNodeConfig() {
     return requestHandler.getGnsNodeConfig();
   }
 
-  public static int getUniqueRequestID() {
-    return requestHandler.getUniqueRequestID();
-  }
-
-  public static void addRequestInfo(int id, RequestInfo requestInfo) {
-    requestHandler.addRequestInfo(id, requestInfo);
-  }
-
-  /**
-   **
-   * Removes and returns QueryInfo entry from the map for a query Id..
-   *
-   * @param id Query Id
-   * @return
-   */
-  public static RequestInfo removeRequestInfo(int id) {
-    return requestHandler.removeRequestInfo(id);
-  }
-
-  /**
-   * Returns the update info for id.
-   *
-   * @param id
-   * @return
-   */
-  public static RequestInfo getRequestInfo(int id) {
-    return requestHandler.getRequestInfo(id);
-  }
-
-  public static int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket) {
-    return requestHandler.addSelectInfo(recordKey, incomingPacket);
-  }
-
-  public static SelectInfo removeSelectInfo(int id) {
-    return requestHandler.removeSelectInfo(id);
-  }
-
-  public static SelectInfo getSelectInfo(int id) {
-    return requestHandler.getSelectInfo(id);
-  }
-
   // CACHE METHODS
   public static void invalidateCache() {
     requestHandler.invalidateCache();
   }
-
-  /**
-   **
-   * Returns true if the local name server cache contains DNS record for the specified name, false otherwise
-   *
-   * @param name Host/Domain name
-   */
-  public static boolean containsCacheEntry(String name) {
-    return requestHandler.containsCacheEntry(name);
-  }
-
-  /**
-   **
-   * Adds a new CacheEntry (NameRecord) from a DNS packet. Overwrites existing cache entry for a name, if the name
-   * record exist in the cache.
-   *
-   * @param packet DNS packet containing record
-   */
-  public static CacheEntry addCacheEntry(DNSPacket packet) {
-    return requestHandler.addCacheEntry(packet);
-  }
-
-  public static CacheEntry addCacheEntry(RequestActivesPacket packet) {
-    return requestHandler.addCacheEntry(packet);
-  }
-
-  /**
-   * Updates an existing cache entry with new information from a DNS packet.
-   *
-   * @param packet DNS packet containing record
-   */
-  public static CacheEntry updateCacheEntry(DNSPacket packet) {
-    return requestHandler.updateCacheEntry(packet);
-  }
-
-  public static void updateCacheEntry(RequestActivesPacket packet) {
-    requestHandler.updateCacheEntry(packet);
-  }
-
-  public static void updateCacheEntry(ConfirmUpdatePacket packet, String name, String key) {
-    requestHandler.updateCacheEntry(packet, name, key);
-  }
-
-  /**
-   * Returns a cache entry for the specified name. Returns null if the cache does not have the key mapped to an entry
-   *
-   * @param name Host/Domain name
-   */
-  public static CacheEntry getCacheEntry(String name) {
-    return requestHandler.getCacheEntry(name);
-  }
-
-  /**
-   * Invalidates the active name server set in cache by setting its value to <i>null</i>.
-   *
-   * @param name
-   */
-  public static void invalidateActiveNameServer(String name) {
-    requestHandler.invalidateActiveNameServer(name);
-  }
-
-  /**
-   * Checks the validity of active nameserver set in cache.
-   *
-   * @param name Host/device/domain name whose name record is cached.
-   * @return Returns true if the entry is valid, false otherwise
-   */
-  public static boolean isValidNameserverInCache(String name) {
-    return requestHandler.isValidNameserverInCache(name);
-  }
-
-  public static int timeSinceAddressCached(String name, String recordKey) {
-    return requestHandler.timeSinceAddressCached(name, recordKey);
-  }
-
+  
   // LOCATING REPLICA CONTROLLERS
   /**
    **

@@ -43,9 +43,9 @@ public class ValuesMap extends JSONObject {
   // Makes a fresh JSONObject
   public ValuesMap(JSONObject json) {
     super();
-    Iterator<String> keyIter = json.keys();
+    Iterator<?> keyIter = json.keys();
     while (keyIter.hasNext()) {
-      String key = keyIter.next();
+      String key = (String) keyIter.next();
       try {
         super.put(key, json.get(key));
       } catch (JSONException e) {
@@ -70,9 +70,9 @@ public class ValuesMap extends JSONObject {
   }
 
   private void addFirstOneToJSONObject(JSONObject json) throws JSONException {
-    Iterator<String> keyIter = json.keys();
+    Iterator<?> keyIter = json.keys();
     while (keyIter.hasNext()) {
-      String key = keyIter.next();
+      String key = (String) keyIter.next();
       json.put(key, super.getJSONArray(key).get(0));
     }
   }
@@ -153,9 +153,9 @@ public class ValuesMap extends JSONObject {
    */
   public boolean writeToValuesMap(ValuesMap destination) {
     boolean somethingChanged = false;
-    Iterator<String> keyIter = keys();
+    Iterator<?> keyIter = keys();
     while (keyIter.hasNext()) {
-      String key = keyIter.next();
+      String key = (String) keyIter.next();
       try {
         //destination.put(key, super.get(key));
         putWithDotNotation(destination, key, super.get(key));
@@ -229,6 +229,7 @@ public class ValuesMap extends JSONObject {
   }
 
   // Test Code
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws JSONException {
     JSONObject json = new JSONObject();
     json.put("name", "frank");

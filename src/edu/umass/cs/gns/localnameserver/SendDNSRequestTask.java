@@ -39,7 +39,7 @@ import java.util.logging.Level;
  */
 public class SendDNSRequestTask<NodeIDType> extends TimerTask {
 
-  private final ClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
   private final DNSPacket incomingPacket;
   private final int lnsReqID;
 
@@ -49,7 +49,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
 
   private int requestActivesCount = -1;
 
-  public SendDNSRequestTask(int lnsReqID, ClientRequestHandlerInterface handler,
+  public SendDNSRequestTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler,
                             DNSPacket incomingPacket) {
     this.lnsReqID = lnsReqID;
     this.handler = handler;
@@ -80,7 +80,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
         GNS.getLogger().fine("Requesting new actives for " + incomingPacket.getGuid());
-        requestNewActives();
+        requestNewActives(handler);
         // Cancel the task now. 
         // When the new actives are received, a new task in place of this task will be rescheduled.
         throw new CancelExecutorTaskException();
@@ -100,7 +100,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     }
   }
 
-  private boolean isResponseReceived(ClientRequestHandlerInterface handler) {
+  private boolean isResponseReceived(ClientRequestHandlerInterface<NodeIDType> handler) {
     DNSRequestInfo info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (info == null) {
         if (handler.getParameters().isDebugMode()) {
@@ -121,7 +121,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     return false;
   }
 
-  private boolean isMaxWaitTimeExceeded(ClientRequestHandlerInterface handler) throws JSONException {
+  private boolean isMaxWaitTimeExceeded(ClientRequestHandlerInterface<NodeIDType> handler) throws JSONException {
     DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (requestInfo != null) {
       if (System.currentTimeMillis() - requestInfo.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
@@ -146,7 +146,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     return false;
   }
 
-  private boolean maybeSendReplyFromCache(CacheEntry cacheEntry, ClientRequestHandlerInterface handler) {
+  private boolean maybeSendReplyFromCache(CacheEntry cacheEntry, ClientRequestHandlerInterface<NodeIDType> handler) {
     if (cacheEntry != null && incomingPacket.getKey() != null) { // key can be null if request is multi-field
       ResultValue value = cacheEntry.getValueAsArray(incomingPacket.getKey());
       if (value != null) {
@@ -191,7 +191,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   /**
    * Send DNS Query reply that we found in the cache back to the User
    */
-  private void sendCachedReplyToUser(ResultValue value, int TTL, ClientRequestHandlerInterface handler) {
+  private void sendCachedReplyToUser(ResultValue value, int TTL, ClientRequestHandlerInterface<NodeIDType> handler) {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Send response from cache: " + incomingPacket.getGuid());
     }
@@ -204,13 +204,13 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     }
   }
 
-  private void requestNewActives() {
+  private void requestNewActives(ClientRequestHandlerInterface<NodeIDType> handler) {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Invalid name server for " + incomingPacket.getGuid());
     }
     SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqID, handler,  incomingPacket);
     PendingTasks.addToPendingRequests(handler.getRequestInfo(lnsReqID), queryTaskObject,
-            handler.getParameters().getQueryTimeout());
+            handler.getParameters().getQueryTimeout(), handler);
   }
 
   private NodeIDType selectNS(CacheEntry cacheEntry) {

@@ -43,12 +43,12 @@ public class AddRemove {
   static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json);
-    int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket);
-    LocalNameServer.addRequestInfo(lnsReqID, info);
+    int lnsReqID = handler.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
+    handler.addRequestInfo(lnsReqID, info);
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
-    LocalNameServer.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    handler.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
     if (StartLocalNameServer.debuggingEnabled) {
       if (Config.debuggingEnabled) {
         GNS.getLogger().fine(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
@@ -67,13 +67,13 @@ public class AddRemove {
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
-    int lnsReqID = LocalNameServer.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), null, removeRecord);
-    LocalNameServer.addRequestInfo(lnsReqID, info);
+    int lnsReqID = handler.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), null, removeRecord, handler);
+    handler.addRequestInfo(lnsReqID, info);
 
     SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, handler, removeRecord, removeRecord.getName(),
             System.currentTimeMillis());
-    LocalNameServer.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    handler.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (Config.debuggingEnabled) {
       GNS.getLogger().info("Remove Task Scheduled. " + "Name: " + removeRecord.getName() 
@@ -86,14 +86,14 @@ public class AddRemove {
    */
   static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
-    UpdateInfo addInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmAddPacket.getLNSRequestID());
+    UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getLNSRequestID());
     if (Config.debuggingEnabled) GNS.getLogger().fine("Confirm add packet: " + confirmAddPacket.toString()); 
     if (addInfo == null) {
       if (Config.debuggingEnabled) GNS.getLogger().warning("Add confirmation return info not found.: lns request id = " + 
               confirmAddPacket.getLNSRequestID());
     } else {
       // update our cache BEFORE we confirm
-      LocalNameServer.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
+      handler.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
       addInfo.setSuccess(confirmAddPacket.isSuccess());
       addInfo.setFinishTime();
       if (confirmAddPacket.isSuccess()) {
@@ -111,13 +111,13 @@ public class AddRemove {
    */
   static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
-    UpdateInfo removeInfo = (UpdateInfo) LocalNameServer.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
+    UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
     if (Config.debuggingEnabled) GNS.getLogger().fine("Confirm remove packet: " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     if (removeInfo == null) {
       if (Config.debuggingEnabled) GNS.getLogger().warning("Remove confirmation return info not found.: lns request id = " + confirmRemovePacket.getLNSRequestID());
     } else {
       // update our cache BEFORE we confirm
-      LocalNameServer.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
+      handler.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       removeInfo.setSuccess(confirmRemovePacket.isSuccess());
       removeInfo.setFinishTime();
       if (confirmRemovePacket.isSuccess()) {

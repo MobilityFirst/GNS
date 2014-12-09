@@ -55,7 +55,7 @@ public class PendingTasks {
    * @param task TimerTask to be executed once actives are received. Request represented in form of TimerTask
    * @param period Frequency at which TimerTask is repeated
    */
-  public static void addToPendingRequests(RequestInfo requestInfo, TimerTask task, int period) {
+  public static void addToPendingRequests(RequestInfo requestInfo, TimerTask task, int period, ClientRequestHandlerInterface handler) {
     if (requestInfo != null && requestInfo.setLookupActives()) {
       // if lookupActives is true, means this request is not already in pending request queue. so, we add this to queue
       String name = requestInfo.getName();
@@ -70,8 +70,8 @@ public class PendingTasks {
       requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
         GNS.getLogger().fine("Active request queued: " + requestID);
-        RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID);
-        LocalNameServer.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
+        RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID, handler);
+        handler.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
                 StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
       }
     } else {
@@ -87,7 +87,7 @@ public class PendingTasks {
    *
    * @throws org.json.JSONException
    */
-  public static void handleActivesRequestReply(JSONObject json) throws JSONException {
+  public static void handleActivesRequestReply(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json);
     if (StartLocalNameServer.debuggingEnabled) {
       GNS.getLogger().fine("Recvd request actives packet: " + requestActivesPacket
@@ -97,25 +97,26 @@ public class PendingTasks {
             || requestActivesPacket.getActiveNameServers().size() == 0) {
       GNS.getLogger().fine("Null set of actives received for name " + requestActivesPacket.getName()
               + " sending error");
-      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), LNSEventCode.RC_NO_RECORD_ERROR);
+      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), 
+              LNSEventCode.RC_NO_RECORD_ERROR, handler);
       return;
     }
 
-    if (LocalNameServer.containsCacheEntry(requestActivesPacket.getName())) {
-      LocalNameServer.updateCacheEntry(requestActivesPacket);
+    if (handler.containsCacheEntry(requestActivesPacket.getName())) {
+      handler.updateCacheEntry(requestActivesPacket);
       if (StartLocalNameServer.debuggingEnabled) {
         GNS.getLogger().fine("Updating cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
     } else {
-      LocalNameServer.addCacheEntry(requestActivesPacket);
+      handler.addCacheEntry(requestActivesPacket);
       if (StartLocalNameServer.debuggingEnabled) {
         GNS.getLogger().fine("Adding to cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
     }
 
-    runPendingRequestsForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID());
+    runPendingRequestsForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), handler);
 
   }
 
@@ -124,7 +125,7 @@ public class PendingTasks {
    *
    * @param requestID request ID of the <code>RequestActivesPacket</code>
    */
-  public static void runPendingRequestsForName(String name, int requestID) {
+  public static void runPendingRequestsForName(String name, int requestID, ClientRequestHandlerInterface handler) {
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
     if (runTasks != null && runTasks.size() > 0) {
@@ -139,12 +140,12 @@ public class PendingTasks {
           if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine(" Running Pending tasks. REPEAT!!");
           }
-          LocalNameServer.getExecutorService().scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
+          handler.getExecutorService().scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
         } else {
           if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine(" Pending tasks. No repeat.");
           }
-          LocalNameServer.getExecutorService().schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);
+          handler.getExecutorService().schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);
         }
       }
     }
@@ -155,7 +156,7 @@ public class PendingTasks {
    *
    * @param requestID request ID of the <code>RequestActivesPacket</code>
    */
-  public static void sendErrorMsgForName(String name, int requestID, LNSEventCode eventCode) {
+  public static void sendErrorMsgForName(String name, int requestID, LNSEventCode eventCode, ClientRequestHandlerInterface handler) {
 
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
@@ -163,7 +164,7 @@ public class PendingTasks {
       GNS.getLogger().fine("Running pending tasks. Sending error messages: Count " + runTasks.size());
       for (PendingTask task : runTasks) {
         // remove request from queue
-        if (LocalNameServer.removeRequestInfo(task.requestInfo.getLnsReqID()) != null) {
+        if (handler.removeRequestInfo(task.requestInfo.getLnsReqID()) != null) {
           task.requestInfo.setFinishTime(); // set finish time for request
           if (eventCode != null) task.requestInfo.addEventCode(eventCode);
           GNS.getStatLogger().fine(task.requestInfo.getLogString());

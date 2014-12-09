@@ -103,7 +103,7 @@ public class LNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
           break;
         // Others
         case REQUEST_ACTIVES:
-          PendingTasks.handleActivesRequestReply(json);
+          PendingTasks.handleActivesRequestReply(json, handler);
           break;
         case SELECT_REQUEST:
           Select.handlePacketSelectRequest(json, handler);

@@ -47,7 +47,7 @@ public class Update {
     UpdatePacket updatePacket = new UpdatePacket(json);
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), null, updatePacket);
+    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), null, updatePacket, handler);
     handler.addRequestInfo(lnsReqID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
     SendUpdatesTask updateTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
@@ -131,7 +131,7 @@ public class Update {
     SendUpdatesTask task = new SendUpdatesTask(updateInfo.getLnsReqID(), handler, updatePacket);
 //    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
 
-    PendingTasks.addToPendingRequests(updateInfo, task, handler.getParameters().getQueryTimeout());
+    PendingTasks.addToPendingRequests(updateInfo, task, handler.getParameters().getQueryTimeout(), handler);
   }
 
   /**

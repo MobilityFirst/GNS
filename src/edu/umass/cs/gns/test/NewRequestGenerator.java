@@ -22,7 +22,7 @@ public class NewRequestGenerator<NodeIDType> {
 
   private final WorkloadParams workloadParams;
 
-  private final ClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   private final BufferedReader traceFileReader;
 
@@ -36,7 +36,7 @@ public class NewRequestGenerator<NodeIDType> {
 
   private ExponentialDistribution dist;
 
-  public NewRequestGenerator(WorkloadParams workloadParams, String traceFile, ClientRequestHandlerInterface handler)
+  public NewRequestGenerator(WorkloadParams workloadParams, String traceFile, ClientRequestHandlerInterface<NodeIDType> handler)
           throws FileNotFoundException {
 
     this.workloadParams = workloadParams;

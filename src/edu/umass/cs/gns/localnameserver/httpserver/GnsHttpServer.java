@@ -205,7 +205,7 @@ public class GnsHttpServer {
                 "Paxos Replica Version: "
                 + PaxosReplica.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
-        String serverLocalNameServerID = "\nLocal Name Server Address: " + LocalNameServer.getAddress() + "\n";
+        String serverLocalNameServerID = "\nLocal Name Server Address: " + LocalNameServer.getNodeAddress() + "\n";
         String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 

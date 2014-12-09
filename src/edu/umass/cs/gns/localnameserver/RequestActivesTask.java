@@ -32,14 +32,16 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
   private String name;
   private HashSet<NodeIDType> nameServersQueried;
   private int requestID;
+  ClientRequestHandlerInterface<NodeIDType> handler;
 
   private long startTime;
 
-  public RequestActivesTask(String name, int requestID) {
+  public RequestActivesTask(String name, int requestID, ClientRequestHandlerInterface<NodeIDType> handler) {
     this.name = name;
     this.nameServersQueried = new HashSet<NodeIDType>();
     this.requestID = requestID;
     this.startTime = System.currentTimeMillis();
+    this.handler = handler;
   }
 
   @Override
@@ -60,7 +62,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
           // max number of attempts have been made,
           GNS.getLogger().severe("Error: No actives received for name  " + name + " after " + numAttempts +
                   " attempts.");
-          PendingTasks.sendErrorMsgForName(name, requestID, LNSEventCode.RC_NO_RESPONSE_ERROR);
+          PendingTasks.sendErrorMsgForName(name, requestID, LNSEventCode.RC_NO_RESPONSE_ERROR, handler);
           throw  new CancelExecutorTaskException();
         }
       }
@@ -100,7 +102,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
    */
   private void sendActivesRequestPacketToPrimary(String name, NodeIDType primaryID, int requestID) {
 
-    RequestActivesPacket packet = new RequestActivesPacket(name, LocalNameServer.getAddress(), requestID, primaryID);
+    RequestActivesPacket packet = new RequestActivesPacket(name, handler.getNodeAddress(), requestID, primaryID);
     try
     {
       JSONObject sendJson = packet.toJSONObject();

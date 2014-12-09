@@ -80,7 +80,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
   }
 
   private boolean isResponseReceived() {
-    if (LocalNameServer.getRequestInfo(getLnsRequestID()) == null) {
+    if (handler.getRequestInfo(getLnsRequestID()) == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
       }
@@ -133,7 +133,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
       return;
     }
 
-    UpdateInfo info = (UpdateInfo) LocalNameServer.getRequestInfo(lnsRequestID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
     if (info != null) {
       info.addEventCode(LNSEventCode.CONTACT_RC);
     }

@@ -30,7 +30,7 @@ public class LNSToNSCommandRequest {
       // because the code at the name server assumes it can look up the info for that record locally on the server.
       // We pick a name server based on that record name using the active name servers info in the cache.
       String serverID = pickNameServer(getUsefulRecordName(packet.getCommand()), handler);
-      GNS.getLogger().info("LNS" + LocalNameServer.getAddress() + " transmitting CommandPacket " + incomingJSON + " to " + serverID);
+      GNS.getLogger().info("LNS" + LocalNameServer.getNodeAddress() + " transmitting CommandPacket " + incomingJSON + " to " + serverID);
       handler.sendToNS(incomingJSON, serverID);
     } else {
       // PACKET IS COMING BACK FROM A NAMESERVER

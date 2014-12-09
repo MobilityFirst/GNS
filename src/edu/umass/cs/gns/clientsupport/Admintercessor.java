@@ -439,7 +439,7 @@ public class Admintercessor {
     GNS.getLogger().finer("Sending dump request id = " + id);
     try {
       sendAdminPacket(new DumpRequestPacket(id, 
-              new InetSocketAddress(LocalNameServer.getAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT), 
+              new InetSocketAddress(LocalNameServer.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT), 
               tagName).toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring error sending DUMP request for id " + id + " : " + e);

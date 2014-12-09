@@ -33,7 +33,7 @@ public class LNSTestRequests {
   public static void sendGroupChangeRequest(JSONObject jsonObject) throws JSONException {
     GNS.getLogger().fine("Sending group change packet: " + jsonObject);
     NewActiveProposalPacket packet = new NewActiveProposalPacket(jsonObject);
-    packet.setLnsAddress(LocalNameServer.getAddress());
+    packet.setLnsAddress(LocalNameServer.getNodeAddress());
     LocalNameServer.sendToNS(packet.toJSONObject(), packet.getProposingNode());
     trackGroupChange.put(new GroupChangeIdentifier(packet.getName(), packet.getVersion()), System.currentTimeMillis());
   }
