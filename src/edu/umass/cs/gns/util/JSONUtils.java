@@ -36,7 +36,7 @@ public class JSONUtils {
    * @throws JSONException
    */
   public static ArrayList<Object> JSONArrayToArrayList(JSONArray jsonArray) throws JSONException {
-    ArrayList<Object> list = new ArrayList();
+    ArrayList<Object> list = new ArrayList<Object>();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.get(i));
     }
@@ -44,7 +44,7 @@ public class JSONUtils {
   }
 
   public static ArrayList<String> JSONArrayToArrayListString(JSONArray jsonArray) throws JSONException {
-    ArrayList<String> list = new ArrayList();
+    ArrayList<String> list = new ArrayList<String>();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.getString(i));
     }
@@ -61,7 +61,7 @@ public class JSONUtils {
   }
 
   public static HashSet<String> JSONArrayToHashSet(JSONArray jsonArray) throws JSONException {
-    HashSet<String> set = new HashSet();
+    HashSet<String> set = new HashSet<String>();
     for (int i = 0; i < jsonArray.length(); i++) {
       set.add(jsonArray.getString(i));
     }
@@ -69,7 +69,7 @@ public class JSONUtils {
   }
 
   public static ArrayList<Integer> JSONArrayToArrayListInteger(JSONArray jsonArray) throws JSONException {
-    ArrayList<Integer> list = new ArrayList();
+    ArrayList<Integer> list = new ArrayList<Integer>();
     for (int i = 0; i < jsonArray.length(); i++) {
       list.add(jsonArray.getInt(i));
     }
@@ -151,13 +151,11 @@ public class JSONUtils {
    * @return ArrayList with the content of JSONArray.
    * @throws JSONException
    */
-  public static Set JSONArrayToSetNodeIdString(JSONArray json) throws JSONException {
-    Set set = new HashSet();
-
+  public static Set<Object> JSONArrayToSetNodeIdStringOldVersion(JSONArray json) throws JSONException {
+    Set<Object> set = new HashSet<Object>();
     if (json == null) {
       return set;
     }
-
     for (int i = 0; i < json.length(); i++) {
       set.add(json.get(i));
     }
@@ -190,7 +188,7 @@ public class JSONUtils {
         case SET_STRING:
           return JSONUtils.JSONArrayToSetString(jsonObject.getJSONArray(field.getName()));
         case SET_NODE_ID_STRING:
-          return JSONUtils.JSONArrayToSetNodeIdString(jsonObject.getJSONArray(field.getName()));
+          return JSONUtils.JSONArrayToSetNodeIdStringOldVersion(jsonObject.getJSONArray(field.getName()));
         case LIST_INTEGER:
           return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_STRING:
@@ -210,6 +208,7 @@ public class JSONUtils {
     return null;
   }
 
+  @SuppressWarnings("unchecked") // because we assume the field types get it right
   public static void putFieldInJsonObject(ColumnField field, Object value, JSONObject jsonObject) throws JSONException {
     try {
       if (value == null) {

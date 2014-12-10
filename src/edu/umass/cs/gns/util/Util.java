@@ -98,14 +98,6 @@ public class Util {
     return set;
   }
   
-  public static Set arrayToNodeIdSet(Object[] array) {
-    TreeSet set = new TreeSet();
-    for (int i = 0; i < array.length; i++) {
-      set.add(array[i]);
-    }
-    return set;
-  }
-
   public static Set<String> nodeIdSetToStringSet(Set set) {
     Set<String> result = new HashSet<String>();
     for (Object id : set) {
@@ -215,6 +207,9 @@ public class Util {
 	  }
 	  return set;
   }
+  
+  
+  
 
   /**
    * Converts a set of NodeIds to a string.
@@ -235,7 +230,7 @@ public class Util {
     }
     return sb.toString();
   }
-
+ 
   /**
    * Converts a encoded NodeId string to a set of NodeId objects.
    *
