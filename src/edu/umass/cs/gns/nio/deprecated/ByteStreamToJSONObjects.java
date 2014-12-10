@@ -15,8 +15,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 /* This class is deprecated. The plan is to move to JSONMessageWorker instead. */
-
-
+  @Deprecated
+  @SuppressWarnings("unchecked")
   public class ByteStreamToJSONObjects implements Runnable {
 
   HashMap socketData = new HashMap();

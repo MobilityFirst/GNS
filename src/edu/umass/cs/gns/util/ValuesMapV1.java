@@ -40,9 +40,9 @@ public class ValuesMapV1 implements Serializable{
 
   public ValuesMapV1(JSONObject json) throws JSONException {
     this();
-    Iterator<String> keyIter = json.keys();
+    Iterator<?> keyIter = json.keys();
     while (keyIter.hasNext()) {
-      String key = keyIter.next();
+      String key = (String) keyIter.next();
       this.content.put(key, new ResultValue(JSONUtils.JSONArrayToResultValue(json.getJSONArray(key))));
     }
   }

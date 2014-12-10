@@ -87,9 +87,9 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
     if (packet.keyIsAllFieldsOrTopLevel()) {
       // pull all the keys and values out of the returned value and cache them
       ValuesMap packetRecordValue = packet.getRecordValue();
-      Iterator<String> keyIter = packetRecordValue.keys();
+      Iterator<?> keyIter = packetRecordValue.keys();
       while (keyIter.hasNext()) {
-        String fieldKey = keyIter.next();
+        String fieldKey = (String) keyIter.next();
         try {
           Object fieldValue = packetRecordValue.get(fieldKey);
           this.valuesMap.put(fieldKey, fieldValue);
@@ -132,9 +132,9 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
       valuesMap = new ValuesMap();
     }
     ValuesMap packetRecordValue = packet.getRecordValue();
-    Iterator<String> keyIter = packetRecordValue.keys();
+    Iterator<?> keyIter = packetRecordValue.keys();
     while (keyIter.hasNext()) {
-      String fieldKey = keyIter.next();
+      String fieldKey = (String) keyIter.next();
       try {
         Object fieldValue = packetRecordValue.get(fieldKey);
         this.valuesMap.put(fieldKey, fieldValue);

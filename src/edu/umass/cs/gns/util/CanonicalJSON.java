@@ -51,9 +51,9 @@ public class CanonicalJSON {
 
         // Sort the keys
         TreeSet<String> t = new TreeSet<String>();
-        Iterator<String> i = theObject.keys();
+        Iterator<?> i = theObject.keys();
         while (i.hasNext()) {
-          t.add(i.next());
+          t.add((String) i.next());
         }
         Iterator<String> keys = t.iterator();
 

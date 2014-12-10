@@ -175,10 +175,16 @@ public class Packet {
   public static void putPacketType(JSONObject json, PacketType type) throws JSONException {
     json.put(PACKET_TYPE, type.getInt());
   }
+  
+  ///
+  /// LEGACY PACKET SENDING CODE THAT WE KEEP AROUND SO THAT THE ADMIN SIDE OF THINGS
+  /// IS SEPARATE FROM THE NIO SIDE. IS THIS NECESSARY?
+  ///
+  
+  
   /**
    * Delimiter that separates size from data in each frame transmitted *
    */
-  //public final static String DELIMITER = ":";
 
   public static final String HEADER_PATTERN = "&";
 
@@ -311,7 +317,6 @@ public class Packet {
    * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
    * @throws java.io.IOException *
    */
-  @SuppressWarnings("unchecked")
   public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, Object nameserverId, GNS.PortType portType) throws IOException {
     int port = gnsNodeConfig.getPort(nameserverId, portType);
     if (port == -1) {
@@ -356,33 +361,6 @@ public class Packet {
   }
   
   /**
-   * Multicast TCP packet to all name servers in <i>nameServerIds</i>.
-   *
-   * @param nameServerIds Set of name server ids where packet is sent
-   * @param json JSONObject representing the packet
-   * @param numRetry Number of re-try if the connection fails before successfully sending the packet.
-   * @param portType Type of port to connect *
-   */
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry, GNS.PortType portType) {
-    multicastTCP(gnsNodeConfig, nameServerIds, json, numRetry, portType, -1);
-  }
-
-  /**
-   * Multicast TCP packet to all name servers in <i>nameServerIds</i>. Excludes name server whose id match
-   * <i>excludeNameServerId</i>
-   *
-   * @param nameServerIds Set of name server ids where packet is sent
-   * @param json JSONObject representing the packet
-   * @param numRetry Number of re-try if the connection fails before successfully sending the packet.
-   * @param portType Type of port to connect
-   * @param excludeNameServerId Id of name server which is excluded from multicast *
-   */
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry, 
-          GNS.PortType portType, int excludeNameServerId) {
-    multicastTCP(gnsNodeConfig, nameServerIds, json, numRetry, portType, new HashSet<Integer>(Arrays.asList(excludeNameServerId)));
-  }
-
-  /**
    * Multicast TCP packet to all name servers in <i>nameServerIds</i>. This method excludes name server id in
    * <i>excludeNameServers</i>
    *
@@ -393,7 +371,7 @@ public class Packet {
    * @param excludeNameServers *
    */
   public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry, 
-          GNS.PortType portType, Set<Integer> excludeNameServers) {
+          GNS.PortType portType, Set excludeNameServers) {
     int tries;
     for (Object id : nameServerIds) {
       if (excludeNameServers != null && excludeNameServers.contains(id)) {
@@ -415,39 +393,6 @@ public class Packet {
         }
       } while (tries < numRetry);
     }
-  }
-
-  /**
-   * Sends a packet to the closest name server in <i>nameServerIds</i> over TCP. If the connection fails, the packet is sent to the
-   * next closest name server untill <i>numRetry</i> attemps have been made to successfully send the packet.
-   *
-   * @param nameServerIds Set of name server ids
-   * @param json JSONObject representing the packet
-   * @param numRetry Number of attempts if the connection fails before successfully sending the packet.
-   * @param portType Type of port to connect
-   * @return Returns the <i>Socket</i> over which the packet was transmitted. Returns <i>null</i> if no connection was successful in
-   * sending the packet. *
-   */
-  @SuppressWarnings("unchecked")
-  public static Socket sendTCPPacketToClosestNameServer(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json,
-          int numRetry, GNS.PortType portType) {
-
-    int attempt = 0;
-    Set<Object> excludeNameServer = new HashSet<>();
-    Object id;
-
-    do {
-      attempt++;
-      id = (Object) gnsNodeConfig.getClosestServer(nameServerIds, excludeNameServer);
-      excludeNameServer.add(id);
-      try {
-        return Packet.sendTCPPacket(gnsNodeConfig, json, id, portType);
-      } catch (IOException e) {
-        GNS.getLogger().severe("Exception: socket closed by nameserver " + id);
-        e.printStackTrace();
-      }
-    } while (attempt < numRetry);
-    return null;
   }
 
   //

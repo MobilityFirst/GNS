@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -71,7 +72,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param otherValue
    */
   public SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
-    super(null, lnsAddress);
+    super((NodeIDType) null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
@@ -95,7 +96,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param minRefreshInterval
    */
   private SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
-    super(null, lnsAddress);
+    super((NodeIDType) null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
@@ -154,8 +155,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
-  public SelectRequestPacket(JSONObject json) throws JSONException {
-    super((NodeIDType)json.opt(NAMESERVER_ID),
+  public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));

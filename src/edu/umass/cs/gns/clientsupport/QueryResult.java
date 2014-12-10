@@ -102,10 +102,10 @@ public class QueryResult<NodeIDType> implements Serializable{
    * @return 
    */
   private static ValuesMap removeInternalFields(ValuesMap valuesMap) {
-    Iterator<String> keyIter = valuesMap.keys();
+    Iterator<?> keyIter = valuesMap.keys();
     //Iterator<String> keyIter = newContent.keys();
     while (keyIter.hasNext()) {
-      String key = keyIter.next();
+      String key = (String) keyIter.next();
       if (InternalField.isInternalField(key)) {
         keyIter.remove();
         //valuesMap.remove(key);

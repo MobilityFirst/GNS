@@ -41,7 +41,7 @@ public class StatusPanel extends JPanel implements ActionListener {
     //System.out.println("update");
     removeAll();
     Box box = Box.createVerticalBox();
-    TreeSet<StatusEntry> entries = new TreeSet(StatusModel.getInstance().getEntries());
+    TreeSet<StatusEntry> entries = new TreeSet<StatusEntry>(StatusModel.getInstance().getEntries());
     // add the header
     StatusPane pane = new StatusPane(null);
     pane.setAlignmentX(Component.LEFT_ALIGNMENT);

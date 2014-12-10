@@ -31,6 +31,7 @@ import java.util.Properties;
  * @author John Keyes (john at integralsource.com)
  * @version $Revision$, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
  */
+@SuppressWarnings("unchecked")
 public abstract class Parser implements CommandLineParser
 {
     /** commandline instance */

@@ -49,7 +49,7 @@ public class Stats {
   }
 
   public double median() {
-    ArrayList<Double> copy = (ArrayList<Double>)data.clone();
+    ArrayList<Double> copy = new ArrayList<Double>(data);
     Collections.sort(data);
 
     if (copy.size() % 2 == 0) {

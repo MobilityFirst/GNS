@@ -32,6 +32,7 @@ import java.util.logging.Level;
  *
  * @author Westy
  */
+@SuppressWarnings("unchecked") //FIXME: Either convert to generics or rewrite to use Nio?
 public class LNSListenerAdmin extends Thread implements Shutdownable {
 
   /**
@@ -107,9 +108,9 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             //dumpRequestPacket.setId(id);
             //dumpRequestPacket.setLnsAddress(handler.getNodeAddress()); // done before it gets here
             JSONObject json = dumpRequestPacket.toJSONObject();
-            Set<String> serverIds = handler.getGnsNodeConfig().getNodeIDs();
+            Set<Object> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
-            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT);
+            Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT, null);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
           } else {
             // INCOMING - send it out to original requester
@@ -139,7 +140,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               GNS.getLogger().fine("LNSListenerAdmin (" + handler.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
               Set<Object> serverIds = handler.getGnsNodeConfig().getNodeIDs();
-              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
+              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT, null);
               // clear the cache
               handler.invalidateCache();
               break;
@@ -211,7 +212,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               GNS.getLogger().fine("LNSListenerAdmin (" + handler.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
               serverIds = handler.getGnsNodeConfig().getNodeIDs();
-              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT);
+              Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT, null);
               break;
             default:
               GNS.getLogger().severe("Unknown admin request in packet: " + incomingJSON);

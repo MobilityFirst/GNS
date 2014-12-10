@@ -37,7 +37,7 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
   private InetSocketAddress lnsAddress = null;
 
   /**
-   * Creates a BasicPacketWithLnsAddress.
+   * Creates a BasicPacketWithNSAndLnsAddress.
    *
    * @param address
    */
@@ -47,7 +47,7 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
   }
 
   /**
-   * Creates a BasicPacketWithLnsAddress.
+   * Creates a BasicPacketWithNSAndLnsAddress.
    *
    * @param address
    * @param port

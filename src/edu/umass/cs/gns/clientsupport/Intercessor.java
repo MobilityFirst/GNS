@@ -9,7 +9,6 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -28,7 +27,7 @@ import java.util.ArrayList;
  * One of a number of class that implement client support in the GNS server.
  *
  * The intercessor is the primary liason class between the servers (HTTP and new
- * TCP) and the Command Module which handles incoming requests from the servers
+ * TCP) and the Command Module which handles incoming requests from the clients
  * and the the Local Name Server.
  *
  * Provides support for the AccountAccess, Field Access,

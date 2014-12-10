@@ -22,7 +22,7 @@ public class Select {
 
   public static void handlePacketSelectRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
-    SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
+    SelectRequestPacket packet = new SelectRequestPacket(incomingJSON, handler.getGnsNodeConfig());
 
     int queryId = handler.addSelectInfo(packet.getKey(), packet);
     packet.setLnsQueryId(queryId);

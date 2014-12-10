@@ -137,7 +137,7 @@ public class NSAccessSupport {
       return true;
     }
     try {
-      Set<String> allowedusers = NSFieldMetaData.lookupOnThisNameServer(access, guidInfo, field, activeReplica);
+      Set<Object> allowedusers = NSFieldMetaData.lookupOnThisNameServer(access, guidInfo, field, activeReplica);
       if (debuggingEnabled) {
         GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
       }
@@ -159,7 +159,7 @@ public class NSAccessSupport {
 
   }
 
-  private static boolean checkAllowedUsers(String accesserGuid, Set<String> allowedUsers, GnsReconfigurable activeReplica,
+  private static boolean checkAllowedUsers(String accesserGuid, Set<Object> allowedUsers, GnsReconfigurable activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (allowedUsers.contains(accesserGuid)) {
       return true;

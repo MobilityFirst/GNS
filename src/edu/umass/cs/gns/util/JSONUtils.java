@@ -167,9 +167,9 @@ public class JSONUtils {
 
   public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
     Map<String, ResultValue> result = new HashMap<String, ResultValue>();
-    Iterator<String> keyIter = json.keys();
+    Iterator<?> keyIter = json.keys();
     while (keyIter.hasNext()) {
-      String key = keyIter.next();
+      String key = (String) keyIter.next();
       result.put(key, new ResultValue(JSONUtils.JSONArrayToResultValue(json.getJSONArray(key))));
     }
     return result;
@@ -271,9 +271,9 @@ public class JSONUtils {
   public static ConcurrentHashMap<Integer, Integer> toIntegerMap(JSONObject json) {
     HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
     try {
-      Iterator<String> nameItr = json.keys();
+      Iterator<?> nameItr = json.keys();
       while (nameItr.hasNext()) {
-        String name = nameItr.next();
+        String name = (String) nameItr.next();
         map.put(Integer.valueOf(name), json.getInt(name));
       }
     } catch (JSONException e) {
@@ -284,9 +284,9 @@ public class JSONUtils {
   public static ConcurrentHashMap<Integer, StatsInfo> toStatsMap(JSONObject json) { //
     HashMap<Integer, StatsInfo> map = new HashMap<Integer, StatsInfo>();
     try {
-      Iterator<String> nameItr = json.keys();
+      Iterator<?> nameItr = json.keys();
       while (nameItr.hasNext()) {
-        String name = nameItr.next();
+        String name = (String) nameItr.next();
         map.put(Integer.valueOf(name), new StatsInfo(json.getJSONObject(name)));
       }
     } catch (JSONException e) {

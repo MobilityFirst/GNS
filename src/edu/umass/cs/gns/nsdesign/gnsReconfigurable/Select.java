@@ -71,7 +71,7 @@ public class Select {
   private static ConcurrentMap<Integer, NSSelectInfo> queriesInProgress = new ConcurrentHashMap<Integer, NSSelectInfo>(10, 0.75f, 3);
 
   public static void handleSelectRequest(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException, FailedDBOperationException {
-    SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
+    SelectRequestPacket packet = new SelectRequestPacket(incomingJSON, replica.getGNSNodeConfig());
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
       handleSelectRequestFromNS(incomingJSON, replica);
     } else {
@@ -90,7 +90,7 @@ public class Select {
    * @throws FailedDBOperationException
    */
   private static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsReconfigurable replica) throws JSONException, UnknownHostException, FailedDBOperationException {
-    SelectRequestPacket packet = new SelectRequestPacket(incomingJSON);
+    SelectRequestPacket packet = new SelectRequestPacket(incomingJSON, replica.getGNSNodeConfig());
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
     if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
@@ -159,7 +159,7 @@ public class Select {
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " recvd QueryRequest: " + incomingJSON);
     }
-    SelectRequestPacket request = new SelectRequestPacket(incomingJSON);
+    SelectRequestPacket request = new SelectRequestPacket(incomingJSON, replica.getGNSNodeConfig());
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, replica);

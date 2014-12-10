@@ -202,9 +202,9 @@ public class NameResolution {
           // Write the response
           for (RRset rrset : lookupresult.answers()) {
               GNS.getLogger().fine(rrset.toString() + "\n");
-              Iterator<Record> rrItr = rrset.rrs();
+              Iterator<?> rrItr = rrset.rrs();
               while (rrItr.hasNext()) {
-                  Record curRecord = rrItr.next();
+                  Record curRecord = (Record) rrItr.next();
                   response.addRecord(curRecord, Section.ANSWER);
                   if (curRecord.getType() == Type.CNAME) {
                       cnameNames.add(((CNAMERecord)curRecord).getAlias());
@@ -221,9 +221,9 @@ public class NameResolution {
               if (lookUpResult.isSuccessful()) {
                   for (RRset rrset : lookUpResult.answers()) {
                       GNS.getLogger().fine(rrset.toString() + "\n");
-                      Iterator<Record> rrItr = rrset.rrs();
+                      Iterator<?> rrItr = rrset.rrs();
                       while (rrItr.hasNext()) {
-                          Record curRecord = rrItr.next();
+                          Record curRecord = (Record) rrItr.next();
                           response.addRecord(curRecord, Section.ANSWER);
                       }
                   }

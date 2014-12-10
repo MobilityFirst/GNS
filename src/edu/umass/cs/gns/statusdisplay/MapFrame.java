@@ -62,6 +62,7 @@ import org.westy.jmapviewer.tilesources.OsmTileSource;
 /**
  * TODO add marker with label fix color and line issues
  */
+@SuppressWarnings("unchecked")
 public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateListener {
 
   private static final long serialVersionUID = 1L;
@@ -95,7 +96,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
       StatusModel model = StatusModel.getInstance();
       //System.out.println(model);
       map.removeAllMapMarkers();
-      TreeSet<StatusEntry> entries = new TreeSet(model.getEntries());
+      TreeSet<StatusEntry> entries = new TreeSet<StatusEntry>(model.getEntries());
       for (StatusEntry entry : entries) {
         if (entry.getLocation() != null) {
           map.addMapMarker(new MapMarkerLabeledDot(entry.getId().toString(), statusColor(entry), entry.getLocation().getY(), entry.getLocation().getX()));

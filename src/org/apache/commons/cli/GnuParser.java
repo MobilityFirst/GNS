@@ -27,6 +27,7 @@ import java.util.List;
  * @author John Keyes (john at integralsource.com)
  * @version $Revision$, $Date: 2008-07-29 01:13:48 -0700 (Tue, 29 Jul 2008) $
  */
+@SuppressWarnings("unchecked")
 public class GnuParser extends Parser
 {
     /**

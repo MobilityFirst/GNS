@@ -29,6 +29,7 @@ import java.util.List;
  * @author John Keyes (john at integralsource.com)
  * @version $Revision$, $Date: 2008-09-16 01:05:03 -0700 (Tue, 16 Sep 2008) $
  */
+@SuppressWarnings("unchecked")
 public class PosixParser extends Parser
 {
     /** holder for flattened tokens */

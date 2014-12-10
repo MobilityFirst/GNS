@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -99,7 +100,6 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
     this.previousValueCorrect = previousValueCorrect;
   }
 
-
   public NewActiveSetStartupPacket(JSONObject json) throws JSONException {
 
     this.type = Packet.getPacketType(json);
@@ -107,21 +107,23 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
     this.name = json.getString(NAME);
     this.primarySender = (NodeIDType)json.getString(PRIMARY_SENDER);
     this.activeSender = (NodeIDType)json.getString(ACTIVE_SENDER);
-    //FIXME: Use utility function here
-    String actives = json.getString(NEW_ACTIVES);
-    this.newActives = new HashSet<NodeIDType>();
-    String[] activeSplit = actives.split(":");
-    for (String x : activeSplit) {
-      newActives.add((NodeIDType) x);
-    }
 
-    //FIXME: Use utility function here
-    String old_actives = json.getString(OLD_ACTIVES);
-    this.oldActives = new HashSet<NodeIDType>();
-    String[] tokens = old_actives.split(":");
-    for (String x : tokens) {
-      oldActives.add((NodeIDType) x);
-    }
+    this.newActives = Util.stringToSetOfNodeId(json.getString(NEW_ACTIVES));
+//    String actives = json.getString(NEW_ACTIVES);
+//   
+//    this.newActives = new HashSet<NodeIDType>();
+//    String[] activeSplit = actives.split(":");
+//    for (String x : activeSplit) {
+//      newActives.add((NodeIDType) x);
+//    }
+    
+    this.oldActives = Util.stringToSetOfNodeId(json.getString(OLD_ACTIVES));
+//    String old_actives = json.getString(OLD_ACTIVES);
+//    this.oldActives = new HashSet<NodeIDType>();
+//    String[] tokens = old_actives.split(":");
+//    for (String x : tokens) {
+//      oldActives.add((NodeIDType) x);
+//    }
 
     this.oldActiveVersion = (short)json.getInt(OLD_ACTIVE_VERSION); 
     this.newActiveVersion = (short)json.getInt(NEW_ACTIVE_VERSION);
@@ -144,10 +146,13 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
     json.put(PRIMARY_SENDER, primarySender);
     json.put(ACTIVE_SENDER, activeSender);
 
-    String actives = convertArrayToString(newActives);
+    
+    //String actives = convertArrayToString(newActives);
+    String actives = Util.setOfNodeIdToString(newActives);
     json.put(NEW_ACTIVES, actives);
 
-    String old_actives = convertArrayToString(oldActives);
+    //String old_actives = convertArrayToString(oldActives);
+    String old_actives = Util.setOfNodeIdToString(newActives);
     json.put(OLD_ACTIVES, old_actives);
 
     json.put(NEW_ACTIVE_VERSION, this.newActiveVersion);
@@ -159,17 +164,17 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
     return json;
   }
 
-  private String convertArrayToString(Set<NodeIDType> values) {
-    StringBuilder sb = new StringBuilder();
-    for (NodeIDType x : values) {
-      if (sb.length() == 0) {
-        sb.append(x.toString());
-      } else {
-        sb.append(":" + x.toString());
-      }
-    }
-    return sb.toString();
-  }
+//  private String convertArrayToString(Set<NodeIDType> values) {
+//    StringBuilder sb = new StringBuilder();
+//    for (NodeIDType x : values) {
+//      if (sb.length() == 0) {
+//        sb.append(x.toString());
+//      } else {
+//        sb.append(":" + x.toString());
+//      }
+//    }
+//    return sb.toString();
+//  }
 
 
   public void setUniqueID(int uniqueID) {

@@ -39,7 +39,7 @@ public class NSFieldMetaData {
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
+  public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
           GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     return lookupOnThisNameServer(type, guidInfo.getGuid(), key, activeReplica);
   }
@@ -56,13 +56,13 @@ public class NSFieldMetaData {
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static Set<String> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
+  public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
           GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     ResultValue result = NSFieldAccess.lookupFieldOnThisServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
     if (result != null) {
-      return new HashSet(result);
+      return new HashSet<Object>(result);
     } else {
-      return new HashSet();
+      return new HashSet<Object>();
     }
   }
 
