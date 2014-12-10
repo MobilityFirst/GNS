@@ -11,12 +11,11 @@ import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
-import edu.umass.cs.gns.clientsupport.LNSToNSCommandRequestHandler;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.commands.CommandDefs;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -47,7 +46,7 @@ public class RetrieveAliases extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);

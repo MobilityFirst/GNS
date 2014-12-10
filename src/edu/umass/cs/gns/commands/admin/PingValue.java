@@ -12,6 +12,7 @@ import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,11 +37,11 @@ public class PingValue extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) throws JSONException, NumberFormatException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
     String node1String = json.getString(N);
     String node2String = json.getString(N2);
     if (module.isAdminMode()) {
-      return new CommandResponse(Admintercessor.sendPingValue(node1String, node2String));
+      return new CommandResponse(Admintercessor.sendPingValue(node1String, node2String, handler));
     }
     return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }

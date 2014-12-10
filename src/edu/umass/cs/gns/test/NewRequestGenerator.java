@@ -104,7 +104,7 @@ public class NewRequestGenerator<NodeIDType> {
           } else if (r.type == TestRequest.REMOVE) {
             t = new GenerateRemoveRequest(r.name, reqCount, lnsPacketDemultiplexer);
           } else if (r.type == TestRequest.GROUP_CHANGE) {
-            t = new GenerateGroupChangeRequest(r.name, reqCount, (TestGroupChangeRequest) r, lnsPacketDemultiplexer);
+            t = new GenerateGroupChangeRequest(r.name, reqCount, (TestGroupChangeRequest) r, lnsPacketDemultiplexer, handler);
           } else {
             GNS.getLogger().severe("Unknown request type found: " + r.toString());
             throw new UnsupportedOperationException();

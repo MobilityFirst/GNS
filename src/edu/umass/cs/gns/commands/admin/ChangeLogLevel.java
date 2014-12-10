@@ -12,6 +12,7 @@ import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -41,13 +42,13 @@ public class ChangeLogLevel extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String levelString = json.getString(LEVEL);
     if (module.isAdminMode()) {
       try {
         Level level = Level.parse(levelString);
-        if (Admintercessor.sendChangeLogLevel(level)) {
+        if (Admintercessor.sendChangeLogLevel(level, handler)) {
           return new CommandResponse(OKRESPONSE);
         } else {
           return new CommandResponse(BADRESPONSE);

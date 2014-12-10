@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
@@ -294,8 +295,8 @@ public class FieldAccess {
    * @param value - the value to match
    * @return 
    */
-  public static CommandResponse select(String key, Object value) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, key, value, null);
+  public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, key, value, null, handler);
     if (result != null) {
       return new CommandResponse(result);
     } else {
@@ -310,8 +311,8 @@ public class FieldAccess {
    * @param value - a bounding box
    * @return 
    */
-  public static CommandResponse selectWithin(String key, String value) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, key, value, null);
+  public static CommandResponse selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, key, value, null, handler);
     if (result != null) {
       return new CommandResponse(result);
     } else {
@@ -327,8 +328,8 @@ public class FieldAccess {
    * @param maxDistance - the maximum distance from position
    * @return 
    */
-  public static CommandResponse selectNear(String key, String value, String maxDistance) {
-    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, key, value, maxDistance);
+  public static CommandResponse selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
+    String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, key, value, maxDistance, handler);
     if (result != null) {
       return new CommandResponse(result);
     } else {
@@ -342,8 +343,8 @@ public class FieldAccess {
    * @param query
    * @return 
    */
-  public static CommandResponse selectQuery(String query) {
-    String result = SelectHandler.sendSelectQuery(query);
+  public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
+    String result = SelectHandler.sendSelectQuery(query, handler);
     if (result != null) {
       return new CommandResponse(result);
     } else {
@@ -359,8 +360,8 @@ public class FieldAccess {
    * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
    * @return 
    */
-  public static CommandResponse selectGroupSetupQuery(String query, String guid, int interval) {
-    String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid, interval);
+  public static CommandResponse selectGroupSetupQuery(String query, String guid, int interval, ClientRequestHandlerInterface handler) {
+    String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid, interval, handler);
     if (result != null) {
       return new CommandResponse(result);
     } else {
@@ -374,8 +375,8 @@ public class FieldAccess {
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
    * @return 
    */
-  public static CommandResponse selectGroupLookupQuery(String guid) {
-    String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid);
+  public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
+    String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid, handler);
     if (result != null) {
       return new CommandResponse(result);
     } else {

@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.test.connecttime;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
@@ -40,8 +41,8 @@ public class Correspondent<NodeIDType> implements Runnable{
 
   private String key = "EdgeRecord";
 
-  public Correspondent(NodeIDType mobileID) {
-    mobileAddress = LocalNameServer.getGnsNodeConfig().getNodeAddress(mobileID);
+  public Correspondent(NodeIDType mobileID,  ClientRequestHandlerInterface<NodeIDType> handler) {
+    mobileAddress = handler.getGnsNodeConfig().getNodeAddress(mobileID);
   }
 
   @Override

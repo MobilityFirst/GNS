@@ -11,6 +11,7 @@ import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.ping.PingManager;
 import java.net.InetSocketAddress;
 import java.util.Set;
 import org.json.JSONObject;
@@ -43,6 +44,13 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @return 
    */
   public GNSNodeConfig<NodeIDType> getGnsNodeConfig();
+  
+  /**
+   * Returns the ping manager.
+   * 
+   * @return 
+   */
+  public PingManager getPingManager();
   
   /**
    * Returns that set of parameters used to control the handlers behavior.

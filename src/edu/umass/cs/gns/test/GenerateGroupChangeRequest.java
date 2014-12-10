@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.test;
 
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
@@ -11,20 +12,23 @@ import java.util.TimerTask;
 
 /**
  * Created by abhigyan on 5/21/14.
+ * @param <NodeIDType>
  */
 public class GenerateGroupChangeRequest<NodeIDType> extends TimerTask {
 
-  private int requestCount;
-  private String name;
-  private LNSPacketDemultiplexer packetDemultiplexer;
-  private TestGroupChangeRequest groupChangeRequest;
+  private final int requestCount;
+  private final String name;
+  private final LNSPacketDemultiplexer packetDemultiplexer;
+  private final TestGroupChangeRequest groupChangeRequest;
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   public GenerateGroupChangeRequest(String name, int count, TestGroupChangeRequest grpChange,
-                                    LNSPacketDemultiplexer packetDemultiplexer) {
+                                    LNSPacketDemultiplexer packetDemultiplexer, ClientRequestHandlerInterface<NodeIDType> handler) {
     this.requestCount = count;
     this.name = name;
     this.packetDemultiplexer = packetDemultiplexer;
     this.groupChangeRequest = grpChange;
+    this.handler = handler;
   }
 
   @Override
@@ -41,7 +45,7 @@ public class GenerateGroupChangeRequest<NodeIDType> extends TimerTask {
 
   private NodeIDType selectReplicaController(String name) {
     Set replicaControllers = ConsistentHashing.getReplicaControllerSet(name);
-    return (NodeIDType) LocalNameServer.getGnsNodeConfig().getClosestServer(replicaControllers, null);
+    return (NodeIDType) handler.getGnsNodeConfig().getClosestServer(replicaControllers, null);
   }
 }
 

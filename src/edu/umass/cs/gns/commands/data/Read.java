@@ -12,6 +12,7 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.JSONUtils;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +43,7 @@ public class Read extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     // the opt hair below is for the subclasses... cute, huh?

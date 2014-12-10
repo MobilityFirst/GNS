@@ -12,10 +12,10 @@ import java.io.IOException;
  *
  * Created by abhigyan on 5/14/14.
  */
-public class StartExperiment {
+public class StartExperiment<NodeIDType> {
 
   public void startMyTest(String nodeID, String workloadFile, String updateTraceFile,
-                          ClientRequestHandlerInterface handler)
+                          ClientRequestHandlerInterface<NodeIDType> handler)
           throws IOException, InterruptedException {
 
     GNS.getLogger().info("Workload config file: " + workloadFile);
@@ -26,7 +26,7 @@ public class StartExperiment {
       new NewRequestGenerator(params, updateTraceFile, handler);
     } else if (params.getExpType() != null && params.getExpType().equals(ExpType.CONNECT_TIME)) {
       GNS.getStatLogger().info("Starting connect time experiment ... ");
-      StartConnectTimeExperiment.startTest(nodeID, params);
+      StartConnectTimeExperiment.startTest(nodeID, params, handler);
     } else if (params.getExpType() != null && params.getExpType().equals(ExpType.BASICTEST)) { // this is the RMI client
       GNS.getStatLogger().info("Starting basic test ... ");
       LNSSideImplementation.startServer();

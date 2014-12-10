@@ -17,18 +17,22 @@ import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-
 import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Implements some administrative functions for accessing the GNS.
@@ -73,9 +77,9 @@ public class Admintercessor {
    *
    * @return
    */
-  public static boolean sendResetDB() {
+  public static boolean sendResetDB(ClientRequestHandlerInterface handler) {
     try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject(), handler);
       return true;
     } catch (Exception e) {
       GNS.getLogger().warning("Ignoring this error while sending RESETDB request: " + e);
@@ -88,9 +92,9 @@ public class Admintercessor {
    * 
    * @return
    */
-  public static boolean sendDeleteAllRecords() {
+  public static boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
     try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject(), handler);
       return true;
     } catch (Exception e) {
       GNS.getLogger().warning("Error while sending DELETEALLRECORDS request: " + e);
@@ -103,9 +107,9 @@ public class Admintercessor {
    * 
    * @return
    */
-  public static boolean sendClearCache() {
+  public static boolean sendClearCache(ClientRequestHandlerInterface handler) {
     try {
-      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
       return true;
     } catch (Exception e) {
       GNS.getLogger().warning("Ignoring error while sending CLEARCACHE request: " + e);
@@ -118,10 +122,10 @@ public class Admintercessor {
    * 
    * @return
    */
-  public static String sendDumpCache() {
+  public static String sendDumpCache(ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
     try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
       waitForAdminResponse(id);
       JSONObject json = adminResult.get(id);
       if (json != null) {
@@ -141,10 +145,10 @@ public class Admintercessor {
    * @param node
    * @return a string containing the ping results for the node
    */
-  public static String sendPingTable(String node) {
+  public static String sendPingTable(String node, ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
     try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGTABLE, node).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGTABLE, node).toJSONObject(), handler);
       waitForAdminResponse(id);
       JSONObject json = adminResult.get(id);
       if (json != null) {
@@ -169,8 +173,8 @@ public class Admintercessor {
    * @param node2
    * @return the ping value between those nodes
    */
-  public static String sendPingValue(int node1, int node2) {
-    return sendPingValue(Integer.toString(node1), Integer.toString(node1));
+  public static String sendPingValue(int node1, int node2, ClientRequestHandlerInterface handler) {
+    return sendPingValue(Integer.toString(node1), Integer.toString(node1), handler);
   }
 
   /**
@@ -181,10 +185,11 @@ public class Admintercessor {
    * @param node2
    * @return
    */
-  public static String sendPingValue(String node1, String node2) {
+  public static String sendPingValue(String node1, String node2, ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
     try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(), node2.toString()).toJSONObject());
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(), 
+              node2.toString()).toJSONObject(), handler);
       waitForAdminResponse(id);
       JSONObject json = adminResult.get(id);
       if (json != null) {
@@ -207,10 +212,10 @@ public class Admintercessor {
    * @param level
    * @return
    */
-  public static boolean sendChangeLogLevel(Level level) {
+  public static boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
-      sendAdminPacket(packet.toJSONObject());
+      sendAdminPacket(packet.toJSONObject(), handler);
       return true;
     } catch (Exception e) {
       GNS.getLogger().warning("Ignoring error while sending CHANGELOGLEVEL request: " + e);
@@ -269,16 +274,16 @@ public class Admintercessor {
    * 
    * @return
    */
-    public static CommandResponse sendDump() {
+    public static CommandResponse sendDump(ClientRequestHandlerInterface handler) {
     int id;
-    if ((id = sendDumpOutputHelper(null)) == -1) {
+    if ((id = sendDumpOutputHelper(null, handler)) == -1) {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
     Map<Object, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
-      return new CommandResponse(formatDumpRecords(result));
+      return new CommandResponse(formatDumpRecords(result, handler));
     } else {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "No response to dump command!");
     }
@@ -310,12 +315,12 @@ public class Admintercessor {
   }
 
   @SuppressWarnings("unchecked")
-  private static String formatDumpRecords(Map<Object, TreeSet<NameRecord>> recordsMap) {
+  private static String formatDumpRecords(Map<Object, TreeSet<NameRecord>> recordsMap, ClientRequestHandlerInterface handler) {
     // now process all the records we received
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<Object> missingIDs = new HashSet(LocalNameServer.getGnsNodeConfig().getNodeIDs());
+    Set<Object> missingIDs = new HashSet(handler.getGnsNodeConfig().getNodeIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + Util.setOfNodeIdToString(missingIDs));
@@ -324,7 +329,7 @@ public class Admintercessor {
     // process all the entries into a nice string
     for (Map.Entry<Object, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
       result.append("Nameserver: " + entry.getKey().toString() +
-              " (" + LocalNameServer.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
+              " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
         try {
@@ -408,9 +413,9 @@ public class Admintercessor {
    * @param tagName
    * @return
    */
-  public static HashSet<String> collectTaggedGuids(String tagName) {
+  public static HashSet<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {
     int id;
-    if ((id = sendDumpOutputHelper(tagName)) == -1) {
+    if ((id = sendDumpOutputHelper(tagName, handler)) == -1) {
       return null;
     }
     waitForDumpResponse(id);
@@ -433,14 +438,14 @@ public class Admintercessor {
     }
   }
 
-  private static int sendDumpOutputHelper(String tagName) {
+  private static int sendDumpOutputHelper(String tagName, ClientRequestHandlerInterface handler) {
     // send the request out to the local name server
     int id = nextDumpRequestID();
     GNS.getLogger().finer("Sending dump request id = " + id);
     try {
       sendAdminPacket(new DumpRequestPacket(id, 
-              new InetSocketAddress(LocalNameServer.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT), 
-              tagName).toJSONObject());
+              new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT), 
+              tagName).toJSONObject(), handler);
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring error sending DUMP request for id " + id + " : " + e);
       return -1;
@@ -450,8 +455,8 @@ public class Admintercessor {
     return id;
   }
 
-  private static void sendAdminPacket(JSONObject json) throws IOException {
-    LNSListenerAdmin.handlePacket(json, null);
+  private static void sendAdminPacket(JSONObject json, ClientRequestHandlerInterface handler) throws IOException {
+    LNSListenerAdmin.handlePacket(json, null, handler);
   }
 
   private static int nextDumpRequestID() {

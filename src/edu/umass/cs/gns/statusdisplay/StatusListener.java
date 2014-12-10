@@ -111,7 +111,7 @@ public class StatusListener extends Thread {
       // send out the StatusInit packet to all local name servers
       System.out.println("Sending status server init to LNS " + id);
       try {
-        Packet.sendTCPPacket(json, new InetSocketAddress(LocalNameServer.getNodeAddress().getHostString(), GNS.DEFAULT_LNS_ADMIN_PORT));
+        Packet.sendTCPPacket(json, new InetSocketAddress("127.0.0.1", GNS.DEFAULT_LNS_ADMIN_PORT));
       } catch (IOException e) {
          System.out.println("Error sending status init to LNS " + id + " : " + e);
       }

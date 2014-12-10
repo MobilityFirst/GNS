@@ -11,6 +11,7 @@ import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import org.json.JSONObject;
 
 /**
@@ -34,7 +35,7 @@ public class Help extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) {
     if (json.has("tcp")) {
       return new CommandResponse("Commands are sent as TCP packets." + NEWLINE + NEWLINE
               + "Note: We use the terms field and key interchangably below." + NEWLINE + NEWLINE

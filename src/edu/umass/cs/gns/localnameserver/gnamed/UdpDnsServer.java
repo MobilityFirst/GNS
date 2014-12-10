@@ -70,8 +70,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
 
   @Override
   public void run() {
-    GNS.getLogger().info("LNS Node at " + LocalNameServer.getNodeAddress().getHostString()
-            + " starting local DNS Server on port " + sock.getLocalPort() + " with GNS server at "
+    GNS.getLogger().info("LNS Node at starting local DNS Server on port " + sock.getLocalPort() + " with GNS server at "
             + gnsServerIP + " and fallback DNS server at " + dnsServerIP);
     if (NameResolution.debuggingEnabled) {
       GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.localnameserver.gnamed.NameResolution *********");

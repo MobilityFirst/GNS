@@ -18,6 +18,7 @@ import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.httpserver.Defs;
 import edu.umass.cs.gns.util.Base64;
 import java.security.InvalidKeyException;
@@ -48,7 +49,7 @@ public class AddGuid extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);

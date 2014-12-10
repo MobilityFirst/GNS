@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
@@ -52,9 +53,9 @@ public class SelectHandler {
    * @param otherValue
    * @return
    */
-  public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue) {
+  public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, new SelectRequestPacket(id, LocalNameServer.getNodeAddress(), operation, GroupBehavior.NONE, key, value, otherValue));
+    return sendSelectHelper(id, new SelectRequestPacket(id, handler.getNodeAddress(), operation, GroupBehavior.NONE, key, value, otherValue));
   }
 
   /**
@@ -63,9 +64,9 @@ public class SelectHandler {
    * @param query
    * @return
    */
-  public static String sendSelectQuery(String query) {
+  public static String sendSelectQuery(String query, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, LocalNameServer.getNodeAddress(), query));
+    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, handler.getNodeAddress(), query));
   }
 
   /**
@@ -77,12 +78,12 @@ public class SelectHandler {
    * @param interval
    * @return
    */
-  public static String sendGroupGuidSetupSelectQuery(String query, String guid, int interval) {
+  public static String sendGroupGuidSetupSelectQuery(String query, String guid, int interval, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
     if (interval == INVALID_REFRESH_INTERVAL) {
       interval = DEFAULT_MIN_REFRESH_INTERVAL;
     }
-    return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, LocalNameServer.getNodeAddress(), query, guid, interval));
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, handler.getNodeAddress(), query, guid, interval));
   }
 
   /**
@@ -92,8 +93,8 @@ public class SelectHandler {
    * @param guid
    * @return
    */
-  public static String sendGroupGuidSetupSelectQuery(String query, String guid) {
-    return sendGroupGuidSetupSelectQuery(query, guid, DEFAULT_MIN_REFRESH_INTERVAL);
+  public static String sendGroupGuidSetupSelectQuery(String query, String guid, ClientRequestHandlerInterface handler) {
+    return sendGroupGuidSetupSelectQuery(query, guid, DEFAULT_MIN_REFRESH_INTERVAL, handler);
   }
 
   /**
@@ -102,9 +103,9 @@ public class SelectHandler {
    * @param guid
    * @return
    */
-  public static String sendGroupGuidLookupSelectQuery(String guid) {
+  public static String sendGroupGuidLookupSelectQuery(String guid, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, LocalNameServer.getNodeAddress(), guid));
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, handler.getNodeAddress(), guid));
   }
 
   private static String sendSelectHelper(int id, SelectRequestPacket sendPacket) {

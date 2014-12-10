@@ -33,6 +33,7 @@ import static edu.umass.cs.gns.localnameserver.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gns.localnameserver.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gns.localnameserver.httpserver.Defs.VALSEP;
 import edu.umass.cs.gns.clientsupport.CommandRequest;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.Util;
 import java.util.Map;
 import org.json.JSONObject;
@@ -50,8 +51,10 @@ public class GnsHttpServer {
   
   // handles command processing
   private static final CommandModule commandModule = new CommandModule();
+  private static ClientRequestHandlerInterface requestHandler;
 
-  public static void runHttp() {
+  public static void runHttp(ClientRequestHandlerInterface requestHandler) {
+    GnsHttpServer.requestHandler = requestHandler;
     runServer();
   }
 
@@ -152,7 +155,7 @@ public class GnsHttpServer {
     
     // Now we execute the command
     GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    return CommandRequest.executeCommand(command, jsonFormattedCommand).getReturnValue();
+    return CommandRequest.executeCommand(command, jsonFormattedCommand, GnsHttpServer.requestHandler).getReturnValue();
   }
  
  
@@ -205,8 +208,8 @@ public class GnsHttpServer {
                 "Paxos Replica Version: "
                 + PaxosReplica.Version.replaceFirst(Matcher.quoteReplacement("$Revision:"), "").replaceFirst(Matcher.quoteReplacement("$"), "") + "\n";
 
-        String serverLocalNameServerID = "\nLocal Name Server Address: " + LocalNameServer.getNodeAddress() + "\n";
-        String numberOfNameServers = "Name Server Count: " + LocalNameServer.getGnsNodeConfig().getNumberOfNodes() + "\n";
+        String serverLocalNameServerID = "\nLocal Name Server Address: " + GnsHttpServer.requestHandler.getNodeAddress() + "\n";
+        String numberOfNameServers = "Name Server Count: " + GnsHttpServer.requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
 
         responseBody.write(buildVersionInfo.getBytes());

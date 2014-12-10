@@ -12,6 +12,7 @@ import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,9 +37,9 @@ public class Dump extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
-      return Admintercessor.sendDump();
+      return Admintercessor.sendDump(handler);
     }
     return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }

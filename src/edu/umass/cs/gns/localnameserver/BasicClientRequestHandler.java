@@ -21,6 +21,7 @@ import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.MovingAverage;
@@ -78,6 +79,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   private final InterfaceJSONNIOTransport tcpTransport;
+  
+  private final PingManager pingManager;
 
   private final Random random;
 
@@ -91,7 +94,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   long receivedRequests = 0;
 
-  public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
+  public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
+          PingManager pingManager, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -101,6 +105,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
     this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
     this.tcpTransport = initTransport();
+    this.pingManager = pingManager;
   }
 
   @SuppressWarnings("unchecked") // calls a static method
@@ -131,6 +136,10 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public InetSocketAddress getNodeAddress() {
     return nodeAddress;
+  }
+
+  public PingManager getPingManager() {
+    return pingManager;
   }
 
   @Override

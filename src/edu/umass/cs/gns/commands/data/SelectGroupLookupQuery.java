@@ -12,6 +12,7 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -36,9 +37,9 @@ public class SelectGroupLookupQuery extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json) throws JSONException {
+  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
-    return FieldAccess.selectGroupLookupQuery(guid);
+    return FieldAccess.selectGroupLookupQuery(guid, handler);
   }
 
   @Override

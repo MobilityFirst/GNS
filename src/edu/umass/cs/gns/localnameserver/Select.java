@@ -46,7 +46,7 @@ public class Select {
         }
       }
     }
-    return LocalNameServer.getGnsNodeConfig().getClosestServer(LocalNameServer.getGnsNodeConfig().getNodeIDs());
+    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNodeIDs());
   }
 
   public static void handlePacketSelectResponse(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

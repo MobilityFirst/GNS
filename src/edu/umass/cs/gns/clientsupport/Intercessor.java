@@ -257,7 +257,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value, LocalNameServer.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value, handler.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -287,7 +287,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<NodeIDType>(null, id, name, LocalNameServer.getNodeAddress());
+    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<NodeIDType>(null, id, name, handler.getNodeAddress());
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -436,7 +436,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
             oldValue,
             argument,
             userJSON,
-            operation, LocalNameServer.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS,
+            operation, handler.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS,
             writer, signature, message);
     try {
       JSONObject json = packet.toJSONObject();

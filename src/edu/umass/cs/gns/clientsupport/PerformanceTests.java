@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.ResultValue;
@@ -48,7 +49,7 @@ public class PerformanceTests {
    * @param verbose
    * @return 
    */
-  public static String runRttPerformanceTest(int numFields, int guidCnt, boolean verbose) {
+  public static String runRttPerformanceTest(int numFields, int guidCnt, boolean verbose, ClientRequestHandlerInterface handler) {
     StringBuilder result = new StringBuilder();
     String accountGuid;
     // see if we already registered our GUID
@@ -72,9 +73,9 @@ public class PerformanceTests {
     }
     //result.append(runTestForGuid(accountGuid, numFields));
     if (verbose) {
-      result.append(resultsToString());
+      result.append(resultsToString(handler));
     } else {
-      String checkResult = checkForExcessiveRtt();
+      String checkResult = checkForExcessiveRtt(handler);
       if (checkResult.isEmpty()) {
         result.append("All RTTs within specified parameters.");
       } else {
@@ -128,8 +129,8 @@ public class PerformanceTests {
     }
   }
 
-  private static int getComparisonPingValue(String node) {
-    String result = Admintercessor.sendPingValue(PingManager.LOCALNAMESERVERID, node);
+  private static int getComparisonPingValue(String node, ClientRequestHandlerInterface handler) {
+    String result = Admintercessor.sendPingValue(PingManager.LOCALNAMESERVERID, node, handler);
     if (result.startsWith(Defs.BADRESPONSE)) {
       return 999;
     } else {
@@ -139,13 +140,13 @@ public class PerformanceTests {
   
   private static final int EXCESSIVE_RTT_DIFFERENCE = 100; 
   
-  private static String checkForExcessiveRtt() {
+  private static String checkForExcessiveRtt(ClientRequestHandlerInterface handler) {
     StringBuilder result = new StringBuilder();
     for (Entry<String, ArrayList<Double>> entry : times.entrySet()) {
       String node = entry.getKey();
       Stats stats = new Stats(times.get(node));
       int avg = (int) Math.round(stats.getMean());
-      int ping = getComparisonPingValue(node);
+      int ping = getComparisonPingValue(node, handler);
       if (avg - ping > EXCESSIVE_RTT_DIFFERENCE) {
         result.append("Node ");
         result.append(entry.getKey().toString());
@@ -160,7 +161,7 @@ public class PerformanceTests {
     return result.toString();
   }
 
-  private static String resultsToString() {
+  private static String resultsToString(ClientRequestHandlerInterface handler) {
     StringBuilder result = new StringBuilder();
     for (Entry<String, ArrayList<Double>> entry : times.entrySet()) {
       Stats stats = new Stats(times.get(entry.getKey()));
@@ -174,7 +175,7 @@ public class PerformanceTests {
       result.append(NEWLINE);
       result.append("StdDev = " + Math.round(stats.getStdDev()) + "ms");
       result.append(NEWLINE);
-      result.append("Ping = " + getComparisonPingValue(entry.getKey()) + "ms");
+      result.append("Ping = " + getComparisonPingValue(entry.getKey(), handler) + "ms");
       result.append(NEWLINE);
     }
     return result.toString();

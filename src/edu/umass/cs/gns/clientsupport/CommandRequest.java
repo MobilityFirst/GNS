@@ -59,7 +59,7 @@ public class CommandRequest {
       @Override
       public void run() {
         try {
-          CommandResponse returnValue = executeCommand(command, jsonFormattedCommand);
+          CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
           // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
           CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
                   handler.getReceivedRequests(), handler.getRequestsPerSecond());
@@ -99,12 +99,12 @@ public class CommandRequest {
    * @param json
    * @return
    */
-  public static CommandResponse executeCommand(GnsCommand command, JSONObject json) {
+  public static CommandResponse executeCommand(GnsCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       if (command != null) {
         //GNS.getLogger().info("Executing command: " + command.toString());
         GNS.getLogger().fine("Executing command: " + command.toString() + " with " + json);
-        return command.execute(json);
+        return command.execute(json, handler);
       } else {
         return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + json.toString());
       }

@@ -26,19 +26,15 @@ import java.net.InetSocketAddress;
 /**
  * This class represents the functions of a Local Name Server.
  *
- * @author abhigyan
+ * @author Westy
  * @param <NodeIDType>
  */
 public class LocalNameServer<NodeIDType> implements Shutdownable {
 
-  // FIXME: Future code cleanup note: The ClientRequestHandlerInterface and the IntercessorInterface
-  // are closely related. Both encapsulate some functionality in the LocalNameServer that we might want to 
-  // be able to abstract out (maybe to a Nameserver someday). There should be a way to combine them further.
-  // One tanglible goal is to remove all references to static LocalNameServer calls in the code.
   /**
    * Implements handling of client requests, comms and caching.
    */
-  private static ClientRequestHandlerInterface requestHandler;
+  private ClientRequestHandlerInterface requestHandler;
 
   /**
    * A local name server forwards the final response for all requests to intercessor.
@@ -57,7 +53,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
    * Ping manager object for pinging other nodes and updating ping latencies in
    */
   // this one is static because it has a get method that is static
-  private static PingManager pingManager;
+  private PingManager pingManager;
 
   /**
    * We keep a pointer to the gnsNodeConfig so we can shut it down.
@@ -76,12 +72,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
   
   private LNSListenerAdmin lnsListenerAdmin;
  
-  public static PingManager getPingManager() {
-    return pingManager;
-  }
-
   /**
-   **
    * Constructs a local name server and assigns it a node id.
    *
    * @throws IOException
@@ -105,7 +96,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    this.requestHandler = new BasicClientRequestHandler(nodeAddress, gnsNodeConfig, parameters);
+    this.requestHandler = new BasicClientRequestHandler(nodeAddress, gnsNodeConfig, pingManager, parameters);
 
     if (!parameters.isExperimentMode()) {
       // intercessor for regular GNS use
@@ -117,19 +108,19 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     }
 
     if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
-      GnsHttpServer.runHttp();
+      GnsHttpServer.runHttp(requestHandler);
     }
 
     if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      GNS.getLogger().info("LNS running at " + LocalNameServer.getNodeAddress() + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
+      GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
       this.pingManager = new PingManager(PingManager.LOCALNAMESERVERID, gnsNodeConfig);
       pingManager.startPinging();
     }
 
     // After starting PingManager because it accesses PingManager.
-    (this.lnsListenerAdmin = new LNSListenerAdmin()).start();
+    (this.lnsListenerAdmin = new LNSListenerAdmin(requestHandler)).start();
 
     if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
       new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis, requestHandler).start();
@@ -162,32 +153,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     }
 
   }
-
-  /**
-   * Returns the host nodeAddress of this LN server.
-   *
-   * @return
-   */
-  public static InetSocketAddress getNodeAddress() {
-    return requestHandler.getNodeAddress();
-  }
-
-  public static GNSNodeConfig getGnsNodeConfig() {
-    return requestHandler.getGnsNodeConfig();
-  }
-
-  // CACHE METHODS
-  public static void invalidateCache() {
-    requestHandler.invalidateCache();
-  }
-
-  /**
-   * Prints local name server cache (and sorts it for convenience)
-   */
-  public static String getCacheLogString(String preamble) {
-    return requestHandler.getCacheLogString(preamble);
-  }
-
+  
   @Override
   public void shutdown() {
     if (udpDnsServer != null) {
