@@ -11,6 +11,7 @@ public class Ballot<NodeIDType> implements Comparable<Ballot>, Serializable{
 		this.coordinatorID = coordinatorID;
 	}
 
+        // FIXME: This probably should use NodeIDType instead of String.
 	public Ballot(String s) {
 		String[] tokens = s.split(":");
 		ballotNumber = new Integer(tokens[0]);

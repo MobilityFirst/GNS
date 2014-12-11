@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -69,14 +70,12 @@ public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket {
     this.version = version;
   }
 
-  public OldActiveSetStopPacket(JSONObject json) throws JSONException {
+  public OldActiveSetStopPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.requestID = json.getInt(REQ_ID);
     this.name = json.getString(NAME);
-    //this.primarySender = unstringer.valueOf(json.getString(PRIMARY_SENDER));
-    //this.activeReceiver = unstringer.valueOf(json.getString(ACTIVE_RECEIVER));
-    this.primarySender = (NodeIDType)json.get(PRIMARY_SENDER);
-    this.activeReceiver = (NodeIDType)json.get(ACTIVE_RECEIVER);
+    this.primarySender = unstringer.valueOf(json.getString(PRIMARY_SENDER));
+    this.activeReceiver = unstringer.valueOf(json.getString(ACTIVE_RECEIVER));
     this.version = (short) json.getInt(VERSION);
   }
 

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.gigapaxos.multipaxospacket;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,11 +21,10 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket{
 		this.status = status;
 	}
 
-	@SuppressWarnings("unchecked")
-	public FailureDetectionPacket(JSONObject json) throws JSONException {
+	public FailureDetectionPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json);
-		this.senderNodeID = (NodeIDType)json.get(Keys.SENDER.toString());
-		this.responderNodeID = (NodeIDType)json.get(Keys.RESPONDER.toString());
+		this.senderNodeID = unstringer.valueOf(json.getString(Keys.SENDER.toString()));
+		this.responderNodeID = unstringer.valueOf(json.getString(Keys.RESPONDER.toString()));
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.FAILURE_DETECT);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
 		this.status = json.getBoolean(Keys.STATUS.toString());

@@ -34,7 +34,8 @@ public abstract class ProtocolPacket<NodeIDType,EventType> implements ThresholdP
 		this.initiator = pkt.initiator;
 	}
 	
-	@SuppressWarnings("unchecked")
+	//FIXME: These will need to be fixed to use an unstringer.
+        @SuppressWarnings("unchecked")
 	public ProtocolPacket(JSONObject json) throws JSONException {
 		//this.setType(Packet.getPacketType(json));
 		this.type = getPacketType(json);

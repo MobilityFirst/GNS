@@ -142,7 +142,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     }
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
-    //this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = json.getString(RECORDKEY);
@@ -151,9 +150,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     this.ttl = json.getInt(TIME_TO_LIVE);
     this.activeNameServers = json.has(ACTIVE_NAMESERVERS) ? 
             unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
-//    if (json.has(ACTIVE_NAMESERVERS)) {
-//      this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));;
-//    }
   }
 
   /**

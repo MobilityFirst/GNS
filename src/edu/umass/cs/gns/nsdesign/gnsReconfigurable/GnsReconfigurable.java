@@ -55,7 +55,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   /**
    * Configuration for all nodes in GNS *
    */
-  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  private final GNSNodeConfig<NodeIDType> nodeConfig;
 
   private PingManager<NodeIDType> pingManager;
 
@@ -71,7 +71,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = nodeID;
 
-    this.gnsNodeConfig = gnsNodeConfig;
+    this.nodeConfig = gnsNodeConfig;
 
     this.nioServer = nioServer;
 
@@ -97,7 +97,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
 
   @Override
   public GNSNodeConfig<NodeIDType> getGNSNodeConfig() {
-    return gnsNodeConfig;
+    return nodeConfig;
   }
 
   @Override
@@ -128,7 +128,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests
-          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, gnsNodeConfig);
+          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, nodeConfig);
           if (!dnsPacket.isQuery()) {
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
@@ -137,7 +137,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, gnsNodeConfig), this, noCoordinationState, recovery);
+          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
@@ -149,17 +149,17 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
          * Packets sent from replica controller *
          */
         case ACTIVE_ADD: // sent when new name is added to GNS
-          AddRecordPacket<NodeIDType> addRecordPacket = new AddRecordPacket<NodeIDType>(json, gnsNodeConfig);
+          AddRecordPacket<NodeIDType> addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
           Add.handleActiveAdd(addRecordPacket, this);
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json), this, noCoordinationState, recovery);
+          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery);
           break;
         // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:
-          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, gnsNodeConfig), this);
+          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, nodeConfig), this);
           break;
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);

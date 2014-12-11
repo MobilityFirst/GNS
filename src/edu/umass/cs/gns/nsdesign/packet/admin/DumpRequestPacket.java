@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.packet.admin;
 
 import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithLnsAddress;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,6 +14,7 @@ import org.json.JSONObject;
  contents of the nameserver;
  *
  * @author Westy
+ * @param <NodeIDType>
  */
 public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
 
@@ -53,7 +55,8 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
 
   /**
    * Constructs a new DumpRequestPacket packet
-   * @param localNameServer 
+   * @param id
+   * @param lnsAddress 
    */
   public DumpRequestPacket(int id, InetSocketAddress lnsAddress) {
     this(id, lnsAddress, null, new JSONArray(), null);
@@ -61,7 +64,8 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
 
   /**
    * Constructs a new DumpRequestPacket packet
-   * @param localNameServer
+   * @param id
+   * @param lnsAddress
    * @param tagName 
    */
   public DumpRequestPacket(int id, InetSocketAddress lnsAddress, String tagName) {
@@ -75,19 +79,16 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
-  public DumpRequestPacket(JSONObject json) throws JSONException {
+  public DumpRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.DUMP_REQUEST) {
       Exception e = new Exception("DumpRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
       return;
     }
-
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
-    this.primaryNameServer = (NodeIDType) json.get(PRIMARY_NAMESERVER);
-    //this.lnsAddress = new InetSocketAddress(json.getString(LNS_ADDRESS), json.getInt(LNS_PORT));
-    //this.localNameServer = json.getInt(LOCAL_NAMESERVER);
+    this.primaryNameServer = json.has(PRIMARY_NAMESERVER) ? unstringer.valueOf(json.getString(PRIMARY_NAMESERVER)) : null;
     this.jsonArray = json.getJSONArray(JSON);
     this.argument = json.optString(ARGUMENT, null);
   }
@@ -105,10 +106,7 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
     Packet.putPacketType(json, getType());
     super.addToJSONObject(json);
     json.put(ID, id);
-    json.put(PRIMARY_NAMESERVER, primaryNameServer.toString());
-    //json.put(LOCAL_NAMESERVER, localNameServer);
-//    json.put(LNS_ADDRESS, lnsAddress.getHostString());
-//    json.put(LNS_PORT, lnsAddress.getPort());
+    json.put(PRIMARY_NAMESERVER, primaryNameServer);
     json.put(JSON, jsonArray);
     if (this.argument != null) {
       json.put(ARGUMENT, argument);

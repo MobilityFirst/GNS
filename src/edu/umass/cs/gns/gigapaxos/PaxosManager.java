@@ -209,7 +209,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			switch (paxosPacketType) {
 			case FAILURE_DETECT:
 				FailureDetectionPacket<NodeIDType> fdp =
-						new FailureDetectionPacket<NodeIDType>(jsonMsg);
+						new FailureDetectionPacket<NodeIDType>(jsonMsg, unstringer);
 				FD.receive(fdp);
 				break;
 			case FIND_REPLICA_GROUP:

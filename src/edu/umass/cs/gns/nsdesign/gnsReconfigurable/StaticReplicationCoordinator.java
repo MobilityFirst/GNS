@@ -107,7 +107,7 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
 
         // call proposeStop
         case ACTIVE_REMOVE: // stop request for removing a name record
-          OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket(request);
+          OldActiveSetStopPacket<NodeIDType> stopPacket1 = new OldActiveSetStopPacket<NodeIDType>(request, nodeConfig);
           paxosID = paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(stopPacket1.getName()),
                   stopPacket1.toString());
 //          GNS.getLogger().info("Proposing remove to paxos ... ");

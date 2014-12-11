@@ -43,14 +43,14 @@ public class StartActiveSetTask<NodeIDType> extends TimerTask {
   private final int newActiveVersion;
   private final int oldActiveVersion;
   private final String initialValue;
-  private final ReplicaController replicaController;
+  private final ReplicaController<NodeIDType> replicaController;
   private final int requestID;
 
   /**
    * Constructor object
    */
   public StartActiveSetTask(String name, Set<NodeIDType> oldActiveNameServers, Set<NodeIDType> newActiveNameServers,
-                            int newActiveVersion, int oldActiveVersion, String initialValue, ReplicaController replicaController) {
+                            int newActiveVersion, int oldActiveVersion, String initialValue, ReplicaController<NodeIDType> replicaController) {
     this.name = name;
     this.oldActiveNameServers = oldActiveNameServers;
     this.newActiveNameServers = newActiveNameServers;
@@ -70,7 +70,7 @@ public class StartActiveSetTask<NodeIDType> extends TimerTask {
     try {
       boolean terminateTask = false;
       try {
-        ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
+        ReplicaControllerRecord<NodeIDType> rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(
                 replicaController.getDB(), name, startupActiveSetFields);
         if (replicaController.getOngoingStartActiveRequests().get(requestID) == null){
           // normally, this task will be the terminated via this branch of code..
@@ -85,7 +85,7 @@ public class StartActiveSetTask<NodeIDType> extends TimerTask {
           GNS.getLogger().info(" Actives got accepted and replaced by new actives. Quitting. ");
         } else {
           // send request to a new active replica
-          NodeIDType selectedActive = (NodeIDType) replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
+          NodeIDType selectedActive = replicaController.getGnsNodeConfig().getClosestServer(newActiveNameServers,
                   newActivesQueried);
           if (selectedActive == null) {
             terminateTask = true;
@@ -94,7 +94,7 @@ public class StartActiveSetTask<NodeIDType> extends TimerTask {
           }
           else {
             newActivesQueried.add(selectedActive);
-            NewActiveSetStartupPacket packet = new NewActiveSetStartupPacket(name, replicaController.getNodeID(),
+            NewActiveSetStartupPacket<NodeIDType> packet = new NewActiveSetStartupPacket<NodeIDType>(name, replicaController.getNodeID(),
                     selectedActive, newActiveNameServers, oldActiveNameServers,
                     (short)oldActiveVersion, (short)newActiveVersion, PacketType.NEW_ACTIVE_START, initialValue, false);
             packet.setUniqueID(requestID);

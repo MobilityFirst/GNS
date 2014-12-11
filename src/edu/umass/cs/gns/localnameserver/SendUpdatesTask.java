@@ -45,7 +45,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private int requestActivesCount = -1;
   private final ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler, UpdatePacket updatePacket) {
+  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler, UpdatePacket<NodeIDType> updatePacket) {
     // based on request info.
     this.lnsReqID = lnsReqID;
     this.handler = handler;
@@ -156,14 +156,14 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private NodeIDType selectNS(CacheEntry<NodeIDType> cacheEntry) {
     NodeIDType nameServerID;
     if (handler.getParameters().isLoadDependentRedirection()) {
-      nameServerID = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
+      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
     } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
-//      nameServerID = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
+//      nameServerID = BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
 //              cacheEntry.getActiveNameServers(), activesQueried);
       throw new UnsupportedOperationException("Not supported yet.");
     } else {
-      nameServerID = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
+      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
     }
     return nameServerID;

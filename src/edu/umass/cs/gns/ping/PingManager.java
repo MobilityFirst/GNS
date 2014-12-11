@@ -83,10 +83,10 @@ public class PingManager<NodeIDType> implements Shutdownable {
             if (debug) {
               GNS.getLogger().fine("From " + nodeId.toString() + " to " + id + " RTT = " + rtt);
             }
-            pingTable.put((NodeIDType) id, windowSlot, rtt);
+            pingTable.put(id, windowSlot, rtt);
             //pingTable[id][windowSlot] = rtt;
             // update the configuration file info with the current average... the reason we're here
-            gnsNodeConfig.updatePingLatency(id, nodeAverage((NodeIDType) id));
+            gnsNodeConfig.updatePingLatency(id, nodeAverage(id));
           }
         } catch (PortUnreachableException e) {
           GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
@@ -144,13 +144,13 @@ public class PingManager<NodeIDType> implements Shutdownable {
       result.append(String.format("%4s", otherNode));
       if (!otherNode.equals(node)) {
         result.append(" = ");
-        result.append(String.format("%d", nodeAverage((NodeIDType) otherNode)));
+        result.append(String.format("%d", nodeAverage(otherNode)));
         result.append(" : ");
         // not print out all the samples... just do it in array order 
         // maybe do it in time order someday if we want to be cute
         for (int j = 0; j < WINDOWSIZE; j++) {
-          if (pingTable.get((NodeIDType) otherNode, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
-            result.append(String.format("%3d", pingTable.get((NodeIDType) otherNode, j)));
+          if (pingTable.get(otherNode, j) != GNSNodeConfig.INVALID_PING_LATENCY) {
+            result.append(String.format("%3d", pingTable.get(otherNode, j)));
           } else {
             result.append("  X");
           }

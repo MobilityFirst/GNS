@@ -54,7 +54,7 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
     try {
       JSONObject json = new JSONObject(value);
       if (Packet.getPacketType(json).equals(Packet.PacketType.OLD_ACTIVE_STOP)) {
-        OldActiveSetStopPacket stopPkt = new OldActiveSetStopPacket(json);
+        OldActiveSetStopPacket stopPkt = new OldActiveSetStopPacket(json, activeReplica.getGnsNodeConfig());
         if (Config.debuggingEnabled) {
           GNS.getLogger().fine("Executing stop request: " + value);
         }
@@ -71,7 +71,7 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
         }
         if (executed) {
           try {
-            activeReplica.stopProcessed(new OldActiveSetStopPacket(new JSONObject(value)));
+            activeReplica.stopProcessed(new OldActiveSetStopPacket(new JSONObject(value), activeReplica.getGnsNodeConfig()));
           } catch (JSONException e) {
             e.printStackTrace();
           }

@@ -21,7 +21,11 @@ public class IntegerMap<NodeIDType> {
 	private HashMap<Integer, NodeIDType> nodeMap =
 			new HashMap<Integer, NodeIDType>();
 
-	// put(NodeIDType) maps NodeIDType to int and stores the mapping
+	/**
+         * Maps NodeIDType to int and stores the mapping
+         * @param node
+         * @return 
+         */
 	public int put(NodeIDType node) {
 		assert (node != null);
 		int id = getID(node);

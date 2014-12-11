@@ -50,6 +50,7 @@ public class StatusPacket<NodeIDType> extends BasicPacket {
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
+  @SuppressWarnings("unchecked")
   public StatusPacket(JSONObject json) throws JSONException, ParseException {
     if (Packet.getPacketType(json) != Packet.PacketType.STATUS) {
       Exception e = new Exception("StatusPacket: wrong packet type " + Packet.getPacketType(json));

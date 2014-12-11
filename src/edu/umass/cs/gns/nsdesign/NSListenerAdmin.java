@@ -118,7 +118,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
 
           case DUMP_REQUEST:
 
-            DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON);
+            DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON, gnsNodeConfig);
 
             dumpRequestPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
 

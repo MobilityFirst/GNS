@@ -100,7 +100,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
     try {
       switch (Packet.getPacketType(incomingJSON)) {
         case DUMP_REQUEST:
-          DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON);
+          DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON, handler.getGnsNodeConfig());
           if (dumpRequestPacket.getPrimaryNameServer() == null) {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
@@ -114,9 +114,9 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
           } else {
             // INCOMING - send it out to original requester
-            DumpRequestPacket incomingPacket = new DumpRequestPacket(incomingJSON);
+            DumpRequestPacket incomingPacket = new DumpRequestPacket(incomingJSON, handler.getGnsNodeConfig());
             int incomingId = incomingPacket.getId();
-            Admintercessor.handleIncomingDumpResponsePackets(incomingJSON);
+            Admintercessor.handleIncomingDumpResponsePackets(incomingJSON, handler);
             GNS.getLogger().fine("ListenerAdmin: Relayed response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());
             int remaining = replicationMap.get(incomingId);
             remaining = remaining - 1;
@@ -126,7 +126,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               GNS.getLogger().fine("ListenerAdmin: Saw last response for " + incomingId);
               replicationMap.remove(incomingId);
               SentinalPacket sentinelPacket = new SentinalPacket(incomingId);
-              Admintercessor.handleIncomingDumpResponsePackets(sentinelPacket.toJSONObject());
+              Admintercessor.handleIncomingDumpResponsePackets(sentinelPacket.toJSONObject(), handler);
             }
           }
           break;

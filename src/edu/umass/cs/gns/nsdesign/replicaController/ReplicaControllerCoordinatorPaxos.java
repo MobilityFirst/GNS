@@ -98,7 +98,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
           break;
         case NEW_ACTIVE_PROPOSE:
-          NewActiveProposalPacket<NodeIdType> activePropose = new NewActiveProposalPacket<NodeIdType>(request);
+          NewActiveProposalPacket<NodeIdType> activePropose = new NewActiveProposalPacket<NodeIdType>(request , nodeConfig);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), activePropose.toString());
           break;
         case GROUP_CHANGE_COMPLETE:

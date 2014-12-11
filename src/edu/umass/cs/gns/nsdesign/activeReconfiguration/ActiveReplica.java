@@ -108,10 +108,10 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
           GroupChange.handlePrevValueResponse(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case OLD_ACTIVE_STOP:
-          GroupChange.handleOldActiveStopFromReplicaController(new OldActiveSetStopPacket(json), this);
+          GroupChange.handleOldActiveStopFromReplicaController(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case DELETE_OLD_ACTIVE_STATE:
-          GroupChange.deleteOldActiveState(new OldActiveSetStopPacket(json), this);
+          GroupChange.deleteOldActiveState(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
       }
     } catch (JSONException e) {

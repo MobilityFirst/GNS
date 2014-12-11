@@ -33,16 +33,16 @@ public class DefaultPaxosInterface<NodeIDType> implements Replicable {
   /**
    * Transport object. It is needed to send responses to client.
    */
-  InterfaceJSONNIOTransport nioServer;
+  InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
 
-  public DefaultPaxosInterface(NodeIDType nodeID, InterfaceJSONNIOTransport nioServer) {
+  public DefaultPaxosInterface(NodeIDType nodeID, InterfaceJSONNIOTransport<NodeIDType> nioServer) {
     this.nodeID = nodeID;
     this.nioServer = nioServer;
   }
 
 //  @Override
-  public void handlePaxosDecision(String paxosID, RequestPacket requestPacket, boolean recovery) {
+  public void handlePaxosDecision(String paxosID, RequestPacket<NodeIDType> requestPacket, boolean recovery) {
     // check
     if (nodeID.equals(RESPONDING_NODE))
       try {

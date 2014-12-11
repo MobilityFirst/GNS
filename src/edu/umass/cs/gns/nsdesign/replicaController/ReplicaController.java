@@ -46,7 +46,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   /**
    * nio server
    */
-  private final InterfaceJSONNIOTransport nioServer;
+  private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
   /**
    * executor service for handling timer tasks
@@ -68,7 +68,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   private final ConcurrentHashMap<NodeIDType, Double> nsRequestRates = new ConcurrentHashMap<>();
 
   /** Algorithm for replicating name records.*/
-  private ReplicationFrameworkInterface replicationFrameworkInterface;
+  private ReplicationFrameworkInterface<NodeIDType> replicationFrameworkInterface;
 
   /**
    * constructor object
@@ -104,7 +104,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     return replicaControllerDB;
   }
 
-  public InterfaceJSONNIOTransport getNioServer() {
+  public InterfaceJSONNIOTransport<NodeIDType> getNioServer() {
     return nioServer;
   }
 
@@ -273,7 +273,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
           Remove.executeMarkRecordForRemoval(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
           break;
         case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket<NodeIDType>(json), this, recovery);
+          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
           break;
         case RC_REMOVE:
           Remove.executeRemoveRecord(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
@@ -281,10 +281,10 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
 
         // group change
         case NEW_ACTIVE_PROPOSE:
-          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket<NodeIDType>(json), this, recovery);
+          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
           break;
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
-          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket<NodeIDType>(json), this);
+          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
           GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);

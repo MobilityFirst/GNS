@@ -76,6 +76,7 @@ public class TrafficStatusPacket<NodeIDType> extends BasicPacket {
    * @throws org.json.JSONException
    *
    */
+  @SuppressWarnings("unchecked")
   public TrafficStatusPacket(JSONObject json) throws JSONException, ParseException {
     if (Packet.getPacketType(json) != PacketType.TRAFFIC_STATUS) {
       Exception e = new Exception("TrafficStatusPacket: wrong packet type " + Packet.getPacketType(json));

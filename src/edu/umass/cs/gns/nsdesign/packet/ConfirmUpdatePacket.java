@@ -90,14 +90,14 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
     this.responseCode = code;
   }
 
-  public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_ADD, (NodeIDType) packet.getSourceId(),
+  public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket<NodeIDType> packet) {
+    this(Packet.PacketType.CONFIRM_ADD, packet.getSourceId(),
             packet.getRequestID(), packet.getLNSRequestID(), code);
 
   }
 
-  public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket packet) {
-    this(Packet.PacketType.CONFIRM_REMOVE, (NodeIDType) packet.getSourceId(),
+  public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket<NodeIDType> packet) {
+    this(Packet.PacketType.CONFIRM_REMOVE, packet.getSourceId(),
             packet.getRequestID(), packet.getLNSRequestID(), code);
   }
 
@@ -110,7 +110,6 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
   public ConfirmUpdatePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.returnTo = json.has(RETURNTO) ? unstringer.valueOf(json.getString(RETURNTO)) : null;
-    //this.returnTo = json.has(RETURNTO) ? (NodeIDType) json.get(RETURNTO) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy

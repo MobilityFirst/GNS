@@ -25,7 +25,7 @@ import java.util.TimerTask;
  * Date: 11/14/13
  * Time: 9:24 AM
  */
-public class WriteActiveNameServersRunningTask extends TimerTask {
+public class WriteActiveNameServersRunningTask<NodeIDType> extends TimerTask {
 
   /** Name for which group change completed */
   private String name;
@@ -33,7 +33,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
   /** Version number of the current active replica set.*/
   private int version;
 
-  private ReplicaController replicaController;
+  private ReplicaController<NodeIDType> replicaController;
 
   /** Number of times request has been re-proposed.*/
   private int numAttempts = 0;
@@ -41,7 +41,7 @@ public class WriteActiveNameServersRunningTask extends TimerTask {
   /** Max number of attempts.*/
   private int MAX_RETRY = 10;
 
-  public WriteActiveNameServersRunningTask(String name, int version, ReplicaController replicaController) {
+  public WriteActiveNameServersRunningTask(String name, int version, ReplicaController<NodeIDType> replicaController) {
     this.name = name;
     this.version = version;
     int timeout = Config.failureDetectionTimeoutSec;

@@ -7,7 +7,6 @@ package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
@@ -360,12 +359,12 @@ public class Admintercessor {
    * 
    * @param json
    */
-  public static void handleIncomingDumpResponsePackets(JSONObject json) {
+  public static void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       switch (getPacketType(json)) {
         case DUMP_REQUEST:
           try {
-            DumpRequestPacket dumpResponse = new DumpRequestPacket(json);
+            DumpRequestPacket dumpResponse = new DumpRequestPacket(json, handler.getGnsNodeConfig());
             int id = dumpResponse.getId();
             // grab or make a new recordsMap
             Map<Object, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);

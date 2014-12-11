@@ -1,10 +1,9 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -20,14 +19,9 @@ import java.util.Set;
 public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddress {
 
   private final static String NAME = "name";
-
   private final static String PROPOSING_NODE = "propNode";
-
   private final static String NEW_ACTIVES = "actives";
-
   private final static String VERSION = "version";
-
-  //private final static String LNS_ID = "lns_id"; // this field is used during testing only
 
   /**
    * name for which the new actives are being proposed
@@ -48,8 +42,6 @@ public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddre
    * Verion number of this new set of active name servers.
    */
   int version;
-//
-//  private int lnsId = -1;
 
   /**
    * Constructor method
@@ -68,25 +60,13 @@ public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddre
     this.version = version;
   }
 
-  public NewActiveProposalPacket(JSONObject json) throws JSONException {
+  public NewActiveProposalPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);
-
-    this.proposingNode = (NodeIDType)json.get(PROPOSING_NODE);
-
-    String actives = json.getString(NEW_ACTIVES);
-
-    this.newActives = new HashSet<NodeIDType>();
-
-    String[] activeSplit = actives.split(":");
-
-    for (String x : activeSplit) {
-      newActives.add((NodeIDType) x);
-    }
-
+    this.proposingNode = unstringer.valueOf(json.getString(PROPOSING_NODE));
+    this.newActives = unstringer.getValuesFromJSONArray(json.getJSONArray(NEW_ACTIVES));
     this.version = json.getInt(VERSION);
-    //this.lnsId = json.getInt(LNS_ID);
   }
 
   /**
@@ -102,19 +82,7 @@ public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddre
     super.addToJSONObject(json);
     json.put(NAME, name);
     json.put(PROPOSING_NODE, proposingNode);
-
-    // convert array to string
-    StringBuilder sb = new StringBuilder();
-    for (NodeIDType x : newActives) {
-      if (sb.length() == 0) {
-        sb.append(x.toString());
-      } else {
-        sb.append(":");
-        sb.append(x.toString());
-      }
-    }
-    String actives = sb.toString();
-    json.put(NEW_ACTIVES, actives);
+    json.put(NEW_ACTIVES, newActives);
     json.put(VERSION, version);
     //json.put(LNS_ID, lnsId);
 
@@ -137,11 +105,4 @@ public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddre
     return version;
   }
 
-//  public int getLnsId() {
-//    return lnsId;
-//  }
-//
-//  public void setLnsId(int lnsId) {
-//    this.lnsId = lnsId;
-//  }
 }

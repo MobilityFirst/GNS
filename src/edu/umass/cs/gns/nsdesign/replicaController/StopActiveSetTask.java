@@ -38,7 +38,7 @@ public class StopActiveSetTask<NodeIDType> extends TimerTask {
   private final int oldVersion;
   private final int requestID;
   private final PacketType packetType;
-  private final ReplicaController rc;
+  private final ReplicaController<NodeIDType> rc;
 
   /**
    * Create a StopActiveSetTask.
@@ -51,7 +51,7 @@ public class StopActiveSetTask<NodeIDType> extends TimerTask {
    * @param rc
    */
   public StopActiveSetTask(String name, Set<NodeIDType> oldActiveNameServers, int oldVersion, PacketType packetType,
-                           BasicPacket clientPacket, ReplicaController rc) {
+                           BasicPacket clientPacket, ReplicaController<NodeIDType> rc) {
     this.name = name;
     this.oldActiveNameServers = oldActiveNameServers;
     this.oldActivesQueried = new HashSet<NodeIDType>();
@@ -84,7 +84,7 @@ public class StopActiveSetTask<NodeIDType> extends TimerTask {
       GNS.getLogger().fine("Old active name servers stopped. Version: " + oldVersion + " Old Actives : "
               + oldActiveNameServers);
     } else {
-      NodeIDType selectedOldActive = (NodeIDType) rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
+      NodeIDType selectedOldActive = rc.getGnsNodeConfig().getClosestServer(oldActiveNameServers, oldActivesQueried);
       if (selectedOldActive == null) {
         rc.getOngoingStopActiveRequests().remove(this.requestID);
         GNS.getLogger().severe("Exception ERROR: Old Actives not stopped and no more old active left to query. "
@@ -93,7 +93,7 @@ public class StopActiveSetTask<NodeIDType> extends TimerTask {
       } else {
         oldActivesQueried.add(selectedOldActive);
         GNS.getLogger().fine(" Old Active Name Server Selected to Query: " + selectedOldActive);
-        OldActiveSetStopPacket packet = new OldActiveSetStopPacket(name, requestID, rc.getNodeID(), selectedOldActive,
+        OldActiveSetStopPacket<NodeIDType> packet = new OldActiveSetStopPacket<NodeIDType>(name, requestID, rc.getNodeID(), selectedOldActive,
                 (short)oldVersion, packetType);
         GNS.getLogger().fine(" Old active stop Sent Packet: " + packet);
         try {

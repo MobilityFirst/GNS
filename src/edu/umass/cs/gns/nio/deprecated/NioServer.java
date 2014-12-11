@@ -133,7 +133,7 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
             if (pendingChangeByNode.containsKey(nodeId) && pendingChangeByNode.get(nodeId)) {
               this.pendingChanges.add(new ChangeRequest(connectedIDs.get(nodeId), ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
               //this.pendingChanges.add(new ChangeRequest(connectedIDs[i], ChangeRequest.CHANGEOPS, SelectionKey.OP_WRITE));
-              pendingChangeByNode.put((NodeIDType) nodeId, false);
+              pendingChangeByNode.put(nodeId, false);
             }
           }
 //          for (int i = 0; i < pendingChangeByNode.length; i++) {

@@ -56,7 +56,7 @@ public class DummyGnsCoordinatorUnreplicated<NodeIDType> extends ActiveReplicaCo
           break;
         case ACTIVE_REMOVE: // stop request for removing a name record
         case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
-          OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket<NodeIDType>(request);
+          OldActiveSetStopPacket stopPacket1 = new OldActiveSetStopPacket<NodeIDType>(request, gnsNodeConfig);
           Short version = nameAndGroupVersion.get(stopPacket1.getName());
           if (version == null || version != stopPacket1.getVersion()) {
             noCoordinatorState = true;

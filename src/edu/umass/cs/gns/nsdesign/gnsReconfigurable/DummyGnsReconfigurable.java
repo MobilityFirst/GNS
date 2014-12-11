@@ -114,7 +114,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
           // ha ha do nothing
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          executeRemoveLocal(new OldActiveSetStopPacket<NodeIDType>(json));
+          executeRemoveLocal(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig));
           break;
         // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
         case CONFIRM_UPDATE:
@@ -138,7 +138,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
       // the active node who received this node, sends confirmation to primary
       // confirm to primary
       oldActiveStopPacket.changePacketTypeToActiveRemoved();
-      nioServer.sendToID((NodeIDType) oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
+      nioServer.sendToID(oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
       if (Config.debuggingEnabled) GNS.getLogger().fine("Active removed: Name Record updated. Sent confirmation to replica " +
               "controller. Packet = " + oldActiveStopPacket);
     } else {
@@ -156,7 +156,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
     } else {
       if (updatePacket.getNameServerID().equals(nodeID)) {
         ConfirmUpdatePacket<NodeIDType> confirmPacket = new ConfirmUpdatePacket<NodeIDType>(Packet.PacketType.CONFIRM_UPDATE,
-                (NodeIDType) updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
+                updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
                 NSResponseCode.NO_ERROR);
         if (Config.debuggingEnabled)
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
