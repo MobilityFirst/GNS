@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -75,8 +76,9 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
    * ***********************************************************
    * Constructs new ActiveNameServerPacket with the give parameter.
    *
-   * @param localNameserver Local name server sending the request
+   * @param localNameServer
    * @param name Host/domain/device name
+   * @param recordKey
    ***********************************************************
    */
   public ActiveNameServerInfoPacket(int localNameServer, String name, String recordKey) {
@@ -95,7 +97,7 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
    * @throws org.json.JSONException
    ***********************************************************
    */
-  public ActiveNameServerInfoPacket(JSONObject json) throws JSONException {
+  public ActiveNameServerInfoPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.ACTIVE_NAMESERVER_INFO) {
       Exception e = new Exception("NewReplicaPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
@@ -107,7 +109,8 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
     this.localNameServer = json.getInt(LOCAL_NAMESERVER);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
-    this.activeNameServers = json.has(ACTIVE_NAMESERVERS) ? Util.stringToSetOfNodeId(json.getString(NAME)) : null;
+    this.activeNameServers = json.has(ACTIVE_NAMESERVERS) ? 
+            unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
   }
 
   /**
@@ -129,71 +132,10 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
     if (activeNameServers != null) {
-      json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(activeNameServers));
+      json.put(ACTIVE_NAMESERVERS, activeNameServers);
     }
 
     return json;
-  }
-
-  /**
-   * **********************************************************
-   * Converts a JSONArray to an Set of Integers
-   *
-   * @param json JSONArray
-   * @return Set<Integer> with the content of JSONArray.
-   * @throws org.json.JSONException
-   **********************************************************
-   */
-  private Set<Integer> toSetInteger(JSONArray json) throws JSONException {
-    Set<Integer> set = new HashSet<Integer>();
-
-    if (json == null) {
-      return set;
-    }
-
-    for (int i = 0; i < json.length(); i++) {
-      set.add(new Integer(json.getString(i)));
-    }
-
-    return set;
-  }
-
-  /**
-   * Test *
-   */
-  public static void main(String[] args) throws Exception {
-    long t1 = System.currentTimeMillis();
-    ActiveNameServerInfoPacket pkt = new ActiveNameServerInfoPacket(13, "h.com", "EdgeRecord");	//0ms
-    long t2 = System.currentTimeMillis();
-    JSONObject json = pkt.toJSONObject();		//3ms
-    long t3 = System.currentTimeMillis();
-    String jsonString = json.toString();		//2ms
-    long t31 = System.currentTimeMillis();
-    byte[] bytearray = jsonString.getBytes();	//0ms
-    long t4 = System.currentTimeMillis();
-    jsonString = new String(bytearray);			//0ms
-    long t41 = System.currentTimeMillis();
-    json = new JSONObject(jsonString);			//2ms
-    long t42 = System.currentTimeMillis();
-    pkt = new ActiveNameServerInfoPacket(json);	//0ms
-    long t43 = System.currentTimeMillis();
-
-    System.out.println("pkt:" + (t2 - t1));
-    System.out.println("json:" + (t3 - t2));
-    System.out.println("jsonString:" + (t31 - t3));
-    System.out.println("bytearray:" + (t4 - t31));
-    System.out.println("jsonString:" + (t41 - t4));
-    System.out.println("json:" + (t42 - t41));
-    System.out.println("pkt:" + (t43 - t42));
-
-    Set active = new HashSet();
-    active.add("1");
-    active.add("2");
-    active.add("3");
-    pkt.activeNameServers = active;
-    System.out.println(pkt.toJSONObject());
-    pkt = new ActiveNameServerInfoPacket(pkt.toJSONObject());
-    System.out.println(pkt.toString());
   }
 
   /**

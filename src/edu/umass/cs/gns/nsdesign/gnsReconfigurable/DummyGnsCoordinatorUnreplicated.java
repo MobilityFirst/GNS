@@ -72,7 +72,7 @@ public class DummyGnsCoordinatorUnreplicated<NodeIDType> extends ActiveReplicaCo
           nameAndGroupVersion.put(recordPacket.getName(), Config.FIRST_VERSION);
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-          NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request);
+          NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request, gnsNodeConfig);
           nameAndGroupVersion.put(newActivePacket.getName(), newActivePacket.getNewActiveVersion());
           request = null;
           break;

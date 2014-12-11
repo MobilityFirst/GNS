@@ -93,19 +93,19 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
       switch (type) {
         // replica controller to active replica
         case NEW_ACTIVE_START:
-          GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket(json), this);
+          GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_FORWARD:
-          GroupChange.handleNewActiveStartForward(new NewActiveSetStartupPacket(json), this);
+          GroupChange.handleNewActiveStartForward(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_RESPONSE:
-          GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket(json), this);
+          GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
-          GroupChange.handlePrevValueRequest(new NewActiveSetStartupPacket(json), this);
+          GroupChange.handlePrevValueRequest(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-          GroupChange.handlePrevValueResponse(new NewActiveSetStartupPacket(json), this);
+          GroupChange.handlePrevValueResponse(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
           break;
         case OLD_ACTIVE_STOP:
           GroupChange.handleOldActiveStopFromReplicaController(new OldActiveSetStopPacket(json), this);

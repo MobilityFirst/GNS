@@ -38,7 +38,7 @@ public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
     // first, store the original packet in hash map
     this.requestID = activeReplica.getOngoingStateTransferRequests().put(packet);
     // next, create a copy as which we will modify
-    this.packet = new NewActiveSetStartupPacket(packet.toJSONObject());
+    this.packet = new NewActiveSetStartupPacket(packet.toJSONObject(), activeReplica.getGnsNodeConfig());
     this.packet.setUniqueID(this.requestID);  // ID assigned by this active replica.
     this.packet.changePacketTypeToPreviousValueRequest();
     this.packet.changeSendingActive(activeReplica.getNodeID());

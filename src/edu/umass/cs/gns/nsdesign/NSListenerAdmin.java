@@ -95,7 +95,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
 
           case ACTIVE_NAMESERVER_INFO:
 
-            ActiveNameServerInfoPacket activeNSInfoPacket = new ActiveNameServerInfoPacket(incomingJSON);
+            ActiveNameServerInfoPacket activeNSInfoPacket = new ActiveNameServerInfoPacket(incomingJSON, gnsNodeConfig);
 
             GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
 

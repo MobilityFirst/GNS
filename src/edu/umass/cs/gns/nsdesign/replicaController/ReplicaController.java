@@ -265,7 +265,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
 
         // lookupMultipleSystemFields actives for name
         case REQUEST_ACTIVES:
-          LookupActives.executeLookupActives(new RequestActivesPacket(json), this, recovery);
+          LookupActives.executeLookupActives(new RequestActivesPacket(json, gnsNodeConfig), this, recovery);
           break;
 
         // remove
@@ -287,7 +287,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
           GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
           break;
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
-          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json), this);
+          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
           break;
         case GROUP_CHANGE_COMPLETE:
           GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, recovery);

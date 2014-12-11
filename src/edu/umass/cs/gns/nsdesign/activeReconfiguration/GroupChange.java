@@ -129,7 +129,7 @@ public class GroupChange {
       return;
     }
     // create name server
-    NewActiveStartInfo activeStartInfo = new NewActiveStartInfo(new NewActiveSetStartupPacket(packet.toJSONObject()));
+    NewActiveStartInfo activeStartInfo = new NewActiveStartInfo(new NewActiveSetStartupPacket(packet.toJSONObject(), activeReplica.getGnsNodeConfig()));
     int requestID = activeReplica.getActiveStartupInProgress().put(activeStartInfo);
     // send to all nodes, except self
     packet.changePacketTypeToForward();

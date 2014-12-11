@@ -112,7 +112,7 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
           // active replica has already put initial state for the name in DB. we only need to create paxos instance.
-          NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request);
+          NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request, nodeConfig);
           paxosManager.createPaxosInstance(newActivePacket.getName(), (short) newActivePacket.getNewActiveVersion(),
                   newActivePacket.getNewActiveNameServers(), paxosInterface);
           break;
