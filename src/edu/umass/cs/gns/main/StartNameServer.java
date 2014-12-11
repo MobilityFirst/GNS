@@ -109,6 +109,7 @@ public class StartNameServer {
    * @param args Command line arguments
    * @throws ParseException
    */
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws IOException {
     HashMap<String, String> allValues = getParametersAsHashMap(args);
     // initialize config options.

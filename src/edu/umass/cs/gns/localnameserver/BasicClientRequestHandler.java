@@ -533,7 +533,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
     
   public void handleNameServerLoadPacket(JSONObject json) throws JSONException {
-    NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json);
+    NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
     nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
   

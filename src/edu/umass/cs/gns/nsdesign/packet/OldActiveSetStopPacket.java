@@ -131,9 +131,4 @@ public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket {
     setType(PacketType.ACTIVE_REMOVE_CONFIRM);
   }
 
-  /**
-   * This method is called before proposing the STOP request to active replicas.
-   * Active replica changes the packet type to distinguish proposed request from the
-   * original packet it received from primary.
-   */
 }

@@ -43,7 +43,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
   private PingManager<NodeIDType> pingManager;
 
   public DummyGnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig,
-                           InterfaceJSONNIOTransport nioServer) {
+                           InterfaceJSONNIOTransport<NodeIDType> nioServer) {
     GNS.getLogger().info("Starting DUMMY gns .... NodeID: " + nodeID);
     this.nodeID = nodeID;
 
@@ -53,7 +53,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
 
     if (!Config.emulatePingLatencies) {
       // when emulating ping latencies we do not
-      this.pingManager = new PingManager(nodeID, gnsNodeConfig);
+      this.pingManager = new PingManager<NodeIDType>(nodeID, gnsNodeConfig);
       this.pingManager.startPinging();
     }
   }
@@ -133,7 +133,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
     return true;
   }
 
-  private void executeRemoveLocal(OldActiveSetStopPacket oldActiveStopPacket) throws JSONException, IOException {
+  private void executeRemoveLocal(OldActiveSetStopPacket<NodeIDType> oldActiveStopPacket) throws JSONException, IOException {
     if (oldActiveStopPacket.getActiveReceiver().equals(nodeID)) {
       // the active node who received this node, sends confirmation to primary
       // confirm to primary
@@ -147,7 +147,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
     }
   }
 
-  private void executeUpdateLocal(UpdatePacket updatePacket, boolean noCoordinationState) throws JSONException, IOException {
+  private void executeUpdateLocal(UpdatePacket<NodeIDType> updatePacket, boolean noCoordinationState) throws JSONException, IOException {
     JSONObject returnJson = null;
     if (noCoordinationState) {
       if (Config.debuggingEnabled) GNS.getLogger().fine("Sending invalid active error to client: " + updatePacket);

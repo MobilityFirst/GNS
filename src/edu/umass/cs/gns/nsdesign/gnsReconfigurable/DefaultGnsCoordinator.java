@@ -41,7 +41,7 @@ public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator 
         // no coordination needed for any request.
 
         case UPDATE: // set a field in update packet because LNS may not set this field correctly.
-          UpdatePacket update = new UpdatePacket<NodeIDType>(request, gnsNodeConfig);
+          UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(request, gnsNodeConfig);
           update.setNameServerID(nodeID);
           replicable.handleDecision(null, update.toString(), false);
           break;

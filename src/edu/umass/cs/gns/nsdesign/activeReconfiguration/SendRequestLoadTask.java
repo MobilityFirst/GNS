@@ -23,7 +23,7 @@ public class SendRequestLoadTask<NodeIDType> extends TimerTask{
   private static final double SEND_RATE = 1.0;
 
   private final ActiveReplicaApp activeApp;
-  private final ActiveReplica activeReplica;
+  private final ActiveReplica<NodeIDType, ?> activeReplica;
 
   // number of requests
   private int prevReqCount = 0;
@@ -59,11 +59,11 @@ public class SendRequestLoadTask<NodeIDType> extends TimerTask{
       double reqRate = (curReqCount - prevReqCount) * 1000.0 / (curTime - prevRunTime);
       GNS.getStatLogger().info("\tRequestRate\tnode\t" + activeReplica.getNodeID() + "\treqRate\t"
               + reqRate + "\t");
-      NameServerLoadPacket nsLoad = new NameServerLoadPacket(activeReplica.getNodeID(), null, reqRate);
+      NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(activeReplica.getNodeID(), null, reqRate);
 
       try {
         JSONObject sendJson = nsLoad.toJSONObject();
-        for (Object nsID: activeReplica.getGnsNodeConfig().getNodeIDs()) {
+        for (NodeIDType nsID: activeReplica.getGnsNodeConfig().getNodeIDs()) {
           try {
             activeReplica.getNioServer().sendToID(nsID, sendJson);
           } catch (IOException e) {

@@ -49,7 +49,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
 
   private ActiveReplicaCoordinator appCoordinator; // coordinates app's requests
 
-  private ActiveReplica<?, ?> activeReplica; // reconfiguration logic
+  private ActiveReplica<NodeIDType, ?> activeReplica; // reconfiguration logic
 
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
 
@@ -134,9 +134,9 @@ public class NameServer<NodeIDType> implements Shutdownable {
 
     // reInitialize GNS
     if (Config.dummyGNS) {
-      gnsReconfigurable = new DummyGnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport);
+      gnsReconfigurable = new DummyGnsReconfigurable<NodeIDType>(nodeID, gnsNodeConfig, tcpTransport);
     } else { // real GNS
-      gnsReconfigurable = new GnsReconfigurable(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
+      gnsReconfigurable = new GnsReconfigurable<NodeIDType>(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
     }
     GNS.getLogger().info(nodeID.toString() + " GNS initialized");
     // reInitialize active replica with the app
@@ -147,19 +147,19 @@ public class NameServer<NodeIDType> implements Shutdownable {
     appCoordinator = activeReplica.getCoordinator();
     GNS.getLogger().info(nodeID.toString() + " App (GNS) coordinator initialized");
 
-    replicaController = new ReplicaController(nodeID, gnsNodeConfig, tcpTransport,
+    replicaController = new ReplicaController<NodeIDType>(nodeID, gnsNodeConfig, tcpTransport,
             executorService, mongoRecords);
     GNS.getLogger().info(nodeID.toString() + " Replica controller initialized");
 
     if (Config.singleNS) {
-      replicaControllerCoordinator = new NoCoordinationReplicaControllerCoordinator(nodeID, gnsNodeConfig, replicaController);
+      replicaControllerCoordinator = new NoCoordinationReplicaControllerCoordinator<NodeIDType>(nodeID, gnsNodeConfig, replicaController);
     } else {
       PaxosConfig paxosConfig = new PaxosConfig();
       paxosConfig.setDebugMode(Config.debuggingEnabled);
       paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/replicaController");
       paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
       paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);
-      replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos(nodeID, tcpTransport,
+      replicaControllerCoordinator = new ReplicaControllerCoordinatorPaxos<NodeIDType>(nodeID, tcpTransport,
               gnsNodeConfig, replicaController, paxosConfig);
     }
     GNS.getLogger().info(nodeID.toString() + " Replica controller coordinator initialized");

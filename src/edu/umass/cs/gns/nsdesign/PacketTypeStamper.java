@@ -24,7 +24,7 @@ public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<
   private final InterfaceJSONNIOTransport<NodeIDType> nio;
   private final Packet.PacketType type;
 
-  public PacketTypeStamper(InterfaceJSONNIOTransport nio, Packet.PacketType type) {
+  public PacketTypeStamper(InterfaceJSONNIOTransport<NodeIDType> nio, Packet.PacketType type) {
     this.nio = nio;
     this.type = type;
   }
@@ -70,6 +70,7 @@ public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<
   /**
    * TEST CODE
    */
+  @SuppressWarnings("unchecked") 
   public static void main(String[] args) throws JSONException, IOException {
     System.out.println("Test if the send methods mark outgoing packets with correct packet types:");
     final Packet.PacketType type1 = Packet.PacketType.PAXOS_PACKET;

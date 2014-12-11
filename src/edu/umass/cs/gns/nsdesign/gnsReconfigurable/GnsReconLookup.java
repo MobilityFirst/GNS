@@ -22,6 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This class executes lookupJSONArray requests sent by an LNS to an active replica. If name servers are replicated,
@@ -79,7 +80,7 @@ public class GnsReconLookup {
       // First we do signature and ACL checks
       String guid = dnsPacket.getGuid();
       String field = dnsPacket.getKey();
-      ArrayList<String> fields = dnsPacket.getKeys();
+      List<String> fields = dnsPacket.getKeys();
       String reader = dnsPacket.getAccessor();
       String signature = dnsPacket.getSignature();
       String message = dnsPacket.getMessage();

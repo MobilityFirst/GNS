@@ -73,14 +73,14 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
 
     if (Config.singleNS && Config.dummyGNS) {  // coordinator for testing only
-      this.coordinator = new DummyGnsCoordinatorUnreplicated(nodeID, gnsNodeConfig, this.activeReplicaApp);
+      this.coordinator = new DummyGnsCoordinatorUnreplicated<NodeIDType>(nodeID, gnsNodeConfig, this.activeReplicaApp);
     } else if (Config.singleNS) {  // coordinator for testing only
-      this.coordinator = new DefaultGnsCoordinator(nodeID, gnsNodeConfig, this.activeReplicaApp);
+      this.coordinator = new DefaultGnsCoordinator<NodeIDType>(nodeID, gnsNodeConfig, this.activeReplicaApp);
     } else if(Config.eventualConsistency) {  // coordinator for testing only
-      this.coordinator = new GnsCoordinatorEventual(nodeID, nioServer, gnsNodeConfig,
+      this.coordinator = new GnsCoordinatorEventual<NodeIDType>(nodeID, nioServer, gnsNodeConfig,
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
     } else { // this is the actual coordinator
-      this.coordinator = new GnsCoordinatorPaxos(nodeID, nioServer, gnsNodeConfig,
+      this.coordinator = new GnsCoordinatorPaxos<NodeIDType>(nodeID, nioServer, gnsNodeConfig,
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
     }
 //    SendRequestLoadTask requestLoadTask = new SendRequestLoadTask(activeReplicaApp, this);
@@ -123,8 +123,9 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
 
   /**
    * The app will call this method after it has executed stop decision
+   * @param stopPacket
    */
-  public void stopProcessed(OldActiveSetStopPacket stopPacket) {
+  public void stopProcessed(OldActiveSetStopPacket<NodeIDType> stopPacket) {
     GroupChange.handleStopProcessed(stopPacket, this);
   }
 
@@ -137,7 +138,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     return nodeID;
   }
 
-  public InterfaceJSONNIOTransport getNioServer() {
+  public InterfaceJSONNIOTransport<NodeIDType> getNioServer() {
     return nioServer;
   }
 

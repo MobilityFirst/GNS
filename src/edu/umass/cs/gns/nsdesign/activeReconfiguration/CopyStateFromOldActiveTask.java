@@ -26,19 +26,19 @@ public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
 
   private final ActiveReplica<NodeIDType,?> activeReplica;
 
-  private final NewActiveSetStartupPacket packet;
+  private final NewActiveSetStartupPacket<NodeIDType> packet;
 
   private final Set<NodeIDType> oldActivesQueried;
 
   private final int requestID;
 
-  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket packet, ActiveReplica<NodeIDType,?> activeReplica) throws JSONException {
+  public CopyStateFromOldActiveTask(NewActiveSetStartupPacket<NodeIDType> packet, ActiveReplica<NodeIDType,?> activeReplica) throws JSONException {
     this.oldActivesQueried = new HashSet<>();
     this.activeReplica = activeReplica;
     // first, store the original packet in hash map
     this.requestID = activeReplica.getOngoingStateTransferRequests().put(packet);
     // next, create a copy as which we will modify
-    this.packet = new NewActiveSetStartupPacket(packet.toJSONObject(), activeReplica.getGnsNodeConfig());
+    this.packet = new NewActiveSetStartupPacket<NodeIDType>(packet.toJSONObject(), activeReplica.getGnsNodeConfig());
     this.packet.setUniqueID(this.requestID);  // ID assigned by this active replica.
     this.packet.changePacketTypeToPreviousValueRequest();
     this.packet.changeSendingActive(activeReplica.getNodeID());
@@ -83,7 +83,7 @@ public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
       }
 
       // select old active to send request to
-      NodeIDType oldActive = (NodeIDType) activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(), oldActivesQueried);
+      NodeIDType oldActive = activeReplica.getGnsNodeConfig().getClosestServer(packet.getOldActiveNameServers(), oldActivesQueried);
 
       if (oldActive == null) {
         // this will happen after all actives have been tried at least once.

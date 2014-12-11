@@ -39,10 +39,10 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
   // if true, reads are coordinated as well.
   private boolean readCoordination = false;
 
-  private InterfaceJSONNIOTransport nioTransport;
-  private InterfaceNodeConfig nodeConfig;
+  private InterfaceJSONNIOTransport<NodeIDType> nioTransport;
+  private InterfaceNodeConfig<NodeIDType> nodeConfig;
 
-  public GnsCoordinatorEventual(NodeIDType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public GnsCoordinatorEventual(NodeIDType nodeID, InterfaceJSONNIOTransport<NodeIDType> nioServer, InterfaceNodeConfig<NodeIDType> nodeConfig,
                                 Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
     this.nodeConfig = nodeConfig;
@@ -50,7 +50,7 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
     this.paxosManager = new PaxosManager<NodeIDType>(nodeID, nodeConfig,
-            new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
+            new PacketTypeStamper<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
   }
 
   /**
@@ -79,7 +79,7 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
           if (update.getNameServerID().equals(nodeID) && nodeIDs!= null) {
             for (NodeIDType x: nodeIDs) {
               if (!x.equals(nodeID))
-                nioTransport.sendToID(x,update.toJSONObject());
+                nioTransport.sendToID(x, update.toJSONObject());
             }
           }
           paxosInterface.handleDecision(update.getName(), update.toJSONObject().toString(), false);

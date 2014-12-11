@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,11 +18,11 @@ public class NameServerLoadPacket<NodeIDType> extends BasicPacket {
     this.requestingNodeID = requestingNodeID;
   }
 
-  public NameServerLoadPacket(JSONObject json) throws JSONException {
+  public NameServerLoadPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.type = PacketType.NAME_SERVER_LOAD;
-    this.reportingNodeID = (NodeIDType)json.get("reportingNodeID");
+    this.reportingNodeID = unstringer.valueOf(json.getString("reportingNodeID"));
     this.loadValue = json.getDouble("lV");
-    this.requestingNodeID = (NodeIDType)json.get("requestingNodeID");
+    this.requestingNodeID = unstringer.valueOf(json.getString("requestingNodeID"));
   }
 
   @Override

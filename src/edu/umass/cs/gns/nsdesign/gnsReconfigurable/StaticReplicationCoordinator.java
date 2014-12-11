@@ -53,12 +53,10 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
     this.paxosInterface = paxosInterface;
     this.readCoordination = readCoordination;
     paxosConfig.setConsistentHashCoordinatorOrder(true);
-    this.paxosManager = new PaxosManager(nodeID, nodeConfig,
-            new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
+    this.paxosManager = new PaxosManager<NodeIDType>(nodeID, nodeConfig,
+            new PacketTypeStamper<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
     createNodePaxosInstances();
   }
-
-
 
   private void createNodePaxosInstances() {
     HashMap<String, Set> groupIDsMembers = ConsistentHashing.getReplicaControllerGroupIDsForNode(nodeID);
@@ -85,14 +83,14 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
           UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(request, nodeConfig);
           update.setNameServerID(nodeID);
           Random r = new Random(update.getName().hashCode());
-          Set replicaControllers = ConsistentHashing.getReplicaControllerSet(update.getName());
+          Set<NodeIDType> replicaControllers = (Set<NodeIDType>) ConsistentHashing.getReplicaControllerSet(update.getName());
           int selectIndex = r.nextInt(GNS.numPrimaryReplicas);
           int count = 0;
           NodeIDType selectNode = null;
           //int selectNode = 0;
-          for (Object x: replicaControllers) {
+          for (NodeIDType x: replicaControllers) {
             if (count == selectIndex) {
-              selectNode = (NodeIDType) x;
+              selectNode = x;
               break;
             }
             count += 1;

@@ -20,21 +20,21 @@ import java.util.Set;
  *
  * Created by abhigyan on 6/17/14.
  */
-public class TestPaxosManager extends AbstractPaxosManager {
+public class TestPaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
-  private PaxosManager paxosManager;
+  private PaxosManager<NodeIDType> paxosManager;
 
-  public TestPaxosManager(PaxosManager paxosManager) {
+  public TestPaxosManager(PaxosManager<NodeIDType> paxosManager) {
     this.paxosManager = paxosManager;
   }
 
   @Override
-  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set nodeIDs, Replicable paxosInterface) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIDType> nodeIDs, Replicable paxosInterface) {
     return paxosManager.createPaxosInstance(paxosIDNoVersion, version, nodeIDs, paxosInterface);
   }
   
   @Override
-  public Set getPaxosNodeIDs(String paxosIDNoVersion) {
+  public Set<NodeIDType> getPaxosNodeIDs(String paxosIDNoVersion) {
     return paxosManager.getPaxosNodeIDs(paxosIDNoVersion);
   }
 

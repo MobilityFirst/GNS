@@ -318,7 +318,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   }
 
   private void updateNSLoad(JSONObject json) throws JSONException {
-    NameServerLoadPacket<NodeIDType> nsLoad  = new NameServerLoadPacket<NodeIDType>(json);
+    NameServerLoadPacket<NodeIDType> nsLoad  = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
     if (Config.debuggingEnabled) GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
             "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID()) +
             "\tNewNoad: " + nsLoad.getLoadValue() + "\t");

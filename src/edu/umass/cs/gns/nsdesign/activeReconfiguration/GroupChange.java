@@ -47,7 +47,7 @@ public class GroupChange {
 
   /********************   BEGIN: methods executed at old active replicas. *********************/
 
-  public static void handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica<?,?> replica)
+  public static void handleOldActiveStopFromReplicaController(OldActiveSetStopPacket stopPacket, ActiveReplica replica)
           throws JSONException{
     replica.getCoordinator().coordinateRequest(stopPacket.toJSONObject());
     // do the check and propose to replica controller.
@@ -56,7 +56,7 @@ public class GroupChange {
   /**
    * Send confirmation to replica controller that actives have stopped.
    */
-  public static void handleStopProcessed(OldActiveSetStopPacket stopPacket, ActiveReplica<?,?> activeReplica) {
+  public static void handleStopProcessed(OldActiveSetStopPacket stopPacket, ActiveReplica activeReplica) {
     try {
       // confirm to primary name server that this set of actives has stopped
       if (stopPacket.getActiveReceiver().equals(activeReplica.getNodeID())) {
@@ -80,7 +80,7 @@ public class GroupChange {
   /**
    * Responds to a request from a new active replica regarding transferring state for a name.
    */
-  public static void handlePrevValueRequest(NewActiveSetStartupPacket packet, ActiveReplica<?,?> activeReplica)
+  public static void handlePrevValueRequest(NewActiveSetStartupPacket packet, ActiveReplica activeReplica)
           throws JSONException, IOException {
     if (Config.debuggingEnabled) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_REQUEST at node " +
             activeReplica.getNodeID());
@@ -120,7 +120,7 @@ public class GroupChange {
    *  node informs all new active replicas (including itself) of their membership in the new set.
    *  This method also creates book-keeping state at active replica to records response from active replicas.
    */
-  public static void handleNewActiveStart(NewActiveSetStartupPacket packet, ActiveReplica<?,?> activeReplica)
+  public static void handleNewActiveStart(NewActiveSetStartupPacket packet, ActiveReplica activeReplica)
           throws JSONException, IOException{
 
     // sanity check: am I in set? otherwise quit.
@@ -151,7 +151,7 @@ public class GroupChange {
    * This active replica learns that it one of the new active replica, upon which it creates a task to copy
    * state from one of the old active replicas who have executed the stop request.
    */
-  public static void handleNewActiveStartForward(NewActiveSetStartupPacket packet, ActiveReplica<?,?> activeReplica)
+  public static void handleNewActiveStartForward(NewActiveSetStartupPacket packet, ActiveReplica activeReplica)
           throws JSONException, IOException {
 
     CopyStateFromOldActiveTask copyTask = new CopyStateFromOldActiveTask(packet, activeReplica);
@@ -164,7 +164,7 @@ public class GroupChange {
    * response is valid, this node becomes functional as a new active replica and confirms back to that active replica
    * who informed it of its membership in new group.
    */
-  public static void handlePrevValueResponse(NewActiveSetStartupPacket packet, ActiveReplica<?,?> activeReplica)
+  public static void handlePrevValueResponse(NewActiveSetStartupPacket packet, ActiveReplica activeReplica)
           throws JSONException, IOException{
     if (Config.debuggingEnabled) GNS.getLogger().info(" Received NEW_ACTIVE_START_PREV_VALUE_RESPONSE at node " + activeReplica.getNodeID());
     if (packet.getPreviousValueCorrect()) {
@@ -196,7 +196,7 @@ public class GroupChange {
    * received such messages from a majority of new replicas. If so, it confirms to the replica controller
    * that the new active replica set is functional.
    */
-  public static void handleNewActiveStartResponse(NewActiveSetStartupPacket packet, ActiveReplica<?,?> activeReplica)
+  public static void handleNewActiveStartResponse(NewActiveSetStartupPacket packet, ActiveReplica activeReplica)
           throws JSONException, IOException {
     NewActiveStartInfo info = (NewActiveStartInfo) activeReplica.getActiveStartupInProgress().get(packet.getUniqueID());
     if (Config.debuggingEnabled) GNS.getLogger().info("NEW_ACTIVE_START: received confirmation from node: " +
