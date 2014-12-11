@@ -124,7 +124,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
     String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
     written = this.sendUnderlying(isa, headeredMsg.getBytes())
             - (headeredMsg.length() - originalSize); // subtract header length
-    assert (written == originalSize);
+    assert (written < 0 || written == originalSize);
     return written;
   }
 
@@ -133,18 +133,20 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
    * a remote node, otherwise it hands over the message directly to the worker.
    */
   protected int sendToIDActual(NodeIDType destID, JSONObject jsonData)
-          throws IOException {
-    int written = 0;
-    int originalSize = jsonData.toString().length();
-    stampSenderInfo(jsonData);
-    if (destID.equals(this.myID)) {
-      written = sendLocal(jsonData) - (jsonData.toString().length() - originalSize);
-    } else {
-      String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-      written = (this.sendUnderlying(destID, headeredMsg.getBytes())
-              - (headeredMsg.length() - originalSize)); // subtract header length
-    }
-    return written;
+		  throws IOException {
+	  int written = 0;
+	  int originalSize = jsonData.toString().length();
+	  stampSenderInfo(jsonData);
+	  if (destID.equals(this.myID)) {
+		  sendLocal(jsonData); 
+		  written = originalSize; // local send just passes pointers
+	  } else {
+		  String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
+		  written = (this.sendUnderlying(destID, headeredMsg.getBytes())
+				  - (headeredMsg.length() - originalSize)); // subtract header length
+	  }
+	  assert(written < 0 || written == originalSize) : written + " != " + originalSize;
+	  return written;
   }
 
   public JSONNIOTransport<NodeIDType> enableStampSenderInfo() {
@@ -233,11 +235,31 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
 
   // fake send by directly passing to local worker
   private int sendLocal(JSONObject jsonData) {
-    ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
-    jsonArray.add(jsonData);
-    NIOInstrumenter.incrSent(); // instrumentation
-    ((JSONMessageExtractor) worker).processJSONMessages(jsonArray);
-    return jsonData.toString().length();
+	  /* We create a deep copy for local sends as 
+	   * otherwise it can end up getting modified
+	   * by the receiver end and cause the number
+	   * of bytes written to be not equal to those
+	   * sent for sends to receivers other than
+	   * the sender when the same message is being
+	   * sent to a set of nodes including self. 
+	   */
+	  try {
+		  jsonData = new JSONObject(jsonData.toString());
+	  } catch (JSONException e) {
+		  e.printStackTrace();
+		  return -1;
+	  }
+
+	  int length = jsonData.toString().length();
+	  ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
+	  jsonArray.add(jsonData);
+	  NIOInstrumenter.incrSent();
+	  ((JSONMessageExtractor) worker).processJSONMessages(jsonArray);
+	  /* Note: Can not return jsonData.toString().length() as it
+	   * may be changed at the receiving end. Local sends are 
+	   * just passing pointers, not actually using networking.
+	   */
+	  return length;
   }
 
   /**

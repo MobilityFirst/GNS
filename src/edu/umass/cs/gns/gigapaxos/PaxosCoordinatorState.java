@@ -120,8 +120,8 @@ public class PaxosCoordinatorState  {
 	private class ProposalStateAtCoordinator {
 		final PValuePacket pValuePacket;
 		final WaitforUtility waitfor;
-		ProposalStateAtCoordinator(int[] members, PValuePacket pValuePacket) {
-			this.pValuePacket = pValuePacket;
+		ProposalStateAtCoordinator(int[] members, PValuePacket pvalue) {
+			this.pValuePacket = new PValuePacket(new Ballot(myBallotNum, myBallotCoord), pvalue);//pvalue;
 			this.waitfor = new WaitforUtility(members);
 		}
 		public String toString() {return  this.pValuePacket + this.waitfor.toString();}
@@ -591,8 +591,8 @@ public class PaxosCoordinatorState  {
 		boolean updated = false;
 		for(int i=0; i<members.length; i++) {
 			if(members[i] == acceptReply.acceptor) {
-				if(this.nodeSlotNumbers[i] < acceptReply.committedSlot) {
-					this.nodeSlotNumbers[i] = acceptReply.committedSlot;
+				if(this.nodeSlotNumbers[i] < acceptReply.maxExecutedSlot) {
+					this.nodeSlotNumbers[i] = acceptReply.maxExecutedSlot;
 					updated = true;
 				}
 			}

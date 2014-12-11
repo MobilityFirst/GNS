@@ -465,7 +465,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		PrepareReplyPacket prepareReply = this.paxosState.handlePrepare(prepare, this.paxosManager.getMyID());  
 		if(prepareReply==null) return null; // can happen only if acceptor is stopped
 		if(prepare.isRecovery()) return null; // no need to get accepted pvalues from disk during recovery as networking is disabled anyway
-
+		
 		// we may also need to look into disk if ACCEPTED_PROPOSALS_ON_DISK is true
 		if(PaxosAcceptor.ACCEPTED_PROPOSALS_ON_DISK) {
 			prepareReply.accepted.putAll(this.paxosManager.getPaxosLogger().getLoggedAccepts(
@@ -498,7 +498,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		MessagingTask mtask=null;
 		ArrayList<ProposalPacket> preActiveProposals=null;
 		ArrayList<AcceptPacket> acceptList = null;
-
+		
 		if((preActiveProposals = this.coordinator.getPreActivesIfPreempted(prepareReply, this.groupMembers))!=null) {
 			log.info(this.getNodeState()+" ("+this.coordinator.getBallotStr()+ ") election PREEMPTED by " + prepareReply.ballot);
 			if(!preActiveProposals.isEmpty()) mtask = new MessagingTask(prepareReply.ballot.coordinatorID, 
@@ -522,7 +522,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept, this.getMyID()); 
 		if(ballot==null) {return null;}// can happen only if acceptor is stopped. 
 
-		this.garbageCollectAccepted(accept.majorityCommittedSlot); 
+		this.garbageCollectAccepted(accept.majorityExecutedSlot); 
 		if(accept.isRecovery()) return null; // recovery ACCEPTS do not need any reply
 
 		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.getMyID(), ballot, accept.slot, 
@@ -603,7 +603,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * 	
 	 */
 	private MessagingTask handleCommittedRequest(PValuePacket committed) {
-		RequestInstrumenter.received(committed, committed.getDecisionIssuer(), this.getMyID());
+		RequestInstrumenter.received(committed, committed.ballot.coordinatorID, this.getMyID());
 
 		// Log, extract from or add to acceptor, and execute the request at the app
 		if(!committed.isRecovery()) 
@@ -670,15 +670,14 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		// extract next in-order decision
 		while((inorderDecision = this.paxosState.putAndRemoveNextExecutable(loggedDecision))!=null) { 
 			if(DEBUG) log.info(this.getNodeState() + " in-order commit: "+inorderDecision); 
-			if(!inorderDecision.isRecovery() && (inorderDecision.ballot.coordinatorID==this.getMyID())) 
-				inorderDecision.setReplyToClient(true); // used only for testing
 
 			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
 			boolean executed=false;
 			String pid = this.getPaxosID();
 			while(!executed) {
 				executed = this.clientRequestHandler.handleDecision(pid, 
-						inorderDecision.toString(), inorderDecision.isRecovery());
+						inorderDecision.toString(), (inorderDecision.isRecovery() ||  
+								(inorderDecision.ballot.coordinatorID!=this.getMyID()))); 
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
 			} execCount++;
 
@@ -813,25 +812,42 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			 * on the lasCoordinatorLongDead with a longer timeout (much longer 
 			 * than the typical node failure detection timeout). 
 			 */
-			log.info(getNodeState() + " decides to run for coordinator as node " + curBallot.coordinatorID + 
-					(curBallot.coordinatorID!=this.getMyID() ? " appears to be dead" : 
-						" has not yet initialized its coordinator"));
-			Ballot newBallot = new Ballot(curBallot.ballotNumber+1, this.getMyID()); 
-			if(this.coordinator.makeCoordinator(newBallot.ballotNumber, newBallot.coordinatorID, 
-					this.groupMembers, this.paxosState.getSlot(), false)!=null) {
-				multicastPrepare = new MessagingTask(this.groupMembers, new PreparePacket(newBallot));
+			log.info(getNodeState()
+					+ " decides to run for coordinator as node "
+					+ curBallot.coordinatorID
+					+ (curBallot.coordinatorID != this.getMyID() ? " appears to be dead"
+							: " has not yet initialized its coordinator"));
+			Ballot newBallot = new Ballot(curBallot.ballotNumber + 1,
+					this.getMyID());
+			if (this.coordinator.makeCoordinator(newBallot.ballotNumber,
+					newBallot.coordinatorID, this.groupMembers,
+					this.paxosState.getSlot(), false) != null) {
+				multicastPrepare = new MessagingTask(this.groupMembers,
+						new PreparePacket(newBallot, this.paxosState.getSlot()));
 			}
-		} else if(this.coordinator.waitingTooLong()) { // just "re-run" by resending  prepare
+		} else if (this.coordinator.waitingTooLong()) { // just "re-run" by
+														// resending prepare
 			TESTPaxosConfig.testAssert(false);
-			log.warning(this.getNodeState() + " resending timed out PREPARE; this is only needed under high congestion");
+			log.warning(this.getNodeState()
+					+ " resending timed out PREPARE; this is only needed under high congestion");
 			Ballot newBallot = this.coordinator.remakeCoordinator(groupMembers);
-			if(newBallot!=null) multicastPrepare = new MessagingTask(this.groupMembers, 
-					new PreparePacket(newBallot));
-		} else if(!this.paxosManager.isNodeUp(curBallot.coordinatorID) && !this.coordinator.exists(curBallot)) { // not my job
-			log.info(getNodeState() + " thinks current coordinator " + curBallot.coordinatorID + " is"+
-					(paxosManager.lastCoordinatorLongDead(curBallot.coordinatorID)?" *long* ":" ") +
-					"dead, the next-in-line is " + getNextCoordinator(curBallot.ballotNumber+1, this.groupMembers) + 
-					(this.coordinator.ranRecently() ? ", and I ran too recently to try again":""));
+			if (newBallot != null)
+				multicastPrepare = new MessagingTask(this.groupMembers,
+						new PreparePacket(newBallot, this.paxosState.getSlot()));
+		} else if (!this.paxosManager.isNodeUp(curBallot.coordinatorID)
+				&& !this.coordinator.exists(curBallot)) { // not my job
+			log.info(getNodeState()
+					+ " thinks current coordinator "
+					+ curBallot.coordinatorID
+					+ " is"
+					+ (paxosManager
+							.lastCoordinatorLongDead(curBallot.coordinatorID) ? " *long* "
+							: " ")
+					+ "dead, the next-in-line is "
+					+ getNextCoordinator(curBallot.ballotNumber + 1,
+							this.groupMembers)
+					+ (this.coordinator.ranRecently() ? ", and I ran too recently to try again"
+							: ""));
 		}
 		return multicastPrepare;
 	}

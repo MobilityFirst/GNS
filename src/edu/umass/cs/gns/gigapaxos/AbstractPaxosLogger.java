@@ -47,8 +47,6 @@ public abstract class AbstractPaxosLogger {
 
 	private static ArrayList<AbstractPaxosLogger> instances =
 			new ArrayList<AbstractPaxosLogger>();
-	protected static boolean firstConnect = true; // coz db needs a create=true flag just once
-	protected static boolean closeCalled = false;
 
 	private final BatchLogger batchLogger;
 	private final Messenger<?> messenger;

@@ -72,8 +72,10 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
 				
 				int length = jsonMsg.toString().length();
+
 				@SuppressWarnings("unchecked")
-				int sent = nioTransport.sendToID((NodeIDType)(mtask.recipients[r]), jsonMsg);
+				NodeIDType recipient = (NodeIDType)(mtask.recipients[r]);
+				int sent = nioTransport.sendToID(recipient, jsonMsg);
 				if (sent == length) {
 					log.fine("Node " + this.nioTransport.getMyID() + " sent " + " to node " +
 							mtask.recipients[r] + ": " + jsonMsg);
@@ -91,7 +93,7 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				}
 				else {
 					log.severe("Node " + this.nioTransport.getMyID() + " sent " + sent +
-							" bytes out of a " + length + " byte message");
+							" bytes out of a " + length + " byte message to node " + recipient);
 				}
 			}
 		}
@@ -140,7 +142,7 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 					execpool.schedule(rtx, delay * BACKOFF_FACTOR,
 						TimeUnit.MILLISECONDS);
 				}
-				else if (sent == -1) { // have to give up at this point
+				else if (sent == -1) { // queue clogged and !isConnected, give up
 					log.severe("Node " +
 							nioTransport.getMyID() +
 							"->" +

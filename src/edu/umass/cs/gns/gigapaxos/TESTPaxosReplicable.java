@@ -132,7 +132,7 @@ public class TESTPaxosReplicable implements Replicable {
 
 	@Override
 	public synchronized boolean handleDecision(String paxosID, String req,
-			boolean recovery) {
+			boolean doNotReplyToClient) {
 		boolean executed = false;
 		try {
 			JSONObject reqJson = new JSONObject(req);
@@ -159,7 +159,7 @@ public class TESTPaxosReplicable implements Replicable {
 			state.putState = false;
 			this.notify();
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
-			if (niot != null && (requestPacket.getReplyToClient() || true)) {
+			if (niot != null && (!doNotReplyToClient /*|| true*/)) { // not all replicas send back response
 				if (DEBUG) log.info("App sending response to client " +
 							requestPacket.clientID + ": " + reqJson);
 				niot.sendToID(requestPacket.clientID, reqJson);

@@ -92,6 +92,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_OLD_DECISIONS =
 			PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 	private static final boolean CLOB_OPTION = false;
+	private static final boolean DONT_SHUTDOWN_DB = true;
 	
 	// FIXME: Replace field name string constants with enums
 	//private static enum Fields {PAXOS_ID, SLOT, BALLOTNUM, COORDINATOR, PACKET_TYPE, STATE, MESSAGE}; 
@@ -816,7 +817,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		long t1 = System.currentTimeMillis();
 		// fetch all accepts and then weed out those below firstSlot
 		ArrayList<PaxosPacket> list = this.getLoggedMessages(paxosID,
-				" and packet_type=" + PaxosPacketType.ACCEPT.getInt()); 
+				" and packet_type=" + PaxosPacketType.ACCEPT.getInt() + " and "
+						+ getIntegerGTEConstraint("slot", firstSlot));
 		TreeMap<Integer, PValuePacket> accepted = new TreeMap<Integer, PValuePacket>();
 		for (PaxosPacket p : list) {
 			int slot = AbstractPaxosLogger.getSlotBallot(p)[0];
@@ -920,7 +922,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		if (FRAMEWORK.equals("embedded")) {
 			try {
 				// the shutdown=true attribute shuts down Derby
-				DriverManager.getConnection(PROTOCOL + ";shutdown=true");
+				if(!DONT_SHUTDOWN_DB)
+					DriverManager.getConnection(PROTOCOL + ";shutdown=true");
 
 				// To shut down a specific database only, but keep the
 				// databases), specify a database in the connection URL:

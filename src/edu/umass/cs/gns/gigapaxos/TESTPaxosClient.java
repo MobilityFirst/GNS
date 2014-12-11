@@ -128,7 +128,7 @@ public class TESTPaxosClient {
 						- proposal.getCreateTime();
 				if (requests.containsKey(proposal.requestID)) {
 					client.incrReplyCount();
-					log.info("Client " + client.myID + " received response #"
+					if(DEBUG) log.info("Client " + client.myID + " received response #"
 							+ client.getReplyCount() + " with latency "
 							+ latency + proposal.getDebugInfo() + " : " + msg);
 					incrTotalLatency(latency);
@@ -179,7 +179,7 @@ public class TESTPaxosClient {
 
 	protected void sendRequest(int id, RequestPacket req) throws IOException,
 			JSONException {
-		log.info("Sending request to node " + id + ": " + req);
+		if(DEBUG) log.info("Sending request to node " + id + ": " + req);
 		this.requests.put(req.requestID, req);
 		this.niot.sendToID(id, req.toJSONObject());
 	}
@@ -269,7 +269,7 @@ public class TESTPaxosClient {
 					}
 				}
 				System.out.println("Current aggregate throughput = "
-						+ Util.df(getTotalThroughput(clients)));
+						+ Util.df(getTotalThroughput(clients)) + " reqs/sec");
 				System.out.println(getWaiting(clients));
 				try {
 					Thread.sleep(1000);
@@ -316,6 +316,17 @@ public class TESTPaxosClient {
 						+ clients[i].getReplyCount() + "\n");
 		}
 	}
+	
+	protected static String getAggregateOutput(int numReqs, long delay) {
+		return "\n  average_throughput = "
+				+ Util.df(numReqs * TESTPaxosConfig.NUM_CLIENTS
+						* 1000.0 / delay)
+				+ "/s"
+				+ "\n  noop_count = "
+				+ TESTPaxosClient.getTotalNoopCount()
+				+ "\n  average_response_time = "
+				+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms";
+	}
 
 	public static void main(String[] args) {
 		try {
@@ -328,31 +339,30 @@ public class TESTPaxosClient {
 				TESTPaxosConfig.setDistributedClients();
 			}
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
-
-			long t1 = System.currentTimeMillis();
-
 			int numReqs = TESTPaxosConfig.NUM_REQUESTS_PER_CLIENT;
-			sendTestRequests(numReqs, clients);
-			waitForResponses(clients);
-			System.out.println("Average response time of first run = "
-					+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms");
-			resetLatencyComputation();
-			sendTestRequests(numReqs, clients);
-			waitForResponses(clients);
 
+			// begin first run
+			long t1 = System.currentTimeMillis();
+			sendTestRequests(numReqs, clients);
+			waitForResponses(clients);
 			long t2 = System.currentTimeMillis();
+			System.out.println("\n[run1]"
+					+ getAggregateOutput(numReqs, t2-t1));
+			// end first run
 
-			printOutput(clients);
-			System.out
-					.println("Average throughput (overall) = "
-							+ Util.df(numReqs * TESTPaxosConfig.NUM_CLIENTS
-									* 1000.0 / (t2 - t1))
-							+ "reqs/sec\n"
-							+ "Total no-op count (overall) = "
-							+ TESTPaxosClient.getTotalNoopCount()
-							+ "\n"
-							+ "Average response time of just the second run (not overall) = "
-							+ Util.df(TESTPaxosClient.getAvgLatency()));
+			resetLatencyComputation();
+			Thread.sleep(1000);
+			
+			// begin second run
+			t1 = System.currentTimeMillis();
+			sendTestRequests(numReqs, clients);
+			waitForResponses(clients);
+			t2 = System.currentTimeMillis();
+			printOutput(clients); // printed only after second
+			System.out.println("\n[run2] "
+							+ getAggregateOutput(numReqs, t2-t1));
+			// end second run
+			
 			for (TESTPaxosClient client : clients) {
 				client.close();
 			}

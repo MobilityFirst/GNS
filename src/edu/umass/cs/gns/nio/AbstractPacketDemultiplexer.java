@@ -4,15 +4,16 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
+
 import java.util.logging.Level;
 
 /**
@@ -20,19 +21,17 @@ import java.util.logging.Level;
  */
 public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemultiplexer {
 
-	private static final boolean NON_BLOCKING_PROCESSING = false;
+	private static final boolean NON_BLOCKING_PROCESSING = false; // for testing only
   /**
    * ******************************** Start of new, untested parts **************************
    */
-  private final ScheduledThreadPoolExecutor executor
-          = new ScheduledThreadPoolExecutor(1); // FIXME: Not sure on what basis to limit number of threads
+  private final ScheduledExecutorService executor
+          = Executors.newScheduledThreadPool(5);  // FIXME: Not sure on what basis to set pool size
   private final HashMap<Integer, Boolean> demuxTypes
           = new HashMap<Integer, Boolean>();
   private final HashMap<Integer, InterfacePacketDemultiplexer> demuxMap
           = new HashMap<Integer, InterfacePacketDemultiplexer>();
-  private static final Logger log
-          = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(AbstractPacketDemultiplexer.class.getName())
-                  : GNS.getLogger();
+  private static final Logger log = Logger.getLogger(AbstractPacketDemultiplexer.class.getName());
 
   public void register(IntegerPacketType type) {
     register(type, this);
@@ -71,6 +70,10 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
     if (handled) {
     	if(NON_BLOCKING_PROCESSING) tasker.run(); // tasker better be really quick
     	else executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);  
+    	/* Note: executor.submit() consistently yields poorer performance
+    	 * than scheduling at 0 as above even though they are equivalent.
+    	 * Probably garbage collection or heap optimization issues.
+    	 */
     } else {
       log.log(Level.WARNING, "Ignoring unknown packet type: {0}", JSONPacket.getPacketType(jsonObject));
     }

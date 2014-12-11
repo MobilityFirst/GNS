@@ -3,12 +3,11 @@ package edu.umass.cs.gns.nio;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
-
 import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
@@ -16,6 +15,7 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -87,9 +87,11 @@ public class NIOTransport<NodeIDType> implements Runnable {
    * was established but the remote end crashed before the
    * send was complete.
    */
-  protected static final int MAX_QUEUED_SENDS = 8192;
+  private static final int MAX_QUEUED_SENDS = 8192;
 
-  protected static final int MIN_INTER_CONNECT_TIME = 5000; // milliseconds before reconnection attempts
+  private static final int MIN_INTER_CONNECT_TIME = 5000; // milliseconds before reconnection attempts
+  
+  private static final boolean DUPLEX_CONNECTIONS = true;
 
   // The channel on which we'll accept connections
   private ServerSocketChannel serverChannel;
@@ -265,8 +267,9 @@ public class NIOTransport<NodeIDType> implements Runnable {
           this.write(key);
         }
       } catch (IOException ioe) {
-        log.severe("IOException encountered while processing key: "
-                + key);
+        log.severe("IOException upon accept or write on key:channel "
+                + key + ":" + key.channel());
+        cleanup(key, (AbstractSelectableChannel)key.channel());
         ioe.printStackTrace(); // print and move on with other keys
       }
     }
@@ -300,6 +303,8 @@ public class NIOTransport<NodeIDType> implements Runnable {
     // Register the new SocketChannel with our Selector, indicating
     // we'd like to be notified when there's data waiting to be read
     socketChannel.register(this.selector, SelectionKey.OP_READ);
+    // Try to reuse accepted connection for sending data
+    if(DUPLEX_CONNECTIONS) this.reuseAcceptedConnectionForWrites(socketChannel);
   }
 
   /*
@@ -341,7 +346,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
    * Invoked only by the selector thread. If a write encounters an exception,
    * the selector thread may establish a new connection.
    */
-  private void write(SelectionKey key) throws IOException {
+  private void write(SelectionKey key)  {
     SocketChannel socketChannel = (SocketChannel) key.channel();
     InetSocketAddress isa = getSockAddrFromSockChannel(socketChannel);
     /*
@@ -443,7 +448,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
       }
       if (queue.size() < NIOTransport.MAX_QUEUED_SENDS) {
         queue.add(ByteBuffer.wrap(data));
-        queuedBytes = +data.length;
+        queuedBytes = data.length;
         if (DEBUG) {
           log.fine("Node " + this.myID + " queued: "
                   + new String(data));
@@ -493,7 +498,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
           try {
             if (key != null) {
               key.interestOps(SelectionKey.OP_WRITE
-                      | SelectionKey.OP_CONNECT);
+                      | SelectionKey.OP_CONNECT | SelectionKey.OP_READ);
             }
           } catch (CancelledKeyException cke) { // Could have been cancelled upon a write attempt
             cleanupRetry(key, sc, isa);
@@ -507,8 +512,8 @@ public class NIOTransport<NodeIDType> implements Runnable {
    * Cleans up and suppresses IOException as there is little
    * useful stuff the selector thread can do at that point.
    */
-  private void cleanup(SelectionKey key, SocketChannel sc) {
-    key.cancel();
+  private void cleanup(SelectionKey key, AbstractSelectableChannel sc) {
+    if(key!=null) key.cancel();
     try {
       sc.close();
     } catch (IOException ioe) {
@@ -528,7 +533,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     try {
       if (this.checkAndReconnect(isa)) {
         testAndIntiateConnection(isa);
-      }
+      } // FIXME: should give up eventually
     } catch (IOException ioe) {
       log.warning("IOException encountered while re-initiating connection to "
               + isa);
@@ -594,13 +599,34 @@ public class NIOTransport<NodeIDType> implements Runnable {
 
   private void putSockAddrToSockChannel(InetSocketAddress isa,
           SocketChannel socketChannel) {
-    synchronized (this.SockAddrToSockChannel) {
-      if (DEBUG) {
-        log.finer("Node " + myID + " inserting (" + isa + ", "
-                + socketChannel + ")");
-      }
-      this.SockAddrToSockChannel.put(isa, socketChannel);
-    }
+	  synchronized (this.SockAddrToSockChannel) {
+		  if (DEBUG) {
+			  log.finer("Node " + myID + " inserting (" + isa + ", "
+					  + socketChannel + ")");
+		  }
+		  this.SockAddrToSockChannel.put(isa, socketChannel);
+	  }
+  }
+  /* This method will replace an existing connection if any
+   * to the destination with the newly accepted connection
+   * and set ops to include write/connect in addition to
+   * reads so as to reuse the accepted connection for writes.
+   */
+  private void reuseAcceptedConnectionForWrites(
+          SocketChannel socketChannel)  {
+    try {
+    	this.putSockAddrToSockChannel(
+    			(InetSocketAddress)socketChannel.getRemoteAddress(), 
+    			socketChannel); // replace existing with newly accepted
+    	socketChannel.register(this.selector, SelectionKey.OP_READ | 
+    			SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);
+	} catch (ClosedChannelException e) {
+		log.warning("Node"+myID+" failed to set channel to OP_WRITE");
+		// do nothing 
+	} catch (IOException e) {
+		log.warning("Node"+myID+" failed to get remote address");
+		// do nothing
+	}
   }
 
   private boolean isConnected(InetSocketAddress isa) {
@@ -674,9 +700,9 @@ public class NIOTransport<NodeIDType> implements Runnable {
           log.fine("Node " + myID + " processing connect event : "
                   + change);
         }
+        SelectionKey key = change.socket.keyFor(this.selector);
         switch (change.type) {
           case ChangeRequest.CHANGEOPS:
-            SelectionKey key = change.socket.keyFor(this.selector);
             key.interestOps(change.ops);
             break;
           case ChangeRequest.REGISTER:
@@ -684,6 +710,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
               change.socket.register(this.selector, change.ops);
             } catch (ClosedChannelException cce) {
               log.severe("Socket channel likely closed before connect finished");
+              cleanup(key, (AbstractSelectableChannel)key.channel());
               cce.printStackTrace();
             }
             break;
@@ -782,10 +809,9 @@ public class NIOTransport<NodeIDType> implements Runnable {
    * Sets selection ops to write as the connection is presumably being
    * set up to write something.
    */
-  private boolean finishConnection(SelectionKey key) throws IOException {
+  private boolean finishConnection(SelectionKey key) {
     SocketChannel socketChannel = (SocketChannel) key.channel();
     // For Java6, this line and the log.warning below can both be commented without affecting functionality
-    SocketAddress isa = socketChannel.getRemoteAddress();
     boolean connected = false;
 
     // Finish the connection. If the connection operation failed
@@ -794,7 +820,9 @@ public class NIOTransport<NodeIDType> implements Runnable {
       connected = socketChannel.finishConnect();
     } catch (IOException e) {
       // Cancel the channel's registration with our selector
-      log.warning("Node " + this.myID + " failed to connect to " + isa);
+      log.warning("Node " + this.myID + " failed to connect to " + 
+    		  new InetSocketAddress(socketChannel.socket().getInetAddress(), 
+    		  socketChannel.socket().getPort()));
       // FIXME: Should probably also drop outstanding data here
       this.cleanup(key, socketChannel);
     }
@@ -811,7 +839,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
       }
     }
     if (connected) {
-      key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);
+      key.interestOps(SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT | SelectionKey.OP_READ);
     }
     return connected;
   }

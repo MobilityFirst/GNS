@@ -59,7 +59,7 @@ public class JSONDelayEmulator {
    * Emulating delays at sender side prevents GNSNIOTransport.sendToID from returning
    * the correct return value. */
   @Deprecated
-	public static int sendWithDelay(JSONNIOTransport<Object> niot, Object id, JSONObject jsonData) throws IOException {
+	public static int sendWithDelay(JSONNIOTransport<Object> niot, Object id, JSONObject jsonData) throws IOException, JSONException {
 		int written = 0;
 		if (JSONDelayEmulator.EMULATE_DELAYS) {
 			DelayerTask dtask = new DelayerTask(niot, id, jsonData);

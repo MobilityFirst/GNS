@@ -34,7 +34,7 @@ public class TESTPaxosConfig {
 
 	private static boolean TEST_ASSERT_ENABLED = false;
 
-	public static final boolean TEST_WITH_RECOVERY = true;
+	private static final boolean TEST_WITH_RECOVERY = true;
 
 	public static final int MAX_NODE_ID = 10000;
 	public static final int TEST_START_NODE_ID = 100; // nodeID's can start from a non-zero value. FIXME: make them non-consecutive as well
@@ -50,9 +50,9 @@ public class TESTPaxosConfig {
 
 	/**************** Load parameters *******************/
 	public static final int NUM_CLIENTS = 10; // 1;// 4 default
-	public static final int NUM_REQUESTS = 5000; // 20;  // 40000 default
+	public static final int NUM_REQUESTS = 30000; // 20;  // 40000 default
 	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
-	public static final double TOTAL_LOAD = 500; // 2000 reqs/sec default (across all clients)
+	public static final double TOTAL_LOAD = 1500; // 2000 reqs/sec default (across all clients)
 	/***********************************************************/
 
 	public static final int DEFAULT_INIT_PORT = SampleNodeConfig.DEFAULT_START_PORT;
@@ -70,7 +70,7 @@ public class TESTPaxosConfig {
 
 	private static boolean reply_to_client = true;
 
-	private static boolean clean_db = false;
+	private static boolean clean_db = !TEST_WITH_RECOVERY;
 	
 	static{assert(NUM_CLIENTS <= MAX_CONFIG_GROUPS);} // all tests should be with at most MAX_CONFIG_GROUPS
 

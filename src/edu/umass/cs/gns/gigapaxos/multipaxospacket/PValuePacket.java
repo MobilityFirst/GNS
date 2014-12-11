@@ -18,14 +18,14 @@ public class PValuePacket extends ProposalPacket {
 	
 	private boolean recovery;
 	private int majorityCommittedSlot; // for garbage collection, similar to that in AcceptPacket
-	private int decisionIssuer=-1; // issuer of the decision that in general may be different from the ballot coordinator
+	//private int decisionIssuer=-1; // issuer of the decision that in general may be different from the ballot coordinator
 	
 	public PValuePacket(Ballot b, ProposalPacket p) {
     	super(p);
 		this.ballot = b;
 		this.majorityCommittedSlot=-1;
 		// packetType inherited, not assigned until DECISION or PREEMPTED
-		this.decisionIssuer = b.coordinatorID;
+		//this.decisionIssuer = b.coordinatorID;
 		this.recovery = false; // true only when created from json
 	}
 	// Meant for super calling by inheritors
@@ -35,7 +35,7 @@ public class PValuePacket extends ProposalPacket {
 		this.majorityCommittedSlot = pvalue.majorityCommittedSlot;
 		this.packetType = pvalue.getType();
 		this.recovery = false; // true only when created from json
-		this.decisionIssuer = pvalue.decisionIssuer;
+		//this.decisionIssuer = pvalue.decisionIssuer;
 	}
 
 	public PValuePacket(JSONObject json) throws JSONException{
@@ -44,16 +44,16 @@ public class PValuePacket extends ProposalPacket {
 		this.majorityCommittedSlot = json.getInt(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString());
 		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.decisionIssuer = json.getInt(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString());
+		//this.decisionIssuer = json.getInt(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString());
 	}
 	
 	public PValuePacket makeDecision(int mcSlot, int issuer) {
 		this.packetType = PaxosPacketType.DECISION;
 		this.majorityCommittedSlot = mcSlot;
-		this.decisionIssuer = issuer;
+		//this.decisionIssuer = issuer;
 		return new PValuePacket(this); // can't modify recovery, so new
 	}
-	public int getDecisionIssuer() {return this.decisionIssuer;}
+	//public int getDecisionIssuer() {return this.decisionIssuer;}
 	public PValuePacket preempt() {
 		this.packetType = PaxosPacketType.PREEMPTED; // preemption does not change final fields, unlike getDecisionPacket
 		return this;
@@ -78,7 +78,7 @@ public class PValuePacket extends ProposalPacket {
 		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
 		json.put(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString(), this.majorityCommittedSlot);
 		json.put(PaxosPacket.Keys.RECOVERY.toString(), this.recovery);
-		json.put(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString(), this.decisionIssuer);
+		//json.put(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString(), this.decisionIssuer);
 		return json;
 	}
 }

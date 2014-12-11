@@ -125,9 +125,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			while (!this.paxosLogger.removeAll())
 				;
 		}
+		open(); // needed to unclose when testing multiple runs of open and close
 		niot.addPacketDemultiplexer(new PaxosPacketDemultiplexer<NodeIDType>(
 				this, this.integerMap, unstringer)); // so paxos packets will come to me.
-
 		initiateRecovery();
 	}
 
@@ -284,6 +284,12 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		this.pinstances.clear();
 		this.corpses.clear();
 		this.paxosLogger.removeAll();
+	}
+
+	private static synchronized void open() {
+		{
+			closed = false;
+		}
 	}
 
 	private static synchronized void closeAll() {

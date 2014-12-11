@@ -9,7 +9,6 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.gns.util.DelayProfiler;
-import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
@@ -58,7 +57,7 @@ public class TESTPaxosMain {
 		}
 		int[] members = new int[group.size()];
 		int i=0; for(int id : group) members[i++] = id;
-		TESTPaxosConfig.createGroup(groupID, TESTPaxosConfig.TEST_WITH_RECOVERY ? 
+		TESTPaxosConfig.createGroup(groupID, !TESTPaxosConfig.getCleanDB() ? 
 				TESTPaxosConfig.getDefaultGroup() : members);
 	}
 
@@ -68,19 +67,21 @@ public class TESTPaxosMain {
 			createRandomGroup(groupID);
 		}
 	}
-	/**
-	 * @param args
+	
+	private static String getAggregateOutput(int numReqs, long t1, long t2) {
+		return TESTPaxosClient.getAggregateOutput(numReqs, t2-t1) + 
+				"\n  " + DelayProfiler.getStats() + 
+				"\n  " + NIOInstrumenter.getJSONStats();
+	}
+
+	/* This method tests single-node paxos and exits gracefully at
+	 * the end by closing all nodes and associated paxos managers.
+	 * Calling this method again with testRecovery=true will test
+	 * recovery mode. 
 	 */
-	public static void main(String[] args) {
-		// Only useful for local testing
-		System.out.println("\nThis is a single-node test. For distributed testing, use TESTPaxosNode " +
-				"and TESTPaxosClient with the appropriate configuration file.\nInitiating single-node test...\n");
+		public static void testPaxos(String[] args) {
 		try {
 			/*************** Setting up servers below ***************************/
-
-			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
-			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
-			assert(myID==-1) : "Cannot specify node ID for local test with TESTPaxosMain";
 
 			TESTPaxosMain tpMain=null;
 			tpMain = new TESTPaxosMain(); // creates all nodes, each with its paxos manager and app
@@ -99,26 +100,49 @@ public class TESTPaxosMain {
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
 			int numReqs = TESTPaxosConfig.NUM_REQUESTS_PER_CLIENT;
+			
+			// begin first run
 			long t1=System.currentTimeMillis();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
-			System.out.println("Average response time of first run = " + Util.df(TESTPaxosClient.getAvgLatency()) + "ms");
+			long t2=System.currentTimeMillis();
+			System.out.println("\n[run1]" + getAggregateOutput(numReqs, t1, t2));
+			// end first run
+
 			TESTPaxosClient.resetLatencyComputation();
+			Thread.sleep(1000);
+
+			// begin second run
+			t1 = System.currentTimeMillis();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
 			TESTPaxosClient.waitForResponses(clients);
-
-			long t2=System.currentTimeMillis();
-
+			t2=System.currentTimeMillis();
 			TESTPaxosClient.printOutput(clients);	
-			System.out.println("Average throughput (overall) = " + 
-					Util.df(2*numReqs*TESTPaxosConfig.NUM_CLIENTS*1000.0/(t2-t1)) + " reqs/sec\n" +
-					"Total no-op count (overall) = " + TESTPaxosClient.getTotalNoopCount() +"\n" +
-					"Average response time of just the second run (not overall) = " + 
-					Util.df(TESTPaxosClient.getAvgLatency())+"ms");
+			System.out.println("[run2]" + getAggregateOutput(numReqs, t1, t2));
+			// end second run
+
 			for(TESTPaxosNode node : tpMain.nodes.values()) node.close(); 
 			for(TESTPaxosClient client : clients) client.close();
-			System.out.println(DelayProfiler.getStats());
-			System.out.println(NIOInstrumenter.getJSONStats());
 		} catch(Exception e) {e.printStackTrace();System.exit(1);}
 	}
+		
+		/**
+		 * @param args
+		 * @throws InterruptedException 
+		 */
+		public static void main(String[] args) throws InterruptedException {
+			// Only useful for local testing
+			System.out.println("\nThis is a single-node test. For distributed testing, "
+					+ "use TESTPaxosNode and TESTPaxosClient with the appropriate "
+					+ "configuration file.\nInitiating single-node test...\n");
+			if(args.length > 0 && args[0].trim().equals("-c")) TESTPaxosConfig.setCleanDB(true);
+			testPaxos(args);
+			
+			Thread.sleep(1000);
+			
+			System.out.println("\n############### Testing with recovery ################\n");
+			TESTPaxosConfig.setCleanDB(false);
+			testPaxos(args);
+		}
+
 }

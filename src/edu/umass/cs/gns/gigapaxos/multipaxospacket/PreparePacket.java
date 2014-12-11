@@ -11,13 +11,18 @@ public final class PreparePacket extends PaxosPacket {
 	public final Ballot ballot;
 	public  final int firstUndecidedSlot; // not really necessary
 	
-	private boolean recovery; // non-final because AbstractPaxosLogger.rollForward needs to set it
+	// non-final because AbstractPaxosLogger.rollForward needs to set it
+	private boolean recovery; 
 
 	public PreparePacket(Ballot b) {
+		this(b, -1);
+	}
+
+	public PreparePacket(Ballot b, int firstUndecidedSlot) {
 		super((PaxosPacket)null);
 		this.ballot = b;
 		this.packetType = PaxosPacketType.PREPARE;
-		this.firstUndecidedSlot = -1;
+		this.firstUndecidedSlot = firstUndecidedSlot;
 		this.recovery = false;
 	}
 
@@ -31,7 +36,7 @@ public final class PreparePacket extends PaxosPacket {
 	
 	public PreparePacket(JSONObject json) throws JSONException{
 		super(json);
-		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE); // coz class is final
+		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.PREPARE); 
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
 		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
 		this.firstUndecidedSlot = json.getInt(PaxosPacket.Keys.FIRST_UNDECIDED_SLOT.toString());

@@ -95,7 +95,6 @@ public class TESTPaxosNode {
 
 	public static void main(String[] args) {
 		try {
-			if(!TESTPaxosConfig.TEST_WITH_RECOVERY) TESTPaxosConfig.setCleanDB(true);
 			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
 			assert(myID!=-1) : "Need a node ID argument"; 
 			

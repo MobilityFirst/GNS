@@ -44,8 +44,8 @@ public class NIOInstrumenter {
 	public void enable() {enabled=true;}
 
 	public synchronized static String getJSONStats() {
-		return "NIO stats: [ #sent=" + totalSent + " | #rcvd="
-				+ totalJSONRcvd + " | avgNIODelay=" + Util.mu(averageDelay)+"]";
+		return "[NIO stats: [ #sent=" + totalSent + " | #rcvd="
+				+ totalJSONRcvd + " | avgNIODelay=" + Util.mu(averageDelay)+"]]";
 	}
 
 	public String toString() {

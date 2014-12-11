@@ -171,7 +171,7 @@ public class PaxosAcceptor {
 			if(accept.slot - this.minCommittedFrontierSlot > 0) this.acceptedProposals.put(accept.slot, accept); // wraparound-aware arithmetic
 			if(DEBUG) log.info("Node"+myID+" acceptor accepting pvalue for slot " + accept.slot + " : " + accept);
 		}
-		garbageCollectAccepted(accept.majorityCommittedSlot);
+		garbageCollectAccepted(accept.majorityExecutedSlot);
 		return new Ballot(ballotNum,ballotCoord);
 	}
 
