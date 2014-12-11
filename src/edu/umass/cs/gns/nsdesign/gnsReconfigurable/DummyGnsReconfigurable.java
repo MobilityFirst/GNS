@@ -31,7 +31,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
   private final NodeIDType nodeID;
 
   /*** nio server */
-  private final InterfaceJSONNIOTransport nioServer;
+  private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
   /** Configuration for all nodes in GNS **/
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
@@ -40,7 +40,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
    * Pings all nodes periodically and updates ping latencies to all name servers in
    * {@link edu.umass.cs.gns.nsdesign.GNSNodeConfig}
    */
-  private PingManager pingManager;
+  private PingManager<NodeIDType> pingManager;
 
   public DummyGnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig,
                            InterfaceJSONNIOTransport nioServer) {
@@ -97,10 +97,10 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
       Packet.PacketType packetType = Packet.getPacketType(json);
       switch (packetType) {
         case DNS:
-          executeLookupLocal(new DNSPacket(json, gnsNodeConfig), noCoordinationState);
+          executeLookupLocal(new DNSPacket<NodeIDType>(json, gnsNodeConfig), noCoordinationState);
           break;
         case UPDATE:
-          executeUpdateLocal(new UpdatePacket(json),noCoordinationState);
+          executeUpdateLocal(new UpdatePacket<NodeIDType>(json, gnsNodeConfig),noCoordinationState);
           break;
         case SELECT_REQUEST:
           throw new UnsupportedOperationException();
@@ -114,7 +114,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
           // ha ha do nothing
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          executeRemoveLocal(new OldActiveSetStopPacket(json));
+          executeRemoveLocal(new OldActiveSetStopPacket<NodeIDType>(json));
           break;
         // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
         case CONFIRM_UPDATE:
@@ -138,7 +138,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
       // the active node who received this node, sends confirmation to primary
       // confirm to primary
       oldActiveStopPacket.changePacketTypeToActiveRemoved();
-      nioServer.sendToID(oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
+      nioServer.sendToID((NodeIDType) oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
       if (Config.debuggingEnabled) GNS.getLogger().fine("Active removed: Name Record updated. Sent confirmation to replica " +
               "controller. Packet = " + oldActiveStopPacket);
     } else {
@@ -151,12 +151,12 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
     JSONObject returnJson = null;
     if (noCoordinationState) {
       if (Config.debuggingEnabled) GNS.getLogger().fine("Sending invalid active error to client: " + updatePacket);
-      ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
+      ConfirmUpdatePacket<NodeIDType> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       returnJson = failConfirmPacket.toJSONObject();
     } else {
       if (updatePacket.getNameServerID().equals(nodeID)) {
-        ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
-                updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
+        ConfirmUpdatePacket<NodeIDType> confirmPacket = new ConfirmUpdatePacket<NodeIDType>(Packet.PacketType.CONFIRM_UPDATE,
+                (NodeIDType) updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
                 NSResponseCode.NO_ERROR);
         if (Config.debuggingEnabled)
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
@@ -168,7 +168,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
     }
   }
 
-  private void executeLookupLocal(DNSPacket dnsPacket, boolean noCoordinatorState) throws JSONException, IOException {
+  private void executeLookupLocal(DNSPacket<NodeIDType> dnsPacket, boolean noCoordinatorState) throws JSONException, IOException {
     if (noCoordinatorState) {
       if (Config.debuggingEnabled) GNS.getLogger().fine("Sending invalid active error to client: " + dnsPacket);
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);

@@ -46,6 +46,7 @@ import org.json.JSONArray;
  *
  * Created by abhigyan on 6/19/14.
  */
+@SuppressWarnings("unchecked")
 public class DBClientIntercessor extends AbstractPacketDemultiplexer implements IntercessorInterface {
 
   private ConcurrentHashMap<Integer, JSONObject> reqIDToJSON = new ConcurrentHashMap<>(); // map from request ID to packets
@@ -119,17 +120,17 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
     try {
       switch (Packet.getPacketType(incomingJson)) {
         case ADD_RECORD:
-          AddRecordPacket addRecordPacket = new AddRecordPacket(incomingJson);
+          AddRecordPacket addRecordPacket = new AddRecordPacket(incomingJson, nodeConfig);
           addRecordPacket.setRequestID(intercessorRequestID);
           outgoingJson = addRecordPacket.toJSONObject();
           break;
         case REMOVE_RECORD:
-          RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(incomingJson);
+          RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(incomingJson, nodeConfig);
           removeRecordPacket.setRequestID(intercessorRequestID);
           outgoingJson = removeRecordPacket.toJSONObject();
           break;
         case UPDATE:
-          UpdatePacket updatePacket = new UpdatePacket(incomingJson);
+          UpdatePacket updatePacket = new UpdatePacket(incomingJson, nodeConfig);
           updatePacket.setRequestID(intercessorRequestID);
           outgoingJson = updatePacket.toJSONObject();
           break;
@@ -165,7 +166,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           if (origJson == null) {
             break;
           }
-          origReqID = new AddRecordPacket(origJson).getRequestID();
+          origReqID = new AddRecordPacket(origJson, nodeConfig).getRequestID();
           ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
@@ -175,7 +176,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           if (origJson == null) {
             break;
           }
-          origReqID = new RemoveRecordPacket(origJson).getRequestID();
+          origReqID = new RemoveRecordPacket(origJson, nodeConfig).getRequestID();
           confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
@@ -185,7 +186,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           if (origJson == null) {
             break;
           }
-          origReqID = new UpdatePacket(origJson).getRequestID();
+          origReqID = new UpdatePacket(origJson, nodeConfig).getRequestID();
           confirmPkt = new ConfirmUpdatePacket(incomingJson);
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();

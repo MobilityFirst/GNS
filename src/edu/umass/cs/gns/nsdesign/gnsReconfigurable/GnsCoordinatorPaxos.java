@@ -87,7 +87,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator {
           break;
         // call propose
         case UPDATE: // updates need coordination
-          UpdatePacket<NodeIdType> update = new UpdatePacket<NodeIdType>(request);
+          UpdatePacket<NodeIdType> update = new UpdatePacket<NodeIdType>(request, nodeConfig);
           update.setNameServerID(nodeID);
           String paxosID = paxosManager.propose(update.getName(), update.toString());
           if (paxosID == null) {
@@ -127,7 +127,7 @@ public class GnsCoordinatorPaxos<NodeIdType> extends ActiveReplicaCoordinator {
             GNS.getLogger().fine("*******Before creating paxos instance: " + request);
           }
           callHandleDecisionWithRetry(null, request.toString(), false);
-          AddRecordPacket<NodeIdType> recordPacket = new AddRecordPacket<NodeIdType>(request);
+          AddRecordPacket<NodeIdType> recordPacket = new AddRecordPacket<NodeIdType>(request, nodeConfig);
           paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION, recordPacket.getActiveNameServers(), paxosInterface);
           if (Config.debuggingEnabled) {
             GNS.getLogger().fine("*******Added paxos instance:" + recordPacket.getName());

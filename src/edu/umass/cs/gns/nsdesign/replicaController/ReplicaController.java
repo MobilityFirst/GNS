@@ -257,37 +257,37 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
 
         // add name to GNS
         case ADD_RECORD:
-          Add.executeAddRecord(new AddRecordPacket(json), this, recovery);
+          Add.executeAddRecord(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
           break;
         case ACTIVE_ADD_CONFIRM:
-          Add.executeAddActiveConfirm(new AddRecordPacket(json), this);
+          Add.executeAddActiveConfirm(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
 
         // lookupMultipleSystemFields actives for name
         case REQUEST_ACTIVES:
-          LookupActives.executeLookupActives(new RequestActivesPacket(json, gnsNodeConfig), this, recovery);
+          LookupActives.executeLookupActives(new RequestActivesPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
           break;
 
         // remove
         case REMOVE_RECORD:
-          Remove.executeMarkRecordForRemoval(new RemoveRecordPacket(json), this, recovery);
+          Remove.executeMarkRecordForRemoval(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
           break;
         case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket(json), this, recovery);
+          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket<NodeIDType>(json), this, recovery);
           break;
         case RC_REMOVE:
-          Remove.executeRemoveRecord(new RemoveRecordPacket(json), this, recovery);
+          Remove.executeRemoveRecord(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
           break;
 
         // group change
         case NEW_ACTIVE_PROPOSE:
-          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket(json), this, recovery);
+          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket<NodeIDType>(json), this, recovery);
           break;
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
-          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket(json), this);
+          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket<NodeIDType>(json), this);
           break;
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
-          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
+          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case GROUP_CHANGE_COMPLETE:
           GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, recovery);

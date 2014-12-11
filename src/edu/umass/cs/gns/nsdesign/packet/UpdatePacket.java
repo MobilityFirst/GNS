@@ -9,6 +9,7 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.net.InetSocketAddress;
 import net.sourceforge.sizeof.SizeOf;
@@ -254,16 +255,16 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    * @param json JSONObject that represents UpdatedAddressPacket.
    * @throws org.json.JSONException
    */
-  public UpdatePacket(JSONObject json) throws JSONException {
+  public UpdatePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     // include the address and signature info
-    super(json.opt(NAMESERVER_ID),
+    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT),
             json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
+    this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
+    //this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LocalNSREQUESTID);
-//    this.NSRequestID = json.getInt(NameServerREQUESTID);
     this.name = json.getString(NAME);
     this.recordKey = json.has(RECORDKEY) ? json.getString(RECORDKEY) : null;
     this.operation = UpdateOperation.valueOf(json.getString(OPERATION));
@@ -271,8 +272,6 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     this.argument = json.optInt(ARGUMENT, -1);
     this.userJSON = json.has(USERJSON) ? new ValuesMap(json.getJSONObject(USERJSON)) : null;
     this.oldValue = json.has(OLDVALUE) ? JSONUtils.JSONArrayToResultValue(json.getJSONArray(OLDVALUE)) : null;
-    //this.localNameServerId = json.getInt(LOCAL_NAMESERVER_ID);
-    //this.nameServerId = new NodeIDType(json.getString(NAMESERVER_ID));
     this.ttl = json.getInt(TTL);
   }
 

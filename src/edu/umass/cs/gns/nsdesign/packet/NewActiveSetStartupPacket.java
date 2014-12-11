@@ -1,13 +1,9 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
-import static edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket.ACTIVES;
 import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 

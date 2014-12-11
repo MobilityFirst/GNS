@@ -25,6 +25,7 @@ import java.util.TimerTask;
  *
  * Created by abhigyan on 6/20/14.
  */
+@SuppressWarnings("unchecked")
 public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   private Timer t = new Timer();
@@ -48,13 +49,13 @@ public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer {
     try {
       switch (Packet.getPacketType(json)) {
         case ADD_RECORD:
-          response = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, new AddRecordPacket(json)).toJSONObject();
+          response = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, new AddRecordPacket(json, nodeConfig)).toJSONObject();
           break;
         case REMOVE_RECORD:
-          response = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, new RemoveRecordPacket(json)).toJSONObject();
+          response = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, new RemoveRecordPacket(json, nodeConfig)).toJSONObject();
           break;
         case UPDATE:
-          response = ConfirmUpdatePacket.createSuccessPacket(new UpdatePacket(json)).toJSONObject();
+          response = ConfirmUpdatePacket.createSuccessPacket(new UpdatePacket(json, nodeConfig)).toJSONObject();
           break;
         case DNS:
           DNSPacket dnsPacket = new DNSPacket(json, nodeConfig);

@@ -75,7 +75,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     if (Config.singleNS && Config.dummyGNS) {  // coordinator for testing only
       this.coordinator = new DummyGnsCoordinatorUnreplicated(nodeID, gnsNodeConfig, this.activeReplicaApp);
     } else if (Config.singleNS) {  // coordinator for testing only
-      this.coordinator = new DefaultGnsCoordinator(nodeID, this.activeReplicaApp);
+      this.coordinator = new DefaultGnsCoordinator(nodeID, gnsNodeConfig, this.activeReplicaApp);
     } else if(Config.eventualConsistency) {  // coordinator for testing only
       this.coordinator = new GnsCoordinatorEventual(nodeID, nioServer, gnsNodeConfig,
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
@@ -93,19 +93,19 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
       switch (type) {
         // replica controller to active replica
         case NEW_ACTIVE_START:
-          GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
+          GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_FORWARD:
-          GroupChange.handleNewActiveStartForward(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
+          GroupChange.handleNewActiveStartForward(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_RESPONSE:
-          GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
+          GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
-          GroupChange.handlePrevValueRequest(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
+          GroupChange.handlePrevValueRequest(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-          GroupChange.handlePrevValueResponse(new NewActiveSetStartupPacket(json, gnsNodeConfig), this);
+          GroupChange.handlePrevValueResponse(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case OLD_ACTIVE_STOP:
           GroupChange.handleOldActiveStopFromReplicaController(new OldActiveSetStopPacket(json), this);

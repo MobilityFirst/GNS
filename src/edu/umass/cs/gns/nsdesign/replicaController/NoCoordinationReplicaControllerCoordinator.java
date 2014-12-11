@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -15,11 +16,13 @@ import org.json.JSONObject;
  * Created by abhigyan on 4/8/14.
  */
 public class NoCoordinationReplicaControllerCoordinator<NodeIDType> implements ReplicaControllerCoordinator{
-  private NodeIDType nodeID;
-  private Replicable app;
+  private final NodeIDType nodeID;
+  private final InterfaceNodeConfig<NodeIDType> nodeConfig;
+  private final Replicable app;
 
-  public NoCoordinationReplicaControllerCoordinator(NodeIDType nodeID, Replicable app) {
+  public NoCoordinationReplicaControllerCoordinator(NodeIDType nodeID,  InterfaceNodeConfig<NodeIDType> nodeConfig, Replicable app) {
     this.nodeID = nodeID;
+    this.nodeConfig = nodeConfig;
     this.app = app;
   }
 
@@ -31,12 +34,12 @@ public class NoCoordinationReplicaControllerCoordinator<NodeIDType> implements R
       switch (type) {
         // no coordination needed on any requests
         case ADD_RECORD: // set a field here to know this node received request from client, and should send confirmation
-          AddRecordPacket recordPacket = new AddRecordPacket(request);
+          AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(request, nodeConfig);
           recordPacket.setNameServerID(nodeID);
           app.handleDecision(null, recordPacket.toString(), false);
           break;
         case REMOVE_RECORD: // set a field here to know this node received request from client, and should send confirmation
-          RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
+          RemoveRecordPacket<NodeIDType> removePacket = new RemoveRecordPacket<NodeIDType>(request, nodeConfig);
           removePacket.setNameServerID(nodeID);
           app.handleDecision(null, removePacket.toString(), false);
           break;

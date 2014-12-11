@@ -45,7 +45,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   /**
    * nio server
    */
-  private final InterfaceJSONNIOTransport nioServer;
+  private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
   /**
    * Object provides interface to the database table storing name records
@@ -57,7 +57,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
-  private PingManager pingManager;
+  private PingManager<NodeIDType> pingManager;
 
   /**
    * Construct the GnsReconfigurable object.
@@ -128,7 +128,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests
-          DNSPacket dnsPacket = new DNSPacket(json, gnsNodeConfig);
+          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, gnsNodeConfig);
           if (!dnsPacket.isQuery()) {
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
@@ -137,7 +137,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket(json), this, noCoordinationState, recovery);
+          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, gnsNodeConfig), this, noCoordinationState, recovery);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
@@ -149,17 +149,17 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
          * Packets sent from replica controller *
          */
         case ACTIVE_ADD: // sent when new name is added to GNS
-          AddRecordPacket addRecordPacket = new AddRecordPacket(json);
+          AddRecordPacket<NodeIDType> addRecordPacket = new AddRecordPacket<NodeIDType>(json, gnsNodeConfig);
           Add.handleActiveAdd(addRecordPacket, this);
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          Remove.executeActiveRemove(new OldActiveSetStopPacket(json), this, noCoordinationState, recovery);
+          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json), this, noCoordinationState, recovery);
           break;
         // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:
-          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket(json), this);
+          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json), this);
           break;
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);

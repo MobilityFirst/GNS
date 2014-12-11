@@ -40,13 +40,13 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
   // this is the app object
   private Replicable paxosInterface;
 
-  private AbstractPaxosManager paxosManager;
+  private AbstractPaxosManager<NodeIDType> paxosManager;
 
   // if true, reads are coordinated as well.
   private boolean readCoordination = false;
-  private InterfaceNodeConfig nodeConfig;
+  private InterfaceNodeConfig<NodeIDType> nodeConfig;
 
-  public StaticReplicationCoordinator(NodeIDType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public StaticReplicationCoordinator(NodeIDType nodeID, InterfaceJSONNIOTransport<NodeIDType> nioServer, InterfaceNodeConfig<NodeIDType> nodeConfig,
                                       Replicable paxosInterface, PaxosConfig paxosConfig, boolean readCoordination) {
     this.nodeID = nodeID;
     this.nodeConfig = nodeConfig;
@@ -82,7 +82,7 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
           break;
         // call propose
         case UPDATE: // updates need coordination
-          UpdatePacket update = new UpdatePacket(request);
+          UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(request, nodeConfig);
           update.setNameServerID(nodeID);
           Random r = new Random(update.getName().hashCode());
           Set replicaControllers = ConsistentHashing.getReplicaControllerSet(update.getName());
@@ -141,7 +141,7 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
         case DNS: // todo send latest actives to client with this request.
 
           if (readCoordination) {
-            DNSPacket dnsPacket = new DNSPacket(request, nodeConfig);
+            DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(request, nodeConfig);
             if (dnsPacket.isQuery()) {
               dnsPacket.setResponder(nodeID);
               paxosID = paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(dnsPacket.getGuid()), dnsPacket.toString());

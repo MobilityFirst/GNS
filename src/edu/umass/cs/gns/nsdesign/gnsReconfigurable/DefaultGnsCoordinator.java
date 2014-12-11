@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -16,12 +17,13 @@ import org.json.JSONObject;
  */
 public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator {
 
-  private NodeIDType nodeID;
+  private final NodeIDType nodeID;
+  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  private final Replicable replicable;
 
-  private Replicable replicable;
-
-  public DefaultGnsCoordinator(NodeIDType nodeID, Replicable replicable) {
+  public DefaultGnsCoordinator(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, Replicable replicable) {
     this.nodeID = nodeID;
+    this.gnsNodeConfig = gnsNodeConfig;
     this.replicable = replicable;
   }
 
@@ -39,7 +41,7 @@ public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator 
         // no coordination needed for any request.
 
         case UPDATE: // set a field in update packet because LNS may not set this field correctly.
-          UpdatePacket update = new UpdatePacket(request);
+          UpdatePacket update = new UpdatePacket<NodeIDType>(request, gnsNodeConfig);
           update.setNameServerID(nodeID);
           replicable.handleDecision(null, update.toString(), false);
           break;

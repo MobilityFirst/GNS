@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
@@ -130,8 +131,8 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
    * @param json JSONObject that represents this packet
    * @throws org.json.JSONException
    */
-  public AddRecordPacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.opt(NAMESERVER_ID),
+  public AddRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
@@ -139,18 +140,16 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
+    this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
+    //this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
-    //this.localNameServerID = json.getInt(LOCALNAMESERVERID);
     this.ttl = json.getInt(TIME_TO_LIVE);
-    //this.nameServerID = new NodeIDType(json.getString(NAMESERVER_ID));
     if (json.has(ACTIVE_NAMESERVERS)) {
-      this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));
-      //this.activeNameServers = JSONUtils.JSONArrayToSetInteger(json.getJSONArray(ACTIVE_NAMESERVERS));
+      this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));;
     }
   }
 

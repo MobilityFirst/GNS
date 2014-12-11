@@ -42,7 +42,7 @@ public class AddRemove {
    */
   static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
-    AddRecordPacket addRecordPacket = new AddRecordPacket(json);
+    AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
     int lnsReqID = handler.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
     handler.addRequestInfo(lnsReqID, info);
@@ -66,7 +66,7 @@ public class AddRemove {
   static void handlePacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
-    RemoveRecordPacket removeRecord = new RemoveRecordPacket(json);
+    RemoveRecordPacket removeRecord = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
     int lnsReqID = handler.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), null, removeRecord, handler);
     handler.addRequestInfo(lnsReqID, info);

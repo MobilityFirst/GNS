@@ -53,15 +53,15 @@ public class NameServer<NodeIDType> implements Shutdownable {
 
   private ReplicaControllerCoordinator replicaControllerCoordinator; // replica control logic
 
-  private ReplicaController replicaController;
+  private ReplicaController<NodeIDType> replicaController;
 
   private NSListenerAdmin admin;
 
-  private GnsReconfigurableInterface gnsReconfigurable;
+  private GnsReconfigurableInterface<NodeIDType> gnsReconfigurable;
 
-  private InterfaceJSONNIOTransport tcpTransport;
+  private InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
 
-  private MongoRecords mongoRecords;
+  private MongoRecords<NodeIDType> mongoRecords;
 
   /**
    * Constructor for name server object. It takes the list of parameters as a config file.
@@ -118,13 +118,13 @@ public class NameServer<NodeIDType> implements Shutdownable {
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
     // init transport
-    NSPacketDemultiplexer nsDemultiplexer = new NSPacketDemultiplexer(this, nodeID);
+    NSPacketDemultiplexer<NodeIDType> nsDemultiplexer = new NSPacketDemultiplexer<NodeIDType>(this, nodeID);
     if (Config.emulatePingLatencies) {
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
       GNS.getLogger().info(nodeID.toString() + " Emulating delays ... ");
     }
     JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
-    JSONNIOTransport gnsnioTransport = new JSONNIOTransport(nodeID, gnsNodeConfig, worker);
+    JSONNIOTransport<NodeIDType> gnsnioTransport = new JSONNIOTransport<NodeIDType>(nodeID, gnsNodeConfig, worker);
     new Thread(gnsnioTransport).start();
     tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, executorService);
     // be careful to give same 'nodeID' to everyone
@@ -152,7 +152,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
     GNS.getLogger().info(nodeID.toString() + " Replica controller initialized");
 
     if (Config.singleNS) {
-      replicaControllerCoordinator = new NoCoordinationReplicaControllerCoordinator(nodeID, replicaController);
+      replicaControllerCoordinator = new NoCoordinationReplicaControllerCoordinator(nodeID, gnsNodeConfig, replicaController);
     } else {
       PaxosConfig paxosConfig = new PaxosConfig();
       paxosConfig.setDebugMode(Config.debuggingEnabled);

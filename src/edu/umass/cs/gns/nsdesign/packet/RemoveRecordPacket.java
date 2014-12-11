@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,18 +46,17 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    */
   private final String name;
 
-   /**
+  /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
    */
   private final NodeIDType sourceId;
 
-
   /**
    * Constructs a new RemoveRecordPacket with the given name and value.
    *
    * @param sourceId the originator of this packet (either a server Id or -1 to indicate The intercessor)
-   * @param requestId  Unique identifier used by the entity making the initial request to confirm
+   * @param requestId Unique identifier used by the entity making the initial request to confirm
    * @param name Host/domain/device name
    * @param lnsAddress
    */
@@ -74,15 +74,16 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param json JSONObject that represents this packet
    * @throws org.json.JSONException
    */
-  public RemoveRecordPacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.opt(NAMESERVER_ID),
+  public RemoveRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
       Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
     }
     this.type = Packet.getPacketType(json);
-    this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
+    this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
+    //this.sourceId = json.has(SOURCE_ID) ? (NodeIDType) json.get(SOURCE_ID) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);

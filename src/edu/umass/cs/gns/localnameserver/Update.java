@@ -44,7 +44,7 @@ public class Update {
   public static void handlePacketUpdate(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
 
-    UpdatePacket updatePacket = new UpdatePacket(json);
+    UpdatePacket updatePacket = new UpdatePacket(json, handler.getGnsNodeConfig());
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     int lnsReqID = handler.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), null, updatePacket, handler);

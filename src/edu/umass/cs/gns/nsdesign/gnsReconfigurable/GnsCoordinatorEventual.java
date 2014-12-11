@@ -34,7 +34,7 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
   // this is the app object
   private Replicable paxosInterface;
 
-  private AbstractPaxosManager paxosManager;
+  private AbstractPaxosManager<NodeIDType> paxosManager;
 
   // if true, reads are coordinated as well.
   private boolean readCoordination = false;
@@ -49,7 +49,7 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
     this.paxosInterface = paxosInterface;
     this.readCoordination = readCoordination;
     this.nioTransport = nioServer;
-    this.paxosManager = new PaxosManager(nodeID, nodeConfig,
+    this.paxosManager = new PaxosManager<NodeIDType>(nodeID, nodeConfig,
             new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
   }
 
@@ -74,7 +74,7 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
         // call propose
         case UPDATE: // updates need coordination
 
-          UpdatePacket update = new UpdatePacket(request);
+          UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(request, nodeConfig);
           Set<NodeIDType> nodeIDs = paxosManager.getPaxosNodeIDs(update.getName());
           if (update.getNameServerID().equals(nodeID) && nodeIDs!= null) {
             for (NodeIDType x: nodeIDs) {
@@ -106,25 +106,26 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
         case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
           // calling handle decision before creating paxos instance to insert state for name in database.
           paxosInterface.handleDecision(null, request.toString(), false);
-          AddRecordPacket recordPacket = new AddRecordPacket(request);
-          paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION, ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
+          AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(request, nodeConfig);
+          paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION,
+                  (Set<NodeIDType>) ConsistentHashing.getReplicaControllerSet(recordPacket.getName()), paxosInterface);
           if (Config.debuggingEnabled) GNS.getLogger().fine("Added paxos instance:" + recordPacket.getName());
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
           // active replica has already put initial state for the name in DB. we only need to create paxos instance.
-          NewActiveSetStartupPacket newActivePacket = new NewActiveSetStartupPacket(request, nodeConfig);
+          NewActiveSetStartupPacket<NodeIDType> newActivePacket = new NewActiveSetStartupPacket<NodeIDType>(request, nodeConfig);
           paxosManager.createPaxosInstance(newActivePacket.getName(), (short) newActivePacket.getNewActiveVersion(),
                   newActivePacket.getNewActiveNameServers(), paxosInterface);
           break;
 
         // no coordination needed for these requests
         case DNS:
-          DNSPacket dnsPacket = new DNSPacket(request, nodeConfig);
+          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(request, nodeConfig);
           String name = dnsPacket.getGuid();
 
           Set<NodeIDType> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
-            RequestActivesPacket requestActives = new RequestActivesPacket(name, dnsPacket.getLnsAddress(), 0, nodeID);
+            RequestActivesPacket<NodeIDType> requestActives = new RequestActivesPacket<NodeIDType>(name, dnsPacket.getLnsAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);
             nioTransport.sendToAddress(dnsPacket.getLnsAddress(), requestActives.toJSONObject());
           }

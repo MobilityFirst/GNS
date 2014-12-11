@@ -31,26 +31,28 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
   private final NodeIdType nodeID;
-  private AbstractPaxosManager paxosManager;
+  private final InterfaceNodeConfig<NodeIdType> nodeConfig;
+  private AbstractPaxosManager<NodeIdType> paxosManager;
 
   private Replicable paxosInterface;
 
-  public ReplicaControllerCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport nioServer, InterfaceNodeConfig nodeConfig,
+  public ReplicaControllerCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport<NodeIdType> nioServer, InterfaceNodeConfig<NodeIdType> nodeConfig,
           Replicable paxosInterface, PaxosConfig paxosConfig) {
     this.nodeID = nodeID;
+    this.nodeConfig = nodeConfig;
 
     if (!Config.useOldPaxos) {
       GNS.getLogger().info("Using gigapaxos");
       this.paxosInterface = paxosInterface;
-      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager(nodeID, nodeConfig, 
-              new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
+      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIdType>(nodeID, nodeConfig, 
+              new PacketTypeStamper<NodeIdType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
     } else {
       GNS.getLogger().info("Using old Paxos (not gigapaxos)");
       this.paxosInterface = paxosInterface;
       paxosConfig.setConsistentHashCoordinatorOrder(true);
-      this.paxosManager = new PaxosManager(nodeID, nodeConfig,
-              new PacketTypeStamper(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
+      this.paxosManager = new PaxosManager<NodeIdType>(nodeID, nodeConfig,
+              new PacketTypeStamper<NodeIdType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
     }
     createPrimaryPaxosInstances();
@@ -81,24 +83,22 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           paxosManager.handleIncomingPacket(request);
           break;
         case ADD_RECORD:
-          AddRecordPacket recordPacket = new AddRecordPacket(request);
-    	  // FIXME NodeId: Makes no to cast generic type to NodeIDType
+          AddRecordPacket<NodeIdType> recordPacket = new AddRecordPacket<NodeIdType>(request, nodeConfig);
           recordPacket.setNameServerID(nodeID);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), recordPacket.toString());
           break;
         case REMOVE_RECORD:
-          RemoveRecordPacket removePacket = new RemoveRecordPacket(request);
-    	  // FIXME NodeId: Makes no to cast generic type to NodeIDType
+          RemoveRecordPacket<NodeIdType> removePacket = new RemoveRecordPacket<NodeIdType>(request, nodeConfig);
           removePacket.setNameServerID(nodeID);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
           break;
         // Packets sent from active replica
         case RC_REMOVE:
-          removePacket = new RemoveRecordPacket(request);
+          removePacket = new RemoveRecordPacket<NodeIdType>(request, nodeConfig);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
           break;
         case NEW_ACTIVE_PROPOSE:
-          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(request);
+          NewActiveProposalPacket<NodeIdType> activePropose = new NewActiveProposalPacket<NodeIdType>(request);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), activePropose.toString());
           break;
         case GROUP_CHANGE_COMPLETE:
