@@ -1124,7 +1124,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param paxosID <<code>paxosID</code> of this paxos instance.
    * @param msg
    */
-  private   void parsePaxosStart(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
+  private void parsePaxosStart(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
                                      String paxosID, String msg) {
 
     if (paxosInstances.containsKey(getPaxosKey(paxosID)) &&
@@ -1135,6 +1135,8 @@ public class PaxosLogger<NodeIDType> extends Thread {
       return;
     }
 
+    // FIXME: This isn't going to work for non-string NodeIDs. We
+    // need a valueOf conversion here, but the're no object available currently to do this.
     Set<NodeIDType> nodeIDs = Util.stringToSetOfNodeId(msg);
 
     if (debugMode) {

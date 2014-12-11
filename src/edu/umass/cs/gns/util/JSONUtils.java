@@ -151,7 +151,7 @@ public class JSONUtils {
    * @return ArrayList with the content of JSONArray.
    * @throws JSONException
    */
-  public static Set<Object> JSONArrayToSetNodeIdStringOldVersion(JSONArray json) throws JSONException {
+  public static Set<Object> JSONArrayToSetNodeIdString(JSONArray json) throws JSONException {
     Set<Object> set = new HashSet<Object>();
     if (json == null) {
       return set;
@@ -188,7 +188,7 @@ public class JSONUtils {
         case SET_STRING:
           return JSONUtils.JSONArrayToSetString(jsonObject.getJSONArray(field.getName()));
         case SET_NODE_ID_STRING:
-          return JSONUtils.JSONArrayToSetNodeIdStringOldVersion(jsonObject.getJSONArray(field.getName()));
+          return JSONUtils.JSONArrayToSetNodeIdString(jsonObject.getJSONArray(field.getName()));
         case LIST_INTEGER:
           return JSONUtils.JSONArrayToArrayListInteger(jsonObject.getJSONArray(field.getName()));
         case LIST_STRING:
@@ -232,9 +232,6 @@ public class JSONUtils {
           break;
         case SET_NODE_ID_STRING:
           Set set = (Set) value;
-          if (Config.debuggingEnabled) {
-            GNS.getLogger().finer("$$$$$$$$$$ Set: " + (set != null ? Util.setOfNodeIdToString(set) : " is null "));
-          }
           jsonObject.put(field.getName(), Util.nodeIdSetToStringSet(set));
           break;
         case LIST_INTEGER:

@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -189,17 +190,7 @@ public class Util {
 	  for(int i=0; i<array.length; i++) if(array[i]==member) return true;
 	  return false;
   }
-
-  public static Object[] stringToNodeIdArray(String string) {
-    string = string.replaceAll("\\[", "").replaceAll("\\]", "").replaceAll("\\s", "");
-    String[] tokens = string.split(",");
-    Object[] array = new Object[tokens.length];
-    for (int i = 0; i < array.length; i++) {
-      array[i] = tokens[i];
-    }
-    return array;
-  }
-
+  
   public static Set<String> arrayOfNodeIdsToStringSet(Object[] array) {
 	  Set<String> set = new HashSet<String>();
 	  for(Object member : array) {
@@ -240,9 +231,7 @@ public class Util {
   public static Set stringToSetOfNodeId(String string) {
     Set nodeIds = new HashSet();
     String[] tokens = string.split(":");
-    for (String s : tokens) {
-      nodeIds.add(s);
-    }
+    nodeIds.addAll(Arrays.asList(tokens));
     return nodeIds;
   }
 

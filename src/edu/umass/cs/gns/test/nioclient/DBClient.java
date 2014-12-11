@@ -13,6 +13,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
+import org.json.JSONArray;
 
 /**
  * DBClient is an alternate interface to use GNS, which we expect to be used only for testing purposes. This interface
@@ -80,6 +81,16 @@ class DBClient {
 	public Integer valueOf(String nodeAsString) {
 		return Integer.valueOf(nodeAsString);
 	}
+
+      @Override
+      public Set<Integer> getValuesFromStringSet(Set<String> strNodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
+      }
+
+      @Override
+      public Set<Integer> getValuesFromJSONArray(JSONArray array) throws JSONException {
+        throw new UnsupportedOperationException("Not supported yet.");
+      }
     };
     this.nioTransport = new NIOTransport(0, nodeConfig, new JSONMessageExtractor(demux));
     new Thread(nioTransport).start();

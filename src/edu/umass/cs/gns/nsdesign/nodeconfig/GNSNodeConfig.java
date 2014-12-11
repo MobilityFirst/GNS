@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
@@ -26,6 +27,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * This class parses a hosts file to gather information about each name server (not local) server in the system.
@@ -355,6 +358,24 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
         throw new IllegalArgumentException("Bad NodeIDType");
     }
   }
+  
+  @Override
+  public Set<NodeIDType> getValuesFromStringSet(Set<String> strNodes) {
+    Set<NodeIDType> nodes = new HashSet<NodeIDType>();
+    for (String strNode : strNodes) {
+      nodes.add(valueOf(strNode));
+    }
+    return nodes;
+  }
+  
+  public Set<NodeIDType> getValuesFromJSONArray(JSONArray array) throws JSONException {
+    Set<NodeIDType> nodes = new HashSet<NodeIDType>();
+    for (int i = 0; i < array.length(); i++) {
+      nodes.add(valueOf(array.getString(i)));
+    }
+    return nodes;
+  }
+
 
   /**
    * Returns the appropriate NodeIDClass corresponding to the NodeIDType.

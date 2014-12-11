@@ -31,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import org.json.JSONArray;
 
 /**
  * This class is the intermediate between a DBClient and a local name server. DBClient is an alternate interface to
@@ -87,6 +88,16 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
       @Override
       public Integer valueOf(String nodeAsString) {
         return Integer.valueOf(nodeAsString);
+      }
+
+      @Override
+      public Set<Integer> getValuesFromStringSet(Set<String> strNodes) {
+        throw new UnsupportedOperationException("Not supported yet.");
+      }
+
+      @Override
+      public Set<Integer> getValuesFromJSONArray(JSONArray array) throws JSONException {
+        throw new UnsupportedOperationException("Not supported yet.");
       }
     };
     this.nioTransport = new NIOTransport(ID, nodeConfig, new JSONMessageExtractor(this));
