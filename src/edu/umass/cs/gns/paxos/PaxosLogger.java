@@ -278,10 +278,10 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * exist. Keys of {@code ConcurrentHashMap} are paxos keys, not paxos IDs. See method
    * <code>getPaxosKey</code>).
    */
-  public ConcurrentHashMap<String, PaxosReplicaInterface> recoverPaxosLogs() {
+  public ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> recoverPaxosLogs() {
 
     // initialize folder
-    ConcurrentHashMap<String, PaxosReplicaInterface> replicas;
+    ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> replicas;
     replicas = recoverPaxosInstancesFromLogs();
 
     logFileName = getNextFileName();
@@ -539,10 +539,10 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @return {@code ConcurrentHashMap} of {@code PaxosReplica} objects that includes log messages, {@code null}
    * if no object exists. Keys of {@code ConcurrentHashMap} are paxosIDs, values are {@code PaxosReplica} objects.
    */
-  ConcurrentHashMap<String, PaxosReplicaInterface> readAllPaxosLogs() {
+  ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> readAllPaxosLogs() {
 //    this.nodeID = nodeID;
     // step 1: recover list of paxos instances
-    ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = recoverListOfPaxosInstances();
+    ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances = recoverListOfPaxosInstances();
     if (paxosInstances == null || paxosInstances.size() == 0) {
       return paxosInstances;
     }
@@ -755,10 +755,10 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * if no object exists. Keys of {@code ConcurrentHashMap} are paxos keys, not paxosIDs. See method
    * getPaxosKey).
    */
-  private  ConcurrentHashMap<String, PaxosReplicaInterface> recoverPaxosInstancesFromLogs() {
+  private  ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> recoverPaxosInstancesFromLogs() {
 
     // step 1: recover list of paxos instances
-    ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = recoverListOfPaxosInstances();
+    ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances = recoverListOfPaxosInstances();
     if (paxosInstances == null) {
       return null;
     }
@@ -784,9 +784,9 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @return A <code>ConcurrentHashMap</code> whose key is the paxosKey obtained from <code>paxosID</code>,
    * and value is a <code>PaxosReplicaInterface</code> object.
    */
-  private  ConcurrentHashMap<String, PaxosReplicaInterface> recoverListOfPaxosInstances() {
+  private  ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> recoverListOfPaxosInstances() {
 
-    ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
+    ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>>();
 
     File f = new File(getPaxosIDsFile());
 
@@ -795,7 +795,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
         GNS.getLogger().fine("Paxos Recovery: " + getPaxosIDsFile() + " does not exist. "
                 + "No further recovery possible.");
       }
-      return new ConcurrentHashMap<String, PaxosReplicaInterface>();
+      return new ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>>();
     }
 
     if (debugMode) {
@@ -830,7 +830,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * this paxos instance. We update the paxos instance based on the state found in this file.
    * @param paxosInstances <code>ConcurrentHashMap</code> with list of paxos instances.
    */
-  private  void recoverMostRecentStateOfPaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
+  private  void recoverMostRecentStateOfPaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances) {
     GNS.getLogger().fine("Keys in paxos instance: " + paxosInstances.keySet());
     File f = new File(getPaxosStateFolder());
     if (f.exists() == false) {
@@ -895,7 +895,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * We update paxos instances with messages that were written after the most recent snapshot.
    * @param paxosInstances <<code>ConcurrentHashMap</code> with list of paxos instances.
    */
-  private  void recoverLogMessagesAfterLoggedState(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances) {
+  private  void recoverLogMessagesAfterLoggedState(ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances) {
 
     // toString list of log files
     String[] fileList = getSortedLogFileList();
@@ -948,7 +948,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param paxosInstances set of paxos instances
    * @param line paxos log line from either <code>paxosIDsFile</code> or the log message files.
    */
-  private  void parseLine(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String line) {
+  private  void parseLine(ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances, String line) {
     if (line.length() <= 1) {
       return;
     }
@@ -980,7 +980,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param log log message to be processed
    * @throws JSONException
    */
-  private  void updatePaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
+  private  void updatePaxosInstances(ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances,
                                            PaxosLogMessage log) throws JSONException {
     if (paxosInstances == null || log == null) {
       if (debugMode) {
@@ -1130,7 +1130,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param paxosID <<code>paxosID</code> of this paxos instance.
    * @param msg
    */
-  private void parsePaxosStart(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances,
+  private void parsePaxosStart(ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances,
                                      String paxosID, String msg) {
 
     if (paxosInstances.containsKey(getPaxosKey(paxosID)) &&
@@ -1161,7 +1161,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param paxosInstances <code>ConcurrentHashMap</code> with current list of paxos instances.
    * @param paxosID <<code>paxosID</code> of the paxos instance.
    */
-  private  void parsePaxosStop(ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances, String paxosID,
+  private  void parsePaxosStop(ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances, String paxosID,
                                      String msg) {
 
     if (gnsRunning) { //
@@ -1173,7 +1173,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
       }
     }
     else { //
-      PaxosReplicaInterface paxosReplica = paxosInstances.get(paxosID);
+      PaxosReplicaInterface<NodeIDType> paxosReplica = paxosInstances.get(paxosID);
       if (paxosReplica != null) paxosReplica.recoverStop();
     }
 
@@ -1183,9 +1183,9 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * Parse a message logged after a paxos replica commits a given request. (We also use term decision for committed
    * requests). We pass the committed request to the <code>PaxosReplicaInterface</code> object.
    */
-  private  void parseDecision(PaxosReplicaInterface paxosReplica, String message) throws JSONException {
+  private  void parseDecision(PaxosReplicaInterface<NodeIDType> paxosReplica, String message) throws JSONException {
     if (paxosReplica != null && message != null) {
-      ProposalPacket proposalPacket = new ProposalPacket(new JSONObject(message));
+      ProposalPacket<NodeIDType> proposalPacket = new ProposalPacket<NodeIDType>(new JSONObject(message));
       paxosReplica.recoverDecision(proposalPacket);
     }
   }
@@ -1194,9 +1194,9 @@ public class PaxosLogger<NodeIDType> extends Thread {
    *  Parse a prepare message logged by the paxos replica. We pass the prepare message to the
    *  <code>PaxosReplicaInterface</code> object.
    */
-  private  void parsePrepare(PaxosReplicaInterface replica, String msg) throws JSONException {
+  private  void parsePrepare(PaxosReplicaInterface<NodeIDType> replica, String msg) throws JSONException {
     if (replica != null && msg != null) {
-      PreparePacket packet = new PreparePacket(new JSONObject(msg));
+      PreparePacket<NodeIDType> packet = new PreparePacket<NodeIDType>(new JSONObject(msg), nodeConfig);
       replica.recoverPrepare(packet);
     }
   }
@@ -1205,7 +1205,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * Parse a accept message logged by the paxos replica. We pass the accept message to the
    *  <code>PaxosReplicaInterface</code> object.
    */
-  private  void parseAccept(PaxosReplicaInterface replica, String msg) throws JSONException {
+  private  void parseAccept(PaxosReplicaInterface<NodeIDType> replica, String msg) throws JSONException {
     if (replica != null && msg != null) {
       AcceptPacket packet = new AcceptPacket(new JSONObject(msg));
       replica.recoverAccept(packet);
@@ -1294,7 +1294,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
             return false;
           }
         case PREPARE:
-          PreparePacket<NodeIDType> prepare = new PreparePacket<NodeIDType>(new JSONObject(logMsg.getMessage()));
+          PreparePacket<NodeIDType> prepare = new PreparePacket<NodeIDType>(new JSONObject(logMsg.getMessage()), nodeConfig);
           if (stateFileName.ballot.compareTo(prepare.getBallot()) >= 0) {
             return true; // notice >= here
           } else {

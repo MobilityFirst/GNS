@@ -3,6 +3,7 @@ package edu.umass.cs.gns.paxos.paxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.paxos.Ballot;
+import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * Created with IntelliJ IDEA.
@@ -21,7 +22,7 @@ public class AcceptReplyPacket<NodeIDType> extends PaxosPacket {
     /**
      * ballot number
      */
-    public Ballot ballot;
+    public Ballot<NodeIDType> ballot;
 
     /**
      * slot number
@@ -38,7 +39,7 @@ public class AcceptReplyPacket<NodeIDType> extends PaxosPacket {
     private static final  String SLOT_NUMBER = "ar3";
 //    private static final  String COMMIT_SLOT = "ar4";
 
-    public AcceptReplyPacket(NodeIDType nodeID, Ballot ballot, int slotNumber) {//, int commitSlot
+    public AcceptReplyPacket(NodeIDType nodeID, Ballot<NodeIDType> ballot, int slotNumber) {//, int commitSlot
         this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
         this.nodeID = nodeID;
         this.ballot = ballot;
@@ -46,11 +47,11 @@ public class AcceptReplyPacket<NodeIDType> extends PaxosPacket {
 //        this.commitSlot = commitSlot;
     }
 
-    public AcceptReplyPacket(JSONObject jsonObject) throws  JSONException{
+    public AcceptReplyPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws  JSONException{
         this.packetType = PaxosPacketType.ACCEPT_REPLY.getInt();
-        this.nodeID = (NodeIDType) jsonObject.getString(NODE_ID);
-        this.ballot = new Ballot(jsonObject.getString(BALLOT_NUMBER));
-        this.slotNumber = jsonObject.getInt(SLOT_NUMBER);
+        this.nodeID = unstringer.valueOf(json.getString(NODE_ID));
+        this.ballot = new Ballot<NodeIDType>(json.getString(BALLOT_NUMBER));
+        this.slotNumber = json.getInt(SLOT_NUMBER);
 //        this.commitSlot = jsonObject.getInt(COMMIT_SLOT);
     }
 

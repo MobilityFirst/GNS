@@ -22,14 +22,14 @@ import java.util.Set;
  * @author Abhigyan
  * @param <NodeIDType>
  ************************************************************/
-public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterface{
+public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterface<NodeIDType> {
   @Override
-  public ReplicationOutput newActiveReplica(ReconfiguratorInterface rc, ReplicaControllerRecord rcRecord, int numReplica, int count)
+  public ReplicationOutput newActiveReplica(ReconfiguratorInterface<NodeIDType> rc, ReplicaControllerRecord<NodeIDType> rcRecord, int numReplica, int count)
           throws FieldNotFoundException {
     // random replicas will be selected deterministically for each name.
 
     if (numReplica == rc.getGnsNodeConfig().getNumberOfNodes()) {
-      return new ReplicationOutput(new HashSet<NodeIDType>(rc.getGnsNodeConfig().getNodeIDs()));
+      return new ReplicationOutput<NodeIDType>(new HashSet<NodeIDType>(rc.getGnsNodeConfig().getNodeIDs()));
     }
 
     Set<NodeIDType> activeNameServers = new HashSet<NodeIDType>();
@@ -53,13 +53,13 @@ public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterf
         do {
           numTries += 1;
           int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
-          NodeIDType newActiveNameServerId = (NodeIDType) getSetIndex(rc.getGnsNodeConfig().getNodeIDs(),nsIndex);
+          NodeIDType newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(),nsIndex);
           added = newActiveNameServerSet.add(newActiveNameServerId)
                   && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != -1;
         } while (!added && numTries < NUM_RETRY);
       }
 
-      return new ReplicationOutput(newActiveNameServerSet);
+      return new ReplicationOutput<NodeIDType>(newActiveNameServerSet);
     } else if (numReplica < numActiveNameServers && count > 1) {
       //Randomly remove old active name server
 
@@ -71,7 +71,7 @@ public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterf
         oldActiveNameServerSet.remove(oldActiveNameServerSet.size() - 1);
       }
 
-      return new ReplicationOutput(new HashSet<NodeIDType>(oldActiveNameServerSet));
+      return new ReplicationOutput<NodeIDType>(new HashSet<NodeIDType>(oldActiveNameServerSet));
     } else {
       if (count == 1) {
         Set<NodeIDType> newActiveNameServerSet = new HashSet<NodeIDType>();
@@ -82,16 +82,16 @@ public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterf
           do {
             numTries += 1;
             int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
-            NodeIDType newActiveNameServerId = (NodeIDType) getSetIndex(rc.getGnsNodeConfig().getNodeIDs(),nsIndex);           
+            NodeIDType newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(),nsIndex);           
             added = newActiveNameServerSet.add(newActiveNameServerId)
                     && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != GNSNodeConfig.INVALID_PING_LATENCY;
           } while (!added && numTries < NUM_RETRY);
         }
 
-        return new ReplicationOutput(newActiveNameServerSet);
+        return new ReplicationOutput<NodeIDType>(newActiveNameServerSet);
       } else {
         //Return the old set of active name servers
-        return new ReplicationOutput(activeNameServers);
+        return new ReplicationOutput<NodeIDType>(activeNameServers);
       }
     }
   }

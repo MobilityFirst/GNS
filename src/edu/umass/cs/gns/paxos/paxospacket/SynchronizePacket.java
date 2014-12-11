@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,11 +24,9 @@ public class SynchronizePacket<NodeIDType> extends PaxosPacket {
 
   String NODE = "x1";
 
-  public SynchronizePacket(JSONObject jsonObject) throws JSONException {
-
+  public SynchronizePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.packetType = PaxosPacketType.SYNC_REQUEST.getInt();
-    this.nodeID = (NodeIDType) jsonObject.get(NODE);
-
+    this.nodeID = unstringer.valueOf(json.getString(NODE));
   }
 
   @Override

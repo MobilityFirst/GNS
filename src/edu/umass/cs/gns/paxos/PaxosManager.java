@@ -42,6 +42,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
    * nodeID of this node.
    */
   NodeIDType nodeID;
+  
+  InterfaceNodeConfig<NodeIDType> nodeConfig;
 
   /**
    * When paxos is run independently {@code nioServer} is used to send messages between paxos replicas and client.
@@ -61,7 +63,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
    * request would have needed an additional database lookup to find what the current X is for this name.
    *
    */
-  final ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances;
+  final ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances;
 
   Replicable clientRequestHandler;
 
@@ -70,7 +72,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
   /**
    *
    */
-  final TreeSet<ProposalStateAtCoordinator> proposalStates = new TreeSet<ProposalStateAtCoordinator>();
+  final TreeSet<ProposalStateAtCoordinator<NodeIDType>> proposalStates = new TreeSet<ProposalStateAtCoordinator<NodeIDType>>();
 
   /**
    * Paxos logs are garbage collected at this interval
@@ -123,6 +125,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
     // set to false to cancel non-periodic delayed tasks upon shutdown
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     this.nodeID = nodeID;
+    this.nodeConfig = nodeConfig;
     assert nioServer instanceof PacketTypeStamper;
     this.nioServer = nioServer;
     this.clientRequestHandler = outputHandler;
@@ -130,12 +133,12 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
     this.consistentHashCoordinatorOrder = paxosConfig.isConsistentHashCoordinatorOrder();
     paxosLogger = new PaxosLogger<NodeIDType>(paxosConfig.getPaxosLogFolder(), nodeID, nodeConfig, this);
     long t0 = System.currentTimeMillis();
-    ConcurrentHashMap<String, PaxosReplicaInterface> myPaxosInstances = paxosLogger.recoverPaxosLogs();
+    ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> myPaxosInstances = paxosLogger.recoverPaxosLogs();
 
     long t1 = System.currentTimeMillis();
     GNS.getLogger().info("Time to recover paxos logs ... " + (t1 - t0)/1000 + " seconds");
     if (myPaxosInstances != null) paxosInstances = myPaxosInstances;
-    else  paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface>();
+    else  paxosInstances = new ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>>();
 
     paxosLogger.start();
     if (debugMode) GNS.getLogger().fine("Paxos instances: " + paxosInstances.size());
@@ -183,9 +186,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
       return false;
     }
 
-    PaxosReplicaInterface r;
+    PaxosReplicaInterface<NodeIDType> r;
 
-    PaxosReplicaInterface r1;
+    PaxosReplicaInterface<NodeIDType> r1;
     synchronized (paxosInstances) { // paxosInstance object can be concurrently modified.
       r1 = paxosInstances.get(getPaxosKeyFromPaxosID(paxosID));
 
@@ -228,14 +231,14 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
    *
    */
   void startResendPendingMessages() {
-    ResendPendingMessagesTask task = new ResendPendingMessagesTask(this);
+    ResendPendingMessagesTask<NodeIDType> task = new ResendPendingMessagesTask<NodeIDType>(this);
     // single time execution
     executorService.scheduleAtFixedRate(task, RESEND_PENDING_MSG_INTERVAL_MILLIS,
             RESEND_PENDING_MSG_INTERVAL_MILLIS, TimeUnit.MILLISECONDS);
   }
 
-  PaxosReplicaInterface createPaxosReplicaObject(String paxosID, NodeIDType nodeID, Set<NodeIDType> nodeIDs1) {
-    return new PaxosReplica<NodeIDType>(paxosID, nodeID, nodeIDs1, this);
+  PaxosReplicaInterface<NodeIDType> createPaxosReplicaObject(String paxosID, NodeIDType nodeID, Set<NodeIDType> nodeIDs1) {
+    return new PaxosReplica<NodeIDType>(paxosID, nodeID, nodeConfig, nodeIDs1, this);
   }
 
   @Override
@@ -403,13 +406,13 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
     }
   }
 
-  void addToActiveProposals(ProposalStateAtCoordinator propState) {
+  void addToActiveProposals(ProposalStateAtCoordinator<NodeIDType> propState) {
     synchronized (proposalStates) {
       proposalStates.add(propState);
     }
   }
 
-  void removeFromActiveProposals(ProposalStateAtCoordinator propState) {
+  void removeFromActiveProposals(ProposalStateAtCoordinator<NodeIDType> propState) {
     synchronized (proposalStates){
       proposalStates.remove(propState);
     }
@@ -592,26 +595,25 @@ class PaxosPacketDemultiplexer extends AbstractPacketDemultiplexer {
 /**
  * Resend proposals (for all paxos instances) that have not yet been accepted by majority.
  */
-class ResendPendingMessagesTask extends TimerTask{
+class ResendPendingMessagesTask<NodeIDType> extends TimerTask{
 
-  PaxosManager paxosManager;
+  PaxosManager<NodeIDType> paxosManager;
 
-  public ResendPendingMessagesTask(PaxosManager paxosManager) {
+  public ResendPendingMessagesTask(PaxosManager<NodeIDType> paxosManager) {
     this.paxosManager = paxosManager;
   }
 
   @Override
   public void run() {
     // requests that will be reattempted
-    ArrayList<ProposalStateAtCoordinator> reattempts = new ArrayList<ProposalStateAtCoordinator>();
+    ArrayList<ProposalStateAtCoordinator<NodeIDType>> reattempts = new ArrayList<ProposalStateAtCoordinator<NodeIDType>>();
     // requests that will be removed because they have already been tried  'MAX_RESENDS' times
-    ArrayList<ProposalStateAtCoordinator> removeList = new ArrayList<ProposalStateAtCoordinator>();
+    ArrayList<ProposalStateAtCoordinator<NodeIDType>> removeList = new ArrayList<ProposalStateAtCoordinator<NodeIDType>>();
 
     try{
       //
       synchronized (paxosManager.proposalStates){
-        for (Object object: paxosManager.proposalStates) {
-          ProposalStateAtCoordinator propState = (ProposalStateAtCoordinator) object;
+        for (ProposalStateAtCoordinator<NodeIDType> propState: paxosManager.proposalStates) {
           if (propState.getResendCount() >= PaxosManager.MAX_RESENDS) {
             removeList.add(propState);
           }
@@ -622,7 +624,7 @@ class ResendPendingMessagesTask extends TimerTask{
         }
       }
 
-      for (ProposalStateAtCoordinator propState: removeList) {
+      for (ProposalStateAtCoordinator<NodeIDType> propState: removeList) {
         synchronized (paxosManager.proposalStates){
           paxosManager.proposalStates.remove(propState);
         }
@@ -631,7 +633,7 @@ class ResendPendingMessagesTask extends TimerTask{
                 + " pValuePacket " + propState.pValuePacket);
       }
 
-      for (ProposalStateAtCoordinator propState: reattempts) {
+      for (ProposalStateAtCoordinator<NodeIDType> propState: reattempts) {
         boolean result = propState.paxosReplica.resendPendingProposal(propState);
         if (!result) {
           synchronized (paxosManager.proposalStates){

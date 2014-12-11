@@ -35,7 +35,7 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
     this.status = json.getBoolean("status");
   }
 
-  public FailureDetectionPacket getFailureDetectionResponse() {
+  public FailureDetectionPacket<NodeIDType> getFailureDetectionResponse() {
     return new FailureDetectionPacket(this.senderNodeID,
             this.responderNodeID, true, PaxosPacketType.FAILURE_RESPONSE);
   }

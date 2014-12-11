@@ -22,7 +22,7 @@ import java.util.Set;
  * @author Abhigyan
  * @param <NodeIDType>
  */
-public class LocationBasedReplication<NodeIDType> implements ReplicationFrameworkInterface {
+public class LocationBasedReplication<NodeIDType> implements ReplicationFrameworkInterface<NodeIDType> {
 
   /**
    * Returns a new set of active name servers based on votes
@@ -38,7 +38,7 @@ public class LocationBasedReplication<NodeIDType> implements ReplicationFramewor
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
   @Override
-  public ReplicationOutput newActiveReplica(ReconfiguratorInterface rc, ReplicaControllerRecord rcRecord, int numReplica, int count) throws FieldNotFoundException {
+  public ReplicationOutput newActiveReplica(ReconfiguratorInterface<NodeIDType> rc, ReplicaControllerRecord<NodeIDType> rcRecord, int numReplica, int count) throws FieldNotFoundException {
 
     Set<NodeIDType> newActiveNameServerSet;
     Set<NodeIDType> localityBasedReplicas;
@@ -71,7 +71,7 @@ public class LocationBasedReplication<NodeIDType> implements ReplicationFramewor
           do {
             retries += 1;
             int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
-            NodeIDType newActiveNameServerId = (NodeIDType) getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
+            NodeIDType newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
             if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
               continue;
             }
@@ -81,7 +81,7 @@ public class LocationBasedReplication<NodeIDType> implements ReplicationFramewor
       }
     }
 
-    return new ReplicationOutput(newActiveNameServerSet, localityBasedReplicas);
+    return new ReplicationOutput<NodeIDType>(newActiveNameServerSet, localityBasedReplicas);
   }
 
   private boolean isHighlyLoaded(ReconfiguratorInterface rc, NodeIDType nodeID) {

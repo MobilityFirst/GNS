@@ -14,9 +14,9 @@ import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
  * want to be part of the replication framework need to 
  * implement this interface.
  * 
- * @author Hardeep Uppal
+ * @param <NodeIDType>
  */
-public interface ReplicationFrameworkInterface {
+public interface ReplicationFrameworkInterface<NodeIDType> {
 
   public final static int NUM_RETRY = 1000;
 
@@ -29,5 +29,5 @@ public interface ReplicationFrameworkInterface {
    * @return A Set containing active nameservers id.
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    **/
-  public ReplicationOutput newActiveReplica(ReconfiguratorInterface rc, ReplicaControllerRecord record, int numReplica, int count) throws FieldNotFoundException;
+  public ReplicationOutput newActiveReplica(ReconfiguratorInterface<NodeIDType> rc, ReplicaControllerRecord<NodeIDType> record, int numReplica, int count) throws FieldNotFoundException;
 }

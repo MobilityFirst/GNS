@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
 import edu.umass.cs.gns.paxos.Ballot;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,14 +13,14 @@ public class PreparePacket<NodeIDType> extends PaxosPacket {
 
   private NodeIDType coordinatorID;
 
-  private Ballot ballot;
+  private Ballot<NodeIDType> ballot;
 
   private NodeIDType receiverID;
 
   private int slotNumber;
-  private Map<Integer, PValuePacket> accepted;
+  private Map<Integer, PValuePacket<NodeIDType>> accepted;
 
-  public PreparePacket(NodeIDType coordinatorID, NodeIDType receiverID, Ballot b, PaxosPacketType packetType) {
+  public PreparePacket(NodeIDType coordinatorID, NodeIDType receiverID, Ballot<NodeIDType> b, PaxosPacketType packetType) {
     this.coordinatorID = coordinatorID;
     this.receiverID = receiverID;
     this.ballot = b;
@@ -28,41 +29,42 @@ public class PreparePacket<NodeIDType> extends PaxosPacket {
 
   }
 
-  public PreparePacket getPrepareReplyPacket(Ballot b, NodeIDType receiverID, Map<Integer, PValuePacket> accepted, int slotNumber) {
+  public PreparePacket getPrepareReplyPacket(Ballot<NodeIDType> b, NodeIDType receiverID, Map<Integer, 
+          PValuePacket<NodeIDType>> accepted, int slotNumber) {
     if (b.equals(this.ballot)) {
-      PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,
+      PreparePacket<NodeIDType> prep = new PreparePacket<NodeIDType>(this.coordinatorID, receiverID,
               this.ballot, PaxosPacketType.PREPARE_REPLY);
       prep.accepted = accepted;
       prep.slotNumber = slotNumber;
       return prep;
     }
 
-    PreparePacket prep = new PreparePacket(this.coordinatorID, receiverID,
+    PreparePacket<NodeIDType> prep = new PreparePacket<NodeIDType>(this.coordinatorID, receiverID,
             b, PaxosPacketType.PREPARE_REPLY);
     prep.accepted = accepted;
     prep.slotNumber = slotNumber;
     return prep;
   }
 
-  public PreparePacket(JSONObject json) throws JSONException {
+  public PreparePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.coordinatorID = (NodeIDType) json.get("coordinatorID");
-    this.receiverID = (NodeIDType) json.get("receiverID");
-    this.ballot = new Ballot(json.getString("ballot"));
+    this.coordinatorID = unstringer.valueOf(json.getString("coordinatorID"));
+    this.receiverID = unstringer.valueOf(json.getString("receiverID"));
+    this.ballot = new Ballot<NodeIDType>(json.getString("ballot"));
     this.slotNumber = json.getInt("slotNumber");
     if (this.packetType == PaxosPacketType.PREPARE_REPLY.getInt()) {
       this.accepted = parseJsonForAccepted(json);
     }
   }
 
-  private ConcurrentHashMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json)
+  private ConcurrentHashMap<Integer, PValuePacket<NodeIDType>> parseJsonForAccepted(JSONObject json)
           throws JSONException {
-    ConcurrentHashMap<Integer, PValuePacket> accepted = new ConcurrentHashMap<Integer, PValuePacket>();
+    ConcurrentHashMap<Integer, PValuePacket<NodeIDType>> accepted = new ConcurrentHashMap<Integer, PValuePacket<NodeIDType>>();
     if (json.has("accepted")) {
       JSONArray jsonArray = json.getJSONArray("accepted");
       for (int i = 0; i < jsonArray.length(); i++) {
         JSONObject element = jsonArray.getJSONObject(i);
-        PValuePacket pval = new PValuePacket(element);
+        PValuePacket<NodeIDType> pval = new PValuePacket<NodeIDType>(element);
         accepted.put(pval.proposal.slot, pval);
       }
     }
@@ -103,7 +105,7 @@ public class PreparePacket<NodeIDType> extends PaxosPacket {
   /**
    * @return the ballot
    */
-  public Ballot getBallot() {
+  public Ballot<NodeIDType> getBallot() {
     return ballot;
   }
 
@@ -124,7 +126,7 @@ public class PreparePacket<NodeIDType> extends PaxosPacket {
   /**
    * @return the accepted
    */
-  public Map<Integer, PValuePacket> getAccepted() {
+  public Map<Integer, PValuePacket<NodeIDType>> getAccepted() {
     return accepted;
   }
 

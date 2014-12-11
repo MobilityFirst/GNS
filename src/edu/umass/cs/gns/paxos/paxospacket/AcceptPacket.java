@@ -13,7 +13,7 @@ public class AcceptPacket<NodeIDType> extends PaxosPacket {
   /**
    * 
    */
-  public PValuePacket pValue;
+  public PValuePacket<NodeIDType> pValue;
   /**
    * slotNumber up to which decisions have been applied at sending node
    */
@@ -21,7 +21,7 @@ public class AcceptPacket<NodeIDType> extends PaxosPacket {
   String NODE = "x1";
   String SLOT = "x2";
 
-  public AcceptPacket(NodeIDType nodeID, PValuePacket pValue, PaxosPacketType packetType, int slotNumber) {
+  public AcceptPacket(NodeIDType nodeID, PValuePacket<NodeIDType> pValue, PaxosPacketType packetType, int slotNumber) {
     this.packetType = packetType.getInt();
     this.nodeID = nodeID;
     this.pValue = pValue;
@@ -30,19 +30,19 @@ public class AcceptPacket<NodeIDType> extends PaxosPacket {
   }
 
   public AcceptPacket(JSONObject json) throws JSONException {
-    this.pValue = new PValuePacket(json);
+    this.pValue = new PValuePacket<NodeIDType>(json);
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
     this.nodeID = (NodeIDType) json.get(NODE);
     this.slotNumberAtReplica = json.getInt(SLOT);
   }
 
-  public AcceptPacket getAcceptReplyPacket(NodeIDType nodeID, Ballot ballot) {
+  public AcceptPacket<NodeIDType> getAcceptReplyPacket(NodeIDType nodeID, Ballot<NodeIDType> ballot) {
     if (ballot == null) {
       ballot = this.pValue.ballot;
     }
-    ProposalPacket proposalPacket = new ProposalPacket(this.pValue.proposal.slot, pValue.proposal.req, PaxosPacketType.NULL, 0);
-    PValuePacket pValuePacket = new PValuePacket(ballot, proposalPacket);
-    AcceptPacket acceptPacket = new AcceptPacket(nodeID, pValuePacket, PaxosPacketType.ACCEPT_REPLY, 0);
+    ProposalPacket<NodeIDType> proposalPacket = new ProposalPacket<NodeIDType>(this.pValue.proposal.slot, pValue.proposal.req, PaxosPacketType.NULL, 0);
+    PValuePacket<NodeIDType> pValuePacket = new PValuePacket<NodeIDType>(ballot, proposalPacket);
+    AcceptPacket<NodeIDType> acceptPacket = new AcceptPacket<NodeIDType>(nodeID, pValuePacket, PaxosPacketType.ACCEPT_REPLY, 0);
     return acceptPacket;
   }
 

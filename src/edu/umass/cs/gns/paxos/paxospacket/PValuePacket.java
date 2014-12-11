@@ -7,12 +7,12 @@ import edu.umass.cs.gns.paxos.Ballot;
 
 import java.io.Serializable;
 
-public class PValuePacket extends PaxosPacket implements Serializable {
+public class PValuePacket<NodeIDType> extends PaxosPacket implements Serializable {
 
-  public Ballot ballot;
-  public ProposalPacket proposal;
+  public Ballot<NodeIDType> ballot;
+  public ProposalPacket<NodeIDType> proposal;
 
-  public PValuePacket(Ballot b, ProposalPacket p) {
+  public PValuePacket(Ballot<NodeIDType> b, ProposalPacket<NodeIDType> p) {
     this.ballot = b;
     this.proposal = p;
   }
@@ -20,8 +20,8 @@ public class PValuePacket extends PaxosPacket implements Serializable {
   static String BALLOT = "b1";
 
   public PValuePacket(JSONObject json) throws JSONException {
-    this.proposal = new ProposalPacket(json);
-    this.ballot = new Ballot(json.getString(BALLOT));
+    this.proposal = new ProposalPacket<NodeIDType>(json);
+    this.ballot = new Ballot<NodeIDType>(json.getString(BALLOT));
   }
 
   @Override

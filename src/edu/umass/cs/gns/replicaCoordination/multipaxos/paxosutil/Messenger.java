@@ -9,8 +9,6 @@ import java.util.logging.Logger;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;

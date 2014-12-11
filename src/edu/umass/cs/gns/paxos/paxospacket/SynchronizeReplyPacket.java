@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
 import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,9 +46,8 @@ public class SynchronizeReplyPacket<NodeIDType> extends PaxosPacket {
     this.flag = flag1;
   }
 
-  public SynchronizeReplyPacket(JSONObject json) throws JSONException {
-
-    this.nodeID = (NodeIDType) json.get(NODE);
+  public SynchronizeReplyPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    this.nodeID = unstringer.valueOf(json.getString(NODE));
     this.maxDecisionSlot = json.getInt(MAX_SLOT);
     if (json.has(MISSING)) {
       missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(MISSING));

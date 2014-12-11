@@ -5,18 +5,18 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-public class ProposalPacket extends PaxosPacket implements Serializable {
+public class ProposalPacket<NodeIDType> extends PaxosPacket implements Serializable {
 
   public int slot;
 
-  public RequestPacket req;
+  public RequestPacket<NodeIDType> req;
 
   public static String SLOT = "s1";
   public static String GC_SLOT = "s2";
 
   public int gcSlot = 0;
 
-  public ProposalPacket(int slot, RequestPacket req, PaxosPacketType packetType, int gcSlot) {
+  public ProposalPacket(int slot, RequestPacket<NodeIDType> req, PaxosPacketType packetType, int gcSlot) {
     this.slot = slot;
     this.req = req;
     this.packetType = packetType.getInt();
@@ -36,7 +36,7 @@ public class ProposalPacket extends PaxosPacket implements Serializable {
     }
   }
 
-  public ProposalPacket getDecisionPacket() {
+  public ProposalPacket<NodeIDType> getDecisionPacket() {
     return new ProposalPacket(slot, req, PaxosPacketType.DECISION, gcSlot);
   }
 

@@ -825,6 +825,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
     return this.FD.getNIOTransport();
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) {
     int nNodes = 3;
 
