@@ -1,6 +1,8 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
  */
 package edu.umass.cs.gns.statusdisplay;
 
@@ -19,6 +21,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
+@SuppressWarnings("unchecked")
 public class StatusClient {
 
   private static InetAddress statusServerAddress = null;

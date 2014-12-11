@@ -143,11 +143,4 @@ public abstract class RequestInfo {
     return sb.toString();
   }
 
-//  public synchronized int getTimerTaskId() {
-//    return timerTaskId;
-//  }
-//
-//  public synchronized void setTimerTaskId(int timerTaskId) {
-//    this.timerTaskId = timerTaskId;
-//  }
 }

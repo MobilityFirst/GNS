@@ -1,5 +1,10 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.test;
-
 
 import java.util.HashSet;
 import java.util.Set;
@@ -9,6 +14,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 4/10/14.
  */
+@SuppressWarnings("unchecked")
 public class TestGroupChangeRequest<NodeIDType> extends TestRequest {
 
   // version number of active replicas

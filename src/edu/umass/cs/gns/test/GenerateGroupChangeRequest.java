@@ -1,8 +1,13 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
@@ -14,6 +19,7 @@ import java.util.TimerTask;
  * Created by abhigyan on 5/21/14.
  * @param <NodeIDType>
  */
+@SuppressWarnings("unchecked")
 public class GenerateGroupChangeRequest<NodeIDType> extends TimerTask {
 
   private final int requestCount;

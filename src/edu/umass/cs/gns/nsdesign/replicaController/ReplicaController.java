@@ -81,7 +81,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     this.nioServer = nioServer;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
 
-    this.replicaControllerDB = new MongoRecordMap(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
+    this.replicaControllerDB = new MongoRecordMap<NodeIDType>(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
 
     this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 

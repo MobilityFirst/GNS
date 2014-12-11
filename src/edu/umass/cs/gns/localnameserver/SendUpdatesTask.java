@@ -11,12 +11,10 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
-import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.HashSet;
 import java.util.TimerTask;
 
@@ -38,7 +36,7 @@ import java.util.TimerTask;
 public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   private final String name;
-  private UpdatePacket updatePacket;
+  private UpdatePacket<NodeIDType> updatePacket;
   private final int lnsReqID;
 
   private HashSet<NodeIDType> activesQueried;
@@ -68,7 +66,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
         throw new CancelExecutorTaskException();
       }
-      CacheEntry cacheEntry = handler.getCacheEntry(name);
+      CacheEntry<NodeIDType> cacheEntry = handler.getCacheEntry(name);
       // IF we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
@@ -142,7 +140,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   }
 
-  private void requestNewActives(ClientRequestHandlerInterface handler) {
+  private void requestNewActives(ClientRequestHandlerInterface<NodeIDType> handler) {
     // remove update info from LNS
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) {   // probably NS sent response
@@ -155,14 +153,15 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     }
   }
 
-  private NodeIDType selectNS(CacheEntry cacheEntry) {
+  private NodeIDType selectNS(CacheEntry<NodeIDType> cacheEntry) {
     NodeIDType nameServerID;
     if (handler.getParameters().isLoadDependentRedirection()) {
       nameServerID = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
     } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
-      nameServerID = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
-              cacheEntry.getActiveNameServers(), activesQueried);
+//      nameServerID = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
+//              cacheEntry.getActiveNameServers(), activesQueried);
+      throw new UnsupportedOperationException("Not supported yet.");
     } else {
       nameServerID = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
@@ -178,12 +177,12 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       }
       return;
     }
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
+    UpdateInfo<NodeIDType> info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) info.addEventCode(LNSEventCode.CONTACT_ACTIVE);
     activesQueried.add(nameServerID);
     // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
     // create the packet that we'll send to the primary
-    UpdatePacket<NodeIDType> pkt = new UpdatePacket(
+    UpdatePacket<NodeIDType> pkt = new UpdatePacket<NodeIDType>(
             updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
             updatePacket.getRequestID(),
             lnsReqID, // the id use by the LNS (that would be us here)

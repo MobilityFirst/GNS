@@ -102,7 +102,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
    */
   private void sendActivesRequestPacketToPrimary(String name, NodeIDType primaryID, int requestID) {
 
-    RequestActivesPacket packet = new RequestActivesPacket(name, handler.getNodeAddress(), requestID, primaryID);
+    RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);
     try
     {
       JSONObject sendJson = packet.toJSONObject();

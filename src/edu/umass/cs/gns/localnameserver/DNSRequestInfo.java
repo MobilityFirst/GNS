@@ -14,23 +14,21 @@ import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-
-
 /**
  * Stores information about name lookups transmitted by the local name server.
  * Extends the <code>RequestInfo</code> class.
  *
  * @author abhigyan
  *************************************************************/
-public class DNSRequestInfo extends RequestInfo{
+public class DNSRequestInfo<NodeIDType> extends RequestInfo{
 
-  private DNSPacket incomingPacket;
+  private DNSPacket<NodeIDType> incomingPacket;
 
   private int nameserverID;
 
   private boolean cacheHit = false;
   
-  private Stringifiable unstringer;
+  private Stringifiable<NodeIDType> unstringer;
 
   /**************************************************************
    * Constructs a QueryInfo object with the following parameters
@@ -38,7 +36,8 @@ public class DNSRequestInfo extends RequestInfo{
    * @param name Host/Domain name
    * @param nameserverID Response name server ID
    **************************************************************/
-  public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket incomingPacket, Stringifiable unstringer) {
+  public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket<NodeIDType> incomingPacket, 
+          Stringifiable<NodeIDType> unstringer) {
     this.requestType = Packet.PacketType.DNS;
     this.lnsReqID = lnsReqId;
     this.name = name;
@@ -57,7 +56,7 @@ public class DNSRequestInfo extends RequestInfo{
   /**
    * @return the incomingPacket
    */
-  public synchronized DNSPacket getIncomingPacket() {
+  public synchronized DNSPacket<NodeIDType> getIncomingPacket() {
     return incomingPacket;
   }
 
@@ -88,7 +87,7 @@ public class DNSRequestInfo extends RequestInfo{
   @Override
   public synchronized JSONObject getErrorMessage() {
     try {
-      DNSPacket dnsPacketOut = new DNSPacket(incomingPacket.toJSONObjectQuestion(), unstringer);
+      DNSPacket<NodeIDType> dnsPacketOut = new DNSPacket<NodeIDType>(incomingPacket.toJSONObjectQuestion(), unstringer);
       dnsPacketOut.getHeader().setResponseCode(NSResponseCode.ERROR);
       dnsPacketOut.getHeader().setQRCode(DNSRecordType.RESPONSE);
       return dnsPacketOut.toJSONObject();

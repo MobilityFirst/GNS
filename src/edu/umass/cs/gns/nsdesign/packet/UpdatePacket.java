@@ -244,8 +244,6 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     this.oldValue = oldValue;
     this.argument = argument;
     this.userJSON = userJSON;
-    //this.localNameServerId = localNameServerId;
-    //this.nameServerId = nameServerId;
     this.ttl = ttl;
   }
 
@@ -414,6 +412,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   //
   // TEST CODE
   //
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) {
     ResultValue x = new ResultValue();
     x.add("12345678");

@@ -50,7 +50,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * 
    * @return 
    */
-  public PingManager getPingManager();
+  public PingManager<NodeIDType> getPingManager();
   
   /**
    * Returns that set of parameters used to control the handlers behavior.
@@ -94,7 +94,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @param incomingPacket
    * @return
    */
-  public int addSelectInfo(String recordKey, SelectRequestPacket incomingPacket);
+  public int addSelectInfo(String recordKey, SelectRequestPacket<NodeIDType> incomingPacket);
 
   /**
    * @param id
@@ -135,14 +135,14 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @param packet DNS packet containing record
    * @return 
    */
-  public CacheEntry addCacheEntry(DNSPacket packet);
+  public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet);
 
   /**
    * 
    * @param packet
    * @return 
    */
-  public CacheEntry addCacheEntry(RequestActivesPacket packet);
+  public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet);
 
   /**
    * Updates an existing cache entry with new information from a DNS packet.
@@ -150,13 +150,13 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @param packet DNS packet containing record
    * @return 
    */
-  public CacheEntry updateCacheEntry(DNSPacket packet);
+  public CacheEntry<NodeIDType> updateCacheEntry(DNSPacket<NodeIDType> packet);
 
   /**
    * 
    * @param packet 
    */
-  public void updateCacheEntry(RequestActivesPacket packet);
+  public void updateCacheEntry(RequestActivesPacket<NodeIDType> packet);
 
   /**
    * 
@@ -164,7 +164,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @param name
    * @param key 
    */
-  public void updateCacheEntry(ConfirmUpdatePacket packet, String name, String key);
+  public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key);
 
   /**
    * Returns a cache entry for the specified name. Returns null if the cache does not have the key mapped to an entry
@@ -172,7 +172,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @param name Host/Domain name
    * @return 
    */
-  public CacheEntry getCacheEntry(String name); 
+  public CacheEntry<NodeIDType> getCacheEntry(String name); 
 
   /**
    * Checks the validity of active nameserver set in cache.

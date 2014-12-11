@@ -82,7 +82,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       this.pingManager = new PingManager<NodeIDType>(nodeID, gnsNodeConfig);
       this.pingManager.startPinging();
     }
-    this.nameRecordDB = new MongoRecordMap(mongoRecords, MongoRecords.DBNAMERECORD);
+    this.nameRecordDB = new MongoRecordMap<NodeIDType>(mongoRecords, MongoRecords.DBNAMERECORD);
   }
 
   @Override

@@ -1,6 +1,8 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
  */
 package edu.umass.cs.gns.statusdisplay;
 
@@ -14,6 +16,7 @@ import javax.swing.JComponent;
  *
  * @author westy
  */
+@SuppressWarnings("unchecked")
 public class StatusFrame extends javax.swing.JFrame implements UpdateListener {
 
   private static StatusFrame instance = null;

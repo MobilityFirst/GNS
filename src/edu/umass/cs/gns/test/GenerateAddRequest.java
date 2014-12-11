@@ -1,7 +1,12 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
@@ -11,8 +16,9 @@ import java.util.Set;
 import java.util.TimerTask;
 
 /**
-* Created by abhigyan on 5/21/14.
-*/
+ * Created by abhigyan on 5/21/14.
+ */
+@SuppressWarnings("unchecked")
 class GenerateAddRequest<NodeIDType> extends TimerTask {
 
   private int requestCount;
@@ -24,7 +30,7 @@ class GenerateAddRequest<NodeIDType> extends TimerTask {
   private Set<NodeIDType> activeNameServers;
 
   public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, LNSPacketDemultiplexer packetDemux,
-                            Set<NodeIDType> activeNameServers) {
+          Set<NodeIDType> activeNameServers) {
     this.requestCount = count;
     this.name = name;
     this.packetDemux = packetDemux;
@@ -34,7 +40,7 @@ class GenerateAddRequest<NodeIDType> extends TimerTask {
   }
 
   public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, LNSPacketDemultiplexer packetDemux) {
-    this(name,count, objectSizeBytes, ttl, packetDemux, null);
+    this(name, count, objectSizeBytes, ttl, packetDemux, null);
   }
 
   @Override
@@ -44,7 +50,9 @@ class GenerateAddRequest<NodeIDType> extends TimerTask {
     newValue.add(Util.randomString(objectSizeKB));
     AddRecordPacket packet = new AddRecordPacket(null, requestCount, name, "EdgeRecord", newValue, null, ttl);
 
-    if (activeNameServers != null) packet.setActiveNameServers(activeNameServers);
+    if (activeNameServers != null) {
+      packet.setActiveNameServers(activeNameServers);
+    }
 
     try {
       packetDemux.handleJSONObject(packet.toJSONObject());

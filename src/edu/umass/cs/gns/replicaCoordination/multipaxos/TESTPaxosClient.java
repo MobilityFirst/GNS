@@ -1,18 +1,21 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.Util;
@@ -20,6 +23,7 @@ import edu.umass.cs.gns.util.Util;
 /**
 @author V. Arun
  */
+@SuppressWarnings("unchecked")
 public class TESTPaxosClient {
 	private static final long INITIAL_WARMUP_DELAY = 1000;
 	private static final long createTime = System.currentTimeMillis();

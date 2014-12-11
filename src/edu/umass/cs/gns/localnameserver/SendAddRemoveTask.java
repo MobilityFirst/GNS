@@ -43,7 +43,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
   private final long requestRecvdTime;
   private final ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface handler, BasicPacket packet, String name, long requestRecvdTime) {
+  public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface<NodeIDType> handler, BasicPacket packet, String name, long requestRecvdTime) {
     this.name = name;
     this.handler = handler;
     this.packet = packet;

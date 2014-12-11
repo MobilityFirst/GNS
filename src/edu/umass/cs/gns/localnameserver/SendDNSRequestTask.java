@@ -40,7 +40,7 @@ import java.util.logging.Level;
 public class SendDNSRequestTask<NodeIDType> extends TimerTask {
 
   private final ClientRequestHandlerInterface<NodeIDType> handler;
-  private final DNSPacket incomingPacket;
+  private final DNSPacket<NodeIDType> incomingPacket;
   private final int lnsReqID;
 
   private final HashSet<NodeIDType> nameserversQueried= new HashSet<>();
@@ -50,7 +50,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   private int requestActivesCount = -1;
 
   public SendDNSRequestTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler,
-                            DNSPacket incomingPacket) {
+                            DNSPacket<NodeIDType> incomingPacket) {
     this.lnsReqID = lnsReqID;
     this.handler = handler;
     this.incomingPacket = incomingPacket;
@@ -70,7 +70,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-      CacheEntry cacheEntry = handler.getCacheEntry(incomingPacket.getGuid());
+      CacheEntry<NodeIDType> cacheEntry = handler.getCacheEntry(incomingPacket.getGuid());
       // if a non-expired value exists in the cache send that and we are done
       if (maybeSendReplyFromCache(cacheEntry, handler)) {
         throw new CancelExecutorTaskException();
@@ -101,7 +101,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   }
 
   private boolean isResponseReceived(ClientRequestHandlerInterface<NodeIDType> handler) {
-    DNSRequestInfo info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
+    DNSRequestInfo<NodeIDType> info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (info == null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().fine("Query ID. Response recvd "
@@ -122,7 +122,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   }
 
   private boolean isMaxWaitTimeExceeded(ClientRequestHandlerInterface<NodeIDType> handler) throws JSONException {
-    DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
+    DNSRequestInfo<NodeIDType> requestInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (requestInfo != null) {
       if (System.currentTimeMillis() - requestInfo.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
         // remove from request info as LNS must clear all state for this request
@@ -134,7 +134,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
                     + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
                     + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
           }
-          Lookup.sendDNSResponseBackToSource(new DNSPacket(requestInfo.getErrorMessage(), handler.getGnsNodeConfig()), handler);
+          Lookup.sendDNSResponseBackToSource(new DNSPacket<NodeIDType>(requestInfo.getErrorMessage(), handler.getGnsNodeConfig()), handler);
           requestInfo.setSuccess(false);
           requestInfo.setFinishTime();
           requestInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
@@ -195,7 +195,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Send response from cache: " + incomingPacket.getGuid());
     }
-    DNSPacket outgoingPacket = new DNSPacket(incomingPacket.getSourceId(), incomingPacket.getHeader().getId(),
+    DNSPacket<NodeIDType> outgoingPacket = new DNSPacket<NodeIDType>(incomingPacket.getSourceId(), incomingPacket.getHeader().getId(),
             incomingPacket.getGuid(), incomingPacket.getKey(), value, TTL, new HashSet<Integer>());
     try {
       Lookup.sendDNSResponseBackToSource(outgoingPacket, handler);
@@ -208,7 +208,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Invalid name server for " + incomingPacket.getGuid());
     }
-    SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqID, handler,  incomingPacket);
+    SendDNSRequestTask queryTaskObject = new SendDNSRequestTask<NodeIDType>(lnsReqID, handler,  incomingPacket);
     PendingTasks.addToPendingRequests(handler.getRequestInfo(lnsReqID), queryTaskObject,
             handler.getParameters().getQueryTimeout(), handler);
   }

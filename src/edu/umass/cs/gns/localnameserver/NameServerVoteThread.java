@@ -121,7 +121,7 @@ public class NameServerVoteThread<NodeIDType> extends Thread {
           if (StartLocalNameServer.debuggingEnabled) {
             GNS.getLogger().fine("\tVoteSent\t" + name + "\t" + vote + "\t" + update + "\t");
           }
-          nsSelectionPacket = new NameServerSelectionPacket(name, vote, update, nsToVoteFor, handler.getNodeAddress());
+          nsSelectionPacket = new NameServerSelectionPacket<NodeIDType>(name, vote, update, nsToVoteFor, handler.getNodeAddress());
 
           // send to all primaries.
           Set<NodeIDType> primaryNameServers = handler.getReplicaControllers(name);

@@ -78,7 +78,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    *
    * @param packet DNS packet
    */
-  public CacheEntry(DNSPacket packet) {
+  public CacheEntry(DNSPacket<NodeIDType> packet) {
     this.name = packet.getGuid();
     // this will depend on TTL sent by NS.
     // UPDATE: NEVER LET IT BE -1 which means infinite
@@ -121,12 +121,12 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    *
    * @param packet
    */
-  public CacheEntry(RequestActivesPacket packet) {
+  public CacheEntry(RequestActivesPacket<NodeIDType> packet) {
     this(packet.getName(), (HashSet) ConsistentHashing.getReplicaControllerSet(packet.getName()),
             packet.getActiveNameServers());
   }
 
-  public synchronized void updateCacheEntry(DNSPacket packet) {
+  public synchronized void updateCacheEntry(DNSPacket<NodeIDType> packet) {
 
     if (valuesMap == null) {
       valuesMap = new ValuesMap();
@@ -149,11 +149,11 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
     timeToLiveInSeconds = packet.getTTL();
   }
 
-  public synchronized void updateCacheEntry(RequestActivesPacket packet) {
+  public synchronized void updateCacheEntry(RequestActivesPacket<NodeIDType> packet) {
     activeNameServers = packet.getActiveNameServers();
   }
 
-  public synchronized void updateCacheEntry(ConfirmUpdatePacket packet) {
+  public synchronized void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet) {
     // invalidate the valuesMap part of the cache... best we can do since the packet has no info
     // it will be refreshed on next read
     valuesMap = null;

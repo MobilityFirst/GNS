@@ -3,7 +3,6 @@
  * University of Massachusetts
  * All Rights Reserved 
  *
- * Initial developer(s): Westy.
  */
 package edu.umass.cs.gns.localnameserver;
 
@@ -138,7 +137,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     return nodeAddress;
   }
 
-  public PingManager getPingManager() {
+  public PingManager<NodeIDType> getPingManager() {
     return pingManager;
   }
 
@@ -226,15 +225,15 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    * @param packet DNS_SUBTYPE_QUERY packet containing record
    */
   @Override
-  public CacheEntry addCacheEntry(DNSPacket packet) {
-    CacheEntry entry = new CacheEntry(packet);
+  public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet) {
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet);
     cache.put(entry.getName(), entry);
     return entry;
   }
 
   @Override
-  public CacheEntry addCacheEntry(RequestActivesPacket packet) {
-    CacheEntry entry = new CacheEntry(packet);
+  public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet) {
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet);
     cache.put(entry.getName(), entry);
     return entry;
   }
@@ -245,8 +244,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    * @param packet DNS_SUBTYPE_QUERY packet containing record
    */
   @Override
-  public CacheEntry updateCacheEntry(DNSPacket packet) {
-    CacheEntry entry = cache.getIfPresent(packet.getGuid());
+  public CacheEntry<NodeIDType> updateCacheEntry(DNSPacket<NodeIDType> packet) {
+    CacheEntry<NodeIDType> entry = cache.getIfPresent(packet.getGuid());
     if (entry == null) {
       return null;
     }
@@ -255,8 +254,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @Override
-  public void updateCacheEntry(RequestActivesPacket packet) {
-    CacheEntry entry = cache.getIfPresent(packet.getName());
+  public void updateCacheEntry(RequestActivesPacket<NodeIDType> packet) {
+    CacheEntry<NodeIDType> entry = cache.getIfPresent(packet.getName());
     if (entry == null) {
       return;
     }
@@ -264,16 +263,16 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @Override
-  public void updateCacheEntry(ConfirmUpdatePacket packet, String name, String key) {
+  public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key) {
     switch (packet.getType()) {
       case CONFIRM_ADD:
-        cache.put(name, new CacheEntry(name, ConsistentHashing.getReplicaControllerSet(name)));
+        cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
         break;
       case CONFIRM_REMOVE:
         cache.invalidate(name);
         break;
       case CONFIRM_UPDATE:
-        CacheEntry entry = cache.getIfPresent(name);
+        CacheEntry<NodeIDType> entry = cache.getIfPresent(name);
         if (entry != null) {
           entry.updateCacheEntry(packet);
         }
@@ -287,7 +286,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    * @param name Host/Domain name
    */
   @Override
-  public CacheEntry getCacheEntry(String name) {
+  public CacheEntry<NodeIDType> getCacheEntry(String name) {
     return cache.getIfPresent(name);
   }
 
@@ -333,7 +332,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public String getCacheLogString(String preamble) {
     StringBuilder cacheTable = new StringBuilder();
-    List<CacheEntry> list = new ArrayList(cache.asMap().values());
+    List<CacheEntry> list = new ArrayList<CacheEntry>(cache.asMap().values());
     Collections.sort(list, new CacheComparator());
     for (CacheEntry entry : list) {
       cacheTable.append("\n");
@@ -360,7 +359,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   @Override
   public Set<NodeIDType> getReplicaControllers(String name) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
+    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name);
   }
 
@@ -379,11 +378,11 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
         GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
       }
 
-      Object x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
+      NodeIDType x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
         GNS.getLogger().info("Closest Primary Name Server: " + x.toString() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
-      return (NodeIDType) x;
+      return x;
     } catch (Exception e) {
       return null;
     }

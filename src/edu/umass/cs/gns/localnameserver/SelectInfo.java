@@ -7,16 +7,11 @@ package edu.umass.cs.gns.localnameserver;
  *************************************************************/
 public class SelectInfo {
 
-  private int id;
+  private final int id;
 
   /**************************************************************
    * Constructs a SelectInfo object with the following parameters
    * @param id Query id
-   * @param name Host/Domain name
-   * @param time System time when query was transmitted
-   * @param nameserverID Response name server ID
-   * @param queryStatus Query Status
-   *                    todo update doc
    **************************************************************/
   public SelectInfo(int id) {
     this.id = id;

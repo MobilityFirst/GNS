@@ -32,9 +32,8 @@ import java.util.Set;
  *
  * This was Hardeep's implementation of beehive DHT routing.
  * 
- * It assumes that Node Ids are Strings (because it uses compareTo).
  */
-public class BeehiveReplication {
+public class BeehiveReplication<NodeIDType> {
 
   private static int numNodes;
   private static double M;
@@ -115,11 +114,10 @@ public class BeehiveReplication {
    * server whose ID is greater than current name server's ID. I think this approximates a replica that will be chosen
    * using DHT routing.
    */
-  @SuppressWarnings("unchecked") //FIXME: deal with GNSNodeConfig generic
-  public static Object getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<String> activeNameServers, Set nameserverQueried) {
-    ArrayList<String> allServers = new ArrayList<String>();
+  public static Object getBeehiveNameServer(GNSNodeConfig gnsNodeConfig, Set<Object> activeNameServers, Set nameserverQueried) {
+    ArrayList<Object> allServers = new ArrayList<Object>();
     if (activeNameServers != null) {
-      for (String x : activeNameServers) {
+      for (Object x : activeNameServers) {
         if (!allServers.contains(x) && nameserverQueried != null && !nameserverQueried.contains(x)) {
           allServers.add(x);
         }
@@ -137,21 +135,10 @@ public class BeehiveReplication {
 
   }
 
-  private static Object beehiveNSChoose(String closestNS, ArrayList<String> nameServers, Set<Object> nameServersQueried) {
+  private static Object beehiveNSChoose(String closestNS, ArrayList<Object> nameServers, Set<Object> nameServersQueried) {
 
     if (nameServers.contains(closestNS) && (nameServersQueried == null || !nameServersQueried.contains(closestNS))) {
       return closestNS;
-    }
-    Collections.sort(nameServers);
-    for (String x : nameServers) {
-      if (x.compareTo(closestNS) > 0 && (nameServersQueried == null || !nameServersQueried.contains(x))) {
-        return x;
-      }
-    }
-    for (String x : nameServers) {
-      if (x.compareTo(closestNS) < 0 && (nameServersQueried == null || !nameServersQueried.contains(x))) {
-        return x;
-      }
     }
     return null;
   }

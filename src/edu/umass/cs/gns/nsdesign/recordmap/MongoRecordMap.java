@@ -17,12 +17,12 @@ import java.util.HashMap;
 import java.util.Set;
 
 //import edu.umass.cs.gns.database.MongoRecords;
-public class MongoRecordMap extends BasicRecordMap {
+public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
 
   private String collectionName;
-  private MongoRecords mongoRecords;
+  private MongoRecords<NodeIDType> mongoRecords;
 
-  public MongoRecordMap(MongoRecords mongoRecords, String collectionName) {
+  public MongoRecordMap(MongoRecords<NodeIDType> mongoRecords, String collectionName) {
     this.collectionName = collectionName;
     this.mongoRecords = mongoRecords;
 
@@ -32,7 +32,7 @@ public class MongoRecordMap extends BasicRecordMap {
   public Set<String> getAllColumnKeys(String name) throws RecordNotFoundException, FailedDBOperationException {
     if (!containsName(name)) {
       try {
-        MongoRecords records = mongoRecords;
+        MongoRecords<NodeIDType> records = mongoRecords;
         JSONObject json = records.lookupEntireRecord(collectionName, name);
         return JSONUtils.JSONArrayToSetString(json.names());
       } catch (JSONException e) {
@@ -167,7 +167,7 @@ public class MongoRecordMap extends BasicRecordMap {
 
   @Override
   public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException {
-    MongoRecords records = mongoRecords;
+    MongoRecords<NodeIDType> records = mongoRecords;
     records.bulkInsert(collectionName, jsons);
     GNS.getLogger().finer(records.toString() + ":: Added all json records. JSON: " + jsons);
   }

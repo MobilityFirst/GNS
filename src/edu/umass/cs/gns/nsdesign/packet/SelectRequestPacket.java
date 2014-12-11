@@ -72,7 +72,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param otherValue
    */
   public SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
-    super((NodeIDType) null, lnsAddress);
+    super(null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
@@ -96,7 +96,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param minRefreshInterval
    */
   private SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
-    super((NodeIDType) null, lnsAddress);
+    super(null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
