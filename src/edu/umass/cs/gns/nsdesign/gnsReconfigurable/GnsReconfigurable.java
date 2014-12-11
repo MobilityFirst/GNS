@@ -67,8 +67,8 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
    * @param nioServer
    * @param mongoRecords
    */
-  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
-          MongoRecords mongoRecords) {
+  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
+          MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = nodeID;
 
     this.gnsNodeConfig = gnsNodeConfig;
@@ -79,7 +79,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       // when emulating ping latencies we do not measure ping latencies but instead emulate ping latencies given
       // in config file.
       // Abhigyan: Move pingmanager object in NameServer.java?
-      this.pingManager = new PingManager(nodeID, gnsNodeConfig);
+      this.pingManager = new PingManager<NodeIDType>(nodeID, gnsNodeConfig);
       this.pingManager.startPinging();
     }
     this.nameRecordDB = new MongoRecordMap(mongoRecords, MongoRecords.DBNAMERECORD);
@@ -159,7 +159,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:
-          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json), this);
+          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);

@@ -4,7 +4,6 @@ import edu.umass.cs.gns.main.GNS;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -55,6 +54,7 @@ public class Util {
     return (int) Math.round(d);
   }
 
+  @SuppressWarnings("unchecked")
   public static Object createObject(String className, Object... arguments) {
     Object object;
     Class[] types = new Class[arguments.length];
@@ -198,10 +198,7 @@ public class Util {
 	  }
 	  return set;
   }
-  
-  
-  
-
+ 
   /**
    * Converts a set of NodeIds to a string.
    *
@@ -220,19 +217,6 @@ public class Util {
       }
     }
     return sb.toString();
-  }
- 
-  /**
-   * Converts a encoded NodeId string to a set of NodeId objects.
-   *
-   * @param string
-   * @return a Set of NodeIds
-   */
-  public static Set stringToSetOfNodeId(String string) {
-    Set nodeIds = new HashSet();
-    String[] tokens = string.split(":");
-    nodeIds.addAll(Arrays.asList(tokens));
-    return nodeIds;
   }
 
   static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";

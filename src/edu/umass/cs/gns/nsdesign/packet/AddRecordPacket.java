@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import static edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket.ACTIVES;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stringifiable;
@@ -148,9 +149,11 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     this.name = json.getString(NAME);
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
     this.ttl = json.getInt(TIME_TO_LIVE);
-    if (json.has(ACTIVE_NAMESERVERS)) {
-      this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));;
-    }
+    this.activeNameServers = json.has(ACTIVE_NAMESERVERS) ? 
+            unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
+//    if (json.has(ACTIVE_NAMESERVERS)) {
+//      this.activeNameServers = Util.stringToSetOfNodeId(json.getString(ACTIVE_NAMESERVERS));;
+//    }
   }
 
   /**
@@ -170,11 +173,10 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
     json.put(VALUE, new JSONArray(getValue()));
-    //json.put(LOCALNAMESERVERID, getLocalNameServerID());
     json.put(TIME_TO_LIVE, getTTL());
-    //json.put(NAMESERVER_ID, nameServerID.toString());
     if (getActiveNameServers() != null) {
-      json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameServers()));
+      json.put(ACTIVE_NAMESERVERS, getActiveNameServers());
+      //json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameServers()));
     }
     return json;
   }

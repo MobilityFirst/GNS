@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
+import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * Handles the set of select commands all of which return a set of guids based on a query.
@@ -135,12 +136,12 @@ public class SelectHandler {
    * 
    * @param json
    */
-  public static void processSelectResponsePackets(JSONObject json) {
+  public static void processSelectResponsePackets(JSONObject json, Stringifiable unstringer) {
     try {
       switch (getPacketType(json)) {
         case SELECT_RESPONSE:
           try {
-            SelectResponsePacket response = new SelectResponsePacket(json);
+            SelectResponsePacket response = new SelectResponsePacket(json, unstringer);
             int id = response.getId();
             GNS.getLogger().fine("Processing SelectResponse for " + id);
             synchronized (monitor) {

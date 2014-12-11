@@ -13,7 +13,7 @@ import java.util.TimerTask;
 /**
 * Created by abhigyan on 5/21/14.
 */
-class GenerateUpdateRequest extends TimerTask {
+class GenerateUpdateRequest<NodeIDType> extends TimerTask {
 
   private final int updateCount;
   private final String name;
@@ -34,7 +34,7 @@ class GenerateUpdateRequest extends TimerTask {
     ResultValue newValue = new ResultValue();
     newValue.add(Util.randomString(objectSizeBytes));
     //ignore signature info
-    UpdatePacket updateAddressPacket = new UpdatePacket(null, updateCount, updateCount, name, "EdgeRecord",
+    UpdatePacket<NodeIDType> updateAddressPacket = new UpdatePacket<NodeIDType>(null, updateCount, updateCount, name, "EdgeRecord",
             newValue, null, -1, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, null, null, GNS.DEFAULT_TTL_SECONDS, null, null, null);
     try {
       packetDemultiplexer.handleJSONObject(updateAddressPacket.toJSONObject());

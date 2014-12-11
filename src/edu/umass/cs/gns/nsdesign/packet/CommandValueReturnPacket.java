@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -61,13 +62,13 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
    * @param response
    * @param requestCnt - current number of requests handled by the LNS (can be used to tell how busy LNS is)
    */
-  public CommandValueReturnPacket(int requestId, CommandResponse response, long requestCnt, int requestRate) {
+  public CommandValueReturnPacket(int requestId, CommandResponse<NodeIDType> response, long requestCnt, int requestRate) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.requestId = requestId;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
     this.LNSRoundTripTime = response.getLNSRoundTripTime();
-    this.responder = (NodeIDType) response.getResponder();
+    this.responder = response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
   }
@@ -78,7 +79,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
    * @param json
    * @throws JSONException
    */
-  public CommandValueReturnPacket(JSONObject json) throws JSONException {
+  public CommandValueReturnPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.requestId = json.getInt(REQUESTID);
     this.returnValue = json.getString(RETURNVALUE);
@@ -92,7 +93,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
     this.requestCnt = json.getLong(REQUESTCNT);
     //
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
-    this.responder = json.has(RESPONDER) ? (NodeIDType) json.get(RESPONDER) : null;
+    this.responder = json.has(RESPONDER) ? unstringer.valueOf(json.getString(RESPONDER)) : null;
   }
 
   /**
@@ -118,7 +119,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
     }
     // instrumentation
     if (responder != null) {
-      json.put(RESPONDER, responder.toString());
+      json.put(RESPONDER, responder);
     }
     return json;
   }

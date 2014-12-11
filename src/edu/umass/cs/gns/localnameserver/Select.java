@@ -53,7 +53,7 @@ public class Select {
     if (Config.debuggingEnabled) {
       GNS.getLogger().finer("LNS" + handler.getNodeAddress() + " recvd QueryResponse: " + json);
     }
-    SelectResponsePacket packet = new SelectResponsePacket(json);
+    SelectResponsePacket packet = new SelectResponsePacket(json, handler.getGnsNodeConfig());
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " recvd from NS" + packet.getNameServerID().toString());
     }

@@ -41,7 +41,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
   private final HashSet<NodeIDType> replicaControllersQueried;
   private int timeoutCount = -1;
   private final long requestRecvdTime;
-  private final ClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface handler, BasicPacket packet, String name, long requestRecvdTime) {
     this.name = name;
@@ -101,7 +101,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
         GNS.getLogger().info("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
       }
       try {
-        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(updateInfo.getErrorMessage());
+        ConfirmUpdatePacket<NodeIDType> confirmPkt = new ConfirmUpdatePacket<NodeIDType>(updateInfo.getErrorMessage(), handler.getGnsNodeConfig());
         Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
       } catch (JSONException e) {
         e.printStackTrace();
@@ -120,7 +120,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
   }
 
   private NodeIDType selectNS() {
-    return (NodeIDType) handler.getClosestReplicaController(getName(), replicaControllersQueried);
+    return handler.getClosestReplicaController(getName(), replicaControllersQueried);
   }
 
   private void sendToNS(NodeIDType nameServerID) {

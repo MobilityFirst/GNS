@@ -7,6 +7,7 @@ import edu.umass.cs.gns.test.WorkloadParams;
  *
  * Created by abhigyan on 5/14/14.
  */
+@SuppressWarnings("unchecked")
 public class StartConnectTimeExperiment {
 
   public static void startTest(String nodeID, WorkloadParams workloadParams, ClientRequestHandlerInterface handler) {

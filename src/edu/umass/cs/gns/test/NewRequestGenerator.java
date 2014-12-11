@@ -49,6 +49,7 @@ public class NewRequestGenerator<NodeIDType> {
 
   class RunTask extends TimerTask {
 
+    @Override
     public void run() {
       numRuns += 1;
 
@@ -82,29 +83,29 @@ public class NewRequestGenerator<NodeIDType> {
 
           TimerTask t;
           if (r.type == TestRequest.LOOKUP) {
-            t = new GenerateLookupRequest(r.name, reqCount, lnsPacketDemultiplexer);
+            t = new GenerateLookupRequest<NodeIDType>(r.name, reqCount, lnsPacketDemultiplexer);
           }else if (r.type == TestRequest.UPDATE) {
-            t = new GenerateUpdateRequest(r.name, reqCount, objectSizeBytes, lnsPacketDemultiplexer);
+            t = new GenerateUpdateRequest<NodeIDType>(r.name, reqCount, objectSizeBytes, lnsPacketDemultiplexer);
           } else if (r.type == TestRequest.ADD) {
             String[] tokens = line.trim().split("\\s+");
             if (tokens.length > 2) {
               // if an initial set of active replicas for this name is given in trace, then use those replicas
-              Set activeReplicas = new HashSet();
+              Set<NodeIDType> activeReplicas = new HashSet<>();
               for (int i = 2; i < tokens.length; i++) {
-                activeReplicas.add(tokens[i]);
+                activeReplicas.add(handler.getGnsNodeConfig().valueOf(tokens[i]));
               }
               GNS.getLogger().fine("Name " + r.name + " Initial active replicas: " + activeReplicas);
-              t = new GenerateAddRequest(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
+              t = new GenerateAddRequest<NodeIDType>(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
                       lnsPacketDemultiplexer, activeReplicas);
             } else {
-              t = new GenerateAddRequest(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
+              t = new GenerateAddRequest<NodeIDType>(r.name, reqCount, objectSizeBytes, workloadParams.getTtl(),
                       lnsPacketDemultiplexer);
             }
 
           } else if (r.type == TestRequest.REMOVE) {
-            t = new GenerateRemoveRequest(r.name, reqCount, lnsPacketDemultiplexer);
+            t = new GenerateRemoveRequest<NodeIDType>(r.name, reqCount, lnsPacketDemultiplexer);
           } else if (r.type == TestRequest.GROUP_CHANGE) {
-            t = new GenerateGroupChangeRequest(r.name, reqCount, (TestGroupChangeRequest) r, lnsPacketDemultiplexer, handler);
+            t = new GenerateGroupChangeRequest<NodeIDType>(r.name, reqCount, (TestGroupChangeRequest) r, lnsPacketDemultiplexer, handler);
           } else {
             GNS.getLogger().severe("Unknown request type found: " + r.toString());
             throw new UnsupportedOperationException();
@@ -127,6 +128,7 @@ public class NewRequestGenerator<NodeIDType> {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws IOException {
     String traceFile = "/Users/abhigyan/Documents/workspace/GNS/test_output/trace/8";
     NewRequestGenerator rg = new NewRequestGenerator(new WorkloadParams(null),traceFile, null);

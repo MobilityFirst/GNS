@@ -85,7 +85,7 @@ public class AddRemove {
    * Handles confirmation of add request from NS
    */
   static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
-    ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json);
+    ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getLNSRequestID());
     if (Config.debuggingEnabled) GNS.getLogger().fine("Confirm add packet: " + confirmAddPacket.toString()); 
     if (addInfo == null) {
@@ -110,7 +110,7 @@ public class AddRemove {
    * Handles confirmation of add request from NS
    */
   static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
-    ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json);
+    ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
     if (Config.debuggingEnabled) GNS.getLogger().fine("Confirm remove packet: " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     if (removeInfo == null) {

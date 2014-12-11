@@ -4,17 +4,15 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.MessagingTask;
-import edu.umass.cs.gns.util.Reportable;
-
 import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-/* A utility class for gathering stats and reporting to specified
+/**
+ * A utility class for gathering stats and reporting to specified
  * recipients from any object that implements Reportable.
  */
-
 public class ReportingTask<Reportee extends Reportable> implements Runnable {
 
 	private static final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(5);

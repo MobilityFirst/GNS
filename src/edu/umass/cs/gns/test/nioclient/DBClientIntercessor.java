@@ -162,32 +162,32 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
     try {
       switch (Packet.getPacketType(incomingJson)) {
         case CONFIRM_ADD:
-          origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
+          origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson, nodeConfig).getRequestID());
           if (origJson == null) {
             break;
           }
           origReqID = new AddRecordPacket(origJson, nodeConfig).getRequestID();
-          ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(incomingJson);
+          ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(incomingJson, nodeConfig);
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
           break;
         case CONFIRM_REMOVE:
-          origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
+          origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson, nodeConfig).getRequestID());
           if (origJson == null) {
             break;
           }
           origReqID = new RemoveRecordPacket(origJson, nodeConfig).getRequestID();
-          confirmPkt = new ConfirmUpdatePacket(incomingJson);
+          confirmPkt = new ConfirmUpdatePacket(incomingJson, nodeConfig);
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
           break;
         case CONFIRM_UPDATE:
-          origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson).getRequestID());
+          origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson, nodeConfig).getRequestID());
           if (origJson == null) {
             break;
           }
           origReqID = new UpdatePacket(origJson, nodeConfig).getRequestID();
-          confirmPkt = new ConfirmUpdatePacket(incomingJson);
+          confirmPkt = new ConfirmUpdatePacket(incomingJson, nodeConfig);
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
           break;

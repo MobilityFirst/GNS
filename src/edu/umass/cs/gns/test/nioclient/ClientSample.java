@@ -21,6 +21,7 @@ import java.net.InetAddress;
  * responses.
  * Created by abhigyan on 6/21/14.
  */
+@SuppressWarnings("unchecked")
 public class ClientSample extends AbstractPacketDemultiplexer {
 
   private final InetAddress lnsAddress;
@@ -67,7 +68,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
                 null, 0);
         dbClient.sendRequest(addRecordPacket.toJSONObject());
         waitForResponse();
-        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
+        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(mostRecentResponse, dbClient.getNodeConfig());
         if (!noAssert) {
           assert confirmPkt.getRequestID() == reqCount : "Add operation failed: Request ID mismatch." + confirmPkt;
           assert confirmPkt.isSuccess() : "Add operation failed: Failure return code. " + confirmPkt;
@@ -110,7 +111,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
                 null, 0, null, null, null);
         dbClient.sendRequest(updatePacket.toJSONObject());
         waitForResponse();
-        confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
+        confirmPkt = new ConfirmUpdatePacket(mostRecentResponse, dbClient.getNodeConfig());
         if (!noAssert) {
           assert confirmPkt.getRequestID() == reqCount : "Update operation failed: Request ID mismatch " + confirmPkt;
           assert confirmPkt.isSuccess() : "Update operation failed: Error " + confirmPkt;
@@ -151,7 +152,7 @@ public class ClientSample extends AbstractPacketDemultiplexer {
         RemoveRecordPacket removePacket = new RemoveRecordPacket(null, ++reqCount, name, null);
         dbClient.sendRequest(removePacket.toJSONObject());
         waitForResponse();
-        confirmPkt = new ConfirmUpdatePacket(mostRecentResponse);
+        confirmPkt = new ConfirmUpdatePacket(mostRecentResponse, dbClient.getNodeConfig());
         if (!noAssert) {
           assert confirmPkt.getRequestID() == reqCount: "Remove operation failed: Request ID mismatch. " + confirmPkt;
           assert confirmPkt.isSuccess(): "Remove operation failed. Error. " + confirmPkt;

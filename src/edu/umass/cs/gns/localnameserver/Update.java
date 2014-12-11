@@ -63,7 +63,7 @@ public class Update {
    * @throws JSONException 
    */
   public static void handlePacketConfirmUpdate(JSONObject json, ClientRequestHandlerInterface handler) throws UnknownHostException, JSONException {
-    ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json);
+    ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
 
     if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
     if (confirmPkt.isSuccess()) {

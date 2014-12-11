@@ -192,7 +192,7 @@ public class Select {
    * @throws JSONException
    */
   public static void handleSelectResponse(JSONObject json, GnsReconfigurable replica) throws JSONException {
-    SelectResponsePacket packet = new SelectResponsePacket(json);
+    SelectResponsePacket packet = new SelectResponsePacket(json, replica.getGNSNodeConfig());
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " recvd from NS " + packet.getNameServerID().toString());
     }

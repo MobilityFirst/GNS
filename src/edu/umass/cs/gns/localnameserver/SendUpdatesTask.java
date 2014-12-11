@@ -124,7 +124,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
           // create a failure packet and send it back to client support
 
           try {
-            ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(info.getErrorMessage());
+            ConfirmUpdatePacket<NodeIDType> confirmPkt = new ConfirmUpdatePacket<NodeIDType>(info.getErrorMessage(), handler.getGnsNodeConfig());
             Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
           } catch (JSONException e) {
             e.printStackTrace();
@@ -146,7 +146,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     // remove update info from LNS
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) {   // probably NS sent response
-      SendUpdatesTask newTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
+      SendUpdatesTask<NodeIDType> newTask = new SendUpdatesTask<NodeIDType>(lnsReqID, handler, updatePacket);
       PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
@@ -183,7 +183,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     activesQueried.add(nameServerID);
     // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
     // create the packet that we'll send to the primary
-    UpdatePacket pkt = new UpdatePacket(
+    UpdatePacket<NodeIDType> pkt = new UpdatePacket(
             updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
             updatePacket.getRequestID(),
             lnsReqID, // the id use by the LNS (that would be us here)
@@ -210,7 +210,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       JSONObject jsonToSend = pkt.toJSONObject();
       handler.sendToNS(jsonToSend, nameServerID);
       // keep track of which NS we sent it to
-      UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(lnsReqID);
+      UpdateInfo<NodeIDType> updateInfo = (UpdateInfo) handler.getRequestInfo(lnsReqID);
       if (updateInfo != null) {
         updateInfo.setNameserverID(nameServerID);
       }

@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.paxos.paxospacket.AcceptPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
@@ -117,11 +118,13 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * Node ID of this node
    */
   private NodeIDType nodeID = null;
+  
+  private InterfaceNodeConfig<NodeIDType> nodeConfig;
 
   /**
    * This is the paxos manager object for which logger is doing the logging.
    */
-  private PaxosManager paxosManager;
+  private PaxosManager<NodeIDType> paxosManager;
 
   /**
    * Lock object controlling access to {@code logCommands}
@@ -223,9 +226,10 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param nodeID Node ID of this node.
    * @param paxosManager Paxos Manager object for this this logger is doing the logging.
    */
-  public PaxosLogger(String logFolder, NodeIDType nodeID, PaxosManager paxosManager) {
+  public PaxosLogger(String logFolder, NodeIDType nodeID, InterfaceNodeConfig<NodeIDType> nodeConfig, PaxosManager<NodeIDType> paxosManager) {
     this.logFolder = logFolder;
     this.nodeID = nodeID;
+    this.nodeConfig = nodeConfig;
     this.paxosManager = paxosManager;
     paxosStateFolder = getLogFolderPath() + "/" + stateFolderSubdir;
 
@@ -274,7 +278,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * exist. Keys of {@code ConcurrentHashMap} are paxos keys, not paxos IDs. See method
    * <code>getPaxosKey</code>).
    */
-  ConcurrentHashMap<String, PaxosReplicaInterface> recoverPaxosLogs() {
+  public ConcurrentHashMap<String, PaxosReplicaInterface> recoverPaxosLogs() {
 
     // initialize folder
     ConcurrentHashMap<String, PaxosReplicaInterface> replicas;
@@ -303,7 +307,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param command <code>LoggingCommand</code> which includes paxosID of the paxos instance, the message and
    *                the action the paxos logger should take after logging the message.
    */
-  void logMessage(LoggingCommand command) {
+  public void logMessage(LoggingCommand<NodeIDType> command) {
     if (Config.noPaxosLog) {
       GNS.getLogger().fine("NO logging");
       handleLoggedMessage(command);
@@ -327,7 +331,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param nodeIDs
    * @param initialState
    */
-  void logPaxosStart(String paxosID, Set<NodeIDType> nodeIDs, StatePacket initialState) {
+  public void logPaxosStart(String paxosID, Set<NodeIDType> nodeIDs, StatePacket initialState) {
     if (!Config.noPaxosLog) {
       if (debugMode) {
         GNS.getLogger().fine(" Paxos ID = " + paxosID);
@@ -344,7 +348,9 @@ public class PaxosLogger<NodeIDType> extends Thread {
           // first log initial state
           logPaxosState(paxosID, initialState);
           // then append to paxos IDs
-          String logString = getLogString(paxosID, PaxosPacketType.START.getInt(), Util.setOfNodeIdToString(nodeIDs));
+          String logString = getLogString(paxosID, PaxosPacketType.START.getInt(), 
+                  // See the companion reader code for this format in parsePaxosStart
+                  Util.setOfNodeIdToString(nodeIDs));
           appendToFile(paxosIDsFile1, logString);
         }
       }
@@ -363,7 +369,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    *
    * @param paxosID <code>paxosID</code> of the paxos instance.
    */
-  void logPaxosStop(String paxosID) {
+  public void logPaxosStop(String paxosID) {
     if (!Config.noPaxosLog) {
       String paxosIDsFile1 = getPaxosIDsFile();
 
@@ -382,7 +388,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param paxosID <code>paxosID</code> of the paxos instance.
    * @param packet <code>StatePacket</code> containing information about paxos state.
    */
-  void logPaxosState(String paxosID, StatePacket packet) {
+  public void logPaxosState(String paxosID, StatePacket packet) {
     if (!Config.noPaxosLog) {
       synchronized (paxosIDsLock) {
         String name = getStateLogFileName(paxosID, packet);
@@ -414,7 +420,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * instances that have been deleted (2) a newer state file for the same paxos instance
    * is logged.
    */
-  void deleteRedundantStateLogs() {
+  public void deleteRedundantStateLogs() {
     String stateFolder = getPaxosStateFolder();
     File f = new File(stateFolder);
     String[] state = f.list(); // read names of all files
@@ -490,7 +496,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * A log file can be deleted if for all x \in X, either (1) 'x' is stopped or (2) the latest state
    * for 'x' was logged on disk after all log messages for 'x' in this log file were written.
    */
-  void deleteLogMessageFiles() {
+  public void deleteLogMessageFiles() {
 
     // select all log files
     String[] logFiles = getSortedLogFileList();
@@ -516,7 +522,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
   /**
    * Clear all the paxos logs. Used for testing only.
    */
-  void clearLogs() {
+  public void clearLogs() {
     if (logFolder != null) {
       getLogFolderPath().length();
       File f = new File(getLogFolderPath());
@@ -556,7 +562,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
   /**
    * Shuts down the logging thread
    */
-  void shutdown() {
+  public void shutdown() {
     // set flag so that logging thread knows to shutoff
     setShutdown();
     while (!isShutdownComplete()) { // check if logging thread has received the signal to shutdown
@@ -635,14 +641,14 @@ public class PaxosLogger<NodeIDType> extends Thread {
         GNS.getLogger().info("Not doing paxos logging.");
       }
       // process each msg
-      for (LoggingCommand cmd : logCmdCopy) {
+      for (LoggingCommand<NodeIDType> cmd : logCmdCopy) {
         handleLoggedMessage(cmd);
       }
     }
     setShutdownComplete();// inform that logging thread has shutdown.
   }
 
-  private void handleLoggedMessage(LoggingCommand cmd) {
+  private void handleLoggedMessage(LoggingCommand<NodeIDType> cmd) {
     if (cmd.getDest() != null) {
       paxosManager.sendMessage(cmd.getDest(), cmd.getSendJson(), cmd.getPaxosID());
     }
@@ -1135,17 +1141,19 @@ public class PaxosLogger<NodeIDType> extends Thread {
       return;
     }
 
-    // FIXME: This isn't going to work for non-string NodeIDs. We
-    // need a valueOf conversion here, but the're no object available currently to do this.
-    Set<NodeIDType> nodeIDs = Util.stringToSetOfNodeId(msg);
-
+    Set<NodeIDType> nodeIds = new HashSet<NodeIDType>();
+    String[] tokens = msg.split(":");
+    for (String token : tokens) {
+      nodeIds.add(nodeConfig.valueOf(token));
+    }
+    
     if (debugMode) {
-      GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIDs);
+      GNS.getLogger().fine(paxosID + "\tPaxos Instance Added. NodeIDs: " + nodeIds);
     }
 
-    paxosInstances.put(getPaxosKey(paxosID), paxosManager.createPaxosReplicaObject(paxosID, paxosManager.nodeID, nodeIDs));
+    paxosInstances.put(getPaxosKey(paxosID), paxosManager.createPaxosReplicaObject(paxosID, paxosManager.nodeID, nodeIds));
   }
-
+  
   /**
    * Parse the line in <code>paxosIDsFile</code> logged after a paxos instance is removed by <code>PaxosManager</code>.
    * If a <code>PaxosReplicaInterface</code> objects with the same paxosID exists in the <code>ConcurrentHashMap</code>,
@@ -1279,14 +1287,14 @@ public class PaxosLogger<NodeIDType> extends Thread {
     try {
       switch (PaxosPacketType.getPacketType(logMsg.getLogMessageType())) {
         case ACCEPT:
-          AcceptPacket accept = new AcceptPacket(new JSONObject(logMsg.getMessage()));
+          AcceptPacket<NodeIDType> accept = new AcceptPacket<NodeIDType>(new JSONObject(logMsg.getMessage()));
           if (stateFileName.slotNumber > accept.pValue.proposal.slot) {
             return true; // > sign is important
           } else {
             return false;
           }
         case PREPARE:
-          PreparePacket prepare = new PreparePacket(new JSONObject(logMsg.getMessage()));
+          PreparePacket<NodeIDType> prepare = new PreparePacket<NodeIDType>(new JSONObject(logMsg.getMessage()));
           if (stateFileName.ballot.compareTo(prepare.getBallot()) >= 0) {
             return true; // notice >= here
           } else {
@@ -1725,9 +1733,6 @@ class LogPaxosStateTask extends TimerTask {
   @Override
   public void run() {
     try {
-
-//      if (StartNameServer.experimentMode) {return;} // we do not log paxos state during experiments ..
-
       GNS.getLogger().info("Logging paxos state task.");
 
       for (Object paxosKey: paxosManager.paxosInstances.keySet()) {

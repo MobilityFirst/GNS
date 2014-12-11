@@ -10,7 +10,7 @@ import java.util.TimerTask;
 /**
 * Created by abhigyan on 5/21/14.
 */
-class GenerateRemoveRequest extends TimerTask {
+class GenerateRemoveRequest<NodeIDType> extends TimerTask {
 
   private final int requestCount;
   private final String name;
@@ -27,7 +27,7 @@ class GenerateRemoveRequest extends TimerTask {
   @Override
   public void run() {
 
-    RemoveRecordPacket packet = new RemoveRecordPacket(null, requestCount, name, null);
+    RemoveRecordPacket<NodeIDType> packet = new RemoveRecordPacket<NodeIDType>(null, requestCount, name, null);
 
     try {
       packetDemultiplexer.handleJSONObject(packet.toJSONObject());

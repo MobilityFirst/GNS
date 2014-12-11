@@ -93,7 +93,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
         case CONFIRM_UPDATE:
         case CONFIRM_ADD:
         case CONFIRM_REMOVE:
-          ConfirmUpdatePacket packet = new ConfirmUpdatePacket(json);
+          ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json, handler.getGnsNodeConfig());
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           if (debuggingEnabled) {
@@ -131,7 +131,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
           }
           break;
         case SELECT_RESPONSE:
-          SelectHandler.processSelectResponsePackets(json);
+          SelectHandler.processSelectResponsePackets(json, handler.getGnsNodeConfig());
           break;
 //        case LNS_TO_NS_COMMAND:
 //          LNSToNSCommandRequestHandler.processCommandResponsePackets(json);

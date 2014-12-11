@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,9 +14,9 @@ import org.json.JSONObject;
 /**
  * This class implements a packet that contains a response
  * to a select statement.
- * 
+ *
  * @author Westy
-*/
+ */
 public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> {
 
   public enum ResponseCode {
@@ -31,7 +32,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
   private final static String NSQUERYID = "nsQueryId";
   private final static String RESPONSECODE = "code";
   private final static String ERRORSTRING = "error";
-  
+
   private int id;
   private int lnsQueryId;
   private int nsQueryId;
@@ -42,8 +43,9 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
 
   /**
    * Constructs a new SelectResponsePacket
+   *
    * @param id
-   * @param jsonObject 
+   * @param jsonObject
    */
   private SelectResponsePacket(int id, InetSocketAddress lnsAddress, int lnsQueryId, int nsQueryId,
           NodeIDType nameServerID, JSONArray records, JSONArray guids, ResponseCode responseCode,
@@ -61,58 +63,60 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
 
   /**
    * Used by a NameServer to a send response with full records back to the collecting NameServer
-   * 
+   *
    * @param id
    * @param lnsAddress
    * @param lnsQueryId
    * @param nsQueryId
    * @param nameServerID
    * @param records
-   * @return 
+   * @return
    */
-  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId, 
+  public static SelectResponsePacket makeSuccessPacketForRecordsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId,
           int nsQueryId, Object nameServerID, JSONArray records) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, records, null, ResponseCode.NOERROR, null);
   }
-  
+
   /**
    * Used by a NameServer to a send response with only a list of guids back to the Local NameServer
-   * 
+   *
    * @param id
    * @param lnsAddress
    * @param lnsQueryId
    * @param nsQueryId
    * @param nameServerID
    * @param guids
-   * @return 
+   * @return
    */
-  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId, 
+  public static SelectResponsePacket makeSuccessPacketForGuidsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId,
           int nsQueryId, Object nameServerID, JSONArray guids) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServerID, null, guids, ResponseCode.NOERROR, null);
   }
 
   /**
    * Used by a NameServer to a failure response to a NameServer or Local NameServer
+   *
    * @param id
    * @param lnsAddress
    * @param lnsQueryId
    * @param nsQueryId
    * @param nameServer
    * @param errorMessage
-   * @return 
+   * @return
    */
-  public static SelectResponsePacket makeFailPacket(int id, InetSocketAddress lnsAddress, 
+  public static SelectResponsePacket makeFailPacket(int id, InetSocketAddress lnsAddress,
           int lnsQueryId, int nsQueryId, Object nameServer, String errorMessage) {
     return new SelectResponsePacket(id, lnsAddress, lnsQueryId, nsQueryId, nameServer, null, null, ResponseCode.ERROR, errorMessage);
   }
 
   /**
    * Constructs new SelectResponsePacket from a JSONObject
+   *
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
-  public SelectResponsePacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.opt(NAMESERVER_ID),
+  public SelectResponsePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {;
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
@@ -128,7 +132,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
     this.records = json.optJSONArray(RECORDS);
     this.guids = json.optJSONArray(GUIDS);
     this.errorMessage = json.optString(ERRORSTRING, null);
-    
+
   }
 
   /**
@@ -167,11 +171,10 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
 //  public int getLnsID() {
 //    return lnsID;
 //  }
-
   public JSONArray getRecords() {
     return records;
   }
-  
+
   public JSONArray getGuids() {
     return guids;
   }
@@ -187,7 +190,6 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
 //  public NodeIDType getNameServerID() {
 //    return nameServer;
 //  }
-
   public ResponseCode getResponseCode() {
     return responseCode;
   }
@@ -196,5 +198,4 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
     return errorMessage;
   }
 
-  
 }

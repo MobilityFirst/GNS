@@ -12,6 +12,7 @@ import java.util.Properties;
  *
  * Created by abhigyan on 4/13/14.
  */
+@SuppressWarnings("unchecked")
 public class WorkloadParams<NodeIDType> {
 
   public static final String EXP_TYPE = "exp_type";

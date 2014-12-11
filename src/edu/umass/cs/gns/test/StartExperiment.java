@@ -12,6 +12,7 @@ import java.io.IOException;
  *
  * Created by abhigyan on 5/14/14.
  */
+@SuppressWarnings("unchecked")
 public class StartExperiment<NodeIDType> {
 
   public void startMyTest(String nodeID, String workloadFile, String updateTraceFile,

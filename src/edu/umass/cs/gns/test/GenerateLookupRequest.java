@@ -11,7 +11,7 @@ import java.util.TimerTask;
 /**
  * Created by abhigyan on 5/21/14.
  */
-public class GenerateLookupRequest extends TimerTask {
+public class GenerateLookupRequest<NodeIDType> extends TimerTask {
 
   private int lookupCount;
   private String name;
@@ -26,7 +26,7 @@ public class GenerateLookupRequest extends TimerTask {
 
   @Override
   public void run() {
-    DNSPacket queryRecord = new DNSPacket(null, lookupCount, name, 
+    DNSPacket<NodeIDType> queryRecord = new DNSPacket<NodeIDType>(null, lookupCount, name, 
             "EdgeRecord", null,
             ColumnFieldType.LIST_STRING, null, null, null);
     queryRecord.getHeader().setId(lookupCount);

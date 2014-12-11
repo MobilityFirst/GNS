@@ -5,10 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import static edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket.ACTIVE_NAMESERVERS;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -55,7 +53,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
   }
 
   public RequestActivesPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super((NodeIDType)json.opt(NAMESERVER_ID),
+    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.name = json.getString(NAME);
     this.activeNameServers = json.has(ACTIVES) ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVES)) : null;

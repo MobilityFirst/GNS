@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 //import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -106,9 +107,10 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
    * @param json JSONObject that represents ConfirmUpdatePacket.
    * @throws org.json.JSONException
    */
-  public ConfirmUpdatePacket(JSONObject json) throws JSONException {
+  public ConfirmUpdatePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.returnTo = json.has(RETURNTO) ? (NodeIDType) json.get(RETURNTO) : null;
+    this.returnTo = json.has(RETURNTO) ? unstringer.valueOf(json.getString(RETURNTO)) : null;
+    //this.returnTo = json.has(RETURNTO) ? (NodeIDType) json.get(RETURNTO) : null;
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy
