@@ -1,16 +1,19 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.workloads;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-/*************************************************************
+/*
  * This class implements update distribution of names using
  * their update rate. The distribution is used to generate
  * updates.
- * 
- * @author Hardeep Uppal
- ************************************************************/
+ */
 public class UpdateDistribution {
 	
 	/** Size of the workload **/
@@ -30,13 +33,13 @@ public class UpdateDistribution {
 	/** Denominator **/
 	public double denominator = 0.0; 
 	
-	/*************************************************************
+	/*
 	 * Constructs a new UpdateDistribution for generating updates.
 	 * @param size Workload size
 	 * @param avgUpdateInterArrivalTime Average inter-arrival time
 	 * between updates.
 	 * @param startRange Starting range for names
-	 ************************************************************/
+	 */
 	public UpdateDistribution( int size, int avgUpdateInterArrivalTime ) {
 		this.size = size;
 		this.avgUpdateInterArrivalTime = avgUpdateInterArrivalTime;		
@@ -47,10 +50,10 @@ public class UpdateDistribution {
 		generateUpdateRate();
 	}
 	
-	/*************************************************************
+	/*
 	 * Generates a map of update rates and update inter-arrival
 	 * time for each name.
-	 ************************************************************/
+	 */
 	private void generateUpdateRate() {
 		//We use the update inter-arrival time as the average update time across all names
 		int updateInterArrivalTime;

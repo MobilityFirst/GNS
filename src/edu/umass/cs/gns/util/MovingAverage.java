@@ -1,19 +1,21 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.util;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
 
 /**
- * ***********************************************************
- * This class implements the moving average
  *
- * @author Hardeep Uppal
- ***********************************************************
+ * Implements the moving average.
+ *
  */
 public class MovingAverage {
 

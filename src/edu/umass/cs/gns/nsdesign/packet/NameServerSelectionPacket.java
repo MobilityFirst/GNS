@@ -1,5 +1,11 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -23,7 +29,7 @@ import org.json.JSONObject;
  * way of inferring locality of demand at active name servers, so local name servers are doing this task.
  *
  *
- * @author Hardeep Uppal, Abhigyan
+ * @author Abhigyan
  * @param <NodeIDType>
  ***********************************************************
  */
@@ -32,26 +38,20 @@ public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndL
   private final static String NAME = "name";
   private final static String VOTE = "vote";
   private final static String UPDATE = "update";
-  //private final static String NAMESERVER_ID = "nsID";
-  //private final static String LOCAL_NAMESERVER_ID = "lnsID";
 
-//  /** Local name server transmitting this packet **/
-//  private int localnameserverID;
-//  /** Closest name server id **/
-//  private NodeIDType nameserverID;
   /**
    * Name (service/host/domain or device name) *
    */
-  private String name;
+  private final String name;
   /**
    * Vote = # of lookup since the last vote *
    */
 
-  private int vote;
+  private final int vote;
   /**
    * Number of updates since the last message for this name *
    */
-  private int update;
+  private final int update;
 
   /**
    * Unique ID for this vote message *
@@ -84,18 +84,17 @@ public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndL
    * Constructs a new NSLocationPacket from a JSONObject.
    *
    * @param json JSONObject that represents NSLocaitionPacket
+   * @param unstringer
    * @throws org.json.JSONException
    ***********************************************************
    */
-  public NameServerSelectionPacket(JSONObject json) throws JSONException {
-    super((NodeIDType) json.opt(NAMESERVER_ID),
+  public NameServerSelectionPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);
     this.vote = json.getInt(VOTE);
     this.update = json.getInt(UPDATE);
-    //this.nameserverID = new NodeIDType(json.getString(NAMESERVER_ID));
-    //this.localnameserverID = json.getInt(LOCAL_NAMESERVER_ID);
   }
 
   /**

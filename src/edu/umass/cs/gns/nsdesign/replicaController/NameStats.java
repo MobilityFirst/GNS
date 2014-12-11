@@ -23,7 +23,7 @@ public class NameStats {
    */
   public static void handleLNSVotesPacket(JSONObject incomingJSON, ReplicaController replicaController) throws JSONException {
     if (Config.debuggingEnabled) GNS.getLogger().fine("NS: received  NAMESERVER_SELECTION " + incomingJSON.toString());
-    NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(incomingJSON);
+    NameServerSelectionPacket selectionPacket = new NameServerSelectionPacket(incomingJSON, replicaController.getGnsNodeConfig());
     try {
       ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), selectionPacket.getName());
       try {

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
@@ -13,8 +18,6 @@ import java.util.TreeSet;
 
 /**
  * Various generic static utility methods.
- *
- * @author Hardeep Uppal, Westy
  */
 public class Util {
 

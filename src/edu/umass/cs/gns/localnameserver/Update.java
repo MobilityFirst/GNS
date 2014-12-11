@@ -136,7 +136,7 @@ public class Update {
 
   /**
    * Checks the returnTo slot of the packet and sends the confirmation packet back to
-   * the correct destination. This can be DNSPacket.LOCAL_SOURCE_ID meaning that the original request
+   * the correct destination. This can be null meaning that the original request
    * originated at a standard client - the packet is then sent to the Intercessor which will
    * pass the packet back to the client. If the returnTo is some other NodeId the packet will be
    * send back to that NameServer node (which is acting like a client in this case).

@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -14,7 +19,7 @@ import java.util.Set;
  * and is used to select active name servers based on location
  * of the demand.
  *
- * @author Hardeep Uppal, Abhigyan
+ * @author Abhigyan
  * @param <NodeIDType>
  */
 public class LocationBasedReplication<NodeIDType> implements ReplicationFrameworkInterface {

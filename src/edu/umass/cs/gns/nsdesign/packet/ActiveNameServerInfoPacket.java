@@ -6,12 +6,8 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.Util;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.HashSet;
 import java.util.Set;
 
 /**

@@ -1,17 +1,25 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 /*************************************************************
  * This class implements the ReplicationFramework interface
  * and is used to randomly select new active nameservers.
  * 
- * @author Hardeep Uppal, Abhigyan
+ * @author Abhigyan
  * @param <NodeIDType>
  ************************************************************/
 public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterface{

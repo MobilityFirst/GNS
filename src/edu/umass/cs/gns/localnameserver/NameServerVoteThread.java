@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
@@ -23,7 +28,7 @@ import java.util.Set;
  * @param <NodeIDType>
  * @see edu.umass.cs.gns.localnameserver.NameRecordStats
  * @see edu.umass.cs.gns.nsdesign.replicaController.NameStats
- * @author Hardeep Uppal, Abhigyan
+ * @author Abhigyan
  */
 public class NameServerVoteThread<NodeIDType> extends Thread {
 

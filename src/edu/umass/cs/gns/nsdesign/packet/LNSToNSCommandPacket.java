@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2014
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -16,8 +21,6 @@ public class LNSToNSCommandPacket extends BasicPacket {
   private final static String REQUESTID = "reqID";
   private final static String COMMAND = "command";
   private final static String RETURNVALUE = "returnValue";
-  //private final static String LNSID = "lnsid";
-  // these two replace LNSID
   private final static String LNSADDRESS = "lnsAddress";
   private final static String LNSPORT = "lnsPort";
 
@@ -31,7 +34,6 @@ public class LNSToNSCommandPacket extends BasicPacket {
    */
   private final JSONObject command;
   private String returnValue;
-  //private final int lnsID; // the local name server handling this request
   /**
    * The address of the local name server handling this request.
    */
@@ -41,6 +43,7 @@ public class LNSToNSCommandPacket extends BasicPacket {
   /**
    *
    * @param requestId
+   * @param lnsAddress
    * @param command
    */
   public LNSToNSCommandPacket(int requestId, InetSocketAddress lnsAddress, JSONObject command) {
@@ -82,11 +85,6 @@ public class LNSToNSCommandPacket extends BasicPacket {
   public int getRequestId() {
     return requestId;
   }
-
-//  @Deprecated
-//  public int getLnsID() {
-//    return lnsID;
-//  }
 
   public InetSocketAddress getLnsAddress() {
     return lnsAddress;
