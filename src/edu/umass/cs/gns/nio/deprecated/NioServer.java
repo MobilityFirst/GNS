@@ -648,9 +648,9 @@ class SendQueryWithDelay2<NodeIDType> extends TimerTask {
 
   JSONObject json;
   NodeIDType destID;
-  NioServer nioServer;
+  NioServer<NodeIDType> nioServer;
 
-  public SendQueryWithDelay2(NioServer nioServer, NodeIDType destID, JSONObject json) {
+  public SendQueryWithDelay2(NioServer<NodeIDType> nioServer, NodeIDType destID, JSONObject json) {
     this.json = json;
     this.destID = destID;
     this.nioServer = nioServer;

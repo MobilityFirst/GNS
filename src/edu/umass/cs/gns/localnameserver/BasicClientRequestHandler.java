@@ -65,7 +65,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    * Cache of Name records Key: Name, Value: CacheEntry (DNS_SUBTYPE_QUERY record)
    *
    */
-  private final Cache<String, CacheEntry> cache;
+  private final Cache<String, CacheEntry<NodeIDType>> cache;
 
   /**
    * Map of name record statistics *
@@ -77,9 +77,9 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
-  private final InterfaceJSONNIOTransport tcpTransport;
+  private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
   
-  private final PingManager pingManager;
+  private final PingManager<NodeIDType> pingManager;
 
   private final Random random;
 
@@ -94,7 +94,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   long receivedRequests = 0;
 
   public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
-          PingManager pingManager, RequestHandlerParameters parameters) throws IOException {
+          PingManager<NodeIDType> pingManager, RequestHandlerParameters parameters) throws IOException {
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -108,7 +108,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @SuppressWarnings("unchecked") // calls a static method
-  private InterfaceJSONNIOTransport initTransport() throws IOException {
+  private InterfaceJSONNIOTransport<NodeIDType> initTransport() throws IOException {
     GNS.getLogger().info("LNS listener started.");
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
     if (parameters.isEmulatePingLatencies()) {
@@ -295,7 +295,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    *
    * @return
    */
-  public Set<Map.Entry<String, CacheEntry>> getCacheEntrySet() {
+  public Set<Map.Entry<String, CacheEntry<NodeIDType>>> getCacheEntrySet() {
     return cache.asMap().entrySet();
   }
 
@@ -307,13 +307,13 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   @Override
   public boolean isValidNameserverInCache(String name) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
+    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.isValidNameserver() : false;
   }
 
   @Override
   public void invalidateActiveNameServer(String name) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
+    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
     if (cacheEntry != null) {
       cacheEntry.invalidateActiveNameServer();
     }
@@ -321,7 +321,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
 
   @Override
   public int timeSinceAddressCached(String name, String recordKey) {
-    CacheEntry cacheEntry = cache.getIfPresent(name);
+    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.timeSinceAddressCached(recordKey) : -1;
   }
 
@@ -332,7 +332,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public String getCacheLogString(String preamble) {
     StringBuilder cacheTable = new StringBuilder();
-    List<CacheEntry> list = new ArrayList<CacheEntry>(cache.asMap().values());
+    List<CacheEntry<NodeIDType>> list = new ArrayList<CacheEntry<NodeIDType>>(cache.asMap().values());
     Collections.sort(list, new CacheComparator());
     for (CacheEntry entry : list) {
       cacheTable.append("\n");

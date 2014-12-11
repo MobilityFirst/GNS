@@ -25,9 +25,9 @@ import java.security.NoSuchAlgorithmException;
  */
 public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
-  ClientRequestHandlerInterface handler;
+  ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public LNSPacketDemultiplexer(ClientRequestHandlerInterface handler) {
+  public LNSPacketDemultiplexer(ClientRequestHandlerInterface<NodeIDType> handler) {
     this.handler = handler;
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);
@@ -63,7 +63,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
     try {
       switch (Packet.getPacketType(json)) {
         case DNS:
-          DNSPacket dnsPacket = new DNSPacket<NodeIDType>(json, handler.getGnsNodeConfig());
+          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, handler.getGnsNodeConfig());
           Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
           switch (incomingPacketType) {
             // Lookup // these have been converted to use handler

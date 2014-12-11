@@ -126,11 +126,11 @@ public class NameServer<NodeIDType> implements Shutdownable {
     JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
     JSONNIOTransport<NodeIDType> gnsnioTransport = new JSONNIOTransport<NodeIDType>(nodeID, gnsNodeConfig, worker);
     new Thread(gnsnioTransport).start();
-    tcpTransport = new GnsMessenger(nodeID, gnsnioTransport, executorService);
+    tcpTransport = new GnsMessenger<NodeIDType>(nodeID, gnsnioTransport, executorService);
     // be careful to give same 'nodeID' to everyone
 
     // init DB
-    mongoRecords = new MongoRecords(nodeID, Config.mongoPort);
+    mongoRecords = new MongoRecords<NodeIDType>(nodeID, Config.mongoPort);
 
     // reInitialize GNS
     if (Config.dummyGNS) {

@@ -1,8 +1,10 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -55,7 +57,7 @@ public class FailureDetection<NodeIDType> {
   long startingTime;
 
   ScheduledThreadPoolExecutor executorService;
-  PaxosManager paxosManager;
+  PaxosManager<NodeIDType> paxosManager;
   private boolean debugMode = true;
 
   /**
@@ -64,9 +66,9 @@ public class FailureDetection<NodeIDType> {
    * @param nodeIDs set of nodes to monitor
    * @param nodeID  ID of this node
    */
-  public FailureDetection(Set<NodeIDType> nodeIDs, NodeIDType nodeID, ScheduledThreadPoolExecutor executorService, PaxosManager paxosManager,
+  public FailureDetection(Set<NodeIDType> nodeIDs, NodeIDType nodeID, ScheduledThreadPoolExecutor executorService, PaxosManager<NodeIDType> paxosManager,
                           int pingIntervalMillis, int timeoutIntervalMillis) {
-    this.nodeID = nodeID;
+    this.nodeID = nodeID; 
 //     this.N =  N;
     this.startingTime = System.currentTimeMillis();
     this.executorService = executorService;
@@ -99,10 +101,10 @@ public class FailureDetection<NodeIDType> {
 
       if (nodeInfo.containsKey(monitoredNodeID)) return;
 
-      FailureDetectionPacket fail = new FailureDetectionPacket(nodeID, monitoredNodeID, false, PaxosPacketType.FAILURE_DETECT);
+      FailureDetectionPacket<NodeIDType> fail = new FailureDetectionPacket<NodeIDType>(nodeID, monitoredNodeID, false, PaxosPacketType.FAILURE_DETECT);
       Random r = new Random();
       try {
-        FailureDetectionTask failureDetectionTask = new FailureDetectionTask(monitoredNodeID, fail.toJSONObject(), this);
+        FailureDetectionTask<NodeIDType> failureDetectionTask = new FailureDetectionTask<NodeIDType>(monitoredNodeID, fail.toJSONObject(), this);
         long initialDelay = timeoutIntervalMillis + r.nextInt(pingIntervalMillis);
         nodeInfo.put(monitoredNodeID, System.currentTimeMillis() + initialDelay);
         nodeStatus.put(monitoredNodeID, true);
@@ -198,69 +200,8 @@ public class FailureDetection<NodeIDType> {
    * @return true if node = nodeID is up, false otherwise.
    */
   boolean isNodeUp(NodeIDType nodeID) {
-//    return true;
     return nodeStatus.get(nodeID);
   }
-
-
-//	/**
-//	 * Receives FailureDetectionPacket and responds to the sender.
-//	 */
-//	public void run() {
-//		
-//		while (true) {
-//			
-////			if (failure == false && this.nodeID == Network.N && System.currentTimeMillis() - startingTime > 30000) {
-////				System.out.println(this.nodeID + " IMP: failure detection quitting.");
-////				try
-////				{
-////					Thread.sleep(20000);
-////				} catch (InterruptedException e)
-////				{
-////					// Auto-generated catch block
-////					e.printStackTrace();
-////				}
-////				failure = true;
-////			}
-//			
-//			byte[] buf = new byte[Network.MAX_PACKET_SIZE];
-//			DatagramPacket packet = new DatagramPacket(buf, buf.length);
-//			try {
-//				socket.receive(packet);
-//			} catch (IOException e) {
-//				e.printStackTrace();
-//			}
-//			byte[] payload = packet.getData();			//Packet's payload
-//			FailureDetectionPacket fdPacket;
-//			try {
-//				JSONObject json = new JSONObject(new String(payload));
-//				fdPacket = new FailureDetectionPacket(json);
-//			} catch (JSONException e) {
-//				// Auto-generated catch block
-//				e.printStackTrace();
-//				continue;
-//			}
-//			
-//			if (fdPacket.packetType == PacketType.FAILURE_DETECT) {
-//				// send response
-//				FailureDetectionPacket fdResponse = fdPacket.getFailureDetectionResponse();
-//				try
-//				{
-//					sendMessage(fdPacket.senderNodeID, fdResponse.toJSONObject());//, 
-////							Network.getFailureMonitoringPortNumber(fdPacket.senderNodeID));
-//				} catch (JSONException e)
-//				{
-//					// Auto-generated catch block
-//					e.printStackTrace();
-//				}
-//			}
-//			else if (fdPacket.packetType == PacketType.FAILURE_RESPONSE) {
-//				updateNodeInfo(fdPacket);
-//			}
-//			
-//		}
-//	}
-
 
   /**
    * if an active node fails, or a failed node comes up again.
@@ -269,7 +210,7 @@ public class FailureDetection<NodeIDType> {
    * @param monitoredNode
    */
   void notifyNodeOfStatusChange(NodeIDType monitoredNode) {
-    FailureDetectionPacket fdPacket = null;
+    FailureDetectionPacket<NodeIDType> fdPacket = null;
     lock.lock();
     try {
       if (nodeInfo.containsKey(monitoredNode)) {
@@ -280,14 +221,14 @@ public class FailureDetection<NodeIDType> {
         if (delay < timeoutIntervalMillis && status == false) {
           // case 1: node is up
           nodeStatus.put(monitoredNode, true);
-          fdPacket = new FailureDetectionPacket(nodeID, monitoredNode,
+          fdPacket = new FailureDetectionPacket<NodeIDType>(nodeID, monitoredNode,
                   true, PaxosPacketType.NODE_STATUS);
         } else if (delay > timeoutIntervalMillis && status == true) {
           // case 2: node is down
 //					GNS.getLogger().severe(nodeID + "FD Node failed " + monitoredNode + "delay = " + delay);
 
           nodeStatus.put(monitoredNode, false);
-          fdPacket = new FailureDetectionPacket(nodeID, monitoredNode,
+          fdPacket = new FailureDetectionPacket<NodeIDType>(nodeID, monitoredNode,
                   false, PaxosPacketType.NODE_STATUS);
 //                    resetNodeInfo(monitoredNode);
           GNS.getLogger().severe(nodeID + "\tFDNodeFailed\t" + nodeID + "\t" + monitoredNode + "\t" + delay + "\t" +
@@ -324,7 +265,7 @@ class FailureDetectionTask<NodeIDType> extends TimerTask {
    */
   NodeIDType destNodeID;
 
-  FailureDetection failureDetection;
+  FailureDetection<NodeIDType> failureDetection;
 
   /**
    * Constructor
@@ -332,7 +273,7 @@ class FailureDetectionTask<NodeIDType> extends TimerTask {
    * @param destNodeID which node to monitor
    * @param json       failure detection packet to send
    */
-  public FailureDetectionTask(NodeIDType destNodeID, JSONObject json, FailureDetection failureDetection) {
+  public FailureDetectionTask(NodeIDType destNodeID, JSONObject json, FailureDetection<NodeIDType> failureDetection) {
     this.destNodeID = destNodeID;
     this.json = json;
     this.failureDetection = failureDetection;
@@ -365,16 +306,18 @@ class FailureDetectionTask<NodeIDType> extends TimerTask {
 }
 
 
-class HandleFailureDetectionPacketTask extends TimerTask {
+class HandleFailureDetectionPacketTask<NodeIDType> extends TimerTask {
 
-  FailureDetectionPacket fdPacket;
+  FailureDetectionPacket<NodeIDType> fdPacket;
 
-  FailureDetection failureDetection;
+  FailureDetection<NodeIDType> failureDetection;
+  
+  
 
-  HandleFailureDetectionPacketTask(JSONObject json, FailureDetection failureDetection) {
+  HandleFailureDetectionPacketTask(JSONObject json, FailureDetection<NodeIDType> failureDetection, Stringifiable<NodeIDType> unstringer) {
     this.failureDetection = failureDetection;
     try {
-      fdPacket = new FailureDetectionPacket(json);
+      fdPacket = new FailureDetectionPacket<NodeIDType>(json, unstringer);
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON Exception " + e.getMessage());
     }
@@ -387,7 +330,7 @@ class HandleFailureDetectionPacketTask extends TimerTask {
       // initialized failure detection
       if (fdPacket != null && fdPacket.packetType == PaxosPacketType.FAILURE_DETECT.getInt()) {
 
-        FailureDetectionPacket fdResponse = fdPacket.getFailureDetectionResponse();
+        FailureDetectionPacket<NodeIDType> fdResponse = fdPacket.getFailureDetectionResponse();
         failureDetection.resetNodeInfo(fdPacket.senderNodeID);
         try {
           GNS.getLogger().finer(failureDetection.nodeID + "FD sent response to " + fdPacket.senderNodeID);

@@ -34,7 +34,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
   private NodeIDType nodeID;
 
   /** nio server*/
-  private InterfaceJSONNIOTransport nioServer;
+  private InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
   /** executor service for handling tasks */
   private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
@@ -58,7 +58,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
    * can't this class use an internal executor of its own? 
    */
   public ActiveReplica(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig,
-                       InterfaceJSONNIOTransport nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+                       InterfaceJSONNIOTransport<NodeIDType> nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                        AppType reconfigurableApp) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;

@@ -73,9 +73,9 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   /**
    * constructor object
    */
-  public ReplicaController(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport nioServer,
+  public ReplicaController(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
                            ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
-                           MongoRecords mongoRecords) {
+                           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
     this.nioServer = nioServer;
@@ -318,11 +318,11 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   }
 
   private void updateNSLoad(JSONObject json) throws JSONException {
-    NameServerLoadPacket nsLoad  = new NameServerLoadPacket(json);
+    NameServerLoadPacket<NodeIDType> nsLoad  = new NameServerLoadPacket<NodeIDType>(json);
     if (Config.debuggingEnabled) GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
             "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID()) +
             "\tNewNoad: " + nsLoad.getLoadValue() + "\t");
-    nsRequestRates.put((NodeIDType)nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
+    nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
 
   public ConcurrentHashMap<NodeIDType, Double> getNsRequestRates() {

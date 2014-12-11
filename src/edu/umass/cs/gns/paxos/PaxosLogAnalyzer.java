@@ -32,7 +32,7 @@ public class PaxosLogAnalyzer<NodeIDType> {
   /**
    * Log messages at all nodes for all paxos instances. A nested HashMap data structure is used to store the messages.
    */
-  HashMap<NodeIDType, ConcurrentHashMap<String, PaxosReplicaInterface>> paxosAllNS;
+  HashMap<NodeIDType, ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>>> paxosAllNS;
 
   /**
    * Constructor
@@ -43,7 +43,7 @@ public class PaxosLogAnalyzer<NodeIDType> {
   public PaxosLogAnalyzer(String paxosLogFolder, int numNS) {
     this.paxosLogFolder = paxosLogFolder;
     this.numNS = numNS;
-    paxosAllNS = new HashMap<NodeIDType, ConcurrentHashMap<String, PaxosReplicaInterface>>();
+    paxosAllNS = new HashMap<NodeIDType, ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>>>();
   }
 
   // FIX ME: THIS CODE ASSUMES NODES WILL BE NAMED 0 - N.
@@ -57,10 +57,10 @@ public class PaxosLogAnalyzer<NodeIDType> {
       NodeIDType nodeID = (NodeIDType) Integer.toString(x);
 
       String nodeLogFolder = getNodeLogFolder(nodeID);
-      PaxosLogger logger = new PaxosLogger(nodeLogFolder, nodeID, false);
+      PaxosLogger<NodeIDType> logger = new PaxosLogger<NodeIDType>(nodeLogFolder, nodeID, false);
 //      PaxosLogger.setLoggerParameters(nodeLogFolder);
       long t0 = System.currentTimeMillis();
-      ConcurrentHashMap<String, PaxosReplicaInterface> paxosInstances = logger.readAllPaxosLogs();
+      ConcurrentHashMap<String, PaxosReplicaInterface<NodeIDType>> paxosInstances = logger.readAllPaxosLogs();
       paxosAllNS.put(nodeID, paxosInstances);
       System.out.println("Read log: Node " + nodeID + "\tPaxosIDs: " + paxosInstances.size()
               + "\t" + (System.currentTimeMillis() - t0) / 1000 + " sec");

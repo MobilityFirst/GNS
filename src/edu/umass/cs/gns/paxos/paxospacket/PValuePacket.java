@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.paxos.Ballot;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import java.io.Serializable;
 
 public class PValuePacket<NodeIDType> extends PaxosPacket implements Serializable {
@@ -19,8 +20,8 @@ public class PValuePacket<NodeIDType> extends PaxosPacket implements Serializabl
 
   static String BALLOT = "b1";
 
-  public PValuePacket(JSONObject json) throws JSONException {
-    this.proposal = new ProposalPacket<NodeIDType>(json);
+  public PValuePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    this.proposal = new ProposalPacket<NodeIDType>(json, unstringer);
     this.ballot = new Ballot<NodeIDType>(json.getString(BALLOT));
   }
 

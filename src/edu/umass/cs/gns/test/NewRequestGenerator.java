@@ -53,7 +53,7 @@ public class NewRequestGenerator<NodeIDType> {
     public void run() {
       numRuns += 1;
 
-      LNSPacketDemultiplexer lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
+      LNSPacketDemultiplexer<NodeIDType> lnsPacketDemultiplexer = new LNSPacketDemultiplexer<NodeIDType>(handler);
       long firstDelay = -1;
       long lastDelay = -1;
       try {

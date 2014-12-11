@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,14 +25,13 @@ public class RequestPacket<NodeIDType> extends PaxosPacket implements Serializab
     this.value = value;
     this.packetType = packetType.getInt();
     this.stop = stop;
-
   }
 
-  public RequestPacket(JSONObject json) throws JSONException {
+  public RequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.packetType = PaxosPacketType.REQUEST.getInt();
     String x = json.getString("y1");
     String[] tokens = x.split("\\s");
-    this.clientID = (NodeIDType) tokens[0];
+    this.clientID = unstringer.valueOf(tokens[0]);
     this.requestID = Integer.parseInt(tokens[1]);
 
     this.stop = tokens[2].equals("1");

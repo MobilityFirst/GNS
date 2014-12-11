@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -23,9 +24,9 @@ public class ProposalPacket<NodeIDType> extends PaxosPacket implements Serializa
     this.gcSlot = gcSlot;
   }
 
-  public ProposalPacket(JSONObject json) throws JSONException {
+  public ProposalPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     try {
-      this.req = new RequestPacket(json);
+      this.req = new RequestPacket<NodeIDType>(json, unstringer);
     } catch (JSONException e) {
       this.req = null;
     }
@@ -37,7 +38,7 @@ public class ProposalPacket<NodeIDType> extends PaxosPacket implements Serializa
   }
 
   public ProposalPacket<NodeIDType> getDecisionPacket() {
-    return new ProposalPacket(slot, req, PaxosPacketType.DECISION, gcSlot);
+    return new ProposalPacket<NodeIDType>(slot, req, PaxosPacketType.DECISION, gcSlot);
   }
 
   public void makeDecisionPacket() {

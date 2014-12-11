@@ -101,7 +101,7 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
     }
 
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
-    this.primaryNameServer = json.has(PRIMARY_NAMESERVER) ? (NodeIDType) json.get(PRIMARY_NAMESERVER) : null;
+    this.primaryNameServer = json.has(PRIMARY_NAMESERVER) ? unstringer.valueOf(json.getString(PRIMARY_NAMESERVER)) : null;
     this.localNameServer = json.getInt(LOCAL_NAMESERVER);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);

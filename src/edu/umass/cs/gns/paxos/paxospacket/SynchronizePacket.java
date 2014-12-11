@@ -19,7 +19,6 @@ public class SynchronizePacket<NodeIDType> extends PaxosPacket {
   public SynchronizePacket(NodeIDType nodeID) {
     this.packetType = PaxosPacketType.SYNC_REQUEST.getInt();
     this.nodeID = nodeID;
-
   }
 
   String NODE = "x1";

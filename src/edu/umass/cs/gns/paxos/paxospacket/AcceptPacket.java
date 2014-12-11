@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
 import edu.umass.cs.gns.paxos.Ballot;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,10 +30,10 @@ public class AcceptPacket<NodeIDType> extends PaxosPacket {
 
   }
 
-  public AcceptPacket(JSONObject json) throws JSONException {
-    this.pValue = new PValuePacket<NodeIDType>(json);
+  public AcceptPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+    this.pValue = new PValuePacket<NodeIDType>(json, unstringer);
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.nodeID = (NodeIDType) json.get(NODE);
+    this.nodeID = unstringer.valueOf(json.getString(NODE));
     this.slotNumberAtReplica = json.getInt(SLOT);
   }
 

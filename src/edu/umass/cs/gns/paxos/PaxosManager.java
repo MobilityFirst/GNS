@@ -304,7 +304,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
       case FAILURE_DETECT:
       case FAILURE_RESPONSE:
-        processMessage(new HandleFailureDetectionPacketTask(json, failureDetection));
+        processMessage(new HandleFailureDetectionPacketTask<NodeIDType>(json, failureDetection, nodeConfig));
         break;
       default:
 

@@ -3,6 +3,7 @@ package edu.umass.cs.gns.paxos.paxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.paxos.Ballot;
+import edu.umass.cs.gns.util.Stringifiable;
 
 public class SendCurrentStatePacket<NodeIDType> extends PaxosPacket {
 
@@ -40,9 +41,9 @@ public class SendCurrentStatePacket<NodeIDType> extends PaxosPacket {
 //        this.state = state;
   }
 
-  public SendCurrentStatePacket(JSONObject json) throws JSONException {
+  public SendCurrentStatePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.sendingNodeID = (NodeIDType) json.get("sendingNodeID");
+    this.sendingNodeID = unstringer.valueOf(json.getString("sendingNodeID"));
     String curBallot = json.getString("currentBallot");
     if (curBallot.length() == 0) {
       this.currentBallot = null;

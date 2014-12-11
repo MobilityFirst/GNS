@@ -53,18 +53,18 @@ public class PreparePacket<NodeIDType> extends PaxosPacket {
     this.ballot = new Ballot<NodeIDType>(json.getString("ballot"));
     this.slotNumber = json.getInt("slotNumber");
     if (this.packetType == PaxosPacketType.PREPARE_REPLY.getInt()) {
-      this.accepted = parseJsonForAccepted(json);
+      this.accepted = parseJsonForAccepted(json, unstringer);
     }
   }
 
-  private ConcurrentHashMap<Integer, PValuePacket<NodeIDType>> parseJsonForAccepted(JSONObject json)
+  private ConcurrentHashMap<Integer, PValuePacket<NodeIDType>> parseJsonForAccepted(JSONObject json, Stringifiable<NodeIDType> unstringer)
           throws JSONException {
     ConcurrentHashMap<Integer, PValuePacket<NodeIDType>> accepted = new ConcurrentHashMap<Integer, PValuePacket<NodeIDType>>();
     if (json.has("accepted")) {
       JSONArray jsonArray = json.getJSONArray("accepted");
       for (int i = 0; i < jsonArray.length(); i++) {
         JSONObject element = jsonArray.getJSONObject(i);
-        PValuePacket<NodeIDType> pval = new PValuePacket<NodeIDType>(element);
+        PValuePacket<NodeIDType> pval = new PValuePacket<NodeIDType>(element, unstringer);
         accepted.put(pval.proposal.slot, pval);
       }
     }

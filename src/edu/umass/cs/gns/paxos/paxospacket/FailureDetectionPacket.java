@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,15 +29,15 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
     this.status = status;
   }
 
-  public FailureDetectionPacket(JSONObject json) throws JSONException {
+  public FailureDetectionPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     this.packetType = json.getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME);
-    this.senderNodeID = (NodeIDType) json.get("sender");
-    this.responderNodeID = (NodeIDType) json.get("responder");
+    this.senderNodeID = unstringer.valueOf(json.getString("sender"));
+    this.responderNodeID = unstringer.valueOf(json.getString("responder"));
     this.status = json.getBoolean("status");
   }
 
   public FailureDetectionPacket<NodeIDType> getFailureDetectionResponse() {
-    return new FailureDetectionPacket(this.senderNodeID,
+    return new FailureDetectionPacket<NodeIDType>(this.senderNodeID,
             this.responderNodeID, true, PaxosPacketType.FAILURE_RESPONSE);
   }
 

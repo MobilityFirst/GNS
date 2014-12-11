@@ -134,7 +134,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
   /**
    * Messages currently queued for logging
    */
-  private  ArrayList<LoggingCommand> logCommands = new ArrayList<LoggingCommand>();
+  private  ArrayList<LoggingCommand<NodeIDType>> logCommands = new ArrayList<LoggingCommand<NodeIDType>>();
 
   /**
    * If {@code msgs} is empty (no new messages for logging), then the logging thread
@@ -590,12 +590,12 @@ public class PaxosLogger<NodeIDType> extends Thread {
    */
   private void doLogging() {
     while (!isShutdown()) {    // check if signal to shutdown
-      ArrayList<LoggingCommand> logCmdCopy = null;
+      ArrayList<LoggingCommand<NodeIDType>> logCmdCopy = null;
 
       synchronized (logQueueLock) {
         if (logCommands.size() > 0) {
           logCmdCopy = logCommands;
-          logCommands = new ArrayList<LoggingCommand>();
+          logCommands = new ArrayList<LoggingCommand<NodeIDType>>();
         }
       }
 
@@ -841,11 +841,11 @@ public class PaxosLogger<NodeIDType> extends Thread {
     }
     File[] files = f.listFiles();
 
-    ConcurrentHashMap<String, PaxosStateFileName> mostRecentStateFile = new ConcurrentHashMap<String,
-            PaxosStateFileName>();
+    ConcurrentHashMap<String, PaxosStateFileName<NodeIDType>> mostRecentStateFile = new ConcurrentHashMap<String,
+            PaxosStateFileName<NodeIDType>>();
     for (File f1 : files) {
       try {
-        PaxosStateFileName fName = new PaxosStateFileName(f1.getName());
+        PaxosStateFileName<NodeIDType> fName = new PaxosStateFileName<NodeIDType>(f1.getName());
         GNS.getLogger().fine("File name: " + fName);
         if (!paxosInstances.containsKey(getPaxosKey(fName.paxosID)) ||
                 !fName.paxosID.equals(paxosInstances.get(getPaxosKey(fName.paxosID)).getPaxosID())) {
@@ -880,7 +880,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
                 "\tThis case should not happen.");
       } else {
         GNS.getLogger().fine("Recovering state for : " + paxosID);
-        PaxosStateFileName state = mostRecentStateFile.get(paxosID);
+        PaxosStateFileName<NodeIDType> state = mostRecentStateFile.get(paxosID);
         paxosInstances.get(paxosKey).recoverCurrentBallotNumber(state.ballot);
         paxosInstances.get(paxosKey).recoverSlotNumber(state.slotNumber);
         paxosManager.clientRequestHandler.updateState(paxosID, state.state);
@@ -1185,7 +1185,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    */
   private  void parseDecision(PaxosReplicaInterface<NodeIDType> paxosReplica, String message) throws JSONException {
     if (paxosReplica != null && message != null) {
-      ProposalPacket<NodeIDType> proposalPacket = new ProposalPacket<NodeIDType>(new JSONObject(message));
+      ProposalPacket<NodeIDType> proposalPacket = new ProposalPacket<NodeIDType>(new JSONObject(message), nodeConfig);
       paxosReplica.recoverDecision(proposalPacket);
     }
   }
@@ -1207,7 +1207,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
    */
   private  void parseAccept(PaxosReplicaInterface<NodeIDType> replica, String msg) throws JSONException {
     if (replica != null && msg != null) {
-      AcceptPacket packet = new AcceptPacket(new JSONObject(msg));
+      AcceptPacket<NodeIDType> packet = new AcceptPacket<NodeIDType>(new JSONObject(msg), nodeConfig);
       replica.recoverAccept(packet);
     }
   }
@@ -1287,7 +1287,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
     try {
       switch (PaxosPacketType.getPacketType(logMsg.getLogMessageType())) {
         case ACCEPT:
-          AcceptPacket<NodeIDType> accept = new AcceptPacket<NodeIDType>(new JSONObject(logMsg.getMessage()));
+          AcceptPacket<NodeIDType> accept = new AcceptPacket<NodeIDType>(new JSONObject(logMsg.getMessage()), nodeConfig);
           if (stateFileName.slotNumber > accept.pValue.proposal.slot) {
             return true; // > sign is important
           } else {
@@ -1301,7 +1301,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
             return false;
           }
         case DECISION:
-          ProposalPacket proposal = new ProposalPacket(new JSONObject(logMsg.getMessage()));
+          ProposalPacket<NodeIDType> proposal = new ProposalPacket<NodeIDType>(new JSONObject(logMsg.getMessage()), nodeConfig);
 
           if (stateFileName.slotNumber > proposal.slot) {
             return true; // > sign is important
@@ -1546,7 +1546,7 @@ public class PaxosLogger<NodeIDType> extends Thread {
  * Class parses the file name of a paxos state file and extracts paxosID, ballotNumber,
  * and slotNumber from the file
  */
-class PaxosStateFileName implements Comparable {
+class PaxosStateFileName<NodeIDType> implements Comparable {
 
   /**
    * paxosID of this paxos instance
@@ -1555,7 +1555,7 @@ class PaxosStateFileName implements Comparable {
   /**
    * Ballot number of the paxos instance when this state was logged
    */
-  Ballot ballot;
+  Ballot<NodeIDType> ballot;
   /**
    * slotNumber of the paxos instance when this state was logged
    */
@@ -1577,7 +1577,7 @@ class PaxosStateFileName implements Comparable {
       return;
     }
 
-    ballot = new Ballot(tokens[tokens.length - 2]);
+    ballot = new Ballot<NodeIDType>(tokens[tokens.length - 2]);
     slotNumber = Integer.parseInt(tokens[tokens.length - 1]);
     int len = name.length() - tokens[tokens.length - 2].length() - 1 - tokens[tokens.length - 1].length() - 1;
     paxosID = name.substring(0, len);
@@ -1590,7 +1590,7 @@ class PaxosStateFileName implements Comparable {
 
   @Override
   public int compareTo(Object o) {
-    PaxosStateFileName p = (PaxosStateFileName) o;
+    PaxosStateFileName<NodeIDType> p = (PaxosStateFileName) o;
     int x = ballot.compareTo(p.ballot);
     if (x != 0) {
       return x;
@@ -1605,6 +1605,7 @@ class PaxosStateFileName implements Comparable {
     return paxosID + "\t" + ballot + "\t" + slotNumber;
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws Exception{
     String name = "test_name:1_0:7_0";
     PaxosStateFileName fname = new PaxosStateFileName(name);

@@ -471,12 +471,12 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
           break;
         // replica --> coordinator
         case PROPOSAL:
-          ProposalPacket<NodeIDType> proposal = new ProposalPacket<NodeIDType>(json);
+          ProposalPacket<NodeIDType> proposal = new ProposalPacket<NodeIDType>(json, nodeConfig);
           handleProposal(proposal);
           break;
         // coordinator --> replica
         case DECISION:
-          proposal = new ProposalPacket<NodeIDType>(json);
+          proposal = new ProposalPacket<NodeIDType>(json, nodeConfig);
           handleCommittedRequest(proposal, false);
           break;
         // coordinator --> replica
@@ -500,7 +500,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
         // replica --> replica
         // local failure detector --> replica
         case NODE_STATUS:
-          FailureDetectionPacket fdPacket = new FailureDetectionPacket(json);
+          FailureDetectionPacket<NodeIDType> fdPacket = new FailureDetectionPacket<NodeIDType>(json, nodeConfig);
           handleNodeStatusUpdate(fdPacket);
           break;
         case SYNC_REQUEST:
@@ -1009,7 +1009,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
    * @param incomingJson json object of type <code>ACCEPT_PACKET</code> received on node.
    */
   private void handleAccept(JSONObject incomingJson) throws JSONException {
-    AcceptPacket<NodeIDType> accept = new AcceptPacket<NodeIDType>(incomingJson);
+    AcceptPacket<NodeIDType> accept = new AcceptPacket<NodeIDType>(incomingJson, nodeConfig);
     AcceptReplyPacket<NodeIDType> acceptReply;
 
     try {

@@ -34,7 +34,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
   /**
    * Implements handling of client requests, comms and caching.
    */
-  private ClientRequestHandlerInterface requestHandler;
+  private ClientRequestHandlerInterface<NodeIDType> requestHandler;
 
   /**
    * A local name server forwards the final response for all requests to intercessor.
@@ -53,12 +53,12 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
    * Ping manager object for pinging other nodes and updating ping latencies in
    */
   // this one is static because it has a get method that is static
-  private PingManager pingManager;
+  private PingManager<NodeIDType> pingManager;
 
   /**
    * We keep a pointer to the gnsNodeConfig so we can shut it down.
    */
-  private GNSNodeConfig gnsNodeConfig;
+  private GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   /**
    * We keep a pointer to the udpDnsServer so we can shut it down.

@@ -73,6 +73,8 @@ public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket {
     this.type = Packet.getPacketType(json);
     this.requestID = json.getInt(REQ_ID);
     this.name = json.getString(NAME);
+    //this.primarySender = unstringer.valueOf(json.getString(PRIMARY_SENDER));
+    //this.activeReceiver = unstringer.valueOf(json.getString(ACTIVE_RECEIVER));
     this.primarySender = (NodeIDType)json.get(PRIMARY_SENDER);
     this.activeReceiver = (NodeIDType)json.get(ACTIVE_RECEIVER);
     this.version = (short) json.getInt(VERSION);
