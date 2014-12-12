@@ -36,6 +36,7 @@ public class PingTable extends GnsCommand {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
     String nodeString = json.getString(N);
     if (module.isAdminMode()) {

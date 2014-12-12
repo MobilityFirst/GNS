@@ -26,7 +26,6 @@ import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
  * a set of methods (like toString, put, remove, keySet, values(), etc.)
  * as exemplified below.
  * */
-
 public class MultiMap {
 
 	public class PaxosRequestState {

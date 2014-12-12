@@ -18,6 +18,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -44,10 +45,12 @@ public class ClearTagged extends GnsCommand {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
-    for (String guid : handler.getAdmintercessor().collectTaggedGuids(tagName, handler)) {
+    for (Iterator<?> it = handler.getAdmintercessor().collectTaggedGuids(tagName, handler).iterator(); it.hasNext();) {
+      String guid = (String) it.next();
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
       if (accountInfo != null) {
         AccountAccess.removeAccount(accountInfo, handler);

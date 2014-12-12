@@ -38,7 +38,7 @@ import java.util.TreeSet;
  *
  * @author westy
  */
-public class Admintercessor {
+public class Admintercessor<NodeIDType> {
 
   private final String LINE_SEPARATOR = System.getProperty("line.separator");
   private Random randomID;
@@ -58,16 +58,16 @@ public class Admintercessor {
   /**
    * This is where dump response records are collected while we're waiting for all them to come in.
    */
-  private ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpStorage;
+  private ConcurrentMap<Integer, Map<NodeIDType, TreeSet<NameRecord>>> dumpStorage;
   /**
    * This is where the final dump response results are put once we see the sentinel packet.
    */
-  private ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpResult;
+  private ConcurrentMap<Integer, Map<NodeIDType, TreeSet<NameRecord>>> dumpResult;
 
   {
     randomID = new Random();
-    dumpStorage = new ConcurrentHashMap<Integer, Map<Object, TreeSet<NameRecord>>>(10, 0.75f, 3);
-    dumpResult = new ConcurrentHashMap<Integer, Map<Object, TreeSet<NameRecord>>>(10, 0.75f, 3);
+    dumpStorage = new ConcurrentHashMap<Integer, Map<NodeIDType, TreeSet<NameRecord>>>(10, 0.75f, 3);
+    dumpResult = new ConcurrentHashMap<Integer, Map<NodeIDType, TreeSet<NameRecord>>>(10, 0.75f, 3);
     adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
   }
   
@@ -76,7 +76,7 @@ public class Admintercessor {
    *
    * @return
    */
-  public boolean sendResetDB(ClientRequestHandlerInterface handler) {
+  public boolean sendResetDB(ClientRequestHandlerInterface<NodeIDType> handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject(), handler);
       return true;
@@ -91,7 +91,7 @@ public class Admintercessor {
    * 
    * @return
    */
-  public boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
+  public boolean sendDeleteAllRecords(ClientRequestHandlerInterface<NodeIDType> handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject(), handler);
       return true;
@@ -106,7 +106,7 @@ public class Admintercessor {
    * 
    * @return
    */
-  public boolean sendClearCache(ClientRequestHandlerInterface handler) {
+  public boolean sendClearCache(ClientRequestHandlerInterface<NodeIDType> handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
       return true;
@@ -121,7 +121,7 @@ public class Admintercessor {
    * 
    * @return
    */
-  public String sendDumpCache(ClientRequestHandlerInterface handler) {
+  public String sendDumpCache(ClientRequestHandlerInterface<NodeIDType> handler) {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
@@ -144,7 +144,7 @@ public class Admintercessor {
    * @param node
    * @return a string containing the ping results for the node
    */
-  public String sendPingTable(String node, ClientRequestHandlerInterface handler) {
+  public String sendPingTable(String node, ClientRequestHandlerInterface<NodeIDType> handler) {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGTABLE, node).toJSONObject(), handler);
@@ -172,7 +172,7 @@ public class Admintercessor {
    * @param node2
    * @return the ping value between those nodes
    */
-  public String sendPingValue(int node1, int node2, ClientRequestHandlerInterface handler) {
+  public String sendPingValue(int node1, int node2, ClientRequestHandlerInterface<NodeIDType> handler) {
     return sendPingValue(Integer.toString(node1), Integer.toString(node1), handler);
   }
 
@@ -184,7 +184,7 @@ public class Admintercessor {
    * @param node2
    * @return
    */
-  public String sendPingValue(String node1, String node2, ClientRequestHandlerInterface handler) {
+  public String sendPingValue(String node1, String node2, ClientRequestHandlerInterface<NodeIDType> handler) {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(), 
@@ -211,7 +211,7 @@ public class Admintercessor {
    * @param level
    * @return
    */
-  public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
+  public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface<NodeIDType> handler) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
       sendAdminPacket(packet.toJSONObject(), handler);
@@ -273,13 +273,13 @@ public class Admintercessor {
    * 
    * @return
    */
-    public CommandResponse sendDump(ClientRequestHandlerInterface handler) {
+    public CommandResponse sendDump(ClientRequestHandlerInterface<NodeIDType> handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
-    Map<Object, TreeSet<NameRecord>> result = dumpResult.get(id);
+    Map<NodeIDType, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
     if (result != null) {
       return new CommandResponse(formatDumpRecords(result, handler));
@@ -297,7 +297,7 @@ public class Admintercessor {
           dumpMonitor.wait(timeoutExpiredMs - System.currentTimeMillis());
           if (System.currentTimeMillis() >= timeoutExpiredMs) {
             // we timed out... only got partial results{
-            Map<Object, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
+            Map<NodeIDType, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
             if (recordsMap != null) { // can be null if we timed out before getting any responses
               dumpResult.put(id, recordsMap);
               dumpStorage.remove(id);
@@ -314,19 +314,20 @@ public class Admintercessor {
   }
 
   @SuppressWarnings("unchecked")
-  private String formatDumpRecords(Map<Object, TreeSet<NameRecord>> recordsMap, ClientRequestHandlerInterface handler) {
+  private String formatDumpRecords(Map<NodeIDType, TreeSet<NameRecord>> recordsMap, 
+          ClientRequestHandlerInterface<NodeIDType> handler) {
     // now process all the records we received
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<Object> missingIDs = new HashSet(handler.getGnsNodeConfig().getNodeIDs());
+    Set<NodeIDType> missingIDs = new HashSet(handler.getGnsNodeConfig().getNodeIDs());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + Util.setOfNodeIdToString(missingIDs));
       result.append(LINE_SEPARATOR);
     }
     // process all the entries into a nice string
-    for (Map.Entry<Object, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
+    for (Map.Entry<NodeIDType, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
       result.append("Nameserver: " + entry.getKey().toString() +
               " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
@@ -359,23 +360,23 @@ public class Admintercessor {
    * 
    * @param json
    */
-  public void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface handler) {
+  public void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface<NodeIDType> handler) {
     try {
       switch (getPacketType(json)) {
         case DUMP_REQUEST:
           try {
-            DumpRequestPacket dumpResponse = new DumpRequestPacket(json, handler.getGnsNodeConfig());
+            DumpRequestPacket<NodeIDType> dumpResponse = new DumpRequestPacket<NodeIDType>(json, handler.getGnsNodeConfig());
             int id = dumpResponse.getId();
             // grab or make a new recordsMap
-            Map<Object, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
+            Map<NodeIDType, TreeSet<NameRecord>> recordsMap = dumpStorage.get(id);
             if (recordsMap == null) {
-              recordsMap = new TreeMap<Object, TreeSet<NameRecord>>();
+              recordsMap = new TreeMap<NodeIDType, TreeSet<NameRecord>>();
               dumpStorage.put(id, recordsMap);
             }
             // pull the records out of the dump response and put them in dumpStorage
             JSONArray jsonArray = dumpResponse.getJsonArray();
             // ServerID can now be a String or and Integer
-            Object serverID = dumpResponse.getPrimaryNameServer();
+            NodeIDType serverID = dumpResponse.getPrimaryNameServer();
             TreeSet<NameRecord> records = new TreeSet<NameRecord>();
             for (int i = 0; i < jsonArray.length(); i++) {
               records.add(new NameRecord(null, jsonArray.getJSONObject(i)));
@@ -412,13 +413,13 @@ public class Admintercessor {
    * @param tagName
    * @return
    */
-  public HashSet<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {
+  public HashSet<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface<NodeIDType> handler) {
     int id;
     if ((id = sendDumpOutputHelper(tagName, handler)) == -1) {
       return null;
     }
     waitForDumpResponse(id);
-    Map<Object, TreeSet<NameRecord>> result = dumpResult.get(id);
+    Map<NodeIDType, TreeSet<NameRecord>> result = dumpResult.get(id);
     dumpResult.remove(id);
 
     if (result != null) {
@@ -437,7 +438,7 @@ public class Admintercessor {
     }
   }
 
-  private int sendDumpOutputHelper(String tagName, ClientRequestHandlerInterface handler) {
+  private int sendDumpOutputHelper(String tagName, ClientRequestHandlerInterface<NodeIDType> handler) {
     // send the request out to the local name server
     int id = nextDumpRequestID();
     GNS.getLogger().finer("Sending dump request id = " + id);
@@ -454,7 +455,7 @@ public class Admintercessor {
     return id;
   }
 
-  private void sendAdminPacket(JSONObject json, ClientRequestHandlerInterface handler) throws IOException {
+  private void sendAdminPacket(JSONObject json, ClientRequestHandlerInterface<NodeIDType> handler) throws IOException {
     LNSListenerAdmin.handlePacket(json, null, handler);
   }
 

@@ -36,6 +36,7 @@ public class PingValue extends GnsCommand {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
     String node1String = json.getString(N);
     String node2String = json.getString(N2);

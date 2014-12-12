@@ -22,9 +22,6 @@ import java.net.PortUnreachableException;
  */
 public class PingManager<NodeIDType> implements Shutdownable {
 
-  // Since we don't have ids for LNSs anymore this represents and the LNS in our table.
-  public static final String LOCALNAMESERVERID = "LOCALNS";
-
   private final static int TIME_BETWEEN_PINGS = 30000;
   private final NodeIDType nodeId;
   private final PingClient<NodeIDType> pingClient;
@@ -77,11 +74,11 @@ public class PingManager<NodeIDType> implements Shutdownable {
         try {
           if (!id.equals(nodeId)) {
             if (debug) {
-              GNS.getLogger().fine("Send from " + nodeId.toString() + " to " + id);
+              GNS.getLogger().fine("Send from " + nodeId + " to " + id);
             }
             long rtt = pingClient.sendPing(id);
             if (debug) {
-              GNS.getLogger().fine("From " + nodeId.toString() + " to " + id + " RTT = " + rtt);
+              GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
             }
             pingTable.put(id, windowSlot, rtt);
             //pingTable[id][windowSlot] = rtt;
@@ -95,7 +92,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
         }
       }
       long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
-      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId.toString() + "\t");
+      GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId + "\t");
       if (debug) {
         GNS.getLogger().fine("PINGER: " + tableToString(nodeId));
       }

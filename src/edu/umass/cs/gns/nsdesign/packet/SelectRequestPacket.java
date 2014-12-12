@@ -71,6 +71,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param value
    * @param otherValue
    */
+  @SuppressWarnings("unchecked")
   public SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
     super(null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
@@ -95,6 +96,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param guid
    * @param minRefreshInterval
    */
+  @SuppressWarnings("unchecked")
   private SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
     super(null, lnsAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
@@ -155,6 +157,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
+  @SuppressWarnings("unchecked")
   public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));

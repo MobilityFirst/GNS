@@ -34,12 +34,12 @@ public class NoCoordinationReplicaControllerCoordinator<NodeIDType> implements R
       switch (type) {
         // no coordination needed on any requests
         case ADD_RECORD: // set a field here to know this node received request from client, and should send confirmation
-          AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(request, nodeConfig);
+          AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<>(request, nodeConfig);
           recordPacket.setNameServerID(nodeID);
           app.handleDecision(null, recordPacket.toString(), false);
           break;
         case REMOVE_RECORD: // set a field here to know this node received request from client, and should send confirmation
-          RemoveRecordPacket<NodeIDType> removePacket = new RemoveRecordPacket<NodeIDType>(request, nodeConfig);
+          RemoveRecordPacket<NodeIDType> removePacket = new RemoveRecordPacket<>(request, nodeConfig);
           removePacket.setNameServerID(nodeID);
           app.handleDecision(null, removePacket.toString(), false);
           break;

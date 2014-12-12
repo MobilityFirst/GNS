@@ -130,14 +130,6 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithLnsAddress {
     this.jsonArray = jsonArray;
   }
 
-//  public InetSocketAddress getLnsAddress() {
-//    return lnsAddress;
-//  }
-//
-//  public void setLnsAddress(InetSocketAddress lnsAddress) {
-//    this.lnsAddress = lnsAddress;
-//  }
-
   public NodeIDType getPrimaryNameServer() {
     return primaryNameServer;
   }

@@ -63,9 +63,9 @@ public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
 
   private static int replicationRound = 0;
 
-  ReplicaController replicaController;
+  ReplicaController<NodeIDType> replicaController;
 
-  public ComputeNewActivesTask(ReplicaController replicaController) {
+  public ComputeNewActivesTask(ReplicaController<NodeIDType> replicaController) {
     this.replicaController = replicaController;
   }
 
@@ -93,7 +93,7 @@ public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
         }
 
         HashMap<ColumnField, Object> hashMap = iterator.nextHashMap();
-        ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), hashMap);
+        ReplicaControllerRecord<NodeIDType> rcRecord = new ReplicaControllerRecord<NodeIDType>(replicaController.getDB(), hashMap);
 
         if (Config.debuggingEnabled) {
         GNS.getLogger().fine("\tComputeNewActivesConsidering\t" + rcRecord.getName() + "\tCount\t" + numNamesRead +
@@ -118,7 +118,7 @@ public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
                   "\tRound\t" + replicationRound + "\tUpdatingOtherActives");
 
           int newActiveVersion = replicaController.getNewActiveVersion(rcRecord.getActiveVersion());
-          NewActiveProposalPacket activePropose = new NewActiveProposalPacket(rcRecord.getName(),
+          NewActiveProposalPacket<NodeIDType> activePropose = new NewActiveProposalPacket<NodeIDType>(rcRecord.getName(),
                   replicaController.getNodeID(), newActiveNameServers, newActiveVersion);
           // to propose request for coordination we send it to ourselves, so that coordinator receives the request
           replicaController.getNioServer().sendToID(replicaController.getNodeID(), activePropose.toJSONObject());
@@ -187,7 +187,7 @@ public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
     }
 
     //Get a new set of active name servers for this record
-    ReplicationOutput replicationOutput =  replicaController.getReplicationFrameworkInterface().newActiveReplica(
+    ReplicationOutput<NodeIDType> replicationOutput =  replicaController.getReplicationFrameworkInterface().newActiveReplica(
             replicaController,rcRecord, numReplica, count);
     newActiveNameServers = replicationOutput.getReplicas();
 

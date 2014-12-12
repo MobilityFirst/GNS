@@ -219,6 +219,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    * @param signature
    * @param message
    */
+  @SuppressWarnings("unchecked")
   public UpdatePacket(
           NodeIDType sourceId,
           int requestID, int LNSRequestID,
@@ -253,6 +254,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    * @param json JSONObject that represents UpdatedAddressPacket.
    * @throws org.json.JSONException
    */
+  @SuppressWarnings("unchecked")
   public UpdatePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     // include the address and signature info
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,

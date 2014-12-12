@@ -36,6 +36,7 @@ public class Dump extends GnsCommand {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
       return handler.getAdmintercessor().sendDump(handler);

@@ -39,25 +39,25 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
   /**
    * A local name server forwards the final response for all requests to intercessor.
    */
-  private Intercessor intercessor;
+  private Intercessor<NodeIDType> intercessor;
   
   /**
    * Retrieves the Intercessor.
    * 
    * @return 
    */
-  public Intercessor getIntercessor() {
+  public Intercessor<NodeIDType> getIntercessor() {
     return intercessor;
   }
   
-  private Admintercessor admintercessor;
+  private Admintercessor<NodeIDType> admintercessor;
   
   /**
    * Retrieves the Admintercessor.
    * 
    * @return 
    */
-  public Admintercessor getAdmintercessor() {
+  public Admintercessor<NodeIDType> getAdmintercessor() {
     return admintercessor;
   }
 
@@ -108,11 +108,11 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    this.requestHandler = new BasicClientRequestHandler(this, nodeAddress, gnsNodeConfig, pingManager, parameters);
+    this.requestHandler = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, pingManager, parameters);
 
-    this.intercessor = new Intercessor(requestHandler);
+    this.intercessor = new Intercessor<NodeIDType>(requestHandler);
     
-    this.admintercessor = new Admintercessor();
+    this.admintercessor = new Admintercessor<NodeIDType>();
    
     if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
       GnsHttpServer.runHttp(requestHandler);
@@ -122,7 +122,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
       GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
-      this.pingManager = new PingManager(PingManager.LOCALNAMESERVERID, gnsNodeConfig);
+      this.pingManager = new PingManager<NodeIDType>(null, gnsNodeConfig);
       pingManager.startPinging();
     }
 
@@ -130,12 +130,12 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     (this.lnsListenerAdmin = new LNSListenerAdmin(requestHandler)).start();
 
     if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
-      new NameServerVoteThread(StartLocalNameServer.voteIntervalMillis, requestHandler).start();
+      new NameServerVoteThread<NodeIDType>(StartLocalNameServer.voteIntervalMillis, requestHandler).start();
     }
 
     if (parameters.isExperimentMode()) {
       GNS.getLogger().info("Starting experiment ..... ");
-      new StartExperiment().startMyTest(null, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
+      new StartExperiment<NodeIDType>().startMyTest(null, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
               requestHandler);
     }
 

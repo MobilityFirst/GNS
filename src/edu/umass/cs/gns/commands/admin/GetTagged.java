@@ -41,6 +41,7 @@ public class GetTagged extends GnsCommand {
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);

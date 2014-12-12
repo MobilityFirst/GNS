@@ -9,7 +9,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
-import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -157,7 +156,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               if (node == null || handler.getGnsNodeConfig().getNodeIDs().contains(node)) {
                 if (node == null) {
                   jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", handler.getPingManager().tableToString(PingManager.LOCALNAMESERVERID));
+                  jsonResponse.put("PINGTABLE", handler.getPingManager().tableToString(null));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);

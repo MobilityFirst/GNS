@@ -71,12 +71,12 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
 
-  private LNSPacketDemultiplexer lnsPacketDemultiplexer;
+  private LNSPacketDemultiplexer<NodeIDType> lnsPacketDemultiplexer;
   private ClientRequestHandlerInterface<NodeIDType> handler;
 
   public Intercessor(ClientRequestHandlerInterface<NodeIDType> handler) {
     this.handler = handler;
-    lnsPacketDemultiplexer = new LNSPacketDemultiplexer(handler);
+    lnsPacketDemultiplexer = new LNSPacketDemultiplexer<NodeIDType>(handler);
   }
   
   /**

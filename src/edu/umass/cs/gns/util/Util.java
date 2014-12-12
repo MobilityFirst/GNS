@@ -208,7 +208,7 @@ public class Util {
    * @param nodeIds
    * @return a string
    */
-  public static String setOfNodeIdToString(Set nodeIds) {
+  public static String setOfNodeIdToString(Set<?> nodeIds) {
     StringBuilder sb = new StringBuilder();
     boolean first = true;
     for (Object x : nodeIds) {

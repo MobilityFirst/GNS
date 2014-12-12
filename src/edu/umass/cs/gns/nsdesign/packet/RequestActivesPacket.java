@@ -45,6 +45,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    */
   private final int lnsRequestID;
 
+  @SuppressWarnings("unchecked")
   public RequestActivesPacket(String name, InetSocketAddress lnsAddress, int lnsRequestID, NodeIDType nameServerID) {
     super(nameServerID, lnsAddress);
     this.name = name;
@@ -52,6 +53,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     this.lnsRequestID = lnsRequestID;
   }
 
+  @SuppressWarnings("unchecked")
   public RequestActivesPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));

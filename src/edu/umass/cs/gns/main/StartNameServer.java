@@ -132,7 +132,7 @@ public class StartNameServer {
     String nodeID = allValues.get(NSParameterNames.ID);
     
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), nodeID);
-
+    
     new NameServer(nodeID, allValues, gnsNodeConfig);
   }
 

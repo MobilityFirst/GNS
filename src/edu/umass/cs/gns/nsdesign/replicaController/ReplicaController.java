@@ -88,13 +88,14 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     if (replicationFrameworkInterface != null) {
       int initialDelay = new Random(1000).nextInt(Config.analysisIntervalSec);
       GNS.getLogger().info("Starting task to compute new actives ... initial delay: " + initialDelay);
-      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask(this), initialDelay,
+      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask<NodeIDType>(this), initialDelay,
               Config.analysisIntervalSec, TimeUnit.SECONDS);
     }
   }
 
   /**
    * BEGIN: getter methods for ReplicaController elements ***
+   * @return 
    */
   public NodeIDType getNodeID() {
     return nodeID;
@@ -124,7 +125,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     return scheduledThreadPoolExecutor;
   }
 
-  public ReplicationFrameworkInterface getReplicationFrameworkInterface() {
+  public ReplicationFrameworkInterface<NodeIDType> getReplicationFrameworkInterface() {
     return replicationFrameworkInterface;
   }
 

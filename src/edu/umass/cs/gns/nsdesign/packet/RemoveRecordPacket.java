@@ -60,6 +60,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param name Host/domain/device name
    * @param lnsAddress
    */
+  @SuppressWarnings("unchecked")
   public RemoveRecordPacket(NodeIDType sourceId, int requestId, String name, InetSocketAddress lnsAddress) {
     super(null, lnsAddress);
     this.type = Packet.PacketType.REMOVE_RECORD;
@@ -74,6 +75,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
    * @param json JSONObject that represents this packet
    * @throws org.json.JSONException
    */
+  @SuppressWarnings("unchecked")
   public RemoveRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));

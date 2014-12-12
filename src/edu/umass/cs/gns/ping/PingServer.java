@@ -39,8 +39,7 @@ public class PingServer<NodeIDType> extends Thread{
   public void run() {
 
     try {
-      serverSocket = new DatagramSocket(nodeID.equals(PingManager.LOCALNAMESERVERID)
-              ? GNS.DEFAULT_LNS_PING_PORT : gnsNodeConfig.getNSPingPort(nodeID));
+      serverSocket = new DatagramSocket(nodeID == null ? GNS.DEFAULT_LNS_PING_PORT : gnsNodeConfig.getNSPingPort(nodeID));
       byte[] receiveData = new byte[1024];
       byte[] sendData;
       while (true) {
