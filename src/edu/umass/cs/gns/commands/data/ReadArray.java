@@ -57,15 +57,15 @@ public class ReadArray extends GnsCommand {
 
     if (getCommandName().equals(READARRAYONE)) {
       if (ALLFIELDS.equals(field)) {
-        return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message);
+        return FieldAccess.lookupOneMultipleValues(guid, reader, signature, message, handler);
       } else {
-        return FieldAccess.lookupOne(guid, field, reader, signature, message);
+        return FieldAccess.lookupOne(guid, field, reader, signature, message, handler);
       }
     } else {
       if (ALLFIELDS.equals(field)) {
-        return FieldAccess.lookupMultipleValues(guid, reader, signature, message);
+        return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
       } else {
-        return FieldAccess.lookupJSONArray(guid, field, reader, signature, message);
+        return FieldAccess.lookupJSONArray(guid, field, reader, signature, message, handler);
       }
     }
   }

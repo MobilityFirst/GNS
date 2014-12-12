@@ -8,7 +8,7 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.util.Base64;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
@@ -78,8 +78,8 @@ public class AccountAccess {
    * @param guid
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid) {
-    return lookupAccountInfoFromGuid(guid, false);
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, ClientRequestHandlerInterface handler) {
+    return lookupAccountInfoFromGuid(guid, false, handler);
   }
 
   /**
@@ -99,18 +99,18 @@ public class AccountAccess {
    * @param allowSubGuids
    * @return
    */
-  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowSubGuids) {
-    QueryResult accountResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-    if (LocalNameServer.getIntercessor().debuggingEnabled) {
+  public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowSubGuids, ClientRequestHandlerInterface handler) {
+    QueryResult accountResult = handler.getIntercessor().sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+    if (handler.getIntercessor().debuggingEnabled) {
       GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
     }
     if (accountResult.isError()) {
       if (allowSubGuids) {
         // if allowSubGuids is true assume this is a guid that is "owned" by an account guid so
         // we look  up the owning account guid
-        guid = lookupPrimaryGuid(guid);
+        guid = lookupPrimaryGuid(guid, handler);
         if (guid != null) {
-          accountResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+          accountResult = handler.getIntercessor().sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
         }
       }
     }
@@ -135,9 +135,9 @@ public class AccountAccess {
    * @param guid
    * @return a GUID
    */
-  public static String lookupPrimaryGuid(String guid) {
+  public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler) {
 
-    QueryResult guidResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, PRIMARY_GUID);
+    QueryResult guidResult = handler.getIntercessor().sendQueryBypassingAuthentication(guid, PRIMARY_GUID);
     if (!guidResult.isError()) {
       return (String) guidResult.getArray(PRIMARY_GUID).get(0);
     } else {
@@ -154,9 +154,9 @@ public class AccountAccess {
    * @param name
    * @return a GUID
    */
-  public static String lookupGuid(String name) {
+  public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
 
-    QueryResult guidResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, HRN_GUID);
+    QueryResult guidResult = handler.getIntercessor().sendQueryBypassingAuthentication(name, HRN_GUID);
     if (!guidResult.isError()) {
       return (String) guidResult.getArray(HRN_GUID).get(0);
     } else {
@@ -172,9 +172,9 @@ public class AccountAccess {
    * @param guid
    * @return an {@link GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid) {
+  public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler) {
 
-    QueryResult guidResult = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(guid, GUID_INFO);
+    QueryResult guidResult = handler.getIntercessor().sendQueryBypassingAuthentication(guid, GUID_INFO);
     if (!guidResult.isError()) {
       try {
         return new GuidInfo(guidResult.getArray(GUID_INFO).toResultValueString());
@@ -195,10 +195,10 @@ public class AccountAccess {
    * @param name
    * @return an {@link AccountInfo} instance
    */
-  public static AccountInfo lookupAccountInfoFromName(String name) {
-    String guid = lookupGuid(name);
+  public static AccountInfo lookupAccountInfoFromName(String name, ClientRequestHandlerInterface handler) {
+    String guid = lookupGuid(name, handler);
     if (guid != null) {
-      return lookupAccountInfoFromGuid(guid);
+      return lookupAccountInfoFromGuid(guid, handler);
     }
     return null;
   }
@@ -228,18 +228,20 @@ public class AccountAccess {
    * @param password
    * @return
    */
-  public static CommandResponse addAccountWithVerification(String host, String name, String guid, String publicKey, String password) {
+  public static CommandResponse addAccountWithVerification(String host, String name, String guid, String publicKey,
+          String password, ClientRequestHandlerInterface handler) {
     CommandResponse response;
-    if ((response = addAccount(name, guid, publicKey, password, GNS.enableEmailAccountAuthentication)).getReturnValue().equals(OKRESPONSE)) {
+    if ((response = addAccount(name, guid, publicKey, password, 
+            GNS.enableEmailAccountAuthentication, handler)).getReturnValue().equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
         String verifyCode = createVerificationCode(name);
-        AccountInfo accountInfo = lookupAccountInfoFromGuid(guid);
+        AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler);
         if (accountInfo == null) {
           return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
         }
         accountInfo.setVerificationCode(verifyCode);
         accountInfo.noteUpdate();
-        if (updateAccountInfoNoAuthentication(accountInfo)) {
+        if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
           boolean emailOK = Email.email("GNS Account Verification", name,
                   String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
           boolean adminEmailOK = Email.email("GNS Account Notification",
@@ -249,13 +251,13 @@ public class AccountAccess {
             return new CommandResponse(OKRESPONSE);
           } else {
             // if we can't send the confirmation back out of the account creation
-            removeAccount(accountInfo);
+            removeAccount(accountInfo, handler);
             return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send email");
           }
         } else {
           // Account info could not be updated.
           // If we're here we're probably hosed anyway, but just in case try to remove the account
-          removeAccount(accountInfo);
+          removeAccount(accountInfo, handler);
           return new CommandResponse(BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
         }
       }
@@ -282,9 +284,9 @@ public class AccountAccess {
    * @param code
    * @return
    */
-  public static CommandResponse verifyAccount(String guid, String code) {
+  public static CommandResponse verifyAccount(String guid, String code, ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
-    if ((accountInfo = lookupAccountInfoFromGuid(guid)) == null) {
+    if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
@@ -302,26 +304,27 @@ public class AccountAccess {
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
-    if (updateAccountInfoNoAuthentication(accountInfo)) {
+    if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
       return new CommandResponse(Defs.OKRESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
     }
   }
 
-  public static CommandResponse resetPublicKey(String guid, String password, String publicKey) {
+  public static CommandResponse resetPublicKey(String guid, String password, String publicKey, 
+          ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
-    if ((accountInfo = lookupAccountInfoFromGuid(guid)) == null) {
+    if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Not an account guid");
     }
     if (verifyPassword(accountInfo, password)) {
       GuidInfo guidInfo;
-      if ((guidInfo = lookupGuidInfo(guid)) == null) {
+      if ((guidInfo = lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read guid info");
       } else {
         guidInfo.setPublicKey(publicKey);
         guidInfo.noteUpdate();
-        if (updateGuidInfoNoAuthentication(guidInfo)) {
+        if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
           return new CommandResponse(Defs.OKRESPONSE + " " + "Public key has been updated.");
         } else {
           return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update guid info");
@@ -377,11 +380,12 @@ public class AccountAccess {
    * @param emailVerify
    * @return status result
    */
-  public static CommandResponse addAccount(String name, String guid, String publicKey, String password, boolean emailVerify) {
+  public static CommandResponse addAccount(String name, String guid, String publicKey, String password, boolean emailVerify,
+          ClientRequestHandlerInterface handler) {
     try {
 
       // First try to create the HRN record to make sure this name isn't already registered
-      if (!LocalNameServer.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!handler.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -389,14 +393,14 @@ public class AccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (!LocalNameServer.getIntercessor().sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
+        if (!handler.getIntercessor().sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-          LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.SINGLE_FIELD_CREATE);
+          handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
         } else {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
-          LocalNameServer.getIntercessor().sendRemoveRecord(name);
+          handler.getIntercessor().sendRemoveRecord(name);
           return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
         }
       } else {
@@ -413,21 +417,21 @@ public class AccountAccess {
    * @param accountInfo
    * @return status result
    */
-  public static CommandResponse removeAccount(AccountInfo accountInfo) {
+  public static CommandResponse removeAccount(AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
     // First remove any group links
-    GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid());
+    GroupAccess.cleanupGroupsForDelete(accountInfo.getPrimaryGuid(), handler);
     // Then remove the HRN link
-    if (!LocalNameServer.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
-      LocalNameServer.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
+    if (!handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryName()).isAnError()) {
+      handler.getIntercessor().sendRemoveRecord(accountInfo.getPrimaryGuid());
       // remove all the alias reverse links
       for (String alias : accountInfo.getAliases()) {
-        LocalNameServer.getIntercessor().sendRemoveRecord(alias);
+        handler.getIntercessor().sendRemoveRecord(alias);
       }
       // getArray rid of all subguids
       for (String guid : accountInfo.getGuids()) {
-        GuidInfo guidInfo = lookupGuidInfo(guid);
+        GuidInfo guidInfo = lookupGuidInfo(guid, handler);
         if (guidInfo != null) { // should not be null, ignore if it is
-          removeGuid(guidInfo, accountInfo, true);
+          removeGuid(guidInfo, accountInfo, true, handler);
         }
       }
 
@@ -452,10 +456,11 @@ public class AccountAccess {
    * @param publicKey - the public key to use with the new account
    * @return status result
    */
-  public static CommandResponse addGuid(AccountInfo accountInfo, String name, String guid, String publicKey) {
+  public static CommandResponse addGuid(AccountInfo accountInfo, String name, String guid, String publicKey,
+          ClientRequestHandlerInterface handler) {
     try {
       // insure that the guid doesn't exist already
-      if (lookupGuidInfo(guid) != null) {
+      if (lookupGuidInfo(guid, handler) != null) {
         return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
       }
       // do this first so if there is an execption we don't have to back out of anything
@@ -465,24 +470,24 @@ public class AccountAccess {
       accountInfo.noteUpdate();
 
       // First try to create the HRN to insure that that name does not already exist
-      if (!LocalNameServer.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!handler.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
         // update the account info
-        if (updateAccountInfoNoAuthentication(accountInfo)) {
+        if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
           // add the GUID_INFO link
-          LocalNameServer.getIntercessor().sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
+          handler.getIntercessor().sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
           // added this step to insure that the pervious step happened.
           // probably should add a timeout here
           GuidInfo newGuidInfo = null;
           int cnt = 0;
           do {
-            newGuidInfo = lookupGuidInfo(guid);
+            newGuidInfo = lookupGuidInfo(guid, handler);
             ThreadUtils.sleep(100); // relax a bit
           } while (newGuidInfo == null && ++cnt < 10);
           if (newGuidInfo == null) {
             throw new GnsRuntimeException("Unable to locate guid info structure.");
           }
           // add a link the new GUID to primary GUID
-          LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
+          handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
                   null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
         }
@@ -503,8 +508,8 @@ public class AccountAccess {
    * @param guid
    * @return
    */
-  public static CommandResponse removeGuid(GuidInfo guid) {
-    return removeGuid(guid, null, false);
+  public static CommandResponse removeGuid(GuidInfo guid, ClientRequestHandlerInterface handler) {
+    return removeGuid(guid, null, false, handler);
   }
 
   /**
@@ -514,8 +519,8 @@ public class AccountAccess {
    * @param guid
    * @return status result
    */
-  public static CommandResponse removeGuid(GuidInfo guid, AccountInfo accountInfo) {
-    return removeGuid(guid, accountInfo, false);
+  public static CommandResponse removeGuid(GuidInfo guid, AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
+    return removeGuid(guid, accountInfo, false, handler);
   }
 
   /**
@@ -529,30 +534,31 @@ public class AccountAccess {
    * @param ignoreAccountGuid
    * @return
    */
-  public static CommandResponse removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid) {
+  public static CommandResponse removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid,
+          ClientRequestHandlerInterface handler) {
     // First make sure guid is not an account GUID (unless we're sure it's not because we're deleting an account guid)
     if (!ignoreAccountGuid) {
-      if (lookupAccountInfoFromGuid(guid.getGuid()) != null) {
+      if (lookupAccountInfoFromGuid(guid.getGuid(), handler) != null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid.getGuid() + " is an account guid");
       }
     }
     // Fill in a missing account info
     if (accountInfo == null) {
-      String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid());
+      String accountGuid = AccountAccess.lookupPrimaryGuid(guid.getGuid(), handler);
       // should not happen unless records got messed up in GNS
       if (accountGuid == null) {
         return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " does not have a primary account guid");
       }
-      if ((accountInfo = lookupAccountInfoFromGuid(accountGuid)) == null) {
+      if ((accountInfo = lookupAccountInfoFromGuid(accountGuid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid.getGuid() + " cannot find primary account guid for " + accountGuid);
       }
     }
     // First remove any group links
-    GroupAccess.cleanupGroupsForDelete(guid.getGuid());
+    GroupAccess.cleanupGroupsForDelete(guid.getGuid(), handler);
     // Then remove the guid record
-    if (!LocalNameServer.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
+    if (!handler.getIntercessor().sendRemoveRecord(guid.getGuid()).isAnError()) {
       // remove reverse record
-      LocalNameServer.getIntercessor().sendRemoveRecord(guid.getName());
+      handler.getIntercessor().sendRemoveRecord(guid.getName());
       // Possibly update the account guid we are associated with to
       // tell them we are gone
       if (ignoreAccountGuid) {
@@ -561,7 +567,7 @@ public class AccountAccess {
         // update the account guid to know that we deleted the guid
         accountInfo.removeGuid(guid.getGuid());
         accountInfo.noteUpdate();
-        if (updateAccountInfoNoAuthentication(accountInfo)) {
+        if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
           return new CommandResponse(OKRESPONSE);
         } else {
           return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
@@ -585,18 +591,19 @@ public class AccountAccess {
    * @param message
    * @return status result
    */
-  public static CommandResponse addAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message) {
+  public static CommandResponse addAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
-    if (LocalNameServer.getIntercessor().sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
+    if (handler.getIntercessor().sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
       // roll this back
       accountInfo.removeAlias(alias);
       return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + alias);
     }
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo, writer, signature, message).isAnError()) {
+    if (updateAccountInfo(accountInfo, writer, signature, message, handler).isAnError()) {
       // back out if we got an error
-      LocalNameServer.getIntercessor().sendRemoveRecord(alias);
+      handler.getIntercessor().sendRemoveRecord(alias);
       accountInfo.removeAlias(alias);
       return new CommandResponse(BADRESPONSE + " " + BADALIAS);
     } else {
@@ -614,19 +621,20 @@ public class AccountAccess {
    * @param message
    * @return status result
    */
-  public static CommandResponse removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message) {
+  public static CommandResponse removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler) {
 
     if (!accountInfo.containsAlias(alias)) {
       return new CommandResponse(BADRESPONSE + " " + BADALIAS);
     }
     // remove the NAME -> GUID record
     NSResponseCode responseCode;
-    if ((responseCode = LocalNameServer.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
+    if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
-    if ((responseCode = updateAccountInfo(accountInfo, writer, signature, message)).isAnError()) {
+    if ((responseCode = updateAccountInfo(accountInfo, writer, signature, message, handler)).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
     return new CommandResponse(OKRESPONSE);
@@ -642,10 +650,11 @@ public class AccountAccess {
    * @param message
    * @return status result
    */
-  public static CommandResponse setPassword(AccountInfo accountInfo, String password, String writer, String signature, String message) {
+  public static CommandResponse setPassword(AccountInfo accountInfo, String password, String writer, String signature, 
+          String message, ClientRequestHandlerInterface handler) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo, writer, signature, message).isAnError()) {
+    if (updateAccountInfo(accountInfo, writer, signature, message, handler).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
     }
     return new CommandResponse(OKRESPONSE);
@@ -661,10 +670,11 @@ public class AccountAccess {
    * @param message
    * @return status result
    */
-  public static CommandResponse addTag(GuidInfo guidInfo, String tag, String writer, String signature, String message) {
+  public static CommandResponse addTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message).isAnError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, handler).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
     }
     return new CommandResponse(OKRESPONSE);
@@ -680,18 +690,20 @@ public class AccountAccess {
    * @param message
    * @return status result
    */
-  public static CommandResponse removeTag(GuidInfo guidInfo, String tag, String writer, String signature, String message) {
+  public static CommandResponse removeTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
-    if (updateGuidInfo(guidInfo, writer, signature, message).isAnError()) {
+    if (updateGuidInfo(guidInfo, writer, signature, message, handler).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
     }
     return new CommandResponse(OKRESPONSE);
   }
 
-  private static NSResponseCode updateAccountInfo(AccountInfo accountInfo, String writer, String signature, String message) {
+  private static NSResponseCode updateAccountInfo(AccountInfo accountInfo, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler) {
     try {
-      NSResponseCode response = LocalNameServer.getIntercessor().sendUpdateRecord(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+      NSResponseCode response = handler.getIntercessor().sendUpdateRecord(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
               accountInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
       return response;
     } catch (JSONException e) {
@@ -700,11 +712,12 @@ public class AccountAccess {
     }
   }
 
-  private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo) {
+  private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
+          ClientRequestHandlerInterface handler) {
     try {
       ResultValue newvalue;
       newvalue = accountInfo.toDBFormat();
-      if (!LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
+      if (!handler.getIntercessor().sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
               newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
         return true;
       }
@@ -714,10 +727,11 @@ public class AccountAccess {
     return false;
   }
 
-  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message) {
+  private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler) {
 
     try {
-      NSResponseCode response = LocalNameServer.getIntercessor().sendUpdateRecord(guidInfo.getGuid(), GUID_INFO,
+      NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guidInfo.getGuid(), GUID_INFO,
               guidInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
       return response;
     } catch (JSONException e) {
@@ -726,12 +740,13 @@ public class AccountAccess {
     }
   }
 
-  private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo) {
+  private static boolean updateGuidInfoNoAuthentication(GuidInfo guidInfo,
+          ClientRequestHandlerInterface handler) {
 
     try {
       ResultValue newvalue;
       newvalue = guidInfo.toDBFormat();
-      if (!LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
+      if (!handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guidInfo.getGuid(), GUID_INFO,
               newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
         return true;
       }

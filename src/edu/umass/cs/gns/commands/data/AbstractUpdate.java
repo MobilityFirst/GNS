@@ -54,7 +54,7 @@ public abstract class AbstractUpdate extends GnsCommand {
     NSResponseCode responseCode;
     if (field == null) {
       // full JSON object update
-      if (!(responseCode = LocalNameServer.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
+      if (!(responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
               getUpdateOperation(), writer, signature, message)).isAnError()) {
          return new CommandResponse(OKRESPONSE);
       } else {
@@ -68,7 +68,7 @@ public abstract class AbstractUpdate extends GnsCommand {
               oldValue != null ? new ResultValue(Arrays.asList(oldValue)) : null,
               index,
               getUpdateOperation(),
-              writer, signature, message)).isAnError()) {
+              writer, signature, message, handler)).isAnError()) {
         return new CommandResponse(OKRESPONSE);
       } else {
         return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());

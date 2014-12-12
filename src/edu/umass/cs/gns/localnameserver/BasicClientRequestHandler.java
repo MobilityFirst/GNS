@@ -8,6 +8,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nio.JSONDelayEmulator;
@@ -53,6 +54,7 @@ import org.json.JSONException;
  */
 public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
 
+  private final LocalNameServer<NodeIDType> localNameServer;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
@@ -93,8 +95,9 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   long receivedRequests = 0;
 
-  public BasicClientRequestHandler(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
+  public BasicClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
           PingManager<NodeIDType> pingManager, RequestHandlerParameters parameters) throws IOException {
+    this.localNameServer = localNameServer;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     this.gnsNodeConfig = gnsNodeConfig;
@@ -139,6 +142,16 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
 
   public PingManager<NodeIDType> getPingManager() {
     return pingManager;
+  }
+
+  @Override
+  public LocalNameServer getLocalNameServer() {
+    return localNameServer;
+  }
+
+  @Override
+  public Intercessor getIntercessor() {
+    return localNameServer.getIntercessor();
   }
 
   @Override
@@ -340,7 +353,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     }
     return preamble + cacheTable.toString();
   }
-
+  
   static class CacheComparator implements Comparator<CacheEntry> {
 
     @Override

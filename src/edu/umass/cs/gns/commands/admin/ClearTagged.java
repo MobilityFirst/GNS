@@ -49,9 +49,9 @@ public class ClearTagged extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
     for (String guid : Admintercessor.collectTaggedGuids(tagName, handler)) {
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
       if (accountInfo != null) {
-        AccountAccess.removeAccount(accountInfo);
+        AccountAccess.removeAccount(accountInfo, handler);
       }
     }
     return new CommandResponse(OKRESPONSE);

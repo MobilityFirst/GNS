@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.test.connecttime;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -35,8 +36,11 @@ public class Mobile implements Runnable{
   private String key = "EdgeRecord";
 
   private String currentValue;
+  
+  private ClientRequestHandlerInterface handler;
 
-  public Mobile(double updateIntervalSec){
+  public Mobile(double updateIntervalSec, ClientRequestHandlerInterface handler) {
+    this.handler = handler;
     this.updateIntervalSec = updateIntervalSec;
   }
 
@@ -59,7 +63,7 @@ public class Mobile implements Runnable{
     long t0 = System.currentTimeMillis();
     String initialValue = "ABCD";
     setCurrentValue(initialValue);
-    NSResponseCode response = LocalNameServer.getIntercessor().sendAddRecord(name, key, getResultValue(getCurrentValue()));
+    NSResponseCode response = handler.getIntercessor().sendAddRecord(name, key, getResultValue(getCurrentValue()));
     assert response == NSResponseCode.NO_ERROR: "Error in adding record";
 
     startListeningThread();
@@ -90,7 +94,7 @@ public class Mobile implements Runnable{
     public void run() {
       String value = Util.randomString(10);
       setCurrentValue(value);
-      NSResponseCode response = LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(name, key,
+      NSResponseCode response = handler.getIntercessor().sendUpdateRecordBypassingAuthentication(name, key,
               value, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL);
       assert response == NSResponseCode.NO_ERROR: "Error in updating record";
     }

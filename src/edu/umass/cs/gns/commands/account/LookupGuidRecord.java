@@ -44,7 +44,7 @@ public class LookupGuidRecord extends GnsCommand {
 //    } else {
       String guid = json.getString(GUID);
       GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
       if (guidInfo != null) {

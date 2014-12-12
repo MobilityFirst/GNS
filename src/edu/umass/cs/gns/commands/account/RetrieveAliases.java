@@ -55,11 +55,11 @@ public class RetrieveAliases extends GnsCommand {
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
       if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
         ArrayList<String> aliases = accountInfo.getAliases();
         return new CommandResponse(new JSONArray(aliases).toString());
       } else {

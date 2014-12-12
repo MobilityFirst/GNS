@@ -55,23 +55,23 @@ public class RemoveGuid extends GnsCommand {
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo accountGuidInfo = null;
       GuidInfo guidInfoToRemove;
-      if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove)) == null) {
+      if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guidToRemove);
       }
       if (accountGuid != null) {
-        if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
+        if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
           return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
         }
       }
       if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
         AccountInfo accountInfo = null;
         if (accountGuid != null) {
-          accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+          accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
           if (accountInfo == null) {
             return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
           }
         }
-        return AccountAccess.removeGuid(guidInfoToRemove, accountInfo);
+        return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
         return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
       }

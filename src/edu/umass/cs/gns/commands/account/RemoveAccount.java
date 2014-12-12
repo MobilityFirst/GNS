@@ -54,13 +54,13 @@ public class RemoveAccount extends GnsCommand {
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
       if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name);
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler);
         if (accountInfo != null) {
-          return AccountAccess.removeAccount(accountInfo);
+          return AccountAccess.removeAccount(accountInfo, handler);
         } else {
           return new CommandResponse(BADRESPONSE + " " + BADACCOUNT);
         }

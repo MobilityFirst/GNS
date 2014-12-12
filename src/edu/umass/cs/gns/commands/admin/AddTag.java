@@ -51,19 +51,10 @@ public class AddTag extends GnsCommand {
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
-    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+    if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
       return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
     }
-    return AccountAccess.addTag(guidInfo, tag, guid, signature, message);
-//    GuidInfo guidInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
-//    }
-//    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-//      return AccountAccess.addTag(guidInfo, tag);
-//    } else {
-//      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
-//    }
+    return AccountAccess.addTag(guidInfo, tag, guid, signature, message, handler);
   }
 
   @Override

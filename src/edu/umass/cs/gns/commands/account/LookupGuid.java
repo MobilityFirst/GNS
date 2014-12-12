@@ -43,7 +43,7 @@ public class LookupGuid extends GnsCommand {
 //    } else {
       String name = json.getString(NAME);
       // look for an account guid
-      String result = AccountAccess.lookupGuid(name);
+      String result = AccountAccess.lookupGuid(name, handler);
       if (result != null) {
         return new CommandResponse(result);
       } else {

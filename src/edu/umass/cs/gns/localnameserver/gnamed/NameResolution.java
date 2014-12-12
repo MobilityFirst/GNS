@@ -10,6 +10,7 @@ package edu.umass.cs.gns.localnameserver.gnamed;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -104,7 +105,7 @@ public class NameResolution {
    * @param query
    * @return A message with either a good response or an error.
    */
-  public static Message lookupGnsServer(Message query) {
+  public static Message lookupGnsServer(Message query, ClientRequestHandlerInterface handler) {
     // check for queries we can't handle
     int type = query.getQuestion().getType();
     // Was the query legitimate or implemented?
@@ -123,7 +124,7 @@ public class NameResolution {
     }
 
     GNS.getLogger().fine("GNS lookup: Field " + fieldName + " in domain " + domainName);
-    String guid = AccountAccess.lookupGuid(domainName);
+    String guid = AccountAccess.lookupGuid(domainName, handler);
     if (guid == null) {
       if (debuggingEnabled) {
         GNS.getLogger().fine("GNS lookup: Domain " + domainName + " not found, returning NXDOMAIN result.");
@@ -131,7 +132,7 @@ public class NameResolution {
       return errorMessage(query, Rcode.NXDOMAIN);
     }
 
-    CommandResponse fieldResponse = FieldAccess.lookup(guid, fieldName, null, null, null, null);
+    CommandResponse fieldResponse = FieldAccess.lookup(guid, fieldName, null, null, null, null, handler);
     if (fieldResponse.isError()) {
       if (debuggingEnabled) {
         GNS.getLogger().fine("GNS lookup: Field " + fieldName + " in domain " + domainName + " not found, returning NXDOMAIN result.");

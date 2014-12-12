@@ -17,7 +17,6 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.test.StartExperiment;
-import edu.umass.cs.gns.test.nioclient.DBClientIntercessor;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.Inet4Address;
@@ -39,14 +38,10 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
   /**
    * A local name server forwards the final response for all requests to intercessor.
    */
-  private static IntercessorInterface intercessor;
+  private IntercessorInterface intercessor;
   
-  public static Intercessor getIntercessor() {
+  public Intercessor getIntercessor() {
     return (Intercessor)intercessor;
-  }
-  
-  public static IntercessorInterface getIntercessorInterface() {
-    return intercessor;
   }
 
   /**
@@ -96,17 +91,10 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    this.requestHandler = new BasicClientRequestHandler(nodeAddress, gnsNodeConfig, pingManager, parameters);
+    this.requestHandler = new BasicClientRequestHandler(this, nodeAddress, gnsNodeConfig, pingManager, parameters);
 
-    if (!parameters.isExperimentMode()) {
-      // intercessor for regular GNS use
-      this.intercessor = new Intercessor(requestHandler);
-    } else {
-      // intercessor for four simple DB operations: add, remove, write, read only.
-      this.intercessor = new DBClientIntercessor(-1, GNS.DEFAULT_LNS_DBCLIENT_PORT,
-              new LNSPacketDemultiplexer(requestHandler));
-    }
-
+    this.intercessor = new Intercessor(requestHandler);
+   
     if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
       GnsHttpServer.runHttp(requestHandler);
     }
@@ -134,7 +122,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
 
     try {
       if (StartLocalNameServer.dnsGnsOnly) {
-        dnsTranslator = new DnsTranslator(Inet4Address.getByName("0.0.0.0"), 53);
+        dnsTranslator = new DnsTranslator(Inet4Address.getByName("0.0.0.0"), 53, requestHandler);
         dnsTranslator.start();
       } else if (StartLocalNameServer.dnsOnly) {
         if (StartLocalNameServer.gnsServerIP == null) {
@@ -142,10 +130,10 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
           return;
         }
         GNS.getLogger().warning("gns server IP" + StartLocalNameServer.gnsServerIP);
-        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", StartLocalNameServer.gnsServerIP);
+        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", StartLocalNameServer.gnsServerIP, requestHandler);
         udpDnsServer.start();
       } else {
-        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null);
+        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null, requestHandler);
         udpDnsServer.start();
       }
     } catch (BindException e) {

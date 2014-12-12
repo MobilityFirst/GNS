@@ -53,7 +53,7 @@ public abstract class AbstractUpdateList extends GnsCommand {
             oldValue != null ? JSONUtils.JSONArrayToResultValue(new JSONArray(oldValue)) : null,
             argument,
             getUpdateOperation(),
-            writer, signature, message)).isAnError()) {
+            writer, signature, message, handler)).isAnError()) {
       return new CommandResponse(OKRESPONSE);
     } else {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());

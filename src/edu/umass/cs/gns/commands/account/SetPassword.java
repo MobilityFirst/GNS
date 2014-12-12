@@ -48,11 +48,11 @@ public class SetPassword extends GnsCommand {
     String password = json.getString(PASSWORD);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+    AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
     if (accountInfo == null) {
       return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
     }
-    return AccountAccess.setPassword(accountInfo, password, guid, signature, message);
+    return AccountAccess.setPassword(accountInfo, password, guid, signature, message, handler);
   }
 
   @Override

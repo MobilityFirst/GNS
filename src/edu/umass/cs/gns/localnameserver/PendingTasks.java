@@ -168,7 +168,7 @@ public class PendingTasks {
           task.requestInfo.setFinishTime(); // set finish time for request
           if (eventCode != null) task.requestInfo.addEventCode(eventCode);
           GNS.getStatLogger().fine(task.requestInfo.getLogString());
-          LocalNameServer.getIntercessorInterface().handleIncomingPacket(task.requestInfo.getErrorMessage());
+          handler.getIntercessor().handleIncomingPacket(task.requestInfo.getErrorMessage());
         }
       }
     }

@@ -54,10 +54,10 @@ public class AddAlias extends GnsCommand {
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
         if (accountInfo == null) {
           return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
         }
@@ -66,7 +66,7 @@ public class AddAlias extends GnsCommand {
         } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
           return new CommandResponse(BADRESPONSE + " " + TOMANYALIASES);
         } else {
-          return AccountAccess.addAlias(accountInfo, name, guid, signature, message);
+          return AccountAccess.addAlias(accountInfo, name, guid, signature, message, handler);
         }
     
 //      GuidInfo guidInfo;

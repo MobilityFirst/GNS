@@ -8,6 +8,7 @@
  */
 package edu.umass.cs.gns.localnameserver.gnamed;
 
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
@@ -40,10 +41,11 @@ public class UdpDnsServer extends Thread implements Shutdownable {
   private final SimpleResolver dnsServer;
   private final SimpleResolver gnsServer;
   private final Cache dnsCache;
-  DatagramSocket sock;
-  ExecutorService executor = null;
-  String dnsServerIP; // just stored for informational purposes
-  String gnsServerIP; // just stored for informational purposes
+  private final DatagramSocket sock;
+  private ExecutorService executor = null;
+  private final String dnsServerIP; // just stored for informational purposes
+  private final String gnsServerIP; // just stored for informational purposes
+  private final ClientRequestHandlerInterface handler;
 
   /**
    * Creates a new <code>UDPServer</code> object bound to the given IP/port
@@ -58,14 +60,16 @@ public class UdpDnsServer extends Thread implements Shutdownable {
    * @throws java.net.SocketException
    * @throws java.net.UnknownHostException
    */
-  public UdpDnsServer(InetAddress addr, int port, String dnsServerIP, String gnsServerIP) throws SecurityException, SocketException, UnknownHostException {
+  public UdpDnsServer(InetAddress addr, int port, String dnsServerIP, String gnsServerIP, 
+          ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
     this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
     this.gnsServer = gnsServerIP != null ? new SimpleResolver(gnsServerIP) : null;
     this.dnsCache = dnsServerIP != null ? new Cache() : null;
     this.dnsServerIP = dnsServerIP;
     this.gnsServerIP = gnsServerIP;
     this.sock = new DatagramSocket(port, addr);
-    executor = Executors.newFixedThreadPool(5);
+    this.executor = Executors.newFixedThreadPool(5);
+    this.handler = handler;
   }
 
   @Override
@@ -88,7 +92,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
           } catch (InterruptedIOException e) {
             continue;
           }
-          executor.execute(new LookupWorker(sock, incomingPacket, incomingData, gnsServer, dnsServer, dnsCache));
+          executor.execute(new LookupWorker(sock, incomingPacket, incomingData, gnsServer, dnsServer, dnsCache, handler));
         }
       } catch (IOException e) {
         GNS.getLogger().severe("Error in UDP Server (will sleep for 3 seconds and try again): " + e);

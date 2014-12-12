@@ -50,7 +50,7 @@ public class GrantMemberships extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-     if (GroupAccess.grantMembership(guid, new ResultValue(members), guid, signature, message)) {
+     if (GroupAccess.grantMembership(guid, new ResultValue(members), guid, signature, message, handler)) {
       return new CommandResponse(OKRESPONSE);
     } else {
       return new CommandResponse(BADRESPONSE + " " + GENERICERROR);

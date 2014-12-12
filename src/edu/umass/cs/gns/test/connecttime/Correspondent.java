@@ -40,8 +40,11 @@ public class Correspondent<NodeIDType> implements Runnable{
   private String name = "test_name";
 
   private String key = "EdgeRecord";
+  
+  private ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public Correspondent(NodeIDType mobileID,  ClientRequestHandlerInterface<NodeIDType> handler) {
+  public Correspondent(NodeIDType mobileID, ClientRequestHandlerInterface<NodeIDType> handler) {
+    this.handler = handler;
     mobileAddress = handler.getGnsNodeConfig().getNodeAddress(mobileID);
   }
 
@@ -84,7 +87,7 @@ public class Correspondent<NodeIDType> implements Runnable{
       // 3. if does not match, sleep and repeat.
 
       long t0 = System.currentTimeMillis();
-      QueryResult result = LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, key);
+      QueryResult result = handler.getIntercessor().sendQueryBypassingAuthentication(name, key);
       connectTime += System.currentTimeMillis() - t0;
 
       String valueFromGns = null;

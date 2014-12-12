@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.localnameserver.gnamed;
 
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -50,6 +51,7 @@ public class LookupWorker implements Runnable {
   private final DatagramSocket socket;
   private final DatagramPacket incomingPacket;
   private final byte[] incomingData;
+  private final ClientRequestHandlerInterface handler;
 
   /**
    * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
@@ -61,13 +63,15 @@ public class LookupWorker implements Runnable {
    * @param gnsServer (might be null gns requests are resolved locally)
    * @param dnsCache (might be null meaning DNS responses are not cached)
    */
-  public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver gnsServer,SimpleResolver dnsServer, Cache dnsCache) {
+  public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver gnsServer,
+          SimpleResolver dnsServer, Cache dnsCache, ClientRequestHandlerInterface handler) {
     this.socket = socket;
     this.incomingPacket = incomingPacket;
     this.incomingData = incomingData;
     this.dnsServer = dnsServer;
     this.dnsCache = dnsCache;
     this.gnsServer = gnsServer;
+    this.handler = handler;
   }
   /**
    * @see java.lang.Thread#run()
@@ -127,7 +131,7 @@ public class LookupWorker implements Runnable {
 
     // If we're not consulting the DNS server as well just send the query to GNS.
     if (dnsServer == null) {
-      return NameResolution.lookupGnsServer(query);
+      return NameResolution.lookupGnsServer(query, handler);
     }
 
     // Otherwise as a first step before performing GNS/DNS lookup we check our own local cache.
@@ -147,15 +151,15 @@ public class LookupWorker implements Runnable {
       // We make two tasks to check the DNS and GNS in parallel
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new GnsDnsLookupTask(query),
+              new GnsDnsLookupTask(query, handler),
               // Create DNS lookup task
-              new GnsDnsLookupTask(dnsQuery, dnsServer));
+              new GnsDnsLookupTask(dnsQuery, dnsServer, handler));
     } else {
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new GnsDnsLookupTask(query, gnsServer, true /* isGNS */),
+              new GnsDnsLookupTask(query, gnsServer, true, /* isGNS */ handler ),
               // Create DNS lookup task
-              new GnsDnsLookupTask(dnsQuery, dnsServer, false /* isGNS */));
+              new GnsDnsLookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler ));
     }
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than

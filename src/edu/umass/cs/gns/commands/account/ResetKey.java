@@ -46,7 +46,7 @@ public class ResetKey extends GnsCommand {
       String guid = json.getString(GUID);
       String publicKey = json.getString(PUBLICKEY);
       String password = json.getString(PASSWORD);
-      return AccountAccess.resetPublicKey(guid, password, publicKey);
+      return AccountAccess.resetPublicKey(guid, password, publicKey, handler);
   }
 
   @Override

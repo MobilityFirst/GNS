@@ -8,6 +8,7 @@
  */
 package edu.umass.cs.gns.localnameserver.gnamed;
 
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
@@ -30,9 +31,11 @@ import java.util.concurrent.Executors;
  * @version 1.0
  */
 public class DnsTranslator extends Thread implements Shutdownable {
-  int port;
-  DatagramSocket sock;
-  ExecutorService executor = null;
+  private int port;
+  private DatagramSocket sock;
+  private ExecutorService executor = null;
+  private ClientRequestHandlerInterface handler;
+  
 
   /**
    * Creates a new <code>DnsTranslator</code> object bound to the given IP/port
@@ -43,10 +46,11 @@ public class DnsTranslator extends Thread implements Shutdownable {
    * @throws java.net.SocketException
    * @throws java.net.UnknownHostException
    */
-  public DnsTranslator(InetAddress addr, int port) throws SecurityException, SocketException, UnknownHostException {
+  public DnsTranslator(InetAddress addr, int port, ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
     this.port = port;
     this.sock = new DatagramSocket(port, addr);
     this.executor = Executors.newFixedThreadPool(5);
+    this.handler = handler;
   }
 
   @Override
@@ -68,7 +72,7 @@ public class DnsTranslator extends Thread implements Shutdownable {
           } catch (InterruptedIOException e) {
             continue;
           }
-          executor.execute(new LookupWorker(sock, incomingPacket, incomingData, null, null, null));
+          executor.execute(new LookupWorker(sock, incomingPacket, incomingData, null, null, null, handler));
         }
       } catch (IOException e) {
         GNS.getLogger().severe("Error in DNS Translator Server (will sleep for 3 seconds and try again): " + e);

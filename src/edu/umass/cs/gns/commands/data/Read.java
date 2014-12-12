@@ -56,11 +56,11 @@ public class Read extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
 
     if (ALLFIELDS.equals(field)) {
-      return FieldAccess.lookupMultipleValues(guid, reader, signature, message);
+      return FieldAccess.lookupMultipleValues(guid, reader, signature, message, handler);
     } else if (field != null) {
-      return FieldAccess.lookup(guid, field, null, reader, signature, message);
+      return FieldAccess.lookup(guid, field, null, reader, signature, message, handler);
     } else { // multi-field lookup
-      return FieldAccess.lookup(guid, null, fields, reader, signature, message);
+      return FieldAccess.lookup(guid, null, fields, reader, signature, message, handler);
     } 
   }
 

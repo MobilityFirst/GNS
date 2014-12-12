@@ -53,23 +53,23 @@ public class PerformanceTests {
     StringBuilder result = new StringBuilder();
     String accountGuid;
     // see if we already registered our GUID
-    if ((accountGuid = AccountAccess.lookupGuid(ACCOUNTNAME)) == null) {
+    if ((accountGuid = AccountAccess.lookupGuid(ACCOUNTNAME, handler)) == null) {
       // if not we use the method  below which bypasses the normal email verification requirement
       // but first we create a GUID from our public key
       accountGuid = ClientUtils.createGuidFromPublicKey(PUBLICKEY.getBytes());
-      AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false);
+      AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false, handler);
     }
     times = new HashMap<String, ArrayList<Double>>();
     if (verbose) {
       result.append("GUIDs:");
       result.append(NEWLINE);
     }
-    for (String guid : createSomeGuids(AccountAccess.lookupAccountInfoFromGuid(accountGuid), guidCnt)) {
+    for (String guid : createSomeGuids(AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler), guidCnt, handler)) {
       if (verbose) {
         result.append(guid);
         result.append(NEWLINE);
       }
-      runTestForGuid(guid, numFields);
+      runTestForGuid(guid, numFields, handler);
     }
     //result.append(runTestForGuid(accountGuid, numFields));
     if (verbose) {
@@ -85,20 +85,20 @@ public class PerformanceTests {
     return result.toString();
   }
 
-  private static ArrayList<String> createSomeGuids(AccountInfo info, int count) {
+  private static ArrayList<String> createSomeGuids(AccountInfo info, int count, ClientRequestHandlerInterface handler) {
     ArrayList<String> result = new ArrayList<String>();
 
     for (int i = 0; i < count; i++) {
       String name = "RTT-" + Util.randomString(6);
       String publicKey = name + "-KEY";
       String guid = ClientUtils.createGuidFromPublicKey(publicKey.getBytes());
-      AccountAccess.addGuid(info, name, guid, publicKey);
+      AccountAccess.addGuid(info, name, guid, publicKey, handler);
       result.add(guid);
     }
     return result;
   }
 
-  private static void runTestForGuid(String guid, int numFields) {
+  private static void runTestForGuid(String guid, int numFields, ClientRequestHandlerInterface handler) {
     ArrayList<String> fields = new ArrayList<String>();
     try {
       // Create n random fields with random values first. Do all of them before we do the reads
@@ -107,7 +107,7 @@ public class PerformanceTests {
         String field = "RTT-" + Util.randomString(7);
         if (!FieldAccess.create(guid, field, new ResultValue(Arrays.asList(Util.randomString(7))),
                 // ignore signature for now
-                null, null, null).isAnError()) {
+                null, null, null, handler).isAnError()) {
           fields.add(field);
         }
       }
@@ -115,7 +115,7 @@ public class PerformanceTests {
       // acessing the RoundTripTime fields of the ValuesMap class which records the
       // time between the LNS sending the request to the NS and the return message.
       for (String field : fields) {
-        QueryResult value = LocalNameServer.getIntercessor().sendQuery(guid, field, null, null, null, ColumnFieldType.LIST_STRING);
+        QueryResult value = handler.getIntercessor().sendQuery(guid, field, null, null, null, ColumnFieldType.LIST_STRING);
         if (!value.isError()) {
           //result.append(value.getRoundTripTime());
           if (times.get(value.getResponder()) == null) {

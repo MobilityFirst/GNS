@@ -65,11 +65,11 @@ public class AddGuid extends GnsCommand {
       String newGuid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
       
       GuidInfo accountGuidInfo;
-      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid)) == null) {
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
       }
       if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
-        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid);
+        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
         if (accountInfo == null) {
           return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
         }
@@ -78,13 +78,13 @@ public class AddGuid extends GnsCommand {
         } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
           return new CommandResponse(BADRESPONSE + " " + TOMANYGUIDS);
         } else {
-          CommandResponse result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey);
+          CommandResponse result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey, handler);
           if (result.getReturnValue().equals(OKRESPONSE)) {
             // set up the default read access
-            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE);
+            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
             // give account guid read and write access to all fields in the new guid
-            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid);
-            FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid);
+            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid, handler);
+            FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid, handler);
             return new CommandResponse(newGuid);
           } else {
             return result;

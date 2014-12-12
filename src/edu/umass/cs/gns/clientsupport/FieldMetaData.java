@@ -7,6 +7,7 @@ package edu.umass.cs.gns.clientsupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.util.HashSet;
@@ -42,8 +43,9 @@ public class FieldMetaData {
    * @param message 
    * @return  
    */
-  public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
+  public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, 
+          String message, ClientRequestHandlerInterface handler) {
+    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE,
             writer, signature, message);
   }
 
@@ -58,8 +60,9 @@ public class FieldMetaData {
    * @param message
    * @return 
    */
-  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature, String message) {
-    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message, ColumnFieldType.LIST_STRING);
+  public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature, 
+          String message, ClientRequestHandlerInterface handler) {
+    QueryResult result = handler.getIntercessor().sendQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new HashSet<String>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());
     } else {
@@ -74,8 +77,8 @@ public class FieldMetaData {
    * @param key
    * @param value
    */
-  public static void add(MetaDataTypeName type, String guid, String key, String value) {
-    LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+  public static void add(MetaDataTypeName type, String guid, String key, String value, ClientRequestHandlerInterface handler) {
+    handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, makeFieldMetaDataKey(type, key), value, null, UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
   }
 
   /**
@@ -89,8 +92,9 @@ public class FieldMetaData {
    * @param message
    * @return
    */
-  public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature, String message) {
-    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
+  public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
+          String message, ClientRequestHandlerInterface handler) {
+    return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
   //

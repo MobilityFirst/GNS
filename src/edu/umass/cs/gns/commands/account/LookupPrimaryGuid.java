@@ -42,7 +42,7 @@ public class LookupPrimaryGuid extends GnsCommand {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {
       String guid = json.getString(GUID);
-      String result = AccountAccess.lookupPrimaryGuid(guid);
+      String result = AccountAccess.lookupPrimaryGuid(guid, handler);
       if (result != null) {
         return new CommandResponse(result);
       } else {

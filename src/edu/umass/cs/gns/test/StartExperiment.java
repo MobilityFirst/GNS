@@ -30,7 +30,7 @@ public class StartExperiment<NodeIDType> {
       StartConnectTimeExperiment.startTest(nodeID, params, handler);
     } else if (params.getExpType() != null && params.getExpType().equals(ExpType.BASICTEST)) { // this is the RMI client
       GNS.getStatLogger().info("Starting basic test ... ");
-      LNSSideImplementation.startServer();
+      LNSSideImplementation.startServer(handler);
       // Test1Name is also a test
 //      Test1Name.startTest();
     }

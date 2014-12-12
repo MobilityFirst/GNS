@@ -58,21 +58,11 @@ public class AclAdd extends GnsCommand {
       return new CommandResponse(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     NSResponseCode responseCode;
-    if (!(responseCode = FieldMetaData.add(access, guid, field, accesser, writer, signature, message)).isAnError()) {
+    if (!(responseCode = FieldMetaData.add(access, guid, field, accesser, writer, signature, message, handler)).isAnError()) {
       return new CommandResponse(OKRESPONSE);
     } else {
       return new CommandResponse(responseCode.getProtocolCode());
     }
-//    GuidInfo guidInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
-//    }
-//    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-//      FieldMetaData.add(access, guidInfo, field, accesser);
-//      return new CommandResponse(OKRESPONSE);
-//    } else {
-//      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
-//    }
   }
 
   @Override

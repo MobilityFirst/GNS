@@ -48,7 +48,7 @@ public class VerifyAccount extends GnsCommand {
 //    } else {
       String guid = json.getString(GUID);
       String code = json.getString(CODE);
-      return AccountAccess.verifyAccount(guid, code);
+      return AccountAccess.verifyAccount(guid, code, handler);
     //}
   }
 

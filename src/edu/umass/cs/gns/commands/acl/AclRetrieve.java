@@ -56,17 +56,8 @@ public class AclRetrieve extends GnsCommand {
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return new CommandResponse(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
-    return new CommandResponse(new JSONArray(FieldMetaData.lookup(access, guid, field, reader, signature, message)).toString());
-//    GuidInfo guidInfo;
-//    if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
-//    }
-//    if (AccessSupport.verifySignature(guidInfo, signature, message)) {
-//      Set<String> values = FieldMetaData.lookup(access, guidInfo, field);
-//      return new JSONArray(values).toString();
-//    } else {
-//      return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
-//    }
+    return new CommandResponse(new JSONArray(FieldMetaData.lookup(access, guid, field, reader, signature,
+            message, handler)).toString());
   }
 
   @Override

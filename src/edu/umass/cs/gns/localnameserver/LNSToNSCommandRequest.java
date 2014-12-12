@@ -33,7 +33,7 @@ public class LNSToNSCommandRequest {
       handler.sendToNS(incomingJSON, serverID);
     } else {
       // PACKET IS COMING BACK FROM A NAMESERVER
-      LocalNameServer.getIntercessorInterface().handleIncomingPacket(incomingJSON);
+      handler.getIntercessor().handleIncomingPacket(incomingJSON);
     }
   }
 

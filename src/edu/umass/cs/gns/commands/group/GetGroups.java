@@ -51,7 +51,7 @@ public class GetGroups extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    return new CommandResponse(new JSONArray(GroupAccess.lookupGroups(guid, reader, signature, message)).toString());
+    return new CommandResponse(new JSONArray(GroupAccess.lookupGroups(guid, reader, signature, message, handler)).toString());
   }
 
   @Override

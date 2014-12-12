@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.localnameserver.gnamed;
 
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import java.util.concurrent.Callable;
 import org.xbill.DNS.Message;
 import org.xbill.DNS.SimpleResolver;
@@ -27,16 +28,18 @@ public class GnsDnsLookupTask implements Callable {
   private final Message query;
   private Message response;
   private final SimpleResolver nameServer; // It is used for both dnsServer and gnsServer
+  private ClientRequestHandlerInterface handler;
 
   /**
    * Creates a worker task that handles a query using the GNS.
    * 
    * @param query 
    */
-  GnsDnsLookupTask(Message query) {
+  GnsDnsLookupTask(Message query, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.GNSLOCAL;
     this.query = query;
     this.nameServer = null;
+    this.handler = handler;
   }
   
   /**
@@ -45,10 +48,11 @@ public class GnsDnsLookupTask implements Callable {
    * @param query 
    * @param dnsServer
    */
-  GnsDnsLookupTask(Message query, SimpleResolver dnsServer) {
+  GnsDnsLookupTask(Message query, SimpleResolver dnsServer, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.DNS;
     this.query = query;
     this.nameServer = dnsServer;
+    this.handler = handler;
   }
 
   /**
@@ -57,7 +61,7 @@ public class GnsDnsLookupTask implements Callable {
    * @param query
    * @param nameServer
    */
-  GnsDnsLookupTask(Message query, SimpleResolver nameServer, Boolean isGNS) {
+  GnsDnsLookupTask(Message query, SimpleResolver nameServer, Boolean isGNS, ClientRequestHandlerInterface handler) {
     if (isGNS) {
       this.workerClass = WorkerClass.GNS;
     } else {
@@ -65,6 +69,7 @@ public class GnsDnsLookupTask implements Callable {
     }
     this.query = query;
     this.nameServer = nameServer;
+    this.handler = handler;
   }
 
   @Override
@@ -77,7 +82,7 @@ public class GnsDnsLookupTask implements Callable {
         response = NameResolution.forwardToGnsServer(nameServer, query);
         break;
       case GNSLOCAL:
-        response = NameResolution.lookupGnsServer(query);
+        response = NameResolution.lookupGnsServer(query, handler);
         break;
     }
     return response;

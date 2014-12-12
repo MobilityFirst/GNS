@@ -59,7 +59,7 @@ public class Select {
     }
     SelectInfo info = handler.getSelectInfo(packet.getLnsQueryId());
     // send a response back to the client
-    LocalNameServer.getIntercessorInterface().handleIncomingPacket(packet.toJSONObject());
+    handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     handler.removeSelectInfo(packet.getLnsQueryId());
   }
 }

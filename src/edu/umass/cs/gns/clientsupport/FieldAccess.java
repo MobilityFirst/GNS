@@ -65,14 +65,15 @@ public class FieldAccess {
    * @param message
    * @return the value of a single field
    */
-  public static CommandResponse lookup(String guid, String field, ArrayList<String> fields, String reader, String signature, String message) {
+  public static CommandResponse lookup(String guid, String field, ArrayList<String> fields, String reader, String signature, 
+          String message, ClientRequestHandlerInterface handler) {
 
     String resultString;
     QueryResult result;
     if (field != null) {
-      result = LocalNameServer.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
+      result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
     } else {
-      result = LocalNameServer.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
+      result = handler.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
     }
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
@@ -108,11 +109,12 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupJSONArray(String guid, String field, String reader, String signature, String message) {
+  public static CommandResponse lookupJSONArray(String guid, String field, String reader, String signature, String message,
+          ClientRequestHandlerInterface handler) {
 
     String resultString;
     // Note the use of ColumnFieldType.LIST_STRING in the sendQuery call which implies old data format.
-    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -139,10 +141,11 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message) {
+  public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message, 
+          ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = handler.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -165,10 +168,11 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupOne(String guid, String field, String reader, String signature, String message) {
+  public static CommandResponse lookupOne(String guid, String field, String reader, String signature, String message,
+          ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -204,10 +208,11 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupOneMultipleValues(String guid, String reader, String signature, String message) {
+  public static CommandResponse lookupOneMultipleValues(String guid, String reader, String signature, String message,
+          ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = LocalNameServer.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = handler.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -244,9 +249,9 @@ public class FieldAccess {
    */
   public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue, int argument,
           UpdateOperation operation,
-          String writer, String signature, String message) {
+          String writer, String signature, String message, ClientRequestHandlerInterface handler) {
 
-    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, key, value, oldValue, argument,
+    return handler.getIntercessor().sendUpdateRecord(guid, key, value, oldValue, argument,
             operation, writer, signature, message);
   }
 
@@ -265,8 +270,8 @@ public class FieldAccess {
    * @return an NSResponseCode
    */
   public static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
-          String writer, String signature, String message) {
-    return LocalNameServer.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(json), operation, writer, signature, message);
+          String writer, String signature, String message, ClientRequestHandlerInterface handler) {
+    return handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(json), operation, writer, signature, message);
   }
 
   /**
@@ -284,8 +289,9 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @return 
    */
-  public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message) {
-    return LocalNameServer.getIntercessor().sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
+  public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler) {
+    return handler.getIntercessor().sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
   }
 
   /**
@@ -360,7 +366,8 @@ public class FieldAccess {
    * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
    * @return 
    */
-  public static CommandResponse selectGroupSetupQuery(String query, String guid, int interval, ClientRequestHandlerInterface handler) {
+  public static CommandResponse selectGroupSetupQuery(String query, String guid, int interval, 
+          ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid, interval, handler);
     if (result != null) {
       return new CommandResponse(result);

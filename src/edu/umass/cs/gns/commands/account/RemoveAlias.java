@@ -53,14 +53,14 @@ public class RemoveAlias extends GnsCommand {
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
-      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
+      if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
-      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
       if (accountInfo == null) {
         return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
       }
-      return AccountAccess.removeAlias(accountInfo, name, guid, signature, message);
+      return AccountAccess.removeAlias(accountInfo, name, guid, signature, message, handler);
       
 //      GuidInfo guidInfo;
 //      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {

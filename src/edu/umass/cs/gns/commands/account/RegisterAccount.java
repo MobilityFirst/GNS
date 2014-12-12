@@ -54,10 +54,11 @@ public class RegisterAccount extends GnsCommand {
       byte[] publicKeyBytes = Base64.decode(publicKey);
       String guid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
       
-      CommandResponse result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey, password);
+      CommandResponse result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey, 
+              password, handler);
       if (result.getReturnValue().equals(OKRESPONSE)) {
         // set up the default read access
-        FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE);
+        FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, handler);
         return new CommandResponse(guid);
       } else {
         return result;

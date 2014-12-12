@@ -54,7 +54,7 @@ public class CreateList extends GnsCommand {
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
     NSResponseCode responseCode;
-    if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message)).isAnError()) {
+    if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message, handler)).isAnError()) {
       return new CommandResponse(OKRESPONSE);
     } else {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());

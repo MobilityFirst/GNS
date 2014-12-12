@@ -3,6 +3,7 @@ package edu.umass.cs.gns.test.rmiclient;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -26,32 +27,38 @@ public class LNSSideImplementation implements ClientRMIInterface {
   public static String LNS_NAME = "Hello";
 
   public static int LNS_PORT = 42131;
+  
+  private ClientRequestHandlerInterface handler;
 
-  public LNSSideImplementation() {}
+  public LNSSideImplementation(ClientRequestHandlerInterface handler) 
+  {
+    this.handler = handler;
+  }
+     
   @Override
   public NSResponseCode sendAddRecord(String name, String key, ResultValue value) throws RemoteException {
-    return LocalNameServer.getIntercessor().sendAddRecord(name, key, value);
+    return handler.getIntercessor().sendAddRecord(name, key, value);
   }
 
   @Override
   public NSResponseCode sendRemoveRecord(String name) throws RemoteException {
-    return LocalNameServer.getIntercessor().sendRemoveRecord(name);
+    return handler.getIntercessor().sendRemoveRecord(name);
   }
 
   @Override
   public QueryResult sendQueryBypassingAuthentication(String name, String key) throws RemoteException {
-    return LocalNameServer.getIntercessor().sendQueryBypassingAuthentication(name, key);
+    return handler.getIntercessor().sendQueryBypassingAuthentication(name, key);
   }
 
   @Override
   public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue, String oldValue, UpdateOperation operation) throws RemoteException {
-    return LocalNameServer.getIntercessor().sendUpdateRecordBypassingAuthentication(name, key, newValue, oldValue, operation);
+    return handler.getIntercessor().sendUpdateRecordBypassingAuthentication(name, key, newValue, oldValue, operation);
   }
 
-  public static void startServer() {
+  public static void startServer(ClientRequestHandlerInterface handler) {
     GNS.getLogger().info("Staring server .... ");
     try {
-      LNSSideImplementation obj = new LNSSideImplementation();
+      LNSSideImplementation obj = new LNSSideImplementation(handler);
       ClientRMIInterface stub = (ClientRMIInterface) UnicastRemoteObject.exportObject(obj, 0);
 
       // Bind the remote object's stub in the registry

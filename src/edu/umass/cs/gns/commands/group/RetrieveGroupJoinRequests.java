@@ -49,7 +49,8 @@ public class RetrieveGroupJoinRequests extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    return new CommandResponse(new JSONArray(GroupAccess.retrieveGroupJoinRequests(guid, guid, signature, message)).toString());
+    return new CommandResponse(new JSONArray(GroupAccess.retrieveGroupJoinRequests(guid, guid, signature,
+            message, handler)).toString());
   }
 
   @Override

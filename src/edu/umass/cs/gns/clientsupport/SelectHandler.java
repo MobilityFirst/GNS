@@ -56,7 +56,8 @@ public class SelectHandler {
    */
   public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, new SelectRequestPacket(id, handler.getNodeAddress(), operation, GroupBehavior.NONE, key, value, otherValue));
+    return sendSelectHelper(id, new SelectRequestPacket(id, handler.getNodeAddress(), operation, 
+            GroupBehavior.NONE, key, value, otherValue), handler);
   }
 
   /**
@@ -67,7 +68,7 @@ public class SelectHandler {
    */
   public static String sendSelectQuery(String query, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, handler.getNodeAddress(), query));
+    return sendSelectHelper(id, SelectRequestPacket.MakeQueryRequest(id, handler.getNodeAddress(), query), handler);
   }
 
   /**
@@ -84,7 +85,8 @@ public class SelectHandler {
     if (interval == INVALID_REFRESH_INTERVAL) {
       interval = DEFAULT_MIN_REFRESH_INTERVAL;
     }
-    return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, handler.getNodeAddress(), query, guid, interval));
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupSetupRequest(id, handler.getNodeAddress(), query, guid, interval), 
+            handler);
   }
 
   /**
@@ -106,12 +108,12 @@ public class SelectHandler {
    */
   public static String sendGroupGuidLookupSelectQuery(String guid, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
-    return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, handler.getNodeAddress(), guid));
+    return sendSelectHelper(id, SelectRequestPacket.MakeGroupLookupRequest(id, handler.getNodeAddress(), guid), handler);
   }
 
-  private static String sendSelectHelper(int id, SelectRequestPacket sendPacket) {
+  private static String sendSelectHelper(int id, SelectRequestPacket sendPacket, ClientRequestHandlerInterface handler) {
     try {
-      LocalNameServer.getIntercessor().injectPacketIntoLNSQueue(sendPacket.toJSONObject());
+      handler.getIntercessor().injectPacketIntoLNSQueue(sendPacket.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring JSON error while sending Select request: " + e);
       e.printStackTrace();
