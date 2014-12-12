@@ -130,7 +130,7 @@ public class PerformanceTests {
   }
 
   private static int getComparisonPingValue(String node, ClientRequestHandlerInterface handler) {
-    String result = Admintercessor.sendPingValue(PingManager.LOCALNAMESERVERID, node, handler);
+    String result = handler.getAdmintercessor().sendPingValue(PingManager.LOCALNAMESERVERID, node, handler);
     if (result.startsWith(Defs.BADRESPONSE)) {
       return 999;
     } else {

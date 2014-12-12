@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.localnameserver.gnamed.DnsTranslator;
 import edu.umass.cs.gns.localnameserver.gnamed.UdpDnsServer;
@@ -38,10 +39,26 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
   /**
    * A local name server forwards the final response for all requests to intercessor.
    */
-  private IntercessorInterface intercessor;
+  private Intercessor intercessor;
   
+  /**
+   * Retrieves the Intercessor.
+   * 
+   * @return 
+   */
   public Intercessor getIntercessor() {
-    return (Intercessor)intercessor;
+    return intercessor;
+  }
+  
+  private Admintercessor admintercessor;
+  
+  /**
+   * Retrieves the Admintercessor.
+   * 
+   * @return 
+   */
+  public Admintercessor getAdmintercessor() {
+    return admintercessor;
   }
 
   /**
@@ -94,6 +111,8 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     this.requestHandler = new BasicClientRequestHandler(this, nodeAddress, gnsNodeConfig, pingManager, parameters);
 
     this.intercessor = new Intercessor(requestHandler);
+    
+    this.admintercessor = new Admintercessor();
    
     if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
       GnsHttpServer.runHttp(requestHandler);

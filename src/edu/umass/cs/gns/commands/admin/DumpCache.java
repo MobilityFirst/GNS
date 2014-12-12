@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
-import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -44,7 +43,7 @@ public class DumpCache extends GnsCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     if (module.isAdminMode()) {
-      return new CommandResponse(Admintercessor.sendDumpCache(handler));
+      return new CommandResponse(handler.getAdmintercessor().sendDumpCache(handler));
     }
     return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }

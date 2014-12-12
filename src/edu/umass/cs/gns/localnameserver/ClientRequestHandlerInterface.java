@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
@@ -71,7 +72,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    
    public Intercessor getIntercessor();
    
-   //public Admintercessor getAdmintercessor();
+   public Admintercessor getAdmintercessor();
 
   // REQUEST INFO METHODS
 

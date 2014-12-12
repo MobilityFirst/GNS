@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
-import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -48,7 +47,7 @@ public class ChangeLogLevel extends GnsCommand {
     if (module.isAdminMode()) {
       try {
         Level level = Level.parse(levelString);
-        if (Admintercessor.sendChangeLogLevel(level, handler)) {
+        if (handler.getAdmintercessor().sendChangeLogLevel(level, handler)) {
           return new CommandResponse(OKRESPONSE);
         } else {
           return new CommandResponse(BADRESPONSE);

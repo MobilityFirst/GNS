@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
-import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -40,7 +39,7 @@ public class PingTable extends GnsCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
     String nodeString = json.getString(N);
     if (module.isAdminMode()) {
-      return new CommandResponse(Admintercessor.sendPingTable(nodeString, handler));
+      return new CommandResponse(handler.getAdmintercessor().sendPingTable(nodeString, handler));
     }
     return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }

@@ -8,6 +8,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
@@ -152,6 +153,11 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public Intercessor getIntercessor() {
     return localNameServer.getIntercessor();
+  }
+  
+  @Override
+  public Admintercessor getAdmintercessor() {
+    return localNameServer.getAdmintercessor();
   }
 
   @Override

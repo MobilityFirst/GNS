@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -14,7 +13,6 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -93,7 +91,6 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
         e.printStackTrace();
       }
     }
-
   }
 
   public static void handlePacket(JSONObject incomingJSON, Socket incomingSocket, ClientRequestHandlerInterface handler) {
@@ -116,7 +113,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             // INCOMING - send it out to original requester
             DumpRequestPacket incomingPacket = new DumpRequestPacket(incomingJSON, handler.getGnsNodeConfig());
             int incomingId = incomingPacket.getId();
-            Admintercessor.handleIncomingDumpResponsePackets(incomingJSON, handler);
+            handler.getAdmintercessor().handleIncomingDumpResponsePackets(incomingJSON, handler);
             GNS.getLogger().fine("ListenerAdmin: Relayed response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());
             int remaining = replicationMap.get(incomingId);
             remaining = remaining - 1;
@@ -126,7 +123,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               GNS.getLogger().fine("ListenerAdmin: Saw last response for " + incomingId);
               replicationMap.remove(incomingId);
               SentinalPacket sentinelPacket = new SentinalPacket(incomingId);
-              Admintercessor.handleIncomingDumpResponsePackets(sentinelPacket.toJSONObject(), handler);
+              handler.getAdmintercessor().handleIncomingDumpResponsePackets(sentinelPacket.toJSONObject(), handler);
             }
           }
           break;
@@ -152,7 +149,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               JSONObject jsonResponse = new JSONObject();
               jsonResponse.put("CACHE", handler.getCacheLogString("CACHE:\n"));
               AdminResponsePacket responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-              Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
+              handler.getAdmintercessor().handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
               break;
             case PINGTABLE:
               String node = new String(incomingPacket.getArgument());
@@ -163,7 +160,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
                   jsonResponse.put("PINGTABLE", handler.getPingManager().tableToString(PingManager.LOCALNAMESERVERID));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                  returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
+                  returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 } else {
                 incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
                 //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
@@ -173,7 +170,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
                 jsonResponse = new JSONObject();
                 jsonResponse.put("ERROR", "Bad host number");
                 responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
+                returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 //returnResponsePacketToSender(incomingPacket.gethandlerId(), responsePacket);
               }
               break;
@@ -189,7 +186,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
                   jsonResponse.put("PINGVALUE", handler.getPingManager().nodeAverage(node2));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                  returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
+                  returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 } else {
                 // send it to the server that can handle it
                 incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
@@ -200,7 +197,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
                 jsonResponse = new JSONObject();
                 jsonResponse.put("ERROR", "Bad host number");
                 responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket);
+                returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 //returnResponsePacketToSender(incomingPacket.gethandlerId(), responsePacket);
               }
               break;
@@ -222,7 +219,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
         case ADMIN_RESPONSE:
           // forward and admin response packets recieved from NSs back to client
           AdminResponsePacket responsePacket = new AdminResponsePacket(incomingJSON);
-          Admintercessor.handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
+          handler.getAdmintercessor().handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
           break;
         case STATUS_INIT:
           StatusClient.handleStatusInit(incomingSocket.getInetAddress());
@@ -239,10 +236,11 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
     }
   }
 
-  private static void returnResponsePacketToSender(InetSocketAddress address, AdminResponsePacket packet) throws IOException, JSONException {
+  private static void returnResponsePacketToSender(InetSocketAddress address, AdminResponsePacket packet,
+          ClientRequestHandlerInterface handler) throws IOException, JSONException {
     if (address == null) {
       // it came from our client
-      Admintercessor.handleIncomingAdminResponsePackets(packet.toJSONObject());
+      handler.getAdmintercessor().handleIncomingAdminResponsePackets(packet.toJSONObject());
     } else {
       // it came from another LNS
       Packet.sendTCPPacket(packet.toJSONObject(), address);

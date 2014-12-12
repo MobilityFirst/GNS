@@ -40,31 +40,31 @@ import java.util.TreeSet;
  */
 public class Admintercessor {
 
-  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
-  private static Random randomID;
+  private final String LINE_SEPARATOR = System.getProperty("line.separator");
+  private Random randomID;
  
   /**
    * Used for the general admin wait / notify handling
    */
-  private static final Object adminResponseMonitor = new Object();
+  private final Object adminResponseMonitor = new Object();
   /**
    * This is where the admin response results are put.
    */
-  private static ConcurrentMap<Integer, JSONObject> adminResult;
+  private ConcurrentMap<Integer, JSONObject> adminResult;
   /**
    * Used for the dump wait / notify handling
    */
-  private static final Object dumpMonitor = new Object();
+  private final Object dumpMonitor = new Object();
   /**
    * This is where dump response records are collected while we're waiting for all them to come in.
    */
-  private static ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpStorage;
+  private ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpStorage;
   /**
    * This is where the final dump response results are put once we see the sentinel packet.
    */
-  private static ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpResult;
+  private ConcurrentMap<Integer, Map<Object, TreeSet<NameRecord>>> dumpResult;
 
-  static {
+  {
     randomID = new Random();
     dumpStorage = new ConcurrentHashMap<Integer, Map<Object, TreeSet<NameRecord>>>(10, 0.75f, 3);
     dumpResult = new ConcurrentHashMap<Integer, Map<Object, TreeSet<NameRecord>>>(10, 0.75f, 3);
@@ -76,7 +76,7 @@ public class Admintercessor {
    *
    * @return
    */
-  public static boolean sendResetDB(ClientRequestHandlerInterface handler) {
+  public boolean sendResetDB(ClientRequestHandlerInterface handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.RESETDB).toJSONObject(), handler);
       return true;
@@ -91,7 +91,7 @@ public class Admintercessor {
    * 
    * @return
    */
-  public static boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
+  public boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.DELETEALLRECORDS).toJSONObject(), handler);
       return true;
@@ -106,7 +106,7 @@ public class Admintercessor {
    * 
    * @return
    */
-  public static boolean sendClearCache(ClientRequestHandlerInterface handler) {
+  public boolean sendClearCache(ClientRequestHandlerInterface handler) {
     try {
       sendAdminPacket(new AdminRequestPacket(AdminRequestPacket.AdminOperation.CLEARCACHE).toJSONObject(), handler);
       return true;
@@ -121,7 +121,7 @@ public class Admintercessor {
    * 
    * @return
    */
-  public static String sendDumpCache(ClientRequestHandlerInterface handler) {
+  public String sendDumpCache(ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.DUMPCACHE).toJSONObject(), handler);
@@ -144,7 +144,7 @@ public class Admintercessor {
    * @param node
    * @return a string containing the ping results for the node
    */
-  public static String sendPingTable(String node, ClientRequestHandlerInterface handler) {
+  public String sendPingTable(String node, ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGTABLE, node).toJSONObject(), handler);
@@ -172,7 +172,7 @@ public class Admintercessor {
    * @param node2
    * @return the ping value between those nodes
    */
-  public static String sendPingValue(int node1, int node2, ClientRequestHandlerInterface handler) {
+  public String sendPingValue(int node1, int node2, ClientRequestHandlerInterface handler) {
     return sendPingValue(Integer.toString(node1), Integer.toString(node1), handler);
   }
 
@@ -184,7 +184,7 @@ public class Admintercessor {
    * @param node2
    * @return
    */
-  public static String sendPingValue(String node1, String node2, ClientRequestHandlerInterface handler) {
+  public String sendPingValue(String node1, String node2, ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
     try {
       sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(), 
@@ -211,7 +211,7 @@ public class Admintercessor {
    * @param level
    * @return
    */
-  public static boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
+  public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
     try {
       AdminRequestPacket packet = new AdminRequestPacket(AdminRequestPacket.AdminOperation.CHANGELOGLEVEL, level.getName());
       sendAdminPacket(packet.toJSONObject(), handler);
@@ -222,7 +222,7 @@ public class Admintercessor {
     return false;
   }
 
-  private static void waitForAdminResponse(int id) {
+  private void waitForAdminResponse(int id) {
     try {
       GNS.getLogger().finer("Waiting for admin response id: " + id);
       synchronized (adminResponseMonitor) {
@@ -241,7 +241,7 @@ public class Admintercessor {
    * 
    * @param json
    */
-  public static void handleIncomingAdminResponsePackets(JSONObject json) {
+  public void handleIncomingAdminResponsePackets(JSONObject json) {
     try {
       switch (getPacketType(json)) {
         case ADMIN_RESPONSE:
@@ -273,7 +273,7 @@ public class Admintercessor {
    * 
    * @return
    */
-    public static CommandResponse sendDump(ClientRequestHandlerInterface handler) {
+    public CommandResponse sendDump(ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
@@ -288,7 +288,7 @@ public class Admintercessor {
     }
   }
 
-  private static void waitForDumpResponse(int id) {
+  private void waitForDumpResponse(int id) {
     try {
       GNS.getLogger().finer("Waiting for dump response id: " + id);
       synchronized (dumpMonitor) {
@@ -314,7 +314,7 @@ public class Admintercessor {
   }
 
   @SuppressWarnings("unchecked")
-  private static String formatDumpRecords(Map<Object, TreeSet<NameRecord>> recordsMap, ClientRequestHandlerInterface handler) {
+  private String formatDumpRecords(Map<Object, TreeSet<NameRecord>> recordsMap, ClientRequestHandlerInterface handler) {
     // now process all the records we received
 
     StringBuilder result = new StringBuilder();
@@ -359,7 +359,7 @@ public class Admintercessor {
    * 
    * @param json
    */
-  public static void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface handler) {
+  public void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       switch (getPacketType(json)) {
         case DUMP_REQUEST:
@@ -412,7 +412,7 @@ public class Admintercessor {
    * @param tagName
    * @return
    */
-  public static HashSet<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {
+  public HashSet<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(tagName, handler)) == -1) {
       return null;
@@ -437,7 +437,7 @@ public class Admintercessor {
     }
   }
 
-  private static int sendDumpOutputHelper(String tagName, ClientRequestHandlerInterface handler) {
+  private int sendDumpOutputHelper(String tagName, ClientRequestHandlerInterface handler) {
     // send the request out to the local name server
     int id = nextDumpRequestID();
     GNS.getLogger().finer("Sending dump request id = " + id);
@@ -454,11 +454,11 @@ public class Admintercessor {
     return id;
   }
 
-  private static void sendAdminPacket(JSONObject json, ClientRequestHandlerInterface handler) throws IOException {
+  private void sendAdminPacket(JSONObject json, ClientRequestHandlerInterface handler) throws IOException {
     LNSListenerAdmin.handlePacket(json, null, handler);
   }
 
-  private static int nextDumpRequestID() {
+  private int nextDumpRequestID() {
     int id;
     do {
       id = randomID.nextInt();
@@ -466,7 +466,7 @@ public class Admintercessor {
     return id;
   }
 
-  private static int nextAdminRequestID() {
+  private int nextAdminRequestID() {
     int id;
     do {
       id = randomID.nextInt();

@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.commands.admin;
 
-import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -45,7 +44,7 @@ public class GetTagged extends GnsCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
-    return new CommandResponse(new JSONArray(Admintercessor.collectTaggedGuids(tagName, handler)).toString());
+    return new CommandResponse(new JSONArray(handler.getAdmintercessor().collectTaggedGuids(tagName, handler)).toString());
   }
 
   @Override
