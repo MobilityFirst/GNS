@@ -114,7 +114,7 @@ public class PaxosCoordinatorState  {
 	 */
 	private int[] nodeSlotNumbers=null;
 
-	private static Logger log = Logger.getLogger(PaxosCoordinatorState.class.getName()); // GNS.getLogger();
+	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosCoordinatorState.class.getName());
 
 	// Used in myProposals map above and nowhere else
 	private class ProposalStateAtCoordinator {
@@ -139,7 +139,7 @@ public class PaxosCoordinatorState  {
 			this.copyOverPrevious(prev.myProposals, prev.nextProposalSlotNumber, members); // wasteful to drop these preactives
 	}
 	private void copyOverPrevious(NullIfEmptyMap<Integer,ProposalStateAtCoordinator> prev, int nextSlot, int[] members) {
-		String s="["; 
+		String s="["; s=s+""; // to remove warning about s not being used when !DEBUG  
 		String paxosID=null;
 		for(ProposalStateAtCoordinator psac : prev.values()) {
 			PValuePacket prevProp = psac.pValuePacket;
@@ -148,7 +148,7 @@ public class PaxosCoordinatorState  {
 			paxosID = prevProp.getPaxosID();
 			this.myProposals.put(prevProp.slot, new ProposalStateAtCoordinator(members, curProp));
 		}
-		log.info("Node "+this.myBallotCoord + ", " + paxosID +  " copying over slots " + s+"]");
+		if(DEBUG) log.fine("Node "+this.myBallotCoord + ", " + paxosID +  " copying over slots " + s+"]");
 		this.nextProposalSlotNumber = nextSlot;
 	}
 	protected void setNodeSlots(int[] slots) {this.nodeSlotNumbers=slots;}
@@ -187,7 +187,7 @@ public class PaxosCoordinatorState  {
 		PValuePacket pvalue = new PValuePacket(myBallot, new ProposalPacket(this.nextProposalSlotNumber++, request)); 
 		assert(!this.myProposals.containsKey(pvalue.slot)); // nextSlot should always be free
 		this.myProposals.put(pvalue.slot, new ProposalStateAtCoordinator(members,pvalue));
-		if(DEBUG) log.info("Node " + myBallot.coordinatorID + " inserted proposal: " + pvalue);
+		if(DEBUG) log.fine("Node " + myBallot.coordinatorID + " inserted proposal: " + pvalue);
 		if(this.isActive()) {
 			if(DEBUG) log.finest("Coordinator at node " + myBallot.coordinatorID + " is active");
 			acceptPacket =  this.initCommander(members, pvalue);
@@ -256,7 +256,7 @@ public class PaxosCoordinatorState  {
 	 */
 	protected synchronized boolean isPrepareAcceptedByMajority(PrepareReplyPacket prepareReply, int[] members) {
 		if(this.canIgnorePrepareReply(prepareReply, members)) {
-			if(DEBUG) log.info("Node " + this.myBallotCoord+ " ignoring prepare reply"); 
+			if(DEBUG) log.fine("Node " + this.myBallotCoord+ " ignoring prepare reply"); 
 			return false;
 		}
 		// isPreemptable and canIgnorePrepareReply should have been called already, hence the assert
@@ -364,7 +364,7 @@ public class PaxosCoordinatorState  {
 					if(psac1.pValuePacket.ballot.compareTo(psac2.pValuePacket.ballot) > 0) { // stop ballot > other ballot
 						// convert request (psac2) to stop (psac1)
 						int reqSlot = psac2.pValuePacket.slot;
-						if(DEBUG) log.info("Converting " + psac2.pValuePacket.slot + " to stop");
+						if(DEBUG) log.fine("Converting " + psac2.pValuePacket.slot + " to stop");
 						ProposalStateAtCoordinator psac2ToStop = new ProposalStateAtCoordinator(members, 
 								new PValuePacket(new Ballot(this.myBallotNum, this.myBallotCoord), 
 										new ProposalPacket(reqSlot, psac1.pValuePacket)));
@@ -373,7 +373,7 @@ public class PaxosCoordinatorState  {
 					else if(psac1.pValuePacket.ballot.compareTo(psac2.pValuePacket.ballot) < 0) { // stop ballot < other ballot
 						// convert stop (psac1) to noop (psac1)
 						assert(psac1.pValuePacket.isStopRequest());
-						if(DEBUG) log.info("Converting " + psac1.pValuePacket.slot + " to noop");
+						if(DEBUG) log.fine("Converting " + psac1.pValuePacket.slot + " to noop");
 						PValuePacket noopPValue = this.makeNoopPValue(psac1.pValuePacket);
 						psac1 = new ProposalStateAtCoordinator(members, noopPValue);
 						modified.add(psac1); // could "continue" here as psac1 is not stop anymore
@@ -453,7 +453,7 @@ public class PaxosCoordinatorState  {
 		 */
 		if(pstate!=null && ((waitfor=pstate.waitfor) != null)) { 
 			waitfor.updateHeardFrom(acceptReply.acceptor);
-			if(DEBUG) log.info("Node " + this.myBallotCoord + " updated waitfor to: " + waitfor+" for "+pstate.pValuePacket);
+			if(DEBUG) log.fine("Node " + this.myBallotCoord + " updated waitfor to: " + waitfor+" for "+pstate.pValuePacket);
 			if(waitfor.heardFromMajority()) {
 				// phase2b success
 				acceptedByMajority=true;
@@ -597,7 +597,7 @@ public class PaxosCoordinatorState  {
 				}
 			}
 		}
-		if(DEBUG) if(updated) log.info("Node "+this.myBallotCoord+" updated nodeSlotNumbers on an accept reply: " + 
+		if(DEBUG) if(updated) log.fine("Node "+this.myBallotCoord+" updated nodeSlotNumbers on an accept reply: " + 
 				Arrays.toString(nodeSlotNumbers));
 	}
 
@@ -608,7 +608,7 @@ public class PaxosCoordinatorState  {
 		AcceptPacket acceptPacket = new AcceptPacket(this.myBallotCoord, 
 				pstate.pValuePacket, getMajorityCommittedSlot());
 		pstate.waitfor.setInitTime();
-		if(DEBUG) log.info("Node " + this.myBallotCoord + " initCommandering " + acceptPacket + 
+		if(DEBUG) log.fine("Node " + this.myBallotCoord + " initCommandering " + acceptPacket + 
 				" nodeSlotNumbers="+Arrays.toString(nodeSlotNumbers));
 		return acceptPacket;
 	}

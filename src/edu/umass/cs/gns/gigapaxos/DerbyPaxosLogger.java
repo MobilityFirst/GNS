@@ -15,6 +15,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Messenger;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.Util;
@@ -123,7 +124,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private ResultSet cursorRset = null;
 
 	private static Logger log =
-			Logger.getLogger(DerbyPaxosLogger.class.getName()); // GNS.getLogger();
+			PaxosManager.getLogger();//Logger.getLogger(DerbyPaxosLogger.class.getName());
 
 	DerbyPaxosLogger(int id, String dbPath, Messenger<?> messenger) {
 		super(id, dbPath, messenger);
@@ -181,9 +182,9 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 					pstmt.clearBatch();
 					for (int j : executed)
 						logged = logged && (j > 0);
-					if (DEBUG)
-						if (logged)
-							log.info("Node " + this.myID +
+					if (logged)
+						if (DEBUG)
+							log.fine("Node " + this.myID +
 									" successfully logged the " + "last " +
 									(i + 1) + " messages in " +
 									(System.currentTimeMillis() - t1) + " ms");
@@ -323,7 +324,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			dstmt = conn.prepareStatement(dcmd);
 			dstmt.execute();
 			conn.commit();
-			if(DEBUG) log.info("Node " + this.myID + " DB deleted up to slot " +
+			if(DEBUG) log.fine("Node " + this.myID + " DB deleted up to slot " +
 					acceptedGCSlot);
 		} catch (SQLException sqle) {
 			log.severe("SQLException while deleting outdated messages for " +

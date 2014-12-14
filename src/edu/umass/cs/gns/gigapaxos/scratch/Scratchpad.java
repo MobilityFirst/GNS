@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.gigapaxos.scratch;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 
 /**
@@ -15,14 +13,16 @@ public class Scratchpad {
 	public void testMultiply() {
 		assert(Scratchpad.multiply(3, 4)==3*4);
 	}
-
-	public static void main(String[] args) {
-		System.out.println(Integer.valueOf("3"));
+	public static boolean doSomething() {
 		try {
-			System.out.println(InetAddress.getByName("128.1.1.1"));
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
+			Thread.sleep(4000);
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		return true;
+	}
+
+	public static void main(String[] args) {
+		assert(doSomething());
 	}
 }

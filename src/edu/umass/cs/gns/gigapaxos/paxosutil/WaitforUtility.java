@@ -9,6 +9,10 @@ package edu.umass.cs.gns.gigapaxos.paxosutil;
  * Note that the final array members will not occupy space in 
  * each instance as it will simply be a pointer to the 
  * corresponding array in the paxos instance that created it.
+ * 
+ * There is a similar Waifor structure in the util package
+ * that is inspired by this one and is slightly cleaner
+ * and more manageable as it uses sets instead of arrays.
  */
 public class WaitforUtility {
 

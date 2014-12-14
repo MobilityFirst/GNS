@@ -4,10 +4,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 
 /**
 @author V. Arun
@@ -17,7 +17,7 @@ public class RequestInstrumenter {
 	
 	private static final HashMap<Integer,String> map = new HashMap<Integer,String>();
 	
-	private static Logger log = Logger.getLogger(RequestInstrumenter.class.getName()); 
+	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(RequestInstrumenter.class.getName()); 
 	
 	public synchronized static void received(RequestPacket request, int sender, int receiver) {
 		if(DEBUG)
@@ -43,13 +43,16 @@ public class RequestInstrumenter {
 	
 	public synchronized static String remove(int requestID) {
 		String retval = map.remove(requestID);
-		if(DEBUG) log.info(requestID + " :\n" + retval);
+		if(DEBUG) log.fine(requestID + " :\n" + retval);
 		return retval;
 	}
 	public synchronized static void removeAll() {
 		if(DEBUG) for(Iterator<Integer> iter = map.keySet().iterator(); iter.hasNext(); ) {
 			remove(iter.next());
 		}
+	}
+	public synchronized static String getLog(int requestID) {
+		return map.get(requestID);
 	}
 	
 	private synchronized static String rcvformat(int requestID, PaxosPacket packet, int sender, int receiver) {

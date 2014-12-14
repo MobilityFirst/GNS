@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.gigapaxos;
+package edu.umass.cs.gns.gigapaxos.testing;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -12,15 +12,21 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
+import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
  */
 public class TESTPaxosConfig {
 		
-	public static final boolean DEBUG = PaxosManager.DEBUG;
+	/* log level used by PaxosManager and therefore
+	 * by all of gigapaxos. 
+	 */
+	public static final Level LEVEL = Level.FINE;
+	public static final boolean SINGLE_NODE_TEST = true;
 	public static final boolean MEMORY_TESTING=false; 
 	public static final boolean DISK_ACCESS_TESTING=true;
 
@@ -50,22 +56,36 @@ public class TESTPaxosConfig {
 
 	/**************** Load parameters *******************/
 	public static final int NUM_CLIENTS = 10; // 1;// 4 default
-	public static final int NUM_REQUESTS = 30000; // 20;  // 40000 default
+	public static final int NUM_REQUESTS = 9000; // 20;  // 40000 default
 	public static final int NUM_REQUESTS_PER_CLIENT = NUM_REQUESTS/NUM_CLIENTS;
-	public static final double TOTAL_LOAD = 1500; // 2000 reqs/sec default (across all clients)
+	public static final double TOTAL_LOAD = 800; // 2000 reqs/sec default (across all clients)
 	/***********************************************************/
 
+	/* This will assert the RSM invariant upon execution 
+	 * of every request. It is meaningful only in a single
+	 * node test and consumes some cycles, so it should
+	 * be disabled in production runs.
+	 */
+	public static final boolean ASSERT_RSM_INVARIANT = SINGLE_NODE_TEST;
+	
+	// to enable retransmission of requests by TESTPaxosClient
+	public static final boolean ENABLE_CLIENT_REQ_RTX = false;
+	// default retransmission timeout
+	public static final long CLIENT_REQ_RTX_TIMEOUT = 8000;
+	
 	public static final int DEFAULT_INIT_PORT = SampleNodeConfig.DEFAULT_START_PORT;
 	
 	private static final SampleNodeConfig<Integer> nodeConfig = new SampleNodeConfig<Integer>(DEFAULT_INIT_PORT);
-	//private static final TreeSet<Integer> nodes = new TreeSet<Integer>();
 	static {for(int i=TEST_START_NODE_ID; i<TEST_START_NODE_ID+NUM_NODES; i++) nodeConfig.addLocal(i);}
 
 	private static final HashMap<String,int[]> groups = new HashMap<String,int[]>();
 	static {setDefaultGroups(MAX_CONFIG_GROUPS);}
-	//static {setRandomGroups(MAX_CONFIG_GROUPS);}
 
 	private static final int[] defaultGroup = {TEST_START_NODE_ID, TEST_START_NODE_ID+1, TEST_START_NODE_ID+2};
+	private static final Set<Integer> defaultGroupSet;
+	static {
+		defaultGroupSet = Util.arrayToIntSet(defaultGroup);
+	}
 	public static final int TEST_CLIENT_ID = 200;
 
 	private static boolean reply_to_client = true;
@@ -76,7 +96,7 @@ public class TESTPaxosConfig {
 
 	private static ArrayList<Object> failedNodes = new ArrayList<Object>();
 	//static {crash(TEST_START_NODE_ID);} // by default, first node is always crashed
-
+	
 	private static boolean[] committed = new boolean[MAX_TEST_REQS];
 	private static boolean[] executedAtAll = new boolean[MAX_TEST_REQS];
 	private static boolean[] recovered = new boolean[MAX_NODE_ID];
@@ -95,7 +115,7 @@ public class TESTPaxosConfig {
 	public static void setDistributedClients() {
 		try {
 			for(int i=0; i<NUM_CLIENTS; i++) 
-				TESTPaxosConfig.getNodeConfig().add(TESTPaxosConfig.TEST_CLIENT_ID+i, InetAddress.getByName("fig.cs.umass.edu"));
+				TESTPaxosConfig.getNodeConfig().add(TESTPaxosConfig.TEST_CLIENT_ID+i, InetAddress.getByName("lime.cs.umass.edu"));
 		} catch(UnknownHostException e) {e.printStackTrace();}
 	}
 	public static void setDistributedServers() {
@@ -149,6 +169,10 @@ public class TESTPaxosConfig {
 	public static int[] getDefaultGroup() {
 		return defaultGroup;
 	}
+	public static Set<Integer> getDefaultGroupSet() {
+		return defaultGroupSet;
+	}
+
 	public static int[] getGroup(String groupID) {
 		int[] members = groups.get(groupID);
 		return members!=null ? members : defaultGroup;
@@ -206,7 +230,8 @@ public class TESTPaxosConfig {
 	public static void testAssert(boolean b) { assert(!TEST_ASSERT_ENABLED || b);}
 
 	// Checks if the IP specified for the id argument is local
-	public static boolean findMyIP(int myID) throws SocketException {
+	public static boolean findMyIP(Integer myID) throws SocketException {
+		if(myID==null) return false;
 		Enumeration<NetworkInterface> netfaces = NetworkInterface.getNetworkInterfaces();
 		ArrayList<InetAddress> myIPs = new ArrayList<InetAddress>();
 		while(netfaces.hasMoreElements()) {

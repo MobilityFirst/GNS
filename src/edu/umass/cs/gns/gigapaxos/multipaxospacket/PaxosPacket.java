@@ -28,7 +28,7 @@ public abstract class PaxosPacket implements PacketInterface {
 	 * Stringifiable<NodeIDTpe>.
 	 */
 	public static enum NodeIDKeys {
-		SENDER_NODE, BALLOT, COORDINATOR, ACCEPTOR, GROUP, DECISION_ISSUER
+		SENDER_NODE, BALLOT, COORDINATOR, ACCEPTOR, GROUP, DECISION_ISSUER, ENTRY_REPLICA
 	}
 
 	public static final String PAXOS_PACKET_TYPE = "PAXOS_PACKET_TYPE"; // Name of packet type field in JSON

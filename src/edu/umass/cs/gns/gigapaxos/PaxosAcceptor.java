@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 
 
 
+
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PValuePacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PreparePacket;
@@ -73,7 +74,7 @@ public class PaxosAcceptor {
 	private NullIfEmptyMap<Integer, PValuePacket> committedRequests=new NullIfEmptyMap<Integer,PValuePacket>();
 
 	// static, so does not count towards space.
-	private static Logger log = Logger.getLogger(PaxosAcceptor.class.getName()); // GNS.getLogger();	
+	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosAcceptor.class.getName()); 	
 
 
 	PaxosAcceptor(int b, int c, int s, HotRestoreInfo hri) {
@@ -131,7 +132,7 @@ public class PaxosAcceptor {
 
 		PrepareReplyPacket preply = null;
 		if(prepare.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) > 0) {
-			if(DEBUG) log.info("Node"+myID + " acceptor " + " updating to higher ballot " + prepare.ballot);
+			if(DEBUG) log.fine("Node"+myID + " acceptor " + " updating to higher ballot " + prepare.ballot);
 			this.ballotNum = prepare.ballot.ballotNumber; this.ballotCoord = prepare.ballot.coordinatorID;
 		}
 		/* Why return accepted values even though they were proposed in lower 
@@ -169,7 +170,7 @@ public class PaxosAcceptor {
 		if (accept.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) >= 0) {  // accept the pvalue and the ballot
 			this.ballotNum = accept.ballot.ballotNumber; this.ballotCoord=accept.ballot.coordinatorID; // no-op if the two are equal anyway
 			if(accept.slot - this.minCommittedFrontierSlot > 0) this.acceptedProposals.put(accept.slot, accept); // wraparound-aware arithmetic
-			if(DEBUG) log.info("Node"+myID+" acceptor accepting pvalue for slot " + accept.slot + " : " + accept);
+			if(DEBUG) log.fine("Node"+myID+" acceptor accepting pvalue for slot " + accept.slot + " : " + accept);
 		}
 		garbageCollectAccepted(accept.majorityExecutedSlot);
 		return new Ballot(ballotNum,ballotCoord);

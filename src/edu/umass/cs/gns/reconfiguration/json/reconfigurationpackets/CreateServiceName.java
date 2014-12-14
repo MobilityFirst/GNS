@@ -22,7 +22,7 @@ public class CreateServiceName extends BasicReconfigurationPacket<String> {
 	}
 	public CreateServiceName(JSONObject json) throws JSONException {
 		super(json);
-		this.setSender(JSONNIOTransport.getSenderAddressAsString(json) + 
+		this.setSender(JSONNIOTransport.getSenderInetAddressAsString(json) + 
 			":"+JSONNIOTransport.getSenderPort(json));
 	}
 }

@@ -38,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> implements
         InterfaceJSONNIOTransport<NodeIDType> {
 
-  public static final String DEFAULT_IP_FIELD = "_IP_ADDRESS";
+  public static final String DEFAULT_IP_FIELD = "_IP_ADDRESS1";
   // didn't add this to "stamping" code below but it is declared for other uses
   public static final String DEFAULT_PORT_FIELD = "_TCP_PORT";
 
@@ -120,7 +120,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
           throws IOException {
     int written = 0;
     int originalSize = jsonData.toString().length();
-    stampSenderInfo(jsonData);
+    //stampSenderInfo(jsonData);
     String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
     written = this.sendUnderlying(isa, headeredMsg.getBytes())
             - (headeredMsg.length() - originalSize); // subtract header length
@@ -136,7 +136,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
 		  throws IOException {
 	  int written = 0;
 	  int originalSize = jsonData.toString().length();
-	  stampSenderInfo(jsonData);
+	  //stampSenderInfo(jsonData);
 	  if (destID.equals(this.myID)) {
 		  sendLocal(jsonData); 
 		  written = originalSize; // local send just passes pointers
@@ -152,16 +152,6 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   public JSONNIOTransport<NodeIDType> enableStampSenderInfo() {
     this.IPField = DEFAULT_IP_FIELD;
     this.portField = DEFAULT_PORT_FIELD;
-    return this;
-  }
-
-  public JSONNIOTransport<NodeIDType> enableStampSenderIP(String key) {
-    this.IPField = key;
-    return this;
-  }
-
-  public JSONNIOTransport<NodeIDType> enableStampSenderPort(String key) {
-    this.portField = key;
     return this;
   }
 
@@ -191,7 +181,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
     return null;
   }
 
-  public static String getSenderAddressAsString(JSONObject json) {
+  public static String getSenderInetAddressAsString(JSONObject json) {
     try {
       String address = (json.has(JSONNIOTransport.DEFAULT_IP_FIELD)
               ? (json.getString(JSONNIOTransport.DEFAULT_IP_FIELD).replaceAll("[^0-9.]*", ""))
@@ -218,8 +208,9 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   /**
    * ******************End of public send methods************************************
    */
+  // FIXME: This method is not used and should be used or removed
   // stamp sender IP address if IPField is set
-  private void stampSenderInfo(JSONObject jsonData) {
+  protected void stampSenderInfo(JSONObject jsonData) {
     try {
       if (this.IPField != null && !this.IPField.isEmpty()) {
         jsonData.put(this.IPField, this.getNodeAddress().toString());

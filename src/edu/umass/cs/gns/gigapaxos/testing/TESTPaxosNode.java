@@ -1,8 +1,9 @@
-package edu.umass.cs.gns.gigapaxos;
+package edu.umass.cs.gns.gigapaxos.testing;
 
 import java.io.IOException;
 import java.util.Set;
 
+import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Replicable;
@@ -26,15 +27,18 @@ public class TESTPaxosNode {
 		this.myID = id;
 		app = new TESTPaxosReplicable();
 		pm = startPaxosManager(id, app);
-		// only for testing so app can send back response; in general, app should have its own NIO
-		app.setNIOTransport(pm.getNIOTransport()); 
+		assert(pm!=null);
 	}
-	public PaxosManager<Integer> startPaxosManager(int id, Replicable app) {
+
+	public PaxosManager<Integer> startPaxosManager(int id,
+			TESTPaxosReplicable app) {
 		try {
-			this.pm = new PaxosManager<Integer>(id, TESTPaxosConfig.getNodeConfig(), 
-					new JSONNIOTransport<Integer>(id, TESTPaxosConfig.getNodeConfig(), 
-							new PacketDemultiplexerDefault(), true), app, null);
-		} catch(IOException ioe) {
+			this.pm = new PaxosManager<Integer>(id,
+					TESTPaxosConfig.getNodeConfig(),
+					app.setNIOTransport(new JSONNIOTransport<Integer>(id,
+							TESTPaxosConfig.getNodeConfig(),
+							new PacketDemultiplexerDefault(), true)), app, null);
+		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
 		return pm;
@@ -67,7 +71,6 @@ public class TESTPaxosNode {
 					created = this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
 							group, null);
 					if(!created) System.out.println(":  not created (probably coz it is pre-existing)");
-					TESTPaxosReplicable.AllApps.addGroup(groupID, group);
 				}
 			}
 		}	
@@ -84,7 +87,6 @@ public class TESTPaxosNode {
 				Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)); 
 				if(id==myID) this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
 						group, null);
-				TESTPaxosReplicable.AllApps.addGroup(groupID, group);
 			}
 			if(i%j==0 && ((j*=2)>1) || (i%100000==0)) {
 				System.out.print(i+" ");
@@ -96,7 +98,7 @@ public class TESTPaxosNode {
 	public static void main(String[] args) {
 		try {
 			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
-			assert(myID!=-1) : "Need a node ID argument"; 
+			assert(myID!=-1) : "Need a node ID argument";
 			
 			int numGroups = TESTPaxosConfig.NUM_GROUPS;
 			if (args!=null && args.length>1) numGroups =  Integer.parseInt(args[1]);

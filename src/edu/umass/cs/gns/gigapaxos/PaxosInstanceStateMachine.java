@@ -29,6 +29,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MatchKeyable;
 import edu.umass.cs.gns.util.Util;
@@ -147,7 +148,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	/************ End of non-final paxos state ***********************************************/
 
 	// static, so does not count towards space.
-	private static Logger log = Logger.getLogger(PaxosInstanceStateMachine.class.getName()); // GNS.getLogger();
+	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosInstanceStateMachine.class.getName()); 
 
 	PaxosInstanceStateMachine(String groupId, short version, int id, Set<Integer> gms, 
 			Replicable app, PaxosManager<?> pm, HotRestoreInfo hri) {
@@ -238,7 +239,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		this.markActiveState(); 
 
 		PaxosPacketType msgType = PaxosPacket.getPaxosPacketType(msg);
-		if(DEBUG) log.info(getNodeState() + " received " + PaxosPacket.getPaxosPacketType(msg) + ": " + msg);
+		if(DEBUG) log.fine(getNodeState() + " received " + PaxosPacket.getPaxosPacketType(msg) + ": " + msg);
 
 		MessagingTask[] mtasks = new MessagingTask[2];
 		// check upon every message 
@@ -289,7 +290,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			break;
 		case NO_TYPE:
 			if(!TESTPaxosConfig.MEMORY_TESTING) 
-				log.info(this.getNodeState() + " received a \"self-poke\" NO_TYPE message");
+				log.fine(this.getNodeState() + " received a \"self-poke\" NO_TYPE message");
 			break;
 		default: 
 			assert(false) : "Paxos instance received an unrecognizable packet: " + msg;
@@ -334,7 +335,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 */
 
 		this.paxosState = new PaxosAcceptor(slotBallot!=null ? slotBallot.ballotnum : 0, 
-				slotBallot!=null ? slotBallot.coordinator: getNextCoordinator(0, groupMembers), 
+				slotBallot!=null ? slotBallot.coordinator: this.roundRobinCoordinator(0), 
 						slotBallot!=null ? slotBallot.slot+1 : 0,null); 
 		if(slotBallot==null) TESTPaxosConfig.setRecovered(this.getNodeID(), pid, true);
 
@@ -342,7 +343,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 	private boolean hotRestore(HotRestoreInfo hri) {
 		assert(this.paxosState==null && this.coordinator==null); // called from constructor only
-		if(DEBUG) log.info("Node"+this.getMyID() + " hot restoring with " + hri);
+		if(DEBUG) log.fine("Node"+this.getMyID() + " hot restoring with " + hri);
 		this.coordinator = new PaxosCoordinator();
 		this.coordinator.hotRestore(hri);
 		this.paxosState = new PaxosAcceptor(hri.accBallot.ballotNumber,
@@ -361,7 +362,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				mtask.msgs[0].getType()!=PaxosPacketType.CHECKPOINT_STATE) return;
 		if(TESTPaxosConfig.isCrashed(this.getMyID())) return; 
 
-		if(DEBUG) log.info(this.getNodeState() + " sending: " + mtask.toString());
+		if(DEBUG) log.fine(this.getNodeState() + " sending: " + mtask.toString());
 		mtask.putPaxosIDVersion(this.getPaxosID(), this.getVersion());
 		try {
 			paxosManager.send(mtask);
@@ -392,7 +393,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				msg.put(PaxosPacket.PAXOS_ID, this.getPaxosID());
 				msg.put(PaxosPacket.PAXOS_VERSION, this.getVersion());
 				msg.put(PaxosPacket.PAXOS_PACKET_TYPE, PaxosPacketType.NO_TYPE.getInt());
-				if(!TESTPaxosConfig.MEMORY_TESTING) log.info(this.getNodeState() + 
+				if(!TESTPaxosConfig.MEMORY_TESTING) if(DEBUG) log.fine(this.getNodeState() + 
 						" sending test paxos message upon recovery");
 				this.handlePaxosMessage(msg);
 			} catch(JSONException je) {je.printStackTrace();}
@@ -406,8 +407,9 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * proposal to the current coordinator.
 	 */
 	private MessagingTask handleRequest(RequestPacket msg) throws JSONException {
-		if(DEBUG) log.info(this.getNodeState() + " Phase0/CLIENT_REQUEST: " + msg);
+		if(DEBUG) log.fine(this.getNodeState() + " Phase0/CLIENT_REQUEST: " + msg);
 		RequestInstrumenter.received(msg, msg.clientID, this.getMyID());
+		msg.setEntryReplica(getMyID());
 		return handleProposal(new ProposalPacket(0, msg));
 	}
 
@@ -423,10 +425,11 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 */
 	private MessagingTask handleProposal(ProposalPacket proposal) throws JSONException {
 		MessagingTask mtask=null; // could be multicast or unicast to coordinator.
+		assert(proposal.getEntryReplica()!=-1);
 		if(proposal.getForwardCount()==0) proposal.setReceiptTime(); // first receipt into the system
 		else RequestInstrumenter.received(proposal, proposal.getForwarderID(), this.getMyID());
 		if(this.coordinator.exists(this.paxosState.getBallot())) { // propose to all
-			if(DEBUG) log.info(this.getNodeState() + " issuing Phase2a/ACCEPT after " + (System.currentTimeMillis() - 
+			if(DEBUG) log.fine(this.getNodeState() + " issuing Phase2a/ACCEPT after " + (System.currentTimeMillis() - 
 					proposal.getCreateTime()) + " ms : " + (this.coordinator.isActive() ? 
 							" sending accept for request ":" received pre-active request ") + proposal);
 			AcceptPacket multicastAccept = null;
@@ -436,7 +439,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			if(multicastAccept!=null) RequestInstrumenter.sent(multicastAccept, this.getMyID(), -1);
 		}
 		else { // else unicast to current coordinator
-			if(DEBUG) log.info(this.getNodeState()+" is not the coordinator, forwarding to " + 
+			if(DEBUG) log.fine(this.getNodeState()+" is not the coordinator, forwarding to " + 
 					this.paxosState.getBallotCoord() + " : " + proposal);
 			mtask = new MessagingTask(this.paxosState.getBallotCoord(), proposal.setForwarderID(this.getMyID())); // unicast to coordinator
 			if(proposal.isPingPonging()) {
@@ -612,7 +615,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 
 		TESTPaxosConfig.commit(committed.requestID); 
 
-		if(this.paxosState.getSlot() - committed.slot < 0) if(DEBUG) log.info(this.getNodeState() + " expecting " + 
+		if(this.paxosState.getSlot() - committed.slot < 0) if(DEBUG) log.fine(this.getNodeState() + " expecting " + 
 				this.paxosState.getSlot() + " recieved out-of-order commit: "+committed);
 
 		return null; //this.fixLongDecisionGaps(committed);
@@ -669,7 +672,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		int execCount = 0;
 		// extract next in-order decision
 		while((inorderDecision = this.paxosState.putAndRemoveNextExecutable(loggedDecision))!=null) { 
-			if(DEBUG) log.info(this.getNodeState() + " in-order commit: "+inorderDecision); 
+			if(DEBUG) log.fine(this.getNodeState() + " in-order commit: "+inorderDecision); 
 
 			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
 			boolean executed=false;
@@ -677,7 +680,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			while(!executed) {
 				executed = this.clientRequestHandler.handleDecision(pid, 
 						inorderDecision.toString(), (inorderDecision.isRecovery() ||  
-								(inorderDecision.ballot.coordinatorID!=this.getMyID()))); 
+								(inorderDecision.getEntryReplica()!=this.getMyID()))); 
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
 			} execCount++;
 
@@ -745,7 +748,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 						this.coordinator.getNodeSlots());
 				PaxosAcceptor A = this.paxosState; PaxosCoordinator C = this.coordinator;
 				this.forceStop();
-				if(!TESTPaxosConfig.MEMORY_TESTING) log.info(this.getNodeState()+" pausing " + hri);
+				if(!TESTPaxosConfig.MEMORY_TESTING) if(DEBUG) log.fine(this.getNodeState()+" pausing " + hri);
 				paused = this.paxosManager.getPaxosLogger().pause(getPaxosID(), hri.toString());
 				if(!paused) {this.paxosState = A; this.coordinator = C;} // revert back if pause failed
 			}

@@ -17,17 +17,18 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.FailureDetectionPacket;
+import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 
 /**
 @author V. Arun
  */
 
 /* FailureDetection provides failure detection for all nodes specified
- * by its monitor(.) interface. It really doesn't have much to do 
+ * by its sendKeepAlive(.) interface. It really doesn't have much to do 
  * with paxos coz it is just a node monitoring utility. It allows
  * the failure detection overhead across all paxos instances on a
  * node to be amortized so that the overhead is no greater than
- * all nodes monitoring all other nodes.
+ * all nodes pinging all other nodes.
  * 
  * There is one failure detection instance per machine. This class could 
  * be static, but it is not so that we can test emulations involving
@@ -38,14 +39,28 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.FailureDetectionPacket;
  */
 public class FailureDetection<NodeIDType> {
 	// final static 
-	private static final double MAX_FAILURE_DETECTION_TRAFFIC = 1/100.0; // 1 ping per 100ms total at each node
-	private static final double PING_PERTURBATION_FACTOR = 0.25; // pings randomly spaced within inter_ping_period_millis times this factor
+	// 1 ping per 100ms total at each node
+	private static final double MAX_FAILURE_DETECTION_TRAFFIC = 1/100.0; 
+	// pings randomly spaced within inter_ping_period_millis times this factor
+	private static final double PING_PERTURBATION_FACTOR = 0.25; 
 	
 	// static
 	private static long node_detection_timeout_millis = 6000; // ms
 	private static long inter_ping_period_millis = node_detection_timeout_millis/2;
-	private static long coordinator_failure_detection_timeout = 3*node_detection_timeout_millis; // run for coordinator even if not next-in-line 
-	private static final long initTime = System.currentTimeMillis() - node_detection_timeout_millis;
+	// run for coordinator even if not next-in-line 
+	private static long coordinator_failure_detection_timeout = 3*node_detection_timeout_millis; 
+	private static long pessimism_offset = 0;
+	
+	/* If initially optimistic, we assume that the last ping from some node came
+	 * just before we booted and we might have just missed it, so we  consider
+	 * a node as dead only if we don't hear from that node for at least 
+	 * failure_detection_timeout after we start. If pessimistic, we assume that
+	 * the last ping from that node came inter_ping_period before we booted. We 
+	 * could be even more pessimistic and assume that the last ping came 
+	 * failure_detection_timeout before we booted, i.e., we assume that all 
+	 * nodes are dead when we boot, but this is probably too pessimistic.
+	 */
+	private final long initTime =  System.currentTimeMillis() - getPessimismOffset();
 
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
@@ -53,28 +68,38 @@ public class FailureDetection<NodeIDType> {
 	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
 
 	// non-final 
-	private Set<NodeIDType> monitoredNodes;  // other nodes to which keepalives will be sent
+	private Set<NodeIDType> keepAliveTargets; 
 	private HashMap<NodeIDType,Long> lastHeardFrom;
 	private HashMap<NodeIDType,ScheduledFuture<PingTask>> futures;
 
-	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
+	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(FailureDetection.class.getName());
 
 	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot, PaxosConfig pc) {
 		nioTransport = niot;
 		myID = id;
 		lastHeardFrom = new HashMap<NodeIDType,Long>();
-		monitoredNodes = new TreeSet<NodeIDType>();
+		keepAliveTargets = new TreeSet<NodeIDType>();
 		futures = new HashMap<NodeIDType,ScheduledFuture<PingTask>>();
-		initialize(pc);  // this line needs to be commented for paxos tests to make sense
+		initialize(pc);
 	}
 	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot) {
 		this(id,niot,null);
 	}
 	
+	protected synchronized static void setPessimistic() {
+		pessimism_offset = inter_ping_period_millis;
+	}
+	protected synchronized static void setParanoid() {
+		pessimism_offset = node_detection_timeout_millis;
+	}
+	protected synchronized static long getPessimismOffset() {
+		return pessimism_offset;
+	}
+	
 	public void close() {
 		this.execpool.shutdownNow();
 	}
-	// FIXME: Should really not be taking this from outside
+	// should really not be taking this from outside
 	private void initialize(PaxosConfig pc) {
 		if(pc==null) return;
 		log.severe("Configuring paxos with external failure detection parameters is a bad idea, doing it anyway.");
@@ -82,57 +107,59 @@ public class FailureDetection<NodeIDType> {
 		inter_ping_period_millis = pc.getFailureDetectionPingMillis();
 		coordinator_failure_detection_timeout = 2*node_detection_timeout_millis;
 	}
+
 	// makes sure that FD params are reasonable
 	private synchronized boolean adjustFDParams() {
 		boolean adjusted = false;
-		int numMonitored = this.monitoredNodes.size();
-		double load = ((double)numMonitored)/inter_ping_period_millis;
-		if(load > MAX_FAILURE_DETECTION_TRAFFIC) {
-			inter_ping_period_millis = (long)(numMonitored/MAX_FAILURE_DETECTION_TRAFFIC+1); // +1 to be strictly below
-			node_detection_timeout_millis = inter_ping_period_millis*2;
-			coordinator_failure_detection_timeout = node_detection_timeout_millis*3;
-			assert(inter_ping_period_millis>0); // just to make sure we didn't accidentally (int) cast it 0 above :)
+		int numMonitored = this.keepAliveTargets.size();
+		double load = ((double) numMonitored) / inter_ping_period_millis;
+		if (load > MAX_FAILURE_DETECTION_TRAFFIC) {
+			inter_ping_period_millis = (long) (numMonitored
+					/ MAX_FAILURE_DETECTION_TRAFFIC + 1); // +1 for strictly <
+			node_detection_timeout_millis = inter_ping_period_millis * 2;
+			coordinator_failure_detection_timeout = node_detection_timeout_millis * 3;
+			assert (inter_ping_period_millis > 0);
 			adjusted = true;
 		}
-		/* If there was any adjustment above, we need to kill and restart periodic ping tasks
-		 * because there is no way to just change their period midway.
+		/*
+		 * If there was any adjustment above, we need to kill and restart
+		 * periodic ping tasks because there is no way to just change their
+		 * period midway.
 		 */
-		if(adjusted) {
-			for(NodeIDType id : this.monitoredNodes) {
-				unMonitor(id);
-				monitor(id); // single-depth recursive call to adjustFDParams
+		if (adjusted) {
+			for (NodeIDType id : this.keepAliveTargets) {
+				dontSendKeepAlive(id);
+				// single-depth recursive call to adjustFDParams
+				sendKeepAlive(id);
 			}
 		}
 		return adjusted;
 	}
 
-	/* Synchronized because we don't want monitoredNodes 
-	 * getting concurrently read by pingAll().
-	 */
-	public void monitor(NodeIDType[] nodes) {
+	public void sendKeepAlive(NodeIDType[] nodes) {
 		for(int i=0; i<nodes.length; i++) {
-			monitor(nodes[i]);
+			sendKeepAlive(nodes[i]);
 		}
 	}
-	public void monitor(Set<NodeIDType> nodes) {
+	public void sendKeepAlive(Set<NodeIDType> nodes) {
 		for(NodeIDType id : nodes) {
-			monitor(id);
+			sendKeepAlive(id);
 		}
 	}
 
-	private synchronized void unMonitor(NodeIDType id) {
-		boolean wasPresent = this.monitoredNodes.remove(id); 
+	private synchronized void dontSendKeepAlive(NodeIDType id) {
+		boolean wasPresent = this.keepAliveTargets.remove(id); 
 		if(wasPresent && this.futures.containsKey(id)) {
 			ScheduledFuture<PingTask> pingTask = futures.get(id);
 			pingTask.cancel(true);
 			futures.remove(id);
 		}
 	}
-	/* Synchronized as it touches monitoredNodes.
+	/* Synchronized as it touches keepAliveTargets.
 	 */
 	@SuppressWarnings("unchecked")
-	public synchronized void monitor(NodeIDType id)  {
-		if(!this.monitoredNodes.contains(id)) this.monitoredNodes.add(id);
+	public synchronized void sendKeepAlive(NodeIDType id)  {
+		if(!this.keepAliveTargets.contains(id)) this.keepAliveTargets.add(id);
 		try {
 			if(!this.futures.containsKey(id)) {
 				PingTask pingTask = new PingTask(id, getPingPacket(id), this.nioTransport);
@@ -145,10 +172,10 @@ public class FailureDetection<NodeIDType> {
 				futures.put(id, (ScheduledFuture<FailureDetection<NodeIDType>.PingTask>)future);
 			}
 		} catch(JSONException e) {
-			log.severe("Can not create ping packet at node " + this.myID + " to monitor node " + id);
+			log.severe("Can not create ping packet at node " + this.myID + " for node " + id);
 			e.printStackTrace();
 		}
-		adjustFDParams(); // check to adjust every time monitor is invoked
+		adjustFDParams(); // check to adjust every time sendKeepAlive is invoked
 	}
 	
 	protected void receive(FailureDetectionPacket<NodeIDType> fdp) {
@@ -214,7 +241,7 @@ public class FailureDetection<NodeIDType> {
 		if(pingTask!=null) {
 			pingTask.cancel(true);
 			this.futures.remove(id);
-			monitor(id); 
+			sendKeepAlive(id); 
 		}
 	}
 

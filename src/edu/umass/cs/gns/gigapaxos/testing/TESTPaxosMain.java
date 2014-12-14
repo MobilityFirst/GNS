@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.gigapaxos;
+package edu.umass.cs.gns.gigapaxos.testing;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -99,6 +99,7 @@ public class TESTPaxosMain {
 			/*************** Client requests/responses below ****************/
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
+			TESTPaxosShutdownThread.register(clients);
 			int numReqs = TESTPaxosConfig.NUM_REQUESTS_PER_CLIENT;
 			
 			// begin first run
@@ -110,7 +111,7 @@ public class TESTPaxosMain {
 			// end first run
 
 			TESTPaxosClient.resetLatencyComputation();
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 
 			// begin second run
 			t1 = System.currentTimeMillis();
@@ -121,7 +122,9 @@ public class TESTPaxosMain {
 			System.out.println("[run2]" + getAggregateOutput(numReqs, t1, t2));
 			// end second run
 
-			for(TESTPaxosNode node : tpMain.nodes.values()) node.close(); 
+			for(TESTPaxosNode node : tpMain.nodes.values()) {
+				node.close(); 
+			}
 			for(TESTPaxosClient client : clients) client.close();
 		} catch(Exception e) {e.printStackTrace();System.exit(1);}
 	}

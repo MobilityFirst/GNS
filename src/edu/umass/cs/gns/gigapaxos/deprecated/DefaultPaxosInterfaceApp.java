@@ -7,8 +7,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nsdesign.Replicable;
-import edu.umass.cs.gns.gigapaxos.TESTPaxosConfig;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
+import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 
 /**
 @author V. Arun

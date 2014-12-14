@@ -49,7 +49,7 @@ public class PaxosCoordinator {
 	public static final boolean DEBUG=PaxosManager.DEBUG;
 	private PaxosCoordinatorState pcs=null; // This gets recreated for each ballot.
 
-	private static Logger log = Logger.getLogger(PaxosCoordinator.class.getName()); // GNS.getLogger();
+	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosCoordinator.class.getName()); // GNS.getLogger();
 
 	/* Come to exist if nonexistent. Called by PaxosInstanceStateMachine
 	 */
@@ -117,11 +117,11 @@ public class PaxosCoordinator {
 				/* Can ignore return value of preActiveProposals below as handleAcceptReplyHigherBallot 
 				 * returns true only if there are no proposals at this coordinator.
 				 */
-				if(DEBUG) log.info("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + 
+				if(DEBUG) log.fine("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + 
 						acceptReply.slotNumber + ", " + acceptReply.getPaxosID());
 				assert(preemptedPValue.ballot.compareTo(acceptReply.ballot) < 0);
 				if(pcs.preemptedFully()) {
-					log.info("Coordinator " + this.pcs.getBallot() + " preempted fully, about to resign");
+					if(DEBUG) log.fine("Coordinator " + this.pcs.getBallot() + " preempted fully, about to resign");
 					resignAsCoordinator();
 				}
 			}

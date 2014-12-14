@@ -39,6 +39,7 @@ public abstract class AbstractPaxosLogger {
 	
 	private boolean aboutToClose = false;
 	private synchronized boolean isAboutToClose() {
+		if(myID==100 && this.aboutToClose) System.out.println("isAboutToClose check"+myID);
 		return this.aboutToClose;
 	}
 	private synchronized void setAboutToClose() {
@@ -53,7 +54,7 @@ public abstract class AbstractPaxosLogger {
 	private final CCheckpointer collapsingCheckpointer;
 
 	private static Logger log =
-			Logger.getLogger(AbstractPaxosLogger.class.getName()); // GNS.getLogger();
+			PaxosManager.getLogger();//Logger.getLogger(AbstractPaxosLogger.class.getName()); 
 
 	protected AbstractPaxosLogger(int id, String logDir, Messenger<?> msgr) {
 		this.myID = id;
@@ -76,7 +77,7 @@ public abstract class AbstractPaxosLogger {
 		if (logMTask.logMsg != null) {
 			// spawn a log-and-message task
 			if (DEBUG)
-				log.info("Node " + logger.myID + " logging " +
+				log.fine("Node " + logger.myID + " logging " +
 						(logMTask.logMsg.getType().getLabel()) + ": " +
 						logMTask.logMsg.toString());
 			PaxosPacket packet = logMTask.logMsg;
@@ -126,7 +127,7 @@ public abstract class AbstractPaxosLogger {
 				MessagingTask mtask = new MessagingTask(logger.myID, PaxosPacket.markRecovered(paxosMsg));
 				try {
 					if (DEBUG)
-						log.info("Node " + logger.myID + " rolling forward " +
+						log.fine("Node " + logger.myID + " rolling forward " +
 								mtask);
 					messenger.send(mtask);
 				} catch (IOException e) {
@@ -290,7 +291,7 @@ public abstract class AbstractPaxosLogger {
 		private final AbstractPaxosLogger logger;
 		private final Messenger<?> messenger;
 		private final ArrayList<LogMessagingTask> logMessages =
-				new ArrayList<LogMessagingTask>();
+				new ArrayList<LogMessagingTask>(); // sync object
 		private boolean processing = false;
 		private boolean stopped = false;
 
@@ -301,17 +302,14 @@ public abstract class AbstractPaxosLogger {
 
 		public void run() {
 			while (true) {
-				synchronized (this.logMessages) {
-					try {
-						while (this.logMessages.isEmpty() && !isStopped())
-							this.logMessages.wait();
-						if (isStopped()) break;
-					} catch (InterruptedException ie) {
-						ie.printStackTrace();
-					}
-				}
+				while (this.isEmpty() && !isStopped())
+					this.logMessagesWait();
+				assert(!isEmpty() || isStopped());
+
+				if(isEmpty() && isStopped()) break;
+				
+				this.setProcessing(true); 
 				LogMessagingTask[] lmTasks = this.dequeueAll();
-				assert (lmTasks.length > 0 || isStopped());
 				PaxosPacket[] packets = new PaxosPacket[lmTasks.length];
 				for (int i = 0; i < lmTasks.length; i++) {
 					packets[i] = lmTasks[i].logMsg;
@@ -322,9 +320,7 @@ public abstract class AbstractPaxosLogger {
 				this.setProcessing(false);
 				DelayProfiler.update("log", t1, packets.length);
 
-				synchronized (this) {
-					notify(); // notify waitToFinish
-				}
+				this.logMessagesNotify();
 
 				for (LogMessagingTask lmTask : lmTasks) {
 					try {
@@ -340,11 +336,26 @@ public abstract class AbstractPaxosLogger {
 					}
 				}
 			}
-			if(DEBUG) log.info("batchLogger"+myID+" thread stopping");
+			//if(DEBUG) 
+			log.info("batchLogger"+myID+" thread stopping");
+		}
+		
+		private void logMessagesWait() {
+			synchronized(this.logMessages) {
+				try {
+					this.logMessages.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		private void logMessagesNotify() {
+			synchronized(this.logMessages) {
+				this.logMessages.notifyAll();
+			}
 		}
 
 		private void enqueue(LogMessagingTask lmTask) {
-			if(this.isStopped()) return;
 			synchronized (this.logMessages) {
 				this.logMessages.add(lmTask);
 				this.logMessages.notify();
@@ -359,7 +370,6 @@ public abstract class AbstractPaxosLogger {
 						new LogMessagingTask[this.logMessages.size()];
 				this.logMessages.toArray(lmTasks);
 				this.logMessages.clear();
-				this.setProcessing(true); // nested locking
 				return lmTasks;
 			}
 		}
@@ -370,34 +380,34 @@ public abstract class AbstractPaxosLogger {
 			}
 		}
 
-		private synchronized void waitToFinish() {
-			try {
-				while (!this.isEmpty() || this.getProcessing())
-					wait();
-			} catch (InterruptedException ie) {
-				ie.printStackTrace();
+		private void waitToFinish() {
+			while (!this.isEmpty() || this.getProcessing())
+				this.logMessagesWait();
+		}
+
+		private boolean getProcessing() {
+			synchronized (this.logMessages) {
+				return this.processing;
 			}
 		}
 
-		private synchronized boolean getProcessing() {
-			return this.processing;
-		}
-
-		private synchronized void setProcessing(boolean b) {
-			this.processing = b;
-		}
-
-		private synchronized boolean stop() {
-			boolean old = this.stopped;
-			this.stopped = true;
+		private void setProcessing(boolean b) {
 			synchronized (this.logMessages) {
+				this.processing = b;
+			}
+		}
+
+		private void stop() {
+			synchronized (this.logMessages) {
+				this.stopped = true;
 				this.logMessages.notify();
 			}
-			return !old;
 		}
 
-		private synchronized boolean isStopped() {
-			return this.stopped;
+		private boolean isStopped() {
+			synchronized (this.logMessages) {
+				return this.stopped;
+			}
 		}
 	}
 
@@ -433,12 +443,11 @@ public abstract class AbstractPaxosLogger {
 
 	private class CCheckpointer implements Runnable {
 		private final HashMap<String, CheckpointTask> checkpoints =
-				new HashMap<String, CheckpointTask>();
+				new HashMap<String, CheckpointTask>(); // sync object
 		private boolean processing = false;
 		private boolean stopped = false;
 
 		private void enqueue(CheckpointTask newCP) {
-			if(this.isStopped()) return;
 			synchronized (checkpoints) {
 				CheckpointTask oldCP = checkpoints.get(newCP.paxosID);
 				if (oldCP == null || oldCP.slot < newCP.slot) {
@@ -469,7 +478,6 @@ public abstract class AbstractPaxosLogger {
 					cpIter.remove();
 					break;
 				}
-				this.setProcessing(true); // nested lock
 				return cp;
 			}
 		}
@@ -480,58 +488,68 @@ public abstract class AbstractPaxosLogger {
 			}
 		}
 
-		private synchronized void waitToFinish() {
-			try {
-				while (!this.isEmpty() || this.getProcessing()) {
-					this.wait();
+		private void checkpointsWait() {
+			synchronized(this.checkpoints) {
+				try {
+					this.checkpoints.wait();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
 				}
-			} catch (InterruptedException ie) {
-				ie.printStackTrace();
+			}
+		}
+		private void checkpointsNotify() {
+			synchronized(this.checkpoints) {
+				this.checkpoints.notifyAll();
+			}
+		}
+		private void waitToFinish() {
+			while (!this.isEmpty() || this.getProcessing()) 
+				this.checkpointsWait();
+		}
+
+		private boolean getProcessing() {
+			synchronized (this.checkpoints) {
+				return this.processing;
 			}
 		}
 
-		private synchronized boolean getProcessing() {
-			return this.processing;
-		}
-
-		private synchronized void setProcessing(boolean b) {
-			this.processing = b;
+		private void setProcessing(boolean b) {
+			synchronized (this.checkpoints) {
+				this.processing = b;
+			}
 		}
 
 		public void run() {
 			while (true) {
-				synchronized (this.checkpoints) {
-					try {
-						while (this.checkpoints.isEmpty() && !isStopped())
-							this.checkpoints.wait();
-						if (isStopped()) break;
-					} catch (InterruptedException ie) {
-						ie.printStackTrace();
-					}
-				}
+				while (this.isEmpty() && !isStopped())
+					this.checkpointsWait();
+
+				assert(!isEmpty() || isStopped());
+				if (this.checkpoints.isEmpty() && isStopped())
+					break;
+
+				this.setProcessing(true);
 				CheckpointTask checkpointTask = this.dequeue();
 				assert (checkpointTask != null);
-				
 				checkpointTask.checkpoint();
 				this.setProcessing(false);
-				synchronized (this) {
-					this.notifyAll();
-				}
+				this.checkpointsNotify();
 			}
-			if(DEBUG) log.info("CCheckpointer"+myID+" thread stopping");
+			//if (DEBUG)
+				log.info("CCheckpointer" + myID + " thread stopping");
 		}
 
-		public synchronized boolean stop() {
-			boolean old = this.stopped;
-			this.stopped = true;
+		public void stop() {
 			synchronized (this.checkpoints) {
+				this.stopped = true;
 				this.checkpoints.notify();
 			}
-			return !old;
 		}
 
-		private synchronized boolean isStopped() {
-			return this.stopped;
+		private boolean isStopped() {
+			synchronized (this.checkpoints) {
+				return this.stopped;
+			}
 		}
 	}
 

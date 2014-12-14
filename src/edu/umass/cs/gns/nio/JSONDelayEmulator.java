@@ -1,10 +1,12 @@
 package edu.umass.cs.gns.nio;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.SocketAddress;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -26,7 +28,7 @@ public class JSONDelayEmulator {
 	private static double VARIATION = 0.1; // 10% variation in latency
 	private static boolean USE_CONFIG_FILE_INFO = false; // Enable this after figuring out how to use config file
 	private static long DEFAULT_DELAY = 100; // 100ms
-	private static GNSNodeConfig gnsNodeConfig = null; // node config object to toString ping latencies for emulation.
+	private static GNSNodeConfig<?> gnsNodeConfig = null; // node config object to toString ping latencies for emulation.
 
 
 	private static final Timer timer = new Timer();
@@ -73,7 +75,7 @@ public class JSONDelayEmulator {
 		JSONDelayEmulator.EMULATE_DELAYS = true;
 	}
 
-	public static void emulateConfigFileDelays(GNSNodeConfig gnsNodeConfig, double variation) {
+	public static void emulateConfigFileDelays(GNSNodeConfig<?> gnsNodeConfig, double variation) {
 		JSONDelayEmulator.EMULATE_DELAYS = true;
 		JSONDelayEmulator.VARIATION = variation;
 		JSONDelayEmulator.USE_CONFIG_FILE_INFO = true;
@@ -121,7 +123,16 @@ public class JSONDelayEmulator {
 		long delay = 0;
 		if (JSONDelayEmulator.EMULATE_DELAYS) {
 			if (JSONDelayEmulator.USE_CONFIG_FILE_INFO) {
-				delay = gnsNodeConfig.getPingLatency(id)/2;// divide by 2 for one-way delay
+				/* FIXME: Not sure if we can really support generic types 
+				 * cleanly in this class as it is mostly static.
+				 */
+				if(id instanceof Integer)
+					delay = ((GNSNodeConfig<Integer>)gnsNodeConfig).getPingLatency((Integer)id)/2;// divide by 2 for one-way delay
+				else if(id instanceof String) 
+					delay = ((GNSNodeConfig<String>)gnsNodeConfig).getPingLatency((String)id)/2;
+				else if(id instanceof SocketAddress) 
+					delay = ((GNSNodeConfig<SocketAddress>)gnsNodeConfig).getPingLatency((SocketAddress)id)/2;
+
 			} else {
 				delay = JSONDelayEmulator.DEFAULT_DELAY;
 			}

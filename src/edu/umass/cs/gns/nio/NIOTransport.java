@@ -91,6 +91,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
 
   private static final int MIN_INTER_CONNECT_TIME = 5000; // milliseconds before reconnection attempts
   
+  // true means duplex, so it will work with one end behind a NAT
   private static final boolean DUPLEX_CONNECTIONS = true;
 
   // The channel on which we'll accept connections
@@ -292,10 +293,9 @@ public class NIOTransport<NodeIDType> implements Runnable {
 
     // Accept the connection and make it non-blocking
     SocketChannel socketChannel = serverSocketChannel.accept();
-    if (DEBUG) {
-      log.fine("Node " + this.myID + " accepted connection from "
+    if (DEBUG) 
+      log.info("Node " + this.myID + " accepted connection from "
               + socketChannel.getRemoteAddress());
-    }
     NIOInstrumenter.incrAccepted();
     socketChannel.configureBlocking(false);
     socketChannel.socket().setKeepAlive(true);
@@ -614,19 +614,22 @@ public class NIOTransport<NodeIDType> implements Runnable {
    */
   private void reuseAcceptedConnectionForWrites(
           SocketChannel socketChannel)  {
-    try {
-    	this.putSockAddrToSockChannel(
-    			(InetSocketAddress)socketChannel.getRemoteAddress(), 
-    			socketChannel); // replace existing with newly accepted
-    	socketChannel.register(this.selector, SelectionKey.OP_READ | 
-    			SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);
-	} catch (ClosedChannelException e) {
-		log.warning("Node"+myID+" failed to set channel to OP_WRITE");
-		// do nothing 
-	} catch (IOException e) {
-		log.warning("Node"+myID+" failed to get remote address");
-		// do nothing
-	}
+	  synchronized (this.SockAddrToSockChannel) {
+		  try {
+			  this.putSockAddrToSockChannel(
+					  (InetSocketAddress) socketChannel.getRemoteAddress(),
+					  socketChannel); // replace existing with newly accepted
+			  socketChannel.register(this.selector, SelectionKey.OP_READ
+					  | SelectionKey.OP_WRITE | SelectionKey.OP_CONNECT);
+		  } catch (ClosedChannelException e) {
+			  log.warning("Node" + myID
+					  + " failed to set channel to OP_WRITE");
+			  // do nothing
+		  } catch (IOException e) {
+			  log.warning("Node" + myID + " failed to get remote address");
+			  // do nothing
+		  }
+	  }
   }
 
   private boolean isConnected(InetSocketAddress isa) {
@@ -735,7 +738,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     InetSocketAddress isa;
 
     if (this.myID == null) {
-      isa = new InetSocketAddress((InetAddress) null, 0);
+      isa = new InetSocketAddress(0);
     } else {
       isa = new InetSocketAddress(this.nodeConfig.getNodeAddress(this.myID),
               this.nodeConfig.getNodePort(this.myID));
@@ -788,9 +791,9 @@ public class NIOTransport<NodeIDType> implements Runnable {
     socketChannel.configureBlocking(false);
 
     // Kick off connection establishment
-    if (DEBUG) {
-      log.finer("Node " + myID + " connecting to socket address " + isa);
-    }
+    if (DEBUG) 
+      log.info("Node " + myID + " connecting to socket address " + isa);
+    
     socketChannel.connect(isa);
     NIOInstrumenter.incrInitiated();
     putSockAddrToSockChannel(isa, socketChannel); // synchronized

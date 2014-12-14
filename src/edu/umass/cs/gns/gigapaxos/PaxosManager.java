@@ -15,6 +15,8 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.*;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
+import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
+import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosReplicable;
 import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MultiArrayMap;
 import edu.umass.cs.gns.util.Stringifiable;
@@ -24,12 +26,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Logger;
 
 /**
@@ -189,7 +191,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		 * (trivially sending message to self) works.
 		 */
 		rollForward(paxosID); 
-		if (!TESTPaxosConfig.isCrashed(this.myID)) this.FD.monitor(gms);
+		if (!TESTPaxosConfig.isCrashed(this.myID)) this.FD.sendKeepAlive(gms);
 		return true;
 	}
 
@@ -432,6 +434,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 		this.pokeAll();
 		this.hasRecovered = true;
+		this.notifyRecovered();
 		System.out.println("\nNode " + this.myID + " recovery complete");
 	}
 
@@ -859,264 +862,301 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	protected int getMyID() {
 		return this.myID;
 	}
-
-	/************************* Testing methods below ***********************************/
-	protected synchronized void waitRecover() throws InterruptedException {
-		wait();
+	
+	private synchronized void waitToRecover() {
+		try {
+			this.wait();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	private synchronized void notifyRecovered() {
+		this.notifyAll();
 	}
 
-	protected InterfaceJSONNIOTransport<NodeIDType> getNIOTransport() {
+	/************************* Testing methods below ***********************************/
+
+	static {
+		ConsoleHandler ch = new ConsoleHandler();
+		ch.setLevel(TESTPaxosConfig.LEVEL);
+		log.addHandler(ch);
+		log.setLevel(TESTPaxosConfig.LEVEL);
+		log.setUseParentHandlers(false);
+	}
+	public static Logger getLogger() {
+		return log;
+	}
+	public InterfaceJSONNIOTransport<NodeIDType> getNIOTransport() {
 		return this.FD.getNIOTransport();
 	}
 
-	public static void main(String[] args) {
-		int nNodes = 3;
-		TreeSet<Integer> gms = new TreeSet<Integer>();
-		int[] members = new int[nNodes];
-		for (int i = 0; i < nNodes; i++) {
-			gms.add(i + 100); // group members
-			members[i] = i + 100; // group members as array
-		}
+	public static void main(String[] args) throws InterruptedException, IOException, JSONException {
+		int[] members = TESTPaxosConfig.getDefaultGroup();
+		int numNodes = members.length;
 
 		SampleNodeConfig<Integer> snc = new SampleNodeConfig<Integer>(2000);
-		snc.localSetup(gms);
+		snc.localSetup(Util.arrayToIntSet(members));
+		
 		@SuppressWarnings("unchecked")
-		JSONNIOTransport<Integer>[] niots = new JSONNIOTransport[nNodes];
-		@SuppressWarnings("unchecked")
-		PaxosManager<Integer>[] pms = new PaxosManager[nNodes];
-		TESTPaxosReplicable[] apps = new TESTPaxosReplicable[nNodes];
+		PaxosManager<Integer>[] pms = new PaxosManager[numNodes];
+		TESTPaxosReplicable[] apps = new TESTPaxosReplicable[numNodes];
+		
+		/* We always test with the first member crashed. This also
+		 * ensures that the system is fault-tolerant to the failure
+		 * of the default coordinator, which in our policy is the 
+		 * first (or lowest numbered) node.
+		 */
 		TESTPaxosConfig.crash(members[0]);
+		/* We disable sending replies to client in PaxosManager's
+		 * unit-test. To test with clients, we rely on other 
+		 * tests in TESTPaxosMain (single-machine) or on 
+		 * TESTPaxosNode and TESTPaxosClient for distributed
+		 * testing.
+		 */
 		TESTPaxosConfig.setSendReplyToClient(false);
+		
+		/* This setting is "guilty until proven innocent", i.e.,
+		 * each node will start out assuming that all other 
+		 * nodes are dead. This is probably too pessimistic
+		 * as it will cause every node to run for coordinator
+		 * when it starts up but is good for testing.
+		 */
+		FailureDetection.setParanoid();
 
-		try {
-			for (int i = 0; i < nNodes; i++) {
-				System.out.println("Testing: initiating node " + members[i]);
-				niots[i] =
-						new JSONNIOTransport<Integer>(members[i], snc,
-								new PacketDemultiplexerDefault(), true);
-
-				for (int j = 0; j < apps.length; j++)
-					apps[i] = new TESTPaxosReplicable(niots[i]);
-				pms[i] =
-						new PaxosManager<Integer>(members[i], snc, niots[i],
-								apps[i], null);
-			}
-
-			System.out.println("Initiated all " + nNodes +
-					" paxos managers with failure detectors, sleeping for a few seconds..\n");
-			Thread.sleep(1000);
-
-			// We don't really test with multiple groups as they are independent, but this is useful for memory testing
-			int paxosGroups = 2;
-
-			System.out.println("\nTesting: Creating " + paxosGroups +
-					" paxos groups each with " + nNodes +
-					" members each, one each at each of the " + nNodes +
-					" nodes");
-			for (int i = 0; i < nNodes; i++) {
-				int k = 1;
-				for (int j = 0; j < paxosGroups; j++) {
-					pms[i].createPaxosInstance("paxos" + j, (short) 0,
-						members[i], gms, apps[i], null, false);
-					if (paxosGroups > 1000 && (j % k == 0 || j % 100000 == 0)) {
-						System.out.print(j + " ");
-						k *= 2;
-					}
-				}
-				System.out.println("");
-			}
-
-			System.out.println("\nTesting: Finished creating " + paxosGroups +
-					" paxos groups each with " + nNodes +
-					" members each, one each at each of the " + nNodes +
-					" nodes");
-			Thread.sleep(1000);
-			/*********** Finished creating paxos instances for testing *****************/
-
-			ScheduledExecutorService execpool =
-					Executors.newScheduledThreadPool(5);
-			class ClientRequestTask implements Runnable {
-				private final RequestPacket request;
-				private final PaxosManager<Integer> paxosManager;
-
-				ClientRequestTask(RequestPacket req, PaxosManager<Integer> pm) {
-					request = req;
-					paxosManager = pm;
-				}
-
-				public void run() {
-					try {
-						JSONObject reqJson = request.toJSONObject();
-						Packet.putPacketType(reqJson, PacketType.PAXOS_PACKET);
-						paxosManager.propose(request.getPaxosID(), request);
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			int numReqs = 1000;
-			RequestPacket[] reqs = new RequestPacket[numReqs];
-			ScheduledFuture<?>[] futures = new ScheduledFuture[numReqs];
-			String[] GUIDs = new String[paxosGroups];
-			for (int i = 0; i < GUIDs.length; i++)
-				GUIDs[i] = "paxos" + i;
-
-			for (int i = 0; i < nNodes; i++) {
-				while (!TESTPaxosConfig.isCrashed(members[i]) &&
-						!TESTPaxosConfig.getRecovered(members[i], GUIDs[0])) {
-					log.info("Waiting for " + members[i] + " to recover ");
-					Thread.sleep(1000);
-				}
-				log.info("Node " + members[i] +
-						" finished recovery including rollback.");
-			}
-			int[] recoverySlots = new int[nNodes];
-			int maxRecoverySlot = -1;
-			for (int i = 0; i < nNodes; i++) {
-				recoverySlots[i] = apps[i].getNumCommitted(GUIDs[0]);
-				if (recoverySlots[i] > maxRecoverySlot)
-					maxRecoverySlot = recoverySlots[i];
-				System.out.println("Node " + members[i] +
-						" recovered at slot " + recoverySlots[i]);
-			}
-
-			int numExceptions = 0;
-			double scheduledDelay = 0;
-			for (int i = 0; i < numReqs; i++) {
-				reqs[i] =
-						new RequestPacket(0, i,
-								"[ Sample write request numbered " + i + " ]",
-								false);
-				reqs[i].putPaxosID(GUIDs[0], (short) 0);
-				JSONObject reqJson = reqs[i].toJSONObject();
-				Packet.putPacketType(reqJson, PacketType.PAXOS_PACKET);
-				try {
-					ClientRequestTask crtask =
-							new ClientRequestTask(reqs[i], pms[1]);
-					futures[i] =
-							(ScheduledFuture<?>) execpool.schedule(crtask,
-								(long) scheduledDelay, TimeUnit.MILLISECONDS);
-					scheduledDelay += 0;
-				} catch (Exception e) {
-					e.printStackTrace();
-					continue;
-				}
-			}
-			log.info("Waiting for future gets");
-			for (int i = 0; i < numReqs; i++) {
-				try {
-					futures[i].get();
-				} catch (Exception e) {
-					e.printStackTrace();
-					numExceptions++;
-				}
-			}
-			log.info("All futures finished; numExceptions=" + numExceptions);
-			Thread.sleep(1000);
-
-			while (true) {
-				boolean done = false;
-				for (int i = 0; i < nNodes; i++) {
-					if (apps[i].getNumCommitted(GUIDs[0]) >= maxRecoverySlot +
-							numReqs) done = true;
-					else System.out.println(apps[i].getNumCommitted(GUIDs[0]) + " " + maxRecoverySlot + " " + numReqs);
-
-				}
-				if (done) break;
-				Thread.sleep(1000);
-			}
-			log.info("Some node has executed up to " +
-					(maxRecoverySlot + numReqs));
-
-			int numCommitted = 0;
-			for (int i = 0; i < nNodes; i++) {
-				for (int j = i + 1; j < nNodes; j++) {
-					if (!TESTPaxosConfig.isCrashed(members[i]) &&
-							!TESTPaxosConfig.isCrashed(members[j])) {
-						int committed1 = apps[i].getNumCommitted(GUIDs[0]);
-						int committed2 = apps[j].getNumCommitted(GUIDs[0]);
-						int diff = committed1 - committed2;
-						if (diff < 0) diff = -diff;
-						while (committed1 != committed2) {
-							if (committed1 > committed2)
-								apps[j].waitToFinish(GUIDs[0], committed1);
-							else if (committed1 < committed2)
-								apps[i].waitToFinish(GUIDs[0], committed2);
-							// (committed1>committed2 ? apps[j] : apps[i]).waitToFinish();
-							log.info("Waiting : (slot1,hash1)=(" + committed1 +
-									"," + apps[i].getHash(GUIDs[0]) +
-									"(; (slot2,hash2=" + committed2 + "," +
-									apps[j].getHash(GUIDs[0]) + ")");
-							Thread.sleep(1000);
-							committed1 = apps[i].getNumCommitted(GUIDs[0]);
-							committed2 = apps[j].getNumCommitted(GUIDs[0]);
-						}
-						assert (committed1 == committed2) : "numCommitted@" +
-								i + "=" + committed1 + ", numCommitted@" + j +
-								"=" + committed2;
-						numCommitted = apps[i].getNumCommitted(GUIDs[0]);
-						assert (apps[i].getHash(GUIDs[0]) == apps[j].getHash(GUIDs[0])) : ("Waiting : (slot1,hash1)=(" +
-								committed1 +
-								"," +
-								apps[i].getHash(GUIDs[0]) +
-								"(; (slot2,hash2=" +
-								committed2 +
-								"," +
-								apps[j].getHash(GUIDs[0]) + ")");
-						; // SMR invariant
-					}
-				}
-			}
-			String preemptedReqs = "[ ";
-			int numPreempted = 0;
-			for (int i = 0; i < numReqs; i++) {
-				if (!TESTPaxosConfig.isCommitted(i)) {
-					preemptedReqs += (i + " ");
-					numPreempted++;
-				}
-			}
-			preemptedReqs += "]";
-
-			DecimalFormat df = new DecimalFormat();
-			df.setMaximumFractionDigits(2);
-
-			System.out.println("\n\nTest completed. Executed " +
-					numCommitted +
-					" requests consistently including " +
-					(numReqs - numPreempted) +
-					" of " +
-					numReqs +
-					" received requests;\nPreempted requests = " +
-					preemptedReqs +
-					"; numExceptions=" +
-					numExceptions +
-					"; average message log time=" +
-					df.format(DelayProfiler.get("logDelay")) +
-					"ms.\n" +
-					"\nNote that it is possible for the test to be successful even if the number of consistently\n" +
-					"executed requests is less than the number of received requests as paxos only guarantees\n" +
-					"consistency, i.e., that all replicas executed requests in the same order, not that all requests\n" +
-					"issued will get executed. The latter property can be achieved by clients reissuing requests\n" +
-					"until successfully executed. With reissuals, clients do need to worry about double execution,\n" +
-					"so they should be careful. A client is not guaranteed to get a failure message if the request fails,\n" +
-					"e.g., if the replica receiving a request dies immediately. If the client uses a timeout to detect\n" +
-					"failure and thereupon reissue its request, it is possible that both the original and re-issued\n" +
-					"requests are executed. Clients can get around this problem by using sequence numbers within\n" +
-					"their app, reading the current sequence number, and then trying to commit their write provided the\n" +
-					"sequence number has not changed in the meantime. There are other alternatives, but all of these\n" +
-					"are application-specific; they are not paxos's problem\n");
-			for (int i = 0; i < nNodes; i++) {
-				pms[i].printLog(GUIDs[0]);
-			}
-			System.out.println("");
-			// Thread.sleep(1000000);
-			execpool.shutdownNow();
-			for (PaxosManager<Integer> pm : pms) {
-				pm.close();
-			}
-			// System.exit(1);
-		} catch (Exception e) {
-			e.printStackTrace();
+		// Set up paxos managers and apps with nio
+		for (int i = 0; i < numNodes; i++) {
+			System.out.println("Initiating PaxosManager at node " + members[i]);
+			JSONNIOTransport<Integer> niot = new JSONNIOTransport<Integer>(
+					members[i], snc, new PacketDemultiplexerDefault(), true);
+			apps[i] = new TESTPaxosReplicable(niot); // app, PM reuse nio
+			pms[i] = new PaxosManager<Integer>(members[i], snc, niot, apps[i],
+					null);
 		}
+
+		System.out.println("Initiated all " + numNodes
+				+ " paxos managers with failure detectors..\n");
+
+		/* We don't rigorously test with multiple groups as they are 
+		 * independent, but this is useful for memory testing.
+		 */
+		int numPaxosGroups = 2;
+		String[] names = new String[numPaxosGroups];
+		for (int i = 0; i < names.length; i++)
+			names[i] = "paxos" + i;
+
+		System.out
+		.println("Creating " + numPaxosGroups
+				+ " paxos groups each with " + numNodes
+				+ " members each, one each at each of the " + numNodes
+				+ " nodes");
+		for (int node = 0; node < numNodes; node++) {
+			int k = 1;
+			for (int group = 0; group < numPaxosGroups; group++) {
+				// creating a paxos instance may induce recovery from disk
+				pms[node].createPaxosInstance(names[group], (short) 0, members[node],
+						Util.arrayToIntSet(members), apps[node], null, false);
+				if (numPaxosGroups > 1000
+						&& ((group % k == 0 && ((k *= 2) > 0)) || group % 100000 == 0)) {
+					System.out.print(group + " ");
+				}
+			}
+			System.out.println("..node"+members[node]+" done");
+		}
+		Thread.sleep(1000);
+
+		/* Wait for all paxos managers to finish recovery. Recovery
+		 * is finished when initiateRecovery() is complete. At this
+		 * point, all the paxos groups at that node would have also
+		 * rolled forward.
+		 */
+		int maxRecoverySlot = -1;
+		int maxRecoveredNode = -1;
+		for (int i = 0; i < numNodes; i++) {
+			while (!TESTPaxosConfig.isCrashed(members[i])
+					&& !TESTPaxosConfig.getRecovered(members[i], names[0])) {
+				log.info("Waiting for node " + members[i] + " to recover ");
+				pms[i].waitToRecover();
+			}
+			log.info("Node " + members[i]
+					+ " finished recovery including rollback;\n" + names[0]
+					+ " recovered at slot " + apps[i].getNumCommitted(names[0]));
+			// need max recovery slot for names[0] below
+			maxRecoverySlot = Math.max(maxRecoverySlot, apps[i].getNumCommitted(names[0]));
+			maxRecoveredNode = i;
+		}
+
+		System.out
+		.println("all nodes done creating groups.");
+
+		/*********** Finished creating paxos instances for testing *****************/
+
+		/************* Begin ClientRequestTask **************************/
+		ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
+		class ClientRequestTask implements Runnable {
+			private final RequestPacket request;
+			private final PaxosManager<Integer> paxosManager;
+
+			ClientRequestTask(RequestPacket req, PaxosManager<Integer> pm) {
+				request = req;
+				paxosManager = pm;
+			}
+
+			public void run() {
+				try {
+					JSONObject reqJson = request.toJSONObject();
+					Packet.putPacketType(reqJson, PacketType.PAXOS_PACKET);
+					paxosManager.propose(request.getPaxosID(), request);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		/************* End ClientRequestTask **************************/
+
+		/* Create and schedule requests. All requests are scheduled 
+		 * immediately to test concurrency
+		 */
+		int numRequests = 1000;
+		RequestPacket[] reqs = new RequestPacket[numRequests];
+		ScheduledFuture<?>[] futures = new ScheduledFuture[numRequests];
+		int numExceptions = 0;
+		double scheduledDelay = 0;
+		for (int i = 0; i < numRequests; i++) {
+			reqs[i] = new RequestPacket(0, i,
+					"[ Sample write request numbered " + i + " ]", false);
+			reqs[i].putPaxosID(names[0], (short) 0);
+			JSONObject reqJson = reqs[i].toJSONObject();
+			Packet.putPacketType(reqJson, PacketType.PAXOS_PACKET);
+			try {
+				ClientRequestTask crtask = new ClientRequestTask(reqs[i],
+						pms[1]);
+				futures[i] = (ScheduledFuture<?>) execpool.schedule(crtask,
+						(long) scheduledDelay, TimeUnit.MILLISECONDS);
+				scheduledDelay += 0;
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+		}
+		/* Any exceptions below could occur because of exceptions
+		 * inside paxos. Scheduling a request will invoke 
+		 * PaxosManager.propose() that will cause it to send the
+		 * request to the corresponding PaxosInstanceStateMachine.
+		 */
+		log.info("Waiting for request scheduling to complete.");
+		for (int i = 0; i < numRequests; i++) {
+			try {
+				futures[i].get();
+			} catch (Exception e) {
+				e.printStackTrace();
+				numExceptions++;
+			}
+		}
+		log.info("Request scheduling complete; numExceptions=" + numExceptions);
+		Thread.sleep(1000);
+
+		/* Wait for scheduled requests to finish being processed by paxos.
+		 * We check for this by checking that at least one node has
+		 * executed up to the slot number maxRecoverySlot + numRequests.
+		 */
+		while (apps[maxRecoveredNode].getNumCommitted(names[0]) < maxRecoverySlot
+				+ numRequests) {
+			apps[maxRecoveredNode].waitToFinish();;
+		}
+		log.info("Node" + maxRecoveredNode + " has executed up to slot "
+				+ (maxRecoverySlot + numRequests));
+
+		/* The code below waits for all uncrashed replicas to
+		 * finish executing up to the same slot and will then
+		 * assert the SMR invariant, i.e., they all made the
+		 * same state transitions up to that slot.
+		 */
+		int numCommitted = 0;
+		for (int i = 0; i < numNodes; i++) {
+			for (int j = i + 1; j < numNodes; j++) {
+				if (TESTPaxosConfig.isCrashed(members[i])
+						|| TESTPaxosConfig.isCrashed(members[j]))
+					continue; // ignore crashed nodes
+
+				int committed1 = apps[i].getNumCommitted(names[0]);
+				int committed2 = apps[j].getNumCommitted(names[0]);
+				// Wait for the other node to catch up
+				while (committed1 != committed2) {
+					if (committed1 > committed2)
+						apps[j].waitToFinish(names[0], committed1);
+					else if (committed1 < committed2)
+						apps[i].waitToFinish(names[0], committed2);
+					log.info("Waiting : (slot1,hash1)=(" + committed1 + ","
+							+ apps[i].getHash(names[0]) + "(; (slot2,hash2="
+							+ committed2 + "," + apps[j].getHash(names[0])
+							+ ")");
+					Thread.sleep(1000);
+					committed1 = apps[i].getNumCommitted(names[0]);
+					committed2 = apps[j].getNumCommitted(names[0]);
+				}
+				// Both nodes caught up to the same slot
+				assert (committed1 == committed2) : "numCommitted@" + i + "="
+				+ committed1 + ", numCommitted@" + j + "=" + committed2;
+				// Assert state machine replication invariant
+				numCommitted = apps[i].getNumCommitted(names[0]);
+				assert (apps[i].getHash(names[0]) == apps[j].getHash(names[0])) : ("Waiting : (slot1,hash1)=("
+						+ committed1
+						+ ","
+						+ apps[i].getHash(names[0])
+						+ "(; (slot2,hash2="
+						+ committed2
+						+ ","
+						+ apps[j].getHash(names[0]) + ")");
+				; // end of SMR invariant 
+			}
+		}
+		
+		/* Print preempted requests if any. These could happen during
+		 * coordinator changes. Preempted requests are converted to 
+		 * no-ops and forwarded to the current presumed coordinator
+		 * by paxos.
+		 */
+		String preemptedReqs = "[ ";
+		int numPreempted = 0;
+		for (int i = 0; i < numRequests; i++) {
+			if (!TESTPaxosConfig.isCommitted(reqs[i].requestID)) {
+				preemptedReqs += (i + " ");
+				numPreempted++;
+			}
+		}
+		preemptedReqs += "]";
+
+		System.out
+		.println("\n\nTest completed. Executed "
+				+ numCommitted
+				+ " requests consistently including "
+				+ (numRequests - numPreempted)
+				+ " of "
+				+ numRequests
+				+ " received requests;\nPreempted requests = "
+				+ preemptedReqs
+				+ "; numExceptions="
+				+ numExceptions
+				+ "; average message log time="
+				+ Util.df(DelayProfiler.get("logDelay"))
+				+ "ms.\n"
+				+ "\nNote that it is possible for the test to be successful even if the number of consistently\n"
+				+ "executed requests is less than the number of received requests as paxos only guarantees\n"
+				+ "consistency, i.e., that all replicas executed requests in the same order, not that all requests\n"
+				+ "issued will get executed. The latter property can be achieved by clients reissuing requests\n"
+				+ "until successfully executed. With reissuals, clients do need to worry about double execution,\n"
+				+ "so they should be careful. A client is not guaranteed to get a failure message if the request fails,\n"
+				+ "e.g., if the replica receiving a request dies immediately. If the client uses a timeout to detect\n"
+				+ "failure and thereupon reissue its request, it is possible that both the original and re-issued\n"
+				+ "requests are executed. Clients can get around this problem by using sequence numbers within\n"
+				+ "their app, reading the current sequence number, and then trying to commit their write provided the\n"
+				+ "sequence number has not changed in the meantime. There are other alternatives, but all of these\n"
+				+ "are application-specific; they are not paxos's problem\n");
+		for (int i = 0; i < numNodes; i++) {
+			pms[i].printLog(names[0]);
+		}
+		execpool.shutdownNow();
+		for (PaxosManager<Integer> pm : pms)
+			pm.close();
 	}
 }
