@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -66,7 +67,6 @@ import java.util.logging.Logger;
  * Testing: Can be unit-tested using main.
  */
 public class DerbyPaxosLogger extends AbstractPaxosLogger {
-	public static final boolean DEBUG = PaxosManager.DEBUG;
 	private static final String FRAMEWORK = "embedded";
 	private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
 	private static final String PROTOCOL = "jdbc:derby:";
@@ -183,11 +183,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 					for (int j : executed)
 						logged = logged && (j > 0);
 					if (logged)
-						if (DEBUG)
-							log.fine("Node " + this.myID +
-									" successfully logged the " + "last " +
-									(i + 1) + " messages in " +
-									(System.currentTimeMillis() - t1) + " ms");
+						log.log(Level.FINE,
+								"{0}{1}{2}{3}{4}{5}{6}",
+								new Object[] { "Node ", this.myID,
+										" successfully logged the " + "last ",
+										(i + 1), " messages in ",
+										(System.currentTimeMillis() - t1),
+										" ms" });
 					t1 = System.currentTimeMillis();
 				}
 			} catch (SQLException sqle) {
@@ -264,22 +266,25 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		this.deleteOutdatedMessages(paxosID, slot, ballot.ballotNumber,
 			ballot.coordinatorID, acceptedGCSlot);
 		// why can't insertCP.toString() return the query string? :/
-		log.info("Node " +
-				this.myID +
-				" DB inserted checkpoint (" +
-				paxosID +
-				"," +
-				JSONUtils.toString(group) +
-				"," +
-				slot +
-				"," +
-				ballot +
-				"," +
-				((state.length() < TRUNCATED_STATE_SIZE) ? state
-						: state.substring(0, TRUNCATED_STATE_SIZE)) + "," +
-				acceptedGCSlot + "); took " + (t2 - t1) +
-				"ms; garbage collection took " +
-				(System.currentTimeMillis() - t2) + "ms");
+		log.log(Level.INFO,
+				"{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}{14}{15}{16}{17}",
+				new Object[] {
+						"Node ",
+						this.myID,
+						" DB inserted checkpoint (",
+						paxosID,
+						",",
+						JSONUtils.toString(group),
+						",",
+						slot,
+						",",
+						ballot,
+						",",
+						((state.length() < TRUNCATED_STATE_SIZE) ? state
+								: state.substring(0, TRUNCATED_STATE_SIZE)),
+						",", acceptedGCSlot + "); took ", (t2 - t1),
+						"ms; garbage collection took ",
+						(System.currentTimeMillis() - t2), "ms" });
 	}
 	
 	// Forms the constraint field < limit while handling wraparounds
@@ -324,8 +329,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			dstmt = conn.prepareStatement(dcmd);
 			dstmt.execute();
 			conn.commit();
-			if(DEBUG) log.fine("Node " + this.myID + " DB deleted up to slot " +
-					acceptedGCSlot);
+			log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] {"Node ", this.myID, " DB deleted up to slot ",
+					acceptedGCSlot});
 		} catch (SQLException sqle) {
 			log.severe("SQLException while deleting outdated messages for " +
 					paxosID);
@@ -365,14 +370,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			int rowcount = localLogMsgStmt.executeUpdate();
 			assert (rowcount == 1);
 			logged = true;
-			if (DEBUG)
-				log.finest("Inserted (" + paxosID + "," + slot + "," +
-						ballotnum + "," + coordinator + ":" + message);
+			log.log(Level.FINEST, "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}", new Object[] {"Inserted (" , paxosID , "," , slot , "," ,
+						ballotnum , "," , coordinator , ":" , message});
 		} catch (SQLException sqle) {
 			if (sqle.getSQLState().equals(DerbyPaxosLogger.DUPLICATE_KEY)) {
-				if (DEBUG)
-					log.fine("Node " + this.myID + " log message " + message +
-							" previously logged");
+					log.log(Level.FINE, "{0}{1}{2}{3}{4}", new Object[] {"Node " , this.myID , " log message ", message,
+							" previously logged"});
 				logged = true;
 			}
 			else {
@@ -632,7 +635,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		if (isClosed() || this.cursorPstmt != null || this.cursorRset != null ||
 				this.cursorConn != null) return false;
 
-		log.info("Node " + this.myID + " initiatedReadCheckpoints");
+		log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Node ", this.myID, " initiatedReadCheckpoints"});
 		boolean initiated = false;
 		try {
 			this.cursorPstmt =
@@ -670,7 +673,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		if (isClosed() || this.cursorPstmt != null || this.cursorRset != null ||
 				this.cursorConn != null) return false;
 
-		log.info("Node " + this.myID + " initiatedReadMessages");
+		log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Node " , this.myID , " initiatedReadMessages"});
 		boolean initiated = false;
 		try {
 			this.cursorPstmt =
@@ -702,7 +705,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	public synchronized void closeReadAll() {
-		log.info("Node " + myID + " invoking closeReadAll");
+		log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Node " , myID , " invoking closeReadAll"});
 		this.cleanupCursorConn();
 	}
 
@@ -884,7 +887,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	public void closeImpl() {
-		log.info("Node " + this.myID + " closing DB");
+		log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Node " , this.myID , " closing DB"});
 		this.setClosed(true);
 		// can not close derby until all instances are done
 		if(allClosed()) this.closeGracefully();
@@ -1030,8 +1033,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 					createTable(stmt, cmdM, getCTable()) &&
 							createIndex(stmt, cmdMI, getMTable());
 			createdPTable = createTable(stmt, cmdP, getPTable());
-			log.info("Created tables " + getCTable() + " and " + getMTable() +
-					" and " + getPTable());
+			log.log(Level.INFO, "{0}{1}{2}{3}{4}{5}", new Object[] {"Created tables ", getCTable() , " and " , getMTable() ,
+					" and " , getPTable()});
 		} catch (SQLException sqle) {
 			log.severe("Could not create table(s): " +
 					getPTable() +
@@ -1052,7 +1055,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			created = true;
 		} catch (SQLException sqle) {
 			if (sqle.getSQLState().equals(DerbyPaxosLogger.DUPLICATE_TABLE)) {
-				log.info("Table " + table + " already exists");
+				log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Table " , table , " already exists"});
 				created = true;
 			}
 			else {
@@ -1077,7 +1080,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			pstmt.execute();
 			conn.commit();
 			dropped = true;
-			log.info("Node " + myID + " dropped pause table " + table);
+			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node " , myID , " dropped pause table " , table});
 		} catch (SQLException sqle) {
 			if (!sqle.getSQLState().equals(NONEXISTENT_TABLE)) {
 				log.severe("Node " + this.myID + " could not drop table " +
@@ -1546,7 +1549,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 					numPackets +
 					" packets = " +
 					((double) time) / numPackets + " ms");
-			// System.exit(1);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

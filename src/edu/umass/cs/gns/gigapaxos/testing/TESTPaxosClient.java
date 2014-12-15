@@ -29,7 +29,7 @@ public class TESTPaxosClient {
 	private static long minSleepInterval = 10;
 
 	private static final long createTime = System.currentTimeMillis();
-	private static final int RANDOM_REPLAY = (int) (Math.random() * TESTPaxosConfig.NUM_GROUPS);
+	private static final int RANDOM_REPLAY = (int) (Math.random() * TESTPaxosConfig.getNumGroups());
 
 	private static int totalNoopCount = 0;
 	
@@ -284,8 +284,8 @@ public class TESTPaxosClient {
 
 	protected static TESTPaxosClient[] setupClients() {
 		System.out.println("\n\nInitiating paxos clients setup");
-		TESTPaxosClient[] clients = new TESTPaxosClient[TESTPaxosConfig.NUM_CLIENTS];
-		for (int i = 0; i < TESTPaxosConfig.NUM_CLIENTS; i++) {
+		TESTPaxosClient[] clients = new TESTPaxosClient[TESTPaxosConfig.getNumClients()];
+		for (int i = 0; i < TESTPaxosConfig.getNumClients(); i++) {
 			try {
 				clients[i] = new TESTPaxosClient(TESTPaxosConfig.TEST_CLIENT_ID
 						+ i);
@@ -295,26 +295,26 @@ public class TESTPaxosClient {
 			}
 		}
 		System.out.println("Completed initiating "
-				+ TESTPaxosConfig.NUM_CLIENTS + " clients");
+				+ TESTPaxosConfig.getNumClients() + " clients");
 		return clients;
 	}
 
 	protected static void sendTestRequests(int numReqsPerClient,
 			TESTPaxosClient[] clients) throws JSONException, IOException {
 		System.out.print("\nInitiating test sending " + numReqsPerClient
-				* TESTPaxosConfig.NUM_CLIENTS + " requests using "
-				+ TESTPaxosConfig.NUM_CLIENTS
+				* TESTPaxosConfig.getNumClients() + " requests using "
+				+ TESTPaxosConfig.getNumClients()
 				+ " clients at an aggregate load of "
-				+ TESTPaxosConfig.TOTAL_LOAD + " reqs/sec...");
+				+ TESTPaxosConfig.getTotalLoad() + " reqs/sec...");
 		long initTime = System.currentTimeMillis();
 		for (int i = 0; i < numReqsPerClient; i++) {
-			for (int j = 0; j < TESTPaxosConfig.NUM_CLIENTS; j++) {
-				int curTotalReqs = j + i * TESTPaxosConfig.NUM_CLIENTS;
+			for (int j = 0; j < TESTPaxosConfig.getNumClients(); j++) {
+				int curTotalReqs = j + i * TESTPaxosConfig.getNumClients();
 				clients[j]
 						.makeAndSendRequest("paxos"
-								+ ((RANDOM_REPLAY + curTotalReqs) % TESTPaxosConfig.NUM_GROUPS));
+								+ ((RANDOM_REPLAY + curTotalReqs) % TESTPaxosConfig.getNumGroups()));
 				long accumulatedTime = System.currentTimeMillis() - initTime;
-				if ((curTotalReqs) / TESTPaxosConfig.TOTAL_LOAD * 1000
+				if ((curTotalReqs) / TESTPaxosConfig.getTotalLoad() * 1000
 						- accumulatedTime > minSleepInterval) {
 					try {
 						Thread.sleep(minSleepInterval);
@@ -330,7 +330,7 @@ public class TESTPaxosClient {
 	}
 
 	protected static void waitForResponses(TESTPaxosClient[] clients) {
-		for (int i = 0; i < TESTPaxosConfig.NUM_CLIENTS; i++) {
+		for (int i = 0; i < TESTPaxosConfig.getNumClients(); i++) {
 			while (clients[i].requests.size() > 0) {
 				synchronized (clients[i]) {
 					try {
@@ -380,7 +380,7 @@ public class TESTPaxosClient {
 	}
 
 	protected static void printOutput(TESTPaxosClient[] clients) {
-		for (int i = 0; i < TESTPaxosConfig.NUM_CLIENTS; i++) {
+		for (int i = 0; i < TESTPaxosConfig.getNumClients(); i++) {
 			if (clients[i].requests.isEmpty()) {
 				System.out.println("\n\nSUCCESS! requests issued = "
 						+ clients[i].getRequestCount()
@@ -401,7 +401,7 @@ public class TESTPaxosClient {
 	
 	protected static String getAggregateOutput(int numReqs, long delay) {
 		return "\n  average_throughput = "
-				+ Util.df(numReqs * TESTPaxosConfig.NUM_CLIENTS
+				+ Util.df(numReqs * TESTPaxosConfig.getNumClients()
 						* 1000.0 / delay)
 				+ "/s"
 				+ "\n  noop_count = "
@@ -412,16 +412,12 @@ public class TESTPaxosClient {
 
 	public static void main(String[] args) {
 		try {
-			Integer myID = (args != null && args.length > 0 ? Integer
-					.parseInt(args[0]) : null);
+			if(args.length>0) TESTPaxosConfig.setDistribtedTest(args[0]); 
+			else TESTPaxosConfig.setDistribtedTest(TESTPaxosConfig.SINGLE_NODE_CONFIG_DIR);;
 
-			TESTPaxosConfig.setDistributedServers();
 
-			if (TESTPaxosConfig.findMyIP(myID)) {
-				TESTPaxosConfig.setDistributedClients();
-			}
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
-			int numReqs = TESTPaxosConfig.NUM_REQUESTS_PER_CLIENT;
+			int numReqs = TESTPaxosConfig.getNumRequestsPerClient();
 
 			// begin first run
 			long t1 = System.currentTimeMillis();

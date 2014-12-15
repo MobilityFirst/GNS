@@ -17,8 +17,8 @@ import java.util.TimerTask;
 /* This class helps emulate delays in NIO transport. It is mostly self-explanatory. 
  * TBD: Need to figure out how to use StartNameServer's emulated latencies.
  * 
- * FIXME: This class works only for Integer node IDs as it is essentially a 
- * static class.
+ * FIXME: This class works only for Integer/String/InetSocketAddress node IDs 
+ * as it is essentially a static class.
  */
 @SuppressWarnings("unchecked")
 public class JSONDelayEmulator {

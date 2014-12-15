@@ -2,18 +2,21 @@ package edu.umass.cs.gns.gigapaxos.paxosutil;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 
 /**
 @author V. Arun
  */
 public class RequestInstrumenter {
-	public static final boolean DEBUG = PaxosManager.DEBUG;
+	/* This class is a no-op unless DEBUG is turned on */
+	public static final boolean DEBUG = TESTPaxosConfig.DEBUG;
 	
 	private static final HashMap<Integer,String> map = new HashMap<Integer,String>();
 	
@@ -43,7 +46,7 @@ public class RequestInstrumenter {
 	
 	public synchronized static String remove(int requestID) {
 		String retval = map.remove(requestID);
-		if(DEBUG) log.fine(requestID + " :\n" + retval);
+		log.log(Level.FINE, "{0}{1}{2}", new Object[] {requestID , " :\n" , retval});
 		return retval;
 	}
 	public synchronized static void removeAll() {

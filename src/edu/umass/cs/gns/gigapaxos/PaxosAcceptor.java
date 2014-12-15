@@ -15,6 +15,9 @@ import java.util.logging.Logger;
 
 
 
+
+
+
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PValuePacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PreparePacket;
@@ -25,6 +28,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.util.MultiArrayMap;
 import edu.umass.cs.gns.util.NullIfEmptyMap;
+import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
@@ -39,7 +43,6 @@ import edu.umass.cs.gns.util.NullIfEmptyMap;
  * requests. This object contributes to about 90B of space.
  */
 public class PaxosAcceptor {
-	private static final boolean DEBUG = PaxosManager.DEBUG;
 	/* It suffices to maintain accept logs only on disk, so that we don't
 	 * have to maintain them in memory. We have to log accepts on disk anyway. 
 	 * We might as well serve them from the disk as well upon a coordinator 
@@ -132,7 +135,7 @@ public class PaxosAcceptor {
 
 		PrepareReplyPacket preply = null;
 		if(prepare.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) > 0) {
-			if(DEBUG) log.fine("Node"+myID + " acceptor " + " updating to higher ballot " + prepare.ballot);
+			log.log(Level.FINE, "{0}{1}{2}{3}{4}", new Object[] {"Node",myID, " acceptor ", " updating to higher ballot ", prepare.ballot});
 			this.ballotNum = prepare.ballot.ballotNumber; this.ballotCoord = prepare.ballot.coordinatorID;
 		}
 		/* Why return accepted values even though they were proposed in lower 
@@ -170,7 +173,7 @@ public class PaxosAcceptor {
 		if (accept.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) >= 0) {  // accept the pvalue and the ballot
 			this.ballotNum = accept.ballot.ballotNumber; this.ballotCoord=accept.ballot.coordinatorID; // no-op if the two are equal anyway
 			if(accept.slot - this.minCommittedFrontierSlot > 0) this.acceptedProposals.put(accept.slot, accept); // wraparound-aware arithmetic
-			if(DEBUG) log.fine("Node"+myID+" acceptor accepting pvalue for slot " + accept.slot + " : " + accept);
+			log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {"Node",myID," acceptor accepting pvalue for slot ",accept.slot," : ", accept});
 		}
 		garbageCollectAccepted(accept.majorityExecutedSlot);
 		return new Ballot(ballotNum,ballotCoord);
@@ -424,6 +427,7 @@ public class PaxosAcceptor {
 	}
 	
 	private static void testAcceptor() {
+		Util.assertAssertionsEnabled();
 		int myID = 9;
 		int ballotnum = 22;
 		int ballotCoord = 1;
@@ -452,7 +456,9 @@ public class PaxosAcceptor {
 	}
 
 	public static void main(String[] args) {
-		testMemory();
+		Util.assertAssertionsEnabled();
+		//testMemory();
 		testAcceptor();
+		System.out.println("SUCCESS!");
 	}
 }

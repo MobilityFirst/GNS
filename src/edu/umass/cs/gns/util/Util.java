@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
@@ -56,6 +57,13 @@ public class Util {
   public static int roundToInt(double d) {
     return (int) Math.round(d);
   }
+  
+  public static void assertAssertionsEnabled() {
+	  boolean assertOn = false;
+	  // *assigns* true if assertions are on.
+	  assert assertOn = true; 
+	  if(!assertOn) throw new RuntimeException("Asserts not enabled; enable assertions using the '-ea' JVM option");
+  }
 
   @SuppressWarnings("unchecked")
   public static Object createObject(String className, Object... arguments) {
@@ -92,6 +100,11 @@ public class Util {
       result.put(parser.getName(), parser.getValue());
     }
     return result;
+  }
+  
+  public static String prefix(String str, int prefixLength) {
+	  if(str==null || str.length() <= prefixLength) return str;
+	  return str.substring(0, prefixLength);
   }
 
   public static Set<Integer> arrayToIntSet(int[] array) {

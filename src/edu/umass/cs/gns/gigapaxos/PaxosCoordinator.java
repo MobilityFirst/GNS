@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.gigapaxos;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptPacket;
@@ -46,7 +47,6 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
  * this class along with PaxosInstanceStateMachine.
  */
 public class PaxosCoordinator {
-	public static final boolean DEBUG=PaxosManager.DEBUG;
 	private PaxosCoordinatorState pcs=null; // This gets recreated for each ballot.
 
 	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosCoordinator.class.getName()); // GNS.getLogger();
@@ -117,11 +117,11 @@ public class PaxosCoordinator {
 				/* Can ignore return value of preActiveProposals below as handleAcceptReplyHigherBallot 
 				 * returns true only if there are no proposals at this coordinator.
 				 */
-				if(DEBUG) log.fine("Coordinator " + this.pcs.getBallot() + " PREEMPTED request#: " + 
-						acceptReply.slotNumber + ", " + acceptReply.getPaxosID());
+				log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {"Coordinator ", this.pcs.getBallot(), " PREEMPTED request#: ", 
+						acceptReply.slotNumber, ", ", acceptReply.getPaxosID()});
 				assert(preemptedPValue.ballot.compareTo(acceptReply.ballot) < 0);
 				if(pcs.preemptedFully()) {
-					if(DEBUG) log.fine("Coordinator " + this.pcs.getBallot() + " preempted fully, about to resign");
+					log.log(Level.FINE, "{0}{1}{2}", new Object[] {"Coordinator ", this.pcs.getBallot(), " preempted fully, about to resign"});
 					resignAsCoordinator();
 				}
 			}
@@ -152,10 +152,10 @@ public class PaxosCoordinator {
 		ArrayList<AcceptPacket> acceptPacketList = null;
 
 		if(this.pcs.isPrepareAcceptedByMajority(prepareReply, members)) { // pcs still valid
-			assert(!this.pcs.isActive());   // ******ensures this else block is called exactly once
+			assert(!this.pcs.isActive());   // ******ensures this block is called exactly once
 			this.pcs.combinePValuesOntoProposals(members); // okay even for multiple threads to call in parallel
 			acceptPacketList = this.pcs.spawnCommandersForProposals(); // should be called only once, o/w conflicts possible
-			this.pcs.setCoordinatorActive(); // *****ensures this else block is called exactly once
+			this.pcs.setCoordinatorActive(); // *****ensures this block is called exactly once
 			log.info("Coordinator " + pcs.getBallot() + " acquired PREPARE MAJORITY: About to conduct view change.");
 		} // "synchronized" in the method definition ensures that this else block is called atomically 
 
@@ -203,7 +203,7 @@ public class PaxosCoordinator {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		System.out.println("FAILURE: This is an untested shell class for PaxosCoordinatorState that is tested.");
-		System.out.println("Try running PaxosManager's tests for now.");
+		System.out.println("FAILURE: This is an untested shell class for PaxosCoordinatorState that is tested. "
+				+ "Try running PaxosManager's tests for now.");
 	}
 }

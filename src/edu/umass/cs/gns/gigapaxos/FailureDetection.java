@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
@@ -179,7 +180,7 @@ public class FailureDetection<NodeIDType> {
 	}
 	
 	protected void receive(FailureDetectionPacket<NodeIDType> fdp) {
-		log.finest("Node " + this.myID + " received ping from node " + fdp.senderNodeID);
+		log.log(Level.FINEST, "{0}{1}{2}{3}", new Object[] {"Node " , this.myID , " received ping from node " , fdp.senderNodeID});
 		this.heardFrom(fdp.senderNodeID);
 	}
 	/* protected in order to allow paxos instances to provide useful liveliness 
@@ -223,8 +224,8 @@ public class FailureDetection<NodeIDType> {
 					nioTransport.sendToID(destID, pingJson);
 			} catch(IOException e) {
 				try {
-					log.info("Encountered IOException while sending keepalive from node " + 
-							pingJson.getInt("sender") + " to node " + destID);
+					log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Encountered IOException while sending keepalive from node " , 
+							pingJson.getInt("sender") , " to node " , destID});
 					cleanupFailedPingTask(destID);
 				} catch(JSONException je) {
 					e.printStackTrace();

@@ -38,14 +38,14 @@ public class TESTPaxosReplicable implements Replicable {
 		private HashMap<Integer, String> committed = new HashMap<Integer, String>();
 	}
 
-	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(TESTPaxosReplicable.class.getName());
+	private static Logger log = PaxosManager.getLogger();// Logger.getLogger(TESTPaxosReplicable.class.getName());
 
 	public TESTPaxosReplicable(JSONNIOTransport<Integer> nio) {
 		this();
 		try {
 			/*
-			 * app uses nio only to send, not receive, so it doesn't care to set
-			 * a PacketDemultiplexer
+			 * app uses nio only to send, not receive, so it doesn't care to set a
+			 * PacketDemultiplexer
 			 */
 			setNIOTransport(nio);
 		} catch (Exception e) {
@@ -76,10 +76,9 @@ public class TESTPaxosReplicable implements Replicable {
 				state = new PaxosState();
 
 			/*
-			 * Initialize seqnum upon first decision. We know it is the first
-			 * decision if seqnum==-1 or if putState is true, i.e., checkpoint
-			 * recovery has just happened and no other request has been
-			 * executed.
+			 * Initialize seqnum upon first decision. We know it is the first decision if seqnum==-1
+			 * or if putState is true, i.e., checkpoint recovery has just happened and no other
+			 * request has been executed.
 			 */
 			if (state.seqnum == -1)
 				state.seqnum = requestPacket.slot;
@@ -93,24 +92,21 @@ public class TESTPaxosReplicable implements Replicable {
 						+ state.seqnum + ": prev_state_value=" + state.value);
 
 			/*
-			 * Set state to current request value concatenated with the hash of
-			 * the previous state. This allows us to easily compare using just
-			 * the current state value that two RSMs executed the exact same set
-			 * of state transitions to arrive at that state.
+			 * Set state to current request value concatenated with the hash of the previous state.
+			 * This allows us to easily compare using just the current state value that two RSMs
+			 * executed the exact same set of state transitions to arrive at that state.
 			 */
 			state.value = requestPacket.requestValue + (digest(state.value));
 
 			/*
-			 * Assert that the next slot is always the next expected seqnum.
-			 * This ensures that paxos is making the app execute requests in the
-			 * correct slot number order. Note that state.seqnum is set exactly
-			 * once at initialization to the arriving request's slot above and
-			 * is then just incremented by one below for every executed
-			 * decision.
+			 * Assert that the next slot is always the next expected seqnum. This ensures that paxos
+			 * is making the app execute requests in the correct slot number order. Note that
+			 * state.seqnum is set exactly once at initialization to the arriving request's slot
+			 * above and is then just incremented by one below for every executed decision.
 			 */
 			assert (state.seqnum == requestPacket.slot);
-			/* increment seqnum (to the next expected seqnum and
-			 * requestPacket.slot)
+			/*
+			 * increment seqnum (to the next expected seqnum and requestPacket.slot)
 			 */
 			state.committed.put(state.seqnum++, state.value);
 			allState.put(paxosID, state); // needed in case we initialized state
@@ -118,8 +114,9 @@ public class TESTPaxosReplicable implements Replicable {
 			executed = true;
 			state.numExecuted++;
 
-			if(TESTPaxosConfig.ASSERT_RSM_INVARIANT) 
-				assert (RSMInvariant(requestPacket.getPaxosID(), state.seqnum - 1));
+			if (TESTPaxosConfig.ASSERT_RSM_INVARIANT)
+				assert (RSMInvariant(requestPacket.getPaxosID(),
+						state.seqnum - 1));
 			state.committed.remove(state.seqnum - MAX_STORED_REQUESTS); // GC
 
 			// testing and logging below

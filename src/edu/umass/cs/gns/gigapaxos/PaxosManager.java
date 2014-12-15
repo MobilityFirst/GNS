@@ -31,7 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -60,14 +60,14 @@ import java.util.logging.Logger;
  * the main method.
  */
 public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
-	public static final boolean DEBUG = NIOTransport.DEBUG;
+	public static final boolean DEBUG = TESTPaxosConfig.DEBUG; // currently used only to debug pausing
 
 	private static final long MORGUE_DELAY = 30000;
 	private static final boolean MAINTAIN_CORPSES = false;
 	private static final int PINSTANCES_CAPACITY = 2000000;
 	private static final boolean CRASH_AND_RECOVER_ME_OPTION = false;
 	private static final boolean HIBERNATE_OPTION = false;
-	private static final boolean PAUSE_OPTION = false;//true;
+	private static final boolean PAUSE_OPTION = true;//true;
 	private static final long DEACTIVATION_PERIOD = 30000; // 30s default
 	private static final boolean ONE_PASS_RECOVERY = true;
 	private static final int MAX_POKE_RATE = 1000; // per sec
@@ -210,14 +210,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 			switch (paxosPacketType) {
 			case FAILURE_DETECT:
-				FailureDetectionPacket<NodeIDType> fdp =
-						new FailureDetectionPacket<NodeIDType>(jsonMsg, unstringer);
-				FD.receive(fdp);
+				FD.receive(new FailureDetectionPacket<NodeIDType>(jsonMsg, unstringer));
 				break;
 			case FIND_REPLICA_GROUP:
-				FindReplicaGroupPacket findGroup =
-						new FindReplicaGroupPacket(jsonMsg);
-				processFindReplicaGroup(findGroup);
+				processFindReplicaGroup(new FindReplicaGroupPacket(jsonMsg));
 				break;
 			default: // paxos protocol messages
 				assert (jsonMsg.has(PaxosPacket.PAXOS_ID));
@@ -378,7 +374,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private synchronized void initiateRecovery() {
 		boolean found = false;
 		int groupCount = 0, freq = 1;
-		log.info("Node " + this.myID + " beginning to recover checkpoints");
+		log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Node ",  this.myID, " beginning to recover checkpoints"});
 		System.out.print("Node " + this.myID +
 				" beginning to recover checkpoints: ");
 		while (this.paxosLogger.initiateReadCheckpoints(true))
@@ -396,8 +392,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			}
 		}
 		this.paxosLogger.closeReadAll(); // releases lock
-		log.info("Node " + this.myID + " has recovered checkpoints for " +
-				groupCount + " paxos groups");
+		log.log(Level.INFO, "{0}{1}{2}{3}{4}", new Object[] {"Node ", this.myID + " has recovered checkpoints for ",
+				groupCount, " paxos groups"});
 		if (!found) {
 			log.warning("No checkpoint state found for node " +
 					this.myID +
@@ -410,8 +406,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		if (ONE_PASS_RECOVERY) { // roll forward all logged messages in a single pass
 			System.out.print("\nNode " + this.myID +
 					" beginning to roll forward logged messages: ");
-			log.info("Node " + this.myID +
-					" beginning to roll forward logged messages");
+			log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Node ", this.myID,
+					" beginning to roll forward logged messages"});
 			while (this.paxosLogger.initiateReadMessages())
 				; // acquires lock
 			PaxosPacket packet = null;
@@ -427,9 +423,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				}
 			}
 			this.paxosLogger.closeReadAll(); // releases lock
-			log.info("Node " + this.myID + " has rolled forward " + logCount +
-					" messages in a single pass across " + groupCount +
-					" paxos groups");
+			log.log(Level.INFO, "{0}{1}{2}{3}{4}{5}{6}", new Object[] {"Node ", this.myID, " has rolled forward ", logCount,
+					" messages in a single pass across ", groupCount,
+					" paxos groups"});
 		}
 
 		this.pokeAll();
@@ -451,7 +447,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 	private synchronized void pokeAll() {
 		if (PaxosInstanceStateMachine.POKE_ENABLED) {
-			log.info("Node " + this.myID + " beginning to poke all instances");
+			log.log(Level.INFO, "{0}{1}{2}", new Object[] {"Node ", this.myID, " beginning to poke all instances"});
 			while (this.paxosLogger.initiateReadCheckpoints(false))
 				; // acquires lock
 			RecoveryInfo pri = null;
@@ -470,8 +466,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				}
 			}
 			this.paxosLogger.closeReadAll(); // releases lock
-			log.info((count > 0 ? "\n" : "") + "Node " + this.myID +
-					" has finished poking all instances");
+			log.log(Level.INFO, "{0}{1}{2}", new Object[] {(count > 0 ? "\n" : ""), "Node ", this.myID,
+					" has finished poking all instances"});
 		}
 	}
 
@@ -532,15 +528,15 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		if (pism == null || this.isClosed()) return false;
 		boolean hibernated = false;
 		if (HIBERNATE_OPTION) {
-			log.info("Node " + myID + " trying to hibernate " +
-					pism.getPaxosID());
+			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node ", myID, " trying to hibernate ",
+					pism.getPaxosID()});
 			boolean stopped = pism.tryForcedCheckpointAndStop(); // could also do forceStop() here, but might be
 																	// wasteful
 			if (stopped) {
 				this.pinstances.remove(pism.getPaxosID());
 				hibernated = true;
-				log.info("Node " + this.myID + " sucessfully hibernated " +
-						pism.getPaxosID());
+				log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node ", this.myID, " sucessfully hibernated ",
+						pism.getPaxosID()});
 			}
 		}
 		return hibernated;
@@ -553,7 +549,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		if (HIBERNATE_OPTION) {
 			PaxosInstanceStateMachine pism = null;
 			if ((pism = this.pinstances.get(paxosID)) != null) return true;
-			log.info("Trying to restore node " + this.myID + " of " + paxosID);
+			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Trying to restore node ", this.myID, " of ", paxosID});
 			RecoveryInfo pri = this.paxosLogger.getRecoveryInfo(paxosID);
 			if (pri != null)
 				pism =
@@ -562,8 +558,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 							this.myApp, true);
 			if (pism != null) {
 				restored = true;
-				log.info("Node" + myID +
-						" successfully restored hibernated instance " + paxosID);
+				log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node", myID,
+						" successfully restored hibernated instance ", paxosID});
 			}
 			else log.warning("Node" + myID + " unable to restore instance " +
 					paxosID);
@@ -576,19 +572,18 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		if (pism == null || this.isClosed()) return false;
 		boolean paused = false;
 		if (PAUSE_OPTION) {
-			if (DEBUG)
-				log.info("Node " + this.myID + " trying to pause " +
-						pism.getPaxosID());
+			log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] { "Node ",
+					this.myID, " trying to pause ", pism.getPaxosID() });
 			long pauseInitTime = System.currentTimeMillis();
 			paused = pism.tryPause();
 			if (paused) {
 				this.pinstances.remove(pism.getPaxosID());
 				DelayProfiler.update("pause", pauseInitTime);
 				if (DEBUG)
-					log.info("Node " + this.myID + " sucessfully paused " +
-							pism.getPaxosID());
+					log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node ", this.myID, " sucessfully paused ",
+							pism.getPaxosID()});
 			}
-			else if (DEBUG) log.info("Failed to pause " + pism);
+			else if (DEBUG) log.log(Level.FINE, "{0}{1}", new Object[] {"Failed to pause ", pism});
 		}
 		return paused;
 	}
@@ -601,9 +596,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			if (this.pinstances.get(paxosID) != null) return true;
 			HotRestoreInfo hri = this.paxosLogger.unpause(paxosID);
 			if (hri != null) {
-				// if(DEBUG)
-				log.info("Node" + myID +
-						" successfully hot restored paused instance " + paxosID);
+				if (DEBUG)
+					log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] { "Node",
+							myID,
+		" successfully hot restored paused instance ", paxosID});
 				restored =
 						this.createPaxosInstance(
 							hri.paxosID,
@@ -612,8 +608,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 							this.integerMap.get(Util.arrayToIntSet(hri.members)),
 							this.myApp, hri, false);
 			}
-			else log.fine("Node" + myID + " unable to hot restore instance " +
-					paxosID);
+			else if(DEBUG) log.log(Level.INFO, "{0}{1}{2}{3}{4}", new Object[] {"Node", myID, " unable to hot restore instance ",
+					paxosID});
 		}
 		return restored;
 	}
@@ -621,9 +617,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	/* Create paxos instance restoring app state from checkpoint if any and roll forward */
 	private PaxosInstanceStateMachine recover(String paxosID, short version,
 			int id, Set<NodeIDType> members, Replicable app, boolean restoration) {
-		if (DEBUG)
-			log.info("Node " + this.myID + " " + paxosID + ":" + version +
-					" recovering");
+		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}{6}", new Object[] { "Node ",
+				this.myID, " ", paxosID, ":", version, " recovering"});
 		this.createPaxosInstance(paxosID, version, id, (members), app, null,
 			false);
 		PaxosInstanceStateMachine pism =
@@ -644,9 +639,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	 */
 	private void rollForward(String paxosID) {
 		if (!ONE_PASS_RECOVERY || this.hasRecovered()) {
-			if (DEBUG)
-				log.info("Node " + this.myID + " " + paxosID +
-						" about to roll forward: ");
+			log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] { "Node ",
+					this.myID, " ", paxosID, " about to roll forward: "});
 			AbstractPaxosLogger.rollForward(paxosLogger, paxosID, messenger);
 			PaxosInstanceStateMachine pism =
 					(this.getInstance(paxosID, true, false));
@@ -783,7 +777,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private void deactivate() {
 		if (this.activePaxii.isEmpty()) return;
 		Object[] actives = this.getActivePaxosIDs(); // FIXME: should try to avoid cloning
-		int count = 0;
+		int count = 0; // to remove unused warning 
 		for (Object active : actives) {
 			String paxosID = (String) active;
 			ActivePaxosState activeState = this.getActiveState(false, paxosID);
@@ -791,19 +785,20 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				boolean paused = pause(pinstances.get(paxosID)); // pause instance
 				if (paused) {
 					this.removeActiveState(paxosID);
-					count++;
-					if (DEBUG)
-						log.info("Node " + myID +
-								" deactivating idle instance " + paxosID);
+					count = count+1;
 				}
 			}
 		}
-		log.info("Node " + myID + " deactivated " + count +
-				" idle instances; total #actives = " + activePaxii.size() +
-				"; average_getInstance_delay = " +
-				Util.mu(DelayProfiler.get("getInstance")) +
-				"; average_pause_delay = " +
-				Util.mu(DelayProfiler.get("pause")));
+		if (PAUSE_OPTION)
+			log.log(Level.INFO,
+					"{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}",
+					new Object[] { "Node ", myID, " deactivated ", count,
+							" idle instances; total #actives = ",
+							activePaxii.size(),
+							"; average_getInstance_delay = ",
+							Util.mu(DelayProfiler.get("getInstance")),
+							"; average_pause_delay = ",
+							Util.mu(DelayProfiler.get("pause"))});
 	}
 
 	private Object[] getActivePaxosIDs() {
@@ -876,13 +871,6 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 	/************************* Testing methods below ***********************************/
 
-	static {
-		ConsoleHandler ch = new ConsoleHandler();
-		ch.setLevel(TESTPaxosConfig.LEVEL);
-		log.addHandler(ch);
-		log.setLevel(TESTPaxosConfig.LEVEL);
-		log.setUseParentHandlers(false);
-	}
 	public static Logger getLogger() {
 		return log;
 	}

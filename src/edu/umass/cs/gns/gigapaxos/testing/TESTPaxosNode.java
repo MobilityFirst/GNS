@@ -10,24 +10,23 @@ import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.util.Util;
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
 public class TESTPaxosNode {
-	/* Nodes may create more groups than TESTPaxosConfig.MAX_CONFIG_GROUPS
-	 * for testing scalability.
+	/*
+	 * Nodes may create more groups than TESTPaxosConfig.MAX_CONFIG_GROUPS for testing scalability.
 	 */
-	//public static final int NUM_GROUPS = TESTPaxosConfig.MAX_CONFIG_GROUPS;
 
 	private final int myID;
-	private PaxosManager<Integer> pm=null;
-	private TESTPaxosReplicable app=null;
+	private PaxosManager<Integer> pm = null;
+	private TESTPaxosReplicable app = null;
 
 	// A server must have an id
 	TESTPaxosNode(int id) throws IOException {
 		this.myID = id;
 		app = new TESTPaxosReplicable();
 		pm = startPaxosManager(id, app);
-		assert(pm!=null);
+		assert (pm != null);
 	}
 
 	public PaxosManager<Integer> startPaxosManager(int id,
@@ -43,79 +42,107 @@ public class TESTPaxosNode {
 		}
 		return pm;
 	}
-	public void close() {this.pm.close();}
 
-	protected Replicable getApp() {return app;}
-	protected PaxosManager<Integer> getPaxosManager() {return pm;}
-	protected String getAppState(String paxosID) {return app.getState(paxosID);}
+	public void close() {
+		this.pm.close();
+	}
+
+	protected Replicable getApp() {
+		return app;
+	}
+
+	protected PaxosManager<Integer> getPaxosManager() {
+		return pm;
+	}
+
+	protected String getAppState(String paxosID) {
+		return app.getState(paxosID);
+	}
 
 	protected void crash() {
 		this.pm.resetAll();
 		this.app.shutdown();
 	}
+
 	public String toString() {
-		String s="[id=";
-		s+=this.myID + ", pm="+pm + ", app="+app;
+		String s = "[id=";
+		s += this.myID + ", pm=" + pm + ", app=" + app;
 		return s;
 	}
 
 	// Creates the default MAX_CONFIG_GROUP groups
 	protected void createDefaultGroupInstances() {
-		System.out.println("\nNode " + this.myID + " initiating creation of default paxos groups:");
-		for(String groupID : TESTPaxosConfig.getGroups()) {
-			for(int id: TESTPaxosConfig.getGroup(groupID)) {
+		System.out.println("\nNode " + this.myID
+				+ " initiating creation of default paxos groups:");
+		for (String groupID : TESTPaxosConfig.getGroups()) {
+			for (int id : TESTPaxosConfig.getGroup(groupID)) {
 				boolean created = false;
-				if(myID==id) {
-					Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID));
+				if (myID == id) {
+					Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig
+							.getGroup(groupID));
 					System.out.print(groupID + ":" + group + " ");
-					created = this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-							group, null);
-					if(!created) System.out.println(":  not created (probably coz it is pre-existing)");
+					created = this.getPaxosManager().createPaxosInstance(
+							groupID, (short) 0, group, null);
+					if (!created)
+						System.out
+								.println(":  not created (probably coz it is pre-existing)");
 				}
-			}
-		}	
-	}
-	// Creates groups if needed more than MAX_CONFIG_GROUPS
-	protected void createNonDefaultGroupInstanes(int numGroups) {
-		int j=1;
-		if(numGroups > TESTPaxosConfig.MAX_CONFIG_GROUPS) 
-			System.out.println("\nNode "+this.myID+" initiating creation of non-default groups:");
-		// Creating groups beyond default configured groups (if numGroups > MAX_CONFIG_GROUPS)
-		for(int i=TESTPaxosConfig.MAX_CONFIG_GROUPS; i<numGroups; i++) {
-			String groupID = TESTPaxosConfig.TEST_GUID_PREFIX+i;
-			for(int id: TESTPaxosConfig.getDefaultGroup()) {
-				Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig.getGroup(groupID)); 
-				if(id==myID) this.getPaxosManager().createPaxosInstance(groupID, (short)0, 
-						group, null);
-			}
-			if(i%j==0 && ((j*=2)>1) || (i%100000==0)) {
-				System.out.print(i+" ");
 			}
 		}
 	}
 
+	// Creates groups if needed more than MAX_CONFIG_GROUPS
+	protected void createNonDefaultGroupInstanes(int numGroups) {
+		int j = 1;
+		if (numGroups > TESTPaxosConfig.PRE_CONFIGURED_GROUPS)
+			System.out.println("\nNode " + this.myID
+					+ " initiating creation of non-default groups:");
+		// Creating groups beyond default configured groups (if numGroups > MAX_CONFIG_GROUPS)
+		for (int i = TESTPaxosConfig.PRE_CONFIGURED_GROUPS; i < numGroups; i++) {
+			String groupID = TESTPaxosConfig.TEST_GUID_PREFIX + i;
+			for (int id : TESTPaxosConfig.getDefaultGroup()) {
+				Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig
+						.getGroup(groupID));
+				if (id == myID)
+					this.getPaxosManager().createPaxosInstance(groupID,
+							(short) 0, group, null);
+			}
+			if (i % j == 0 && ((j *= 2) > 1) || (i % 100000 == 0)) {
+				System.out.print(i + " ");
+			}
+		}
+	}
 
 	public static void main(String[] args) {
 		try {
-			int myID = (args!=null && args.length>0 ? Integer.parseInt(args[0]) : -1);
-			assert(myID!=-1) : "Need a node ID argument";
-			
-			int numGroups = TESTPaxosConfig.NUM_GROUPS;
-			if (args!=null && args.length>1) numGroups =  Integer.parseInt(args[1]);
+			int myID = (args != null && args.length > 0 ? Integer
+					.parseInt(args[0]) : -1);
+			assert (myID != -1) : "Need a node ID argument";
+			if (args.length > 1)
+				TESTPaxosConfig.setDistribtedTest(args[1]);
+			else
+				TESTPaxosConfig.setDistribtedTest();
 
-			if(TESTPaxosConfig.findMyIP(myID))  {
-				TESTPaxosConfig.setDistributedServers();
-				TESTPaxosConfig.setDistributedClients();
-			}
+			int numGroups = TESTPaxosConfig.getNumGroups();
+			if (args != null && args.length > 1)
+				numGroups = Integer.parseInt(args[1]);
+
 			TESTPaxosNode me = new TESTPaxosNode(myID);
 
 			// Creating default groups
-			System.out.println("Creating " + TESTPaxosConfig.MAX_CONFIG_GROUPS + " default groups");
+			System.out
+					.println("Creating "
+							+ TESTPaxosConfig.PRE_CONFIGURED_GROUPS
+							+ " default groups");
 			me.createDefaultGroupInstances();
-			System.out.println("Creating " + (numGroups - TESTPaxosConfig.MAX_CONFIG_GROUPS) + " additional non-default groups");
+			System.out.println("Creating "
+					+ (numGroups - TESTPaxosConfig.PRE_CONFIGURED_GROUPS)
+					+ " additional non-default groups");
 			me.createNonDefaultGroupInstanes(numGroups);
 
-			System.out.println("\n\nFinished creating all groups\n\n"); // no output to print here except logs
-		} catch(Exception e) {e.printStackTrace();}
+			System.out.println("\n\nFinished creating all groups\n\n"); // no stdout to print here
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
