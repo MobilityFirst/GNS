@@ -103,6 +103,7 @@
     <copy todir="${dist.dir}/conf">
       <fileset dir="conf"/>  
     </copy>
+    <copy file="${dist.jar}" tofile="${dist.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>
     <delete file="${dist.dir}/README.TXT"/> 
   </target>
     
