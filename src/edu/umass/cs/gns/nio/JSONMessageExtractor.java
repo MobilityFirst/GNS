@@ -317,6 +317,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 
 	// fix this to be enableable
 	private void stampAddressIntoJSONObjects(InetSocketAddress address, ArrayList<JSONObject> jsonArray) {
+          if (address != null) {
 		try {
 			for (JSONObject json : jsonArray) {
 				// only put the IP field in if it doesn't exist already 
@@ -330,6 +331,9 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		} catch (JSONException e) {
 			log.severe("Unable to stamp sender address and port at receiver: " + e);
 		}
+          } else {
+          log.severe("Address is null, unable to stamp sender address and port at receiver: ");
+          }
 	}
 
 	// Pretty prints the JSON array, used only for debugging.

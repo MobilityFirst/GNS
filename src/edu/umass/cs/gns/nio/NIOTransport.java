@@ -3,8 +3,8 @@ package edu.umass.cs.gns.nio;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
-import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
 
+import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;

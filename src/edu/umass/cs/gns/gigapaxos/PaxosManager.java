@@ -2,7 +2,7 @@ package edu.umass.cs.gns.gigapaxos;
 
 import edu.umass.cs.gns.nio.*;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.gns.nsdesign.nodeconfig.SampleNodeConfig;
+import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;

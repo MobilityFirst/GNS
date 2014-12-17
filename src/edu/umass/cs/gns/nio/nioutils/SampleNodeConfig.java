@@ -4,7 +4,7 @@
  * All Rights Reserved 
  *
  */
-package edu.umass.cs.gns.nsdesign.nodeconfig;
+package edu.umass.cs.gns.nio.nioutils;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
