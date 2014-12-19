@@ -69,7 +69,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     paxosConfig.setDebugMode(Config.debuggingEnabled);
     paxosConfig.setFailureDetectionPingMillis(Config.failureDetectionPingSec * 1000);
     paxosConfig.setFailureDetectionTimeoutMillis(Config.failureDetectionTimeoutSec * 1000);
-    paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + nodeID.toString() + "/gnsReconfigurable");
+    paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/NODE" + nodeID.toString() + "/gnsReconfigurable");
     this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
 
     if (Config.singleNS && Config.dummyGNS) {  // coordinator for testing only

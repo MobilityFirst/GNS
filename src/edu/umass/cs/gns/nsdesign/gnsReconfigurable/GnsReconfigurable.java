@@ -7,6 +7,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
@@ -17,6 +18,11 @@ import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceStopRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +33,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.Set;
 
 /**
  * Implements GNS module which stores the name records for all names that are replicated at this name server.
@@ -35,7 +42,7 @@ import java.util.ArrayList;
  *
  * Created by abhigyan on 2/26/14.
  */
-public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface {
+public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface, InterfaceReplicable, InterfaceReconfigurable {
 
   /**
    * ID of this node
@@ -440,5 +447,55 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   public void shutdown() {
     // ping manager created here. so this class calls shutdown.
     pingManager.shutdown();
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String getState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public InterfaceStopRequest getStopRequest(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String getFinalState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public void putInitialState(String name, int epoch, String state) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean deleteFinalState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Integer getEpoch(String name) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }
