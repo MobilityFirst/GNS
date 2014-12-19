@@ -14,6 +14,8 @@ import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
@@ -44,7 +46,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
     if (!Config.useOldPaxos) {
       GNS.getLogger().info("Using gigapaxos");
       this.paxosInterface = paxosInterface;
-      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIdType>(nodeID, nodeConfig, 
+      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIdType>(nodeID, nodeConfig,
               new PacketTypeStamper<NodeIdType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
     } else {
@@ -83,14 +85,28 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           paxosManager.handleIncomingPacket(request);
           break;
         case ADD_RECORD:
-          AddRecordPacket<NodeIdType> recordPacket = new AddRecordPacket<NodeIdType>(request, nodeConfig);
-          recordPacket.setNameServerID(nodeID);
-          paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(recordPacket.getName()), recordPacket.toString());
+          AddRecordPacket<NodeIdType> addPacket = new AddRecordPacket<NodeIdType>(request, nodeConfig);
+          addPacket.setNameServerID(nodeID);
+          // FIXME: HACK ALERT : GIGAPAXIS TRANSITION UNFINISHED
+          if (!Config.useOldPaxos) {
+            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket = 
+                    new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, addPacket.toString(), false);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(addPacket.getName()), requestPacket.toString());
+          } else {
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(addPacket.getName()), addPacket.toString());
+          }
           break;
         case REMOVE_RECORD:
           RemoveRecordPacket<NodeIdType> removePacket = new RemoveRecordPacket<NodeIdType>(request, nodeConfig);
           removePacket.setNameServerID(nodeID);
-          paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
+          // FIXME: HACK ALERT : GIGAPAXIS TRANSITION UNFINISHED
+          if (!Config.useOldPaxos) {
+            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket = 
+                    new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, removePacket.toString(), false);
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), requestPacket.toString());
+          } else {
+            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
+          }
           break;
         // Packets sent from active replica
         case RC_REMOVE:
@@ -98,7 +114,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
           break;
         case NEW_ACTIVE_PROPOSE:
-          NewActiveProposalPacket<NodeIdType> activePropose = new NewActiveProposalPacket<NodeIdType>(request , nodeConfig);
+          NewActiveProposalPacket<NodeIdType> activePropose = new NewActiveProposalPacket<NodeIdType>(request, nodeConfig);
           paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(activePropose.getName()), activePropose.toString());
           break;
         case GROUP_CHANGE_COMPLETE:
