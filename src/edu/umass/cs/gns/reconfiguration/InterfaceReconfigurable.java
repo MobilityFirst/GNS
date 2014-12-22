@@ -5,7 +5,7 @@ package edu.umass.cs.gns.reconfiguration;
  */
 public interface InterfaceReconfigurable extends InterfaceApplication {
 	
-	public InterfaceStopRequest getStopRequest(String name, int epoch);
+	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch);
 	
 	public String getFinalState(String name, int epoch);
 

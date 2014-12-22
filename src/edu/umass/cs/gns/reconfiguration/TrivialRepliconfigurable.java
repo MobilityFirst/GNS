@@ -41,7 +41,7 @@ public class TrivialRepliconfigurable implements InterfaceRepliconfigurable {
 	}
 
 	@Override
-	public InterfaceStopRequest getStopRequest(String name, int epoch) {
+	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
 		if(this.app instanceof InterfaceReconfigurable) return ((InterfaceReconfigurable)this.app).getStopRequest(name, epoch);
 		throw new RuntimeException("Can not get stop request for a non-reconfigurable app");
 	}

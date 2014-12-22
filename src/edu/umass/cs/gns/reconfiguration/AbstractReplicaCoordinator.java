@@ -123,8 +123,8 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements Interfac
 		boolean handled = ((this.app instanceof InterfaceReplicable) ? 
 				((InterfaceReplicable)(this.app)).handleRequest(request, noReplyToClient) : 
 					this.app.handleRequest(request));
-		if(request instanceof InterfaceStopRequest && ((InterfaceStopRequest)request).isStop()) 
-			callCallback((InterfaceStopRequest)request, handled);
+		if(request instanceof InterfaceReconfigurableRequest && ((InterfaceReconfigurableRequest)request).isStop()) 
+			callCallback((InterfaceReconfigurableRequest)request, handled);
 		return handled;
 	}
 	public InterfaceRequest getRequest(String stringified) throws RequestParseException {
@@ -139,7 +139,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements Interfac
 	}
 
 	@Override
-	public InterfaceStopRequest getStopRequest(String name, int epoch) {
+	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
 		return this.app.getStopRequest(name, epoch);
 	}
 	@Override
@@ -180,7 +180,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements Interfac
 
 	
 	/*********************** Start of private helper methods **********************/
-	private void callCallback(InterfaceStopRequest request, boolean handled) {
+	private void callCallback(InterfaceReconfigurableRequest request, boolean handled) {
 		if(this.callback!=null) this.callback.executed(request, handled);
 	}
 	private boolean needsCoordination(InterfaceRequest request) {

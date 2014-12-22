@@ -85,7 +85,7 @@ InterfacePacketDemultiplexer {
 	}
 	
 	@Override
-	public void executed(InterfaceStopRequest request, boolean handled) {
+	public void executed(InterfaceReconfigurableRequest request, boolean handled) {
 		StopEpoch<NodeIDType> stopEpoch = (StopEpoch<NodeIDType>)(
 				this.callbackMap.get(request.getServiceName()));
 		if(stopEpoch==null) return;
@@ -211,7 +211,7 @@ InterfacePacketDemultiplexer {
 	private void updateStats(InterfaceRequest request, InetAddress sender) {
 		String name = request.getServiceName();
 
-		if(request instanceof InterfaceStopRequest && ((InterfaceStopRequest)request).isStop()) return; // no reporting on stop
+		if(request instanceof InterfaceReconfigurableRequest && ((InterfaceReconfigurableRequest)request).isStop()) return; // no reporting on stop
 		if(this.demandProfiler.register(request, sender).shouldReport()) {
 			report(this.demandProfiler.pluckDemandProfile(name));
 		}		

@@ -1,8 +1,6 @@
 package edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets;
 
 
-import java.net.InetSocketAddress;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

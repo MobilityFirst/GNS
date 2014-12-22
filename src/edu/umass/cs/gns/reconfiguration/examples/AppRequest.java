@@ -8,14 +8,14 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.gns.reconfiguration.InterfaceStopRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 
 /**
 @author V. Arun
  */
 
-public class AppRequest extends JSONPacket implements InterfaceStopRequest, InterfaceReplicableRequest {
+public class AppRequest extends JSONPacket implements InterfaceReconfigurableRequest, InterfaceReplicableRequest {
 
 	public static final String PACKET_TYPE = JSONPacket.PACKET_TYPE;
 

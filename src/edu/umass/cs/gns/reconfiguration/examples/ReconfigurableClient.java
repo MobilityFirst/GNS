@@ -95,6 +95,10 @@ public class ReconfigurableClient {
 					switch(AppRequest.PacketType.getPacketType(JSONPacket.getPacketType(json))) {
 					case DEFAULT_APP_REQUEST:
 						break;
+					case APP_COORDINATION:
+						// FIXME:
+						throw new RuntimeException("Functionality not yet implemented");
+						//break;
 					}
 				}
 			} catch (JSONException e) {

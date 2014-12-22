@@ -10,7 +10,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.InterfacePacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
@@ -72,7 +71,7 @@ public class Reconfigurator<NodeIDType> implements InterfacePacketDemultiplexer 
 	private boolean isExternalRequest(JSONObject json) throws JSONException {
 		ReconfigurationPacket.PacketType rcType = 
 				ReconfigurationPacket.getReconfigurationPacketType(json);
-		return false;
+		return rcType!=null;
 	}
 
 	/****************************** Start of protocol task handler methods *********************/

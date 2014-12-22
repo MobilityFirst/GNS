@@ -5,13 +5,13 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.gns.reconfiguration.InterfaceStopRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.examples.AppRequest;
 
 /**
 @author V. Arun
  */
-public class NoopAppRequest extends AppRequest implements InterfaceStopRequest, InterfaceReplicableRequest {
+public class NoopAppRequest extends AppRequest implements InterfaceReconfigurableRequest, InterfaceReplicableRequest {
 	
 	/* Can define IntegerPacketType types here other than
 	 * those defined in AppRequest. The reconfiguration 

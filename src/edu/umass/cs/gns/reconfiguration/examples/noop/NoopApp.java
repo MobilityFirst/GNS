@@ -12,7 +12,7 @@ import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.reconfiguration.InterfaceStopRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.examples.AppRequest;
 
@@ -46,6 +46,8 @@ InterfaceReplicable, InterfaceReconfigurable {
 			switch ((AppRequest.PacketType)(request.getRequestType())) {
 			case DEFAULT_APP_REQUEST:
 				return processRequest((NoopAppRequest)request);
+			default:
+				break;
 			}
 		} catch (RequestParseException rpe) {
 			rpe.printStackTrace();
@@ -114,7 +116,7 @@ InterfaceReplicable, InterfaceReconfigurable {
 	}
 
 	@Override
-	public InterfaceStopRequest getStopRequest(String name, int epoch) {
+	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
 		return new NoopAppRequest(name, epoch, (int)(Math.random()*Integer.MAX_VALUE), "", AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
 	}
 
