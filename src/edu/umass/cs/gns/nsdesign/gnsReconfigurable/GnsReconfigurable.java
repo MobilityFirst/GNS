@@ -21,7 +21,7 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.reconfiguration.InterfaceStopRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -475,7 +475,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   }
 
   @Override
-  public InterfaceStopRequest getStopRequest(String name, int epoch) {
+  public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
