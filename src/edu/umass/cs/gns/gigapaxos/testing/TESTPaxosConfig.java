@@ -29,52 +29,28 @@ public class TESTPaxosConfig {
 
 	public static final boolean DEBUG = false;
 	
-	private static final boolean DEFAULT_SINGLE_NODE_TEST = true;
 	protected static final String SINGLE_NODE_CONFIG_DIR = "/Users/arun/GNS/conf/gigapaxos/";
 	private static final String DISTRIBUTED_CONFIG_DIR = "/home/arun/GNS/conf/gigapaxos/";
 	private static final String DEFAULT_PROPERTIES_FILENAME = "testing.properties";
 	private static final String DEFAULT_SERVERS_FILENAME = "testing_servers.conf";
 
-	protected static final void setSingleNodeTest() {
-		setConfigDir(SINGLE_NODE_CONFIG_DIR);
-	}
-
 	protected static final void setSingleNodeTest(String dir) {
-		setConfigDir(dir);
-	}
-
-	protected static final void setDistribtedTest() {
-		setConfigDir(DISTRIBUTED_CONFIG_DIR);
+		setConfigDir(dir!=null ? dir : SINGLE_NODE_CONFIG_DIR, false);
 	}
 
 	protected static final void setDistribtedTest(String dir) {
-		setConfigDir(dir);
+		setConfigDir(dir!=null ? dir : DISTRIBUTED_CONFIG_DIR, true);
 	}
-
+		
 	/*
 	 * We have different config paths for single node and distributed tests as they may be running
 	 * on different platforms, e.g., Mac and Linux.
 	 */
 
-	private static String configDir = DEFAULT_SINGLE_NODE_TEST ? SINGLE_NODE_CONFIG_DIR
-			: DISTRIBUTED_CONFIG_DIR;
-
-	private static String getConfigDir() {
-		return configDir;
-	}
-
-	private static void setConfigDir(String dir) {
-		configDir = (dir.endsWith("/") ? dir : dir + "/");
-		loadServersFromFile(getServersFile());
-		loadPropertiesFromFile(getPropertiesFile());
-	}
-
-	private static final String getServersFile() {
-		return getConfigDir() + DEFAULT_SERVERS_FILENAME;
-	}
-
-	private static final String getPropertiesFile() {
-		return getConfigDir() + DEFAULT_PROPERTIES_FILENAME;
+	private static void setConfigDir(String dir, boolean distributed) {
+		String configDir = (dir.endsWith("/") ? dir : dir + "/");
+		if(distributed) loadServersFromFile(configDir + DEFAULT_SERVERS_FILENAME);
+		loadPropertiesFromFile(configDir + DEFAULT_PROPERTIES_FILENAME, distributed);
 	}
 
 	/* When memory testing, the number of paxos instances can be
@@ -140,10 +116,12 @@ public class TESTPaxosConfig {
 	 * This will assert the RSM invariant upon execution of every request. It is meaningful only in
 	 * a single node test and consumes some cycles, so it should be disabled in production runs.
 	 */
-	public static final boolean ASSERT_RSM_INVARIANT = DEFAULT_SINGLE_NODE_TEST;
+	private static boolean assertRSMInvariant = false;
+	public static final boolean shouldAssertRSMInvariant() {return assertRSMInvariant;}
+	public static final void setAssertRSMInvariant(boolean b) {assertRSMInvariant=b;}
 
 	// to enable retransmission of requests by TESTPaxosClient
-	public static final boolean ENABLE_CLIENT_REQ_RTX = true;
+	public static final boolean ENABLE_CLIENT_REQ_RTX = false;
 	// default retransmission timeout
 	public static final long CLIENT_REQ_RTX_TIMEOUT = 8000;
 
@@ -225,6 +203,7 @@ public class TESTPaxosConfig {
 
 	// Sets consistent, random groups starting with the same random seed
 	public static void setRandomGroups(int numGroups) {
+		//if(!getCleanDB()) return;
 		Random r = new Random(RANDOM_SEED);
 		for (int i = 0; i < Math.min(PRE_CONFIGURED_GROUPS, numGroups); i++) {
 			groups.put(TEST_GUID_PREFIX + i, defaultGroup);
@@ -238,6 +217,18 @@ public class TESTPaxosConfig {
 			}
 			TESTPaxosConfig.setGroup(TESTPaxosConfig.getGroupName(i), members);
 		}
+	}
+	
+	public static final void setCleanDB(String[] args) {
+		for(String arg : args) 
+			if (arg.trim().equals("-c")) 
+				TESTPaxosConfig.setCleanDB(true);
+	}
+	public static final String getConfDirArg(String[] args) {
+		for(String arg : args) 
+			if (!arg.trim().equals("-c")) 
+				return arg;
+		return null;
 	}
 
 	public static void setGroup(String groupID, Set<Integer> members) {
@@ -371,12 +362,13 @@ public class TESTPaxosConfig {
 			props = new Properties();
 			props.load(inStream);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Could not find the properties file at "
+					+ filename + "; using default properties in TESTPaxosConfig.");
 		}
 		return props;
 	}
 
-	private static void loadPropertiesFromFile(String filename) {
+	private static void loadPropertiesFromFile(String filename, boolean distributed) {
 		Properties props = readProperties(filename);
 		if (props == null)
 			return;
@@ -396,6 +388,8 @@ public class TESTPaxosConfig {
 				TESTPaxosConfig.totalLoad = Double.valueOf(props
 						.getProperty(key));
 				break;
+			case "SERVERS_FILENAME":
+				if(distributed) TESTPaxosConfig.loadServersFromFile(props.getProperty(key));
 			}
 		}
 	}
@@ -423,7 +417,10 @@ public class TESTPaxosConfig {
 			}
 			reader.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.err
+					.println("Could not find the file with the list of distributed servers at "
+							+ filename + "; exiting.");
+			System.exit(1);
 		}
 	}
 

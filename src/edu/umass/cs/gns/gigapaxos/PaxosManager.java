@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.gigapaxos;
 
-import edu.umass.cs.gns.nio.*;
+import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.gns.nsdesign.Replicable;
@@ -14,7 +15,6 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.*;
-import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosReplicable;
 import edu.umass.cs.gns.util.DelayProfiler;
@@ -22,6 +22,7 @@ import edu.umass.cs.gns.util.MultiArrayMap;
 import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.Util;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -195,7 +196,17 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return true;
 	}
 
+	// Called by external entities, so we need to fix node IDs
 	public void handleIncomingPacket(JSONObject jsonMsg) {
+		try {
+			this.handleIncomingPacketInternal(fixNodeStringToInt(jsonMsg));
+		} catch (JSONException e) {
+			log.severe("Node"+myID+" unable to fix node ID string to integer");
+			e.printStackTrace();
+		}
+	}
+	// Called by internal entities like rollForward and works with integer node IDs
+	private void handleIncomingPacketInternal(JSONObject jsonMsg) {
 		if (this.isClosed())
 			return;
 		else {
@@ -204,6 +215,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 		PaxosPacketType paxosPacketType;
 		try {
+			//jsonMsg = fixNodeStringToInt(jsonMsg);
 			RequestPacket.addDebugInfo(jsonMsg, ("i" + myID));
 			assert (Packet.getPacketType(jsonMsg) == PacketType.PAXOS_PACKET /* || Packet.hasPacketTypeField(jsonMsg) */);
 			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg); // will throw exception if no PAXOS_PACKET_TYPE
@@ -254,6 +266,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	}
 
 	public String propose(String paxosID, String requestPacket) {
+		requestPacket = (new RequestPacket(-1, requestPacket, false))
+				.setReturnRequestValue().toString();
 		RequestPacket request = null;
 		String retval = null;
 		try {
@@ -277,7 +291,12 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		}
 	}
 
-	// FIXME: Unclear how this will be used. May cause problems with ongoing DB transactions.
+	/* Note: paxosLogger.removeAll() must be only used when a node is
+	 * recovering. Otherwise, it may cause problems with ongoing DB 
+	 * transactions. If there are multiple virtual nodes recovering
+	 * on a single physical machine, then each invocation of 
+	 * removeAll will try to remove all DB entries.
+	 */
 	public synchronized void resetAll() {
 		this.pinstances.clear();
 		this.corpses.clear();
@@ -392,7 +411,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			}
 		}
 		this.paxosLogger.closeReadAll(); // releases lock
-		log.log(Level.INFO, "{0}{1}{2}{3}{4}", new Object[] {"Node ", this.myID + " has recovered checkpoints for ",
+		log.log(Level.INFO, "{0}{1}{2}{3}{4}", new Object[] {"Node ", this.myID , " has recovered checkpoints for ",
 				groupCount, " paxos groups"});
 		if (!found) {
 			log.warning("No checkpoint state found for node " +
@@ -413,7 +432,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			PaxosPacket packet = null;
 			while ((packet = this.paxosLogger.readNextMessage()) != null) {
 				try {
-					this.handleIncomingPacket(PaxosPacket.markRecovered(packet).toJSONObject());
+					log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] {"Node ", this.myID,
+					" rolling forward logged message: ", packet});
+					this.handleIncomingPacketInternal(PaxosPacket.markRecovered(packet).toJSONObject());
 					if ((++logCount) % freq == 0) {
 						freq *= 2;
 						System.out.print(" " + logCount);
@@ -868,6 +889,46 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private synchronized void notifyRecovered() {
 		this.notifyAll();
 	}
+	
+	// convert string -> NodeIDType -> int (can *NOT* convert string directly to int)
+	private JSONObject fixNodeStringToInt(JSONObject json) throws JSONException {
+		// FailureDetectionPacket already has generic NodeIDType
+		if (PaxosPacket.getPaxosPacketType(json) == PaxosPacket.PaxosPacketType.FAILURE_DETECT)
+			return json;
+
+		if (json.has(PaxosPacket.NodeIDKeys.BALLOT.toString())) {
+			// fix ballot string
+			String ballotString =
+					json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString());
+			Integer coordInt = this.integerMap.put(this.unstringer.valueOf(Ballot.getBallotCoordString(ballotString)));
+			assert (coordInt != null);
+			Ballot ballot =
+					new Ballot(Ballot.getBallotNumString(ballotString),
+							coordInt);
+			json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(),
+				ballot.toString());
+		}
+		else if (json.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {
+			// fix group string (JSONArray)
+			JSONArray jsonArray =
+					json.getJSONArray(PaxosPacket.NodeIDKeys.GROUP.toString());
+			for (int i = 0; i < jsonArray.length(); i++) {
+				String memberString = jsonArray.getString(i);
+				int memberInt = this.integerMap.put(this.unstringer.valueOf(memberString));
+				jsonArray.put(i, memberInt);
+			}
+		}
+		else for (PaxosPacket.NodeIDKeys key : PaxosPacket.NodeIDKeys.values()) {
+			if (json.has(key.toString())) {
+				// fix default node string
+				String nodeString = json.getString(key.toString());
+				int nodeInt = this.integerMap.put(this.unstringer.valueOf(nodeString));
+				json.put(key.toString(), nodeInt);
+			}
+		}
+		return json;
+	}
+
 
 	/************************* Testing methods below ***********************************/
 

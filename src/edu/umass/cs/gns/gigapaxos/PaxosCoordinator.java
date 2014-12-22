@@ -128,7 +128,8 @@ public class PaxosCoordinator {
 		}
 		else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
 			committedPValue = pcs.handleAcceptReplyMyBallot(members, acceptReply);
-		} else assert(false):"YIKES! Acceptor "+acceptReply.acceptor+" replied without updating its ballot";
+		} else log.warning("YIKES! Acceptor "+acceptReply.acceptor+" replied without updating its ballot:\n" +
+			acceptReply.ballot + " < " + this.pcs.getBallotStr());
 		return committedPValue!=null ? committedPValue : preemptedPValue; // both could be null too
 	}
 
@@ -156,7 +157,6 @@ public class PaxosCoordinator {
 			this.pcs.combinePValuesOntoProposals(members); // okay even for multiple threads to call in parallel
 			acceptPacketList = this.pcs.spawnCommandersForProposals(); // should be called only once, o/w conflicts possible
 			this.pcs.setCoordinatorActive(); // *****ensures this block is called exactly once
-			log.info("Coordinator " + pcs.getBallot() + " acquired PREPARE MAJORITY: About to conduct view change.");
 		} // "synchronized" in the method definition ensures that this else block is called atomically 
 
 		return (acceptPacketList);

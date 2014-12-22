@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -25,50 +26,57 @@ import edu.umass.cs.gns.util.Util;
  * @author V. Arun
  */
 public class TESTPaxosClient {
-	private static final boolean DEBUG = PaxosManager.DEBUG;
 	private static long minSleepInterval = 10;
 
 	private static final long createTime = System.currentTimeMillis();
-	private static final int RANDOM_REPLAY = (int) (Math.random() * TESTPaxosConfig.getNumGroups());
+	private static final int RANDOM_REPLAY = (int) (Math.random() * TESTPaxosConfig
+			.getNumGroups());
 
 	private static int totalNoopCount = 0;
-	
-	private static int numRequests = 0; // used only for latency 
+
+	private static int numRequests = 0; // used only for latency
 	private static long totalLatency = 0;
 	private static double movingAvgLatency = 0;
 	private static double movingAvgDeviation = 0;
 	private static int numRtxReqs = 0;
 	private static int rtxCount = 0;
-	
+
 	private static synchronized void incrTotalLatency(long ms) {
 		totalLatency += ms;
 		numRequests++;
 	}
+
 	private static synchronized void updateMovingAvgLatency(long ms) {
 		movingAvgLatency = Util.movingAverage(ms, movingAvgLatency);
 		movingAvgDeviation = Util.movingAverage(ms, movingAvgDeviation);
 	}
+
 	private static synchronized void updateLatency(long ms) {
 		incrTotalLatency(ms);
 		updateMovingAvgLatency(ms);
 	}
 
 	private static synchronized double getTimeout() {
-		return movingAvgLatency + 4*movingAvgDeviation;
+		return Math.max(movingAvgLatency + 4 * movingAvgDeviation,
+				TESTPaxosConfig.CLIENT_REQ_RTX_TIMEOUT);
 	}
 
 	private static synchronized double getAvgLatency() {
 		return totalLatency * 1.0 / numRequests;
 	}
+
 	private static synchronized void incrRtxCount() {
 		rtxCount++;
 	}
+
 	private static synchronized void incrNumRtxReqs() {
 		numRtxReqs++;
 	}
+
 	private static synchronized int getRtxCount() {
 		return rtxCount;
 	}
+
 	private static synchronized int getNumRtxReqs() {
 		return numRtxReqs;
 	}
@@ -89,7 +97,7 @@ public class TESTPaxosClient {
 	private final ConcurrentHashMap<Integer, RequestPacket> requests = new ConcurrentHashMap<Integer, RequestPacket>();
 	private final Timer timer = new Timer(); // for retransmission
 
-	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(TESTPaxosClient.class.getName()); 
+	private static Logger log = PaxosManager.getLogger();// Logger.getLogger(TESTPaxosClient.class.getName());
 
 	private synchronized int incrReplyCount() {
 		return this.replyCount++;
@@ -146,6 +154,10 @@ public class TESTPaxosClient {
 		this.timer.cancel();
 		this.niot.stop();
 	}
+	
+	synchronized boolean noOutstanding() {
+		return this.requests.isEmpty();
+	}
 
 	/******** Start of ClientPacketDemultiplexer ******************/
 	private class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer {
@@ -163,20 +175,25 @@ public class TESTPaxosClient {
 						- proposal.getCreateTime();
 				if (requests.containsKey(proposal.requestID)) {
 					client.incrReplyCount();
-					if(DEBUG) log.info("Client " + client.myID + " received response #"
-							+ client.getReplyCount() + " with latency "
-							+ latency + proposal.getDebugInfo() + " : " + msg);
+					log.log(Level.FINE,
+							"{0}{1}{2}{3}{4}{5}{6}{7}{8}",
+							new Object[] { "Client ", client.myID,
+									" received response #",
+									client.getReplyCount(), " with latency ",
+									latency, proposal.getDebugInfo(), " : ",
+									msg });
 					updateLatency(latency);
 					synchronized (client) {
 						client.notify();
 					}
 				} else {
-					if (DEBUG)
-						log.info("Client " + client.myID
-								+ " received PHANTOM response #"
-								+ client.getReplyCount() + " with latency "
-								+ latency + proposal.getDebugInfo() + " : "
-								+ msg);
+					log.log(Level.FINE,
+							"{0}{1}{2}{3}{4}{5}{6}{7}{8}",
+							new Object[] { "Client ", client.myID,
+									" received PHANTOM response #",
+									client.getReplyCount(), " with latency ",
+									latency, proposal.getDebugInfo(), " : ",
+									msg });
 				}
 				if (proposal.isNoop())
 					client.incrNoopCount();
@@ -189,8 +206,9 @@ public class TESTPaxosClient {
 			return true;
 		}
 	}
+
 	/******** End of ClientPacketDemultiplexer ******************/
-	
+
 	private class Retransmitter extends TimerTask {
 		final int id;
 		final RequestPacket req;
@@ -205,8 +223,7 @@ public class TESTPaxosClient {
 		Retransmitter(int id, RequestPacket req, double timeout) {
 			this.id = id;
 			this.req = req;
-			this.timeout = Math.max(TESTPaxosConfig.CLIENT_REQ_RTX_TIMEOUT,
-					timeout);
+			this.timeout = timeout;
 			first = false;
 		}
 
@@ -215,7 +232,11 @@ public class TESTPaxosClient {
 				// checks parent queue
 				if (requests.containsKey(req.requestID)) {
 					incrRtxCount();
-					if(first) incrNumRtxReqs();
+					if (first)
+						incrNumRtxReqs();
+					log.log(Level.INFO, "{0}{1}{2}{3}{4}{5}", new Object[] {
+							"Retransmitting request ", "" + req.requestID,
+							" to node ", id, ": ", req });
 					niot.sendToID(id, req.toJSONObject());
 					timer.schedule(new Retransmitter(id, req, timeout * 2),
 							(long) (timeout * 2));
@@ -250,20 +271,20 @@ public class TESTPaxosClient {
 
 	protected void sendRequest(int id, RequestPacket req) throws IOException,
 			JSONException {
-		if(DEBUG) log.info("Sending request to node " + id + ": " + req);
+		log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] {
+				"Sending request to node ", id, ": ", req });
 		this.requests.put(req.requestID, req);
 		this.niot.sendToID(id, req.toJSONObject());
-		if(TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX) 
-			this.timer.schedule(new Retransmitter(id, req), (long)getTimeout());
+		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
+			this.timer
+					.schedule(new Retransmitter(id, req), (long) getTimeout());
 	}
 
 	protected RequestPacket makeRequest() {
 		int reqID = ((int) (Math.random() * Integer.MAX_VALUE));
-		RequestPacket req = new RequestPacket(this.myID,
-				reqID, // only place where req count is incremented
-				"[Sample request numbered "
-						+ incrReqCount() + "]",
-				false);
+		RequestPacket req = new RequestPacket(this.myID, reqID, // only place where req count is
+																// incremented
+				"[Sample request numbered " + incrReqCount() + "]", false);
 		req.putPaxosID(TESTPaxosConfig.TEST_GUID, (short) 0);
 		return req;
 	}
@@ -284,7 +305,8 @@ public class TESTPaxosClient {
 
 	protected static TESTPaxosClient[] setupClients() {
 		System.out.println("\n\nInitiating paxos clients setup");
-		TESTPaxosClient[] clients = new TESTPaxosClient[TESTPaxosConfig.getNumClients()];
+		TESTPaxosClient[] clients = new TESTPaxosClient[TESTPaxosConfig
+				.getNumClients()];
 		for (int i = 0; i < TESTPaxosConfig.getNumClients(); i++) {
 			try {
 				clients[i] = new TESTPaxosClient(TESTPaxosConfig.TEST_CLIENT_ID
@@ -310,9 +332,9 @@ public class TESTPaxosClient {
 		for (int i = 0; i < numReqsPerClient; i++) {
 			for (int j = 0; j < TESTPaxosConfig.getNumClients(); j++) {
 				int curTotalReqs = j + i * TESTPaxosConfig.getNumClients();
-				clients[j]
-						.makeAndSendRequest("paxos"
-								+ ((RANDOM_REPLAY + curTotalReqs) % TESTPaxosConfig.getNumGroups()));
+				clients[j].makeAndSendRequest("paxos"
+						+ ((RANDOM_REPLAY + curTotalReqs) % TESTPaxosConfig
+								.getNumGroups()));
 				long accumulatedTime = System.currentTimeMillis() - initTime;
 				if ((curTotalReqs) / TESTPaxosConfig.getTotalLoad() * 1000
 						- accumulatedTime > minSleepInterval) {
@@ -334,9 +356,11 @@ public class TESTPaxosClient {
 			while (clients[i].requests.size() > 0) {
 				synchronized (clients[i]) {
 					try {
-						System.out.println(getWaiting(clients)+ 
-								"; #num_total_retransmissions = " + getRtxCount() + 
-								"; num_retransmitted_requests = " + getNumRtxReqs());
+						System.out.println(getWaiting(clients)
+								+ "; #num_total_retransmissions = "
+								+ getRtxCount()
+								+ "; num_retransmitted_requests = "
+								+ getNumRtxReqs());
 						clients[i].wait();
 					} catch (InterruptedException e) {
 						e.printStackTrace();
@@ -352,7 +376,15 @@ public class TESTPaxosClient {
 			}
 		}
 	}
-	protected static Set<RequestPacket> getMissingRequests(TESTPaxosClient[] clients) {
+
+	protected static boolean noOutstanding(
+			TESTPaxosClient[] clients) {
+		boolean noOutstanding = true;
+		for(TESTPaxosClient client : clients) noOutstanding = noOutstanding && client.noOutstanding();
+		return noOutstanding;
+	}
+	protected static Set<RequestPacket> getMissingRequests(
+			TESTPaxosClient[] clients) {
 		Set<RequestPacket> missing = new HashSet<RequestPacket>();
 		for (int i = 0; i < clients.length; i++) {
 			missing.addAll(clients[i].requests.values());
@@ -361,7 +393,7 @@ public class TESTPaxosClient {
 	}
 
 	private static String getWaiting(TESTPaxosClient[] clients) {
-		int total=0;
+		int total = 0;
 		String s = " unfinished requests: [ ";
 		for (int i = 0; i < clients.length; i++) {
 			s += "C" + i + ":" + clients[i].requests.size() + " ";
@@ -398,13 +430,11 @@ public class TESTPaxosClient {
 						+ clients[i].getReplyCount() + "\n");
 		}
 	}
-	
+
 	protected static String getAggregateOutput(int numReqs, long delay) {
 		return "\n  average_throughput = "
-				+ Util.df(numReqs * TESTPaxosConfig.getNumClients()
-						* 1000.0 / delay)
-				+ "/s"
-				+ "\n  noop_count = "
+				+ Util.df(numReqs * TESTPaxosConfig.getNumClients() * 1000.0
+						/ delay) + "/s" + "\n  noop_count = "
 				+ TESTPaxosClient.getTotalNoopCount()
 				+ "\n  average_response_time = "
 				+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms";
@@ -412,9 +442,7 @@ public class TESTPaxosClient {
 
 	public static void main(String[] args) {
 		try {
-			if(args.length>0) TESTPaxosConfig.setDistribtedTest(args[0]); 
-			else TESTPaxosConfig.setDistribtedTest(TESTPaxosConfig.SINGLE_NODE_CONFIG_DIR);;
-
+			TESTPaxosConfig.setDistribtedTest(args.length > 0 ? args[0] : null);
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
 			int numReqs = TESTPaxosConfig.getNumRequestsPerClient();
@@ -425,12 +453,12 @@ public class TESTPaxosClient {
 			waitForResponses(clients);
 			long t2 = System.currentTimeMillis();
 			System.out.println("\n[run1]"
-					+ getAggregateOutput(numReqs, t2-t1));
+					+ getAggregateOutput(numReqs, t2 - t1));
 			// end first run
 
 			resetLatencyComputation();
 			Thread.sleep(1000);
-			
+
 			// begin second run
 			t1 = System.currentTimeMillis();
 			sendTestRequests(numReqs, clients);
@@ -438,9 +466,9 @@ public class TESTPaxosClient {
 			t2 = System.currentTimeMillis();
 			printOutput(clients); // printed only after second
 			System.out.println("\n[run2] "
-							+ getAggregateOutput(numReqs, t2-t1));
+					+ getAggregateOutput(numReqs, t2 - t1));
 			// end second run
-			
+
 			for (TESTPaxosClient client : clients) {
 				client.close();
 			}

@@ -17,48 +17,43 @@ public class PValuePacket extends ProposalPacket {
 	public final Ballot ballot;
 	
 	private boolean recovery;
-	private int majorityCommittedSlot; // for garbage collection, similar to that in AcceptPacket
-	//private int decisionIssuer=-1; // issuer of the decision that in general may be different from the ballot coordinator
+	private int medianCheckpointedSlot; // for garbage collection, similar to that in AcceptPacket
 	
 	public PValuePacket(Ballot b, ProposalPacket p) {
     	super(p);
 		this.ballot = b;
-		this.majorityCommittedSlot=-1;
+		this.medianCheckpointedSlot=-1;
 		// packetType inherited, not assigned until DECISION or PREEMPTED
-		//this.decisionIssuer = b.coordinatorID;
 		this.recovery = false; // true only when created from json
 	}
 	// Meant for super calling by inheritors
 	protected PValuePacket(PValuePacket pvalue) {
 		super(pvalue);
 		this.ballot = pvalue.ballot;
-		this.majorityCommittedSlot = pvalue.majorityCommittedSlot;
+		this.medianCheckpointedSlot = pvalue.medianCheckpointedSlot;
 		this.packetType = pvalue.getType();
 		this.recovery = false; // true only when created from json
-		//this.decisionIssuer = pvalue.decisionIssuer;
 	}
 
 	public PValuePacket(JSONObject json) throws JSONException{
 		super(json);
 		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
-		this.majorityCommittedSlot = json.getInt(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString());
+		this.medianCheckpointedSlot = json.getInt(PaxosPacket.Keys.MEDIAN_CHECKPOINTED_SLOT.toString());
 		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		//this.decisionIssuer = json.getInt(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString());
 	}
 	
 	public PValuePacket makeDecision(int mcSlot, int issuer) {
 		this.packetType = PaxosPacketType.DECISION;
-		this.majorityCommittedSlot = mcSlot;
-		//this.decisionIssuer = issuer;
+		this.medianCheckpointedSlot = mcSlot;
 		return new PValuePacket(this); // can't modify recovery, so new
 	}
-	//public int getDecisionIssuer() {return this.decisionIssuer;}
 	public PValuePacket preempt() {
 		this.packetType = PaxosPacketType.PREEMPTED; // preemption does not change final fields, unlike getDecisionPacket
 		return this;
 	}
-	public int getMajorityCommittedSlot() {return this.majorityCommittedSlot;}
+	public int getMedianCheckpointedSlot() {return this.medianCheckpointedSlot;}
+	protected void setMedianCheckpointedSlot(int slot) {this.medianCheckpointedSlot = slot;}
 	public boolean isRecovery() {
 		return this.recovery;
 	}
@@ -76,7 +71,7 @@ public class PValuePacket extends ProposalPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
 		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
-		json.put(PaxosPacket.Keys.MEDIAN_COMMITTED_SLOT.toString(), this.majorityCommittedSlot);
+		json.put(PaxosPacket.Keys.MEDIAN_CHECKPOINTED_SLOT.toString(), this.medianCheckpointedSlot);
 		json.put(PaxosPacket.Keys.RECOVERY.toString(), this.recovery);
 		//json.put(PaxosPacket.NodeIDKeys.DECISION_ISSUER.toString(), this.decisionIssuer);
 		return json;

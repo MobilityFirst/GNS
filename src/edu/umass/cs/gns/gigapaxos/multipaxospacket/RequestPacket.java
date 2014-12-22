@@ -15,7 +15,9 @@ public class RequestPacket extends PaxosPacket {
 	 * here as opposed to PaxosPacket.
 	 */
 	public static enum Keys {
-		NO_OP, IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT
+		NO_OP, IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, 
+		FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, 
+		CLIENT_PORT, RETURN_VALUE
 	}
 
 	private static final long MAX_AGREEMENT_TIME = 30000;
@@ -30,6 +32,7 @@ public class RequestPacket extends PaxosPacket {
 	private int entryReplica = -1;
 	private String clientAddress = null;
 	private int clientPort = -1;
+	private boolean returnRequestValue = false;
 
 	// needed to stop ping-ponging under coordinator confusion
 	private int forwardCount = 0;
@@ -39,7 +42,6 @@ public class RequestPacket extends PaxosPacket {
 	// preserved across forwarding by nodes, so not final
 	private long createTime = System.currentTimeMillis(); 
 	private long receiptTime = System.currentTimeMillis();
-	//private boolean replyToClient = false;
 	private String debugInfo = "";
 
 	public RequestPacket(int clientID, String value, boolean stop) {
@@ -64,6 +66,7 @@ public class RequestPacket extends PaxosPacket {
 		this.entryReplica = req.entryReplica;
 		this.clientAddress = req.clientAddress;
 		this.clientPort = req.clientPort;
+		this.returnRequestValue = req.returnRequestValue;
 		this.packetType = PaxosPacketType.REQUEST;
 		// debug/testing fields below
 		this.createTime = req.createTime;
@@ -80,7 +83,13 @@ public class RequestPacket extends PaxosPacket {
 		noop.clientAddress = this.clientAddress;
 		noop.clientPort = this.clientPort;
 		noop.createTime = this.createTime;
+		noop.returnRequestValue = this.returnRequestValue;
 		return noop;
+	}
+	
+	public RequestPacket setReturnRequestValue() {
+		this.returnRequestValue = true;
+		return this;
 	}
 
 	public boolean isNoop() {
@@ -182,6 +191,7 @@ public class RequestPacket extends PaxosPacket {
 				json.getInt(Keys.CLIENT_PORT.toString()) : JSONNIOTransport
 				.getSenderPort(json));
 		this.entryReplica = json.getInt(PaxosPacket.NodeIDKeys.ENTRY_REPLICA.toString());
+		this.returnRequestValue = json.getBoolean(Keys.RETURN_VALUE.toString());
 	}
 
 	@Override
@@ -203,6 +213,7 @@ public class RequestPacket extends PaxosPacket {
 			json.put(Keys.CLIENT_ADDR.toString(), this.clientAddress);
 		if (this.clientPort >= 0)
 			json.put(Keys.CLIENT_PORT.toString(), this.clientPort);
+		json.put(Keys.RETURN_VALUE.toString(), this.returnRequestValue);
 		return json;
 	}
 	
@@ -221,15 +232,6 @@ public class RequestPacket extends PaxosPacket {
 		return System.currentTimeMillis() - this.receiptTime > MAX_AGREEMENT_TIME;
 	}
 
-	/*
-	public void setReplyToClient(boolean b) {
-		this.replyToClient = b;
-	}
-
-	public boolean getReplyToClient() {
-		return this.replyToClient;
-	}
-	*/
 
 	/* For testing */
 	public static int getRequestID(String req) {
@@ -261,6 +263,10 @@ public class RequestPacket extends PaxosPacket {
 
 	public long getReceiptTime() {
 		return this.receiptTime;
+	}
+	
+	public String toString() {
+		return this.returnRequestValue ? this.requestValue : super.toString();
 	}
 
 	public static void main(String[] args) {

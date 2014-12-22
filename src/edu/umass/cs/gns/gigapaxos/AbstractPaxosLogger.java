@@ -15,6 +15,9 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PreparePacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.StatePacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.gigapaxos.paxosutil.ConsumerBatchTask;
+import edu.umass.cs.gns.gigapaxos.paxosutil.ConsumerTask;
+import edu.umass.cs.gns.gigapaxos.paxosutil.GCTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
@@ -34,6 +37,8 @@ import edu.umass.cs.gns.util.DelayProfiler;
  * persistent logger.
  */
 public abstract class AbstractPaxosLogger {
+	protected static final boolean BATCH_GC_ENABLED = false;
+	
 	protected final int myID; // protected coz the pluggable logger needs it
 	protected final String logDirectory; // protected coz the pluggable logger needs it
 
@@ -51,9 +56,9 @@ public abstract class AbstractPaxosLogger {
 
 	private static ArrayList<AbstractPaxosLogger> instances = new ArrayList<AbstractPaxosLogger>();
 
-	private final BatchLogger batchLogger;
+	private final BatchedLogger batchLogger;
 	private final Messenger<?> messenger;
-	private final CCheckpointer collapsingCheckpointer;
+	private final Checkpointer collapsingCheckpointer;
 
 	private static Logger log = PaxosManager.getLogger();// Logger.getLogger(AbstractPaxosLogger.class.getName());
 
@@ -61,10 +66,8 @@ public abstract class AbstractPaxosLogger {
 		this.myID = id;
 		logDirectory = (logDir == null ? "." : logDir) + "/";
 		this.messenger = msgr;
-		this.batchLogger = new BatchLogger(this, this.messenger);
-		(new Thread(this.batchLogger)).start();
-		this.collapsingCheckpointer = new CCheckpointer();
-		(new Thread(this.collapsingCheckpointer)).start();
+		(this.batchLogger = new BatchedLogger(new ArrayList<LogMessagingTask>(), this, this.messenger)).start();;
+		(this.collapsingCheckpointer = new Checkpointer(new HashMap<String,CheckpointTask>())).start();
 		addLogger(this);
 	}
 
@@ -73,19 +76,20 @@ public abstract class AbstractPaxosLogger {
 	public static final void logAndMessage(AbstractPaxosLogger logger,
 			LogMessagingTask logMTask, Messenger<?> messenger)
 			throws JSONException, IOException {
+		// don't accept new work if about to close
 		if (logger.isAboutToClose())
 			return;
 		assert (logMTask != null);
-		if (logMTask.logMsg != null) {
-			messenger.send(logMTask); // no logging, just send right away
+		// if no log message, just send right away
+		if (logMTask.logMsg == null) {
+			messenger.send(logMTask); 
 			return;
 		}
 		// else spawn a log-and-message task
+		PaxosPacket packet = logMTask.logMsg;
 		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}",
 				new Object[] { "Node ", logger.myID, " logging ",
-						(logMTask.logMsg.getType().getLabel()), ": ",
-						logMTask.logMsg.toString() });
-		PaxosPacket packet = logMTask.logMsg;
+				(packet.getType()), ": ",packet});
 		assert (packet.getPaxosID() != null) : ("Null paxosID in " + packet);
 		logger.batchLogger.enqueue(logMTask); // batchLogger will also send
 	}
@@ -142,7 +146,7 @@ public abstract class AbstractPaxosLogger {
 			// must continue, exceptions, warts, and all
 		}
 	}
-
+	
 	/*
 	 * Needed in order to first remove the (at most one) pending checkpoint and then invoke the
 	 * child's remove method.
@@ -252,6 +256,8 @@ public abstract class AbstractPaxosLogger {
 
 	public abstract ArrayList<PValuePacket> getLoggedDecisions(String paxosID,
 			int minSlot, int maxSlot) throws JSONException;
+	
+	public abstract boolean deleteBatch(GCTask[] gcTasks);
 
 	// pausing methods
 	protected abstract boolean pause(String paxosID, String serialized);
@@ -286,130 +292,63 @@ public abstract class AbstractPaxosLogger {
 
 	/*********************************** Private utility classes below ****************************/
 	// Makes sure that message logging batches as much as possible.
-	private class BatchLogger implements Runnable {
+	
+	private class BatchedLogger extends ConsumerBatchTask<LogMessagingTask> {
+
 		private final AbstractPaxosLogger logger;
 		private final Messenger<?> messenger;
-		private final ArrayList<LogMessagingTask> logMessages = new ArrayList<LogMessagingTask>(); // sync
-																									// object
-		private boolean processing = false;
-		private boolean stopped = false;
+		private ArrayList<LogMessagingTask> logMessages = new ArrayList<LogMessagingTask>();
 
-		BatchLogger(AbstractPaxosLogger lgr, Messenger<?> msgr) {
-			this.logger = lgr;
-			this.messenger = msgr;
+		BatchedLogger(ArrayList<LogMessagingTask> lock,
+				AbstractPaxosLogger logger, Messenger<?> messenger) {
+			super(lock, new LogMessagingTask[0]);
+			this.logMessages = lock;
+			this.logger = logger;
+			this.messenger = messenger;
 		}
 
-		public void run() {
-			while (true) {
-				while (this.isEmpty() && !isStopped())
-					this.logMessagesWait();
-				assert (!isEmpty() || isStopped());
-
-				if (isEmpty() && isStopped())
-					break;
-
-				this.setProcessing(true);
-				LogMessagingTask[] lmTasks = this.dequeueAll();
-				PaxosPacket[] packets = new PaxosPacket[lmTasks.length];
-				for (int i = 0; i < lmTasks.length; i++) {
-					packets[i] = lmTasks[i].logMsg;
-				}
-
-				long t1 = System.currentTimeMillis();
-				this.logger.logBatch(packets); // the main point of this class
-				this.setProcessing(false);
-				DelayProfiler.update("log", t1, packets.length);
-
-				this.logMessagesNotify();
-
-				for (LogMessagingTask lmTask : lmTasks) {
-					try {
-						this.messenger.send(lmTask);
-					} catch (JSONException je) {
-						log.severe("Logged message but could not send response: "
-								+ lmTask);
-						je.printStackTrace();
-					} catch (IOException ioe) {
-						log.severe("Logged message but could not send response: "
-								+ lmTask);
-						ioe.printStackTrace();
-					}
-				}
-			}
-			log.log(Level.FINE, "{0}{1}{2}", new Object[] {"batchLogger", myID, " thread stopping"});
+		@Override
+		public void enqueueImpl(LogMessagingTask task) {
+			this.logMessages.add(task);
 		}
 
-		private void logMessagesWait() {
-			synchronized (this.logMessages) {
+		@Override
+		public LogMessagingTask dequeueImpl() {
+			throw new RuntimeException(this.getClass().getName()
+					+ ".dequeueImpl() should not have been called");
+		}
+
+		@Override
+		public void process(LogMessagingTask task) {
+			throw new RuntimeException(this.getClass().getName()
+					+ ".process() should not have been called");
+		}
+
+		@Override
+		public void process(LogMessagingTask[] lmTasks) {
+			PaxosPacket[] packets = new PaxosPacket[lmTasks.length];
+			for (int i = 0; i < lmTasks.length; i++)
+				packets[i] = lmTasks[i].logMsg;
+
+			// first log
+			long t1 = System.currentTimeMillis();
+			this.logger.logBatch(packets); 
+			this.setProcessing(false);
+			DelayProfiler.update("log", t1, packets.length);
+
+			// then message
+			for (LogMessagingTask lmTask : lmTasks) {
 				try {
-					this.logMessages.wait();
-				} catch (InterruptedException e) {
+					this.messenger.send(lmTask); 
+				} catch (JSONException | IOException e) {
+					log.severe("Logged message but could not send response: "
+							+ lmTask);
 					e.printStackTrace();
 				}
 			}
 		}
-
-		private void logMessagesNotify() {
-			synchronized (this.logMessages) {
-				this.logMessages.notifyAll();
-			}
-		}
-
-		private void enqueue(LogMessagingTask lmTask) {
-			synchronized (this.logMessages) {
-				this.logMessages.add(lmTask);
-				this.logMessages.notify();
-			}
-
-		}
-
-		// There is no dequeue(), just dequeueAll()
-		private LogMessagingTask[] dequeueAll() {
-			synchronized (this.logMessages) {
-				LogMessagingTask[] lmTasks = new LogMessagingTask[this.logMessages
-						.size()];
-				this.logMessages.toArray(lmTasks);
-				this.logMessages.clear();
-				return lmTasks;
-			}
-		}
-
-		private boolean isEmpty() {
-			synchronized (this.logMessages) {
-				return this.logMessages.isEmpty();
-			}
-		}
-
-		private void waitToFinish() {
-			while (!this.isEmpty() || this.getProcessing())
-				this.logMessagesWait();
-		}
-
-		private boolean getProcessing() {
-			synchronized (this.logMessages) {
-				return this.processing;
-			}
-		}
-
-		private void setProcessing(boolean b) {
-			synchronized (this.logMessages) {
-				this.processing = b;
-			}
-		}
-
-		private void stop() {
-			synchronized (this.logMessages) {
-				this.stopped = true;
-				this.logMessages.notify();
-			}
-		}
-
-		private boolean isStopped() {
-			synchronized (this.logMessages) {
-				return this.stopped;
-			}
-		}
 	}
+	
 
 	// Just a convenience container for a single checkpoint task
 	private class CheckpointTask {
@@ -440,119 +379,86 @@ public abstract class AbstractPaxosLogger {
 					state, gcSlot);
 		}
 	}
-
-	private class CCheckpointer implements Runnable {
+	
+	private class Checkpointer extends ConsumerTask<CheckpointTask> {
 		// used for synchronizing.
-		private final HashMap<String, CheckpointTask> checkpoints = new HashMap<String, CheckpointTask>(); 
-		private boolean processing = false;
-		private boolean stopped = false;
-
-		private void enqueue(CheckpointTask newCP) {
-			synchronized (checkpoints) {
-				CheckpointTask oldCP = checkpoints.get(newCP.paxosID);
-				if (oldCP == null || oldCP.slot < newCP.slot) {
-					this.checkpoints.put(newCP.paxosID, newCP);
-					this.checkpoints.notify();
-				}
+		private final HashMap<String, CheckpointTask> checkpoints; 
+		Checkpointer(HashMap<String, CheckpointTask> lock) {
+			super(lock);
+			this.checkpoints = lock;
+		}
+		@Override
+		public void enqueueImpl(CheckpointTask newCP) {
+			CheckpointTask oldCP = checkpoints.get(newCP.paxosID);
+			if (oldCP == null || oldCP.slot < newCP.slot) {
+				this.checkpoints.put(newCP.paxosID, newCP);
 			}
 		}
-
-		/*
-		 * A dequeue is explicitly needed to remove any pending checkpoint when a paxos instance is
-		 * killed. Otherwise, because checkpointing is an asynchronous operation, a checkpoint can
-		 * get created after a paxos instance has been stopped and all other state has been removed.
-		 */
+		@Override
+		public CheckpointTask dequeueImpl() {
+			CheckpointTask cp = null;
+			for (Iterator<CheckpointTask> cpIter = checkpoints.values()
+					.iterator(); cpIter.hasNext();) {
+				cp = cpIter.next();
+				cpIter.remove();
+				break;
+			}
+			return cp;
+		}
+		@Override
+		public void process(CheckpointTask task) {
+			assert(task!=null);
+			task.checkpoint();			
+		}
+		
 		private void dequeue(String paxosID) {
 			synchronized (checkpoints) {
-				checkpoints.remove(paxosID);
+				this.checkpoints.remove(paxosID);
 			}
 		}
-
-		private CheckpointTask dequeue() {
-			synchronized (checkpoints) {
-				CheckpointTask cp = null;
-				for (Iterator<CheckpointTask> cpIter = checkpoints.values()
-						.iterator(); cpIter.hasNext();) {
-					cp = cpIter.next();
-					cpIter.remove();
-					break;
-				}
-				return cp;
-			}
-		}
-
-		private boolean isEmpty() {
-			synchronized (this.checkpoints) {
-				return this.checkpoints.isEmpty();
-			}
-		}
-
-		private void checkpointsWait() {
-			synchronized (this.checkpoints) {
-				try {
-					this.checkpoints.wait();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		private void checkpointsNotify() {
-			synchronized (this.checkpoints) {
-				this.checkpoints.notifyAll();
-			}
-		}
-
-		private void waitToFinish() {
-			while (!this.isEmpty() || this.getProcessing())
-				this.checkpointsWait();
-		}
-
-		private boolean getProcessing() {
-			synchronized (this.checkpoints) {
-				return this.processing;
-			}
-		}
-
-		private void setProcessing(boolean b) {
-			synchronized (this.checkpoints) {
-				this.processing = b;
-			}
-		}
-
-		public void run() {
-			while (true) {
-				while (this.isEmpty() && !isStopped())
-					this.checkpointsWait();
-
-				assert (!isEmpty() || isStopped());
-				if (this.checkpoints.isEmpty() && isStopped())
-					break;
-
-				this.setProcessing(true);
-				CheckpointTask checkpointTask = this.dequeue();
-				assert (checkpointTask != null);
-				checkpointTask.checkpoint();
-				this.setProcessing(false);
-				this.checkpointsNotify();
-			}
-			log.log(Level.FINE, "{0}{1}{2}", new Object[] {"CCheckpointer", myID, " thread stopping"});
-		}
-
-		public void stop() {
-			synchronized (this.checkpoints) {
-				this.stopped = true;
-				this.checkpoints.notify();
-			}
-		}
-
-		private boolean isStopped() {
-			synchronized (this.checkpoints) {
-				return this.stopped;
-			}
-		}
+		
 	}
 
+	// FIXME: Class not used and will be deprecated
+	protected class BatchedGarbageCollector extends ConsumerBatchTask<GCTask> {
+		// used for synchronizing.
+		private final HashMap<String, GCTask> gcTasks; 
+
+		public BatchedGarbageCollector(HashMap<String, GCTask> lock) {
+			super(lock, new GCTask[0]);
+			this.gcTasks = lock;
+		}
+
+		@Override
+		public void enqueueImpl(GCTask newGCTask) {
+			GCTask oldGCTask = gcTasks.get(newGCTask.paxosID);
+			if (oldGCTask == null || oldGCTask.gcSlot - newGCTask.gcSlot < 0) {
+				this.gcTasks.put(newGCTask.paxosID, newGCTask);
+				this.gcTasks.notify();
+			}			
+		}
+
+		@Override
+		public GCTask dequeueImpl() {
+			throw new RuntimeException(this.getClass().getName()
+					+ ".dequeueImpl() should not have been called");
+		}
+
+		@Override
+		public void process(GCTask task) {
+			throw new RuntimeException(this.getClass().getName()
+					+ ".process() should not have been called");
+		}
+
+		@Override
+		public void process(GCTask[] batch) {
+			long t1 = System.currentTimeMillis();
+			assert (batch != null);
+			deleteBatch(batch);
+			DelayProfiler.update("delete", t1, batch.length);
+		}
+	}
+	
 	/******************************** End of private utility classes ****************************/
 
 	public static void main(String[] args) {

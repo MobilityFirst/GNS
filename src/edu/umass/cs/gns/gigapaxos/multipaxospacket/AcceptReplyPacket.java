@@ -14,7 +14,7 @@ public final class AcceptReplyPacket extends PaxosPacket {
     public final int acceptor; // sender nodeID
     public final Ballot ballot;
     public final int slotNumber;
-    public final int maxExecutedSlot;
+    public final int maxCheckpointedSlot;
     
     private int requestID = 0; // used only for debugging
 
@@ -24,7 +24,7 @@ public final class AcceptReplyPacket extends PaxosPacket {
         this.acceptor = nodeID;
         this.ballot = ballot;
         this.slotNumber = slotNumber;
-        this.maxExecutedSlot = committedSlot;
+        this.maxCheckpointedSlot = committedSlot;
     }    
     public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber, int committedSlot, AcceptPacket accept) {
     	this(nodeID, ballot, slotNumber, committedSlot);
@@ -38,7 +38,7 @@ public final class AcceptReplyPacket extends PaxosPacket {
         this.acceptor = jsonObject.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
         this.ballot = new Ballot(jsonObject.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
         this.slotNumber = jsonObject.getInt(PaxosPacket.Keys.SLOT.toString());
-        this.maxExecutedSlot = jsonObject.getInt(PaxosPacket.Keys.COMMITTED_SLOT.toString());
+        this.maxCheckpointedSlot = jsonObject.getInt(PaxosPacket.Keys.MAX_CHECKPOINTED_SLOT.toString());
         this.requestID = jsonObject.getInt(RequestPacket.Keys.REQUEST_ID.toString());
     }
     
@@ -56,7 +56,7 @@ public final class AcceptReplyPacket extends PaxosPacket {
         json.put(PaxosPacket.NodeIDKeys.SENDER_NODE.toString(), acceptor);
         json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
         json.put(PaxosPacket.Keys.SLOT.toString(), slotNumber);
-        json.put(PaxosPacket.Keys.COMMITTED_SLOT.toString(), this.maxExecutedSlot);
+        json.put(PaxosPacket.Keys.MAX_CHECKPOINTED_SLOT.toString(), this.maxCheckpointedSlot);
         json.put(RequestPacket.Keys.REQUEST_ID.toString(), this.requestID);
         return json;
     }

@@ -10,7 +10,7 @@ repository and compile it using "ant" in the top-level directory so as to create
 
 Run the following command: 
 
-$ java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.gigapaxos.TESTPaxosMain 2>/tmp/run1
+$ java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosMain 2>/tmp/run1
 
 The above command will try to create a sub-directory called "paxos_logs" from wherever it
 is run, so you need to have write permissions in that directory. Running it again will 
@@ -25,39 +25,33 @@ throws exceptions on the console, it has likely failed.
  
 (2) Testing gigapaxos in a distributed setting
 
-A distributed test requires two or more machines to run servers and clients. The 4-node 
-example described below is currently hard-coded in the package, but should make it clear 
-how to run it in other settings with different numbers of client and server machines.
+A distributed test requires two or more machines to run servers and clients. The servers 
+need to be specified in a config file as exemplified below. 
 
-In this example, the servers will run on the following three machines that are respectively
-numbered 100, 101, and 102.
- date.cs.umass.edu
- plum.cs.umass.edu
- pear.cs.umass.edu
-The clients will all run on the following machine numbered 200 onwards.
- fig.cs.umass.edu
+100 date.cs.umass.edu
+101 plum.cs.umass.edu
+102 pear.cs.umass.edu
+
+The clients can run on any machine and do not have to be specified in the config file. 
+gigapaxos expects to find the config file in a file called "testing_servers.conf" in
+the directory TESTPaxosConfig.DISTRIBUTED_CONFIG_DIR.
+The name and path of the config file can be specified in TESTPaxosConfig.testing_servers.conf 
+and TESTPaxosConfig.DISTRIBUTED_CONFIG_DIR respectively. Other testing parameters 
  
 The servers must be started first in any order as follows:
 
-[date$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.gigapaxos.TESTPaxosNode 100 2>/tmp/run1
-[plum$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.gigapaxos.TESTPaxosNode 101 2>/tmp/run1
-[pear$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.gigapaxos.TESTPaxosNode 102 2>/tmp/run1
+[date$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosNode 100 2>/tmp/run1
+[plum$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosNode 101 2>/tmp/run1
+[pear$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosNode 102 2>/tmp/run1
 
 The client must be started after at least two of the above servers are up. A server is
 up after it has stopped printing console output for more than a few seconds. The clients
 are started as follows:
 
-[fig$] java -ea -Xms1024M -cp /Users/arun/GNS/dist/GNS.jar edu.umass.cs.gns.gigapaxos.TESTPaxosClient 200 2>/tmp/run1
+[fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.TESTPaxosClient 2>/tmp/run1
 
 If the test is successful, the console output should print a sequence of "SUCCESS" just as 
 in the single machine test.
-
-The names of the servers and client above are currently hardcoded in TESTPaxosConfig.java
-in the methods setDistributedServers() and setDistributedClients() respectively. It should
-be fairly straightforward at this point to change the set of server or client machines.
-
-FIXME: Take the list of server client machines from a config file, and write a script
-to automate the distributed testing.
 
 (3) Writing a simple application using gigapaxos
 

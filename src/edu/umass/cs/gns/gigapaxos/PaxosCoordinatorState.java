@@ -282,6 +282,12 @@ public class PaxosCoordinatorState  {
 		log.log(Level.FINEST, "{0}{1}", new Object[]{"Waitfor = " , waitforMyBallot});
 		if(this.waitforMyBallot.heardFromMajority()) {
 			acceptedByMajority = true;
+			log.log(Level.INFO, "{0}{1}{2}{3}{4}{5}", new Object[] {prepareReply.getPaxosID(), 
+					" coordinator ", 
+					Ballot.getBallotString(myBallotNum, myBallotCoord), 
+					" acquired PREPARE majority and about to conduct view change;", 
+					" accepted_pvalues_min_slots = ", 
+					Util.arrayOfIntToString(this.nodeSlotNumbers)});
 		}
 		return acceptedByMajority;
 	}
@@ -453,11 +459,16 @@ public class PaxosCoordinatorState  {
 		 */
 		if(pstate!=null && ((waitfor=pstate.waitfor) != null)) { 
 			waitfor.updateHeardFrom(acceptReply.acceptor);
-			log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {"Node ", this.myBallotCoord, " updated waitfor to: ", waitfor, " for ", pstate.pValuePacket});
+			log.log(Level.FINEST, "{0}{1}{2}{3}{4}{5}", new Object[] {"Node ", 
+					this.myBallotCoord, " updated waitfor to: ", waitfor, 
+					" for ", pstate.pValuePacket});
 			if(waitfor.heardFromMajority()) {
 				// phase2b success
 				acceptedByMajority=true;
 				decision = (pstate.pValuePacket.makeDecision(getMajorityCommittedSlot(), this.myBallotCoord));
+				log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[]{"Node " , 
+						this.myBallotCoord , " decided for slot ", decision.slot, 
+						": ", decision});
 				assert(!decision.isRecovery());
 				this.myProposals.remove(decision.slot);
 			} else 	pstate.pValuePacket.addDebugInfo("r");
@@ -566,7 +577,7 @@ public class PaxosCoordinatorState  {
 
 	/* Record the acceptor GC slot number specified in the prepare reply. Acceptors remove
 	 * accepted proposals at or below the GC slot number, i.e., the maximum slot number that
-	 * has been cumulatively committed by a majority of replicas.
+	 * has been cumulatively executed by a majority of replicas.
 	 */
 	private synchronized void recordSlotNumber(int[] members, PrepareReplyPacket preply) {
 		assert(this.nodeSlotNumbers!=null);
@@ -574,7 +585,7 @@ public class PaxosCoordinatorState  {
 		for(int i=0; i<members.length; i++) {
 			if(members[i] == preply.acceptor) {
 				if(this.nodeSlotNumbers[i] < preply.getMinSlot()) {
-					this.nodeSlotNumbers[i] = preply.getMinSlot(); // starting slot is GCSlot+1
+					this.nodeSlotNumbers[i] = preply.getMinSlot(); 
 					updated = true;
 				}
 			}
@@ -591,8 +602,8 @@ public class PaxosCoordinatorState  {
 		boolean updated = false;
 		for(int i=0; i<members.length; i++) {
 			if(members[i] == acceptReply.acceptor) {
-				if(this.nodeSlotNumbers[i] < acceptReply.maxExecutedSlot) {
-					this.nodeSlotNumbers[i] = acceptReply.maxExecutedSlot;
+				if(this.nodeSlotNumbers[i] < acceptReply.maxCheckpointedSlot) {
+					this.nodeSlotNumbers[i] = acceptReply.maxCheckpointedSlot;
 					updated = true;
 				}
 			}

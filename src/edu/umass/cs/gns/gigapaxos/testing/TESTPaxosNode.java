@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.gigapaxos.testing;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
@@ -24,19 +25,20 @@ public class TESTPaxosNode {
 	// A server must have an id
 	TESTPaxosNode(int id) throws IOException {
 		this.myID = id;
-		app = new TESTPaxosReplicable();
-		pm = startPaxosManager(id, app);
+		pm = startPaxosManagerAndApp(id);
 		assert (pm != null);
 	}
 
-	public PaxosManager<Integer> startPaxosManager(int id,
-			TESTPaxosReplicable app) {
+	private PaxosManager<Integer> startPaxosManagerAndApp(int id) {
 		try {
+			// shared between app and paxos manager only for testing
+			JSONNIOTransport<Integer> niot = null;
 			this.pm = new PaxosManager<Integer>(id,
 					TESTPaxosConfig.getNodeConfig(),
-					app.setNIOTransport(new JSONNIOTransport<Integer>(id,
-							TESTPaxosConfig.getNodeConfig(),
-							new PacketDemultiplexerDefault(), true)), app, null);
+					(niot = new JSONNIOTransport<Integer>(id, TESTPaxosConfig
+							.getNodeConfig(), new PacketDemultiplexerDefault(),
+							true)),
+					(this.app = new TESTPaxosReplicable(niot)), null);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -86,6 +88,9 @@ public class TESTPaxosNode {
 					if (!created)
 						System.out
 								.println(":  not created (probably coz it is pre-existing)");
+					else
+						System.out.println("Created group " + groupID
+								+ " with members " + group);
 				}
 			}
 		}
@@ -113,23 +118,33 @@ public class TESTPaxosNode {
 		}
 	}
 
+	private static int processArgs(String[] args) {
+		// first arg is always node ID
+		int myID = -1;
+		try {
+			myID = (args != null && args.length > 0 ? Integer.parseInt(args[0])
+					: -1);
+		} catch (NumberFormatException nfe) {
+		}
+		assert (myID != -1) : "Need an integer node ID as the first argument";
+
+		// args[1] or beyond other than "-c" will be interpreted as confDir
+		TESTPaxosConfig.setDistribtedTest(TESTPaxosConfig.getConfDirArg(Arrays
+				.copyOfRange(args, 1, args.length)));
+
+		// if -c is in args
+		TESTPaxosConfig.setCleanDB(args);
+
+		return myID;
+	}
+
 	public static void main(String[] args) {
 		try {
-			int myID = (args != null && args.length > 0 ? Integer
-					.parseInt(args[0]) : -1);
-			assert (myID != -1) : "Need a node ID argument";
-			if (args.length > 1)
-				TESTPaxosConfig.setDistribtedTest(args[1]);
-			else
-				TESTPaxosConfig.setDistribtedTest();
-
-			int numGroups = TESTPaxosConfig.getNumGroups();
-			if (args != null && args.length > 1)
-				numGroups = Integer.parseInt(args[1]);
-
+			int myID = processArgs(args);
 			TESTPaxosNode me = new TESTPaxosNode(myID);
 
 			// Creating default groups
+			int numGroups = TESTPaxosConfig.getNumGroups();
 			System.out
 					.println("Creating "
 							+ TESTPaxosConfig.PRE_CONFIGURED_GROUPS

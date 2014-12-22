@@ -48,15 +48,15 @@ public class TESTPaxosReplicable implements Replicable {
 			 * PacketDemultiplexer
 			 */
 			setNIOTransport(nio);
+			AllApps.addApp(this);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	public TESTPaxosReplicable() {
-		// app uses nio only to send, not receive, so it doesn't care to set a
-		// PacketDemultiplexer
-		AllApps.addApp(this);
+	// private because nio is necessary for testing 
+	private TESTPaxosReplicable() {
+		// app uses nio only to send, not receive, so no PacketDemultiplexer
 		try {
 			md = MessageDigest.getInstance("SHA");
 		} catch (NoSuchAlgorithmException e) {
@@ -109,14 +109,13 @@ public class TESTPaxosReplicable implements Replicable {
 			 * increment seqnum (to the next expected seqnum and requestPacket.slot)
 			 */
 			state.committed.put(state.seqnum++, state.value);
-			allState.put(paxosID, state); // needed in case we initialized state
-											// above
+			allState.put(paxosID, state); // needed if we initialized state above
 			executed = true;
 			state.numExecuted++;
 
-			if (TESTPaxosConfig.ASSERT_RSM_INVARIANT)
+			if (TESTPaxosConfig.shouldAssertRSMInvariant())
 				assert (RSMInvariant(requestPacket.getPaxosID(),
-						state.seqnum - 1));
+						state.seqnum - 1)) : reqJson;
 			state.committed.remove(state.seqnum - MAX_STORED_REQUESTS); // GC
 
 			// testing and logging below
@@ -245,8 +244,9 @@ public class TESTPaxosReplicable implements Replicable {
 			state1 = app1.allState.get(paxosID).committed.get(seqnum);
 		if (app2.allState.containsKey(paxosID))
 			state2 = app2.allState.get(paxosID).committed.get(seqnum);
-		assert (state1 == null || state2 == null || state1.equals(state2)) : paxosID
-				+ ":" + seqnum + ": " + state1 + " != " + state2;
+		assert (state1 == null || state2 == null || state1.equals(state2)) : 
+			app1.getMyID() + ":" + paxosID + ":" + seqnum + ": " + state1 + " != " 
+			+ app2.getMyID() + ":" + paxosID + ":" + seqnum + ": " + state2;
 		return (state1 == null || state2 == null || state1.equals(state2));
 	}
 
@@ -282,16 +282,18 @@ public class TESTPaxosReplicable implements Replicable {
 
 	// AllApps below is for testing
 	public static class AllApps {
-		private static Set<TESTPaxosReplicable> appMap = new HashSet<TESTPaxosReplicable>();
+		//private static Set<TESTPaxosReplicable> appMap = new HashSet<TESTPaxosReplicable>();
+		private static HashMap<Integer, TESTPaxosReplicable> appMap = new HashMap<Integer, TESTPaxosReplicable>();
 
 		private synchronized static void addApp(TESTPaxosReplicable app) {
-			appMap.add(app);
+			//appMap.add(app);
+			appMap.put(app.getMyID(), app);
 		}
 
 		private synchronized static Set<TESTPaxosReplicable> getReplicas(
 				String paxosID) {
 			Set<TESTPaxosReplicable> replicas = new HashSet<TESTPaxosReplicable>();
-			for (TESTPaxosReplicable app : appMap) {
+			for (TESTPaxosReplicable app : appMap.values()) {
 				if (app.allState.containsKey(paxosID))
 					replicas.add(app);
 			}

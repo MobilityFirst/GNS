@@ -65,7 +65,7 @@ public class PaxosAcceptor {
 	private int _slot=0;
 	private int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
 	private int ballotCoord=-1;
-	private int minCommittedFrontierSlot=-1; // slot up to which accepted are garbage-collected
+	private int acceptedGCSlot=-1; // slot up to which accepted pvalues are garbage-collected
 	private byte state = (byte)STATES.RECOVERY.ordinal(); // initial state is recovery
 
 	/* The two maps below are of type NullIfEmptyMap as testing shows that
@@ -90,7 +90,7 @@ public class PaxosAcceptor {
 		this.ballotNum = hri.accBallot.ballotNumber;
 		this.ballotCoord = hri.accBallot.coordinatorID;
 		this._slot = hri.accSlot;
-		this.minCommittedFrontierSlot = hri.accGCSlot;
+		this.acceptedGCSlot = hri.accGCSlot;
 		return true;
 	}
 
@@ -108,7 +108,7 @@ public class PaxosAcceptor {
 	protected synchronized void setActive() {this.state = (byte)STATES.ACTIVE.ordinal();}
 	protected synchronized boolean isActive() {return this.state==(byte)STATES.ACTIVE.ordinal();}
 
-	protected synchronized int getGCSlot() {return this.minCommittedFrontierSlot;}
+	protected synchronized int getGCSlot() {return this.acceptedGCSlot;}
 	protected synchronized int getSlot() {return _slot;}
 	protected synchronized Ballot getBallot() {return new Ballot(ballotNum, ballotCoord);}
 	protected synchronized String getBallotStr() {return Ballot.getBallotString(ballotNum, ballotCoord);}
@@ -172,10 +172,10 @@ public class PaxosAcceptor {
 
 		if (accept.ballot.compareTo(new Ballot(ballotNum,ballotCoord)) >= 0) {  // accept the pvalue and the ballot
 			this.ballotNum = accept.ballot.ballotNumber; this.ballotCoord=accept.ballot.coordinatorID; // no-op if the two are equal anyway
-			if(accept.slot - this.minCommittedFrontierSlot > 0) this.acceptedProposals.put(accept.slot, accept); // wraparound-aware arithmetic
+			if(accept.slot - this.acceptedGCSlot > 0) this.acceptedProposals.put(accept.slot, accept); // wraparound-aware arithmetic
 			log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {"Node",myID," acceptor accepting pvalue for slot ",accept.slot," : ", accept});
 		}
-		garbageCollectAccepted(accept.majorityExecutedSlot);
+		garbageCollectAccepted(accept.getMedianCheckpointedSlot());
 		return new Ballot(ballotNum,ballotCoord);
 	}
 
@@ -187,7 +187,7 @@ public class PaxosAcceptor {
 		// decision != null at this point
 		assert(isNonConflictingDecision(decision));
 
-		this.garbageCollectAccepted(decision.getMajorityCommittedSlot());
+		this.garbageCollectAccepted(decision.getMedianCheckpointedSlot());
 		if(ACCEPTED_PROPOSALS_ON_DISK) this.acceptedProposals.remove(decision.slot); // corresponding accept must be disk-logged at a majority 
 
 		// wraparound-aware arithmetic
@@ -243,8 +243,8 @@ public class PaxosAcceptor {
 		} else assert false : ("YIKES! Asked to execute " + s + " when expecting " + this.getSlot());
 	}
 	private synchronized void garbageCollectAccepted(int gcSlot) {
-		if(gcSlot - this.minCommittedFrontierSlot > 0) { // wraparound-aware arithmetic
-			this.minCommittedFrontierSlot = gcSlot;
+		if(gcSlot - this.acceptedGCSlot > 0) { // wraparound-aware arithmetic
+			this.acceptedGCSlot = gcSlot;
 			Iterator<Integer> slotIterator = this.acceptedProposals.keySet().iterator();
 			while(slotIterator.hasNext()) {
 				if((Integer)slotIterator.next() - gcSlot <= 0) slotIterator.remove();
@@ -258,7 +258,7 @@ public class PaxosAcceptor {
 	public String toString() {
 		return "{Acceptor: [slot=" + this.getSlot() + ", ballot="+this.ballotNum+":"+this.ballotCoord +
 				", isStopped="+this.isStopped()+", |accepted|="+this.acceptedProposals.size() + ", |committed|=" + 
-				this.committedRequests.size() + ", committedFrontier="+ this.minCommittedFrontierSlot + 
+				this.committedRequests.size() + ", committedFrontier="+ this.acceptedGCSlot + 
 				this.getAccepted() + this.getCommitted() + "]}";
 	}
 	private String getAccepted() {

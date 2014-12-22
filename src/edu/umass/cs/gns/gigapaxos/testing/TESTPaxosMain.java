@@ -3,7 +3,6 @@ package edu.umass.cs.gns.gigapaxos.testing;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -44,42 +43,6 @@ public class TESTPaxosMain {
 		}
 	}
 
-	private static int getRandomNodeID() {
-		Set<Integer> allNodes = TESTPaxosConfig.getNodes();
-		Object[] array = allNodes.toArray();
-		int index = (int) (Math.random() * allNodes.size());
-		return (Integer) array[index];
-	}
-
-	/*
-	 * Will create a random group for testing. Will be a no-op if recovery is enabled.
-	 */
-	private static void createRandomGroup(String groupID) {
-		int size = 0;
-		while (size < 3)
-			size = (int) (Math.random() * 10);
-		TreeSet<Integer> group = new TreeSet<Integer>();
-		while (group.size() < size) {
-			group.add(getRandomNodeID());
-		}
-		int[] members = new int[group.size()];
-		int i = 0;
-		for (int id : group)
-			members[i++] = id;
-		TESTPaxosConfig.createGroup(
-				groupID,
-				!TESTPaxosConfig.getCleanDB() ? TESTPaxosConfig
-						.getDefaultGroup() : members);
-	}
-
-	private static void createRandomGroups() {
-		for (String groupID : TESTPaxosConfig.getGroups()) {
-			if (groupID.equals(TESTPaxosConfig.getGroup(0)))
-				continue; // first group is always default
-			createRandomGroup(groupID);
-		}
-	}
-
 	private static String getAggregateOutput(int numReqs, long t1, long t2) {
 		return TESTPaxosClient.getAggregateOutput(numReqs, t2 - t1) + "\n  "
 				+ DelayProfiler.getStats() + "\n  "
@@ -91,7 +54,7 @@ public class TESTPaxosMain {
 	 * associated paxos managers. Calling this method again with testRecovery=true will test
 	 * recovery mode.
 	 */
-	public static void testPaxos(String[] args) {
+	public static void testPaxos() {
 		try {
 			/*************** Setting up servers below ***************************/
 
@@ -99,7 +62,8 @@ public class TESTPaxosMain {
 			tpMain = new TESTPaxosMain(); // creates all nodes, each with its paxos manager and app
 
 			// no-op if recovery enabled coz we need consistent groups across runs
-			createRandomGroups();  
+			TESTPaxosConfig
+					.setRandomGroups(TESTPaxosConfig.PRE_CONFIGURED_GROUPS);
 
 			// creates paxos groups (may not create if recovering)
 			for (int id : tpMain.nodes.keySet()) {
@@ -125,6 +89,7 @@ public class TESTPaxosMain {
 					.println("\n[run1]" + getAggregateOutput(numReqs, t1, t2));
 			// end first run
 
+			assert(TESTPaxosClient.noOutstanding(clients));
 			TESTPaxosClient.resetLatencyComputation();
 			Thread.sleep(2000);
 
@@ -148,28 +113,32 @@ public class TESTPaxosMain {
 		}
 	}
 
+	private static void processArgs(String[] args) {
+		// Only useful for local testing
+		TESTPaxosConfig.setSingleNodeTest(TESTPaxosConfig.getConfDirArg(args));
+		TESTPaxosConfig.setCleanDB(args);
+	}
+
 	/**
 	 * @param args
 	 * @throws InterruptedException
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		// Only useful for local testing
-		if (args != null && args.length > 0)
-			TESTPaxosConfig.setSingleNodeTest(args[0]);
+		processArgs(args);
+
 		System.out
 				.println("\nThis is a single-node test. For distributed testing, "
 						+ "use TESTPaxosNode and TESTPaxosClient with the appropriate "
 						+ "configuration file.\nInitiating single-node test...\n");
-		if (args.length > 0 && args[0].trim().equals("-c"))
-			TESTPaxosConfig.setCleanDB(true);
-		testPaxos(args);
+		TESTPaxosConfig.setAssertRSMInvariant(true);
+		testPaxos();
 
 		Thread.sleep(1000);
 
 		System.out
 				.println("\n############### Testing with recovery ################\n");
 		TESTPaxosConfig.setCleanDB(false);
-		testPaxos(args);
+		testPaxos();
 	}
 
 }

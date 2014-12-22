@@ -11,6 +11,7 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.StatePacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
+import edu.umass.cs.gns.gigapaxos.paxosutil.GCTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Messenger;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RecoveryInfo;
@@ -263,8 +264,9 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		 * above can cause deadlock if we don't have at least 2x the number of connections as
 		 * concurrently active paxosIDs. Realized this the hard way. :)
 		 */
-		this.deleteOutdatedMessages(paxosID, slot, ballot.ballotNumber,
-			ballot.coordinatorID, acceptedGCSlot);
+		if(!BATCH_GC_ENABLED)
+			this.deleteOutdatedMessages(paxosID, slot, ballot.ballotNumber,
+					ballot.coordinatorID, acceptedGCSlot);
 		// why can't insertCP.toString() return the query string? :/
 		log.log(Level.INFO,
 				"{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}{10}{11}{12}{13}{14}{15}{16}{17}",
@@ -308,9 +310,17 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		ResultSet checkpointRS = null;
 		Connection conn = null;
 		try {
-			// The following are for handling integer wraparound arithmetic
-			int minLoggedAccept = (acceptedGCSlot - slot <= 0 ? acceptedGCSlot+1 : slot+1);
+			/* All accepts at or below the most recent checkpointed slot are
+			 * retained. We retain the accept at the checkpoint slot to 
+			 * ensure that the accepted pvalues list is never empty unless 
+			 * there are truly no accepts beyond prepare.firstUndecidedSlot.
+			 * If we don't ensure this property, we would have to maintain
+			 * GC slot information in the database and send it along with 
+			 * prepare replies.
+			 */
+			int minLoggedAccept = (acceptedGCSlot - slot < 0 ? acceptedGCSlot+1 : slot);
 			int minLoggedDecision = slot - MAX_OLD_DECISIONS;
+			// The following are for handling integer wraparound arithmetic
 			String decisionConstraint = getIntegerLTConstraint("slot", minLoggedDecision);
 			String acceptConstraint = getIntegerLTConstraint("slot", minLoggedAccept);
 			String ballotnumConstraint = getIntegerLTConstraint("ballotnum", ballotnum);
@@ -1421,6 +1431,70 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			cleanup(conn);
 		}
 		return allPaxosInstances;
+	}
+	
+	// This method is not used and will be deprecated
+	@Override
+	public synchronized boolean deleteBatch(GCTask[] gcTasks) {
+		if (isClosed() || DISABLE_LOGGING) return false;
+		boolean logged = true;
+		PreparedStatement pstmt = null;
+		Connection conn = null;
+				
+		// Create delete command using the slot, ballot, and gcSlot
+		String dcmd = "delete from " + getMTable() + " where paxos_id=?"
+				+ " and (packet_type="
+				+ PaxosPacketType.DECISION.getInt() + " and slot < ?) or (packet_type="
+				+ PaxosPacketType.PREPARE.getInt() + " and (ballotnum < ? or (ballotnum=? "
+				+ " and coordinator<?))) or (packet_type=" + PaxosPacketType.ACCEPT.getInt()
+				+ " and slot < ?)";
+		
+		long t1 = System.currentTimeMillis();
+		for (int i = 0; i < gcTasks.length; i++) {
+			try {
+				if (conn == null) {
+					conn = this.getDefaultConn();
+					conn.setAutoCommit(false);
+					pstmt = conn.prepareStatement(dcmd);
+				}
+				GCTask gcTask = gcTasks[i];
+
+				pstmt.setString(1, gcTask.paxosID);
+				pstmt.setInt(2, gcTask.lastCPSlot - MAX_OLD_DECISIONS);
+				pstmt.setInt(3, gcTask.ballot.ballotNumber);
+				pstmt.setInt(4, gcTask.ballot.ballotNumber);
+				pstmt.setInt(5, gcTask.ballot.coordinatorID);
+				pstmt.setInt(6, gcTask.gcSlot);
+				pstmt.addBatch();
+				if ((i + 1) % 1000 == 0 || (i + 1) == gcTasks.length) {
+					int[] executed = pstmt.executeBatch();
+					conn.commit();
+					pstmt.clearBatch();
+					for (int j : executed)
+						logged = logged && (j > 0);
+					if (logged)
+						log.log(Level.FINE,
+								"{0}{1}{2}{3}{4}{5}{6}",
+								new Object[] { "Node ", this.myID,
+										" successfully logged the " + "last ",
+										(i + 1), " messages in ",
+										(System.currentTimeMillis() - t1),
+										" ms" });
+					t1 = System.currentTimeMillis();
+				}
+			} catch (SQLException sqle) {
+				sqle.printStackTrace();
+				log.severe("Node " + myID +
+						" incurred SQLException while logging:" + gcTasks[i]);
+				cleanup(pstmt);
+				cleanup(conn);
+				conn = null; // refresh connection
+				continue;
+			}
+		}
+		cleanup(pstmt);
+		cleanup(conn);
+		return logged;		
 	}
 
 	/**
