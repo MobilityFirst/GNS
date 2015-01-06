@@ -43,7 +43,7 @@ public class FieldAccess {
   }
 
   /**
-   * Returns true if the field is specified using dot notation or is the all-fields indicator.
+   * Returns true if the field doesn't use dot notation or is the all-fields indicator.
    * 
    * @param field
    * @return 

@@ -28,7 +28,7 @@ public class LNSToNSCommandRequest {
       // that is the active server for that GUID
       // because the code at the name server assumes it can look up the info for that record locally on the server.
       // We pick a name server based on that record name using the active name servers info in the cache.
-      String serverID = pickNameServer(getUsefulRecordName(packet.getCommand()), handler);
+      Object serverID = pickNameServer(getUsefulRecordName(packet.getCommand()), handler);
       GNS.getLogger().info("LNS" + handler.getNodeAddress() + " transmitting CommandPacket " + incomingJSON + " to " + serverID);
       handler.sendToNS(incomingJSON, serverID);
     } else {
@@ -62,20 +62,19 @@ public class LNSToNSCommandRequest {
    * @param guid
    * @return
    */
-  private static String pickNameServer(String guid, ClientRequestHandlerInterface handler) {
+  private static Object pickNameServer(String guid, ClientRequestHandlerInterface handler) {
     if (guid != null) {
       CacheEntry cacheEntry = handler.getCacheEntry(guid);
       // PRoBABLY WILL NEED SOMETHING IN HERE TO FORCE IT TO UPDATE THE ActiveNameServers
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
-        String id = (String) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
+        Object id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (id != null) {
-          
-          GNS.getLogger().info("@@@@@@@ Picked NS" + id.toString() + " for record " + guid);
+          GNS.getLogger().info("@@@@@@@ Picked NS" + id + " for record " + guid);
           return id;
         }
       }
       GNS.getLogger().warning("!?!?!?!?!?!?!?! NO SERVER FOR NS for record " + guid);
     }
-    return (String) handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNodeIDs());
+    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNodeIDs());
   }
 }

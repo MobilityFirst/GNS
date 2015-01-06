@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * This class handles sending DNS queries from a NameServer back to an Local Name Server.
+ * This class handles sending DNS queries from a NameServer back to a Local Name Server.
  *
  * Currently it is used by the code that does ACL checks in the NS to look up GUID info.
  *

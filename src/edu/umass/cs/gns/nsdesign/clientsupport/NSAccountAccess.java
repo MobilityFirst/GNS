@@ -34,7 +34,8 @@ import java.util.Date;
 public class NSAccountAccess {
 
   /**
-   * Gets the AccountInfo record for guid if the guid is an account guid.
+   * Gets the AccountInfo record for guid if the guid is an account guid. Only looks
+   * on this name server.
    *
    * @param guid
    * @param activeReplica
