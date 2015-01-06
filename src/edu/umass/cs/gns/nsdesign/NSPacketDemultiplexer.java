@@ -3,8 +3,6 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
-import edu.umass.cs.gns.nsdesign.commands.CommandProcessor;
-import edu.umass.cs.gns.nsdesign.packet.LNSToNSCommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
@@ -41,7 +39,6 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
         prevMsgCount = msgCount;
       }
     }, 0, 10, TimeUnit.SECONDS);
-    register(Packet.PacketType.LNS_TO_NS_COMMAND);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.SELECT_REQUEST);
@@ -104,10 +101,6 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
         public void run() {
           try {
             switch (type) {
-              case LNS_TO_NS_COMMAND:
-                CommandProcessor.processCommandPacket(new LNSToNSCommandPacket(json), nameServer.getGnsReconfigurable());
-                break;
-
               // Packets sent from LNS
               case UPDATE:
               case DNS:
@@ -170,9 +163,6 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
                 GNS.getLogger().severe("Packet type not found: " + type + " JSON: " + json);
                 break;
             }
-          } catch (JSONException e) {
-            GNS.getLogger().severe("JSON Exception here: " + json + " Exception: " + e.getCause());
-            e.printStackTrace();
           } catch (Exception e) {
             GNS.getLogger().severe("Caught exception with message: " + json + " Exception: " + e.getCause());
             e.printStackTrace();

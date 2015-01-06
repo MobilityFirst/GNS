@@ -24,10 +24,8 @@ import org.json.JSONException;
  **
  * An interface for handling of client requests, comms and cacheing.
  * Abstracts out the methods for storing of request info, caching and 
- * communication needs of a node. Make the code that uses it not depend
- * on the LocalNameServer
- * 
- * Someday maybe both NS and LNS will use this.
+ * communication needs of a node. A lot of this code used to be static methods in the LocalNameServer.
+ * This class makes the code that uses it not depend statically on the LocalNameServer.
  *
  * @param <NodeIDType>
  */

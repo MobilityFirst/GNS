@@ -62,7 +62,6 @@ public class Packet {
     CONFIRM_UPDATE(21),
     // Lookup actives
     REQUEST_ACTIVES(30),
-    LNS_TO_NS_COMMAND(35),
     // Admin:
     DUMP_REQUEST(40),
     SENTINAL(41),

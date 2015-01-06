@@ -37,7 +37,6 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
     register(Packet.PacketType.CONFIRM_REMOVE);
     register(Packet.PacketType.CONFIRM_UPDATE);
     register(Packet.PacketType.GROUP_CHANGE_COMPLETE);
-    register(Packet.PacketType.LNS_TO_NS_COMMAND);
     register(Packet.PacketType.NAME_SERVER_LOAD);
     register(Packet.PacketType.NEW_ACTIVE_PROPOSE);
     register(Packet.PacketType.REMOVE_RECORD);
@@ -118,9 +117,6 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
           break;
         case GROUP_CHANGE_COMPLETE:
           LNSTestRequests.handleGroupChangeComplete(json);
-          break;
-        case LNS_TO_NS_COMMAND:
-          LNSToNSCommandRequest.handlePacketCommandRequest(json, handler);
           break;
         case COMMAND:
           CommandRequest.handlePacketCommandRequest(json, handler);
