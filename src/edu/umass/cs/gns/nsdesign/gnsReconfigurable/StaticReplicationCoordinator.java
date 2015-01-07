@@ -141,6 +141,9 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
           if (readCoordination) {
             DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(request, nodeConfig);
             if (dnsPacket.isQuery()) {
+              // Originally the responder field was used to communicate back to the client about which node responded to a query.
+              // Now it appears someone is using it for another purpose, undocumented. This seems like a bad idea.
+              // Get your own field! - Westy
               dnsPacket.setResponder(nodeID);
               paxosID = paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(dnsPacket.getGuid()), dnsPacket.toString());
               if (paxosID == null) {

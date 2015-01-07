@@ -220,8 +220,8 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
 //    nameRecord = recordMap.getNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
 //    System.out.println(nameRecord);
 //    if (nameRecord != null) {
-//      System.out.println(nameRecord.getKey("_GNS_account_info"));
-//      System.out.println(nameRecord.getKey("_GNS_guid_info"));
+//      System.out.println(nameRecord.getKeyAsArray("_GNS_account_info"));
+//      System.out.println(nameRecord.getKeyAsArray("_GNS_guid_info"));
 //    }
 //    System.out.println(recordMap.getNameRecordField("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK"));
 //    recordMap.updateNameRecordSingleValue("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRANK", "SLACKER");
@@ -230,7 +230,7 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
 //    nameRecord = recordMap.getNameRecord("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
 //    System.out.println(nameRecord);
 //    if (nameRecord != null) {
-//      System.out.println(nameRecord.getKey("FRANK"));
+//      System.out.println(nameRecord.getKeyAsArray("FRANK"));
 //    }
 //  }
 

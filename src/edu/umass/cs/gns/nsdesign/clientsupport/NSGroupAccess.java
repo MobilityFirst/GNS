@@ -10,10 +10,13 @@ import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.util.ValuesMap;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Set;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * GroupAccess provides an interface to the group information in the GNS.
@@ -42,19 +45,24 @@ public class NSGroupAccess {
       }
     }
   }
-  
+
   /**
    * Return the members of a the group guid.
-   * 
+   *
    * @param guid
    * @param allowQueryToOtherNSs
    * @param activeReplica
+   * @param lnsAddress
    * @return
-   * @throws FailedDBOperationException 
+   * @throws FailedDBOperationException
    */
   public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs, GnsReconfigurable activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    return NSFieldAccess.lookupField(guid, GroupAccess.GROUP, allowQueryToOtherNSs, activeReplica, lnsAddress);
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUP, allowQueryToOtherNSs, activeReplica, lnsAddress);
+  }
+
+  public static boolean isGroupGuid(String guid, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+    return !NSFieldAccess.lookupListFieldOnThisServer(guid, GroupAccess.GROUP, activeReplica).isEmpty();
   }
 
   /**
@@ -68,7 +76,7 @@ public class NSGroupAccess {
   public static Set<String> lookupGroups(String guid, GnsReconfigurableInterface activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // this guid could be on another NS hence the true below
-    return NSFieldAccess.lookupField(guid, GroupAccess.GROUPS, true, activeReplica, lnsAddress).toStringSet();
+    return NSFieldAccess.lookupListFieldAnywhere(guid, GroupAccess.GROUPS, true, activeReplica, lnsAddress).toStringSet();
   }
 
   /**
@@ -105,6 +113,9 @@ public class NSGroupAccess {
     }
   }
 
+  ///
+  /// Support code for context sensitive group guids
+  ///
   public static void updateLastUpdate(String guid, Date lastUpdate, GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) {
     LNSUpdateHandler.sendUpdate(guid, GROUP_LAST_UPDATE, new ResultValue(Arrays.asList(Long.toString(lastUpdate.getTime()))),
             UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, activeReplica, lnsAddress);
@@ -123,7 +134,7 @@ public class NSGroupAccess {
 
   public static Date getLastUpdate(String guid, GnsReconfigurable activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_LAST_UPDATE, true, activeReplica, lnsAddress);
+    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_LAST_UPDATE, true, activeReplica, lnsAddress);
     GNS.getLogger().fine("++++ResultValue = " + resultValue);
     if (!resultValue.isEmpty()) {
       return new Date(Long.parseLong((String) resultValue.get(0)));
@@ -132,9 +143,9 @@ public class NSGroupAccess {
     }
   }
 
-  public static int getMinRefresh(String guid, GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) 
+  public static int getMinRefresh(String guid, GnsReconfigurable activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica, lnsAddress);
+    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica, lnsAddress);
     GNS.getLogger().fine("++++ResultValue = " + resultValue);
     if (!resultValue.isEmpty()) {
       return Integer.parseInt((String) resultValue.get(0));
@@ -146,7 +157,7 @@ public class NSGroupAccess {
 
   public static String getQueryString(String guid, GnsReconfigurable activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
-    ResultValue resultValue = NSFieldAccess.lookupField(guid, GROUP_QUERY_STRING, true, activeReplica, lnsAddress);
+    ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_QUERY_STRING, true, activeReplica, lnsAddress);
     GNS.getLogger().fine("++++ResultValue = " + resultValue);
     if (!resultValue.isEmpty()) {
       return (String) resultValue.get(0);
@@ -155,4 +166,19 @@ public class NSGroupAccess {
     }
   }
 
+  public static ValuesMap lookupFieldInGroupGuid(String groupGuid, String field, GnsReconfigurable activeReplica,
+          InetSocketAddress lnsAddress) throws FailedDBOperationException, JSONException {
+    JSONArray resultArray = new JSONArray();
+    for (Object guidObject : lookupMembers(groupGuid, false, activeReplica, lnsAddress)) {
+      String guid = (String) guidObject;
+      ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalAndRemote(guid, field, activeReplica, lnsAddress);
+      if (valuesMap.has(field)) {
+        resultArray.put(valuesMap.get(field));
+      }
+    }
+    GNS.getLogger().info("Group result for " + groupGuid + "/" + field + " = " + resultArray.toString());
+    ValuesMap result = new ValuesMap();
+    result.put(field, resultArray);
+    return result;
+  }
 }

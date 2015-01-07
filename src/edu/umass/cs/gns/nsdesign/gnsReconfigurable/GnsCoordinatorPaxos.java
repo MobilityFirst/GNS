@@ -67,8 +67,9 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
   /**
    * Handles coordination among replicas for a request. Returns -1 in case of error, 0 otherwise.
    * Error could happen if replicable app is not initialized, or paxos instance for this name does not exist.
+   *
    * @param request
-   * @return 
+   * @return
    */
   @Override
   public int coordinateRequest(JSONObject request) {
@@ -158,6 +159,9 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
             nioTransport.sendToAddress(dnsPacket.getLnsAddress(), requestActives.toJSONObject());
           }
           if (readCoordination && dnsPacket.isQuery()) {
+            // Originally the responder field was used to communicate back to the client about which node responded to a query.
+            // Now it appears someone is using it for another purpose, undocumented. This seems like a bad idea.
+            // Get your own field! - Westy
             dnsPacket.setResponder(nodeID);
             paxosID = paxosManager.propose(dnsPacket.getGuid(), dnsPacket.toString());
             if (paxosID == null) {

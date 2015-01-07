@@ -11,10 +11,12 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -63,6 +65,11 @@ public class GnsReconLookup {
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine("Node " + gnsApp.getNodeID().toString() + "; DNS Query Packet: " + dnsPacket.toString());
     }
+    // META COMMENT ABOUT THE COMMENT BELOW: 
+    // Originally the responder field was used to communicate back to the client about which node responded to a query.
+    // Now it appears someone is using it for another purpose, undocumented. This seems like a bad idea.
+    // Get your own field! - Westy
+    //
     // if all replicas are coordinating on a read request, then check if this node should reply to client.
     // whether coordination is done or not, only the replica receiving client's request replies to the client.
     if (dnsPacket.getResponder() != null && // null means that we are not coordinating with other replicas upon reads.
@@ -89,7 +96,6 @@ public class GnsReconLookup {
       // Check the signature and access
       NSResponseCode errorCode = NSResponseCode.NO_ERROR;
 
-      // FIXME: ignore check for non-top-level fields
       if (reader != null) { // reader will be null for internal system reads
         if (field != null) {// single field check
           errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message,
@@ -117,7 +123,24 @@ public class GnsReconLookup {
         }
       } else {
         // All signature and ACL checks passed see if we can find the field to return;
-        NameRecord nameRecord = lookupNameRecord(dnsPacket, guid, field, fields, gnsApp.getDB());
+
+        //Otherwise we do a standard lookup
+        NameRecord nameRecord = lookupNameRecordLocally(dnsPacket, guid, field, fields, gnsApp.getDB());
+
+        try {
+          // But before we continue handle the group guid indirection case, but only
+          // if the name record doesn't contain the field we are looking for
+          // and only for single field lookups.
+          if (Config.allowGroupGuidIndirection && field != null && !Defs.ALLFIELDS.equals(field)
+                  && !nameRecord.containsKey(field) && !recovery) {
+            if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
+              return;
+            }
+          }
+        } catch (FieldNotFoundException e) {
+          // Ignore field not found exceptions...
+        }
+
         if (Config.debuggingEnabled) {
           GNS.getLogger().fine("Name record read is: " + nameRecord);
         }
@@ -132,17 +155,51 @@ public class GnsReconLookup {
   }
 
   /**
+   * Special case group guid field indirection lookup:
+   * If the guid is a group guid and it is a single field lookup we try to get the values from the
+   * members of the group.
+   *
+   * If it is a group guid we use the group to get a bunch of values for a field.
+   * We only do this for a single field lookup!
+   *
+   * @param dnsPacket
+   * @param guid
+   * @param field
+   * @param nameRecord
+   * @param gnsApp
+   * @return
+   * @throws FailedDBOperationException
+   * @throws IOException
+   * @throws JSONException
+   */
+  private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket dnsPacket, String guid, String field, NameRecord nameRecord,
+          GnsReconfigurable gnsApp) throws FailedDBOperationException, IOException, JSONException {
+    if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
+      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getLnsAddress());
+      // Set up the response packet
+      dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+      dnsPacket.setResponder(gnsApp.getNodeID());
+      dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
+      dnsPacket.setRecordValue(valuesMap);
+      // .. and send it
+      gnsApp.getNioServer().sendToAddress(dnsPacket.getLnsAddress(), dnsPacket.toJSONObject());
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * Does the actual lookup of the field or fields in the database.
-   * 
+   *
    * @param dnsPacket
    * @param guid
    * @param field
    * @param fields
    * @param database
    * @return
-   * @throws FailedDBOperationException 
+   * @throws FailedDBOperationException
    */
-  private static NameRecord lookupNameRecord(DNSPacket dnsPacket, String guid, String field, List<String> fields,
+  private static NameRecord lookupNameRecordLocally(DNSPacket dnsPacket, String guid, String field, List<String> fields,
           BasicRecordMap database) throws FailedDBOperationException {
     NameRecord nameRecord = null;
     // Try to look up the value in the database
@@ -186,9 +243,9 @@ public class GnsReconLookup {
    * @return
    */
   private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsReconfigurable gnsApp) {
+    // change it to a response packet
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     dnsPacket.setResponder(gnsApp.getNodeID());
-    // change it to a response packet
     String guid = dnsPacket.getGuid();
     String key = dnsPacket.getKey();
     try {
@@ -203,15 +260,17 @@ public class GnsReconLookup {
           dnsPacket.setTTL(nameRecord.getTimeToLive());
           // Either returing one value or a bunch
           if (key != null && nameRecord.containsKey(key)) {
-            // if it's a USER JSON access just return the entire map
+            // if it's a USER JSON (new return format) access just return the entire map
             if (ColumnFieldType.USER_JSON.equals(dnsPacket.getReturnFormat())) {
               dnsPacket.setRecordValue(nameRecord.getValuesMap());
             } else {
-              dnsPacket.setSingleReturnValue(nameRecord.getKey(key));
+              // we return the single value of the key (old array-based return format)
+              dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));
               if (Config.debuggingEnabled) {
                 GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue());
               }
             }
+            // or we're supposed to return all the keys so return the entire record
           } else if (dnsPacket.getKeys() != null || Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (Config.debuggingEnabled) {
@@ -249,4 +308,5 @@ public class GnsReconLookup {
     return dnsPacket;
 
   }
+
 }

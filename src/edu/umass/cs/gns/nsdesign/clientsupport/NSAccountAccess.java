@@ -58,7 +58,7 @@ public class NSAccountAccess {
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowQueryToOtherNSs,
           GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    ResultValue accountResult = NSFieldAccess.lookupField(guid, AccountAccess.ACCOUNT_INFO, allowQueryToOtherNSs, 
+    ResultValue accountResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.ACCOUNT_INFO, allowQueryToOtherNSs, 
             activeReplica, lnsAddress);
     if (!accountResult.isEmpty()) {
       try {
@@ -149,7 +149,7 @@ public class NSAccountAccess {
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsReconfigurableInterface activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    ResultValue guidResult = NSFieldAccess.lookupField(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
+    ResultValue guidResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
             lnsAddress);
     if (!guidResult.isEmpty()) {
       try {

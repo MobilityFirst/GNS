@@ -15,8 +15,10 @@ import java.io.Serializable;
 import java.util.Iterator;
 
 /**
- * Either a ValuesMap or an Error. Also
- * has some instrumentation for round trip times and what server responded.
+ * Either a ValuesMap or an Error. Used to represent values returned
+ * from a DNS query.
+ * 
+ * Also has some instrumentation for round trip times and what server responded.
  * 
  * @author westy
  * @param <NodeIDType>

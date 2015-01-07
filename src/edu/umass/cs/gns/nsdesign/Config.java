@@ -64,8 +64,11 @@ public class Config {
   public static double beehiveBase = 16;
   public static int beehiveWorkloadSize = 11000;
 
-  // testing related parameters
+  //transition parameters
   public static boolean useOldPaxos = true; // option to use older paxos package (current default is NOT to use gigpaxos)
+  public static boolean allowGroupGuidIndirection = true;
+  
+  // testing related parameters
   public static boolean emulatePingLatencies = false;
   public static double latencyVariation = 0.1;
   public static boolean noPaxosLog = false;

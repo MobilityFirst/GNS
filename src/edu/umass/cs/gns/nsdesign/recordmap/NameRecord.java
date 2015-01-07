@@ -269,7 +269,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @return
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
-  public ResultValue getKey(String key) throws FieldNotFoundException {
+  public ResultValue getKeyAsArray(String key) throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
       ValuesMap valuesMap = (ValuesMap) hashMap.get(VALUES_MAP);
       if (valuesMap.has(key)) {
@@ -395,7 +395,7 @@ public class NameRecord implements Comparable<NameRecord> {
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();
       ArrayList<Object> updatedValues = new ArrayList<Object>();
       if (userJSON != null) {
-        // full userJSON update
+        // full userJSON (new style) update
         Iterator<?> keyIter =  userJSON.keys();
         while (keyIter.hasNext()) {
           String key = (String) keyIter.next();

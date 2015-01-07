@@ -12,16 +12,21 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-// PLEASE DON'T DELETE THIS CLASS WITHOUT TALKING TO WESTY FIRST!
 /**
- * This class is the underlying representation used to transmit the value in the key / value store from
- * the client to the server.
+ * This class is one  representation used to transmit the value in the key / value store from
+ * the client to the server. 
  * 
  * This extends ArrayList (like a JSONArray), but we made a class for this (as opposed to just using a
  * ArrayList or a JSONArray) so we can dispatch off it in methods and also more easily instrument it.
  * 
  * One of the ideas here is to make it easy to mess with the implementation of this.
  * The other idea is that we also support Strings AND Numbers in this list at some point.
+ * 
+ * It originally this was the only representation used. The database stored keys and values where
+ * the value was an array. This is no longer the case. A guid is now a full JSON Object where each
+ * value can be anything including a nested object.
+ * 
+ * Some internal fields still use this as their base representation in the database. User fields do not.
  * 
  * See also ValuesMap.
  * 

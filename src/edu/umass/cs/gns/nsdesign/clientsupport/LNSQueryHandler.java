@@ -23,18 +23,44 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * This class handles sending DNS queries from a NameServer back to a Local Name Server.
  *
- * Currently it is used by the code that does ACL checks in the NS to look up GUID info.
- *
- *
  * @author westy
  */
 public class LNSQueryHandler {
 
   private static final Object monitor = new Object();
-  private static ConcurrentMap<Integer, QueryResult> queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
-  private static ConcurrentMap<Integer, Integer> outStandingQueries = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
-  private static Random randomID = new Random();
+  private static final ConcurrentMap<Integer, QueryResult> queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
+  private static final ConcurrentMap<Integer, Integer> outStandingQueries = new ConcurrentHashMap<Integer, Integer>(10, 0.75f, 3);
+  private static final Random randomID = new Random();
 
+  /**
+   * Sends a DNS query from this Name Server to a Local Name Server.
+   * 
+   * @param name
+   * @param key
+   * @param activeReplica
+   * @param lnsAddress
+   * @return 
+   */
+  public static QueryResult sendQuery(String name, String key, GnsReconfigurableInterface activeReplica, 
+          InetSocketAddress lnsAddress) {
+    return sendQuery(name, key, ColumnFieldType.USER_JSON, activeReplica, lnsAddress);
+  }
+  
+  /**
+   * Sends a DNS query from this Name Server to a Local Name Server.
+   * The value returned in the QueryResult will be an old-style values list.
+   * 
+   * @param name
+   * @param key
+   * @param activeReplica
+   * @param lnsAddress
+   * @return 
+   */
+  public static QueryResult sendListFieldQuery(String name, String key, GnsReconfigurableInterface activeReplica, 
+          InetSocketAddress lnsAddress) {
+    return sendQuery(name, key, ColumnFieldType.LIST_STRING, activeReplica, lnsAddress);
+  }
+  
   /**
    * Sends a DNS query from this Name Server to a Local Name Server
    * Returns the entire guid record in a QueryResult.
@@ -44,13 +70,13 @@ public class LNSQueryHandler {
    * @param activeReplica
    * @return the entire guid record in a QueryResult.
    */
-  public static QueryResult sendQuery(String name, String key, GnsReconfigurableInterface activeReplica, 
+  private static QueryResult sendQuery(String name, String key, ColumnFieldType returnFormat, GnsReconfigurableInterface activeReplica, 
           InetSocketAddress lnsAddress) {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
     // use this to filter out everything but the first responder
     outStandingQueries.put(id, id);
-    sendQueryInternal(id, lnsAddress, name, key, activeReplica);
+    sendQueryInternal(id, lnsAddress, name, key, returnFormat, activeReplica);
     // now we wait until the packet comes back
     waitForResponsePacket(id);
     QueryResult result = queryResultMap.get(id);
@@ -58,9 +84,10 @@ public class LNSQueryHandler {
     return result;
   }
 
-  private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key, GnsReconfigurableInterface activeReplica) {
+  private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key, 
+          ColumnFieldType returnFormat, GnsReconfigurableInterface activeReplica) {
     DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, null,
-            ColumnFieldType.LIST_STRING,
+            returnFormat,
             null, null, null);
     JSONObject json;
     try {

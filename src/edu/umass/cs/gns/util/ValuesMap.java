@@ -18,8 +18,8 @@ import org.json.JSONArray;
 /**
  * This is the key / value representation for keys and values when we are manipulating them in memory.
  *
- * We maintain this class for backwards compatability with older code. In particular, in some older
- * code values are always a list (a ResultValue).
+ * This class also has some code that supports backwards compatability with older code. 
+ * In particular, in some older code result values are always a list.
  *
  * @author westy
  */
