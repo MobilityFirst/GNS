@@ -62,7 +62,7 @@ public class AddGuid extends GnsCommand {
       String message = json.getString(SIGNATUREFULLMESSAGE);
       
       byte[] publicKeyBytes = Base64.decode(publicKey);
-      String newGuid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
+      String newGuid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
       
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {

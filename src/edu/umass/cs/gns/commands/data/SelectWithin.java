@@ -17,7 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * A query that returns all guids that have a location field within the given area.
+ * 
  * @author westy
  */
 public class SelectWithin extends GnsCommand {

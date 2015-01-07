@@ -50,6 +50,7 @@ public class Defs {
   public final static String NEWREAD = "newRead";
   public final static String READARRAYONE = "readArrayOne";
   public final static String SELECT = "select";
+  public final static String SELECTGROUP = "selectGroup";
   public final static String WITHIN = "within";
   public final static String NEAR = "near";
   public final static String QUERY = "query";

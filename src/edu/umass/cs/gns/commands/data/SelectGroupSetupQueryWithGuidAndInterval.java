@@ -11,24 +11,24 @@ import edu.umass.cs.gns.commands.CommandModule;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 
 /**
- * Initializes a new group guid to automatically update and maintain all records that satisfy the query.
+ * Initializes the group guid to automatically update and maintain all records that satisfy the query.
  * 
  * @author westy
  */
-public class SelectGroupSetupQueryWithInterval extends SelectGroupSetupQuery {
+public class SelectGroupSetupQueryWithGuidAndInterval extends SelectGroupSetupQuery {
 
-  public SelectGroupSetupQueryWithInterval(CommandModule module) {
+  public SelectGroupSetupQueryWithGuidAndInterval(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{QUERY, INTERVAL};
+    return new String[]{GUID, QUERY, INTERVAL};
   }
 
   @Override
   public String getCommandDescription() {
-    return "Initializes a new group guid to automatically update and maintain all records that satisfy the query."
+    return "Initializes the group guid to automatically update and maintain all records that satisfy the query."
             + "Interval is the minimum refresh interval of the query - lookups happening more quickly than this"
             + "interval will retrieve a stale value." 
             + "For details see http://gns.name/wiki/index.php/Query_Syntax "

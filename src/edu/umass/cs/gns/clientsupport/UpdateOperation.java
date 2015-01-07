@@ -31,7 +31,7 @@ public enum UpdateOperation {
    */
   USER_JSON_REPLACE_OR_CREATE(false, true, true, USER_JSON_REPLACE), // doesn't require a read
   //
-  // The following all user the "older" JSONArray format. 
+  // NOTE: The following all user the "older" JSONArray format. 
   //
   /**
    * Creates the field with the given value.

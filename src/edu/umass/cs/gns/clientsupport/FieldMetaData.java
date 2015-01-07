@@ -8,7 +8,6 @@ package edu.umass.cs.gns.clientsupport;
 //import edu.umass.cs.gns.packet.QueryResultValue;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.util.HashSet;
 import java.util.Set;

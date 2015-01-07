@@ -475,7 +475,7 @@ public class AccountAccess {
         if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
           // add the GUID_INFO link
           handler.getIntercessor().sendAddRecord(guid, GUID_INFO, guidInfoFormatted);
-          // added this step to insure that the pervious step happened.
+          // added this step to insure that the previous step happened.
           // probably should add a timeout here
           GuidInfo newGuidInfo = null;
           int cnt = 0;

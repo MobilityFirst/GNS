@@ -3,7 +3,7 @@
  *
  * The various classes in here also provides basic methods for reading and writing fields in the GNS. 
  * 
- * Used by the various classes in the client package to implement writing of fields
+ * Used by the classes in the client package to implement writing of fields
  * (for both user data and system data), meta data, groups and perform more
  * sophisticated queries (the select queries).
  * 

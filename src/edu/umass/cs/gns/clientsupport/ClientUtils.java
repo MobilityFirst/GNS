@@ -21,7 +21,7 @@ public class ClientUtils {
    * @param keyBytes
    * @return 
    */
-  public static String createGuidFromPublicKey(byte[] keyBytes) {
+  public static String createGuidStringFromPublicKey(byte[] keyBytes) {
     byte[] publicKeyDigest = SHA1HashFunction.getInstance().hash(keyBytes);
     return ByteUtils.toHex(publicKeyDigest);
   }

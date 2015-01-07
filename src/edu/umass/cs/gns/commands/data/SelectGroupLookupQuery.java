@@ -33,7 +33,7 @@ public class SelectGroupLookupQuery extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return SELECT;
+    return SELECTGROUP;
   }
 
   @Override

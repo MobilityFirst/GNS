@@ -8,7 +8,8 @@
 package edu.umass.cs.gns.clientsupport;
 
 /**
- *
+ * Support for fields that can't be accessed by the client.
+ * 
  * @author westy
  */
 public class InternalField {

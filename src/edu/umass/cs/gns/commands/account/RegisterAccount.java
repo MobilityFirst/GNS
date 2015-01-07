@@ -36,7 +36,7 @@ public class RegisterAccount extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, GUID, PUBLICKEY, PASSWORD};
+    return new String[]{NAME, PUBLICKEY, PASSWORD};
   }
 
   @Override
@@ -48,11 +48,10 @@ public class RegisterAccount extends GnsCommand {
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
       String name = json.getString(NAME);
-      //String guid = json.getString(GUID);
       String publicKey = json.getString(PUBLICKEY);
-      String password = json.optString(PASSWORD, null);
+      String password = json.getString(PASSWORD);
       byte[] publicKeyBytes = Base64.decode(publicKey);
-      String guid = ClientUtils.createGuidFromPublicKey(publicKeyBytes);
+      String guid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
       
       CommandResponse result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey, 
               password, handler);

@@ -5,13 +5,20 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
+import static edu.umass.cs.gns.clientsupport.AccountAccess.lookupGuidInfo;
+import static edu.umass.cs.gns.clientsupport.Defs.BADACCOUNT;
+import static edu.umass.cs.gns.clientsupport.Defs.BADGUID;
+import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
+import static edu.umass.cs.gns.clientsupport.Defs.OKRESPONSE;
+import static edu.umass.cs.gns.clientsupport.Defs.TOMANYGUIDS;
+import static edu.umass.cs.gns.clientsupport.Defs.VERIFICATIONERROR;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.util.ArrayList;
 import org.json.JSONArray;
@@ -19,7 +26,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Provides static methods for sending and retrieve data values to and from the 
+ * Provides static methods for sending and retrieve data values to and from the
  * the database which stores the fields and values.
  * Provides conversion between the database to java objects.
  *
@@ -34,9 +41,9 @@ public class FieldAccess {
 
   /**
    * Returns true if the field is specified using dot notation.
-   * 
+   *
    * @param field
-   * @return 
+   * @return
    */
   public static boolean isKeyDotNotation(String field) {
     return field.indexOf('.') != -1;
@@ -44,9 +51,9 @@ public class FieldAccess {
 
   /**
    * Returns true if the field doesn't use dot notation or is the all-fields indicator.
-   * 
+   *
    * @param field
-   * @return 
+   * @return
    */
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
     return Defs.ALLFIELDS.equals(field) || !isKeyDotNotation(field);
@@ -65,7 +72,7 @@ public class FieldAccess {
    * @param message
    * @return the value of a single field
    */
-  public static CommandResponse lookup(String guid, String field, ArrayList<String> fields, String reader, String signature, 
+  public static CommandResponse lookup(String guid, String field, ArrayList<String> fields, String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
 
     String resultString;
@@ -141,7 +148,7 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message, 
+  public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
     String resultString;
@@ -185,7 +192,7 @@ public class FieldAccess {
         // going to punt if we see a number and make it into a string.
         Object singleValue = value.get(0);
         if (singleValue instanceof Number) {
-          resultString = ((Number)singleValue).toString();
+          resultString = ((Number) singleValue).toString();
         } else {
           resultString = (String) value.get(0);
         }
@@ -232,18 +239,18 @@ public class FieldAccess {
 
   /**
    * Sends an update request to the server.
-   * 
+   *
    * @param guid - the guid to update
-   * @param key - the field to update 
+   * @param key - the field to update
    * @param value - the new value
    * @param oldValue - the old value - only applicable for certain operations, null otherwise
    * @param argument - for operations that require an index, -1 otherwise
    * @param operation - the update operation to perform... see <code>UpdateOperation</code>
    * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally 
+   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally 
+   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
    * @return an NSResponseCode
    */
@@ -257,15 +264,15 @@ public class FieldAccess {
 
   /**
    * Sends an update request to the server containing a JSON Object.
-   * 
+   *
    * @param guid - the guid to update
    * @param json - the JSONObject to use in the update
    * @param operation - the update operation to perform... see <code>UpdateOperation</code>
    * @param writer - the guid performing the write operation, can be the same as the guid being written. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally 
+   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally 
+   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
    * @return an NSResponseCode
    */
@@ -275,19 +282,19 @@ public class FieldAccess {
   }
 
   /**
-   * Sends an update request to the server containing a JSON Object. 
-   * This is a convenience method - one could use the <code>update</code> method. 
-   * 
+   * Sends an update request to the server containing a JSON Object.
+   * This is a convenience method - one could use the <code>update</code> method.
+   *
    * @param guid - the guid to update
    * @param key - the field to create
    * @param value - the initial value of the field
    * @param writer - the guid performing the create operation, can be the same as the guid being written. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
-   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally 
+   * @param signature - the signature of the request. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
-   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally 
+   * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
-   * @return 
+   * @return
    */
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -296,10 +303,10 @@ public class FieldAccess {
 
   /**
    * Sends a select request to the server to retrieve all the guids matching the request.
-   * 
+   *
    * @param key - the key to match
    * @param value - the value to match
-   * @return 
+   * @return
    */
   public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, key, value, null, handler);
@@ -312,10 +319,10 @@ public class FieldAccess {
 
   /**
    * Sends a select request to the server to retrieve all the guids within an area specified by a bounding box.
-   * 
+   *
    * @param key - the field to match - should be a location field
    * @param value - a bounding box
-   * @return 
+   * @return
    */
   public static CommandResponse selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, key, value, null, handler);
@@ -328,11 +335,11 @@ public class FieldAccess {
 
   /**
    * Sends a select request to the server to retrieve all the guids within maxDistance of value.
-   * 
+   *
    * @param key - the field to match - should be a location field
-   * @param value - the position 
+   * @param value - the position
    * @param maxDistance - the maximum distance from position
-   * @return 
+   * @return
    */
   public static CommandResponse selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, key, value, maxDistance, handler);
@@ -345,9 +352,9 @@ public class FieldAccess {
 
   /**
    * Sends a select request to the server to retrieve all the guid matching the query.
-   * 
+   *
    * @param query
-   * @return 
+   * @return
    */
   public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectQuery(query, handler);
@@ -360,14 +367,43 @@ public class FieldAccess {
 
   /**
    * Sends a select request to the server to setup a context aware group guid and retrieve all the guids matching the query.
-   * 
+   *
+   * @param accountGuid
    * @param query
-   * @param guid - the group guid
+   * @param publicKeyBytes
    * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
-   * @return 
+   * @param handler
+   * @return
    */
-  public static CommandResponse selectGroupSetupQuery(String query, String guid, int interval, 
+  public static CommandResponse selectGroupSetupQuery(String accountGuid, String query, byte[] publicKeyBytes, int interval,
           ClientRequestHandlerInterface handler) {
+    String guid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
+    // Check to see if the guid doesn't exists and if so create it...
+    if (lookupGuidInfo(guid, handler) == null) {
+      // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
+      // FIXME: This should probably include authentication
+      GuidInfo accountGuidInfo;
+      if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
+      }
+      AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
+      if (accountInfo == null) {
+        return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
+      }
+      if (!accountInfo.isVerified()) {
+        return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+      } else if (accountInfo.getGuids().size() > edu.umass.cs.gns.localnameserver.httpserver.Defs.MAXGUIDS) {
+        return new CommandResponse(BADRESPONSE + " " + TOMANYGUIDS);
+      } else {
+        // The alias (HRN) of the new guid is a hash of the query.
+        String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
+        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, name, guid, new String(publicKeyBytes), handler);
+        if (!groupGuidCreateresult.getReturnValue().equals(OKRESPONSE)) {
+          return groupGuidCreateresult;
+        }
+      }
+    }
+    // We either found or created the guid above so now we set up the actual query structure.
     String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid, interval, handler);
     if (result != null) {
       return new CommandResponse(result);
@@ -378,9 +414,9 @@ public class FieldAccess {
 
   /**
    * Sends a select request to the server to retrieve the members of a context aware group guid.
-   * 
+   *
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
-   * @return 
+   * @return
    */
   public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid, handler);

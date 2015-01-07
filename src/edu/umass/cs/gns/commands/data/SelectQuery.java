@@ -17,7 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * A query that returns all guids that satisfy the given query.
+ * 
  * @author westy
  */
 public class SelectQuery extends GnsCommand {

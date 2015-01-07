@@ -17,7 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * A query that returns all guids that have a location field near the given location.
+ * 
  * @author westy
  */
 public class SelectNear extends GnsCommand {

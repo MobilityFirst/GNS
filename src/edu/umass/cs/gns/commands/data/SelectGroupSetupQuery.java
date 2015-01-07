@@ -7,17 +7,20 @@
  */
 package edu.umass.cs.gns.commands.data;
 
+import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.util.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * Initializes a new group guid to automatically update and maintain all records that satisfy the query.
+ * 
  * @author westy
  */
 public class SelectGroupSetupQuery extends GnsCommand {
@@ -28,25 +31,28 @@ public class SelectGroupSetupQuery extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, QUERY};
+    return new String[]{ACCOUNT_GUID, QUERY};
   }
 
   @Override
   public String getCommandName() {
-    return SELECT;
+    return SELECTGROUP;
   }
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    String guid = json.getString(GUID);
+    String accountGuid = json.getString(ACCOUNT_GUID);
     String query = json.getString(QUERY);
+    String publicKey = json.getString(PUBLICKEY);
+    byte[] publicKeyBytes = Base64.decode(publicKey);
     int interval = json.optInt(INTERVAL, -1);
-    return FieldAccess.selectGroupSetupQuery(query, guid, interval, handler);
+    
+    return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKeyBytes, interval, handler);
   }
 
   @Override
   public String getCommandDescription() {
-    return "Intializes the group guid to automatically update and maintain all records that satisfy the query."
+    return "Initializes a new group guid to automatically update and maintain all records that satisfy the query."
             + "For details see http://gns.name/wiki/index.php/Query_Syntax "
             + "Values are returned as a JSON array of JSON Objects.";
   }

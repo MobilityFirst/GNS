@@ -10,7 +10,8 @@ package edu.umass.cs.gns.clientsupport;
 import static edu.umass.cs.gns.clientsupport.InternalField.makeInternalFieldString;
 
 /**
- *
+ * Provides types for various meta data fields that are stored as internal fields.
+ * 
  * @author westy
  */
 public enum MetaDataTypeName {

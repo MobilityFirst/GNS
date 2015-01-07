@@ -17,7 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * A basic query that returns all guids that have a field with the given value.
+ * 
  * @author westy
  */
 public class Select extends GnsCommand {
