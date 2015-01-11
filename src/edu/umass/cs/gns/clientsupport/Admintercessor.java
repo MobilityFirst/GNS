@@ -42,7 +42,7 @@ public class Admintercessor<NodeIDType> {
 
   private final String LINE_SEPARATOR = System.getProperty("line.separator");
   private Random randomID;
- 
+
   /**
    * Used for the general admin wait / notify handling
    */
@@ -70,7 +70,7 @@ public class Admintercessor<NodeIDType> {
     dumpResult = new ConcurrentHashMap<Integer, Map<NodeIDType, TreeSet<NameRecord>>>(10, 0.75f, 3);
     adminResult = new ConcurrentHashMap<Integer, JSONObject>(10, 0.75f, 3);
   }
-  
+
   /**
    * Clears the database and reinitializes all indices.
    *
@@ -88,7 +88,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Sends the delete all records command.
-   * 
+   *
    * @return
    */
   public boolean sendDeleteAllRecords(ClientRequestHandlerInterface<NodeIDType> handler) {
@@ -103,7 +103,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Sends the clear cache command.
-   * 
+   *
    * @return
    */
   public boolean sendClearCache(ClientRequestHandlerInterface<NodeIDType> handler) {
@@ -118,7 +118,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Sends the dump cache command.
-   * 
+   *
    * @return
    */
   public String sendDumpCache(ClientRequestHandlerInterface<NodeIDType> handler) {
@@ -140,7 +140,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Sends the ping table command for a given node.
-   * 
+   *
    * @param node
    * @return a string containing the ping results for the node
    */
@@ -165,9 +165,9 @@ public class Admintercessor<NodeIDType> {
   }
 
   /**
-   * Sends the ping value command for node1 to node2 specified as integers. 
+   * Sends the ping value command for node1 to node2 specified as integers.
    * Returns the ping value between those nodes.
-   * 
+   *
    * @param node1
    * @param node2
    * @return the ping value between those nodes
@@ -177,9 +177,9 @@ public class Admintercessor<NodeIDType> {
   }
 
   /**
-   * Sends the ping value command for node1 to node2 specified as strings. 
+   * Sends the ping value command for node1 to node2 specified as strings.
    * Returns the ping value between those nodes.
-   * 
+   *
    * @param node1
    * @param node2
    * @return
@@ -187,7 +187,7 @@ public class Admintercessor<NodeIDType> {
   public String sendPingValue(String node1, String node2, ClientRequestHandlerInterface<NodeIDType> handler) {
     int id = nextAdminRequestID();
     try {
-      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(), 
+      sendAdminPacket(new AdminRequestPacket(id, AdminRequestPacket.AdminOperation.PINGVALUE, node1.toString(),
               node2.toString()).toJSONObject(), handler);
       waitForAdminResponse(id);
       JSONObject json = adminResult.get(id);
@@ -207,7 +207,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Sends the change log level command.
-   * 
+   *
    * @param level
    * @return
    */
@@ -238,7 +238,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Processes incoming AdminResponse packets.
-   * 
+   *
    * @param json
    */
   public void handleIncomingAdminResponsePackets(JSONObject json) {
@@ -267,13 +267,12 @@ public class Admintercessor<NodeIDType> {
   }
 
   // DUMP
-
   /**
    * Sends the dump command to the LNS.
-   * 
+   *
    * @return
    */
-    public CommandResponse sendDump(ClientRequestHandlerInterface<NodeIDType> handler) {
+  public CommandResponse sendDump(ClientRequestHandlerInterface<NodeIDType> handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
       return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
@@ -314,7 +313,7 @@ public class Admintercessor<NodeIDType> {
   }
 
   @SuppressWarnings("unchecked")
-  private String formatDumpRecords(Map<NodeIDType, TreeSet<NameRecord>> recordsMap, 
+  private String formatDumpRecords(Map<NodeIDType, TreeSet<NameRecord>> recordsMap,
           ClientRequestHandlerInterface<NodeIDType> handler) {
     // now process all the records we received
 
@@ -328,8 +327,8 @@ public class Admintercessor<NodeIDType> {
     }
     // process all the entries into a nice string
     for (Map.Entry<NodeIDType, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
-      result.append("Nameserver: " + entry.getKey().toString() +
-              " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
+      result.append("Nameserver: " + entry.getKey().toString()
+              + " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);
       for (NameRecord record : entry.getValue()) {
         try {
@@ -345,7 +344,11 @@ public class Admintercessor<NodeIDType> {
           result.append(record.getTimeToLive());
           result.append(LINE_SEPARATOR);
           result.append("    VALUE: ");
-          result.append(record.getValuesMap());
+          try {
+            result.append(record.getValuesMap().toString(2));
+          } catch (JSONException e) {
+            result.append(record.getValuesMap());
+          }
           result.append(LINE_SEPARATOR);
         } catch (FieldNotFoundException e) {
           GNS.getLogger().severe("FieldNotFoundException. " + e.getMessage());
@@ -357,7 +360,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Processes incoming Dump packets.
-   * 
+   *
    * @param json
    */
   public void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface<NodeIDType> handler) {
@@ -409,7 +412,7 @@ public class Admintercessor<NodeIDType> {
 
   /**
    * Sends a command to collect all guids that contain the given tag.
-   * 
+   *
    * @param tagName
    * @return
    */
@@ -443,8 +446,8 @@ public class Admintercessor<NodeIDType> {
     int id = nextDumpRequestID();
     GNS.getLogger().finer("Sending dump request id = " + id);
     try {
-      sendAdminPacket(new DumpRequestPacket(id, 
-              new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT), 
+      sendAdminPacket(new DumpRequestPacket(id,
+              new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT),
               tagName).toJSONObject(), handler);
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring error sending DUMP request for id " + id + " : " + e);
