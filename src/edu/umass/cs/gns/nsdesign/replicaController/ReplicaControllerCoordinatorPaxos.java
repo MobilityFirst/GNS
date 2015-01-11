@@ -4,7 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
+import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.GroupChangeCompletePacket;
@@ -47,14 +47,14 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
       GNS.getLogger().info("Using gigapaxos");
       this.paxosInterface = paxosInterface;
       this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIdType>(nodeID, nodeConfig,
-              new PacketTypeStamper<NodeIdType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
+              new PacketTypeStampAndSend<NodeIdType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
     } else {
       GNS.getLogger().info("Using old Paxos (not gigapaxos)");
       this.paxosInterface = paxosInterface;
       paxosConfig.setConsistentHashCoordinatorOrder(true);
       this.paxosManager = new PaxosManager<NodeIdType>(nodeID, nodeConfig,
-              new PacketTypeStamper<NodeIdType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
+              new PacketTypeStampAndSend<NodeIdType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig);
     }
     createPrimaryPaxosInstances();

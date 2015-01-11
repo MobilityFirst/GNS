@@ -6,7 +6,7 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
-import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
+import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
@@ -126,7 +126,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
     this.nodeID = nodeID;
     this.nodeConfig = nodeConfig;
-    assert nioServer instanceof PacketTypeStamper;
+    assert nioServer instanceof PacketTypeStampAndSend;
     this.nioServer = nioServer;
     this.clientRequestHandler = outputHandler;
     this.debugMode = paxosConfig.isDebugMode();

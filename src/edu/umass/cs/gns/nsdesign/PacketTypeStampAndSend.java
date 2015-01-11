@@ -19,12 +19,12 @@ import java.net.InetSocketAddress;
  * actually sending the packet.
  * @param <NodeIDType>
  */
-public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
+public class PacketTypeStampAndSend<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
 
   private final InterfaceJSONNIOTransport<NodeIDType> nio;
   private final Packet.PacketType type;
 
-  public PacketTypeStamper(InterfaceJSONNIOTransport<NodeIDType> nio, Packet.PacketType type) {
+  public PacketTypeStampAndSend(InterfaceJSONNIOTransport<NodeIDType> nio, Packet.PacketType type) {
     this.nio = nio;
     this.type = type;
   }
@@ -113,7 +113,7 @@ public class PacketTypeStamper<NodeIDType> implements InterfaceJSONNIOTransport<
       }
     };
 
-    PacketTypeStamper packetTypeStamper = new PacketTypeStamper(jsonnioTransport, type1);
+    PacketTypeStampAndSend packetTypeStamper = new PacketTypeStampAndSend(jsonnioTransport, type1);
     JSONObject sample = new JSONObject();
     sample.put("Apple", "Banana");
     packetTypeStamper.sendToID("100", sample);  

@@ -51,16 +51,16 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
       GNS.getLogger().info("Using gigapaxos");
       this.paxosInterface = new TestReplicable(paxosInterface);
       this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID, nodeConfig,
-              new PacketTypeStamper<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
+              new PacketTypeStampAndSend<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
               this.paxosInterface, paxosConfig);
 //      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
-//              nodeConfig, new PacketTypeStamper(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
+//              nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
 //              this.paxosInterface, paxosConfig));
     } else {
       GNS.getLogger().info("Using old Paxos (not gigapaxos)");
       this.paxosInterface = paxosInterface;
       this.paxosManager = new PaxosManager<NodeIDType>(nodeID, nodeConfig,
-              new PacketTypeStamper<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION), this.paxosInterface, paxosConfig);
+              new PacketTypeStampAndSend<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION), this.paxosInterface, paxosConfig);
     }
   }
 

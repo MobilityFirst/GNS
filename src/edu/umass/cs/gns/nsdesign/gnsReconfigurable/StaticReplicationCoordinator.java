@@ -4,7 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.PacketTypeStamper;
+import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
@@ -54,7 +54,7 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
     this.readCoordination = readCoordination;
     paxosConfig.setConsistentHashCoordinatorOrder(true);
     this.paxosManager = new PaxosManager<NodeIDType>(nodeID, nodeConfig,
-            new PacketTypeStamper<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
+            new PacketTypeStampAndSend<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION), paxosInterface, paxosConfig);
     createNodePaxosInstances();
   }
 
