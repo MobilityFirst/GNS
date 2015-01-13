@@ -66,7 +66,7 @@ public class Remove {
   public static void executeMarkRecordForRemoval(RemoveRecordPacket removeRecord, ReplicaController rc,
           boolean recovery) throws JSONException, IOException, FailedDBOperationException {
     boolean sendError = false;
-    NSResponseCode respCode = NSResponseCode.ERROR;
+    //NSResponseCode respCode = NSResponseCode.ERROR;
     try {
       ReplicaControllerRecord rcRecord = ReplicaControllerRecord.getNameRecordPrimaryMultiField(rc.getDB(),
               removeRecord.getName(), applyMarkedForRemovalFields);
@@ -116,7 +116,7 @@ public class Remove {
       e.printStackTrace();
     }
     if (removeRecord.getNameServerID().equals(rc.getNodeID()) && sendError & !recovery) {
-      ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(respCode, removeRecord);
+      ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(NSResponseCode.ERROR, removeRecord);
       rc.getNioServer().sendToAddress(removeRecord.getLnsAddress(), failPacket.toJSONObject());
     }
   }

@@ -93,7 +93,7 @@ public class Add {
     } catch (RecordExistsException e) {
       if (addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
         // send error to client
-        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
+        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.DUPLICATE_ERROR, addRecordPacket);
         if (Config.debuggingEnabled)
           GNS.getLogger().fine("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server address = " +
                   addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);

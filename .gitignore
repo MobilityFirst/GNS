@@ -2,3 +2,6 @@
 /nbproject/private/
 /build/
 /dist/
+/scripts/3nodeslocal/log/
+/scripts/3nodeslocal/paxoslog/
+/scripts/3nodeslocal/derby.log

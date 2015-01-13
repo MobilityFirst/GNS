@@ -10,6 +10,7 @@ import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -62,7 +63,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   // Instrumentation
   private final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  public boolean debuggingEnabled = false;
+  public boolean debuggingEnabled = true;
 
    {
     randomID = new Random();
@@ -77,6 +78,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   public Intercessor(ClientRequestHandlerInterface<NodeIDType> handler) {
     this.handler = handler;
     lnsPacketDemultiplexer = new LNSPacketDemultiplexer<NodeIDType>(handler);
+    if (debuggingEnabled) {
+      GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.clientsupport.Intercessor *********");
+    }
   }
   
   /**
@@ -133,9 +137,6 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
         case SELECT_RESPONSE:
           SelectHandler.processSelectResponsePackets(json, handler.getGnsNodeConfig());
           break;
-//        case LNS_TO_NS_COMMAND:
-//          LNSToNSCommandRequestHandler.processCommandResponsePackets(json);
-//          break;
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON error: " + e);
@@ -144,7 +145,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
 
   /**
    * Sends a query to the Nameserver for a field in a guid.
-   * Field is a string naming the field. Field can us dot notation to indicate subfields.
+   * Field is a string naming the field. Field can use dot notation to indicate subfields.
    * Field can also be +ALL+ meaning retrieve all the fields (including internal system fields).
    * Return format should be one of ColumnFieldType.USER_JSON signifying new JSONObject format or
    * ColumnFieldType.LIST_STRING signifying old JSONArray of strings format.
@@ -254,7 +255,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   public NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
-      GNS.getLogger().fine("Sending add: " + name + " / " + field + "->" + value);
+      GNS.getLogger().info("Sending add: " + name + " / " + field + "->" + value);
     }
     AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value, handler.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
@@ -271,7 +272,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     if (debuggingEnabled) {
-      GNS.getLogger().fine("Add (" + id + "): " + name + "/" + field + "\n  Returning: " + result);
+      GNS.getLogger().info("Add (" + id + "): " + name + "/" + field + "\n  Returning: " + result);
     }
     return result;
   }

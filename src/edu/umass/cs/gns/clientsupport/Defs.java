@@ -123,6 +123,7 @@ public class Defs {
   public final static String TOMANYALIASES = "+TOMANYALIASES+";
   public final static String TOMANYGUIDS = "+TOMANYGUIDS+";
   public final static String UPDATEERROR = "+UPDATEERROR+";
+  public final static String UPDATETIMEOUT = "+UPDATETIMEOUT+";
   public final static String SELECTERROR = "+SELECTERROR+";
   public final static String GENERICERROR = "+GENERICERROR+";
   //

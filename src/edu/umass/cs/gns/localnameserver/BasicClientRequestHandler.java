@@ -48,8 +48,9 @@ import org.json.JSONException;
  * a node.
  *
  * Note: This based on LNS code, but at some point the idea was that the LNS and NS
- * would both use this interface. It's not done yet (interrupted for more pressing
- * issues).
+ * could both use this interface. Not sure if that is going to happen now, but there
+ * is a need for certain services at the NS that the LNS implements (like caching and
+ * retransmission of lookups).
  *
  * @author westy
  */
@@ -113,7 +114,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
 
   @SuppressWarnings("unchecked") // calls a static method
   private InterfaceJSONNIOTransport<NodeIDType> initTransport() throws IOException {
-    GNS.getLogger().info("LNS listener started.");
+    GNS.getLogger().info("Starting LNS listener on " + nodeAddress);
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
     if (parameters.isEmulatePingLatencies()) {
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());

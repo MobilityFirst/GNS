@@ -586,6 +586,7 @@ public class StartLocalNameServer {
       //Start local name server
       new LocalNameServer(new InetSocketAddress(address, port), new GNSNodeConfig(nsFile, true));
     } catch (Exception e) {
+      GNS.getLogger().severe("Problem starting LNS: " + e);
       e.printStackTrace();
     }
   }

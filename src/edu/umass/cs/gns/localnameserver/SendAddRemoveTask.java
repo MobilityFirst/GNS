@@ -15,6 +15,7 @@ import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.*;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,7 +57,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
   public void run() {
     try {
       timeoutCount = timeoutCount + 1;
-      if (handler.getParameters().isDebugMode()) {
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
         GNS.getLogger().info("ENTER name = " + getName() + " timeout = " + getTimeoutCount());
       }
 
@@ -81,7 +82,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
 
   private boolean isResponseReceived() {
     if (handler.getRequestInfo(getLnsRequestID()) == null) {
-      if (handler.getParameters().isDebugMode()) {
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
         GNS.getLogger().info("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
       }
       return true;
@@ -97,11 +98,11 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
         GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
         return true;
       }
-      if (handler.getParameters().isDebugMode()) {
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
         GNS.getLogger().info("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
       }
       try {
-        ConfirmUpdatePacket<NodeIDType> confirmPkt = new ConfirmUpdatePacket<NodeIDType>(updateInfo.getErrorMessage(), handler.getGnsNodeConfig());
+        ConfirmUpdatePacket<NodeIDType> confirmPkt = new ConfirmUpdatePacket<NodeIDType>(updateInfo.getErrorMessage(NSResponseCode.UPDATE_TIMEOUT), handler.getGnsNodeConfig());
         Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
       } catch (JSONException e) {
         e.printStackTrace();
@@ -140,21 +141,21 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
     replicaControllersQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {
-      if (handler.getParameters().isDebugMode()) {
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled || Config.debuggingEnabled) {
         GNS.getLogger().info("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
       }
       updatePacketWithRequestID(getPacket(), getLnsRequestID());
     }
     // create the packet that we'll send to the primary
 
-    if (handler.getParameters().isDebugMode()) {
+    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled || Config.debuggingEnabled) {
       GNS.getLogger().info("Sending request to node: " + nameServerID.toString());
     }
 
     // and send it off
     try {
       JSONObject jsonToSend = getPacket().toJSONObject();
-      if (handler.getParameters().isDebugMode()) {
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
         GNS.getLogger().info(" Send add/remove/upsert to: " + nameServerID.toString() + " Name:" + getName() + " Id:" + getLnsRequestID()
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }

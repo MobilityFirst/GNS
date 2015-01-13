@@ -35,8 +35,11 @@ public enum NSResponseCode implements Serializable{
   BAD_GUID_ERROR(5, Defs.BADGUID, true),
   BAD_ACCESSOR_ERROR(6, Defs.BADACCESSORGUID, true),
   //
-  VERIFICATION_ERROR(6, Defs.VERIFICATIONERROR, true)
+  VERIFICATION_ERROR(7, Defs.VERIFICATIONERROR, true),
+  UPDATE_TIMEOUT(8, Defs.UPDATETIMEOUT, true),
+  DUPLICATE_ERROR(9, Defs.DUPLICATENAME, true)
   ;
+  
   //
   // stash the codes in a lookup table
   private static NSResponseCode[] responseCodes;

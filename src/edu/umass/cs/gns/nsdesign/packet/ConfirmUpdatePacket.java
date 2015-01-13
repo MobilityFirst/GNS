@@ -85,11 +85,6 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
             NSResponseCode.NO_ERROR);
   }
 
-  public void convertToFailPacket(NSResponseCode code) {
-    assert code != NSResponseCode.NO_ERROR; // that would be stupid
-    this.responseCode = code;
-  }
-
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.CONFIRM_ADD, packet.getSourceId(),
             packet.getRequestID(), packet.getLNSRequestID(), code);

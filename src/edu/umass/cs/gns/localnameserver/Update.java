@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -45,7 +46,7 @@ public class Update {
           throws JSONException, UnknownHostException {
 
     UpdatePacket updatePacket = new UpdatePacket(json, handler.getGnsNodeConfig());
-    if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
+    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     int lnsReqID = handler.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), null, updatePacket, handler);
     handler.addRequestInfo(lnsReqID, info);
@@ -65,14 +66,14 @@ public class Update {
   public static void handlePacketConfirmUpdate(JSONObject json, ClientRequestHandlerInterface handler) throws UnknownHostException, JSONException {
     ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
 
-    if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
+    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
     if (confirmPkt.isSuccess()) {
       // we are removing request info as processing for this request is complete
       UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getLNSRequestID());
       // if update info isn't available, we cant do anything. probably response is overly delayed and an error response
       // has already been sent to client.
       if (updateInfo == null) {
-        if (handler.getParameters().isDebugMode()) GNS.getLogger().warning("Update info not found. quitting. SUCCESS update.  " + confirmPkt);
+        if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().warning("Update info not found. quitting. SUCCESS update.  " + confirmPkt);
         return;
       }
       // update the cache BEFORE we send back the confirmation
@@ -90,7 +91,7 @@ public class Update {
       // NOTE: we are NOT removing request info as processing for this request is still ongoing
       UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(confirmPkt.getLNSRequestID());
       if (updateInfo == null) {
-        if (handler.getParameters().isDebugMode()) GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
+        if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
         return;
       }
       updateInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
@@ -100,7 +101,7 @@ public class Update {
       // we are removing request info as processing for this request is complete
       UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getLNSRequestID());
       if (updateInfo == null) {
-        if (handler.getParameters().isDebugMode()) GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
+        if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
         return;
       }
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
@@ -120,7 +121,7 @@ public class Update {
    * @throws JSONException
    */
   private static void handleInvalidActiveError(UpdateInfo updateInfo, ClientRequestHandlerInterface handler) throws JSONException {
-    if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + 
+    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + 
             updateInfo.getName() + "\tRequest new actives.\t");
     
     UpdatePacket updatePacket = (UpdatePacket) updateInfo.getUpdatePacket();
@@ -149,11 +150,11 @@ public class Update {
    */
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getReturnTo() == null) {
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
       
       handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo().toString() + 
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().fine("Sending back to Node " + packet.getReturnTo().toString() + 
               ":" + packet.toJSONObject().toString());
       
       try {

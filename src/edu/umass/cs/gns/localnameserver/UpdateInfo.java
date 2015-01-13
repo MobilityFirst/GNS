@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.net.InetSocketAddress;
@@ -22,7 +23,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
 
   private final BasicPacket basicPacket;
   
-  private ClientRequestHandlerInterface<NodeIDType> handler;
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface<NodeIDType> handler) {
     this.lnsReqID = lnsRequestID;
@@ -63,22 +64,26 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
 
   @Override
   public synchronized JSONObject getErrorMessage() {
+    return getErrorMessage(NSResponseCode.ERROR);
+  }
+  
+  public JSONObject getErrorMessage(NSResponseCode errorCode) {
     ConfirmUpdatePacket confirm = null;
     switch (basicPacket.getType()) {
       case ADD_RECORD:
-        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (AddRecordPacket) basicPacket);
+        confirm = new ConfirmUpdatePacket(errorCode, (AddRecordPacket) basicPacket);
         break;
       case REMOVE_RECORD:
-        confirm = new ConfirmUpdatePacket(NSResponseCode.ERROR, (RemoveRecordPacket) basicPacket);
+        confirm = new ConfirmUpdatePacket(errorCode, (RemoveRecordPacket) basicPacket);
         break;
       case UPDATE:
-        confirm = ConfirmUpdatePacket.createFailPacket((UpdatePacket) basicPacket, NSResponseCode.ERROR);
+        confirm = ConfirmUpdatePacket.createFailPacket((UpdatePacket) basicPacket, errorCode);
         break;
     }
     try {
       return (confirm != null) ? confirm.toJSONObject() : null;
     } catch (JSONException e) {
-      e.printStackTrace();
+      GNS.getLogger().severe("Problem creating JSON error object:" + e);
     }
     return null;
   }

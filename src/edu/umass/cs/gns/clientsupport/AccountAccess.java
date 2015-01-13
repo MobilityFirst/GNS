@@ -384,8 +384,9 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
     try {
 
+      NSResponseCode returnCode;
       // First try to create the HRN record to make sure this name isn't already registered
-      if (!handler.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!(returnCode = handler.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid)))).isAnError()) {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
@@ -393,7 +394,7 @@ public class AccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         }
-        if (!handler.getIntercessor().sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat()).isAnError()) {
+        if (!(returnCode = handler.getIntercessor().sendAddRecord(guid, ACCOUNT_INFO, accountInfo.toDBFormat())).isAnError()) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, GUID_INFO, guidInfo.toDBFormat(), null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
@@ -401,10 +402,10 @@ public class AccountAccess {
           // delete the record we added above
           // might be nice to have a notion of a transaction that we could roll back
           handler.getIntercessor().sendRemoveRecord(name);
-          return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
+          return new CommandResponse(BADRESPONSE + " " + returnCode.getProtocolCode() + " " + guid);
         }
       } else {
-        return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + name);
+        return new CommandResponse(BADRESPONSE + " " + returnCode.getProtocolCode() + " " + name);
       }
     } catch (JSONException e) {
       return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());
@@ -468,9 +469,10 @@ public class AccountAccess {
 
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
-
+      
+      NSResponseCode returnCode;
       // First try to create the HRN to insure that that name does not already exist
-      if (!handler.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid))).isAnError()) {
+      if (!(returnCode = handler.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid)))).isAnError()) {
         // update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
           // add the GUID_INFO link
@@ -494,7 +496,7 @@ public class AccountAccess {
       }
       // otherwise roll it back
       accountInfo.removeGuid(guid);
-      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + name);
+      return new CommandResponse(BADRESPONSE + " " + returnCode.getProtocolCode() + " " + name);
     } catch (JSONException e) {
       return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());
     } catch (GnsRuntimeException e) {
@@ -594,10 +596,11 @@ public class AccountAccess {
   public static CommandResponse addAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
-    if (handler.getIntercessor().sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid()))).isAnError()) {
+    NSResponseCode returnCode;
+    if ((returnCode = handler.getIntercessor().sendAddRecord(alias, HRN_GUID, new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())))).isAnError()) {
       // roll this back
       accountInfo.removeAlias(alias);
-      return new CommandResponse(BADRESPONSE + " " + DUPLICATENAME + " " + alias);
+      return new CommandResponse(BADRESPONSE + " " + returnCode.getProtocolCode() + " " + alias);
     }
     accountInfo.addAlias(alias);
     accountInfo.noteUpdate();
