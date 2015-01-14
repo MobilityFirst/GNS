@@ -21,7 +21,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 		this.myID = id;
 		AbstractPacketDemultiplexer pd;
 		JSONMessenger<NodeIDType> messenger = new JSONMessenger<NodeIDType>((new JSONNIOTransport<NodeIDType>(this.myID, 
-				nc, (pd = new ReconfigurationPacketDemultiplexer()), true)).enableStampSenderInfo());
+				nc, (pd = new ReconfigurationPacketDemultiplexer()), true)));
 		this.activeReplica = new ActiveReplica<NodeIDType>(createAppCoordinator(), nc, messenger);
 		this.reconfigurator = new Reconfigurator<NodeIDType>(nc, messenger);
 		

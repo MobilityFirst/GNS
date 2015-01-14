@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class NameServer<NodeIDType> implements Shutdownable {
 
-  private ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(10); // worker thread pool
+  private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(10); // worker thread pool
 
   private ActiveReplicaCoordinator appCoordinator; // coordinates app's requests
 
@@ -64,48 +64,20 @@ public class NameServer<NodeIDType> implements Shutdownable {
   private MongoRecords<NodeIDType> mongoRecords;
 
   /**
-   * Constructor for name server object. It takes the list of parameters as a config file.
-   *
-   * @param nodeID ID of this name server
-   * @param configFile Config file with parameters and values
-   * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
-   */
-  public NameServer(NodeIDType nodeID, String configFile, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
-
-    // load options given in config file in a java properties object
-    Properties prop = new Properties();
-
-    File f = new File(configFile);
-    if (!f.exists()) {
-      System.err.println("Config file not found:" + configFile);
-      System.exit(2);
-    }
-    InputStream input = new FileInputStream(configFile);
-    // load a properties file
-    prop.load(input);
-
-    // create a hash map with all options including options in config file
-    HashMap<String, String> allValues = new HashMap<String, String>();
-    for (String propertyName : prop.stringPropertyNames()) {
-      allValues.put(propertyName, prop.getProperty(propertyName));
-    }
-    init(nodeID, allValues, gnsNodeConfig);
-  }
-
-  /**
    * Constructor for name server object. It takes the list of parameters as a <code>HashMap</code> whose keys
    * are parameter names and values are parameter values. Parameter values are <code>String</code> objects.
    *
    * @param nodeID ID of this name server
    * @param configParameters Config file with parameters and values
    * @param gnsNodeConfig <code>GNSNodeConfig</code> containing ID, IP, port, ping latency of all nodes
+   * @throws java.io.IOException
    */
   public NameServer(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
     init(nodeID, configParameters, gnsNodeConfig);
   }
 
   /**
-   * This methods actually does the work. It start a listening socket at the name server for incoming messages,
+   * This methods actually does the work. It starts a listening socket at the name server for incoming messages,
    * and creates <code>GnsReconfigurable</code> and <code>ReplicaController</code> objects.
    *
    * @throws IOException
@@ -113,7 +85,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
    * NIOTransport will create an additional listening thread. threadPoolExecutor will create a few more shared
    * pool of threads.
    */
-  private void init(NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
+  private void init(final NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
     // set to false to cancel non-periodic delayed tasks upon shutdown
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
@@ -127,7 +99,6 @@ public class NameServer<NodeIDType> implements Shutdownable {
     JSONNIOTransport<NodeIDType> gnsnioTransport = new JSONNIOTransport<NodeIDType>(nodeID, gnsNodeConfig, worker);
     new Thread(gnsnioTransport).start();
     tcpTransport = new GnsMessenger<NodeIDType>(nodeID, gnsnioTransport, executorService);
-    // be careful to give same 'nodeID' to everyone
 
     // init DB
     mongoRecords = new MongoRecords<NodeIDType>(nodeID, Config.mongoPort);

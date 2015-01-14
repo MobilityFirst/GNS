@@ -24,7 +24,7 @@ import java.util.TimerTask;
 
 /**
  * Sends three types of messages (with retries): AddRecordPacket, RemoveRecordPacket, and
- * to replica controllers. These messages are sent one by one to all
+ * UpdateRecordPacket to replica controllers. These messages are sent one by one to all
  * replica controllers in order of their distance until
  * (1) local name server receives a response from one of the primary replicas.
  * (2) no response is received until {@code maxQueryWaitTime}. In this case, an error response is sent to client.

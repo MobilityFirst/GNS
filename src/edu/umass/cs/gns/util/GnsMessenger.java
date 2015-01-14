@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import org.json.JSONException;
 
 /**
  * Based on {@link edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil.Messenger} class.
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 5/3/14.
  */
-public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType>  {
+public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
 
   private static final long RTX_DELAY = 1000; //ms
   private static final int BACKOFF_FACTOR = 2;
@@ -46,22 +47,41 @@ public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeI
 
   @Override
   public int sendToID(NodeIDType id, JSONObject jsonData) throws IOException {
-    int sent = gnsnioTransport.sendToID(id, jsonData);
-    if (sent < jsonData.length()) {
-      Retransmitter rtxTask = new Retransmitter(id, jsonData, RTX_DELAY);
-      scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
+    try {
+      // a little hair here to prevent the json from being modified during send
+      String stringData = jsonData.toString();
+      int dataLength = stringData.length();
+      JSONObject dataCopy = new JSONObject(stringData);
+      int sent = gnsnioTransport.sendToID(id, dataCopy);
+      if (sent < dataLength) {
+        Retransmitter rtxTask = new Retransmitter(id, dataCopy, RTX_DELAY);
+        scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
+      }
+      GNS.getLogger().fine("############## " + dataLength);
+      return dataLength;
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to send due to a JSON error: " + e);
+      return -1;
     }
-    return jsonData.length();
   }
 
   @Override
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData) throws IOException {
-    int sent = gnsnioTransport.sendToAddress(isa, jsonData);
-    if (sent < jsonData.length()) {
-      Retransmitter rtxTask = new Retransmitter(isa, jsonData, RTX_DELAY);
-      scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
+    // a little hair here to prevent the json from being modified during send
+    try {
+      String stringData = jsonData.toString();
+      int dataLength = stringData.length();
+      JSONObject dataCopy = new JSONObject(stringData);
+      int sent = gnsnioTransport.sendToAddress(isa, dataCopy);
+      if (sent < dataLength) {
+        Retransmitter rtxTask = new Retransmitter(isa, dataCopy, RTX_DELAY);
+        scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
+      }
+      return dataLength;
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to send due to a JSON error: " + e);
+      return -1;
     }
-    return jsonData.length();
   }
 
   @Override

@@ -120,7 +120,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
     }
     new Thread(gnsNiot).start();
-
+    // id is null here because we're the LNS
     return new GnsMessenger(null, gnsNiot, executorService);
   }
 

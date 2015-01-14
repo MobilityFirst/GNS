@@ -172,7 +172,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     json.put(TIME_TO_LIVE, getTTL());
     if (getActiveNameServers() != null) {
       json.put(ACTIVE_NAMESERVERS, getActiveNameServers());
-      //json.put(ACTIVE_NAMESERVERS, Util.setOfNodeIdToString(getActiveNameServers()));
     }
     return json;
   }

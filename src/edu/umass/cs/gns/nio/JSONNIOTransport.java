@@ -41,11 +41,7 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
         InterfaceJSONNIOTransport<NodeIDType> {
 
   public static final String DEFAULT_IP_FIELD = "_IP_ADDRESS1";
-  // didn't add this to "stamping" code below but it is declared for other uses
   public static final String DEFAULT_PORT_FIELD = "_TCP_PORT";
-
-  private String IPField = null;
-  private String portField = null;
 
   public static final boolean DEBUG = false; // enables send monitoring
 
@@ -120,14 +116,19 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   @Override
   public int sendToAddress(InetSocketAddress isa, JSONObject jsonData)
           throws IOException {
-    int written = 0;
-    int originalSize = jsonData.toString().length();
-    //stampSenderInfo(jsonData);
-    String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-    written = this.sendUnderlying(isa, headeredMsg.getBytes())
-            - (headeredMsg.length() - originalSize); // subtract header length
-    assert (written < 0 || written == originalSize);
-    return written;
+    String stringData = jsonData.toString();
+    int originalSize = stringData.length();
+    // a little hair here to deal with the fact that we change the message size
+    // but the caller expects us to write the original amount
+    String headeredMsg = JSONMessageExtractor.prependHeader(stringData);
+    int alteredSize = headeredMsg.length();
+    int written = this.sendUnderlying(isa, headeredMsg.getBytes());
+    if (written == alteredSize) {
+      // since the caller expects that we wrote the original message
+      return originalSize;
+    } else {
+      return written;
+    }
   }
 
   /*
@@ -135,37 +136,28 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
    * a remote node, otherwise it hands over the message directly to the worker.
    */
   protected int sendToIDActual(NodeIDType destID, JSONObject jsonData)
-		  throws IOException {
-	  int written = 0;
-	  int originalSize = jsonData.toString().length();
-	  //stampSenderInfo(jsonData);
-	  if (destID.equals(this.myID)) {
-		  sendLocal(jsonData); 
-		  written = originalSize; // local send just passes pointers
-	  } else {
-		  String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-		  written = (this.sendUnderlying(destID, headeredMsg.getBytes())
-				  - (headeredMsg.length() - originalSize)); // subtract header length
-	  }
-	  assert(written < 0 || written == originalSize) : written + " != " + originalSize;
-	  return written;
-  }
-
-  public JSONNIOTransport<NodeIDType> enableStampSenderInfo() {
-    this.IPField = DEFAULT_IP_FIELD;
-    this.portField = DEFAULT_PORT_FIELD;
-    return this;
-  }
-
-  public JSONNIOTransport<NodeIDType> enableStampSenderPort() {
-    this.portField = DEFAULT_PORT_FIELD;
-    return this;
-  }
-
-  public JSONNIOTransport<NodeIDType> disableStampSenderIP() {
-    this.IPField = null;
-    this.portField = null;
-    return this;
+          throws IOException {
+    String stringData = jsonData.toString();
+    int originalSize = stringData.length();
+    if (destID.equals(this.myID)) {
+      sendLocal(jsonData);
+      return originalSize; // local send just passes pointers
+    } else {
+      // a little hair here to deal with the fact that we change the message size
+      // but the caller expects us to write the original amount
+      String headeredMsg = JSONMessageExtractor.prependHeader(stringData);
+      int alteredSize = headeredMsg.length();
+      int written = this.sendUnderlying(destID, headeredMsg.getBytes());
+      if (written == alteredSize) {
+        // since the caller expects that we wrote the original message
+        if (DEBUG) {
+          log.fine("############## " + originalSize + " actualWritten=" + written);
+        }
+        return originalSize;
+      } else {
+        return written;
+      }
+    }
   }
 
   public static InetSocketAddress getSenderAddress(JSONObject json) {
@@ -210,49 +202,33 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
   /**
    * ******************End of public send methods************************************
    */
-  // FIXME: This method is not used and should be used or removed
-  // stamp sender IP address if IPField is set
-  protected void stampSenderInfo(JSONObject jsonData) {
-    try {
-      if (this.IPField != null && !this.IPField.isEmpty()) {
-        jsonData.put(this.IPField, this.getNodeAddress().toString());
-      }
-      if (this.portField != null && !this.portField.isEmpty()) {
-        jsonData.put(this.portField, this.getNodePort());
-      }
-
-    } catch (JSONException je) {
-      je.printStackTrace();
-    }
-  }
-
   // fake send by directly passing to local worker
   private int sendLocal(JSONObject jsonData) {
-	  /* We create a deep copy for local sends as 
-	   * otherwise it can end up getting modified
-	   * by the receiver end and cause the number
-	   * of bytes written to be not equal to those
-	   * sent for sends to receivers other than
-	   * the sender when the same message is being
-	   * sent to a set of nodes including self. 
-	   */
-	  try {
-		  jsonData = new JSONObject(jsonData.toString());
-	  } catch (JSONException e) {
-		  e.printStackTrace();
-		  return -1;
-	  }
+    /* We create a deep copy for local sends as 
+     * otherwise it can end up getting modified
+     * by the receiver end and cause the number
+     * of bytes written to be not equal to those
+     * sent for sends to receivers other than
+     * the sender when the same message is being
+     * sent to a set of nodes including self. 
+     */
+    try {
+      jsonData = new JSONObject(jsonData.toString());
+    } catch (JSONException e) {
+      e.printStackTrace();
+      return -1;
+    }
 
-	  int length = jsonData.toString().length();
-	  ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
-	  jsonArray.add(jsonData);
-	  NIOInstrumenter.incrSent();
-	  ((JSONMessageExtractor) worker).processJSONMessages(jsonArray);
-	  /* Note: Can not return jsonData.toString().length() as it
-	   * may be changed at the receiving end. Local sends are 
-	   * just passing pointers, not actually using networking.
-	   */
-	  return length;
+    int length = jsonData.toString().length();
+    ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
+    jsonArray.add(jsonData);
+    NIOInstrumenter.incrSent();
+    ((JSONMessageExtractor) worker).processJSONMessages(jsonArray);
+    /* Note: Can not return jsonData.toString().length() as it
+     * may be changed at the receiving end. Local sends are 
+     * just passing pointers, not actually using networking.
+     */
+    return length;
   }
 
   /**
@@ -263,7 +239,9 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
    * all NIO sends actually happen. Do NOT add more gunk to this method.
    */
   private int sendUnderlying(NodeIDType id, byte[] data) throws IOException {
-    if (DEBUG) log.info("Send to: " + id + " json: " + new String(data));
+    if (DEBUG) {
+      log.info("Send to: " + id + " json: " + new String(data));
+    }
     return this.send(id, data);
   }
 

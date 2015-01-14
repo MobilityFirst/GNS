@@ -30,7 +30,7 @@ public class Config {
    * One way this is used is to wrap if conditionals around logging statements. If this is false
    * logging used for debugging won't be generated in many cases.
    */
-  public static boolean debuggingEnabled = true;
+  public static boolean debuggingEnabled = false;
 
   // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?
   public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/";  
@@ -68,7 +68,7 @@ public class Config {
   /**
    * Chooses between legacy Paxos implementation and newer gigpaxos.
    */
-  public static boolean useOldPaxos = false; // option to use older paxos package (current default is NOT to use gigpaxos)
+  public static boolean useOldPaxos = true; // option to use older paxos package (current default is NOT to use gigpaxos)
   /**
    * Controls whether DNS reads can read fields from group guids.
    */

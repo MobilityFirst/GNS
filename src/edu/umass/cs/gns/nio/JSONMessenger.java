@@ -36,6 +36,8 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 	private Logger log =
 			(NIOTransport.DEBUG ? Logger.getLogger(getClass().getName())
 					: GNS.getLogger());
+        
+        private static boolean debuggingEnabled = true;
 
 	public JSONMessenger(InterfaceJSONNIOTransport<NodeIDType> niot) {
 		assert (niot != null);
@@ -77,13 +79,15 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				NodeIDType recipient = (NodeIDType)(mtask.recipients[r]);
 				int sent = nioTransport.sendToID(recipient, jsonMsg);
 				if (sent == length) {
+                                  if (debuggingEnabled)
 					log.fine("Node " + this.nioTransport.getMyID() + " sent " + " to node " +
 							mtask.recipients[r] + ": " + jsonMsg);
 				}
 				else if (sent < length) {
 					if (NIOTransport.sampleLog()) {
 						log.warning("Node " + this.nioTransport.getMyID() +
-								" messenger experiencing congestion, this is bad but not disastrous (yet)");
+								" messenger experiencing congestion, this is bad but not disastrous (yet) "
+                                                        + "sent=" + sent + " length=" + length + " json=" + jsonMsg);
 					}
 					@SuppressWarnings("unchecked")
 					Retransmitter rtxTask =

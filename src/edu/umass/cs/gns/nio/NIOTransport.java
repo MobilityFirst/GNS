@@ -179,9 +179,13 @@ public class NIOTransport<NodeIDType> implements Runnable {
     int written = this.queuePendingWrite(isa, data);
     // Finally, wake up our selecting thread so it can make the required changes
     this.selector.wakeup();
+    if (DEBUG) {
+      log.fine("############## " + written);
+    }
     return written;
   }
 
+  @Override
   public void run() {
     this.started = true;
     while (!isStopped()) {

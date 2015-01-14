@@ -10,8 +10,9 @@ import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONException;
@@ -21,6 +22,8 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
+import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.util.ArrayList;
 
@@ -63,7 +66,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   // Instrumentation
   private final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  public boolean debuggingEnabled = true;
+  public boolean debuggingEnabled = false;
 
    {
     randomID = new Random();

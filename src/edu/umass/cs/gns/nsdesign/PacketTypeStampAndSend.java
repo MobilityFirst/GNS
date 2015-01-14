@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -14,9 +15,8 @@ import java.net.InetSocketAddress;
  *
  * Created by abhigyan on 3/29/14.
  *
- * Arun: Edited to make member fields private. FIXME: Need to change
- * the name to StampAndSend or something to reflect that this class is
- * actually sending the packet.
+ * Arun: Edited to make member fields private.
+ *
  * @param <NodeIDType>
  */
 public class PacketTypeStampAndSend<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
@@ -42,12 +42,26 @@ public class PacketTypeStampAndSend<NodeIDType> implements InterfaceJSONNIOTrans
   @Override
   public int sendToID(NodeIDType id, JSONObject jsonData) throws IOException {
     try {
-      // Creating a copy of json so that modifications to the original object does not modify the outgoing packet.
-      // This was created to fix a bug we were seeing.
-      JSONObject jsonCopy = new JSONObject(jsonData.toString());
+      // Creating a copy of json so that modifications to the 
+      // original object does not modify the outgoing packet.
+      String originalDataString = jsonData.toString();
+      int originalSize = originalDataString.length();
+      JSONObject jsonCopy = new JSONObject(originalDataString);
       Packet.putPacketType(jsonCopy, type);
-      return nio.sendToID(id, jsonCopy);
+      int alteredSize = jsonCopy.toString().length();
+      int written = nio.sendToID(id, jsonCopy);
+      // A little hair here because the caller expects us to write
+      // the amount they sent, not the altered amount
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().fine("############## " + originalSize + " actualWritten=" + written);
+      }
+      if (written == alteredSize) {
+        return originalSize;
+      } else {
+        return written;
+      }
     } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to stamp due to JSON error:" + e);
       e.printStackTrace();
     }
     return -1;
@@ -58,9 +72,20 @@ public class PacketTypeStampAndSend<NodeIDType> implements InterfaceJSONNIOTrans
     try {
       // Creating a copy of json so that modifications to the original object does not modify the outgoing packet.
       // This was created to fix a bug we were seeing.
-      JSONObject jsonCopy = new JSONObject(jsonData.toString());
+      String originalDataString = jsonData.toString();
+      int originalSize = originalDataString.length();
+      JSONObject jsonCopy = new JSONObject(originalDataString);
       Packet.putPacketType(jsonCopy, type);
-      return nio.sendToAddress(isa, jsonCopy);
+      int alteredSize = jsonCopy.toString().length();
+      int written = nio.sendToAddress(isa, jsonCopy);
+      // a little hair here because the caller expects us to write
+      // the amount they sent, not the altered amount
+      //GNS.getLogger().info("############## " + originalSize + " actualWritten=" + written);
+      if (written == alteredSize) {
+        return originalSize;
+      } else {
+        return written;
+      }
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -70,7 +95,7 @@ public class PacketTypeStampAndSend<NodeIDType> implements InterfaceJSONNIOTrans
   /**
    * TEST CODE
    */
-  @SuppressWarnings("unchecked") 
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws JSONException, IOException {
     System.out.println("Test if the send methods mark outgoing packets with correct packet types:");
     final Packet.PacketType type1 = Packet.PacketType.PAXOS_PACKET;
@@ -116,7 +141,7 @@ public class PacketTypeStampAndSend<NodeIDType> implements InterfaceJSONNIOTrans
     PacketTypeStampAndSend packetTypeStamper = new PacketTypeStampAndSend(jsonnioTransport, type1);
     JSONObject sample = new JSONObject();
     sample.put("Apple", "Banana");
-    packetTypeStamper.sendToID("100", sample);  
+    packetTypeStamper.sendToID("100", sample);
     packetTypeStamper.sendToAddress(null, sample);
     System.out.println("TEST SUCCESS.");
   }

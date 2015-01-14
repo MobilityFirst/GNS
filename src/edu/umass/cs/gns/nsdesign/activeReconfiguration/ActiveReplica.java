@@ -54,9 +54,17 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     return coordinator;
   }
 
-  /* FIXME: Arun: Really bizarre to pass a ScheduledThreadPoolExecutor in the constructor. Why
-   * can't this class use an internal executor of its own? 
-   */
+/**
+ * Create an ActiveReplica.
+ * 
+ * Note that a ScheduledThreadPoolExecutor is created as part of the NameServer and passed into this function.
+ * 
+ * @param nodeID
+ * @param gnsNodeConfig
+ * @param nioServer
+ * @param scheduledThreadPoolExecutor
+ * @param reconfigurableApp 
+ */
   public ActiveReplica(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig,
                        InterfaceJSONNIOTransport<NodeIDType> nioServer, ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
                        AppType reconfigurableApp) {

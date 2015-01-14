@@ -116,7 +116,7 @@ public class ReconfigurableClient {
 		try {
 			JSONMessenger<Integer> messenger = new JSONMessenger<Integer>(
 					(new JSONNIOTransport<Integer>(null, nc, new PacketDemultiplexerDefault(), 
-							true)).enableStampSenderPort());
+							true)));
 			client = new ReconfigurableClient(nc, messenger);
 			int numRequests = 1;
 			String namePrefix = "name";
