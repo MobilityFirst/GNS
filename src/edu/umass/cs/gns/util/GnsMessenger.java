@@ -3,6 +3,7 @@ package edu.umass.cs.gns.util;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nsdesign.Config;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -54,6 +55,9 @@ public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeI
       JSONObject dataCopy = new JSONObject(stringData);
       int sent = gnsnioTransport.sendToID(id, dataCopy);
       if (sent < dataLength) {
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().info("Retansmitting to " + id + " " + dataCopy);
+        }
         Retransmitter rtxTask = new Retransmitter(id, dataCopy, RTX_DELAY);
         scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
       }

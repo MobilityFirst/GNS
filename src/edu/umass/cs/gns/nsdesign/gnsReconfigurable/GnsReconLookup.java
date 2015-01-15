@@ -132,8 +132,9 @@ public class GnsReconLookup {
           // if the name record doesn't contain the field we are looking for
           // and only for single field lookups.
           if (Config.allowGroupGuidIndirection && field != null && !Defs.ALLFIELDS.equals(field)
-                  && !nameRecord.containsKey(field) && !recovery) {
+                  && nameRecord != null && !nameRecord.containsKey(field) && !recovery) {
             if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
+              // We got the values and send them out above so we're done here.
               return;
             }
           }

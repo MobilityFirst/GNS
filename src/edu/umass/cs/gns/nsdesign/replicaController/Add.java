@@ -46,7 +46,7 @@ public class Add {
                                                   boolean recovery)
           throws JSONException, FailedDBOperationException, IOException {
 
-    if (Config.debuggingEnabled) GNS.getLogger().fine("Executing ADD at replica controller " + addRecordPacket +
+    if (Config.debuggingEnabled) GNS.getLogger().info("Executing ADD at replica controller " + addRecordPacket +
             " Local name server address = " + addRecordPacket.getLnsAddress());
     if (recovery) ReplicaControllerRecord.removeNameRecordPrimary(replicaController.getDB(), addRecordPacket.getName());
 

@@ -166,7 +166,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
    */
   public int send(NodeIDType id, byte[] data) throws IOException {
     if (DEBUG) {
-      log.fine("Node " + myID + " invoked send (" + id + ", "
+      log.info("Node " + myID + " invoked send (" + id + ", "
               + new String(data) + "), checking connection status..");
     }
     return send(new InetSocketAddress(this.nodeConfig.getNodeAddress(id),

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nio;
 
+import edu.umass.cs.gns.main.GNS;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,8 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
 
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
 import java.util.logging.Level;
 
 /**
@@ -21,7 +24,7 @@ import java.util.logging.Level;
  */
 public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemultiplexer {
 
-	private static final boolean NON_BLOCKING_PROCESSING = false; // for testing only
+  private static final boolean NON_BLOCKING_PROCESSING = false; // for testing only
   /**
    * ******************************** Start of new, untested parts **************************
    */
@@ -63,17 +66,29 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
 
   // This method will be invoked by NIO
   protected boolean handleJSONObjectSuper(JSONObject jsonObject) throws JSONException {
-	NIOInstrumenter.rcvdJSONPacket(jsonObject);
+    NIOInstrumenter.rcvdJSONPacket(jsonObject);
+    if (Config.debuggingEnabled) {
+      if (Packet.hasPacketTypeField(jsonObject)) {
+        Packet.PacketType packetType = Packet.getPacketType(jsonObject);
+         GNS.getLogger().fine("########### HANDLING " + packetType.toString() + "->" + jsonObject.toString());
+      } else {
+         GNS.getLogger().fine("########### HANDLING {NO TYPE}" + jsonObject.toString());
+      }
+     
+    }
     InterfacePacketDemultiplexer pd = this.demuxMap.get(JSONPacket.getPacketType(jsonObject));
     Tasker tasker = new Tasker(jsonObject, pd != null ? pd : this);
     boolean handled = this.demuxTypes.containsKey(JSONPacket.getPacketType(jsonObject));
     if (handled) {
-    	if(NON_BLOCKING_PROCESSING) tasker.run(); // tasker better be really quick
-    	else executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);  
-    	/* Note: executor.submit() consistently yields poorer performance
-    	 * than scheduling at 0 as above even though they are equivalent.
-    	 * Probably garbage collection or heap optimization issues.
-    	 */
+      if (NON_BLOCKING_PROCESSING) {
+        tasker.run(); // tasker better be really quick
+      } else {
+        executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
+      }
+      /* Note: executor.submit() consistently yields poorer performance
+       * than scheduling at 0 as above even though they are equivalent.
+       * Probably garbage collection or heap optimization issues.
+       */
     } else {
       log.log(Level.WARNING, "Ignoring unknown packet type: {0}", JSONPacket.getPacketType(jsonObject));
     }

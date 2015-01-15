@@ -5,3 +5,6 @@
 /scripts/3nodeslocal/log/
 /scripts/3nodeslocal/paxoslog/
 /scripts/3nodeslocal/derby.log
+/scripts/3nodesnew/log/
+/scripts/3nodesnew/paxosLog/
+/scripts/3nodesnew/derby.log

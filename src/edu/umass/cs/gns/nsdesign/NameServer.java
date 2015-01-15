@@ -23,13 +23,8 @@ import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.GnsMessenger;
-
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -87,6 +82,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
    */
   private void init(final NodeIDType nodeID, HashMap<String, String> configParameters, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException {
     // set to false to cancel non-periodic delayed tasks upon shutdown
+    GNS.getLogger().info("Begin name server initialization for " + nodeID.toString());
     this.executorService.setExecuteExistingDelayedTasksAfterShutdownPolicy(false);
 
     // init transport
@@ -95,8 +91,8 @@ public class NameServer<NodeIDType> implements Shutdownable {
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
       GNS.getLogger().info(nodeID.toString() + " Emulating delays ... ");
     }
-    JSONMessageExtractor worker = new JSONMessageExtractor(nsDemultiplexer);
-    JSONNIOTransport<NodeIDType> gnsnioTransport = new JSONNIOTransport<NodeIDType>(nodeID, gnsNodeConfig, worker);
+    JSONMessageExtractor messageExtractor = new JSONMessageExtractor(nsDemultiplexer);
+    JSONNIOTransport<NodeIDType> gnsnioTransport = new JSONNIOTransport<NodeIDType>(nodeID, gnsNodeConfig, messageExtractor);
     new Thread(gnsnioTransport).start();
     tcpTransport = new GnsMessenger<NodeIDType>(nodeID, gnsnioTransport, executorService);
 

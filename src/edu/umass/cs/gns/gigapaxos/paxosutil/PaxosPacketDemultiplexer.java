@@ -6,6 +6,8 @@ import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,6 +31,7 @@ public class PaxosPacketDemultiplexer<NodeIDType> extends
 		this.register(Packet.PacketType.PAXOS_PACKET);
 	}
 
+        @Override
 	public boolean handleJSONObject(JSONObject jsonMsg) {
 		boolean isPacketTypeFound = true;
 
@@ -42,6 +45,11 @@ public class PaxosPacketDemultiplexer<NodeIDType> extends
 				 * operation will be done by Messenger using
 				 * IntegerMap just before sending out packets.
 				 */
+                                
+                                if (Config.debuggingEnabled) {
+                                  GNS.getLogger().info("########### HANDLING " + 
+                                    PaxosPacket.getPaxosPacketType(jsonMsg) + "->" + jsonMsg.toString());
+                                }
 				paxosManager.handleIncomingPacket((jsonMsg));
 				break;
 			default:
