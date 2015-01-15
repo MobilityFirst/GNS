@@ -130,7 +130,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().finer("Handling " + packetType.name() + " packet: " + json.toString());
+        GNS.getLogger().info("Handling " + packetType.name() + " packet: " + json.toString());
       }
       switch (packetType) {
         case DNS:

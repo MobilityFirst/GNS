@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
+
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
@@ -10,12 +11,11 @@ import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.GroupChangeCompletePacket;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PACKET_TYPE;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
-import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
@@ -70,17 +70,29 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
 
   @Override
   public int coordinateRequest(JSONObject request) {
-    if (Config.debuggingEnabled) {
-      GNS.getLogger().info("Request: " + request.toString());
-    }
+
     if (this.paxosInterface == null) {
       return -1; // replicable app not set
     }
     try {
       Packet.PacketType type = Packet.getPacketType(request);
+      if (Config.debuggingEnabled) {
+        int packetTypeInt = request.optInt(edu.umass.cs.gns.paxos.paxospacket.PaxosPacket.PACKET_TYPE_FIELD_NAME, -1);
+        if (packetTypeInt != -1) {
+          GNS.getLogger().info("###### " + nodeID + " Request: " + type + 
+                " PaxosType: " + edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.getPacketType(packetTypeInt));
+        }
+        packetTypeInt = request.optInt(edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PAXOS_PACKET_TYPE);
+        if (packetTypeInt != -1) {
+          GNS.getLogger().info("###### " + nodeID + " Request: " + type + 
+                " GigaPaxosType: " + edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType.getPaxosPacketType(packetTypeInt));
+        }
+        
+      }
       switch (type) {
         // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:
+          
           Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
           paxosManager.handleIncomingPacket(request);
           break;
@@ -89,8 +101,8 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           addPacket.setNameServerID(nodeID);
           // FIXME: HACK ALERT : GIGAPAXIS TRANSITION UNFINISHED
           if (!Config.useOldPaxos) {
-            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket = 
-                    new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, addPacket.toString(), false);
+            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
+                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, addPacket.toString(), false);
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(addPacket.getName()), requestPacket.toString());
           } else {
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(addPacket.getName()), addPacket.toString());
@@ -101,8 +113,8 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           removePacket.setNameServerID(nodeID);
           // FIXME: HACK ALERT : GIGAPAXIS TRANSITION UNFINISHED
           if (!Config.useOldPaxos) {
-            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket = 
-                    new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, removePacket.toString(), false);
+            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
+                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, removePacket.toString(), false);
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), requestPacket.toString());
           } else {
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
@@ -134,7 +146,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           break;
         default:
           GNS.getLogger().severe("Packet type not found in coordination: " + type);
-          break;
+          return -1;
       }
     } catch (JSONException e) {
       e.printStackTrace();

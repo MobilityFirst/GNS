@@ -70,32 +70,25 @@ public class Add {
           // change packet type and inform all active replicas.
           addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
           addRecordPacket.setActiveNameServers(rcRecord.getActiveNameservers());
-          if (Config.debuggingEnabled) GNS.getLogger().fine("Name: " + rcRecord.getName() +
+          if (Config.debuggingEnabled) GNS.getLogger().info("Name: " + rcRecord.getName() +
                   " Initial active replicas: " + Util.setOfNodeIdToString(rcRecord.getActiveNameservers()));
           for (Object nodeID: rcRecord.getActiveNameservers()) {
             replicaController.getNioServer().sendToID(nodeID, addRecordPacket.toJSONObject());
           }
         }
-
-        ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
-        if (Config.debuggingEnabled) GNS.getLogger().fine("Add complete informing client. " + addRecordPacket
-                + " Local name server address = " + addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
         if (!recovery) {
+           ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
+        if (Config.debuggingEnabled) GNS.getLogger().info("Add complete informing client. " + addRecordPacket
+                + " Local name server address = " + addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
           replicaController.getNioServer().sendToAddress(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
         }
       }
-//    } catch (FailedDBOperationException e) {
-//      // send error to client
-//      ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.ERROR, addRecordPacket);
-//      if (!recovery && addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
-//        replicaController.getNioServer().sendToID(addRecordPacket.getLocalNameServerID(), confirmPkt.toJSONObject());
-//      }
     } catch (RecordExistsException e) {
       if (addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
         // send error to client
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.DUPLICATE_ERROR, addRecordPacket);
         if (Config.debuggingEnabled)
-          GNS.getLogger().fine("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server address = " +
+          GNS.getLogger().info("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server address = " +
                   addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
         if (!recovery) {
           replicaController.getNioServer().sendToAddress(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.reconfiguration;
 
-
+// ANYTHING THAT IS REPLICABLE SHOULD BE InterfaceReplicable
 /**
 @author V. Arun
  */

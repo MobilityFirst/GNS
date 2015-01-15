@@ -5,6 +5,7 @@ import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
+import edu.umass.cs.gns.util.NetworkUtils;
 import org.apache.commons.cli.*;
 
 import java.io.File;
@@ -337,7 +338,7 @@ public class StartLocalNameServer {
   /*
    * Sample invocation
    * 
-   java -Xmx2g -cp ../../build/jars/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer -address 127.0.0.1 -port 24398
+   java -Xmx2g -cp ../../build/jars/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer -port 24398
    -nsfile name-server-info 
    -cacheSize 10000 -primary 3 -location -vInterval 1000 -chooseFromClosestK 1 -lookupRate 10000 
    -updateRateMobile 0 -updateRateRegular 10000 -maxQueryWaitTime 100000 -queryTimeout 100
@@ -352,17 +353,10 @@ public class StartLocalNameServer {
    *  ***********************************************************
    */
   public static void main(String[] args) {
-    // all parameters will be specified in the arg list
-    startLNS(null, -1, null, args);
-  }
-
-  // supports old style single name-server-info style as nsFile as well as new format 
-  public static void startLNS(String address, int port, String nsFile, String... args) {
     try {
       CommandLine parser = null;
       try {
         parser = initializeOptions(args);
-
       } catch (ParseException e) {
         e.printStackTrace();
         printUsage();
@@ -377,8 +371,7 @@ public class StartLocalNameServer {
       if (parser.hasOption(CONFIG_FILE)) {
         configFile = parser.getOptionValue(CONFIG_FILE);
       }
-
-      startLNSConfigFile(address, port, nsFile, configFile, parser);
+      startLNSConfigFile(null, -1, null, configFile, parser);
     } catch (Exception e1) {
       e1.printStackTrace();
       printUsage();
@@ -388,19 +381,17 @@ public class StartLocalNameServer {
 
   /**
    * During testing, we can start LNS by calling this method without using command line parameters.
-   * Three parameters of this method, <code>id</code>, <code>nsFile</code>, and <code>configFile</code>, are
+   * Three parameters of this method, <code>address</code>, <code>nsFile</code>, and <code>configFile</code>, are
    * sufficient to start local name server; <code>CommandLine</code> can be null. Values of id and nsFile will not be
    * used, if config file also contains values of these parameters.
    *
-   * @param id ID of local name server (GOING AWAY)
-   * @param address // replaces id
+   * @param address
    * @param nsFile node config file (can be null)
    * @param configFile config file with parameters (can be null)
    * @param parser command line arguments (can be null)
    */
   public static void startLNSConfigFile(String address, int port, String nsFile, String configFile, CommandLine parser) {
     try {
-
       // create a hash map with all options including options in config file and the command line arguments
       HashMap<String, String> allValues = new HashMap<String, String>();
 
@@ -419,9 +410,7 @@ public class StartLocalNameServer {
         for (String propertyName : prop.stringPropertyNames()) {
           allValues.put(propertyName, prop.getProperty(propertyName));
         }
-
       }
-
       // add options given via command line to hashmap. these options can override options given in config file.
       if (parser != null) {
         for (Option option : parser.getOptions()) {
@@ -439,6 +428,8 @@ public class StartLocalNameServer {
 
       if (allValues.containsKey(ADDRESS)) {
         address = allValues.get(ADDRESS);
+      } else {
+        address = NetworkUtils.getLocalHostLANAddress().getHostAddress();
       }
 
       if (allValues.containsKey(PORT)) {

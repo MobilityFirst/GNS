@@ -94,7 +94,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     try {
       final Packet.PacketType type = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("MsgType " + type + " Msg " + json);
+        GNS.getLogger().fine("MsgType " + type + " Msg " + json);
       }
       nameServer.getExecutorService().submit(new Runnable() {
         @Override

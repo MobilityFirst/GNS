@@ -19,13 +19,15 @@ import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 
 /**
  * Class implements all functionality of a replica controller.
@@ -64,18 +66,19 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
 
   private final UniqueIDHashMap ongoingStartActiveRequests = new UniqueIDHashMap();
 
-
   private final ConcurrentHashMap<NodeIDType, Double> nsRequestRates = new ConcurrentHashMap<>();
 
-  /** Algorithm for replicating name records.*/
+  /**
+   * Algorithm for replicating name records.
+   */
   private ReplicationFrameworkInterface<NodeIDType> replicationFrameworkInterface;
 
   /**
    * constructor object
    */
   public ReplicaController(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
-                           ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
-                           MongoRecords<NodeIDType> mongoRecords) {
+          ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
+          MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
     this.nioServer = nioServer;
@@ -94,8 +97,10 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   }
 
   /**
-   * BEGIN: getter methods for ReplicaController elements ***
-   * @return 
+   * BEGIN: getter methods for ReplicaController elements
+   *
+   ***
+   * @return
    */
   public NodeIDType getNodeID() {
     return nodeID;
@@ -133,10 +138,12 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
    * ****END: getter methods for ReplicaController elements ***
    */
   /**
-   * ****BEGIN: miscellaneous methods needed by replica controller module ***
+   * ****BEGIN: miscellaneous methods needed by replica controller module
+   *
+   ***
    * @param name
    * @param nameServers
-   * @return 
+   * @return
    */
   // FIXME: Code like this really needs an explanation!!
   public boolean isSmallestNodeRunning(String name, Set<NodeIDType> nameServers) {
@@ -145,27 +152,27 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     Collections.sort(x1, NodeIDComparator);
     Collections.shuffle(x1, r);
     for (NodeIDType x : x1) {
-      if (gnsNodeConfig.getPingLatency(x) < 9000L)
+      if (gnsNodeConfig.getPingLatency(x) < 9000L) {
         return x.equals(nodeID);
+      }
     }
     return false;
   }
-  
-   
+
   public static Comparator<Object> NodeIDComparator = new Comparator<Object>() {
- 
-            @Override
-	    public int compare(Object object1, Object object2) {
- 
-	      String objectName1 = object1.toString();
-	      String objectName2 = object2.toString();
- 
-	      //ascending order
-	      return objectName1.compareTo(objectName2);
- 
-	    }
- 
-	};
+
+    @Override
+    public int compare(Object object1, Object object2) {
+
+      String objectName1 = object1.toString();
+      String objectName2 = object2.toString();
+
+      //ascending order
+      return objectName1.compareTo(objectName2);
+
+    }
+
+  };
 
   /**
    * Returns the version number of next group of active replicas, whose current version number is 'activeVersion'.
@@ -254,6 +261,9 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     try {
       JSONObject json = new JSONObject(value);
       Packet.PacketType packetType = Packet.getPacketType(json);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("************ " + packetType + " RECOVERY IS " + recovery);
+      }
       switch (packetType) {
 
         // add name to GNS
@@ -302,7 +312,8 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
         case NAME_SERVER_LOAD:
           updateNSLoad(json);
         default:
-          break;
+          GNS.getLogger().severe("Unexpected packet received " + packetType);
+          return false;
       }
       executed = true;
       // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
@@ -319,10 +330,12 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   }
 
   private void updateNSLoad(JSONObject json) throws JSONException {
-    NameServerLoadPacket<NodeIDType> nsLoad  = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
-    if (Config.debuggingEnabled) GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID() +
-            "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID()) +
-            "\tNewNoad: " + nsLoad.getLoadValue() + "\t");
+    NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID()
+              + "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID())
+              + "\tNewNoad: " + nsLoad.getLoadValue() + "\t");
+    }
     nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
 
