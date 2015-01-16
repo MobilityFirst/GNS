@@ -51,13 +51,10 @@ public class Select {
 
   public static void handlePacketSelectResponse(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().finer("LNS" + handler.getNodeAddress() + " recvd QueryResponse: " + json);
+      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " recvd QueryResponse: " + json);
     }
     SelectResponsePacket packet = new SelectResponsePacket(json, handler.getGnsNodeConfig());
-    if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " recvd from NS" + packet.getNameServerID().toString());
-    }
-    SelectInfo info = handler.getSelectInfo(packet.getLnsQueryId());
+    //SelectInfo info = handler.getSelectInfo(packet.getLnsQueryId());
     // send a response back to the client
     handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     handler.removeSelectInfo(packet.getLnsQueryId());

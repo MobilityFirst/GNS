@@ -18,11 +18,11 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 6/17/14.
  */
-public class TestReplicable implements Replicable{
+public class ReplicableTransition implements Replicable{
 
   private Replicable replicable;
 
-  public TestReplicable(Replicable replicable) {
+  public ReplicableTransition(Replicable replicable) {
     this.replicable = replicable;
   }
 
@@ -33,7 +33,7 @@ public class TestReplicable implements Replicable{
 
       JSONObject json = new JSONObject(value);
       if (Packet.getPacketType(json).equals(Packet.PacketType.PAXOS_PACKET)) {
-        if (Config.debuggingEnabled) GNS.getLogger().fine(" Received decision: " + value);
+        if (Config.debuggingEnabled) GNS.getLogger().info("$$$$$$$$$$ Received decision: " + value);
         RequestPacket requestPacket = new RequestPacket(json);
         value = requestPacket.requestValue;
         noop = value.equals(RequestPacket.NO_OP);
@@ -42,8 +42,11 @@ public class TestReplicable implements Replicable{
       GNS.getLogger().severe(" JSON Exception; " + value);
       e.printStackTrace();
     }
-
-    return noop || replicable.handleDecision(name, value, doNotReplyToClient);
+    if (noop) {
+      return true;
+    } else {
+      return replicable.handleDecision(name, value, doNotReplyToClient);
+    }
   }
 
   @Override

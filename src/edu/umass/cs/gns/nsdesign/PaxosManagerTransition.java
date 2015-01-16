@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import java.util.Set;
 
 /**
- * Temporary class created for the testing with multipaxos package. The multipaxos package assumes that
+ * Class created to patch over differences with the new gigapaxos code. The gigapaxos package assumes that
  * the parameter 'String value' in these two 'propose' methods are actually RequestPacket objects represented
  * as a string:
  *
@@ -17,14 +17,13 @@ import java.util.Set;
  *
  * The above two methods in this class wrap the actual value inside a RequestPacket before calling the
  * propose/proposeStop methods.
- *
- * Created by abhigyan on 6/17/14.
+ * 
  */
-public class TestPaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
+public class PaxosManagerTransition<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
   private PaxosManager<NodeIDType> paxosManager;
 
-  public TestPaxosManager(PaxosManager<NodeIDType> paxosManager) {
+  public PaxosManagerTransition(PaxosManager<NodeIDType> paxosManager) {
     this.paxosManager = paxosManager;
   }
 
@@ -41,13 +40,6 @@ public class TestPaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDTyp
   @Override
   public String propose(String paxosIDNoVersion, String value) {
     RequestPacket requestPacket = new RequestPacket(-1, value, false);
-//    try {
-//      GNS.getLogger().info(" Size of value: " + value.length() + "\trequestpacket size " + requestPacket.toJSONObject().toString().length());
-//      GNS.getLogger().info(" String value: " + value);
-//      GNS.getLogger().info(" String requestpacket " + requestPacket.toJSONObject().toString());
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//    }
     return paxosManager.propose(paxosIDNoVersion, requestPacket.toString());
   }
 

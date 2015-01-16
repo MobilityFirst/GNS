@@ -134,9 +134,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		initiateRecovery();
 	}
 
-	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc,
-			InterfaceJSONNIOTransport<NodeIDType> niot, Replicable pi) {
-		this(id, nc, niot, pi, null);
+	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nodeConfig,
+			InterfaceJSONNIOTransport<NodeIDType> niot, Replicable paxosInterface) {
+		this(id, nodeConfig, niot, paxosInterface, null);
 	}
 
 	/*
@@ -178,7 +178,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				this.getInstance(paxosID, (hasRecovered && hri == null),
 					tryRestore);
 		if (pism != null) return false;
-
+                log.info("&&&&&&&&&&&&& MY APP CLASS is " + (app != null ? app
+								: this.myApp).getClass().getName());
 		pism =
 				new PaxosInstanceStateMachine(paxosID, version, id,
 						this.integerMap.put(gms), app != null ? app

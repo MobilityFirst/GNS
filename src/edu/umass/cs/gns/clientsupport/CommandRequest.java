@@ -85,7 +85,7 @@ public class CommandRequest {
       String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
       //String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("########CANONICAL JSON: " + commandSansSignature);
+        GNS.getLogger().fine("########CANONICAL JSON: " + commandSansSignature);
       }
       command.put(SIGNATURE, signature);
       command.put(SIGNATUREFULLMESSAGE, commandSansSignature);

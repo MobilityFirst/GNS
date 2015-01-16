@@ -50,13 +50,11 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
     if (!Config.useOldPaxos) {
       GNS.getLogger().info("Using gigapaxos");
       this.paxosInterface = paxosInterface;
-      //this.paxosInterface = new TestReplicable(paxosInterface);
-      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID, nodeConfig,
-              new PacketTypeStampAndSend<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
-              this.paxosInterface, paxosConfig);
-//      this.paxosManager = new TestPaxosManager(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
-//              nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
-//              this.paxosInterface, paxosConfig));
+      // this doesn't do any good because somebody is calling createPaxosInstance with their own app
+      //this.paxosInterface = new ReplicableTransition(paxosInterface);
+      this.paxosManager = new PaxosManagerTransition(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
+              nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
+              this.paxosInterface, paxosConfig));
     } else {
       GNS.getLogger().info("Using old Paxos (not gigapaxos)");
       this.paxosInterface = paxosInterface;
@@ -130,13 +128,13 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
         case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
           // calling handle decision before creating paxos instance to insert state for name in database.
           if (Config.debuggingEnabled) {
-            GNS.getLogger().fine("*******Before creating paxos instance: " + request);
+            GNS.getLogger().info("*******Before creating paxos instance: " + request);
           }
           callHandleDecisionWithRetry(null, request.toString(), false);
           AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(request, nodeConfig);
           paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION, recordPacket.getActiveNameServers(), paxosInterface);
           if (Config.debuggingEnabled) {
-            GNS.getLogger().fine("*******Added paxos instance:" + recordPacket.getName());
+            GNS.getLogger().info("*******Added paxos instance:" + recordPacket.getName());
           }
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
