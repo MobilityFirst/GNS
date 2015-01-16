@@ -178,8 +178,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				this.getInstance(paxosID, (hasRecovered && hri == null),
 					tryRestore);
 		if (pism != null) return false;
-                log.info("&&&&&&&&&&&&& MY APP CLASS is " + (app != null ? app
-								: this.myApp).getClass().getName());
+                //log.info("&&&&&&&&&&&&& MY APP CLASS is " + (app != null ? app : this.myApp).getClass().getName());
 		pism =
 				new PaxosInstanceStateMachine(paxosID, version, id,
 						this.integerMap.put(gms), app != null ? app

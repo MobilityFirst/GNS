@@ -701,8 +701,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			String pid = this.getPaxosID();
 			while(!executed) {
                           if (Config.debuggingEnabled) {
-                            if (execCount > 10) break;
-                            ThreadUtils.sleep(200); // take a chill pill
+                            if (execCount > 100) break;
+                            //ThreadUtils.sleep(200); // take a chill pill
                           }
 				executed = this.clientRequestHandler.handleDecision(pid, 
                                         // CHANGED THIS TO SEND THE requestValue - Westy
