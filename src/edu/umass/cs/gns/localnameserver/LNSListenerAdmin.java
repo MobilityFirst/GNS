@@ -13,13 +13,11 @@ import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -29,18 +27,13 @@ import java.util.logging.Level;
  *
  * @author Westy
  */
-@SuppressWarnings("unchecked") //FIXME: Either convert to generics or rewrite to use Nio?
+@SuppressWarnings("unchecked")
 public class LNSListenerAdmin extends Thread implements Shutdownable {
 
   /**
    * Socket over which active name server request arrive *
    */
   private ServerSocket serverSocket;
-  private static Random randomID;
-  /**
-   * Keeps track of which responses socket should be used for which request *
-   */
-  private static Map<Integer, InetAddress> hostMap;
   /**
    * Keeps track of how many responses are outstanding for a request *
    */
@@ -57,7 +50,6 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
   public LNSListenerAdmin(ClientRequestHandlerInterface handler) throws IOException {
     super("ListenerAdmin");
     this.serverSocket = new ServerSocket(GNS.DEFAULT_LNS_ADMIN_PORT);
-    randomID = new Random(System.currentTimeMillis());;
     replicationMap = new HashMap<Integer, Integer>();
     this.handler = handler;
   }
@@ -101,8 +93,6 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
             GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
-            //dumpRequestPacket.setId(id);
-            //dumpRequestPacket.setLnsAddress(handler.getNodeAddress()); // done before it gets here
             JSONObject json = dumpRequestPacket.toJSONObject();
             Set<Object> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
@@ -152,7 +142,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               break;
             case PINGTABLE:
               String node = new String(incomingPacket.getArgument());
-              // -1 means return the LNS data
+              // null means return the LNS data
               if (node == null || handler.getGnsNodeConfig().getNodeIDs().contains(node)) {
                 if (node == null) {
                   jsonResponse = new JSONObject();
@@ -176,7 +166,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             case PINGVALUE:
               String node1 = new String(incomingPacket.getArgument());
               String node2 = new String(incomingPacket.getArgument2());
-              // -1 means return the LNS data
+              // null means return the LNS data
               if (node1 == null || handler.getGnsNodeConfig().nodeExists(node1)
                       && handler.getGnsNodeConfig().nodeExists(node2)) {
                 if (node1 == null) {

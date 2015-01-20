@@ -635,7 +635,7 @@ class WakeupSelectorTask extends TimerTask {
 //		synchronized (this.connectionStatus) {
 ////			String hostIP = socketChannel.socket().getInetAddress().getHostAddress();
 //			String hostIP  = "127.0.0.1";
-//			int port = socketChannel.socket().getPort();
+//			int port = socketChannel.socket().getPortForTopLevelNode();
 //			if (IP_Port_to_ID.containsKey(hostIP + ":" + port)) {
 //				int id = (Integer) IP_Port_to_ID.toString(hostIP + ":" + port);
 //				System.out.println("CONNECTED to " + id);

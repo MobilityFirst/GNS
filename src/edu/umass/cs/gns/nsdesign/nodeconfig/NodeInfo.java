@@ -4,18 +4,20 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * ***********************************************************
- *
+ * The NodeInfo class is used to represent nodes in a GNSNodeConfig.
+ * 
  * @author  Westy
  * @param <NodeIDType>
- ***********************************************************
  */
-public class HostInfo<NodeIDType> {
+public class NodeInfo<NodeIDType> {
 
   /**
    * Id of the name server *
    */
   private final NodeIDType id;
+  private final NodeIDType activeReplicaID;
+  private final NodeIDType reconfiguratorID;
+  
   /**
    * IP address of the name server *
    */
@@ -52,6 +54,8 @@ public class HostInfo<NodeIDType> {
    * Constructs a NameServerInfo with the give parameter
    *
    * @param id Name server id
+   * @param activeReplicaID
+   * @param reconfiguratorID
    * @param ipAddressString
    * @param startingPortNumber first port number of block of ports used for TCP and UDP comms
    * @param pingLatency RTT latency between the local nameserver and this nameserver in milleseconds
@@ -59,19 +63,44 @@ public class HostInfo<NodeIDType> {
    * @param longitude Longitude of the nameserver
    ***********************************************************
    */
-  public HostInfo(NodeIDType id, String ipAddressString, int startingPortNumber, long pingLatency, double latitude, double longitude) {
+  public NodeInfo(NodeIDType id, NodeIDType activeReplicaID, NodeIDType reconfiguratorID,
+          String ipAddressString, int startingPortNumber, 
+          long pingLatency, double latitude, double longitude) {
 
     this.id = id;
+    this.activeReplicaID = activeReplicaID;
+    this.reconfiguratorID = reconfiguratorID;
     this.ipAddressString = ipAddressString;
-//    this.ipAddress = ipAddress;
     this.startingPortNumber = startingPortNumber;
     this.pingLatency = pingLatency;
     this.latitude = latitude;
     this.longitude = longitude;
   }
 
+  /**
+   * Returns the node id of this node;
+   * 
+   * @return 
+   */
   public NodeIDType getId() {
     return id;
+  }
+
+  /**
+   * Returns the ActiveReplica id for this node.
+   * 
+   * @return 
+   */
+  public NodeIDType getActiveReplicaID() {
+    return activeReplicaID;
+  }
+
+  /**
+   * Returns the Reconfigurator id for this node.
+   * @return 
+   */
+  public NodeIDType getReconfiguratorID() {
+    return reconfiguratorID;
   }
 
   public synchronized InetAddress getIpAddress() {

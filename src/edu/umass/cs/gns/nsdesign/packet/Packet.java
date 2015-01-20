@@ -290,7 +290,7 @@ public class Packet {
    * @throws java.io.IOException *
    */
   public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, Object nameserverId, GNS.PortType portType) throws IOException {
-    int port = gnsNodeConfig.getPort(nameserverId, portType);
+    int port = gnsNodeConfig.getPortForTopLevelNode(nameserverId, portType);
     if (port == -1) {
       GNS.getLogger().warning("sendTCPPacket:: FAIL, BAD PORT! to: " + nameserverId + " json: " + json.toString());
       throw new IOException("Invalid port number " + port);

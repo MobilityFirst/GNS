@@ -17,20 +17,23 @@ import java.util.List;
 
 /**
  * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
- * 
+ *
  * @author westy
  */
 public class HostFileLoader {
 
-  private static Long INVALID_FILE_VERSION = -1L;
+  private static final Long INVALID_FILE_VERSION = -1L;
   private static Long fileVersion = INVALID_FILE_VERSION;
+
+  private static final boolean debuggingEnabled = false;
 
   /**
    * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
+   * 
    * The first line of the file can be a Long representing the file version. This will be ignored by this
    * call. To read that call <code>readVersionLine</code>.
    *
-   * This currently supports three formats (one of these per line):
+   * This currently supports three line formats (one of these per line):
    * <code>
    * {hostname}
    * or
@@ -38,7 +41,7 @@ public class HostFileLoader {
    * or
    * {number}{whitespace}{hostname}{whitespace}{startingport}
    * </code>
-   * Also, you can't mix formats in one file.
+   * Also, you can't mix the above line formats in one file.
    *
    * @param hostsFile
    * @return a List of hostnames
@@ -55,6 +58,9 @@ public class HostFileLoader {
           // do nothing
         } else if (!readFirstLine && isLineTheFileVersion(line)) {
           fileVersion = getTheVersionFromLine(line);
+          if (debuggingEnabled) {
+            GNS.getLogger().info("Read version line: " + fileVersion);
+          }
         } else {
           result.add(parseHostline(line));
         }
@@ -82,6 +88,9 @@ public class HostFileLoader {
       } catch (NumberFormatException e) {
         nodeID = idString;
       }
+      if (debuggingEnabled) {
+        GNS.getLogger().info("Read ID: " + nodeID);
+      }
       return new HostSpec(nodeID, tokens[1], port);
     } else if (tokens.length == 1) {
       if (hostFileHasNumbers) {
@@ -107,10 +116,12 @@ public class HostFileLoader {
     String line = br.readLine();
     return getTheVersionFromLine(line);
   }
-  
+
   public static boolean isChangedFileVersion(String hostsFile) throws IOException {
     Long newVersion = readVersionLine(hostsFile);
-    GNS.getLogger().info("Old version: " + fileVersion + " new version: " + newVersion);
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Old version: " + fileVersion + " new version: " + newVersion);
+    }
     return newVersion != null && newVersion != INVALID_FILE_VERSION && newVersion != fileVersion;
   }
 
@@ -134,5 +145,5 @@ public class HostFileLoader {
   public static Long getFileVersion() {
     return fileVersion;
   }
-  
+
 }

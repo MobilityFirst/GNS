@@ -35,9 +35,11 @@ public class GNS {
   public enum PortType {
 
     NS_TCP_PORT(0), // TCP port at name servers
-    //NS_UDP_PORT(1), // UDP port at local name servers
-    NS_ADMIN_PORT(2),
-    NS_PING_PORT(3)
+    NS_ADMIN_PORT(1),
+    NS_PING_PORT(2),
+    // sub ports
+    ACTIVE_REPLICA_PORT(3),
+    RECONFIGURATOR_PORT(4)
     ;
     
     //
