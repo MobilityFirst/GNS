@@ -15,8 +15,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -174,11 +172,10 @@ public class Packet {
   }
   
   ///
-  /// LEGACY PACKET SENDING CODE THAT WE KEEP AROUND SO THAT THE ADMIN SIDE OF THINGS
-  /// IS SEPARATE FROM THE NIO SIDE. IS THIS NECESSARY?
+  /// PACKET SENDING CODE THAT WE KEEP AROUND SO THAT THE ADMIN SIDE OF THINGS
+  /// IS SEPARATE FROM THE NIO SIDE.
   ///
-  
-  
+ 
   /**
    * Delimiter that separates size from data in each frame transmitted *
    */
@@ -281,28 +278,6 @@ public class Packet {
 
     //Read the packet from the input stream
     return Packet.getJSONObjectFrame(input, sizeOfPacket);
-  }
-
-  /**
-   * **
-   * Send a response to a name server using UDP
-   *
-   * //
-   *
-   * @param socket DatagramSocket over which the packet is sent
-   * @param json JsonObject representing the packet
-   * @throws java.io.IOException *
-   */
-  public static void sendUDPPacket(DatagramSocket socket, JSONObject json, InetAddress address, int port) throws IOException {
-    if (address == null || json == null || socket == null || port == -1) {
-      GNS.getLogger().warning("sendUDPPacket:: FAIL! address: " + address + " port: " + port + " json: " + json.toString());
-      return;
-    }
-
-//    GNRS.getLogger().finer("sendUDPPacket:: address: " + address.getHostName() + " port: " + port + " json: " + json.toString());
-    byte[] buffer = json.toString().getBytes();
-    DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, port);
-    socket.send(packet);
   }
 
   /**

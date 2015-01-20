@@ -142,17 +142,17 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     }
   }
 
-  /**
-   * Returns the UDP port of a nameserver.
-   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   *
-   * @param id
-   * @return
-   */
-  public int getNSUdpPort(NodeIDType id) {
-    HostInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
-    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
-  }
+//  /**
+//   * Returns the UDP port of a nameserver.
+//   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
+//   *
+//   * @param id
+//   * @return
+//   */
+//  public int getNSUdpPort(NodeIDType id) {
+//    HostInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
+//    return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_UDP_PORT.getOffset();
+//  }
 
   /**
    * Returns the Admin port of a Nameserver.
@@ -258,8 +258,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDType
     switch (portType) {
       case NS_TCP_PORT:
         return getNSTcpPort(nameServerId);
-      case NS_UDP_PORT:
-        return getNSUdpPort(nameServerId);
+//      case NS_UDP_PORT:
+//        return getNSUdpPort(nameServerId);
       case NS_ADMIN_PORT:
         return getNSAdminRequestPort(nameServerId);
       case NS_PING_PORT:
