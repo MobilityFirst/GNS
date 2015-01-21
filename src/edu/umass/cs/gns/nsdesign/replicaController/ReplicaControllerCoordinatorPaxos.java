@@ -75,6 +75,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
     }
     try {
       Packet.PacketType type = Packet.getPacketType(request);
+      // Strictly for debugging
       if (Config.debuggingEnabled) {
         int packetTypeInt = request.optInt(edu.umass.cs.gns.paxos.paxospacket.PaxosPacket.PACKET_TYPE_FIELD_NAME, -1);
         if (packetTypeInt != -1) {
@@ -86,7 +87,6 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
           GNS.getLogger().info("###### " + nodeID + " Request: " + type + 
                 " GigaPaxosType: " + edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType.getPaxosPacketType(packetTypeInt));
         }
-        
       }
       switch (type) {
         // packets from coordination modules at replica controller

@@ -8,6 +8,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 import edu.umass.cs.gns.clientsupport.FieldAccess;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -27,7 +28,7 @@ import java.util.Set;
  *
  * @param <NodeIDType>
  */
-public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAddress {
+public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAddress implements InterfaceRequest {
 
   private final static String HEADER = "dns_header";
   private final static String GUID = "dns_guid";
@@ -50,7 +51,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   /**
    * Name in the query *
    */
-  private String guid;
+  private final String guid;
   /**
    * The key of the value key pair. Mutually exclusive with keys.
    */
@@ -80,7 +81,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   /**
    * Determines the format of the return value that we toString back in the response packet.
    */
-  ColumnFieldType returnFormat;
+  private final ColumnFieldType returnFormat;
   /**
    * For response packets this is the node that responded
    */
@@ -156,7 +157,6 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
     this.returnFormat = null;
   }
 
-  
   /**
    **
    * Constructs a packet from a JSONObject that represents a DNS packet.
@@ -438,6 +438,12 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
 
   public ColumnFieldType getReturnFormat() {
     return returnFormat;
+  }
+
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.guid;
   }
 
 }

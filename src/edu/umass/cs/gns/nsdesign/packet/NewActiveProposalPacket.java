@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,7 +17,7 @@ import java.util.Set;
  * @author abhigyan
  *
  */
-public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddress {
+public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddress implements InterfaceRequest {
 
   private final static String NAME = "name";
   private final static String PROPOSING_NODE = "propNode";
@@ -26,22 +27,22 @@ public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddre
   /**
    * name for which the new actives are being proposed
    */
-  String name;
+  private final String name;
 
   /**
    * node which proposed this message.
    */
-  NodeIDType proposingNode;
+  private final NodeIDType proposingNode;
 
   /**
    * current set of actives of this node.
    */
-  Set<NodeIDType> newActives;
+  private final Set<NodeIDType> newActives;
 
   /**
    * Verion number of this new set of active name servers.
    */
-  int version;
+  private final int version;
 
   /**
    * Constructor method
@@ -103,6 +104,12 @@ public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithLnsAddre
 
   public int getVersion() {
     return version;
+  }
+
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.name;
   }
 
 }

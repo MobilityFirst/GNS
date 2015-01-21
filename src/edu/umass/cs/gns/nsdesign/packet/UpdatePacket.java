@@ -7,6 +7,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stringifiable;
@@ -45,7 +46,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndLNS {
+public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndLNS implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String LocalNSREQUESTID = "LNSreqID";
@@ -54,8 +55,6 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   private final static String NEWVALUE = "newvalue";
   private final static String OLDVALUE = "oldvalue";
   private final static String USERJSON = "userjson";
-  //private final static String NAMESERVER_ID = "nsID";
-  //private final static String LOCAL_NAMESERVER_ID = "lnsID";
   private final static String SOURCE_ID = "sourceId";
   private final static String TTL = "ttl";
   private final static String OPERATION = "operation";
@@ -76,11 +75,11 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   /**
    * Name (the GUID) *
    */
-  private String name;
+  private final String name;
   /**
    * The key of the value key pair.
    */
-  private String recordKey;
+  private final String recordKey;
   /**
    * Value for updating.
    * This is mutually exclusive with userJSON below - one or the other will be used in any operation, but not both.
@@ -88,34 +87,31 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    * list (which is what ResultValue really is).
    *
    */
-  private ResultValue updateValue;
+  private final ResultValue updateValue;
   /**
    * The old value to replace in a substitute operation.
    * Not used when userJSON is specified.
    * For simplicity's sake even when we are just updating with a single value it is converted into a
    * list (which is what ResultValue really is).
    */
-  private ResultValue oldValue;
+  private final ResultValue oldValue;
   /**
    * Currently this is used in as the index in the set operation.
    * Not used when userJSON is specified.
    * When used with set the value in updateValue will be the one to set the element to.
    */
-  private int argument;
+  private final int argument;
   /**
    * Allows us to update the entire user value of this guid record at once.
    * This is mutually exclusive with updateValue (and oldValue, argument) above -
    * one or the other will be used in any operation, but not both.
    */
-  private ValuesMap userJSON;
+  private final ValuesMap userJSON;
   /**
    * The operation to perform *
    */
-  private UpdateOperation operation;
-//  /**
-//   * Name server transmitting this packet *
-//   */
-//  private NodeIDType nameServerId;
+  private final UpdateOperation operation;
+
   /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, -1) that means go back the Intercessor otherwise
    * it came from another server.
@@ -124,7 +120,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   /**
    * Time to live
    */
-  private int ttl;
+  private final int ttl;
 
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.
@@ -403,11 +399,10 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     return operation;
   }
 
-  /**
-   * @param operation
-   */
-  public void setOperation(UpdateOperation operation) {
-    this.operation = operation;
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.name;
   }
 
   //

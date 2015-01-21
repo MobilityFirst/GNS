@@ -56,15 +56,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    *
    */
   private ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> hostInfoMapping;
-  // keep this around
-  private ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> previousHostInfoMapping;
-
-  public GNSNodeConfig(String hostsFile, boolean isLocalNameServer) throws IOException {
-    this(hostsFile, null);
-  }
 
   /**
-   * Creates a GNSNodeConfig and initializes it from a name server host file.
+   * Creates a GNSNodeConfig for the given nameServerID and initializes it from a name server host file.
    * This supports the new hosts.txt style format.
    *
    * @param hostsFile
@@ -84,11 +78,24 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     readHostsFile(hostsFile);
     // Informational purposes
     for (Entry<NodeIDType, NodeInfo<NodeIDType>> hostInfoEntry : hostInfoMapping.entrySet()) {
-      GNS.getLogger().info("Id: " + hostInfoEntry.getValue().getId().toString()
+      GNS.getLogger().info("For "
+              + (nameServerID == null ? "LNS" : nameServerID.toString())
+              + " Id: " + hostInfoEntry.getValue().getId().toString()
               + " Host:" + hostInfoEntry.getValue().getIpAddress()
               + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
     }
     startCheckingForUpdates();
+  }
+
+  /**
+   * Creates a GNSNodeConfig for the LocalNameServer and initializes it from a name server host file.
+   *
+   * @param hostsFile
+   * @param isLocalNameServer
+   * @throws IOException
+   */
+  public GNSNodeConfig(String hostsFile, boolean isLocalNameServer) throws IOException {
+    this(hostsFile, null);
   }
 
   // Currently only used by GNSINstaller
@@ -101,8 +108,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
-   * Returns the complete set of IDs for all name servers (not local name servers).
-   * Currently only returns "top-level" node ids, not active-replica or reconfigurator node ids.
+   * Returns the complete set of "top-level" IDs for all name servers (not local name servers).
+   * "top-level" as in not active-replica or reconfigurator node ids.
+   *
    * If you want those use <code>getActiveReplicas</code> and <code>getReconfigurators</code>.
    *
    * @return the set of IDs.
@@ -114,8 +122,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * Returns the set of active replica ids.
-   * 
-   * @return 
+   *
+   * @return
    */
   @Override
   public Set<NodeIDType> getActiveReplicas() {
@@ -125,7 +133,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     return result;
   }
-  
+
   private NodeInfo<NodeIDType> getActiveReplicaInfo(NodeIDType id) {
     for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
       if (hostInfo.getActiveReplicaID().equals(id)) {
@@ -137,8 +145,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * Returns the set of reconfigurator ids.
-   * 
-   * @return 
+   *
+   * @return
    */
   @Override
   public Set<NodeIDType> getReconfigurators() {
@@ -148,7 +156,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     return result;
   }
-  
+
   private NodeInfo<NodeIDType> getReconfiguratorInfo(NodeIDType id) {
     for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
       if (hostInfo.getReconfiguratorID().equals(id)) {
@@ -166,11 +174,11 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   public int getNumberOfNodes() {
     return hostInfoMapping.size();
   }
-  
+
   /**
    * Returns the TCP port of a nameserver.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   * Works for for "top-level" node ids and active-replica and reconfigurator nodes ids.
+   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id
    * @return
@@ -227,7 +235,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   /**
    * Returns the IP address of a name server.
    * Will return null if the node doesn't exist.
-   * Works for for "top-level" node ids and active-replica and reconfigurator nodes ids.
+   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id Server id
    * @return IP address of a server
@@ -273,22 +281,22 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * Returns true if the node exists.
-   * 
-   * Currently only returns true for "top-level" nodes, not 
-   * active-replica and reconfigurator nodes.
+   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
-   * @param ID
+   * @param id
    * @return
    */
   @Override
-  public boolean nodeExists(NodeIDType ID) {
-    return getNodeIDs().contains(ID);
+  public boolean nodeExists(NodeIDType id) {
+    return getNodeIDs().contains(id)
+            || getActiveReplicaInfo(id) != null
+            || getReconfiguratorInfo(id) != null;
   }
 
   /**
    * **
    * Returns port number for the specified port type. Return -1 if the specified port type does not exist.
-   * 
+   *
    * Only for "top-level" nodes, not active-replica and reconfigurator nodes.
    *
    * @param nameServerId Name server id //
@@ -437,7 +445,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
       throw new IOException("Problem loading hosts file: " + e);
     }
     // save the old one... maybe we'll need it again?
-    previousHostInfoMapping = hostInfoMapping;
+    ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> previousHostInfoMapping = hostInfoMapping;
     // Create a new one so we don't hose the old one if the new file is bogus
     ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> newHostInfoMapping
             = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>(16, 0.75f, 8);
@@ -570,8 +578,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
-   * Tests 
-   * 
+   * Tests
+   *
    * @param args
    * @throws java.lang.Exception
    */

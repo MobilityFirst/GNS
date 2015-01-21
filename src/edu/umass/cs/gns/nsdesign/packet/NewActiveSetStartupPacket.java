@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,9 +10,10 @@ import java.util.Set;
 
 /**
  * TODO write documentation for this class.
+ *
  * @param <NodeIDType>
  */
-public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
+public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
 
   private final static String ID = "nasID"; // new active set ID
   private final static String NAME = "name";
@@ -24,47 +26,46 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
   private final static String PREVIOUS_VALUE = "previousValue";
   private final static String PREVIOUS_VALUE_CORRECT = "pvCorrect";
 
-
   /**
    * A unique ID to distinguish this packet at active replica
    */
-  int uniqueID;
+  private int uniqueID;
   /**
    * name for which the proposal is being done.
    */
-  String name;
+  private final String name;
   /**
    * primary node that sent this message
    */
-  NodeIDType primarySender;
+  private final NodeIDType primarySender;
   /**
    * active node to which this message was sent
    */
-  NodeIDType activeSender;
+  private NodeIDType activeSender;
   /**
    * current set of actives of this node.
    */
-  Set<NodeIDType> newActives;
+  private final Set<NodeIDType> newActives;
   /**
    * Previous set of actives of this node.
    */
-  Set<NodeIDType> oldActives;
+  private final Set<NodeIDType> oldActives;
   /**
    * Version of the new set of actives.
    */
-  short newActiveVersion;
+  private final short newActiveVersion;
   /**
    * Version of the old set of actives.
    */
-  short oldActiveVersion;
+  private final short oldActiveVersion;
   /**
    * Value at the end of previous epoch.
    */
-  String previousValue; // CAN BE NULL
+  private String previousValue; // CAN BE NULL
   /**
    * Value at the end of previous epoch.
    */
-  boolean previousValueCorrect;
+  private boolean previousValueCorrect;
 
   /**
    *
@@ -112,9 +113,9 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
     this.oldActives = unstringer.getValuesFromJSONArray(json.getJSONArray(OLD_ACTIVES));
     //this.oldActives = Util.stringToSetOfNodeId(json.getString(OLD_ACTIVES));
 
-    this.oldActiveVersion = (short)json.getInt(OLD_ACTIVE_VERSION); 
-    this.newActiveVersion = (short)json.getInt(NEW_ACTIVE_VERSION);
-    this.previousValue = json.has(PREVIOUS_VALUE) ? json.getString(PREVIOUS_VALUE): null;
+    this.oldActiveVersion = (short) json.getInt(OLD_ACTIVE_VERSION);
+    this.newActiveVersion = (short) json.getInt(NEW_ACTIVE_VERSION);
+    this.previousValue = json.has(PREVIOUS_VALUE) ? json.getString(PREVIOUS_VALUE) : null;
     this.previousValueCorrect = json.getBoolean(PREVIOUS_VALUE_CORRECT);
   }
 
@@ -159,12 +160,9 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
 //    }
 //    return sb.toString();
 //  }
-
-
   public void setUniqueID(int uniqueID) {
     this.uniqueID = uniqueID;
   }
-
 
   public int getUniqueID() {
     return uniqueID;
@@ -244,6 +242,12 @@ public class NewActiveSetStartupPacket<NodeIDType> extends BasicPacket {
 
   public void changePreviousValueCorrect(boolean previousValueCorrect) {
     this.previousValueCorrect = previousValueCorrect;
+  }
+
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.name;
   }
 
 }

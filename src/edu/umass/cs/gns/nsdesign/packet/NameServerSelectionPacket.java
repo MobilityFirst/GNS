@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
@@ -33,7 +34,8 @@ import org.json.JSONObject;
  * @param <NodeIDType>
  ***********************************************************
  */
-public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> {
+public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType>
+        implements InterfaceRequest {
 
   private final static String NAME = "name";
   private final static String VOTE = "vote";
@@ -142,5 +144,11 @@ public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndL
    */
   public int getUniqueID() {
     throw new UnsupportedOperationException();
+  }
+
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.name;
   }
 }

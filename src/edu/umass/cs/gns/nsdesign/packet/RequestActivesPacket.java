@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
@@ -22,8 +23,9 @@ import java.util.Set;
  * Otherwise, <code>activeNameServers</code> is set to null.
  *
  * @author Abhigyan
+ * @param <NodeIDType>
  */
-public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
+public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS implements InterfaceRequest {
 
   public static final String NAME = "name";
   public static final String ACTIVES = "actives";
@@ -90,17 +92,13 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
     return activeNameServers;
   }
 
-//  public int getLNSID() {
-//    return lnsID;
-//  }
-//  public InetSocketAddress getLnsAddress() {
-//    return lnsAddress;
-//  }
   public int getLnsRequestID() {
     return lnsRequestID;
   }
-
-//  public NodeIDType getNameServerID() {
-//    return nsID;
-//  }
+  
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.name;
+  }
 }

@@ -6,6 +6,8 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import org.json.JSONException;
 
 /**
@@ -35,6 +37,11 @@ public abstract class BasicPacket implements PacketInterface {
    */
   public Packet.PacketType getType() {
     return type;
+  }
+  
+  // For InterfaceRequest
+  public IntegerPacketType getRequestType() throws RequestParseException {
+     return type;
   }
 
   /**

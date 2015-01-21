@@ -154,7 +154,7 @@ public class Packet {
   public static PacketType getPacketType(int number) {
     return PacketType.getPacketType(number);
   }
-
+  
   public static PacketType getPacketType(JSONObject json) throws JSONException {
     if (Packet.hasPacketTypeField(json)) {
       return getPacketType(json.getInt(PACKET_TYPE));

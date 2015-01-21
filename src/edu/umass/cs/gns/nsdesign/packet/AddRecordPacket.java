@@ -5,11 +5,10 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import static edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket.ACTIVES;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,7 +34,7 @@ import java.util.Set;
  *
  * @param <NodeIDType>
  */
-public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> {
+public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
@@ -137,8 +136,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
-      Exception e = new Exception("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
-      e.printStackTrace();
+      throw new JSONException("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
@@ -218,16 +216,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     return value;
   }
 
-//  /**
-//   * @return the local name server ID that sent this request.
-//   */
-//  public int getLocalNameServerID() {
-//    return localNameServerID;
-//  }
-//
-//  public void setLocalNameServerID(int localNameServerID1) {
-//    localNameServerID = localNameServerID1;
-//  }
   /**
    * @return the ttl
    */
@@ -235,13 +223,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
     return ttl;
   }
 
-//  public NodeIDType getNameServerID() {
-//    return nameServerID;
-//  }
-//
-//  public void setNameServerID(NodeIDType nameServerID) {
-//    this.nameServerID = nameServerID;
-//  }
   public NodeIDType getSourceId() {
     return sourceId;
   }
@@ -252,6 +233,12 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
 
   public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
     this.activeNameServers = activeNameServers;
+  }
+  
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.name;
   }
 
 }

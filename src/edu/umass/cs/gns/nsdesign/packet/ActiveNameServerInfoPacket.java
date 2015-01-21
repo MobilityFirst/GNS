@@ -5,19 +5,20 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Set;
 
 /**
- * This class implements the packet transmitted between local nameserver and a primary nameserver to toString information
- * about the current active nameserver set.
+ * This class implements the packet transmitted between local nameserver and a primary nameserver to
+ * transmit information about the current active nameserver set.
  *
  * @author Hardeep Uppal
  * @param <NodeIDType>
  */
-public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
+public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
 
   public final static String PRIMARY_NAMESERVER = "primary";
   public final static String LOCAL_NAMESERVER = "local";
@@ -27,11 +28,11 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
   /**
    * Name (service/host/domain or device name) *
    */
-  private String name;
+  private final String name;
   /**
    * The key of the value key pair. For GNRS this will be EdgeRecord, CoreRecord or GroupRecord. *
    */
-  private String recordKey;
+  private final String recordKey;
   /**
    * Primary name server receiving the request *
    */
@@ -39,14 +40,11 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
   /**
    * Local name server sending the request *
    */
-  private int localNameServer;
+  private final int localNameServer;
   /**
    * Set containing ids of active name servers *
    */
   private Set<NodeIDType> activeNameServers;
-
-  public ActiveNameServerInfoPacket() {
-  }
 
   /**
    * ***********************************************************
@@ -95,9 +93,7 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
    */
   public ActiveNameServerInfoPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.ACTIVE_NAMESERVER_INFO) {
-      Exception e = new Exception("NewReplicaPacket: wrong packet type " + Packet.getPacketType(json));
-      e.printStackTrace();
-      return;
+      throw new JSONException("NewReplicaPacket: wrong packet type " + Packet.getPacketType(json));
     }
 
     this.type = Packet.PacketType.ACTIVE_NAMESERVER_INFO;
@@ -105,8 +101,8 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
     this.localNameServer = json.getInt(LOCAL_NAMESERVER);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
-    this.activeNameServers = json.has(ACTIVE_NAMESERVERS) ? 
-            unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
+    this.activeNameServers = json.has(ACTIVE_NAMESERVERS)
+            ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
   }
 
   /**
@@ -175,5 +171,11 @@ public class ActiveNameServerInfoPacket<NodeIDType> extends BasicPacket {
 
   public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
     this.activeNameServers = activeNameServers;
+  }
+
+  // For InterfaceRequest
+  @Override
+  public String getServiceName() {
+    return this.name;
   }
 }

@@ -15,7 +15,13 @@ public class NodeInfo<NodeIDType> {
    * Id of the name server *
    */
   private final NodeIDType id;
+  /**
+   * The id of the activeReplica part of the name server.
+   */
   private final NodeIDType activeReplicaID;
+  /**
+   * The id of the reconfigurator part of the name server.
+   */
   private final NodeIDType reconfiguratorID;
   
   /**
@@ -54,9 +60,9 @@ public class NodeInfo<NodeIDType> {
    * Constructs a NameServerInfo with the give parameter
    *
    * @param id Name server id
-   * @param activeReplicaID
-   * @param reconfiguratorID
-   * @param ipAddressString
+   * @param activeReplicaID id of the activeReplica part of the name server.
+   * @param reconfiguratorID id of the reconfigurator part of the name server
+   * @param ipAddressString ip address as a string
    * @param startingPortNumber first port number of block of ports used for TCP and UDP comms
    * @param pingLatency RTT latency between the local nameserver and this nameserver in milleseconds
    * @param latitude Latitude of the nameserver
