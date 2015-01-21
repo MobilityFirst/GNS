@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
-
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
@@ -15,8 +15,12 @@ import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,7 +31,7 @@ import java.util.Set;
  * Coordinates requests among replicas of replica controllers by using paxos consensus protocol.
  * Created by abhigyan on 3/30/14.
  */
-public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaControllerCoordinator {
+public class ReplicaControllerCoordinatorPaxos<NodeIdType> extends AbstractReplicaCoordinator implements ReplicaControllerCoordinator {
 
   private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
@@ -37,8 +41,10 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
 
   private Replicable paxosInterface;
 
-  public ReplicaControllerCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport<NodeIdType> nioServer, InterfaceNodeConfig<NodeIdType> nodeConfig,
+  public ReplicaControllerCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport<NodeIdType> nioServer,
+          InterfaceNodeConfig<NodeIdType> nodeConfig,
           Replicable paxosInterface, PaxosConfig paxosConfig) {
+    super(paxosInterface);
     this.nodeID = nodeID;
     this.nodeConfig = nodeConfig;
 
@@ -79,19 +85,19 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
       if (Config.debuggingEnabled) {
         int packetTypeInt = request.optInt(edu.umass.cs.gns.paxos.paxospacket.PaxosPacket.PACKET_TYPE_FIELD_NAME, -1);
         if (packetTypeInt != -1) {
-          GNS.getLogger().info("###### " + nodeID + " Request: " + type + 
-                " PaxosType: " + edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.getPacketType(packetTypeInt));
+          GNS.getLogger().info("###### " + nodeID + " Request: " + type
+                  + " PaxosType: " + edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.getPacketType(packetTypeInt));
         }
         packetTypeInt = request.optInt(edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PAXOS_PACKET_TYPE);
         if (packetTypeInt != -1) {
-          GNS.getLogger().info("###### " + nodeID + " Request: " + type + 
-                " GigaPaxosType: " + edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType.getPaxosPacketType(packetTypeInt));
+          GNS.getLogger().info("###### " + nodeID + " Request: " + type
+                  + " GigaPaxosType: " + edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType.getPaxosPacketType(packetTypeInt));
         }
       }
       switch (type) {
         // packets from coordination modules at replica controller
         case REPLICA_CONTROLLER_COORDINATION:
-          
+
           Packet.putPacketType(request, Packet.PacketType.PAXOS_PACKET);
           paxosManager.handleIncomingPacket(request);
           break;
@@ -191,5 +197,36 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> implements ReplicaCon
     if (paxosManager instanceof PaxosManager) {
       ((PaxosManager) paxosManager).shutdown();
     }
+  }
+
+  // For ReplicaControllerCoordinator
+  @Override
+  public boolean coordinateRequest(InterfaceRequest request) throws IOException, RequestParseException {
+    // who uses ints for status return values?
+    try {
+      return coordinateRequest(new JSONObject(request.toString())) == 0;
+    } catch (JSONException e) {
+      throw new RequestParseException(e);
+    }
+  }
+
+  @Override
+  public boolean createReplicaGroup(String serviceName, int epoch, String state, Set nodes) {
+    return paxosManager.createPaxosInstance(serviceName, (short)epoch, nodes, paxosInterface);
+  }
+
+  @Override
+  public void deleteReplicaGroup(String serviceName) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set getReplicaGroup(String serviceName) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

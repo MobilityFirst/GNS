@@ -1,8 +1,12 @@
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -57,5 +61,34 @@ public class ReplicableTransition implements Replicable{
   @Override
   public boolean updateState(String name, String state) {
     return replicable.updateState(name, state);
+  }
+
+  // For InterfaceReplicable
+  
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+  
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String getState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

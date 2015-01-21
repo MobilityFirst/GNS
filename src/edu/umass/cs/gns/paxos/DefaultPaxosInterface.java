@@ -1,11 +1,15 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import org.json.JSONException;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * We use this paxos interface object while running tests for paxos module.
@@ -79,6 +83,32 @@ public class DefaultPaxosInterface<NodeIDType> implements Replicable {
   public boolean updateState(String paxosID, String state) {
     // empty method becasue this only for running paxos tests independently
     return false;
+  }
+  
+  // For InterfaceReplicable
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    return handleRequest(request, false);
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String getState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
 }

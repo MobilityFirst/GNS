@@ -1,12 +1,16 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -14,6 +18,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Set;
 
 /**
  * WARNING: DO NOT USE THIS CLASS!!! It is guaranteed to return fake and incorrect values of name records.
@@ -229,5 +234,55 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
   @Override
   public void shutdown() {
     // nothing to do here currently, may need updating if we create a thread inside this module
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String getState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public String getFinalState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public void putInitialState(String name, int epoch, String state) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean deleteFinalState(String name, int epoch) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Integer getEpoch(String name) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

@@ -34,7 +34,6 @@ import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MatchKeyable;
-import edu.umass.cs.gns.util.ThreadUtils;
 import edu.umass.cs.gns.util.Util;
 
 /**

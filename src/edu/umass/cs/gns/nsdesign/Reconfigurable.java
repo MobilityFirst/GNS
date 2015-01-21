@@ -1,9 +1,11 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
+
 /**
 @author V. Arun
  */
-public interface Reconfigurable extends Application {
+public interface Reconfigurable extends Application, InterfaceReconfigurable {
 
 	public boolean stopVersion(String name, short version); // getFinalState should return non-null value after this call
 

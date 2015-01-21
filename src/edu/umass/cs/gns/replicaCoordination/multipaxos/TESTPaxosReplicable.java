@@ -6,6 +6,7 @@
  */
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.util.HashMap;
@@ -17,7 +18,10 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
+import java.util.Set;
 
 /**
  * @author V. Arun
@@ -187,5 +191,35 @@ public class TESTPaxosReplicable implements Replicable {
     while (state.seqnum < slot) {
       this.wait();
     }
+  }
+
+  // For InterfaceReplicable
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    return handleRequest(request, false);
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    return handleDecision(request.getServiceName(), request.toString(), doNotReplyToClient);
+  }
+
+  @Override
+  public String getState(String name, int epoch) {
+    // FIXME: What to do with epoch?
+    return getState(name);
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    // FIXME: Need to convert the string to an InterfaceRequest.. easier said than done.
+    //return getRequest(stringified, this.allState.get(stringified).seqnum);
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

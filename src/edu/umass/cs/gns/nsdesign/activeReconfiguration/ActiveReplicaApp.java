@@ -1,12 +1,17 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.Application;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -126,5 +131,62 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
 
   public synchronized int getRequestCount() {
     return requestCount;
+  }
+
+  // For InterfaceReconfigurable
+  @Override
+  public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+    assertReconfigurable();
+    return ((Reconfigurable) (this.app)).getStopRequest(name, epoch);
+  }
+
+  @Override
+  public String getFinalState(String name, int epoch) {
+    assertReconfigurable();
+    return ((Reconfigurable) (this.app)).getFinalState(name, epoch);
+  }
+
+  @Override
+  public void putInitialState(String name, int epoch, String state) {
+    assertReconfigurable();
+    ((Reconfigurable) (this.app)).putInitialState(name, epoch, state);
+  }
+
+  @Override
+  public boolean deleteFinalState(String name, int epoch) {
+    assertReconfigurable();
+    return ((Reconfigurable) (this.app)).deleteFinalState(name, epoch);
+  }
+
+  @Override
+  public Integer getEpoch(String name) {
+    assertReconfigurable();
+    return ((Reconfigurable) (this.app)).getEpoch(name);
+  }
+
+  // For InterfaceReplicable
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    return ((Replicable) app).handleRequest(request);
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    return ((Replicable) app).getRequest(stringified);
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    return ((Replicable) app).getRequestTypes();
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean handleRequest) {
+    return ((Replicable) app).handleRequest(request, handleRequest);
+  }
+
+  @Override
+  public String getState(String name, int epoch) {
+    return ((Replicable) app).getState(name, epoch);
   }
 }

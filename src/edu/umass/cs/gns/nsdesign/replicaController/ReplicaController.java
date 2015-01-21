@@ -5,6 +5,7 @@ import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
@@ -16,6 +17,9 @@ import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,7 +40,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <NodeIDType>
  */
-public class ReplicaController<NodeIDType> implements Replicable, ReconfiguratorInterface, Shutdownable {
+public class ReplicaController<NodeIDType> implements Replicable, InterfaceReplicable, ReconfiguratorInterface, Shutdownable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;
 
@@ -74,7 +78,13 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   private ReplicationFrameworkInterface<NodeIDType> replicationFrameworkInterface;
 
   /**
-   * constructor object
+   * Creates a ReplicaController.
+   * 
+   * @param nodeID
+   * @param gnsNodeConfig
+   * @param nioServer
+   * @param scheduledThreadPoolExecutor
+   * @param mongoRecords
    */
   public ReplicaController(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           ScheduledThreadPoolExecutor scheduledThreadPoolExecutor,
@@ -122,6 +132,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
     return ongoingStartActiveRequests;
   }
 
+  @Override
   public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
     return gnsNodeConfig;
   }
@@ -254,7 +265,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   }
 
   @Override
-  public boolean handleDecision(String name, String value, boolean recovery) {
+  public boolean handleDecision(String name, String value, boolean doNotReplyToClient) {
     // if the request isn't executed
     boolean executed = false;
 //    try {
@@ -262,13 +273,13 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
       JSONObject json = new JSONObject(value);
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("************ " + packetType + " RECOVERY IS " + recovery);
+        GNS.getLogger().info("************ " + packetType + " RECOVERY IS " + doNotReplyToClient);
       }
       switch (packetType) {
 
         // add name to GNS
         case ADD_RECORD:
-          Add.executeAddRecord(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
+          Add.executeAddRecord(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
           break;
         case ACTIVE_ADD_CONFIRM:
           Add.executeAddActiveConfirm(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this);
@@ -276,23 +287,23 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
 
         // lookupMultipleSystemFields actives for name
         case REQUEST_ACTIVES:
-          LookupActives.executeLookupActives(new RequestActivesPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
+          LookupActives.executeLookupActives(new RequestActivesPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
           break;
 
         // remove
         case REMOVE_RECORD:
-          Remove.executeMarkRecordForRemoval(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
+          Remove.executeMarkRecordForRemoval(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
           break;
         case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
+          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
           break;
         case RC_REMOVE:
-          Remove.executeRemoveRecord(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
+          Remove.executeRemoveRecord(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
           break;
 
         // group change
         case NEW_ACTIVE_PROPOSE:
-          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket<NodeIDType>(json, gnsNodeConfig), this, recovery);
+          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
           break;
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
           GroupChange.handleOldActiveStop(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
@@ -301,7 +312,7 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
           GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
           break;
         case GROUP_CHANGE_COMPLETE:
-          GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, recovery);
+          GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, doNotReplyToClient);
           break;
         case NAMESERVER_SELECTION:
           NameStats.handleLNSVotesPacket(json, this);
@@ -354,8 +365,35 @@ public class ReplicaController<NodeIDType> implements Replicable, Reconfigurator
   public void shutdown() {
 
   }
+  
+  // Methods for InterfaceReplicable
+  
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    return handleRequest(request, false); // false is the default
+  }
 
-  /**
-   * ****END: miscellaneous methods needed by replica controller module ***
-   */
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    return this.handleDecision(request.getServiceName(), request.toString(), doNotReplyToClient);
+  }
+  
+  
+  @Override
+  public String getState(String name, int epoch) {
+    //FIXME: What do we do with the epoch?
+    return getState(name);
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    //FIXME: There's currently no method for taking a random JSON Object packet and making a packet out of it.
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
 }
