@@ -188,14 +188,23 @@ public class Packet {
   public static void putPacketType(JSONObject json, PacketType type) throws JSONException {
     json.put(PACKET_TYPE, type.getInt());
   }
-  
+
   private static final String JSON_OBJECT_CLASS = "org.json.JSONObject";
   private static final String STRINGIFIABLE_OBJECT_CLASS = "edu.umass.cs.gns.util.Stringifiable";
 
-  public static Object createInstance(PacketType type, JSONObject json, Stringifiable unstringer) {
-    return CreateInstance.createInstance(type.getClassName(),
+  /**
+   * Create an packet instance from a JSON Object that contains a packet plus
+   * a Stringifiable instance (same as a packet constructor).
+   *
+   * @param json
+   * @param unstringer
+   * @return
+   */
+  public static Object createInstance(JSONObject json, Stringifiable unstringer)
+          throws JSONException {
+    return CreateInstance.createInstance(getPacketType(json).getClassName(),
             Arrays.asList(json, unstringer),
-            Arrays.asList(JSON_OBJECT_CLASS, STRINGIFIABLE_OBJECT_CLASS));       
+            Arrays.asList(JSON_OBJECT_CLASS, STRINGIFIABLE_OBJECT_CLASS));
   }
 
   ///
@@ -472,6 +481,7 @@ public class Packet {
     System.out.println(getPacketType(5).toString());
     System.out.println(PacketType.valueOf("REQUEST_ACTIVES").toString());
     System.out.println(PacketType.valueOf("REQUEST_ACTIVES").getInt());
+    // createInstance testing
     ResultValue x = new ResultValue();
     x.add("12345678");
     UpdatePacket up = new UpdatePacket(null, 32234234, 123, "12322323",
@@ -482,10 +492,15 @@ public class Packet {
     try {
       json = up.toJSONObject();
     } catch (JSONException e) {
-
+      System.out.println("Problem converting packet to JSON: " + e);
     }
     if (json != null) {
-      Object object = createInstance(PacketType.UPDATE, json, unstringer);
+      Object object = null;
+      try {
+        object = createInstance(json, unstringer);
+      } catch (JSONException e) {
+        System.out.println("Problem creating instance: " + e);
+      }
       if (object != null) {
         System.out.println(object.toString());
       } else {
