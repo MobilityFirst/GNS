@@ -39,80 +39,79 @@ public class Packet {
 
   public enum PacketType implements IntegerPacketType {
 
-    DNS(1),
+    DNS(1, "edu.umass.cs.gns.nsdesign.packet.DNSPacket"),
     // Add
-    ADD_RECORD(2),
-    CONFIRM_ADD(3),
-    ACTIVE_ADD(4), // on an add request replica controller sends to active replica
-    ACTIVE_ADD_CONFIRM(5), // after adding name, active replica confirms to replica controller
+    ADD_RECORD(2, "edu.umass.cs.gns.nsdesign.packet.AddRecordPacket"),
+    CONFIRM_ADD(3, "edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket"),
+    ACTIVE_ADD(4, "edu.umass.cs.gns.nsdesign.packet.AddRecordPacket"), // on an add request replica controller sends to active replica
+    ACTIVE_ADD_CONFIRM(5, "edu.umass.cs.gns.nsdesign.packet.AddRecordPacket"), // after adding name, active replica confirms to replica controller
 
     // new client
-    COMMAND(7),
-    COMMAND_RETURN_VALUE(8),
+    COMMAND(7, "edu.umass.cs.gns.nsdesign.packet.CommandPacket"),
+    COMMAND_RETURN_VALUE(8, "edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket"),
     // Remove
-    REMOVE_RECORD(10),
-    CONFIRM_REMOVE(11),
-    ACTIVE_REMOVE(12), // on a remove request, replica controller sends to active replica
-    ACTIVE_REMOVE_CONFIRM(13), // after removing name, active replica confirms to replica controller
-    RC_REMOVE(14),
+    REMOVE_RECORD(10, "edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket"),
+    CONFIRM_REMOVE(11, "edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket"),
+    ACTIVE_REMOVE(12, null), // on a remove request, replica controller sends to active replica
+    ACTIVE_REMOVE_CONFIRM(13, "edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket"), // after removing name, active replica confirms to replica controller
+    RC_REMOVE(14, "edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket"),
     // Update
-    UPDATE(20), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
-    CONFIRM_UPDATE(21),
+    UPDATE(20, "edu.umass.cs.gns.nsdesign.packet.UpdatePacket"), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
+    CONFIRM_UPDATE(21, "edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket"),
     // Lookup actives
-    REQUEST_ACTIVES(30),
+    REQUEST_ACTIVES(30, "edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket"),
     // Admin:
-    DUMP_REQUEST(40),
-    SENTINAL(41),
-    ADMIN_REQUEST(42),
-    ADMIN_RESPONSE(43),
+    DUMP_REQUEST(40, "edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket"),
+    SENTINAL(41, "edu.umass.cs.gns.nsdesign.packet.admin.SentinalPacket"),
+    ADMIN_REQUEST(42, "edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket"),
+    ADMIN_RESPONSE(43, "edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket"),
     // status
-    STATUS(50),
-    TRAFFIC_STATUS(51),
-    STATUS_INIT(52),
+    STATUS(50, "edu.umass.cs.gns.nsdesign.packet.admin.StatusPacket"),
+    TRAFFIC_STATUS(51, "edu.umass.cs.gns.nsdesign.packet.admin.TrafficStatusPacket"),
+    STATUS_INIT(52, "edu.umass.cs.gns.nsdesign.packet.admin.StatusInitPacket"),
     // select
-    SELECT_REQUEST(70),
-    SELECT_RESPONSE(71),
+    SELECT_REQUEST(70, "edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket"),
+    SELECT_RESPONSE(71, "edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket"),
     // stats collection for names
-    NAMESERVER_SELECTION(80),
-    NAME_RECORD_STATS_REQUEST(81),
-    NAME_RECORD_STATS_RESPONSE(82),
-    ACTIVE_NAMESERVER_INFO(83),
+    NAMESERVER_SELECTION(80, "edu.umass.cs.gns.nsdesign.packet.NameServerSelectionPacket"),
+    //NAME_RECORD_STATS_REQUEST(81),
+    //NAME_RECORD_STATS_RESPONSE(82),
+    ACTIVE_NAMESERVER_INFO(83, "edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket"),
     // paxos
-    PAXOS_PACKET(90),
+    PAXOS_PACKET(90, null),
     // group change
-    NEW_ACTIVE_PROPOSE(100),
-    OLD_ACTIVE_STOP(101),
-    OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(102),
-    DELETE_OLD_ACTIVE_STATE(103), //
-    NEW_ACTIVE_START(104),
-    NEW_ACTIVE_START_FORWARD(105),
-    NEW_ACTIVE_START_RESPONSE(106),
-    NEW_ACTIVE_START_CONFIRM_TO_PRIMARY(107),
-    NEW_ACTIVE_START_PREV_VALUE_REQUEST(108),
-    NEW_ACTIVE_START_PREV_VALUE_RESPONSE(109),
-    GROUP_CHANGE_COMPLETE(110),
+    NEW_ACTIVE_PROPOSE(100, "edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket"),
+    OLD_ACTIVE_STOP(101, null),
+    OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(102, "edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket"),
+    DELETE_OLD_ACTIVE_STATE(103, "edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket"),
+    //
+    NEW_ACTIVE_START(104, "edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket"),
+    NEW_ACTIVE_START_FORWARD(105, "edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket"),
+    NEW_ACTIVE_START_RESPONSE(106, "edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket"),
+    NEW_ACTIVE_START_CONFIRM_TO_PRIMARY(107, "edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket"),
+    NEW_ACTIVE_START_PREV_VALUE_REQUEST(108, "edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket"),
+    NEW_ACTIVE_START_PREV_VALUE_RESPONSE(109, "edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket"),
+    GROUP_CHANGE_COMPLETE(110, "edu.umass.cs.gns.nsdesign.packet.GroupChangeCompletePacket"),
     // coordination
-    ACTIVE_COORDINATION(120), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
-    REPLICA_CONTROLLER_COORDINATION(121), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+    ACTIVE_COORDINATION(120, null), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
+    REPLICA_CONTROLLER_COORDINATION(121, null), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
 
     // deprecated packet types:
-    UPDATE_NAMESERVER(201),
-    ACTIVE_NAMESERVER_UPDATE(202),
-    NAME_SERVER_LOAD(203),
-    
+    //UPDATE_NAMESERVER(201),
+    //ACTIVE_NAMESERVER_UPDATE(202),
+    NAME_SERVER_LOAD(203, "edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket"),
     // for finite ping pong protocol task example
-    TEST_PING(222),
-    TEST_PONG(223),
-    
-    TEST_NOOP(224),
-    
+    TEST_PING(222, "edu.umass.cs.gns.protocoltask.examples.PingPongPacket"),
+    TEST_PONG(223, "edu.umass.cs.gns.protocoltask.examples.PingPongPacket"),
+    TEST_NOOP(224, null),
     // SPECIAL CASES FOR DNS_SUBTYPE_QUERY PACKETS WHICH USE ONE PACKET FOR ALL THESE
     // these 3 are here for completeness and instrumentation
-    DNS_SUBTYPE_QUERY(-1),
-    DNS_SUBTYPE_RESPONSE(-2),
-    DNS_SUBTYPE_ERROR_RESPONSE(-3);
+    DNS_SUBTYPE_QUERY(-1, null),
+    DNS_SUBTYPE_RESPONSE(-2, null),
+    DNS_SUBTYPE_ERROR_RESPONSE(-3, null);
 
     private int number;
+    private String className;
     private static final Map<Integer, PacketType> map = new HashMap<Integer, PacketType>();
 
     static {
@@ -121,16 +120,29 @@ public class Packet {
           GNS.getLogger().warning("**** Duplicate ID number for packet type " + type + ": " + type.getInt());
         }
         map.put(type.getInt(), type);
+        if (type.className != null) {
+          try {
+            Class klass = Class.forName(type.className, false, Packet.class.getClassLoader());
+            //GNS.getLogger().info(type.name() + "->" + klass.getName());
+          } catch (ClassNotFoundException e) {
+            GNS.getLogger().warning("Unknown class for " + type.name() + ":" + type.className);
+          }
+        }
       }
     }
 
-    private PacketType(int number) {
+    private PacketType(int number, String className) {
       this.number = number;
+      this.className = className;
     }
 
     @Override
     public int getInt() {
       return number;
+    }
+
+    public String getClassName() {
+      return className;
     }
 
     public static PacketType getPacketType(int number) {
@@ -154,7 +166,7 @@ public class Packet {
   public static PacketType getPacketType(int number) {
     return PacketType.getPacketType(number);
   }
-  
+
   public static PacketType getPacketType(JSONObject json) throws JSONException {
     if (Packet.hasPacketTypeField(json)) {
       return getPacketType(json.getInt(PACKET_TYPE));
@@ -170,16 +182,14 @@ public class Packet {
   public static void putPacketType(JSONObject json, PacketType type) throws JSONException {
     json.put(PACKET_TYPE, type.getInt());
   }
-  
+
   ///
   /// PACKET SENDING CODE THAT WE KEEP AROUND SO THAT THE ADMIN SIDE OF THINGS
   /// IS SEPARATE FROM THE NIO SIDE.
   ///
- 
   /**
    * Delimiter that separates size from data in each frame transmitted *
    */
-
   public static final String HEADER_PATTERN = "&";
 
   /**
@@ -303,8 +313,8 @@ public class Packet {
     }
     return sendTCPPacket(json, new InetSocketAddress(addr, port));
   }
-  
-   public static Socket sendTCPPacket(JSONObject json, InetSocketAddress addr) throws IOException {
+
+  public static Socket sendTCPPacket(JSONObject json, InetSocketAddress addr) throws IOException {
     GNS.getLogger().finer("sendTCPPacket:: to " + addr.getHostString() + ":" + addr.getPort() + " json: " + json.toString());
     Socket socket = new Socket(addr.getHostString(), addr.getPort());
     sendTCPPacket(json, socket);
@@ -331,7 +341,7 @@ public class Packet {
     output.println(msg);
     output.flush();
   }
-  
+
   /**
    * Multicast TCP packet to all name servers in <i>nameServerIds</i>. This method excludes name server id in
    * <i>excludeNameServers</i>
@@ -342,7 +352,7 @@ public class Packet {
    * @param portType Type of port to connect
    * @param excludeNameServers *
    */
-  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry, 
+  public static void multicastTCP(GNSNodeConfig gnsNodeConfig, Set nameServerIds, JSONObject json, int numRetry,
           GNS.PortType portType, Set excludeNameServers) {
     int tries;
     for (Object id : nameServerIds) {

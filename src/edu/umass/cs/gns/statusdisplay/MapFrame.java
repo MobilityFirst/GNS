@@ -177,11 +177,11 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
     packetGraphics.put(Packet.PacketType.ADD_RECORD, new PacketGraphic(Colors.Green, 1.3));
    // packetGraphics.put(Packet.PacketType.REPLICATE_RECORD, new PacketGraphic(Colors.Cyan, 1.4));
     //packetGraphics.put(Packet.PacketType.REMOVE_REPLICATION_RECORD, new PacketGraphic(Colors.DarkSalmon, 1.0));
-    packetGraphics.put(Packet.PacketType.NAME_RECORD_STATS_REQUEST, new PacketGraphic(Colors.Grey, 1.0));
-    packetGraphics.put(Packet.PacketType.NAME_RECORD_STATS_RESPONSE, new PacketGraphic(Colors.BlueViolet, 1.0));
+    //packetGraphics.put(Packet.PacketType.NAME_RECORD_STATS_REQUEST, new PacketGraphic(Colors.Grey, 1.0));
+    //packetGraphics.put(Packet.PacketType.NAME_RECORD_STATS_RESPONSE, new PacketGraphic(Colors.BlueViolet, 1.0));
 
-    packetGraphics.put(Packet.PacketType.UPDATE_NAMESERVER, new PacketGraphic(Colors.YellowGreen, 1.0));
-    packetGraphics.put(Packet.PacketType.ACTIVE_NAMESERVER_UPDATE, new PacketGraphic(Colors.OliveDrab, 1.0));
+//    packetGraphics.put(Packet.PacketType.UPDATE_NAMESERVER, new PacketGraphic(Colors.YellowGreen, 1.0));
+//    packetGraphics.put(Packet.PacketType.ACTIVE_NAMESERVER_UPDATE, new PacketGraphic(Colors.OliveDrab, 1.0));
 
     packetGraphics.put(Packet.PacketType.NAMESERVER_SELECTION, new PacketGraphic(Colors.MediumSeaGreen, 1.0));
     packetGraphics.put(Packet.PacketType.UPDATE, new PacketGraphic(Colors.MediumPurple, 1.0));
@@ -456,7 +456,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
           //StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.UPDATE_ADDRESS_NS, null, null));
           break;
         case 4:
-          StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.NAME_RECORD_STATS_RESPONSE, null, null));
+          //StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.NAME_RECORD_STATS_RESPONSE, null, null));
           break;
         case 5:
           StatusModel.getInstance().queueSendNotation(new TrafficStatusPacket(from, to, GNS.PortType.NS_TCP_PORT, Packet.PacketType.ADD_RECORD, null, null));

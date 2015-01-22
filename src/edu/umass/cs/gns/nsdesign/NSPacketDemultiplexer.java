@@ -66,7 +66,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     register(Packet.PacketType.NEW_ACTIVE_PROPOSE);
     register(Packet.PacketType.GROUP_CHANGE_COMPLETE);
     register(Packet.PacketType.NAMESERVER_SELECTION);
-    register(Packet.PacketType.NAME_RECORD_STATS_RESPONSE);
+    //register(Packet.PacketType.NAME_RECORD_STATS_RESPONSE);
     register(Packet.PacketType.NAME_SERVER_LOAD);
     // packets from coordination modules at replica controller
     register(Packet.PacketType.REPLICA_CONTROLLER_COORDINATION);
@@ -137,7 +137,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
               case NEW_ACTIVE_PROPOSE:
               case GROUP_CHANGE_COMPLETE:
               case NAMESERVER_SELECTION:
-              case NAME_RECORD_STATS_RESPONSE:
+              //case NAME_RECORD_STATS_RESPONSE:
               case NAME_SERVER_LOAD:
               // packets from coordination modules at replica controller
               case REPLICA_CONTROLLER_COORDINATION:

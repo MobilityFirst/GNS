@@ -50,7 +50,7 @@ public class NoCoordinationReplicaControllerCoordinator<NodeIDType> implements R
         case GROUP_CHANGE_COMPLETE:
         case REQUEST_ACTIVES:
         case NAMESERVER_SELECTION:
-        case NAME_RECORD_STATS_RESPONSE:
+        //case NAME_RECORD_STATS_RESPONSE:
         case ACTIVE_ADD_CONFIRM:
         case ACTIVE_REMOVE_CONFIRM:
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:

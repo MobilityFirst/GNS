@@ -317,9 +317,9 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
         case NAMESERVER_SELECTION:
           NameStats.handleLNSVotesPacket(json, this);
           break;
-        case NAME_RECORD_STATS_RESPONSE:
+        //case NAME_RECORD_STATS_RESPONSE:
           // todo this packets related to stats reporting are not implemented yet.
-          throw new UnsupportedOperationException();
+          //throw new UnsupportedOperationException();
         case NAME_SERVER_LOAD:
           updateNSLoad(json);
         default:
