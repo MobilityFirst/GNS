@@ -5,11 +5,15 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+import edu.umass.cs.gns.util.CreateInstance;
+import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -18,9 +22,11 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.json.JSONArray;
 
 /**
  * So we have these packets see and we convert them back and forth to and from JSON Objects.
@@ -181,6 +187,15 @@ public class Packet {
 
   public static void putPacketType(JSONObject json, PacketType type) throws JSONException {
     json.put(PACKET_TYPE, type.getInt());
+  }
+  
+  private static final String JSON_OBJECT_CLASS = "org.json.JSONObject";
+  private static final String STRINGIFIABLE_OBJECT_CLASS = "edu.umass.cs.gns.util.Stringifiable";
+
+  public static Object createInstance(PacketType type, JSONObject json, Stringifiable unstringer) {
+    return CreateInstance.createInstance(type.getClassName(),
+            Arrays.asList(json, unstringer),
+            Arrays.asList(JSON_OBJECT_CLASS, STRINGIFIABLE_OBJECT_CLASS));       
   }
 
   ///
@@ -436,10 +451,46 @@ public class Packet {
    * @throws java.io.IOException *
    */
   public static void main(String[] args) throws IOException {
+    Stringifiable unstringer = new Stringifiable() {
+      @Override
+      public Integer valueOf(String nodeAsString) {
+        return Integer.valueOf(nodeAsString);
+      }
+
+      @Override
+      public Set getValuesFromStringSet(Set strNodes) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      }
+
+      @Override
+      public Set getValuesFromJSONArray(JSONArray array) throws JSONException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+      }
+    };
     System.out.println(PacketType.DNS);
     System.out.println(getPacketType(5));
     System.out.println(getPacketType(5).toString());
     System.out.println(PacketType.valueOf("REQUEST_ACTIVES").toString());
     System.out.println(PacketType.valueOf("REQUEST_ACTIVES").getInt());
+    ResultValue x = new ResultValue();
+    x.add("12345678");
+    UpdatePacket up = new UpdatePacket(null, 32234234, 123, "12322323",
+            "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
+            GNS.DEFAULT_TTL_SECONDS, null, null, null);
+    System.out.println(up.toString());
+    JSONObject json = null;
+    try {
+      json = up.toJSONObject();
+    } catch (JSONException e) {
+
+    }
+    if (json != null) {
+      Object object = createInstance(PacketType.UPDATE, json, unstringer);
+      if (object != null) {
+        System.out.println(object.toString());
+      } else {
+        System.out.println("OBJECT IS NULL");
+      }
+    }
   }
 }
