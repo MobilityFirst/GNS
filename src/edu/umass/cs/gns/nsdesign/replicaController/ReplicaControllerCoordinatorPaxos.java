@@ -105,37 +105,39 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> extends AbstractRepli
           AddRecordPacket<NodeIdType> addPacket = new AddRecordPacket<NodeIdType>(request, nodeConfig);
           addPacket.setNameServerID(nodeID);
           // FIXME: HACK ALERT : GIGAPAXIS TRANSITION UNFINISHED
-          if (!Config.useOldPaxos) {
-            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
-                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, addPacket.toString(), false);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(addPacket.getName()), requestPacket.toString());
-          } else {
+//          if (!Config.useOldPaxos) {
+//            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
+//                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, addPacket.toString(), false);
+//            requestPacket.setReturnRequestValue();
+//            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(addPacket.getName()), requestPacket.toString());
+//          } else {
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(addPacket.getName()), addPacket.toString());
-          }
+          //}
           break;
         case REMOVE_RECORD:
           RemoveRecordPacket<NodeIdType> removePacket = new RemoveRecordPacket<NodeIdType>(request, nodeConfig);
           removePacket.setNameServerID(nodeID);
           // FIXME: HACK ALERT : GIGAPAXIS TRANSITION UNFINISHED
-          if (!Config.useOldPaxos) {
-            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
-                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, removePacket.toString(), false);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), requestPacket.toString());
-          } else {
+//          if (!Config.useOldPaxos) {
+//            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
+//                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, removePacket.toString(), false);
+//            requestPacket.setReturnRequestValue();
+//            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), requestPacket.toString());
+//          } else {
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
-          }
+          //}
           break;
         // Packets sent from active replica
         case RC_REMOVE:
           removePacket = new RemoveRecordPacket<NodeIdType>(request, nodeConfig);
           // FIXME: HACK ALERT : GIGAPAXIS TRANSITION UNFINISHED
-          if (!Config.useOldPaxos) {
-            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
-                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, removePacket.toString(), false);
-            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), requestPacket.toString());
-          } else {
+//          if (!Config.useOldPaxos) {
+//            edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket requestPacket
+//                    = new edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket(-1, removePacket.toString(), false);
+//            paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), requestPacket.toString());
+//          } else {
             paxosManager.propose(ConsistentHashing.getReplicaControllerGroupID(removePacket.getName()), removePacket.toString());
-          }
+          //}
           break;
         case NEW_ACTIVE_PROPOSE:
           NewActiveProposalPacket<NodeIdType> activePropose = new NewActiveProposalPacket<NodeIdType>(request, nodeConfig);

@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
@@ -48,15 +49,18 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
     this.nioTransport = nioServer;
 
     if (!Config.useOldPaxos) {
-      GNS.getLogger().info("Using gigapaxos");
+      GNS.getLogger().info("Using gigapaxos in GnsCoordinatorPaxos");
       this.paxosInterface = paxosInterface;
       // this doesn't do any good because somebody is calling createPaxosInstance with their own app
       //this.paxosInterface = new ReplicableTransition(paxosInterface);
-      this.paxosManager = new PaxosManagerTransition(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
+       this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
               nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
-              this.paxosInterface, paxosConfig));
+              this.paxosInterface, paxosConfig);
+//      this.paxosManager = new PaxosManagerTransition(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
+//              nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
+//              this.paxosInterface, paxosConfig));
     } else {
-      GNS.getLogger().info("Using old Paxos (not gigapaxos)");
+      GNS.getLogger().info("Using old Paxos (not gigapaxos) in GnsCoordinatorPaxos");
       this.paxosInterface = paxosInterface;
       this.paxosManager = new PaxosManager<NodeIDType>(nodeID, nodeConfig,
               new PacketTypeStampAndSend<NodeIDType>(nioServer, Packet.PacketType.ACTIVE_COORDINATION), 
@@ -81,7 +85,9 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
     try {
       Packet.PacketType type = Packet.getPacketType(request);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("######## Coordinating " + type);
+        GNS.getLogger().info("######## Coordinating " + type + 
+                (type.equals(Packet.PacketType.ACTIVE_COORDINATION) ? 
+                        (" PaxosType: " + PaxosPacket.getPaxosPacketType(request)) : ""));    
       }
       switch (type) {
         // coordination packets internal to paxos

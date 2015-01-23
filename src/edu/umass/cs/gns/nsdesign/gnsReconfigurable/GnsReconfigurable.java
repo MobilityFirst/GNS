@@ -170,7 +170,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           break;
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);
-          break;
+          return false;
       }
       executed = true;
     } catch (JSONException e) {

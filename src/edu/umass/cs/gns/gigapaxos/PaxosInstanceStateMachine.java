@@ -698,8 +698,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			String pid = this.getPaxosID();
 			while(!executed) {
 				executed = this.clientRequestHandler.handleDecision(pid, 
-						inorderDecision.getRequestValue(), (inorderDecision.isRecovery() ||  
-								(inorderDecision.getEntryReplica()!=this.getMyID()))); 
+						inorderDecision.getRequestValue(), (inorderDecision.isRecovery()
+                                                        // Had to remove this line to get things to work. - Westy
+                                                        //||  (inorderDecision.getEntryReplica()!=this.getMyID())
+                                                        )); 
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
 			} execCount++;
 
