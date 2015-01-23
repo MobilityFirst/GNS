@@ -29,7 +29,7 @@ public class ExampleNode {
 	private final Set<Integer> nodeIDs;
 	private final JSONNIOTransport<Integer> niot;
 	private final ProtocolExecutor<Integer, Packet.PacketType, String> protocolExecutor;
-
+	
 	private Logger log =
 			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())
 					: GNS.getLogger();
@@ -46,7 +46,7 @@ public class ExampleNode {
 		this.protocolExecutor =
 				new ProtocolExecutor<Integer, Packet.PacketType, String>(
 						new JSONMessenger<Integer>(niot));
-
+		
 		// Create and register local services (i.e., another level of demultiplexing)
 		this.protocolExecutor.register(Packet.PacketType.TEST_PING,
 				new PingPongServer(this.myID));
@@ -61,6 +61,8 @@ public class ExampleNode {
 			case TEST_PING:
 				this.protocolExecutor.handleEvent(new PingPongPacket(msg));
 				break;
+				default:
+					break;
 			}
 		} catch (JSONException je) {
 			je.printStackTrace();

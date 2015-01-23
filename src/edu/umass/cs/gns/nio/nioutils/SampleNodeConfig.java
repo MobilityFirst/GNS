@@ -53,6 +53,7 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
   public void localSetup(int nNodes) {
     local = true;
     for (Integer i = 0; i < nNodes; i++) {
+    	// FIXME: Will throw an exception if NodeIDType not integer
       this.add((NodeIDType) i, getLocalAddress());
     }
   }

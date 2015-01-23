@@ -44,6 +44,7 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
 		try {
+			((NoopAppRequest)request).setNeedsCoordination(false);
 			this.sendAllLazy((NoopAppRequest) request);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -96,11 +97,11 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 
 	protected void sendAllLazy(NoopAppRequest request) throws IOException,
 			RequestParseException, JSONException {
+		if(this.getReplicaGroup(request.getServiceName())==null) return;
 		GenericMessagingTask<Integer, JSONObject> mtask = new GenericMessagingTask<Integer, JSONObject>(
 				this.getReplicaGroup(request.getServiceName()).toArray(),
 				request.toJSONObject());
-		if (this.messenger == null)
-			return;
-		this.messenger.send(mtask);
+		if (this.messenger != null)
+			this.messenger.send(mtask);
 	}
 }

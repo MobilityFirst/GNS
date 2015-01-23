@@ -2,6 +2,7 @@ package edu.umass.cs.gns.reconfiguration.examples;
 
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -14,9 +15,11 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.util.MyLogger;
 
 /**
 @author V. Arun
@@ -43,22 +46,40 @@ public class ReconfigurableClient {
 		CreateServiceName create = new CreateServiceName(null, name, 0, state);
 		return create;
 	}
+	private DeleteServiceName makeDeleteNameRequest(String name, String state) {
+		DeleteServiceName delete = new DeleteServiceName(null, name, 0);
+		return delete;
+	}
 
 	private int getRandomReplica() {
 		int index = (int)(this.nodeConfig.getActiveReplicas().size()*Math.random());
 		return (Integer)(this.nodeConfig.getActiveReplicas().toArray()[index]);
 	}
+	private int getRandomRCReplica() {
+		int index = (int)(this.nodeConfig.getReconfigurators().size()*Math.random());
+		return (Integer)(this.nodeConfig.getReconfigurators().toArray()[index]);
+	}
+
 	private int getFirstReplica() {
 		return this.nodeConfig.getActiveReplicas().iterator().next();
 	}
-	private void sendRequest(AppRequest req) throws JSONException, IOException {
+	private int getFirstRCReplica() {
+		return this.nodeConfig.getReconfigurators().iterator().next();
+	}
+
+	private void sendRequest(AppRequest req) throws JSONException, IOException, RequestParseException {
 		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstReplica() : this.getRandomReplica());
-		System.out.println("Sending to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":"+this.nodeConfig.getNodePort(id) + ": "+ req);
+		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getRequestType(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
 		this.sendRequest(id, req.toJSONObject());
 	}
 	private void sendRequest(CreateServiceName req) throws JSONException, IOException {
-		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstReplica() : this.getRandomReplica());
-		System.out.println("Sending to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ": "+this.nodeConfig.getNodePort(id) + req);
+		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
+		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getSummary(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
+		this.sendRequest(id, req.toJSONObject());
+	}
+	private void sendRequest(DeleteServiceName req) throws JSONException, IOException {
+		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
+		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getSummary(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
 		this.sendRequest(id, req.toJSONObject());
 	}
 
@@ -75,17 +96,17 @@ public class ReconfigurableClient {
 		}
 		@Override
 		public boolean handleJSONObject(JSONObject json) {
-			log.info("Client received: " + json);
+			log.log(Level.FINEST, MyLogger.FORMAT[1], new Object[]{"Client received: " , json});
 			try {
 				switch(ReconfigurationPacket.getReconfigurationPacketType(json)) {
 				case CREATE_SERVICE_NAME:
 					CreateServiceName create = new CreateServiceName(json);
-					System.out.println("App"+messenger.getMyID()+" created " +create.getServiceName());
+					log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{"App" , " created " , create.getServiceName()});
 					exists.put(create.getServiceName(), true);
 					break;
 				case DELETE_SERVICE_NAME:
 					DeleteServiceName delete = new DeleteServiceName(json);
-					System.out.println("App created " +delete.getServiceName());
+					log.log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"App deleted " ,delete.getServiceName()});
 					exists.remove(delete.getServiceName());
 					break;
 				default: break;
@@ -116,9 +137,9 @@ public class ReconfigurableClient {
 		try {
 			JSONMessenger<Integer> messenger = new JSONMessenger<Integer>(
 					(new JSONNIOTransport<Integer>(null, nc, new PacketDemultiplexerDefault(), 
-							true)));
+							true)).enableStampSenderPort());
 			client = new ReconfigurableClient(nc, messenger);
-			int numRequests = 1;
+			int numRequests = 2;
 			String namePrefix = "name";
 			String requestValuePrefix = "request_value";
 			String initValue = "initial_value";
@@ -127,10 +148,11 @@ public class ReconfigurableClient {
 			while(client.exists.containsKey(namePrefix+0));
 			Thread.sleep(1000);
 			for(int i=0; i<numRequests; i++) {
-				client.sendRequest(client.makeRequest(namePrefix+i, requestValuePrefix+i));
+				client.sendRequest(client.makeRequest(namePrefix+0, requestValuePrefix+i));
 				Thread.sleep(1000);
 			}
 			Thread.sleep(1000);
+			client.sendRequest(client.makeDeleteNameRequest(namePrefix+0, initValue));
 			client.messenger.stop();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
@@ -138,6 +160,9 @@ public class ReconfigurableClient {
 			je.printStackTrace();
 		} catch(InterruptedException ie) {
 			ie.printStackTrace();
+		} catch (RequestParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}

@@ -63,19 +63,19 @@ InterfaceReplicable, InterfaceReconfigurable {
 			AppData prevData = this.prevEpochFinal.get(request.getServiceName());
 			data = new AppData(request.getServiceName(), 
 				(prevData!=null ? prevData.epoch+1 : 0), request.getValue()); 
-			throw new RuntimeException("App"+myID+" has no record for "+ request.getServiceName());
+			throw new RuntimeException("App-"+myID+" has no record for "+ request.getServiceName());
 		}
 		assert(data!=null);
 		data.setState(request.getValue());
 		this.appData.put(request.getServiceName(), data);
-		System.out.println("App"+myID+" wrote " + data.name+":"+data.epoch + " with state "+data.getState());
+		System.out.println("App-"+myID+" wrote " + data.name+":"+data.epoch + " with state "+data.getState());
 		return true;
 	}
 	private boolean processStopRequest(NoopAppRequest request) {
 		AppData data = this.appData.remove(request.getServiceName());
 		if(data==null) return false;
 		this.prevEpochFinal.put(request.getServiceName(), data);
-		System.out.println("App-"+myID+" stopped " + data.name+":"+getEpoch(request.getServiceName()) + " with state "+data.getState());
+		System.out.println("App-"+myID+" stopped " + data.name+":"+(data.epoch) + " with state "+data.getState());
 		return true;
 	}
 
@@ -104,9 +104,8 @@ InterfaceReplicable, InterfaceReconfigurable {
 	}
 
 	@Override
-	public String getState(String name, int epoch) {
-		// TODO Auto-generated method stub
-		return null;
+	public String getState(String name) {
+		throw new RuntimeException("Method not yet implemented");
 	}
 
 	@Override
@@ -129,15 +128,19 @@ InterfaceReplicable, InterfaceReconfigurable {
 
 	@Override
 	public void putInitialState(String name, int epoch, String state) {
-		System.out.println("App"+this.myID+" created record " + name+":"+epoch);
+		System.out.println("App-"+this.myID+" created record " + name+":"+epoch+ ":"+state);
 		AppData data = new AppData(name, epoch, state);
 		this.appData.put(name, data);
 	}
 
 	@Override
 	public boolean deleteFinalState(String name, int epoch) {
-		AppData data = this.appData.remove(name);
-		return (data!=null && data.epoch==epoch ? true : false);
+		AppData data = this.appData.get(name);
+		if(data!=null && data.epoch==epoch) {
+			this.appData.remove(name);
+			return true;
+		}
+		return false;
 	}
 
 	@Override

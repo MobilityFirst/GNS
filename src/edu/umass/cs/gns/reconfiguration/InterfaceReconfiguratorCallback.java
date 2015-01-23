@@ -9,5 +9,5 @@ package edu.umass.cs.gns.reconfiguration;
  * by a third-party class like an instance of Application.
  */
 public interface InterfaceReconfiguratorCallback {
-	public void executed(InterfaceReconfigurableRequest request, boolean handled);
+	public void executed(InterfaceRequest request, boolean handled);
 }

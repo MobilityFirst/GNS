@@ -31,7 +31,6 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MatchKeyable;
 import edu.umass.cs.gns.util.Util;
@@ -692,25 +691,15 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		int execCount = 0;
 		// extract next in-order decision
 		while((inorderDecision = this.paxosState.putAndRemoveNextExecutable(loggedDecision))!=null) { 
-                  
 			log.log(Level.FINE, "{0}{1}{2}", new Object[]{this, " in-order commit: ",inorderDecision}); 
 
 			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
 			boolean executed=false;
 			String pid = this.getPaxosID();
 			while(!executed) {
-                          if (Config.debuggingEnabled) {
-                            if (execCount > 100) break;
-                            //ThreadUtils.sleep(200); // take a chill pill
-                          }
 				executed = this.clientRequestHandler.handleDecision(pid, 
-                                        // CHANGED THIS TO SEND THE requestValue - Westy
-						inorderDecision.requestValue.toString(), 
-                                                //inorderDecision.toString(), 
-                                                (inorderDecision.isRecovery()
-                                                        // also commented this out until I determine if it is correct - Westy
-                                                        // ||  (inorderDecision.getEntryReplica()!=this.getMyID())
-                                                        )); 
+						inorderDecision.getRequestValue(), (inorderDecision.isRecovery() ||  
+								(inorderDecision.getEntryReplica()!=this.getMyID()))); 
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
 			} execCount++;
 

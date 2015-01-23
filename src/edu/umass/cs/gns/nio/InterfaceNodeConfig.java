@@ -20,10 +20,9 @@ public interface InterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeIDTyp
 
     public abstract int getNodePort(NodeIDType id);
 
-    /* FIXME: This method needs to be made available only in 
-     * "InterfaceDynamicNodeConfig". 
-     */
     public abstract Set<NodeIDType> getNodeIDs();
+    
+    //public abstract void register(Runnable callback);
 
 }
 

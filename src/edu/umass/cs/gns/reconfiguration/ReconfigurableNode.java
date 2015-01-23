@@ -12,21 +12,45 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 public abstract class ReconfigurableNode<NodeIDType> {
 
 	protected final NodeIDType myID; // only needed for app debugging in createAppCoordinator 
-	protected final ActiveReplica<NodeIDType> activeReplica;
-	protected final Reconfigurator<NodeIDType> reconfigurator;
-
 	protected abstract AbstractReplicaCoordinator<NodeIDType> createAppCoordinator();
 
+	/*
 	public ReconfigurableNode(NodeIDType id, InterfaceReconfigurableNodeConfig<NodeIDType> nc) throws IOException {
 		this.myID = id;
 		AbstractPacketDemultiplexer pd;
 		JSONMessenger<NodeIDType> messenger = new JSONMessenger<NodeIDType>((new JSONNIOTransport<NodeIDType>(this.myID, 
-				nc, (pd = new ReconfigurationPacketDemultiplexer()), true)));
-		this.activeReplica = new ActiveReplica<NodeIDType>(createAppCoordinator(), nc, messenger);
-		this.reconfigurator = new Reconfigurator<NodeIDType>(nc, messenger);
+				nc, (pd = new ReconfigurationPacketDemultiplexer()), true)).enableStampSenderInfo());
+		ActiveReplica<NodeIDType> activeReplica = new ActiveReplica<NodeIDType>(createAppCoordinator(), nc, messenger);
+		Reconfigurator<NodeIDType> reconfigurator = new Reconfigurator<NodeIDType>(nc, messenger);
 		
-		pd.register(this.activeReplica.getPacketTypes(), this.activeReplica); // includes app packets
-		pd.register(this.reconfigurator.getPacketTypes().toArray(), this.reconfigurator);
+		pd.register(activeReplica.getPacketTypes(), activeReplica); // includes app packets
+		pd.register(reconfigurator.getPacketTypes().toArray(), reconfigurator);
 		messenger.addPacketDemultiplexer(pd);
 	}
+	*/
+
+	public ReconfigurableNode(NodeIDType id, InterfaceReconfigurableNodeConfig<NodeIDType> nc) throws IOException {
+		this.myID = id;
+		AbstractPacketDemultiplexer pd;
+
+		if (!nc.getActiveReplicas().contains(id)
+				&& !nc.getReconfigurators().contains(id))
+			throw new RuntimeException("Node " + id
+					+ " not present in NodeConfig argument " + nc.getActiveReplicas() + " " + nc.getReconfigurators());
+
+		JSONMessenger<NodeIDType> messenger = new JSONMessenger<NodeIDType>((new JSONNIOTransport<NodeIDType>(this.myID, 
+				nc, (pd = new ReconfigurationPacketDemultiplexer()), true)).enableStampSenderInfo());
+
+		if(nc.getActiveReplicas().contains(id)) { // create active
+			ActiveReplica<NodeIDType> activeReplica = new ActiveReplica<NodeIDType>(createAppCoordinator(), nc, messenger);
+			pd.register(activeReplica.getPacketTypes(), activeReplica); // includes app packets
+			messenger.addPacketDemultiplexer(pd);
+		}
+		if(nc.getReconfigurators().contains(id)) { // create reconfigurator
+			Reconfigurator<NodeIDType> reconfigurator = new Reconfigurator<NodeIDType>(nc, messenger);
+			pd.register(reconfigurator.getPacketTypes().toArray(), reconfigurator);
+			messenger.addPacketDemultiplexer(pd);
+		}
+	}
+
 }

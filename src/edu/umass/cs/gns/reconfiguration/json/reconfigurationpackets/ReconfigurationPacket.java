@@ -9,10 +9,11 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONPacket;
-import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.IntegerPacketTypeMap;
+import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * @author V. Arun
@@ -32,14 +33,19 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		EPOCH_FINAL_STATE (228), // : record locally
 		DROP_EPOCH_FINAL_STATE (229), // : drop final state
 
-		// events at reconfigurator
+		// all events below are at reconfigurators
 		DEMAND_REPORT (230), // : starting point for reconfiguration, send stop_epoch if needed
 		ACK_STOP_EPOCH (231), // : record locally
 		ACK_START_EPOCH (232), // : record locally
 		ACK_EPOCH_FINAL_STATE (233), // : record locally; if majority, send drop_epoch_final_state
 		ACK_DROP_EPOCH_FINAL_STATE (234),
+		
+		// the two packets below are sent from a client app
 		CREATE_SERVICE_NAME (235),
 		DELETE_SERVICE_NAME (236),
+		
+		// this type is relevant only between reconfigurators
+		RC_RECORD_REQUEST (237);
 		;
 
 		private final int number;
@@ -75,6 +81,7 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		typeMap.put(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE, AckDropEpochFinalState.class); 
 		typeMap.put(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME, CreateServiceName.class); 
 		typeMap.put(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME, DeleteServiceName.class); 
+		typeMap.put(ReconfigurationPacket.PacketType.RC_RECORD_REQUEST, RCRecordRequest.class); 
 
 		for(ReconfigurationPacket.PacketType type : ReconfigurationPacket.PacketType.intToType.values()) {
 			assert(getPacketTypeClassName(type)!=null) : type;
@@ -89,8 +96,8 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		//this.setType(t);
 	}
 
-	public ReconfigurationPacket(JSONObject json) throws JSONException {
-		super(json);
+	public ReconfigurationPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+		super(json, unstringer);
 		this.setType(getPacketType(json));
 	}	
 
@@ -125,6 +132,10 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		}
 		return null;
 	}
+	
+	public static final boolean isReconfigurationPacket(JSONObject json) throws JSONException {
+		return getReconfigurationPacketType(json)!=null;
+	}
 
 	public static final ReconfigurationPacket.PacketType getReconfigurationPacketType(JSONObject json) throws JSONException{
 		if(json.has(ReconfigurationPacket.PACKET_TYPE)) 
@@ -134,9 +145,12 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 	public static final String getPacketTypeClassName(ReconfigurationPacket.PacketType type) {
 		return typeMap.get(type)!=null ? typeMap.get(type).getSimpleName() : null;
 	}
+	public static final Class<?> getPacketTypeClass(ReconfigurationPacket.PacketType type) {
+		return typeMap.get(type)!=null ? typeMap.get(type) : null;
+	}
 
 	public static BasicReconfigurationPacket<?> getReconfigurationPacket(JSONObject json, 
-		Map<ReconfigurationPacket.PacketType,Class<?>> typeMap) throws JSONException {
+		Map<ReconfigurationPacket.PacketType,Class<?>> typeMap, Stringifiable<?> unstringer) throws JSONException {
 		BasicReconfigurationPacket<?> rcPacket = null;
 		try {
 			ReconfigurationPacket.PacketType rcType = 
@@ -144,7 +158,7 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 			if(rcType!=null && getPacketTypeClassName(rcType)!=null) {
 				rcPacket = (BasicReconfigurationPacket<?>)(Class.forName(
 					"edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets." + 
-							getPacketTypeClassName(rcType)).getConstructor(JSONObject.class).newInstance(json));
+							getPacketTypeClassName(rcType)).getConstructor(JSONObject.class, Stringifiable.class).newInstance(json, unstringer));
 			}
 		}
 		catch(NoSuchMethodException nsme) {nsme.printStackTrace();} 
@@ -152,11 +166,17 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		catch(IllegalAccessException iae) {iae.printStackTrace();} 
 		catch(ClassNotFoundException cnfe) {cnfe.printStackTrace();}
 		catch(InstantiationException ie) {ie.printStackTrace();}
+		finally{if(ReconfigurationPacket.PacketType.intToType.get(JSONPacket.getPacketType(json))==null)
+			System.out.println("!!!!!!!!!!!!!!!!"+json);}
 
 		return rcPacket;
 	}
-	public static BasicReconfigurationPacket<?> getReconfigurationPacket(JSONObject json) throws JSONException {
-		return getReconfigurationPacket(json, typeMap);
+	public static BasicReconfigurationPacket<?> getReconfigurationPacket(JSONObject json, Stringifiable<?> unstringer) throws JSONException {
+		return getReconfigurationPacket(json, typeMap, unstringer);
+	}
+	public static BasicReconfigurationPacket<?> getReconfigurationPacket(InterfaceRequest request, Stringifiable<?> unstringer) throws JSONException {
+		if(request instanceof BasicReconfigurationPacket<?>) return (BasicReconfigurationPacket<?>)request;
+		return getReconfigurationPacket(new JSONObject(request.toString()), typeMap, unstringer);
 	}
 
 	/************************* Start of assertion methods **************************************************/ 
@@ -178,13 +198,12 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 	public static void assertPacketTypeChecks(ReconfigurationPacket.PacketType type, String packetName, 
 			Class<?> target, String handlerMethodPrefix) {
 		String errMsg = "Method " + handlerMethodPrefix+packetName +
-				" does not exist in ReconfiguratorProtocolTask";
+				" does not exist in " + target.getSimpleName();
 		try {
-			System.out.println(type + " : " + packetName);
+			//System.out.println(type + " : " + packetName + " : " + handlerMethodPrefix+packetName);
 			if(packetName!=null)
-				assert(target.getMethod(handlerMethodPrefix+packetName, 
-					ProtocolEvent.class, ProtocolTask[].class)!=null) : 
-						errMsg;
+				assert (target.getMethod(handlerMethodPrefix + packetName,
+						getPacketTypeClass(type), ProtocolTask[].class) != null) : errMsg ;
 		} catch(NoSuchMethodException nsme) {
 			System.err.println(errMsg);
 			nsme.printStackTrace();

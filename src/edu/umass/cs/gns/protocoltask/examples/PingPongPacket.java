@@ -6,6 +6,8 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
+import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.gns.util.StringifiableDefault;
 
 /**
  * @author V. Arun
@@ -16,7 +18,9 @@ public class PingPongPacket extends ProtocolPacket<Integer, Packet.PacketType> {
 	public static final String SENDER = "SENDER";
 	public static final String INITIATOR = "INITIATOR";
 	public static final String KEY = "KEY";
-
+	
+	public static final Stringifiable<Integer> unstringer = new StringifiableDefault<Integer>(0);
+	
 	public final String field1 = "PingPong"; // unnecessary field
 	private int counter = 0;
 
@@ -26,7 +30,7 @@ public class PingPongPacket extends ProtocolPacket<Integer, Packet.PacketType> {
 	}
 
 	public PingPongPacket(JSONObject json) throws JSONException {
-		super(json);
+		super(json, unstringer);
 		this.setType(Packet.getPacketType(json));
 		this.counter = (json.has(COUNTER) ? json.getInt(COUNTER) : 0);
 	}

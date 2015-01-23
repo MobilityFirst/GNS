@@ -34,6 +34,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implements GNS module which stores the name records for all names that are replicated at this name server.
@@ -41,6 +43,7 @@ import java.util.Set;
  * among multiple replicas of a name is included in the coordinator module.
  *
  * Created by abhigyan on 2/26/14.
+ * @param <NodeIDType>
  */
 public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface, InterfaceReplicable, InterfaceReconfigurable {
 
@@ -466,7 +469,13 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
 
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); 
+    
+//    try {
+//      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), nodeConfig);
+//    } catch (JSONException ex) {
+//      throw new RequestParseException(ex);
+//    }
   }
 
   @Override

@@ -9,6 +9,8 @@ import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.BackwardsCompatibility;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.FindReplicaGroupPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
@@ -72,6 +74,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private static final long DEACTIVATION_PERIOD = 30000; // 30s default
 	private static final boolean ONE_PASS_RECOVERY = true;
 	private static final int MAX_POKE_RATE = 1000; // per sec
+	private static final boolean BATCHING_ENABLED = false;
 
 	// final
 	private final AbstractPaxosLogger paxosLogger; // logging
@@ -87,6 +90,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private final IntegerMap<NodeIDType> integerMap =
 			new IntegerMap<NodeIDType>();
 	private final Stringifiable<NodeIDType> unstringer;
+	private final RequestBatcher batched;
 
 	// non-final
 	private boolean hasRecovered = false;
@@ -124,6 +128,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 						this.messenger);
 
 		timer.schedule(new Deactivator(), DEACTIVATION_PERIOD); // periodically remove active state for idle paxii
+		(this.batched = new RequestBatcher(new HashMap<String,ArrayList<RequestPacket>>(), this)).start();
 		if (TESTPaxosConfig.getCleanDB()) {
 			while (!this.paxosLogger.removeAll())
 				;
@@ -134,10 +139,16 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		initiateRecovery();
 	}
 
-	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nodeConfig,
-			InterfaceJSONNIOTransport<NodeIDType> niot, Replicable paxosInterface) {
-		this(id, nodeConfig, niot, paxosInterface, null);
+	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc,
+			InterfaceJSONNIOTransport<NodeIDType> niot, Replicable pi) {
+		this(id, nc, niot, pi, null);
 	}
+	
+	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc,
+			InterfaceJSONNIOTransport<NodeIDType> niot, InterfaceReplicable app) {
+		this(id, nc, niot, BackwardsCompatibility.InterfaceReplicableToReplicable(app), null); // FIXME: untested
+	}
+	
 
 	/*
 	 * We need to be careful with pause/unpause and createPaxosInstance as there are potential
@@ -163,6 +174,14 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			null, true);
 	}
 
+	
+	public boolean createPaxosInstance(String paxosID, short version,
+			Set<NodeIDType> gms, InterfaceReplicable app) {
+		return this.createPaxosInstance(paxosID, version, this.myID, gms,
+				BackwardsCompatibility.InterfaceReplicableToReplicable(app),
+				null, true);
+	}
+
 	public Set<NodeIDType> getPaxosNodeIDs(String paxosID) {
 		PaxosInstanceStateMachine pism = this.pinstances.get(paxosID);
 		if (pism != null)
@@ -173,40 +192,62 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	protected boolean createPaxosInstance(String paxosID, short version,
 			int id, Set<NodeIDType> gms, Replicable app, HotRestoreInfo hri,
 			boolean tryRestore) {
-		if (this.isClosed() || id != myID) return false;
-		PaxosInstanceStateMachine pism =
-				this.getInstance(paxosID, (hasRecovered && hri == null),
-					tryRestore);
-		if (pism != null) return false;
-                //log.info("&&&&&&&&&&&&& MY APP CLASS is " + (app != null ? app : this.myApp).getClass().getName());
-		pism =
-				new PaxosInstanceStateMachine(paxosID, version, id,
-						this.integerMap.put(gms), app != null ? app
-								: this.myApp, this, hri);
+		if (this.isClosed() || id != myID)
+			return false;
+		boolean tryHotRestore = (hasRecovered() && hri == null);
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID,
+				tryHotRestore, tryRestore);
+		if (pism != null)
+			return false;
+
+		pism = new PaxosInstanceStateMachine(paxosID, version, id,
+				this.integerMap.put(gms), app != null ? app : this.myApp, this,
+				hri);
 		pinstances.put(paxosID, pism);
-		if (this.hasRecovered())
-			assert (this.getInstance(paxosID, false, false) != null);
+		assert (this.getInstance(paxosID, false, false) != null);
 		/*
-		 * Note: rollForward can not be done inside the instance as we
-		 * first need to update the instance map here so that networking
-		 * (trivially sending message to self) works.
+		 * Note: rollForward can not be done inside the instance as we first need to update the
+		 * instance map here so that networking (trivially sending message to self) works.
 		 */
-		rollForward(paxosID); 
-		if (!TESTPaxosConfig.isCrashed(this.myID)) this.FD.sendKeepAlive(gms);
+		if (!tryHotRestore)
+			rollForward(paxosID);
+		if (!TESTPaxosConfig.isCrashed(this.myID))
+			this.FD.sendKeepAlive(gms);
 		return true;
 	}
 
 	// Called by external entities, so we need to fix node IDs
 	public void handleIncomingPacket(JSONObject jsonMsg) {
 		try {
-			this.handleIncomingPacketInternal(fixNodeStringToInt(jsonMsg));
+			if(BATCHING_ENABLED)
+				this.handleIncomingPacketPreBatch(fixNodeStringToInt(jsonMsg));
+			else
+				this.handleIncomingPacketInternal(fixNodeStringToInt(jsonMsg));
 		} catch (JSONException e) {
 			log.severe("Node"+myID+" unable to fix node ID string to integer");
 			e.printStackTrace();
 		}
 	}
+
+	/* If RequestPacket, hand over to batcher that will then 
+	 * call handleIncomingPacketInternal on batched requests.
+	 */
+	private void handleIncomingPacketPreBatch(JSONObject jsonMsg) {
+		try {
+			if (PaxosPacket.getPaxosPacketType(jsonMsg).equals(
+					PaxosPacket.PaxosPacketType.REQUEST))
+				this.batched.enqueue(new RequestPacket(jsonMsg));
+			else 
+				this.handleIncomingPacketInternal(jsonMsg);
+		} catch (JSONException e) {
+			log.severe("Node" + myID + " unable to process JSONObject "
+					+ jsonMsg);
+			e.printStackTrace();
+		}
+	}
+
 	// Called by internal entities like rollForward and works with integer node IDs
-	private void handleIncomingPacketInternal(JSONObject jsonMsg) {
+	public void handleIncomingPacketInternal(JSONObject jsonMsg) {
 		if (this.isClosed())
 			return;
 		else {
@@ -217,7 +258,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		try {
 			//jsonMsg = fixNodeStringToInt(jsonMsg);
 			RequestPacket.addDebugInfo(jsonMsg, ("i" + myID));
-			assert (Packet.getPacketType(jsonMsg) == PacketType.PAXOS_PACKET /* || Packet.hasPacketTypeField(jsonMsg) */);
+			assert (Packet.getPacketType(jsonMsg) == PacketType.PAXOS_PACKET);
 			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg); // will throw exception if no PAXOS_PACKET_TYPE
 
 			switch (paxosPacketType) {
@@ -265,14 +306,21 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return matched ? paxosID : null;
 	}
 
+	/*
+	 * FIXME: This method's use should be discouraged. It is odd to just
+	 * send an arbitrary string request without some of the fields in
+	 * RequestPacket, e.g., the clientID fields that tells the app to which
+	 * client to send the reply. A paxos manager can receive a non-RequestPacket
+	 * string only if its propose(.) is invoked directly as opposed to being
+	 * invoked via receiving a packet from the network. In these cases, it is
+	 * better to force the invoker to convert to a RequestPacket first.
+	 */
 	public String propose(String paxosID, String requestPacket) {
-		requestPacket = (new RequestPacket(-1, requestPacket, false))
-				.setReturnRequestValue().toString();
-		RequestPacket request = null;
+		RequestPacket request = (new RequestPacket(-1, requestPacket, false))
+				.setReturnRequestValue();
+		request.putPaxosID(paxosID, (short)0); // FIXME: epoch number if arbitrary
 		String retval = null;
 		try {
-			JSONObject reqJson = new JSONObject(requestPacket);
-			request = new RequestPacket(reqJson);
 			retval = propose(paxosID, request);
 		} catch (JSONException je) {
 			log.severe("Could not parse proposed request string as multipaxospacket.RequestPacket");
@@ -345,6 +393,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		waitToFinishAll();
 
 		/* Close logger, FD, messenger, and timer */
+		this.batched.stop();
 		this.paxosLogger.close();
 		this.FD.close();
 		this.messenger.stop();

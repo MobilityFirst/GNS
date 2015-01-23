@@ -84,7 +84,7 @@ public class TESTPaxosNode {
 							.getGroup(groupID));
 					System.out.print(groupID + ":" + group + " ");
 					created = this.getPaxosManager().createPaxosInstance(
-							groupID, (short) 0, group, null);
+							groupID, (short) 0, group, (Replicable)null);
 					if (!created)
 						System.out
 								.println(":  not created (probably coz it is pre-existing)");
@@ -110,7 +110,7 @@ public class TESTPaxosNode {
 						.getGroup(groupID));
 				if (id == myID)
 					this.getPaxosManager().createPaxosInstance(groupID,
-							(short) 0, group, null);
+							(short) 0, group, (Replicable)null);
 			}
 			if (i % j == 0 && ((j *= 2) > 1) || (i % 100000 == 0)) {
 				System.out.print(i + " ");

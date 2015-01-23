@@ -9,7 +9,7 @@ import edu.umass.cs.gns.nio.IntegerPacketType;
  */
 public class TrivialRepliconfigurable implements InterfaceRepliconfigurable {
 	
-	private final InterfaceApplication app;
+	public final InterfaceApplication app;
 	
 	public TrivialRepliconfigurable(InterfaceApplication app) {
 		this.app = app;
@@ -74,14 +74,16 @@ public class TrivialRepliconfigurable implements InterfaceRepliconfigurable {
 	}
 
 	@Override
-	public String getState(String name, int epoch) {
-		// TODO Auto-generated method stub
-		return null;
+	public String getState(String name) {
+		if(this.app instanceof InterfaceReplicable) return 
+				((InterfaceReplicable)this.app).getState(name); 
+		throw new RuntimeException("Can not get stop request for a non-replicable app");
 	}
 
 	@Override
 	public boolean updateState(String name, String state) {
-		// TODO Auto-generated method stub
-		return false;
+		if(this.app instanceof InterfaceReplicable) 
+				return ((InterfaceReplicable)this.app).updateState(name, state);
+		throw new RuntimeException("Can not get stop request for a non-replicable app");
 	}
 }

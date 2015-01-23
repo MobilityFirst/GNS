@@ -5,9 +5,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
@@ -26,6 +23,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ReconfigurationPacket.PacketType.DEMAND_REPORT,
 		ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME,
 		ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
+		ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
 	};
 	private static final ReconfigurationPacket.PacketType[] types = 
 			ReconfigurationPacket.concatenate(localTypes, 
@@ -40,7 +38,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
 	private String key = null;
 	private final NodeIDType myID;
-	private final Reconfigurator<NodeIDType> reconfigurator;
+	private final Object reconfigurator;
 
 	public ReconfiguratorProtocolTask(NodeIDType id, Reconfigurator<NodeIDType> reconfigurator) {
 		this.myID = id;
@@ -78,12 +76,16 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ProtocolEvent<ReconfigurationPacket.PacketType, String> event,
 		ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 
+		return (GenericMessagingTask<NodeIDType, ?>[])(autoInvokeMethod(this.reconfigurator, event, ptasks));
+	}
+	
+	public static Object autoInvokeMethod(Object target, ProtocolEvent<ReconfigurationPacket.PacketType, String> event,
+			ProtocolTask<?, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		ReconfigurationPacket.PacketType type = event.getType();
-		Object returnValue = null;
 		try {
-			returnValue = this.reconfigurator.getClass().getMethod(HANDLER_METHOD_PREFIX+
-				ReconfigurationPacket.getPacketTypeClassName(type), ProtocolEvent.class, 
-				ProtocolTask[].class).invoke(this.reconfigurator, 
+			return target.getClass().getMethod(HANDLER_METHOD_PREFIX+
+				ReconfigurationPacket.getPacketTypeClassName(type), ReconfigurationPacket.getPacketTypeClass(type), 
+				ProtocolTask[].class).invoke(target, 
 					(BasicReconfigurationPacket<?>)event, ptasks);
 		} catch(NoSuchMethodException nsme) {
 			nsme.printStackTrace();
@@ -92,15 +94,8 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		} catch(IllegalAccessException iae) {
 			iae.printStackTrace();
 		}
-
-		return (GenericMessagingTask<NodeIDType, ?>[])returnValue;
+		return null;
 	}
-
-	@SuppressWarnings("unchecked")
-	public BasicReconfigurationPacket<NodeIDType> getReconfigurationPacket(JSONObject json) throws JSONException {
-		return (BasicReconfigurationPacket<NodeIDType>)ReconfigurationPacket.getReconfigurationPacket(json);
-	}
-
 
 	public static void main(String[] args) {
 	}

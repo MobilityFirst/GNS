@@ -18,10 +18,8 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
+import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
-import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.reconfiguration.RequestParseException;
 
 /**
  * @author V. Arun
@@ -128,12 +126,23 @@ public class TESTPaxosReplicable implements Replicable {
 				if (DEBUG)
 					log.info("App sending response to client "
 							+ requestPacket.clientID + ": " + reqJson);
-				if (TESTPaxosConfig.getSendReplyToClient())
+				if (TESTPaxosConfig.getSendReplyToClient()) {
 					niot.sendToAddress(
 							new InetSocketAddress(requestPacket
 									.getClientAddress(), requestPacket
 									.getClientPort()), reqJson);
+					// send responses for batched requests as well
+					if(requestPacket.getBatched()!=null) {
+						for (RequestPacket batchedReq : requestPacket.getBatched()) {
+							ProposalPacket batchedProposal = new ProposalPacket(requestPacket.slot, batchedReq);
+							niot.sendToAddress(new InetSocketAddress(
+									batchedProposal.getClientAddress(),
+									batchedProposal.getClientPort()),
+									batchedProposal.toJSONObject());
+						}
+					}
 				// niot.sendToID(requestPacket.clientID, reqJson);
+				}
 				RequestInstrumenter.remove(requestPacket.requestID);
 			} else if (DEBUG)
 				log.info("Node" + getMyID() + " not sending reply to client: "
@@ -311,31 +320,4 @@ public class TESTPaxosReplicable implements Replicable {
 			return s;
 		}
 	}
-     
-  @Override
-  public boolean handleRequest(InterfaceRequest request) {
-    return handleRequest(request, false);
-  }
-  
-  @Override
-  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
-    return handleDecision(request.getServiceName(), request.toString(), doNotReplyToClient);
-  }
-
-  @Override
-  public String getState(String name, int epoch) {
-    //FIXME: What to do with epoch?
-    return getState(name);
-  }
-
-  @Override
-  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
-    //FIXME: Would like to call  getRequest(String paxosID, int reqnum), but not sure about reqnum
-    throw new UnsupportedOperationException("Not supported yet."); 
-  }
-
-  @Override
-  public Set<IntegerPacketType> getRequestTypes() {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
 }

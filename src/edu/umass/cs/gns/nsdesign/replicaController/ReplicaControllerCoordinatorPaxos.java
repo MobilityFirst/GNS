@@ -33,13 +33,13 @@ import java.util.Set;
  */
 public class ReplicaControllerCoordinatorPaxos<NodeIdType> extends AbstractReplicaCoordinator implements ReplicaControllerCoordinator {
 
-  private static long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
+  private static final long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;
 
   private final NodeIdType nodeID;
   private final InterfaceNodeConfig<NodeIdType> nodeConfig;
-  private AbstractPaxosManager<NodeIdType> paxosManager;
+  private final AbstractPaxosManager<NodeIdType> paxosManager;
 
-  private Replicable paxosInterface;
+  private final Replicable paxosInterface;
 
   public ReplicaControllerCoordinatorPaxos(NodeIdType nodeID, InterfaceJSONNIOTransport<NodeIdType> nioServer,
           InterfaceNodeConfig<NodeIdType> nodeConfig,
@@ -202,8 +202,8 @@ public class ReplicaControllerCoordinatorPaxos<NodeIdType> extends AbstractRepli
   // For ReplicaControllerCoordinator
   @Override
   public boolean coordinateRequest(InterfaceRequest request) throws IOException, RequestParseException {
-    // who uses ints for status return values?
     try {
+      // Who uses ints for boolean status return values?
       return coordinateRequest(new JSONObject(request.toString())) == 0;
     } catch (JSONException e) {
       throw new RequestParseException(e);

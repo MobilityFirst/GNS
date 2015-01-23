@@ -60,8 +60,8 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 		if (this.waitfor.getHeardCount() >= this.threshold && testAndInvokeThresholdHandler()) {
 			// got valid responses from threshold nodes
 			mtasks = this.handleThresholdEvent(ptasks);
-			if (GenericMessagingTask.isEmpty(mtasks) && ptasks[0] == null) ProtocolExecutor.cancel(this);
-			else ProtocolExecutor.timedCancel(this);
+			if (GenericMessagingTask.isEmpty(mtasks) && ptasks[0] == null) ProtocolExecutor.cancel(this); // FIXME:
+			else ProtocolExecutor.enqueueCancel(this.getKey());
 		}
 		return mtasks;
 	}

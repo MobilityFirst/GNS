@@ -94,7 +94,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_OLD_DECISIONS =
 			PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 	private static final boolean CLOB_OPTION = false;
-	private static final boolean DONT_SHUTDOWN_DB = true;
+	// needed for testing with recovery in the same JVM
+	private static final boolean DONT_SHUTDOWN_DB = true; 
 	
 	// FIXME: Replace field name string constants with enums
 	//private static enum Fields {PAXOS_ID, SLOT, BALLOTNUM, COORDINATOR, PACKET_TYPE, STATE, MESSAGE}; 
@@ -282,8 +283,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 						",",
 						ballot,
 						",",
-						((state.length() < TRUNCATED_STATE_SIZE) ? state
-								: state.substring(0, TRUNCATED_STATE_SIZE)),
+						((state!=null && state.length() < TRUNCATED_STATE_SIZE) ? state
+								: state!=null ? state.substring(0, TRUNCATED_STATE_SIZE) : null),
 						",", acceptedGCSlot + "); took ", (t2 - t1),
 						"ms; garbage collection took ",
 						(System.currentTimeMillis() - t2), "ms" });
@@ -708,7 +709,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		} catch (SQLException | JSONException e) {
 			log.severe("Node " + this.myID + " got " +
 					(e instanceof SQLException ? "SQL" : "JSON") +
-					"Exception in readNextMessage: " + " : " + e);
+					"Exception in readNextMessage while reading: " + " : " + packet);
 			e.printStackTrace();
 		}
 		return packet;
@@ -935,6 +936,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 		if (FRAMEWORK.equals("embedded")) {
 			try {
+				// FIXME: Why is DONT_SHUTDOWN_DB needed?
 				// the shutdown=true attribute shuts down Derby
 				if(!DONT_SHUTDOWN_DB)
 					DriverManager.getConnection(PROTOCOL + ";shutdown=true");

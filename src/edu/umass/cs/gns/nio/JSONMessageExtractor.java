@@ -88,9 +88,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		packetDemuxes.remove(pd);
 	}
 
-	/**
-         * Appends a header.
-         * 
+	/*
 	 * Header is of the form pattern<size>pattern. The pattern is
 	 * changeable above. But there is no escape character support
 	 * built into the data itself. So if the header pattern occurs
@@ -102,17 +100,6 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		return (JSONMessageExtractor.HEADER_PATTERN + str.length() +
 				JSONMessageExtractor.HEADER_PATTERN + str);
 	}
-        
-        /**
-         * Returns the length of the header. 
-         * 
-         * @param str
-         * @return 
-         */
-        public static int headerLength(String str) {
-          return (JSONMessageExtractor.HEADER_PATTERN + str.length() +
-                  JSONMessageExtractor.HEADER_PATTERN).length();
-        }
 
 	/*
 	 * Incoming data has to be associated with a socket channel, not a nodeID,
@@ -120,7 +107,6 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * This means that, if the the socket channel changes in the middle of the
 	 * transmission, that message will **definitely** be lost.
 	 */
-        @Override
 	public void processData(SocketChannel socket, byte[] data, int count) {
 		String str = new String(data, 0, count);
 		processData(socket, str);

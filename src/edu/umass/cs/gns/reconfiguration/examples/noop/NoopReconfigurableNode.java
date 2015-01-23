@@ -26,13 +26,23 @@ public class NoopReconfigurableNode extends ReconfigurableNode<Integer> {
 	}
 
 	public static void main(String[] args) {
-		NoopReconfigurableNode[] nodes = new NoopReconfigurableNode[TestConfig.numNodes];
 		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
 		nc.localSetup(TestConfig.getNodes());
 		try {
+			/*
 			for(int i=0; i<TestConfig.numNodes; i++) {
 				nodes[i] = new NoopReconfigurableNode(i+TestConfig.startNodeID, nc);
 			}
+			*/
+			System.out.println("Setting up actives at " + nc.getActiveReplicas());
+			for(int activeID : nc.getActiveReplicas()) {
+				new NoopReconfigurableNode(activeID, nc);
+			}
+			System.out.println("Setting up RCs at " + nc.getReconfigurators());
+			for(int rcID : nc.getReconfigurators()) {
+				new NoopReconfigurableNode(rcID, nc);
+			}
+
 		} catch(IOException ioe) {
 			ioe.printStackTrace();
 		}

@@ -36,8 +36,6 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 	private Logger log =
 			(NIOTransport.DEBUG ? Logger.getLogger(getClass().getName())
 					: GNS.getLogger());
-        
-        private static boolean debuggingEnabled = true;
 
 	public JSONMessenger(InterfaceJSONNIOTransport<NodeIDType> niot) {
 		assert (niot != null);
@@ -74,30 +72,36 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
 				
 				int length = jsonMsg.toString().length();
+				//int sent = 0;
 
-				@SuppressWarnings("unchecked")
-				NodeIDType recipient = (NodeIDType)(mtask.recipients[r]);
-				int sent = nioTransport.sendToID(recipient, jsonMsg);
+				// special case provision for InetSocketAddress
+				int sent = this.specialCaseSend(mtask.recipients[r], jsonMsg);
+				/*
+				if(mtask.recipients[r] instanceof InetSocketAddress) {
+					sent = this.nioTransport.sendToAddress((InetSocketAddress)mtask.recipients[r], jsonMsg);
+				} else {
+					sent = nioTransport.sendToID((NodeIDType)(mtask.recipients[r]), jsonMsg);
+				}
+				*/
+				
+				// check success or failure and react accordingly
 				if (sent == length) {
-                                  if (debuggingEnabled)
 					log.fine("Node " + this.nioTransport.getMyID() + " sent " + " to node " +
 							mtask.recipients[r] + ": " + jsonMsg);
 				}
 				else if (sent < length) {
 					if (NIOTransport.sampleLog()) {
 						log.warning("Node " + this.nioTransport.getMyID() +
-								" messenger experiencing congestion, this is bad but not disastrous (yet) "
-                                                        + "sent=" + sent + " length=" + length + " json=" + jsonMsg);
+								" messenger experiencing congestion, this is bad but not disastrous (yet)");
 					}
-					@SuppressWarnings("unchecked")
 					Retransmitter rtxTask =
-							new Retransmitter((NodeIDType)(mtask.recipients[r]), jsonMsg,
+							new Retransmitter((mtask.recipients[r]), jsonMsg,
 									RTX_DELAY);
 					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore future
 				}
 				else {
 					log.severe("Node " + this.nioTransport.getMyID() + " sent " + sent +
-							" bytes out of a " + length + " byte message to node " + recipient);
+							" bytes out of a " + length + " byte message to node " + mtask.recipients[r]);
 				}
 			}
 		}
@@ -107,6 +111,13 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 	public void stop() {
 		this.execpool.shutdown();
 		this.nioTransport.stop();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private int specialCaseSend(Object id, JSONObject json) throws IOException {
+		if(id instanceof InetSocketAddress)
+			return this.sendToAddress((InetSocketAddress)id, json);
+		else return this.sendToID((NodeIDType)id, json);
 	}
 
 	/**
@@ -120,11 +131,11 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 	 */
 	private class Retransmitter implements Runnable {
 
-		private final NodeIDType dest;
+		private final Object dest;
 		private final JSONObject msg;
 		private final long delay;
 
-		Retransmitter(NodeIDType id, JSONObject m, long d) {
+		Retransmitter(Object id, JSONObject m, long d) {
 			this.dest = id;
 			this.msg = m;
 			this.delay = d;
@@ -134,7 +145,7 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 		public void run() {
 			int sent = 0;
 			try {
-				sent = nioTransport.sendToID(dest, msg);
+				sent = specialCaseSend(this.dest, this.msg);
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			} finally {
@@ -206,5 +217,4 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 	public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
 		this.nioTransport.addPacketDemultiplexer(pd);
 	}
-
 }

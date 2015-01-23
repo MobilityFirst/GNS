@@ -4,27 +4,34 @@ package edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.DemandProfile;
+import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AbstractDemandProfile;
+import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.gns.util.StringifiableDefault;
+import edu.umass.cs.gns.util.Util;
 
 
 /**
 @author V. Arun
  */
-public class DemandReport<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> {
-	public enum Keys {STATS, RATE, NUM_REQUESTS, NUM_TOTAL_REQUESTS};
+public class DemandReport<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements InterfaceReplicableRequest {
+	public enum Keys {STATS};
 
 	private final JSONObject stats;
+	//private boolean coordType = false;
 
 	public DemandReport(NodeIDType initiator, String name, int epochNumber, JSONObject stats) {
 		super(initiator, ReconfigurationPacket.PacketType.DEMAND_REPORT, name, epochNumber);
 		this.stats = stats;
 	}
-	public DemandReport(NodeIDType initiator, String name, int epochNumber, DemandProfile demand) {
+	public DemandReport(NodeIDType initiator, String name, int epochNumber, AbstractDemandProfile demand) {
 		super(initiator, ReconfigurationPacket.PacketType.DEMAND_REPORT, name, epochNumber);
-		this.stats = getStats(demand);
+		this.stats = demand.getStats();
 	}
-	public DemandReport(JSONObject json) throws JSONException {
-		super(json);
+	public DemandReport(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+		super(json, unstringer);
 		this.stats = json.getJSONObject(Keys.STATS.toString());
 	}
 	public JSONObject toJSONObjectImpl() throws JSONException {
@@ -32,27 +39,34 @@ public class DemandReport<NodeIDType> extends BasicReconfigurationPacket<NodeIDT
 		json.put(Keys.STATS.toString(), this.stats);
 		return json;
 	}
-	private static JSONObject getStats(DemandProfile demand) {
-		JSONObject json = new JSONObject();
-		try {
-			json.put(DemandReport.Keys.RATE.toString(), demand.getRequestRate());
-			json.put(DemandReport.Keys.NUM_REQUESTS.toString(), demand.getNumRequests());
-			json.put(DemandReport.Keys.NUM_TOTAL_REQUESTS.toString(), demand.getNumTotalRequests());			
-		} catch(JSONException je) {
-			je.printStackTrace();
-		}
-		return json;
+	public JSONObject getStats() {
+		return this.stats;
 	}
+	@Override
+	public IntegerPacketType getRequestType() throws RequestParseException {
+		return ReconfigurationPacket.PacketType.DEMAND_REPORT;
+	}
+	@Override
+	public boolean needsCoordination() {
+		return false;
+		//return coordType;
+	}
+	@Override
+	public void setNeedsCoordination(boolean b) {
+		//coordType = b;
+	}
+	
 	public static void main(String[] args) {
 		JSONObject stats = new JSONObject();
 		try {
+			Util.assertAssertionsEnabled();
 			stats.put("rate", 0.33);
 			stats.put("numRequests", 24);
 			stats.put("numTotalRequests", 24);
 
 			DemandReport<Integer> dr = new DemandReport<Integer>(4, "name1", 2, stats);
 			System.out.println(dr);
-			DemandReport<Integer> dr2 = new DemandReport<Integer>(dr.toJSONObject());
+			DemandReport<Integer> dr2 = new DemandReport<Integer>(dr.toJSONObject(), new StringifiableDefault<Integer>(0));
 			System.out.println(dr2);
 			assert(dr.toString().length()==dr2.toString().length());
 			assert(dr.toString().indexOf("}") == dr2.toString().indexOf("}"));

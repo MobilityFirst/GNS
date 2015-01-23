@@ -4,25 +4,28 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
-import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
+import edu.umass.cs.gns.reconfiguration.Reconfigurator;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckStartEpoch;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.EpochFinalState;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestEpochFinalState;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
+import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.Util;
 
 /**
 @author V. Arun
  */
-public class FetchEpochFinalState<NodeIDType> extends
+public class WaitEpochFinalState<NodeIDType> extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
 	private final StartEpoch<NodeIDType> startEpoch; // message that started the epoch change
@@ -33,7 +36,10 @@ public class FetchEpochFinalState<NodeIDType> extends
 
 	private String key = null;
 	
-	public FetchEpochFinalState(NodeIDType myID, StartEpoch<NodeIDType> startEpoch, AbstractReplicaCoordinator<NodeIDType> appCoordinator) {
+	public static final Logger log = Logger.getLogger(Reconfigurator.class
+			.getName());
+	
+	public WaitEpochFinalState(NodeIDType myID, StartEpoch<NodeIDType> startEpoch, AbstractReplicaCoordinator<NodeIDType> appCoordinator) {
 		super(startEpoch.getPrevEpochGroup(), 1);
 		this.startEpoch = startEpoch;
 		this.appCoordinator = appCoordinator;
@@ -92,13 +98,17 @@ public class FetchEpochFinalState<NodeIDType> extends
 		if(type==null) return false;
 		boolean handled = false;
 		switch(type) {
-		case EPOCH_FINAL_STATE: 
+		case EPOCH_FINAL_STATE:
+			@SuppressWarnings("unchecked")
 			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>)event;
 			handled = checkEpochFinalState(event);
 			this.appCoordinator.createReplicaGroup(state.getServiceName(), state.getEpochNumber()+1,  
 				state.getState(), this.startEpoch.getCurEpochGroup());		
-			System.out.println("App-" + this.appCoordinator.getMyID() + 
-				" received " + event.getType() + " " + event);
+			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[]{
+					this.getClass().getSimpleName(), this.appCoordinator.getMyID(), "received",
+					state.getSummary()});
+			default:
+				break;
 		}
 		return handled; 
 	}
@@ -109,14 +119,14 @@ public class FetchEpochFinalState<NodeIDType> extends
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, PacketType, String>[] ptasks) {
-		System.out.println("App-"+this.appCoordinator.getMyID() + " sending ack start epoch "
-			+ " to RC" + this.startEpoch.getInitiator());
 		AckStartEpoch<NodeIDType> ackStartEpoch = new AckStartEpoch<NodeIDType>(this.startEpoch.getInitiator(), 
 			startEpoch.getServiceName(), startEpoch.getEpochNumber(), this.appCoordinator.getMyID());
 		GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, 
 				AckStartEpoch<NodeIDType>>(this.startEpoch.getInitiator(), ackStartEpoch);
 		ackStartEpoch.setKey(this.startEpoch.getKey());
-		System.out.println("App-"+ackStartEpoch.getSender() + " sending " + ackStartEpoch.getType() + " to RC" + this.startEpoch.getInitiator());
+		log.log(Level.INFO, MyLogger.FORMAT[5], new Object[]{this.getClass().getSimpleName() , ackStartEpoch.getSender() , "sending"
+				, ackStartEpoch.getSummary(), "to RC"
+				, this.startEpoch.getInitiator()});
 		return mtask.toArray();
 	}
 	

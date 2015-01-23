@@ -29,7 +29,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ReconfigurationPacket.PacketType.DROP_EPOCH_FINAL_STATE
 	};
 	private static final ReconfigurationPacket.PacketType[] types = ReconfigurationPacket.concatenate(defaultTypes,
-		FetchEpochFinalState.types);
+		WaitEpochFinalState.types);
 	static { 
 		ReconfigurationPacket.assertPacketTypeChecks(defaultTypes, ActiveReplica.class, HANDLER_METHOD_PREFIX);
 	}
@@ -80,10 +80,19 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ReconfigurationPacket.PacketType type = event.getType();
 		Object returnValue = null;
 		try {
-			returnValue = this.activeReplica.getClass().getMethod(HANDLER_METHOD_PREFIX+
-				ReconfigurationPacket.getPacketTypeClassName(type), ProtocolEvent.class, 
-				ProtocolTask[].class).invoke(this.activeReplica, 
-					(BasicReconfigurationPacket<?>)event, ptasks);
+			if (ReconfigurationPacket.getPacketTypeClass(type) != null)
+				returnValue = this.activeReplica
+						.getClass()
+						.getMethod(
+								HANDLER_METHOD_PREFIX
+										+ ReconfigurationPacket
+												.getPacketTypeClassName(type),
+								ReconfigurationPacket.getPacketTypeClass(type),
+								ProtocolTask[].class)
+						.invoke(this.activeReplica,
+								(BasicReconfigurationPacket<?>) event, ptasks);
+			else
+				assert (false);
 		} catch(NoSuchMethodException nsme) {
 			nsme.printStackTrace();
 		} catch(InvocationTargetException ite) {
@@ -96,7 +105,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
 	@SuppressWarnings("unchecked")
 	public BasicReconfigurationPacket<NodeIDType> getReconfigurationPacket(JSONObject json) throws JSONException {
-		return (BasicReconfigurationPacket<NodeIDType>)ReconfigurationPacket.getReconfigurationPacket(json);
+		return (BasicReconfigurationPacket<NodeIDType>)ReconfigurationPacket.getReconfigurationPacket(json, this.activeReplica.getUnstringer());
 	}
 
 	public static void main(String[] args) {

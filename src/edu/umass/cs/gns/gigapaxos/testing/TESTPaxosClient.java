@@ -335,11 +335,12 @@ public class TESTPaxosClient {
 				clients[j].makeAndSendRequest("paxos"
 						+ ((RANDOM_REPLAY + curTotalReqs) % TESTPaxosConfig
 								.getNumGroups()));
-				long accumulatedTime = System.currentTimeMillis() - initTime;
-				if ((curTotalReqs) / TESTPaxosConfig.getTotalLoad() * 1000
-						- accumulatedTime > minSleepInterval) {
+				long leadTime = (long) ((curTotalReqs)
+						/ TESTPaxosConfig.getTotalLoad() * 1000)
+						- (System.currentTimeMillis() - initTime);
+				if (leadTime > minSleepInterval) {
 					try {
-						Thread.sleep(minSleepInterval);
+						Thread.sleep(leadTime);
 					} catch (InterruptedException e) {
 						e.printStackTrace();
 					}

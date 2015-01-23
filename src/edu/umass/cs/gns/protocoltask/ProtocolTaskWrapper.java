@@ -21,7 +21,7 @@ class ProtocolTaskWrapper<NodeIDType, EventType, KeyType>
   protected static final long MAX_IDLE_TIME = 300000; // 5 mins
   protected static final long MAX_LIFETIME = 1800000; // 30 mins
 
-  private final ProtocolTask<NodeIDType, EventType, KeyType> task;
+  public final ProtocolTask<NodeIDType, EventType, KeyType> task;
   private long startTime = System.currentTimeMillis();
   private long lastActiveTime = System.currentTimeMillis();
   private ScheduledFuture<?> future;
@@ -79,7 +79,7 @@ class ProtocolTaskWrapper<NodeIDType, EventType, KeyType>
                     : this.task.start()); // if schedulable, call restart
     // if threshold task, filter out members already heard from
     if (this.task instanceof ThresholdProtocolTask) {
-      ((ThresholdProtocolTask) (this.task)).fix(mtasks);
+      ((ThresholdProtocolTask<NodeIDType,?,?>) (this.task)).fix(mtasks);
     }
     return mtasks;
   }

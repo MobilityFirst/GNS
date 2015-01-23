@@ -9,10 +9,6 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import java.util.Set;
 
 /**
 @author V. Arun
@@ -28,8 +24,6 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 	private static MessageDigest md ;
 
 	private HashMap<String,PaxosState> allState = new HashMap<String,PaxosState>();
-
-  
 	private class PaxosState {
 		protected int seqnum=-1;
 		protected String value = "Initial state";
@@ -116,30 +110,4 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 	public synchronized void waitToFinish() throws InterruptedException {
 		this.wait();
 	}
-        
-  // For InterfaceReplicable
-  @Override
-  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public String getState(String name, int epoch) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public boolean handleRequest(InterfaceRequest request) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<IntegerPacketType> getRequestTypes() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
 }

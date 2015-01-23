@@ -54,6 +54,7 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		}
 	}
 
+	// These app keys by design need not be the same as those in BasicReconfigurationPacket
 	public enum Keys {SERVICE_NAME, EPOCH, REQUEST_ID, REQUEST_VALUE, IS_STOP, IS_COORDINATION};
 
 	private final String name;
@@ -62,7 +63,7 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 	private final boolean stop;
 	private final String value;
 	
-	private boolean coordType = false;
+	private boolean coordType = true;
 
 	public AppRequest(String name, int epoch, int id, String value, IntegerPacketType type, boolean stop) {
 		super(type);
@@ -138,11 +139,11 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		return this.stop;
 	}
 	@Override
-	public boolean isCoordinationType() {
+	public boolean needsCoordination() {
 		return this.coordType;
 	}
 	@Override
-	public void setCoordinationType() {
-		this.coordType = true;
+	public void setNeedsCoordination(boolean b) {
+		this.coordType = b;
 	}
 }

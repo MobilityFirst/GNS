@@ -5,8 +5,7 @@ import java.util.Set;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
 /**
- * @author V. Arun
- * @param <NodeIDType>
+@author V. Arun
  */
 public interface InterfaceReconfigurableNodeConfig<NodeIDType> extends InterfaceNodeConfig<NodeIDType> {
 	public Set<NodeIDType> getActiveReplicas();
