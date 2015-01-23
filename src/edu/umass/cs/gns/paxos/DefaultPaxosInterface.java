@@ -96,10 +96,10 @@ public class DefaultPaxosInterface<NodeIDType> implements Replicable {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
-  @Override
-  public String getState(String name, int epoch) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
+//  @Override
+//  public String getState(String name, int epoch) {
+//    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//  }
 
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {

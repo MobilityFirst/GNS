@@ -9,9 +9,14 @@ import edu.umass.cs.gns.main.GNS;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -214,7 +219,17 @@ public class Util {
 	  }
 	  return set;
   }
- 
+  
+	// FIXME: Is there a sublinear method to return a random member from a set?
+	public static Object selectRandom(Collection<?> set) {
+		int random = (int) (Math.random() * set.size());
+		Iterator<?> iterator = set.iterator();
+		Object randomNode = null;
+		for (int i = 0; i <= random && iterator.hasNext(); i++)
+			randomNode = iterator.next();
+		return randomNode;
+	}
+
   /**
    * Converts a set of NodeIds to a string.
    *
@@ -246,6 +261,13 @@ public class Util {
     return sb.toString();
   }
   
+  public static InetSocketAddress getInetSocketAddressFromString(String s) {
+	  s = s.replaceAll("[^0-9.:]", "");
+	  String[] tokens = s.split(":");
+	  if(tokens.length<2) return null;
+	  return new InetSocketAddress(tokens[0], Integer.valueOf(tokens[1]));
+  }
+  
   public void assertEnabled() {
 	  try {
 		  assert(false);
@@ -268,8 +290,6 @@ public class Util {
   }
 
   public static void main(String[] args) {
-	  int[] members = {23, 44, 53, 21};
-	  System.out.println(Util.arrayOfIntToString(members));
-	  System.out.println(Util.arrayOfIntToStringSet(members));
+	  System.out.println(Util.getInetSocketAddressFromString((new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)).toString()).getHostString());
   }
 }

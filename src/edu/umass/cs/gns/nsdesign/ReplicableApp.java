@@ -53,11 +53,11 @@ public class ReplicableApp implements Replicable {
     return ((Replicable) this.app).handleRequest(request, handleRequest);
   }
 
-  @Override
-  public String getState(String name, int epoch) {
-    assertReplicable();
-    return ((Replicable) this.app).getState(name, epoch);
-  }
+//  @Override
+//  public String getState(String name, int epoch) {
+//    assertReplicable();
+//    return ((Replicable) this.app).getState(name, epoch);
+//  }
 
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {

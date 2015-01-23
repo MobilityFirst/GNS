@@ -204,11 +204,11 @@ public class TESTPaxosReplicable implements Replicable {
     return handleDecision(request.getServiceName(), request.toString(), doNotReplyToClient);
   }
 
-  @Override
-  public String getState(String name, int epoch) {
-    // FIXME: What to do with epoch?
-    return getState(name);
-  }
+//  @Override
+//  public String getState(String name, int epoch) {
+//    // FIXME: What to do with epoch?
+//    return getState(name);
+//  }
 
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {

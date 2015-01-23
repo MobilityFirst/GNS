@@ -185,8 +185,8 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
     return ((Replicable) app).handleRequest(request, handleRequest);
   }
 
-  @Override
-  public String getState(String name, int epoch) {
-    return ((Replicable) app).getState(name, epoch);
-  }
+//  @Override
+//  public String getState(String name, int epoch) {
+//    return ((Replicable) app).getState(name, epoch);
+//  }
 }

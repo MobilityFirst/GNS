@@ -42,7 +42,7 @@ public class MultiArrayMap<KeyType,ValueType extends Keyable<KeyType>> {
 
 	}
 	public synchronized void put(KeyType key, ValueType value) {
-		assert(key.equals(value.getKey()));
+		assert(key.equals(value.getKey())) : key + " != " + value.getKey();
 		boolean inserted=false;
 		int level = 0;
 		for(Object[] array : this.aMap) {

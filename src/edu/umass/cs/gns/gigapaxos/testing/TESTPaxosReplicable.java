@@ -20,6 +20,9 @@ import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
+import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 
 /**
  * @author V. Arun
@@ -319,5 +322,28 @@ public class TESTPaxosReplicable implements Replicable {
 			}
 			return s;
 		}
+                
+                
 	}
+        
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
 }

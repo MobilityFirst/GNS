@@ -12,8 +12,17 @@ Start the reconfigurable app client as follows:
 
 $ java -ea -Xms4096M -cp .:./build:./lib/derby.jar:./lib/c3p0-0.9.5-pre8.jar edu.umass.cs.gns.reconfiguration.examples.ReconfigurableClient
 
-Implementing a new reconfiguration policy: The default reconfiguration
-policy is implemented in the class
+To test with a clean slate (i.e., without recovery), you need to
+remove paxos logs and reconfigurator DB logs as follows:
+
+ $ rm -r paxos_logs/ (or whatever log directory was specified in
+PaxosConfig or DerbyPaxosLogger.DATABASE)
+
+ $ rm -r reconfiguratorDB (or whatever was specified in
+DerbyPersistentReconfiguratorDB.DATABASE)
+
+Implementing a new reconfiguration policy is as follows. The default
+reconfiguration policy is implemented in the class
 reconfiguration.reconfigurationutils.DemandProfile. Do NOT change this
 class to change the policy. To change the policy, 
 - create your own implementation of

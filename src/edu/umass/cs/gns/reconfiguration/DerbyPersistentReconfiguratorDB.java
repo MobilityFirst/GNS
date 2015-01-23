@@ -822,7 +822,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				+ retrievedRecord;
 	}
 
-	private static InterfaceRequest getRandomInterfaceRequest(String name) {
+	private static InterfaceRequest getRandomInterfaceRequest(final String name) {
 		return new InterfaceRequest() {
 
 			@Override

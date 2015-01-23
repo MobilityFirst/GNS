@@ -378,12 +378,11 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
     return this.handleDecision(request.getServiceName(), request.toString(), doNotReplyToClient);
   }
   
-  
-  @Override
-  public String getState(String name, int epoch) {
-    //FIXME: What do we do with the epoch?
-    return getState(name);
-  }
+//  @Override
+//  public String getState(String name, int epoch) {
+//    //FIXME: What do we do with the epoch?
+//    return getState(name);
+//  }
 
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {
