@@ -69,7 +69,8 @@ public class Reconfigurator<NodeIDType> implements
 		this.protocolExecutor.register(this.protocolTask.getDefaultTypes(),
 				this.protocolTask); // non default types will be registered by spawned tasks
 		this.DB = new RepliconfigurableReconfiguratorDB<NodeIDType>(
-				new InMemoryReconfiguratorDB<NodeIDType>(this.messenger.getMyID(),
+				//new InMemoryReconfiguratorDB<NodeIDType>(this.messenger.getMyID(),
+				new DerbyPersistentReconfiguratorDB<NodeIDType>(this.messenger.getMyID(),
 						this.consistentNodeConfig), getMyID(),
 				this.consistentNodeConfig, this.messenger);
 		this.DB.setCallback(this);
@@ -102,6 +103,12 @@ public class Reconfigurator<NodeIDType> implements
 
 	public String toString() {
 		return "RC" + getMyID();
+	}
+	
+	public void close() {
+		this.protocolExecutor.stop();
+		this.messenger.stop();
+		this.DB.close();
 	}
 
 	/****************************** Start of protocol task handler methods *********************/

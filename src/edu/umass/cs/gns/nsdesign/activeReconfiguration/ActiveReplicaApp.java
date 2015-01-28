@@ -31,7 +31,7 @@ import org.json.JSONObject;
  */
 public class ActiveReplicaApp implements Reconfigurable, Replicable {
 
-  Application app = null;
+  public Application app = null;
   ActiveReplica<?, ?> activeReplica = null;
 
   /**

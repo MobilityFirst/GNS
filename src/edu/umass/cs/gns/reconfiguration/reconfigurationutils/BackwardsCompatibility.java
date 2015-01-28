@@ -4,13 +4,16 @@ import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.reconfiguration.examples.noop.NoopAppCoordinator;
 import java.util.Set;
 
 public class BackwardsCompatibility {
 
 	public static Replicable InterfaceReplicableToReplicable(
 			final InterfaceReplicable app) {
+		assert(app instanceof RepliconfigurableReconfiguratorDB || app instanceof NoopAppCoordinator) : app.getClass();
 		Replicable replicable = new Replicable() {
 
 			@Override

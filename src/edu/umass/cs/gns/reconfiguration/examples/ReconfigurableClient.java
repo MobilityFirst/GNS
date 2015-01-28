@@ -146,12 +146,11 @@ public class ReconfigurableClient {
 
 			client.sendRequest(client.makeCreateNameRequest(namePrefix+0, initValue));
 			while(client.exists.containsKey(namePrefix+0));
-			Thread.sleep(1000);
+			Thread.sleep(2000);
 			for(int i=0; i<numRequests; i++) {
 				client.sendRequest(client.makeRequest(namePrefix+0, requestValuePrefix+i));
-				Thread.sleep(1000);
+				Thread.sleep(2000);
 			}
-			Thread.sleep(1000);
 			client.sendRequest(client.makeDeleteNameRequest(namePrefix+0, initValue));
 			client.messenger.stop();
 		} catch(IOException ioe) {

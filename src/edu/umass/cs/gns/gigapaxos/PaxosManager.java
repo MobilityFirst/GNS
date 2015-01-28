@@ -183,7 +183,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	}
 
 	public Set<NodeIDType> getPaxosNodeIDs(String paxosID) {
-		PaxosInstanceStateMachine pism = this.pinstances.get(paxosID);
+		/* Important to invoke getInstance anywhere we want to get from pinstance
+		 * because the instance may be paused.
+		 */
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID); //this.pinstances.get(paxosID);
 		if (pism != null)
 			return this.integerMap.getIntArrayAsNodeSet(pism.getMembers());
 		return null;
@@ -294,14 +297,12 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private String propose(String paxosID, RequestPacket requestPacket)
 			throws JSONException {
 		if (this.isClosed()) return null;
-
 		boolean matched = false;
-		JSONObject jsonReq = requestPacket.toJSONObject();
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null) {
 			matched = true;
-			jsonReq.put(PaxosPacket.PAXOS_ID, pism.getPaxosID());
-			this.handleIncomingPacket(jsonReq);
+			requestPacket.putPaxosID(paxosID, pism.getVersion());
+			this.handleIncomingPacket(requestPacket.toJSONObject());
 		}
 		return matched ? paxosID : null;
 	}
@@ -318,7 +319,6 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	public String propose(String paxosID, String requestPacket) {
 		RequestPacket request = (new RequestPacket(-1, requestPacket, false))
 				.setReturnRequestValue();
-		request.putPaxosID(paxosID, (short)0); // FIXME: epoch number if arbitrary
 		String retval = null;
 		try {
 			retval = propose(paxosID, request);
@@ -332,11 +332,16 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	public String proposeStop(String paxosID, String value, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version) {
-			return this.propose(paxosID, value);
+			RequestPacket request = (new RequestPacket(-1, value, true))
+					.setReturnRequestValue();
+			request.putPaxosID(paxosID, version); 
+			try {
+				return this.propose(paxosID, request);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 		}
-		else {
-			return null;
-		}
+		return null;
 	}
 
 	/* Note: paxosLogger.removeAll() must be only used when a node is

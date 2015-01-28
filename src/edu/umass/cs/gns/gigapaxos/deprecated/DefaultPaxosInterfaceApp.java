@@ -29,7 +29,25 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 
 	private HashMap<String,PaxosState> allState = new HashMap<String,PaxosState>();
 
-  
+  @Override
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public boolean handleRequest(InterfaceRequest request) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
 	private class PaxosState {
 		protected int seqnum=-1;
 		protected String value = "Initial state";
@@ -116,24 +134,4 @@ public class DefaultPaxosInterfaceApp implements Replicable {
 	public synchronized void waitToFinish() throws InterruptedException {
 		this.wait();
 	}
-        
-        @Override
-  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public boolean handleRequest(InterfaceRequest request) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<IntegerPacketType> getRequestTypes() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
 }

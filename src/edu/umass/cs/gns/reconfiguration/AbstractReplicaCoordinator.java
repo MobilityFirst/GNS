@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.IntegerPacketType;
@@ -64,7 +65,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	/********************* End of abstract methods ***********************************************/
 
 	// A replica coordinator is meaningless without an underlying app
-	public AbstractReplicaCoordinator(InterfaceReplicable app) {
+	protected AbstractReplicaCoordinator(InterfaceReplicable app) {
 		this.app = new TrivialRepliconfigurable(app); 
 		this.messenger = null;
 	}
@@ -201,12 +202,18 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	/*********************** End of private helper methods ************************/
 
 	/********************** Request propagation helper methods ******************/
+	/*
+	 * FIXME: This sendAllLazy method is concretized for JSON and is present
+	 * here only for convenience, so that inheritors can directly use it.
+	 * JSONObject is not needed anywhere else in this class and should ideally
+	 * not be in this class at all.
+	 */
 	protected void sendAllLazy(InterfaceRequest request) throws IOException, RequestParseException, JSONException {
 		assert(request.getServiceName()!=null);
 		assert(this.getReplicaGroup(request.getServiceName())!=null) : "ARC"+getMyID()+" has no group for " + request.getServiceName();
-		System.out.println("Sending lazily to " + this.getReplicaGroup(request.getServiceName()));
 		GenericMessagingTask<NodeIDType,Object> mtask = 
-				new GenericMessagingTask<NodeIDType,Object>(this.getReplicaGroup(request.getServiceName()).toArray(), request); 
+				new GenericMessagingTask<NodeIDType,Object>(this.getReplicaGroup(request.getServiceName()).toArray(), 
+						new JSONObject(request.toString())); 
 		if(this.messenger==null) return; 
 		this.messenger.send(mtask);
 	}

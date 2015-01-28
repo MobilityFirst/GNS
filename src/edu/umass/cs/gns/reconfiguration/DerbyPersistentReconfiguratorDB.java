@@ -72,7 +72,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private static final boolean RC_RECORD_CLOB_OPTION = MAX_RC_RECORD_SIZE > 4096;
 	private static final boolean DEMAND_PROFILE_CLOB_OPTION = MAX_DEMAND_PROFILE_SIZE > 4096;
 	private static final boolean COMBINE_STATS = false;
-	private static final String CHECKPOINT_TRANSFER_DIR = "checkpoints";
+	private static final String CHECKPOINT_TRANSFER_DIR = "paxos_large_checkpoints";
+	private static final boolean LARGE_CHECKPOINTS_OPTION = true;
 
 	private static enum Columns {
 		SERVICE_NAME, EPOCH, RC_GROUP_NAME, ACTIVES, NEW_ACTIVES, RC_STATE, STRINGIFIED_RECORD, DEMAND_PROFILE
@@ -141,11 +142,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		JSONObject historic = getDemandStatsJSON(report.getServiceName());
 		JSONObject combined = null;
 		String insertCmd = "insert into " + getDemandTable() + " ("
-				// + Columns.RC_GROUP_NAME.toString() + ", "
 				+ Columns.DEMAND_PROFILE.toString() + ", "
 				+ Columns.SERVICE_NAME.toString() + " ) values (?,?)";
 		String updateCmd = "update " + getDemandTable() + " set "
-				// + Columns.RC_GROUP_NAME.toString() + "=?, "
 				+ Columns.DEMAND_PROFILE.toString() + "=? where "
 				+ Columns.SERVICE_NAME.toString() + "=?";
 		String cmd = historic != null ? updateCmd : insertCmd;
@@ -158,8 +157,6 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		try {
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
-			// insertCP.setString(1,
-			// this.consistentNodeConfig.getFirstReconfigurator(report.getServiceName()).toString());
 			if (DEMAND_PROFILE_CLOB_OPTION)
 				insertCP.setClob(1, new StringReader(combined.toString()));
 			else
@@ -270,6 +267,11 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	@Override
 	public ReconfigurationRecord<NodeIDType> deleteReconfigurationRecord(
 			String name) {
+		log.log(Level.INFO,
+				MyLogger.FORMAT[4],
+				new Object[] { "==============================> DerbyRCDB",
+						myID, name,
+						 " ->", "DELETE" });
 		ReconfigurationRecord<NodeIDType> record = this
 				.deleteReconfigurationRecord(name, this.getRCRecordTable());
 		this.deleteReconfigurationRecord(name, this.getPendingTable());
@@ -302,7 +304,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	// write records to a file and return filename
 	@Override
-	public String getState(String rcGroup) {
+	public synchronized String getState(String rcGroup) {
 		if (!this.createCheckpointFile(rcGroup))
 			return null;
 
@@ -313,17 +315,20 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		try {
 			conn = this.getDefaultConn();
 			pstmt = this.getPreparedStatement(conn, getRCRecordTable(),
-					rcGroup, Columns.STRINGIFIED_RECORD.toString());
+					Columns.STRINGIFIED_RECORD.toString());
 			recordRS = pstmt.executeQuery();
 
+			// first wipe out the file
+			writer = new FileWriter(getCheckpointFile(rcGroup), false);
+			writer.close(); 
+			// then start appending to the clean slate
 			writer = new FileWriter(getCheckpointFile(rcGroup), true);
 
 			while (recordRS.next()) {
 				String msg = recordRS.getString(1);
 				ReconfigurationRecord<NodeIDType> rcRecord = new ReconfigurationRecord<NodeIDType>(
 						new JSONObject(msg), this.consistentNodeConfig);
-				writer.write(rcRecord.toString() + "\n"); // append record to
-															// file
+				writer.write(rcRecord.toString() + "\n"); // append to file
 			}
 		} catch (SQLException | JSONException | IOException e) {
 			log.severe(e.getClass().getSimpleName()
@@ -338,17 +343,31 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return this.getCheckpointDir() + rcGroup;
 	}
 
+	/* The second argument "state" here is implemented as the name of
+	 * the file where the checkpoint state is actually stored. We 
+	 * assume that each RC record in the checkpoint state is
+	 * separated by a newline.
+	 */
 	@Override
-	public boolean updateState(String rcGroup, String state) {
+	public synchronized boolean updateState(String rcGroup, String state) {
 		// treat rcGroup as filename and read records from it
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new InputStreamReader(new FileInputStream(
-					getCheckpointFile(rcGroup))));
-			String line = null;
-			while ((line = br.readLine()) != null) {
-				this.putReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
-						new JSONObject(line), this.consistentNodeConfig));
+			if(LARGE_CHECKPOINTS_OPTION) { // read state from file
+				br = new BufferedReader(new InputStreamReader(new FileInputStream(
+						getCheckpointFile(rcGroup))));
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					this.putReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
+							new JSONObject(line), this.consistentNodeConfig));
+				}
+			}
+			else { // state is actually the state
+				String[] lines = state.split("\n");
+				for(String line : lines) {
+					this.putReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
+							new JSONObject(line), this.consistentNodeConfig));					
+				}
 			}
 		} catch (IOException | JSONException e) {
 			log.severe("Node" + myID + " unable to insert checkpoint");
@@ -703,7 +722,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		}
 	}
 
-	public void closeImpl() {
+	public void close() {
 		setClosed(true);
 		if (allClosed())
 			closeGracefully();
@@ -805,6 +824,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private PreparedStatement getPreparedStatement(Connection conn,
 			String table, String name, String column) throws SQLException {
 		return this.getPreparedStatement(conn, table, name, column, "");
+	}
+	private PreparedStatement getPreparedStatement(Connection conn,
+			String table, String column) throws SQLException {
+		return this.getPreparedStatement(conn, table, null, column);
 	}
 
 	private static void testRCRecordReadAfterWrite(String name,

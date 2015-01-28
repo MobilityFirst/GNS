@@ -56,21 +56,22 @@ InterfaceReplicable, InterfaceReconfigurable {
 	}
 	
 	private boolean processRequest(NoopAppRequest request) {
-		if(request.isStop()) return processStopRequest(request);
+		if (request.isStop())
+			return processStopRequest(request);
 		AppData data = this.appData.get(request.getServiceName());
-		if(data==null) {
-			// create if non-existent name
-			AppData prevData = this.prevEpochFinal.get(request.getServiceName());
-			data = new AppData(request.getServiceName(), 
-				(prevData!=null ? prevData.epoch+1 : 0), request.getValue()); 
-			throw new RuntimeException("App-"+myID+" has no record for "+ request.getServiceName());
+		if (data == null) {
+			System.out.println("App-" + myID + " has no record for "
+					+ request.getServiceName());
+			return false;
 		}
-		assert(data!=null);
+		assert (data != null);
 		data.setState(request.getValue());
 		this.appData.put(request.getServiceName(), data);
-		System.out.println("App-"+myID+" wrote " + data.name+":"+data.epoch + " with state "+data.getState());
+		System.out.println("App-" + myID + " wrote " + data.name + ":"
+				+ data.epoch + " with state " + data.getState());
 		return true;
 	}
+
 	private boolean processStopRequest(NoopAppRequest request) {
 		AppData data = this.appData.remove(request.getServiceName());
 		if(data==null) return false;
@@ -105,13 +106,20 @@ InterfaceReplicable, InterfaceReconfigurable {
 
 	@Override
 	public String getState(String name) {
-		throw new RuntimeException("Method not yet implemented");
+		//throw new RuntimeException("Method not yet implemented");
+		AppData data = this.appData.get(name);
+		return (data!=null ? data.getState() : null);
 	}
 
 	@Override
 	public boolean updateState(String name, String state) {
-		// TODO Auto-generated method stub
-		return false;
+		AppData data = this.appData.get(name);
+		/* If no previous state, set epoch to initial epoch,
+		 * otherwise putInitialState will be called.
+		 */
+		if(data==null) data = new AppData(name, 0, state);
+		data.setState(state);
+		return true;
 	}
 
 	@Override

@@ -173,4 +173,9 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	public String[] getPendingReconfigurations() {
 		return new String[0];
 	}
+
+	@Override
+	public void close() {
+		// do nothing
+	}
 }

@@ -49,7 +49,6 @@ InterfacePacketDemultiplexer {
 	private final JSONMessenger<NodeIDType> messenger;
 
 	private final AggregateDemandProfiler demandProfiler = new AggregateDemandProfiler();
-	//private final ConsistentHashing<NodeIDType> CH;
 	
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
@@ -67,7 +66,6 @@ InterfacePacketDemultiplexer {
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(messenger);
 		this.protocolTask = new ActiveReplicaProtocolTask<NodeIDType>(getMyID(), this);
 		this.protocolExecutor.register(this.protocolTask.getDefaultTypes(), this.protocolTask);
-		//this.CH = new ConsistentHashing<NodeIDType>(this.nodeConfig.getReconfigurators().toArray());
 		this.appCoordinator.setMessenger(this.messenger);
 	}
 	
@@ -87,8 +85,10 @@ InterfacePacketDemultiplexer {
 			// else check if app request
 			else if(isAppRequest(jsonObject)) { 
 				InterfaceRequest request = this.appCoordinator.getRequest(jsonObject.toString());
-				this.appCoordinator.handleIncoming(request); // for app
-				updateDemandStats(request, JSONPacket.getSenderAddress(jsonObject)); // for reconfiguration
+				// send to app via its coordinator
+				this.appCoordinator.handleIncoming(request); 
+				// update demand stats (for reconfigurator) if handled by app
+				updateDemandStats(request, JSONPacket.getSenderAddress(jsonObject)); 
 			}
 		} catch(RequestParseException rpe) {
 			rpe.printStackTrace();
@@ -123,6 +123,12 @@ InterfacePacketDemultiplexer {
 		}
 		return types;
 	}
+	
+	public void close() {
+		this.protocolExecutor.stop();
+		this.messenger.stop();
+	}
+
 
 	/********************* Start of protocol task handler methods ************************/
 
@@ -267,16 +273,17 @@ InterfacePacketDemultiplexer {
 	private void report(AbstractDemandProfile demand) {
 		try {
 			NodeIDType reportee = selectReconfigurator(demand.getName());
-			if(reportee==null) return;
-			// else send to reportee
-			assert(this.appCoordinator.getEpoch(demand.getName())!=null);
+			assert (reportee != null);
+			/* We don't strictly need the epoch number in demand reports, 
+			 * but it is useful for debugging purposes.
+			 */
+			Integer epoch = this.appCoordinator.getEpoch(demand.getName());
+			epoch = (epoch==null ? 0 : epoch);
 			GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, Object>(
 					reportee, (new DemandReport<NodeIDType>(getMyID(),
-							demand.getName(),
-							this.appCoordinator.getEpoch(demand.getName()),
-							demand)).toJSONObject());
+							demand.getName(), epoch, demand)).toJSONObject());
 			this.send(mtask);
-		} catch(JSONException je) {
+		} catch (JSONException je) {
 			je.printStackTrace();
 		}
 	}

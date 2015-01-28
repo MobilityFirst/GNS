@@ -32,4 +32,7 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	
 	// names for which reconfiguration is incomplete, needed for recovery
 	public String[] getPendingReconfigurations();
+	
+	// close DB
+	public void close();
 }

@@ -23,6 +23,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.util.RetrievableDigest;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,6 +67,8 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
 
   private PingManager<NodeIDType> pingManager;
 
+  private RetrievableDigest digester;
+
   /**
    * Construct the GnsReconfigurable object.
    *
@@ -90,6 +93,11 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       this.pingManager.startPinging();
     }
     this.nameRecordDB = new MongoRecordMap<NodeIDType>(mongoRecords, MongoRecords.DBNAMERECORD);
+    try {
+      this.digester = new RetrievableDigest(30000);
+    } catch (NoSuchAlgorithmException ex) {
+      GNS.getLogger().severe("Unable to create Digest:" + ex);
+    }
   }
 
   @Override
@@ -112,17 +120,30 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
     return nioServer;
   }
 
+  public RetrievableDigest getDigester() {
+    return digester;
+  }
+
   /**
    * ActiveReplicaCoordinator calls this method to locally execute a decision.
    * Depending on request type, this method will call a private method to execute request.
    *
    * @param name
-   * @param value
+   * @param incomingValue
    * @param recovery
    * @return
    */
   @Override
-  public boolean handleDecision(String name, String value, boolean recovery) {
+  public boolean handleDecision(String name, String incomingValue, boolean recovery) {
+    // Convert the request back into the original packet.
+    String value = null;
+    if (Config.useRequestDigest) {
+      value = digester.retrieveOriginalString(incomingValue.getBytes());
+    }
+    // If we could not find a original value (or not using digester) it must not be a digest. 
+    if (value == null) {
+      value = incomingValue;
+    }
     //
     boolean executed = false;
     try {

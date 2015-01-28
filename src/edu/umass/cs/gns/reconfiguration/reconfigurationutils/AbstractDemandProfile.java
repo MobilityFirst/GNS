@@ -3,7 +3,10 @@ package edu.umass.cs.gns.reconfiguration.reconfigurationutils;
 import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+
 import org.json.JSONObject;
+
+
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
 
@@ -96,7 +99,6 @@ public abstract class AbstractDemandProfile {
 		} catch (InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
-			if (e instanceof NoSuchMethodException)
 			e.printStackTrace();
 		}
 		return null;

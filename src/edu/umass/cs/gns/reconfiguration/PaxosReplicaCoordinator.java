@@ -67,7 +67,10 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 		return this.paxosManager.getPaxosNodeIDs(serviceName);
 	}
 
-	// FIXME: Needed only for reconfiguring reconfigurators.
+	/* FIXME: Needed only for reconfiguring reconfigurators, which
+	 * is not yet implemented. We also need PaxosManager support 
+	 * for deleting a paxos group.
+	 */
 	@Override
 	public void deleteReplicaGroup(String serviceName) {
 		throw new RuntimeException("Method not yet implemented");

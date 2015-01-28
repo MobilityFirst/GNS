@@ -665,7 +665,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		return fixGapsRequest;
 	}
 	private boolean checkIfTrapped(JSONObject incoming, MessagingTask mtask) {
-		if(this.isStopped()) {
+		if(this.isStopped() && mtask!=null) {
 			log.warning(this.getNodeState() + " DROPPING message trapped inside stopped " +
 					"instance: " + incoming + " ; " + mtask);
 			return true;
@@ -698,9 +698,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			String pid = this.getPaxosID();
 			while(!executed) {
 				executed = this.clientRequestHandler.handleDecision(pid, 
-						inorderDecision.getRequestValue(), (inorderDecision.isRecovery()
-                                                        // Had to remove this line to get things to work. - Westy
-                                                        //||  (inorderDecision.getEntryReplica()!=this.getMyID())
+						inorderDecision.getRequestValue(), (inorderDecision.isRecovery() 
+                                                        //|| (inorderDecision.getEntryReplica()!=this.getMyID())
                                                         )); 
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
 			} execCount++;

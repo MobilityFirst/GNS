@@ -59,6 +59,8 @@ public class RetrievableDigest {
 
   /**
    * Retrieves the original string that was used to create the digest.
+   * Will return null if no corresponding original string value exists for the
+   * given digest value.
    *
    * @param digest
    * @return

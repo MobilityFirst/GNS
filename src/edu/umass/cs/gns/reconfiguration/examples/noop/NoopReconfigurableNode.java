@@ -21,19 +21,16 @@ public class NoopReconfigurableNode extends ReconfigurableNode<Integer> {
 	@Override
 	protected AbstractReplicaCoordinator<Integer> createAppCoordinator() {
 		NoopApp app = new NoopApp(this.myID); 
-		NoopAppCoordinator appCoordinator = new NoopAppCoordinator(app);
+		//NoopAppCoordinator appCoordinator = new NoopAppCoordinator(app);
+		NoopAppCoordinator appCoordinator = new NoopAppCoordinator(app, NoopAppCoordinator.CoordType.PAXOS, this.nodeConfig, this.messenger);
 		return appCoordinator;
 	}
 
+	// local setup
 	public static void main(String[] args) {
 		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
 		nc.localSetup(TestConfig.getNodes());
 		try {
-			/*
-			for(int i=0; i<TestConfig.numNodes; i++) {
-				nodes[i] = new NoopReconfigurableNode(i+TestConfig.startNodeID, nc);
-			}
-			*/
 			System.out.println("Setting up actives at " + nc.getActiveReplicas());
 			for(int activeID : nc.getActiveReplicas()) {
 				new NoopReconfigurableNode(activeID, nc);

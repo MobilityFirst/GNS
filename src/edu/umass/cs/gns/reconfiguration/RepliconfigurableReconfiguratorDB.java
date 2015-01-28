@@ -57,11 +57,12 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		assert (this.getReplicaGroup(rcGroupName) != null);
 		return super.coordinateRequest(rcGroupName, request);
 	}
-	
+
 	// assumes RC group name is the name of the first node
 	private String getRCGroupName(InterfaceRequest request) {
-		Set<NodeIDType> reconfigurators = this.consistentNodeConfig.getReplicatedReconfigurators(request.getServiceName());
-		assert(reconfigurators!=null && !reconfigurators.isEmpty());
+		Set<NodeIDType> reconfigurators = this.consistentNodeConfig
+				.getReplicatedReconfigurators(request.getServiceName());
+		assert (reconfigurators != null && !reconfigurators.isEmpty());
 		return reconfigurators.iterator().next().toString();
 	}
 
@@ -102,30 +103,35 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 					.getReplicatedReconfigurators(node.toString());
 			// if I am present, create group
 			if (group.contains(this.getMyID())) {
-				System.out.println("Creating group " + node.toString() + ": " + group);
+				System.out.println("Creating reconfigurator group " + node.toString() + " with members "
+						+ group);
 				this.createReplicaGroup(node.toString(), 0, null, group);
 			}
 		}
 		return false;
 	}
-	
+
 	private String getRCGroupName(String serviceName) {
 		Set<NodeIDType> reconfigurators = this.consistentNodeConfig
 				.getReconfigurators();
-		if(reconfigurators!=null && !reconfigurators.isEmpty())
+		if (reconfigurators != null && !reconfigurators.isEmpty())
 			return reconfigurators.iterator().next().toString();
 		return null;
 	}
-	
+
 	// needed by Reconfigurator
 	protected String getDemandStats(String name) {
 		return this.app.getDemandStats(name);
 	}
-	
+
 	protected String[] getPendingReconfigurations() {
 		return this.app.getPendingReconfigurations();
 	}
-	
+
+	protected void close() {
+		this.app.close();
+	}
+
 	@Override
 	public Set<NodeIDType> getReplicaGroup(String serviceName) {
 		return super.getReplicaGroup(getRCGroupName(serviceName));
