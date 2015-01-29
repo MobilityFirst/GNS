@@ -131,7 +131,7 @@ public class GnsReconUpdate {
         }
         if (updatePacket.getNameServerID().equals(replica.getNodeID())) { //if this node proposed this update
           // send error message to client
-          ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
+          ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
           if (Config.debuggingEnabled) {
@@ -151,7 +151,7 @@ public class GnsReconUpdate {
         // this should be uncommented once active replica starts to send read/write statistics for name.
 //        nameRecord.incrementUpdateRequest();
         if (updatePacket.getNameServerID().equals(replica.getNodeID())) {
-          ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE,
+          ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
           if (Config.debuggingEnabled) {

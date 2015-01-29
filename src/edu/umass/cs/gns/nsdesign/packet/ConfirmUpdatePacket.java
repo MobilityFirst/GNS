@@ -68,7 +68,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
    */
   public static ConfirmUpdatePacket createFailPacket(UpdatePacket updatePacket, NSResponseCode code) {
     assert code != NSResponseCode.NO_ERROR; // that would be stupid
-    return new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE, updatePacket.getSourceId(),
+    return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
             updatePacket.getRequestID(), updatePacket.getLNSRequestID(), code);
   }
 
@@ -80,19 +80,19 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
    * @return <code>ConfirmUpdateLNSPacket</code> indicating request failure.
    */
   public static ConfirmUpdatePacket createSuccessPacket(UpdatePacket updatePacket) {
-    return new ConfirmUpdatePacket(Packet.PacketType.CONFIRM_UPDATE, updatePacket.getSourceId(),
+    return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
             updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
             NSResponseCode.NO_ERROR);
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket<NodeIDType> packet) {
-    this(Packet.PacketType.CONFIRM_ADD, packet.getSourceId(),
+    this(Packet.PacketType.ADD_CONFIRM, packet.getSourceId(),
             packet.getRequestID(), packet.getLNSRequestID(), code);
 
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket<NodeIDType> packet) {
-    this(Packet.PacketType.CONFIRM_REMOVE, packet.getSourceId(),
+    this(Packet.PacketType.REMOVE_CONFIRM, packet.getSourceId(),
             packet.getRequestID(), packet.getLNSRequestID(), code);
   }
 

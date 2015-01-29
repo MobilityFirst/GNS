@@ -97,9 +97,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   public void handleIncomingPacket(JSONObject json) {
     try {
       switch (getPacketType(json)) {
-        case CONFIRM_UPDATE:
-        case CONFIRM_ADD:
-        case CONFIRM_REMOVE:
+        case UPDATE_CONFIRM:
+        case ADD_CONFIRM:
+        case REMOVE_CONFIRM:
           ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json, handler.getGnsNodeConfig());
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error

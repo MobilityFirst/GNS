@@ -52,9 +52,9 @@ public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator 
         case NAME_SERVER_LOAD:
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
-        case CONFIRM_UPDATE:
-        case CONFIRM_ADD:
-        case CONFIRM_REMOVE:
+        case UPDATE_CONFIRM:
+        case ADD_CONFIRM:
+        case REMOVE_CONFIRM:
           replicable.handleDecision(null, request.toString(), false);
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:

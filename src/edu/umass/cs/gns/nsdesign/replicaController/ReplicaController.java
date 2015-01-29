@@ -79,7 +79,7 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
 
   /**
    * Creates a ReplicaController.
-   * 
+   *
    * @param nodeID
    * @param gnsNodeConfig
    * @param nioServer
@@ -318,8 +318,8 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
           NameStats.handleLNSVotesPacket(json, this);
           break;
         //case NAME_RECORD_STATS_RESPONSE:
-          // todo this packets related to stats reporting are not implemented yet.
-          //throw new UnsupportedOperationException();
+        // todo this packets related to stats reporting are not implemented yet.
+        //throw new UnsupportedOperationException();
         case NAME_SERVER_LOAD:
           updateNSLoad(json);
         default:
@@ -341,7 +341,7 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
   }
 
   private void updateNSLoad(JSONObject json) throws JSONException {
-    NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
+    NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<>(json, gnsNodeConfig);
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine("Updated NS Load. Node: " + nsLoad.getReportingNodeID()
               + "\tPrevLoad: " + nsRequestRates.get(nsLoad.getReportingNodeID())
@@ -350,12 +350,14 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
     nsRequestRates.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
 
+  @Override
   public ConcurrentHashMap<NodeIDType, Double> getNsRequestRates() {
     return nsRequestRates;
   }
 
   /**
    * Nuclear option for clearing out all state at GNS.
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void reset() throws FailedDBOperationException {
     replicaControllerDB.reset();
@@ -365,9 +367,8 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
   public void shutdown() {
 
   }
-  
+
   // Methods for InterfaceReplicable
-  
   @Override
   public boolean handleRequest(InterfaceRequest request) {
     return handleRequest(request, false); // false is the default
@@ -377,22 +378,19 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
   public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
     return this.handleDecision(request.getServiceName(), request.toString(), doNotReplyToClient);
   }
-  
-//  @Override
-//  public String getState(String name, int epoch) {
-//    //FIXME: What do we do with the epoch?
-//    return getState(name);
-//  }
 
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {
-    //FIXME: There's currently no method for taking a random JSON Object packet and making a packet out of it.
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    try {
+      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), gnsNodeConfig);
+    } catch (JSONException e) {
+      throw new RequestParseException(e);
+    }
   }
 
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet."); 
   }
 
 }

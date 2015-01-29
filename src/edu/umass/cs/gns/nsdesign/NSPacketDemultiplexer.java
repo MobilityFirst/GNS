@@ -49,9 +49,9 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     register(Packet.PacketType.ACTIVE_COORDINATION);
     // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
     // coming back from the LNS is handled.
-    register(Packet.PacketType.CONFIRM_UPDATE);
-    register(Packet.PacketType.CONFIRM_ADD);
-    register(Packet.PacketType.CONFIRM_REMOVE);
+    register(Packet.PacketType.UPDATE_CONFIRM);
+    register(Packet.PacketType.ADD_CONFIRM);
+    register(Packet.PacketType.REMOVE_CONFIRM);
 
     register(Packet.PacketType.ADD_RECORD);
     register(Packet.PacketType.REQUEST_ACTIVES);
@@ -112,9 +112,9 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
               case ACTIVE_COORDINATION:
                 // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
               // coming back from the LNS is handled.
-              case CONFIRM_UPDATE:
-              case CONFIRM_ADD:
-              case CONFIRM_REMOVE:
+              case UPDATE_CONFIRM:
+              case ADD_CONFIRM:
+              case REMOVE_CONFIRM:
                 ActiveReplicaCoordinator appCoordinator = nameServer.getActiveReplicaCoordinator();
                 if (appCoordinator != null) {
                   appCoordinator.coordinateRequest(json);

@@ -156,9 +156,9 @@ public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoord
         case NAME_SERVER_LOAD:
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
-        case CONFIRM_UPDATE:
-        case CONFIRM_ADD:
-        case CONFIRM_REMOVE:
+        case UPDATE_CONFIRM:
+        case ADD_CONFIRM:
+        case REMOVE_CONFIRM:
           // Packets sent from replica controller
           callHandleDecision = request;
 

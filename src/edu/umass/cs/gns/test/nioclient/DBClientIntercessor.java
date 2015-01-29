@@ -13,9 +13,9 @@ import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.ADD_RECORD;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_ADD;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_REMOVE;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.CONFIRM_UPDATE;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.ADD_CONFIRM;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.REMOVE_CONFIRM;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.UPDATE_CONFIRM;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.DNS;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.REMOVE_RECORD;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.UPDATE;
@@ -161,7 +161,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
     JSONObject outgoingJson = null;
     try {
       switch (Packet.getPacketType(incomingJson)) {
-        case CONFIRM_ADD:
+        case ADD_CONFIRM:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson, nodeConfig).getRequestID());
           if (origJson == null) {
             break;
@@ -171,7 +171,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
           break;
-        case CONFIRM_REMOVE:
+        case REMOVE_CONFIRM:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson, nodeConfig).getRequestID());
           if (origJson == null) {
             break;
@@ -181,7 +181,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
           confirmPkt.setRequestID(origReqID);
           outgoingJson = confirmPkt.toJSONObject();
           break;
-        case CONFIRM_UPDATE:
+        case UPDATE_CONFIRM:
           origJson = (JSONObject) uniqueIDHashMap.remove(new ConfirmUpdatePacket(incomingJson, nodeConfig).getRequestID());
           if (origJson == null) {
             break;

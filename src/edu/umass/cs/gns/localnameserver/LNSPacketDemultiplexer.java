@@ -33,9 +33,9 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.ADD_RECORD);
     register(Packet.PacketType.COMMAND);
-    register(Packet.PacketType.CONFIRM_ADD);
-    register(Packet.PacketType.CONFIRM_REMOVE);
-    register(Packet.PacketType.CONFIRM_UPDATE);
+    register(Packet.PacketType.ADD_CONFIRM);
+    register(Packet.PacketType.REMOVE_CONFIRM);
+    register(Packet.PacketType.UPDATE_CONFIRM);
     register(Packet.PacketType.GROUP_CHANGE_COMPLETE);
     register(Packet.PacketType.NAME_SERVER_LOAD);
     register(Packet.PacketType.NEW_ACTIVE_PROPOSE);
@@ -81,7 +81,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
         case UPDATE:
           Update.handlePacketUpdate(json, handler);
           break;
-        case CONFIRM_UPDATE:
+        case UPDATE_CONFIRM:
           Update.handlePacketConfirmUpdate(json, handler);
           break;
         case NAME_SERVER_LOAD:
@@ -94,10 +94,10 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
         case REMOVE_RECORD:
           AddRemove.handlePacketRemoveRecord(json, handler);
           break;
-        case CONFIRM_ADD:
+        case ADD_CONFIRM:
           AddRemove.handlePacketConfirmAdd(json, handler);
           break;
-        case CONFIRM_REMOVE:
+        case REMOVE_CONFIRM:
           AddRemove.handlePacketConfirmRemove(json, handler);
           break;
         // Others

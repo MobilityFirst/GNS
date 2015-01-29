@@ -285,13 +285,13 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key) {
     switch (packet.getType()) {
-      case CONFIRM_ADD:
+      case ADD_CONFIRM:
         cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
         break;
-      case CONFIRM_REMOVE:
+      case REMOVE_CONFIRM:
         cache.invalidate(name);
         break;
-      case CONFIRM_UPDATE:
+      case UPDATE_CONFIRM:
         CacheEntry<NodeIDType> entry = cache.getIfPresent(name);
         if (entry != null) {
           entry.updateCacheEntry(packet);

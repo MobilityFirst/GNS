@@ -122,9 +122,9 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
           executeRemoveLocal(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig));
           break;
         // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
-        case CONFIRM_UPDATE:
-        case CONFIRM_ADD:
-        case CONFIRM_REMOVE:
+        case UPDATE_CONFIRM:
+        case ADD_CONFIRM:
+        case REMOVE_CONFIRM:
           throw new UnsupportedOperationException();
         default:
           GNS.getLogger().severe(" ERROR: Packet type not found: " + json);
@@ -160,7 +160,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
       returnJson = failConfirmPacket.toJSONObject();
     } else {
       if (updatePacket.getNameServerID().equals(nodeID)) {
-        ConfirmUpdatePacket<NodeIDType> confirmPacket = new ConfirmUpdatePacket<NodeIDType>(Packet.PacketType.CONFIRM_UPDATE,
+        ConfirmUpdatePacket<NodeIDType> confirmPacket = new ConfirmUpdatePacket<NodeIDType>(Packet.PacketType.UPDATE_CONFIRM,
                 updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
                 NSResponseCode.NO_ERROR);
         if (Config.debuggingEnabled)

@@ -81,9 +81,9 @@ public class DummyGnsCoordinatorUnreplicated<NodeIDType> extends ActiveReplicaCo
           break;
         case SELECT_REQUEST:
         case SELECT_RESPONSE:
-        case CONFIRM_UPDATE:
-        case CONFIRM_ADD:
-        case CONFIRM_REMOVE:
+        case UPDATE_CONFIRM:
+        case ADD_CONFIRM:
+        case REMOVE_CONFIRM:
           throw new UnsupportedOperationException();
         case ACTIVE_COORDINATION:
           // we do not expect any coordination packets

@@ -184,9 +184,9 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery);
           break;
         // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
-        case CONFIRM_UPDATE:
-        case CONFIRM_ADD:
-        case CONFIRM_REMOVE:
+        case UPDATE_CONFIRM:
+        case ADD_CONFIRM:
+        case REMOVE_CONFIRM:
           LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, nodeConfig), this);
           break;
         default:
@@ -471,18 +471,22 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   }
 
   @Override
-  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public boolean handleRequest(InterfaceRequest request) {
+    return handleRequest(request, false); // false is the default
   }
 
   @Override
-  public boolean handleRequest(InterfaceRequest request) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
+    return this.handleDecision(request.getServiceName(), request.toString(), doNotReplyToClient);
   }
 
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    try {
+      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), nodeConfig);
+    } catch (JSONException e) {
+      throw new RequestParseException(e);
+    }
   }
 
   @Override
