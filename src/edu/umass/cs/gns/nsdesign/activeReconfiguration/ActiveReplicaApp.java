@@ -8,6 +8,7 @@ import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.Application;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
@@ -51,9 +52,17 @@ public class ActiveReplicaApp implements Reconfigurable, Replicable {
   }
 
   @Override
-  public boolean handleDecision(String name, String value, boolean recovery) {
+  public boolean handleDecision(String name, String incomingValue, boolean recovery) {
     if (!recovery) {
       incrementRequestCount();
+    }
+    String value = null;
+    if (Config.useRequestDigest) {
+      value = ((GnsReconfigurable)app).getDigester().retrieveOriginalString(incomingValue.getBytes());
+    }
+    // If we could not find a original value (or not using digester) it must not be a digest. 
+    if (value == null) {
+      value = incomingValue;
     }
     boolean executed = false;
     try {

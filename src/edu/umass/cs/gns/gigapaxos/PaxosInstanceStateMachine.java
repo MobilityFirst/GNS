@@ -31,8 +31,10 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MatchKeyable;
+import edu.umass.cs.gns.util.ThreadUtils;
 import edu.umass.cs.gns.util.Util;
 
 /**
@@ -702,6 +704,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
                                                         //|| (inorderDecision.getEntryReplica()!=this.getMyID())
                                                         )); 
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
+                                if (Config.debuggingEnabled) {
+                                  ThreadUtils.sleep(500);
+                                }
+                                
 			} execCount++;
 
 			// checkpoint if needed, must be atomic with the execution 
