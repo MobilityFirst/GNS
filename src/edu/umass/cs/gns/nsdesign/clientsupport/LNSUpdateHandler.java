@@ -8,8 +8,7 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
@@ -50,7 +49,7 @@ public class LNSUpdateHandler {
    * @return
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue, UpdateOperation operation, 
-          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) {
+          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
     return sendUpdate(name, key, newValue, null, -1, operation, activeReplica, lnsAddress);
   }
 
@@ -68,7 +67,7 @@ public class LNSUpdateHandler {
    * @return
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue,
-          ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) {
+          ResultValue oldValue, int argument, UpdateOperation operation, GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID().toString() + "; Sending update: " + name + " : " + key + "->" + newValue.toString());
     int id = nextRequestID();
     // use this to filter out everything but the first responder
@@ -84,7 +83,7 @@ public class LNSUpdateHandler {
   }
 
   private static void sendUpdateInternal(int updateId, InetSocketAddress lnsAddress, String name, String key, ResultValue newValue,
-          ResultValue oldValue, int argument, UpdateOperation operation, GnsReconfigurableInterface activeReplica) {
+          ResultValue oldValue, int argument, UpdateOperation operation, GnsApplicationInterface activeReplica) {
     UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), updateId,
             name, key, newValue, oldValue, argument, operation,
             null, GNS.DEFAULT_TTL_SECONDS,
@@ -102,7 +101,7 @@ public class LNSUpdateHandler {
     }
   }
 
-  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value, GnsReconfigurableInterface activeReplica,
+  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
@@ -123,7 +122,7 @@ public class LNSUpdateHandler {
     return result;
   }
 
-  public static NSResponseCode sendRemoveRecord(String name, GnsReconfigurableInterface activeReplica,
+  public static NSResponseCode sendRemoveRecord(String name, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
@@ -150,7 +149,7 @@ public class LNSUpdateHandler {
    * @param packet
    * @param activeReplica
    */
-  public static void handleConfirmUpdatePacket(ConfirmUpdatePacket packet, GnsReconfigurable activeReplica) {
+  public static void handleConfirmUpdatePacket(ConfirmUpdatePacket packet, GnsApplicationInterface activeReplica) {
     int id = packet.getRequestID();
     if (packet.isSuccess()) {
       //Packet is a response and does not have a response error

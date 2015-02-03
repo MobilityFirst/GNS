@@ -11,6 +11,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import org.json.JSONException;
@@ -75,7 +76,7 @@ public class Remove {
    * @throws java.io.IOException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsReconfigurable gnsApp,
+  public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsApplicationInterface gnsApp,
                                                      boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
     if (Config.debuggingEnabled) GNS.getLogger().info("Executing remove: " + oldActiveStopPacket);
 //    GNSMessagingTask msgTask = null;
@@ -128,7 +129,7 @@ public class Remove {
    * replica controller.
    */
   private static void sendActiveRemovedConfirmationMsg(OldActiveSetStopPacket oldActiveStopPacket,
-                                                                  GnsReconfigurable gnsApp, boolean recovery)
+                                                                  GnsApplicationInterface gnsApp, boolean recovery)
           throws JSONException, IOException {
     // confirm to primary name server that this set of actives has stopped
     if (oldActiveStopPacket.getActiveReceiver().equals(gnsApp.getNodeID())) {

@@ -12,7 +12,7 @@ import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.net.InetSocketAddress;
@@ -40,7 +40,7 @@ public class NSFieldMetaData {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
-          GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
+          GnsApplicationInterface activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     return lookupOnThisNameServer(type, guidInfo.getGuid(), key, activeReplica);
   }
 
@@ -57,7 +57,7 @@ public class NSFieldMetaData {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
-          GnsReconfigurable activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
+          GnsApplicationInterface activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     ResultValue result = NSFieldAccess.lookupListFieldOnThisServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
     if (result != null) {
       return new HashSet<Object>(result);
@@ -67,7 +67,7 @@ public class NSFieldMetaData {
   }
 
   public static void add(MetaDataTypeName type, String guid, String key, String value, 
-          GnsReconfigurableInterface activeReplica, InetSocketAddress lnsAddress) {
+          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
 
     LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica, lnsAddress);

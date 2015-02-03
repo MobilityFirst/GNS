@@ -8,8 +8,8 @@ package edu.umass.cs.gns.nsdesign.clientsupport;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
+
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,7 +41,7 @@ public class LNSQueryHandler {
    * @param lnsAddress
    * @return 
    */
-  public static QueryResult sendQuery(String name, String key, GnsReconfigurableInterface activeReplica, 
+  public static QueryResult sendQuery(String name, String key, GnsApplicationInterface activeReplica, 
           InetSocketAddress lnsAddress) {
     return sendQuery(name, key, ColumnFieldType.USER_JSON, activeReplica, lnsAddress);
   }
@@ -56,7 +56,7 @@ public class LNSQueryHandler {
    * @param lnsAddress
    * @return 
    */
-  public static QueryResult sendListFieldQuery(String name, String key, GnsReconfigurableInterface activeReplica, 
+  public static QueryResult sendListFieldQuery(String name, String key, GnsApplicationInterface activeReplica, 
           InetSocketAddress lnsAddress) {
     return sendQuery(name, key, ColumnFieldType.LIST_STRING, activeReplica, lnsAddress);
   }
@@ -70,7 +70,7 @@ public class LNSQueryHandler {
    * @param activeReplica
    * @return the entire guid record in a QueryResult.
    */
-  private static QueryResult sendQuery(String name, String key, ColumnFieldType returnFormat, GnsReconfigurableInterface activeReplica, 
+  private static QueryResult sendQuery(String name, String key, ColumnFieldType returnFormat, GnsApplicationInterface activeReplica, 
           InetSocketAddress lnsAddress) {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
@@ -85,7 +85,7 @@ public class LNSQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key, 
-          ColumnFieldType returnFormat, GnsReconfigurableInterface activeReplica) {
+          ColumnFieldType returnFormat, GnsApplicationInterface activeReplica) {
     DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, null,
             returnFormat,
             null, null, null);
@@ -108,7 +108,7 @@ public class LNSQueryHandler {
    * @param dnsResponsePacket
    * @param activeReplica
    */
-  public static void handleDNSResponsePacket(DNSPacket dnsResponsePacket, GnsReconfigurable activeReplica) {
+  public static void handleDNSResponsePacket(DNSPacket dnsResponsePacket, GnsApplicationInterface activeReplica) {
     int id = dnsResponsePacket.getQueryId();
     if (!dnsResponsePacket.containsAnyError()) {
       //Packet is a response and does not have a response error

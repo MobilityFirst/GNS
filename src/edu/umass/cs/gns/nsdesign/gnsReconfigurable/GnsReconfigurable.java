@@ -77,7 +77,8 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
    * @param nioServer
    * @param mongoRecords
    */
-  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
+  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
+          InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = nodeID;
 

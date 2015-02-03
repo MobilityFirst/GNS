@@ -9,6 +9,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
@@ -57,7 +58,7 @@ public class GnsReconLookup {
    * @throws java.security.SignatureException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static void executeLookupLocal(DNSPacket dnsPacket, GnsReconfigurable gnsApp,
+  public static void executeLookupLocal(DNSPacket dnsPacket, GnsApplicationInterface gnsApp,
           boolean noCoordinatorState, boolean recovery)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
@@ -174,7 +175,7 @@ public class GnsReconLookup {
    * @throws JSONException
    */
   private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket dnsPacket, String guid, String field, NameRecord nameRecord,
-          GnsReconfigurable gnsApp) throws FailedDBOperationException, IOException, JSONException {
+          GnsApplicationInterface gnsApp) throws FailedDBOperationException, IOException, JSONException {
     if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
       ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getLnsAddress());
       // Set up the response packet
@@ -243,7 +244,7 @@ public class GnsReconLookup {
    * @param nameRecord
    * @return
    */
-  private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsReconfigurable gnsApp) {
+  private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsApplicationInterface gnsApp) {
     // change it to a response packet
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     dnsPacket.setResponder(gnsApp.getNodeID());

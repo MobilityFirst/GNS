@@ -7,6 +7,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -46,7 +47,7 @@ public class GnsReconUpdate {
    * @throws IOException
    * @throws FailedDBOperationException 
    */
-  public static void executeUpdateLocal(UpdatePacket updatePacket, GnsReconfigurable replica,
+  public static void executeUpdateLocal(UpdatePacket updatePacket, GnsApplicationInterface replica,
           boolean noCoordinationState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (Config.debuggingEnabled) {

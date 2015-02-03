@@ -15,18 +15,16 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
-
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 
@@ -82,7 +80,7 @@ public class NSAccessSupport {
    * @return
    */
   public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo,
-          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorInfo.getName() + " Field: " + field);
     }
@@ -115,7 +113,7 @@ public class NSAccessSupport {
    * @throws FailedDBOperationException 
    */
   private static boolean hierarchicalAccessCheck(MetaDataTypeName access, GuidInfo guidInfo, String field,
-          GuidInfo accessorInfo, GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GuidInfo accessorInfo, GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
@@ -131,7 +129,7 @@ public class NSAccessSupport {
   }
 
   private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, GuidInfo accessorInfo,
-          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
       return true;
@@ -159,7 +157,7 @@ public class NSAccessSupport {
 
   }
 
-  private static boolean checkAllowedUsers(String accesserGuid, Set<Object> allowedUsers, GnsReconfigurable activeReplica,
+  private static boolean checkAllowedUsers(String accesserGuid, Set<Object> allowedUsers, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (allowedUsers.contains(accesserGuid)) {
       return true;
@@ -172,7 +170,7 @@ public class NSAccessSupport {
     }
   }
 
-  public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field, GnsReconfigurable activeReplica) throws FailedDBOperationException {
+  public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field, GnsApplicationInterface activeReplica) throws FailedDBOperationException {
     try {
       return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica).contains(EVERYONE)
               || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALLFIELDS, activeReplica).contains(EVERYONE);

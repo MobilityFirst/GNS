@@ -4,6 +4,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
@@ -18,7 +19,7 @@ import java.io.IOException;
  */
 public class Add {
 
-  public static void handleActiveAdd(AddRecordPacket addRecordPacket, GnsReconfigurable gnsApp)
+  public static void handleActiveAdd(AddRecordPacket addRecordPacket, GnsApplicationInterface gnsApp)
           throws JSONException, IOException, FailedDBOperationException {
 
     if (Config.debuggingEnabled) GNS.getLogger().info("Add record at active replica. name = " + addRecordPacket.getName() +
@@ -55,7 +56,7 @@ public class Add {
    * @param gnsApp <code>GnsReconfigurable</code> calling this method
    * @throws JSONException
    */
-  private static void sendConfirmMsg(AddRecordPacket addRecordPacket, GnsReconfigurable gnsApp)
+  private static void sendConfirmMsg(AddRecordPacket addRecordPacket, GnsApplicationInterface gnsApp)
           throws JSONException, IOException {
     addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD_CONFIRM);
     gnsApp.getNioServer().sendToID(gnsApp.getNodeID(), addRecordPacket.toJSONObject());

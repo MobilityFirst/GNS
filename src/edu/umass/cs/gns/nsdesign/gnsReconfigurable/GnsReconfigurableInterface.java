@@ -1,12 +1,10 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 
 /**
@@ -18,14 +16,7 @@ import edu.umass.cs.gns.ping.PingManager;
  * Created by abhigyan on 5/19/14.
  * @param <NodeIDType>
  */
-public interface GnsReconfigurableInterface<NodeIDType> extends Replicable, Reconfigurable, Shutdownable{
-  NodeIDType getNodeID();
-
-  BasicRecordMap getDB();
-
-  GNSNodeConfig<NodeIDType> getGNSNodeConfig();
-
-  InterfaceJSONNIOTransport getNioServer();
+public interface GnsReconfigurableInterface<NodeIDType> extends GnsApplicationInterface, Replicable, Reconfigurable, Shutdownable{
 
   void reset() throws FailedDBOperationException;
 
