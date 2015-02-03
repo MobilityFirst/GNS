@@ -38,7 +38,18 @@ import org.json.JSONException;
  *
  * Also contains an implementation of the <code>Stringifiable</code> interface which allows
  * strings to be converted back to NodeIDTypes.
- *
+ * 
+ * This also implements InterfaceReconfigurableNodeConfig which entails a separation of the activeReplica
+ * and reconfigurator network ports. 
+ * 
+ * The current implementation maintains three NodeIds for each node that is read from the hosts file.
+ * A "top-level" id which is identical to the id read from the file, plus to additional ids. 
+ * One for the activeReplica and one for the reconfigurator. See <code>NodeInfo</code>, 
+ * <code>addHostInfo</code> and <code>readHostsFile</code> for the details on 
+ * how those are generated.
+ * 
+ * One caveat of the current implementation is that despite the use of NodeIDType throughout the code,
+ * we only currently support String NodeIDTypes in this class.
  *
  * @param <NodeIDType>
  */
