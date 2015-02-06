@@ -144,7 +144,7 @@ public class ReconfigurableClient<NodeIDType> {
 
   public static void main(String[] args) throws IOException {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, "billy");
+    GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     ReconfigurableClient client = null;
     try {
       JSONMessenger<String> messenger = new JSONMessenger<String>(

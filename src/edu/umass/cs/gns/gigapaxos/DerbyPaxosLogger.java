@@ -1137,7 +1137,9 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
 		// providing a user name and PASSWORD is optional in embedded derby
-		props.put("user", DerbyPaxosLogger.USER + this.myID);
+                // CHANGED TO NOT INCLUDE ID BECAUSE IDS CREATED FROM STRINGS WERE BREAKING - Westy
+		//props.put("user", DerbyPaxosLogger.USER + this.myID);
+                props.put("user", DerbyPaxosLogger.USER);
 		props.put("password", DerbyPaxosLogger.PASSWORD);
 		String dbCreation = PROTOCOL + this.logDirectory + DATABASE;
 

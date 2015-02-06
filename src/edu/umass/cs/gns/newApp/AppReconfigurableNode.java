@@ -2,12 +2,12 @@ package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.io.IOException;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
-import edu.umass.cs.gns.reconfiguration.examples.ReconfigurableSampleNodeConfig;
-import edu.umass.cs.gns.reconfiguration.examples.TestConfig;
+import java.util.Set;
 
 /**
  * @author Westy
@@ -32,17 +32,18 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
   }
 
   // local setup
-  public static void main(String[] args) {
-    ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
-    nc.localSetup(TestConfig.getNodes());
+  public static void main(String[] args) throws IOException {
+    // change this to use GNSNodeConfig
+    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+    GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     try {
-      System.out.println("Setting up actives at " + nc.getActiveReplicas());
-      for (int activeID : nc.getActiveReplicas()) {
-        new AppReconfigurableNode(activeID, nc);
+      System.out.println("Setting up actives at " + nodeConfig.getActiveReplicas());
+      for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {
+        new AppReconfigurableNode(activeID, nodeConfig);
       }
-      System.out.println("Setting up RCs at " + nc.getReconfigurators());
-      for (int rcID : nc.getReconfigurators()) {
-        new AppReconfigurableNode(rcID, nc);
+      System.out.println("Setting up RCs at " + nodeConfig.getReconfigurators());
+      for (String rcID : (Set<String>) nodeConfig.getReconfigurators()) {
+        new AppReconfigurableNode(rcID, nodeConfig);
       }
 
     } catch (IOException ioe) {

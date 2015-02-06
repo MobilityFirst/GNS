@@ -13,7 +13,9 @@ public class BackwardsCompatibility {
 
 	public static Replicable InterfaceReplicableToReplicable(
 			final InterfaceReplicable app) {
-		assert(app instanceof RepliconfigurableReconfiguratorDB || app instanceof NoopAppCoordinator) : app.getClass();
+		assert(app instanceof RepliconfigurableReconfiguratorDB || app instanceof NoopAppCoordinator
+                        || app instanceof edu.umass.cs.gns.newApp.AppCoordinator // - Westy
+                        ) : app.getClass();
 		Replicable replicable = new Replicable() {
 
 			@Override

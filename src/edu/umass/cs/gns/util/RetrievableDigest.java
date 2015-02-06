@@ -28,7 +28,7 @@ public class RetrievableDigest {
   private final MessageDigest hashFunction;
   // Stores the info for the digest in a FIFO queue. Used to remove old entries.
   private final Queue<DigestInfo> timeQueue;
-  // Stores the info the digest in a map. Ues to retrieve the original string from the digest.
+  // Stores the info the digest in a map. Used to retrieve the original string from the digest.
   private final Map<String, DigestInfo> digestMap;
   // How long (in milleseconds) to keep entries in our table before we discard them
   private final long timeToLive;
