@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;

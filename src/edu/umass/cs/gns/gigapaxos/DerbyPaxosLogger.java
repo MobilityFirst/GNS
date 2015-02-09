@@ -1033,7 +1033,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 						PAXOS_ID_SIZE + ") not null, serialized varchar(" +
 						PAUSE_STATE_SIZE +
 						") not null, primary key (paxos_id))";
-		if (this.dbDirectoryExists()) this.dropTable(getPTable()); // using pause table unnecessarily slows down
+                  if (this.dbDirectoryExists()) this.dropTable(getPTable()); // using pause table unnecessarily slows down
 																	// recovery significantly
 		Statement stmt = null;
 		Connection conn = null;

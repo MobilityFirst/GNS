@@ -15,16 +15,19 @@ import java.util.Set;
  */
 public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeIDType> {
   
-  private final MongoRecords<NodeIDType> mongoRecords;
+  private MongoRecords<NodeIDType> mongoRecords = null;
 
   public AppReconfigurableNode(NodeIDType nodeID, InterfaceReconfigurableNodeConfig<NodeIDType> nc)
           throws IOException {
     super(nodeID, nc);
-    this.mongoRecords = new MongoRecords<>(nodeID, Config.mongoPort);
   }
 
   @Override
   protected AbstractReplicaCoordinator<NodeIDType> createAppCoordinator() {
+    // this is called by super so we need to get this field initialized now
+    if (this.mongoRecords == null) {
+      this.mongoRecords = new MongoRecords<>(this.myID, Config.mongoPort);
+    }
     App app = new App(this.myID, this.nodeConfig, this.messenger, mongoRecords);
     //NoopAppCoordinator appCoordinator = new NoopAppCoordinator(app);
     AppCoordinator appCoordinator = new AppCoordinator(app, this.nodeConfig, this.messenger);

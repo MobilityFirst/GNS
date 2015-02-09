@@ -66,12 +66,14 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
    */
   private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
-
   public App(NodeIDType id, InterfaceReconfigurableNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
     this.nodeConfig = nodeConfig;
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Created " + nameRecordDB);
+    }
     this.nioServer = nioServer;
   }
 
@@ -84,7 +86,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().finer("Handling " + packetType.name() + " packet: " + json.toString());
+        GNS.getLogger().info("Handling " + packetType.name() + " packet: " + json.toString());
       }
       switch (packetType) {
         case DNS:
@@ -98,7 +100,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this, 
+          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this,
                   noCoordinationState, doNotReplyToClient);
           break;
         case SELECT_REQUEST:
@@ -115,7 +117,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
           Add.handleActiveAdd(addRecordPacket, this);
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this, 
+          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this,
                   noCoordinationState, doNotReplyToClient);
           break;
         // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
@@ -203,8 +205,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       }
       return state.toString();
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe("Record not found for name: " + name);
-      e.printStackTrace();
+      // normal result
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       e.printStackTrace();
@@ -241,9 +242,9 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
 
   @Override
   public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-    return new AppAppRequest(name, epoch, (int) (Math.random() * Integer.MAX_VALUE), "", AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
+    throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   private final static ArrayList<ColumnField> prevValueRequestFields = new ArrayList<>();
 
   static {
@@ -279,6 +280,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
 
   @Override
   public void putInitialState(String name, int epoch, String state) {
+    GNS.getLogger().info("name " + name + " version " + epoch + " state " + state);
     TransferableNameRecordState state1;
     try {
       state1 = new TransferableNameRecordState(state);
@@ -287,7 +289,8 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       e.printStackTrace();
       return;
     }
-    // Keep retrying until we can store the initial state for a name in DB. Unless this step completes, future operations
+    // Keep retrying until we can store the initial state for a name in DB. 
+    // Unless this step completes, future operations
     // e.g., lookupMultipleSystemFields, update, cannot succeed anyway.
     while (true) {
       try {
@@ -329,7 +332,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   public boolean deleteFinalState(String name, int epoch) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-  
+
   private final static ArrayList<ColumnField> readVersion = new ArrayList<>();
 
   static {
@@ -342,17 +345,16 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, readVersion);
       return nameRecord.getActiveVersion();
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe("Record not found for name: " + name);
-      e.printStackTrace();
+      // normal result
     } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-      e.printStackTrace();
+      // normal result
     } catch (FailedDBOperationException e) {
+      GNS.getLogger().severe("Database operation failed: " + e.getMessage());
       e.printStackTrace();
     }
     return null;
   }
-  
+
   @Override
   public NodeIDType getNodeID() {
     return nodeID;
@@ -367,7 +369,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   public InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig() {
     return nodeConfig;
   }
-  
+
   @Override
   public InterfaceJSONNIOTransport getNioServer() {
     return nioServer;

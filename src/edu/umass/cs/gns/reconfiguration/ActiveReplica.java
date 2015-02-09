@@ -75,6 +75,7 @@ InterfacePacketDemultiplexer {
 
 	@Override
 	public boolean handleJSONObject(JSONObject jsonObject) {
+                log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{this, "received", jsonObject});
 		BasicReconfigurationPacket<NodeIDType> rcPacket = null;
 		try {
 			// try handling as reconfiguration packet through protocol task 

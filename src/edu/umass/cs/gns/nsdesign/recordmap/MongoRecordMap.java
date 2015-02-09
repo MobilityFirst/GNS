@@ -16,12 +16,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-//import edu.umass.cs.gns.database.MongoRecords;
+/**
+ * Supports abstract access to a collection of MondoDB records specified by the
+ * <code>collectionName</code> string.
+ * 
+ * @author westy
+ * @param <NodeIDType> 
+ */
 public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
 
   private String collectionName;
   private MongoRecords<NodeIDType> mongoRecords;
 
+  
   public MongoRecordMap(MongoRecords<NodeIDType> mongoRecords, String collectionName) {
     this.collectionName = collectionName;
     this.mongoRecords = mongoRecords;
@@ -238,6 +245,12 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
       GNS.getLogger().severe("Field not found: " + e.getMessage());
     }
   }
+  
+  @Override
+  public String toString() {
+    return "MongoRecordMap{" + "collectionName=" + collectionName + ", mongoRecords=" + mongoRecords + '}';
+  }
+
 //
 //  // test code
 //  public static void main(String[] args) throws Exception {

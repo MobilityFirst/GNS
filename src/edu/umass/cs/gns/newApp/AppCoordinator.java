@@ -46,14 +46,14 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
   @Override
   public boolean coordinateRequest(InterfaceRequest request)
           throws IOException, RequestParseException {
+    if (this.app == null) {
+      return false; // replicable app not set
+    }
     JSONObject json = null;
     try {
       json = new JSONObject(request.toString());
     } catch (JSONException e) {
       throw new RequestParseException(e);
-    }
-    if (this.app == null) {
-      return false; // replicable app not set
     }
     InterfaceRequest callHandleDecision = null;
     boolean noCoordinatorState = false;
