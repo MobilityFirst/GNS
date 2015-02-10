@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.newApp.test;
 
+import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.reconfiguration.examples.*;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,22 +15,24 @@ import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
-import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.gns.util.ValuesMap;
 
 /**
  * @author Westy
  * @param <NodeIDType>
  */
-public class ReconfigurableClient<NodeIDType> {
+public class DummyLNS<NodeIDType> {
 
   private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
   private final JSONMessenger<NodeIDType> messenger;
@@ -36,15 +40,10 @@ public class ReconfigurableClient<NodeIDType> {
 
   private Logger log = Logger.getLogger(getClass().getName());
 
-  ReconfigurableClient(InterfaceReconfigurableNodeConfig<NodeIDType> nc, JSONMessenger<NodeIDType> messenger) {
+  DummyLNS(InterfaceReconfigurableNodeConfig<NodeIDType> nc, JSONMessenger<NodeIDType> messenger) {
     this.nodeConfig = nc;
     this.messenger = messenger;
-    messenger.addPacketDemultiplexer(new ClientPacketDemultiplexer());
-  }
-
-  private AppRequest makeRequest(String name, String value) {
-    AppRequest req = new AppRequest(name, 0, value, AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
-    return req;
+    messenger.addPacketDemultiplexer(new DUmmyLNSPacketDemultiplexer());
   }
 
   private CreateServiceName makeCreateNameRequest(String name, String state) {
@@ -55,6 +54,13 @@ public class ReconfigurableClient<NodeIDType> {
   private DeleteServiceName makeDeleteNameRequest(String name, String state) {
     DeleteServiceName delete = new DeleteServiceName(null, name, 0);
     return delete;
+  }
+
+  private UpdatePacket makeUpdateRequest(String name, String value) throws JSONException {
+    UpdatePacket packet = new UpdatePacket(-1, -1, -1, name, null, null, null, -1,
+            new ValuesMap(new JSONObject(value)), UpdateOperation.USER_JSON_REPLACE,
+            null, "", 0, null, null, null);
+    return packet;
   }
 
   private NodeIDType getRandomReplica() {
@@ -75,7 +81,7 @@ public class ReconfigurableClient<NodeIDType> {
     return this.nodeConfig.getReconfigurators().iterator().next();
   }
 
-  private void sendRequest(AppRequest req) throws JSONException, IOException, RequestParseException {
+  private void sendUpdateRequest(UpdatePacket req) throws JSONException, IOException, RequestParseException {
     NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstReplica() : this.getRandomReplica());
     log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending ", req.getRequestType(), " to ", id, ":", this.nodeConfig.getNodeAddress(id), ":", this.nodeConfig.getNodePort(id), ": ", req});
     this.sendRequest(id, req.toJSONObject());
@@ -97,17 +103,21 @@ public class ReconfigurableClient<NodeIDType> {
     this.messenger.send(new GenericMessagingTask<NodeIDType, Object>(id, json));
   }
 
-  private class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer {
+  private class DUmmyLNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
-    ClientPacketDemultiplexer() {
+    DUmmyLNSPacketDemultiplexer() {
       this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
       this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
-      this.register(AppRequest.PacketType.DEFAULT_APP_REQUEST);
+      // From current app
+      register(Packet.PacketType.UPDATE);
+      register(Packet.PacketType.DNS);
+      register(Packet.PacketType.SELECT_REQUEST);
+      register(Packet.PacketType.SELECT_RESPONSE);
     }
 
     @Override
     public boolean handleJSONObject(JSONObject json) {
-      log.log(Level.FINEST, MyLogger.FORMAT[1], new Object[]{"Client received: ", json});
+      log.log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
       try {
         switch (ReconfigurationPacket.getReconfigurationPacketType(json)) {
           case CREATE_SERVICE_NAME:
@@ -123,16 +133,19 @@ public class ReconfigurableClient<NodeIDType> {
           default:
             break;
         }
-        AppRequest.PacketType type = AppRequest.PacketType.getPacketType(JSONPacket.getPacketType(json));
+        final Packet.PacketType type = Packet.getPacketType(json);
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().fine("MsgType " + type + " Msg " + json);
+        }
         if (type != null) {
-          switch (AppRequest.PacketType.getPacketType(JSONPacket.getPacketType(json))) {
-            case DEFAULT_APP_REQUEST:
+          switch (type) {
+            case DNS:
               break;
-            case APP_COORDINATION:
-              // FIXME:
-              throw new RuntimeException("Functionality not yet implemented");
-            //break;
+            case UPDATE:
+              break;
           }
+        } else {
+
         }
       } catch (JSONException e) {
         // TODO Auto-generated catch block
@@ -145,26 +158,29 @@ public class ReconfigurableClient<NodeIDType> {
   public static void main(String[] args) throws IOException {
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
-    ReconfigurableClient client = null;
+    DummyLNS localNameServer = null;
     try {
       JSONMessenger<String> messenger = new JSONMessenger<String>(
               (new JSONNIOTransport<String>(null, nodeConfig, new PacketDemultiplexerDefault(),
                       true)).enableStampSenderPort());
-      client = new ReconfigurableClient(nodeConfig, messenger);
+      localNameServer = new DummyLNS(nodeConfig, messenger);
       int numRequests = 2;
       String namePrefix = "name";
-      String requestValuePrefix = "request_value";
+      String updateValue = "{"
+              + "  \"name\": \"John\","
+              + "  \"number\": \"%d\"}";
       String initValue = "initial_value";
 
-      client.sendRequest(client.makeCreateNameRequest(namePrefix + 0, initValue));
-      while (client.exists.containsKey(namePrefix + 0));
+      localNameServer.sendRequest(localNameServer.makeCreateNameRequest(namePrefix + 0, initValue));
+      while (localNameServer.exists.containsKey(namePrefix + 0));
       Thread.sleep(2000);
       for (int i = 0; i < numRequests; i++) {
-        client.sendRequest(client.makeRequest(namePrefix + 0, requestValuePrefix + i));
+
+        localNameServer.sendUpdateRequest(localNameServer.makeUpdateRequest(namePrefix + 0, String.format(updateValue, i)));
         Thread.sleep(2000);
       }
-      client.sendRequest(client.makeDeleteNameRequest(namePrefix + 0, initValue));
-      client.messenger.stop();
+      localNameServer.sendRequest(localNameServer.makeDeleteNameRequest(namePrefix + 0, initValue));
+      localNameServer.messenger.stop();
     } catch (IOException ioe) {
       ioe.printStackTrace();
     } catch (JSONException je) {
@@ -175,6 +191,6 @@ public class ReconfigurableClient<NodeIDType> {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-
+    System.exit(0);
   }
 }

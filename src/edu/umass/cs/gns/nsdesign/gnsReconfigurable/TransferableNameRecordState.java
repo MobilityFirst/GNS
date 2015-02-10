@@ -20,9 +20,14 @@ public class TransferableNameRecordState {
   }
 
   public TransferableNameRecordState(String state) throws JSONException {
-    int ttlIndex = state.indexOf(":");
-    this.ttl = Integer.parseInt(state.substring(0, ttlIndex));
-    this.valuesMap = new ValuesMap(new JSONObject(state.substring(ttlIndex + 1)));
+    if (state != null) {
+      int ttlIndex = state.indexOf(":");
+      this.ttl = Integer.parseInt(state.substring(0, ttlIndex));
+      this.valuesMap = new ValuesMap(new JSONObject(state.substring(ttlIndex + 1)));
+    } else {
+      this.ttl = 0;
+      this.valuesMap = new ValuesMap();
+    }
   }
 
   @Override

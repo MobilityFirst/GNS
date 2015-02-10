@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
@@ -21,7 +22,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
+public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket implements InterfaceRequest, InterfaceReconfigurableRequest {
 
   private final static String REQ_ID = "reqID";
 
@@ -65,12 +66,13 @@ public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket implements I
    * @param primarySender
    * @param activeReceiver
    * @param version
-   * @param type1
+   * @param type
    */
-  public OldActiveSetStopPacket(String name, int requestID, NodeIDType primarySender, NodeIDType activeReceiver, short version, PacketType type1) {
+  public OldActiveSetStopPacket(String name, int requestID, NodeIDType primarySender, NodeIDType activeReceiver, 
+          short version, PacketType type) {
     this.name = name;
     this.requestID = requestID;
-    this.type = type1;
+    this.type = type;
     this.primarySender = primarySender;
     this.activeReceiver = activeReceiver;
     this.version = version;
@@ -146,5 +148,15 @@ public class OldActiveSetStopPacket<NodeIDType> extends BasicPacket implements I
   @Override
   public String getServiceName() {
     return this.name;
+  }
+
+  @Override
+  public int getEpochNumber() {
+    return this.version;
+  }
+
+  @Override
+  public boolean isStop() {
+    return true;
   }
 }
