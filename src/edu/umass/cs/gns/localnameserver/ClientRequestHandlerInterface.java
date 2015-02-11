@@ -46,13 +46,6 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
   public GNSNodeConfig<NodeIDType> getGnsNodeConfig();
   
   /**
-   * Returns the ping manager.
-   * 
-   * @return 
-   */
-  public PingManager<NodeIDType> getPingManager();
-  
-  /**
    * Returns that set of parameters used to control the handlers behavior.
    * 
    * @return 

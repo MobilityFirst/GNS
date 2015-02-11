@@ -82,8 +82,6 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
   private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
-  
-  private final PingManager<NodeIDType> pingManager;
 
   private final Random random;
 
@@ -97,8 +95,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   long receivedRequests = 0;
 
-  public BasicClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
-          PingManager<NodeIDType> pingManager, RequestHandlerParameters parameters) throws IOException {
+  public BasicClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, 
+          GNSNodeConfig<NodeIDType> gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
     this.localNameServer = localNameServer;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
@@ -109,7 +107,6 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
     this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
     this.tcpTransport = initTransport();
-    this.pingManager = pingManager;
   }
 
   @SuppressWarnings("unchecked") // calls a static method
@@ -140,10 +137,6 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public InetSocketAddress getNodeAddress() {
     return nodeAddress;
-  }
-
-  public PingManager<NodeIDType> getPingManager() {
-    return pingManager;
   }
 
   @Override

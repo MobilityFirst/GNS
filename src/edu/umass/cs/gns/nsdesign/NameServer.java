@@ -50,7 +50,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
 
   private ReplicaController<NodeIDType> replicaController;
 
-  private NSListenerAdmin admin;
+  private NSListenerAdmin nsListenerAdmin;
 
   private GnsReconfigurableInterface<NodeIDType> gnsReconfigurable;
 
@@ -132,8 +132,8 @@ public class NameServer<NodeIDType> implements Shutdownable {
     GNS.getLogger().info(nodeID.toString() + " Replica controller coordinator initialized");
 
     // start the NSListenerAdmin thread
-    admin = new NSListenerAdmin(gnsReconfigurable, appCoordinator, replicaController, replicaControllerCoordinator, gnsNodeConfig);
-    admin.start();
+    nsListenerAdmin = new NSListenerAdmin(gnsReconfigurable, appCoordinator, replicaController, replicaControllerCoordinator, gnsNodeConfig);
+    nsListenerAdmin.start();
 
     GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
   }
@@ -176,7 +176,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
     activeReplica.shutdown();
     replicaControllerCoordinator.shutdown();
     replicaController.shutdown();
-    admin.shutdown();
+    nsListenerAdmin.shutdown();
     mongoRecords.close();
 
   }

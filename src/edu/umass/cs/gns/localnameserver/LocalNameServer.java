@@ -32,39 +32,18 @@ import java.net.InetSocketAddress;
 public class LocalNameServer<NodeIDType> implements Shutdownable {
 
   /**
-   * Implements handling of client requests, comms and caching.
-   */
-  private ClientRequestHandlerInterface<NodeIDType> requestHandler;
-
-  /**
-   * A local name server forwards the final response for all requests to intercessor.
+   * Handles the client support processing for the local name server.
    */
   private Intercessor<NodeIDType> intercessor;
   
   /**
-   * Retrieves the Intercessor.
-   * 
-   * @return 
+   * Handles administrative client support for the local name server.
    */
-  public Intercessor<NodeIDType> getIntercessor() {
-    return intercessor;
-  }
-  
   private Admintercessor<NodeIDType> admintercessor;
-  
-  /**
-   * Retrieves the Admintercessor.
-   * 
-   * @return 
-   */
-  public Admintercessor<NodeIDType> getAdmintercessor() {
-    return admintercessor;
-  }
 
   /**
-   * Ping manager object for pinging other nodes and updating ping latencies in
+   * Ping manager object for pinging other nodes and updating ping latencies.
    */
-  // this one is static because it has a get method that is static
   private PingManager<NodeIDType> pingManager;
 
   /**
@@ -82,7 +61,10 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
    */
   private DnsTranslator dnsTranslator;
   
-  private LNSListenerAdmin lnsListenerAdmin;
+  /**
+   * We also keep a pointer to the lnsListenerAdmin so we can shut it down.
+   */
+  private LNSListenerAdmin<NodeIDType> lnsListenerAdmin;
  
   /**
    * Constructs a local name server and assigns it a node id.
@@ -91,7 +73,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
    */
   public LocalNameServer(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig) throws IOException, InterruptedException {
     System.out.println("Log level: " + GNS.getLogger().getLevel().getName());
-    // keep a copy of this so we can shut it down later
+    // Keep a copy of this so we can shut it down later
     this.gnsNodeConfig = gnsNodeConfig;
     GNS.getLogger().info("GNS Version: " + GNS.readBuildVersion());
     RequestHandlerParameters parameters = new RequestHandlerParameters(StartLocalNameServer.debuggingEnabled,
@@ -108,7 +90,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    this.requestHandler = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, pingManager, parameters);
+    ClientRequestHandlerInterface<NodeIDType> requestHandler = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, parameters);
 
     this.intercessor = new Intercessor<NodeIDType>(requestHandler);
     
@@ -127,7 +109,10 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     }
 
     // After starting PingManager because it accesses PingManager.
-    (this.lnsListenerAdmin = new LNSListenerAdmin(requestHandler)).start();
+    (this.lnsListenerAdmin = new LNSListenerAdmin<NodeIDType>(requestHandler, pingManager)).start();
+    
+    // The Admintercessor needs to use the LNSListenerAdmin;
+    this.admintercessor.setListenerAdmin(lnsListenerAdmin);
 
     if (parameters.getReplicationFramework() == ReplicationFrameworkType.LOCATION) {
       new NameServerVoteThread<NodeIDType>(StartLocalNameServer.voteIntervalMillis, requestHandler).start();
@@ -178,6 +163,24 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     if (lnsListenerAdmin != null) {
       lnsListenerAdmin.shutdown();
     }
+  }
+  
+   /**
+   * Retrieves the Intercessor.
+   * 
+   * @return 
+   */
+  public Intercessor<NodeIDType> getIntercessor() {
+    return intercessor;
+  }
+  
+   /**
+   * Retrieves the Admintercessor.
+   * 
+   * @return 
+   */
+  public Admintercessor<NodeIDType> getAdmintercessor() {
+    return admintercessor;
   }
 
 }

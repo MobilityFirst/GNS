@@ -63,6 +63,20 @@ public class Admintercessor<NodeIDType> {
    * This is where the final dump response results are put once we see the sentinel packet.
    */
   private ConcurrentMap<Integer, Map<NodeIDType, TreeSet<NameRecord>>> dumpResult;
+  
+  /**
+   * 
+   */
+  LNSListenerAdmin listenerAdmin = null;
+
+  /**
+   * Sets the listener admin.
+   * 
+   * @param listenerAdmin 
+   */
+  public void setListenerAdmin(LNSListenerAdmin listenerAdmin) {
+    this.listenerAdmin = listenerAdmin;
+  }
 
   {
     randomID = new Random();
@@ -459,7 +473,9 @@ public class Admintercessor<NodeIDType> {
   }
 
   private void sendAdminPacket(JSONObject json, ClientRequestHandlerInterface<NodeIDType> handler) throws IOException {
-    LNSListenerAdmin.handlePacket(json, null, handler);
+    if (listenerAdmin != null) {
+      listenerAdmin.handlePacket(json, null, handler);
+    }
   }
 
   private int nextDumpRequestID() {

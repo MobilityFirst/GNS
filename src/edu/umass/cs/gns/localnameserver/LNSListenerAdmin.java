@@ -9,6 +9,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,19 +28,25 @@ import java.util.logging.Level;
  *
  * @author Westy
  */
-@SuppressWarnings("unchecked")
-public class LNSListenerAdmin extends Thread implements Shutdownable {
+public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable {
 
   /**
-   * Socket over which active name server request arrive *
+   * Socket over which active name server request arrive. *
    */
   private ServerSocket serverSocket;
   /**
    * Keeps track of how many responses are outstanding for a request *
    */
-  private static Map<Integer, Integer> replicationMap;
-  
-  private ClientRequestHandlerInterface handler;
+  private final Map<Integer, Integer> replicationMap;
+
+  private final ClientRequestHandlerInterface<NodeIDType> handler;
+
+  /**
+   *
+   * The PingManager is here because one of the admin functions is to allow is to display
+   * latencies.
+   */
+  private final PingManager<NodeIDType> pingManager;
 
   /**
    *
@@ -47,11 +54,12 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
    *
    * @throws IOException
    */
-  public LNSListenerAdmin(ClientRequestHandlerInterface handler) throws IOException {
+  public LNSListenerAdmin(ClientRequestHandlerInterface<NodeIDType> handler, PingManager<NodeIDType> pingManager) throws IOException {
     super("ListenerAdmin");
     this.serverSocket = new ServerSocket(GNS.DEFAULT_LNS_ADMIN_PORT);
-    replicationMap = new HashMap<Integer, Integer>();
+    replicationMap = new HashMap<>();
     this.handler = handler;
+    this.pingManager = pingManager;
   }
 
   /**
@@ -84,7 +92,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
     }
   }
 
-  public static void handlePacket(JSONObject incomingJSON, Socket incomingSocket, ClientRequestHandlerInterface handler) {
+  public void handlePacket(JSONObject incomingJSON, Socket incomingSocket, ClientRequestHandlerInterface<NodeIDType> handler) {
     try {
       switch (Packet.getPacketType(incomingJSON)) {
         case DUMP_REQUEST:
@@ -94,7 +102,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             int id = dumpRequestPacket.getId();
             GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
             JSONObject json = dumpRequestPacket.toJSONObject();
-            Set<Object> serverIds = handler.getGnsNodeConfig().getNodeIDs();
+            Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
             Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT, null);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
@@ -125,7 +133,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + handler.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              Set<Object> serverIds = handler.getGnsNodeConfig().getNodeIDs();
+              Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT, null);
               // clear the cache
               handler.invalidateCache();
@@ -146,14 +154,14 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               if (node == null || handler.getGnsNodeConfig().getNodeIDs().contains(node)) {
                 if (node == null) {
                   jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", handler.getPingManager().tableToString(null));
+                  jsonResponse.put("PINGTABLE", pingManager.tableToString(null));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 } else {
-                incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
-                //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
-                Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
+                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                  //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
+                  Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
@@ -164,23 +172,23 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
               }
               break;
             case PINGVALUE:
-              String node1 = new String(incomingPacket.getArgument());
-              String node2 = new String(incomingPacket.getArgument2());
+              NodeIDType node1 = (NodeIDType) new String(incomingPacket.getArgument());
+              NodeIDType node2 = (NodeIDType) new String(incomingPacket.getArgument2());
               // null means return the LNS data
               if (node1 == null || handler.getGnsNodeConfig().nodeExists(node1)
                       && handler.getGnsNodeConfig().nodeExists(node2)) {
                 if (node1 == null) {
                   // handle it here
                   jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGVALUE", handler.getPingManager().nodeAverage(node2));
+                  jsonResponse.put("PINGVALUE", pingManager.nodeAverage(node2));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 } else {
-                // send it to the server that can handle it
-                incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
-                //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
-                Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
+                  // send it to the server that can handle it
+                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                  //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
+                  Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
@@ -225,7 +233,7 @@ public class LNSListenerAdmin extends Thread implements Shutdownable {
     }
   }
 
-  private static void returnResponsePacketToSender(InetSocketAddress address, AdminResponsePacket packet,
+  private void returnResponsePacketToSender(InetSocketAddress address, AdminResponsePacket packet,
           ClientRequestHandlerInterface handler) throws IOException, JSONException {
     if (address == null) {
       // it came from our client

@@ -38,7 +38,7 @@ import java.util.logging.Level;
  * A separate thread that runs in the NameServer that handles administrative (AKA non-data related, non-user)
  * type operations. All of the things in here are for server administration and debugging.
  */
-@SuppressWarnings("unchecked") //FIXME: Either convert to generics or rewrite to use Nio?
+@SuppressWarnings("unchecked")
 public class NSListenerAdmin extends Thread implements Shutdownable{
 
   /**
