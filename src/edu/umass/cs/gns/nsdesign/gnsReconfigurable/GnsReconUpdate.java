@@ -34,7 +34,7 @@ public class GnsReconUpdate {
 
   /**
    * Executes the local update in response to an UpdatePacket.
-   * 
+   *
    * @param updatePacket
    * @param replica
    * @param noCoordinationState
@@ -45,13 +45,15 @@ public class GnsReconUpdate {
    * @throws SignatureException
    * @throws JSONException
    * @throws IOException
-   * @throws FailedDBOperationException 
+   * @throws FailedDBOperationException
    */
   public static void executeUpdateLocal(UpdatePacket updatePacket, GnsApplicationInterface replica,
           boolean noCoordinationState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("Processing UPDATE: " + updatePacket);
+      GNS.getLogger().info("Processing UPDATE with " + " noCoordinationState= " + noCoordinationState + ""
+              + " recovery= " + recovery +  " packet: " + updatePacket);
+
     }
 
     if (noCoordinationState) {
@@ -71,7 +73,7 @@ public class GnsReconUpdate {
     NSResponseCode errorCode = NSResponseCode.NO_ERROR;
     // FIXME : handle ACL checks for full JSON user updates
     if (writer != null && field != null) { // writer will be null for internal system reads
-      errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST, 
+      errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST,
               replica, updatePacket.getLnsAddress());
     }
     // return an error packet if one of the checks doesn't pass
@@ -110,9 +112,9 @@ public class GnsReconUpdate {
     // Apply update
     if (Config.debuggingEnabled) {
       if (field != null) {
-      GNS.getLogger().fine("****** field=" + field + " operation= " + updatePacket.getOperation().toString() +
-              " value= " + updatePacket.getUpdateValue() +
-              " name Record=" + nameRecord.toString());
+        GNS.getLogger().info("****** field=" + field + " operation= " + updatePacket.getOperation().toString()
+                + " value= " + updatePacket.getUpdateValue()
+                + " name Record=" + nameRecord.toString());
       }
     }
     boolean result;
@@ -145,7 +147,7 @@ public class GnsReconUpdate {
 
       } else {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("Update applied" + updatePacket);
+          GNS.getLogger().info("Update applied" + updatePacket);
         }
 
         // FIXME: Abhigyan: commented this because we are using lns votes for this calculation.
@@ -155,11 +157,12 @@ public class GnsReconUpdate {
           ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
-          if (Config.debuggingEnabled) {
-            GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
-          }
+
           if (!recovery) {
             replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
+            if (Config.debuggingEnabled) {
+              GNS.getLogger().info("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
+            }
           }
         }
       }

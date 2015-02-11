@@ -71,7 +71,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     this.nodeConfig = nodeConfig;
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP &&&&&&& Created " + nameRecordDB);
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Created " + nameRecordDB);
     }
     this.nioServer = nioServer;
   }
@@ -85,7 +85,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("&&&&&&& APP &&&&&&& Handling " + packetType.name() + " packet: " + json.toString());
+        GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name() + " packet: " + json.toString());
       }
       switch (packetType) {
         case DNS:
@@ -200,7 +200,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       }
       TransferableNameRecordState state = new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("&&&&&&& APP &&&&&&& Getting state: " + state.toString());
+        GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Getting state: " + state.toString());
       }
       return state.toString();
     } catch (RecordNotFoundException e) {
@@ -218,7 +218,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   @Override
   public boolean updateState(String name, String state) {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP &&&&&&& Updating state: " + state);
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating state: " + state);
     }
     boolean stateUpdated = false;
     try {
@@ -283,7 +283,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   @Override
   public void putInitialState(String name, int epoch, String state) {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP &&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
     }
     TransferableNameRecordState state1;
     try {
@@ -302,7 +302,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
           NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, state1.valuesMap, state1.ttl);
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
           if (Config.debuggingEnabled) {
-            GNS.getLogger().info("&&&&&&& APP &&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
+            GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
           }
         } catch (RecordExistsException e) {
           NameRecord nameRecord;
@@ -335,7 +335,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   @Override
   public boolean deleteFinalState(String name, int epoch) {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP &&&&&&& Deleting name " + name + " version " + epoch);
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
     }
     try {
       NameRecord.removeNameRecord(nameRecordDB, name);
