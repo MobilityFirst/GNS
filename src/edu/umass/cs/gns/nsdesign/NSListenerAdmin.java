@@ -10,16 +10,13 @@ import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
-import edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
@@ -31,7 +28,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.Set;
 import java.util.logging.Level;
 
 /**
@@ -93,28 +89,28 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
         JSONObject incomingJSON = Packet.getJSONObjectFrame(socket);
         switch (Packet.getPacketType(incomingJSON)) {
 
-          case ACTIVE_NAMESERVER_INFO:
-
-            ActiveNameServerInfoPacket activeNSInfoPacket = new ActiveNameServerInfoPacket(incomingJSON, gnsNodeConfig);
-
-            GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
-
-            ReplicaControllerRecord nameRecordPrimary = null;
-            try {
-              nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(replicaController.getDB(),
-                      activeNSInfoPacket.getName(), ReplicaControllerRecord.ACTIVE_NAMESERVERS);
-            } catch (RecordNotFoundException e) {
-              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-              break;
-            }
-
-            try {
-              sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest, nameRecordPrimary.getActiveNameservers());
-            } catch (FieldNotFoundException e) {
-              GNS.getLogger().severe("Field not found exception. " + e.getMessage());
-              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-            }
-            break;
+//          case ACTIVE_NAMESERVER_INFO:
+//
+//            ActiveNameServerInfoPacket activeNSInfoPacket = new ActiveNameServerInfoPacket(incomingJSON, gnsNodeConfig);
+//
+//            GNS.getLogger().fine("NSListenrAdmin:: ListenerActiveNameServerInfo: Received RequestNum:" + (++numRequest) + " --> " + incomingJSON.toString());
+//
+//            ReplicaControllerRecord nameRecordPrimary = null;
+//            try {
+//              nameRecordPrimary = ReplicaControllerRecord.getNameRecordPrimaryMultiField(replicaController.getDB(),
+//                      activeNSInfoPacket.getName(), ReplicaControllerRecord.ACTIVE_NAMESERVERS);
+//            } catch (RecordNotFoundException e) {
+//              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//              break;
+//            }
+//
+//            try {
+//              sendactiveNameServerInfo(activeNSInfoPacket, socket, numRequest, nameRecordPrimary.getActiveNameservers());
+//            } catch (FieldNotFoundException e) {
+//              GNS.getLogger().severe("Field not found exception. " + e.getMessage());
+//              e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//            }
+//            break;
 
           case DUMP_REQUEST:
 
@@ -271,13 +267,13 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
    * @throws IOException
    * @throws JSONException
    */
-  private void sendactiveNameServerInfo(ActiveNameServerInfoPacket activeNSInfoPacket,
-          Socket socket, int numRequest, Set<Object> activeNameServers) throws IOException, JSONException {
-    activeNSInfoPacket.setActiveNameServers(activeNameServers);
-    activeNSInfoPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
-    Packet.sendTCPPacket(activeNSInfoPacket.toJSONObject(), socket);
-    GNS.getLogger().fine("NSListenrAdmin: Response RequestNum:" + numRequest + " --> " + activeNSInfoPacket.toString());
-  }
+//  private void sendactiveNameServerInfo(ActiveNameServerInfoPacket activeNSInfoPacket,
+//          Socket socket, int numRequest, Set<Object> activeNameServers) throws IOException, JSONException {
+//    activeNSInfoPacket.setActiveNameServers(activeNameServers);
+//    activeNSInfoPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
+//    Packet.sendTCPPacket(activeNSInfoPacket.toJSONObject(), socket);
+//    GNS.getLogger().fine("NSListenrAdmin: Response RequestNum:" + numRequest + " --> " + activeNSInfoPacket.toString());
+//  }
 
   /**
    * Closes the server socket in process of shutting down name server.

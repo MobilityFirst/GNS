@@ -50,8 +50,11 @@ public class RequestHandlerParameters {
   /**
    * The replicationFrameworkType we are using.
    */
-  private final ReplicationFrameworkType replicationFramework;
+  private ReplicationFrameworkType replicationFramework = ReplicationFrameworkType.LOCATION;
 
+  public RequestHandlerParameters() {
+  }
+ 
   public RequestHandlerParameters(boolean debugMode, boolean experimentMode, boolean emulatePingLatencies, double variation, 
           boolean adaptiveTimeout, double outputSampleRate, int queryTimeout, int maxQueryWaitTime, int cacheSize, 
           boolean loadDependentRedirection, ReplicationFrameworkType replicationFramework) {

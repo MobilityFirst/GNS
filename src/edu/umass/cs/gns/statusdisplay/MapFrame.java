@@ -190,7 +190,7 @@ public class MapFrame extends JFrame implements JMapViewerEventListener, UpdateL
 
 
 
-    packetGraphics.put(Packet.PacketType.ACTIVE_NAMESERVER_INFO, new PacketGraphic(Colors.DarkOrange, 1.0));
+    //packetGraphics.put(Packet.PacketType.ACTIVE_NAMESERVER_INFO, new PacketGraphic(Colors.DarkOrange, 1.0));
 
     //packetGraphics.put(Packet.PacketType.DUMP_REQUEST, new PacketGraphic(Colors.Black, 1.0));
     //packetGraphics.put(Packet.PacketType.STATUS, new PacketGraphic(Colors.Black, 1.0));

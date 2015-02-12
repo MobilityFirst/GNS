@@ -52,10 +52,19 @@ public class NameServer<NodeIDType> implements Shutdownable {
 
   private NSListenerAdmin nsListenerAdmin;
 
+  /**
+   * This one is just kept around so we can shut it down at the end.
+   */
   private GnsReconfigurableInterface<NodeIDType> gnsReconfigurable;
 
+  /**
+   * This one is just kept around so we can shut it down at the end.
+   */
   private InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
 
+  /**
+   * This one is just kept around so we can shut it down at the end.
+   */
   private MongoRecords<NodeIDType> mongoRecords;
 
   /**
@@ -72,7 +81,7 @@ public class NameServer<NodeIDType> implements Shutdownable {
   }
 
   /**
-   * This methods actually does the work. It starts a listening socket at the name server for incoming messages,
+   * This method actually does the work. It starts a listening socket at the name server for incoming messages,
    * and creates <code>GnsReconfigurable</code> and <code>ReplicaController</code> objects.
    *
    * @throws IOException
@@ -153,10 +162,10 @@ public class NameServer<NodeIDType> implements Shutdownable {
   public ScheduledThreadPoolExecutor getExecutorService() {
     return executorService;
   }
-
-  public GnsReconfigurableInterface getGnsReconfigurable() {
-    return gnsReconfigurable;
-  }
+//
+//  public GnsReconfigurableInterface getGnsReconfigurable() {
+//    return gnsReconfigurable;
+//  }
 
   /**
    * * Shutdown a name server by closing different components in.

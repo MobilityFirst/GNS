@@ -259,8 +259,8 @@ public class Packet {
           return new edu.umass.cs.gns.nsdesign.packet.NameServerSelectionPacket(json, unstringer);
       //NAME_RECORD_STATS_REQUEST(81),
         //NAME_RECORD_STATS_RESPONSE(82),
-        case ACTIVE_NAMESERVER_INFO:
-          return new edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket(json, unstringer);
+//        case ACTIVE_NAMESERVER_INFO:
+//          return new edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket(json, unstringer);
         // paxos
         case PAXOS_PACKET:
           return null;

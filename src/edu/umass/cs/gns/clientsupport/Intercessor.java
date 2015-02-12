@@ -49,7 +49,7 @@ import java.util.ArrayList;
  * @author westy
  */
 public class Intercessor<NodeIDType> implements IntercessorInterface {
-  
+
   /* Used by the wait/notify calls */
   private final Object monitor = new Object();
   /* Used by update confirmation */
@@ -68,13 +68,33 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
 
   public boolean debuggingEnabled = false;
 
-   {
+  {
     randomID = new Random();
     queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
     queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
+  
+//  // NEW CODE
+//  private AbstractPacketDemultiplexer lnsPacketDemultiplexer;
+//  private InterfaceNodeConfig nodeConfig;
+//  private InetSocketAddress nodeAddress;
+//  private ClientRequestHandlerInterface<NodeIDType> handler;
+// 
+//
 
+//  public Intercessor(AbstractPacketDemultiplexer demultiplexer, InterfaceNodeConfig nodeConfig, InetSocketAddress nodeAddress) {
+//    this.handler = handler;
+//    this.nodeConfig = nodeConfig;
+//    this.nodeAddress = nodeAddress;
+//    this.lnsPacketDemultiplexer = demultiplexer;
+//    //lnsPacketDemultiplexer = new LNSPacketDemultiplexer<NodeIDType>(handler);
+//    if (debuggingEnabled) {
+//      GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.clientsupport.Intercessor *********");
+//    }
+//  }
+
+  
   private LNSPacketDemultiplexer<NodeIDType> lnsPacketDemultiplexer;
   private ClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -85,7 +105,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.clientsupport.Intercessor *********");
     }
   }
-  
+
   /**
    * This is invoked to receive packets. It updates the appropriate map
    * for the id and notifies the appropriate monitor to wake the
@@ -100,7 +120,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
         case UPDATE_CONFIRM:
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:
-          ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json, handler.getGnsNodeConfig());
+          ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json,
+                  handler.getGnsNodeConfig());
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           if (debuggingEnabled) {
@@ -166,28 +187,28 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   public QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
   }
-  
+
   /**
    * Sends a query to the Nameserver for multiple fields in a guid.
    * Fields is a list if strings naming the fields. Fields can us dot notation to indicate subfields.
    * Return format should be one of ColumnFieldType.USER_JSON signifying new JSONObject format or
    * ColumnFieldType.LIST_STRING signifying old JSONArray of strings format.
-   * 
+   *
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
-   * 
+   *
    * @param name
    * @param fields
    * @param reader
    * @param signature
    * @param message
    * @param returnFormat
-   * @return 
+   * @return
    */
   public QueryResult sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
   }
-  
-  private QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {  
+
+  private QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending query: " + name + " " + field);
     }
@@ -239,9 +260,10 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
 
   /**
    * This version bypasses any signature checks and is meant for "system" use.
+   *
    * @param name
    * @param field
-   * @return 
+   * @return
    */
   public QueryResult sendQueryBypassingAuthentication(String name, String field) {
     return sendQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
@@ -260,7 +282,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().info("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value, handler.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value,
+            handler.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -282,6 +305,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
 
   /**
    * Sends an RemoveRecord packet to the Local Name Server.
+   *
    * @param name
    * @return
    */
@@ -290,7 +314,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<NodeIDType>(null, id, name, handler.getNodeAddress());
+    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<NodeIDType>(null, id, name,
+            handler.getNodeAddress());
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);

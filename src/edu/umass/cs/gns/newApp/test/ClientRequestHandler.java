@@ -4,8 +4,9 @@
  * All Rights Reserved 
  *
  */
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.newApp.test;
 
+import edu.umass.cs.gns.localnameserver.*;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.clientsupport.Admintercessor;
@@ -53,7 +54,7 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
+public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
 
   private final LocalNameServer<NodeIDType> localNameServer;
   private final RequestHandlerParameters parameters;
@@ -94,8 +95,9 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   long receivedRequests = 0;
 
-  public BasicClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, 
-          GNSNodeConfig<NodeIDType> gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
+  public ClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, 
+          GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport tcpTransport, 
+          RequestHandlerParameters parameters) throws IOException {
     this.localNameServer = localNameServer;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
@@ -105,19 +107,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     this.random = new Random(System.currentTimeMillis());
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
     this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
-    this.tcpTransport = initTransport();
-  }
-
-  @SuppressWarnings("unchecked") // calls a static method
-  private InterfaceJSONNIOTransport<NodeIDType> initTransport() throws IOException {
-    GNS.getLogger().info("Starting LNS listener on " + nodeAddress);
-    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
-    if (parameters.isEmulatePingLatencies()) {
-      JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
-    }
-    new Thread(gnsNiot).start();
-    // id is null here because we're the LNS
-    return new GnsMessenger(null, gnsNiot, executorService);
+    this.tcpTransport = tcpTransport;
+    //this.tcpTransport = initTransport();
   }
 
   /**

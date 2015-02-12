@@ -90,7 +90,8 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    ClientRequestHandlerInterface<NodeIDType> requestHandler = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, parameters);
+    ClientRequestHandlerInterface<NodeIDType> requestHandler 
+            = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, parameters);
 
     this.intercessor = new Intercessor<NodeIDType>(requestHandler);
     
