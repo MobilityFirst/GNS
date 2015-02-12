@@ -25,10 +25,13 @@ import java.security.NoSuchAlgorithmException;
  */
 public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
-  ClientRequestHandlerInterface<NodeIDType> handler;
+  private ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public LNSPacketDemultiplexer(ClientRequestHandlerInterface<NodeIDType> handler) {
+  public void setHandler(ClientRequestHandlerInterface<NodeIDType> handler) {
     this.handler = handler;
+  }
+ 
+  public LNSPacketDemultiplexer() {
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.ADD_RECORD);
@@ -54,6 +57,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
    */
   @Override
   public boolean handleJSONObject(JSONObject json) {
+    assert handler != null;
     handler.updateRequestStatistics();
     if (StartLocalNameServer.debuggingEnabled) {
       GNS.getLogger().fine("******* Incoming packet: " + json);

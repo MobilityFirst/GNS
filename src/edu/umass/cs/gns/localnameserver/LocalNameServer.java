@@ -17,7 +17,7 @@ import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.test.StartExperiment;
+//import edu.umass.cs.gns.test.StartExperiment;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.Inet4Address;
@@ -89,11 +89,15 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
             StartLocalNameServer.replicationFramework
     );
 
+    LNSPacketDemultiplexer demultiplexer = new LNSPacketDemultiplexer();
+    
     GNS.getLogger().info("Parameter values: " + parameters.toString());
     ClientRequestHandlerInterface<NodeIDType> requestHandler 
-            = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, parameters);
+            = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, demultiplexer, parameters);
+    // Nice circular data structure...
+    demultiplexer.setHandler(requestHandler);
 
-    this.intercessor = new Intercessor<NodeIDType>(requestHandler);
+    this.intercessor = new Intercessor<NodeIDType>(requestHandler, demultiplexer);
     
     this.admintercessor = new Admintercessor<NodeIDType>();
    
@@ -119,11 +123,11 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
       new NameServerVoteThread<NodeIDType>(StartLocalNameServer.voteIntervalMillis, requestHandler).start();
     }
 
-    if (parameters.isExperimentMode()) {
-      GNS.getLogger().info("Starting experiment ..... ");
-      new StartExperiment<NodeIDType>().startMyTest(null, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
-              requestHandler);
-    }
+//    if (parameters.isExperimentMode()) {
+//      GNS.getLogger().info("Starting experiment ..... ");
+//      new StartExperiment<NodeIDType>().startMyTest(null, StartLocalNameServer.workloadFile, StartLocalNameServer.updateTraceFile,
+//              requestHandler);
+//    }
 
     try {
       if (StartLocalNameServer.dnsGnsOnly) {

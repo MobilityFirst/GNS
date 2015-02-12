@@ -95,7 +95,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   long receivedRequests = 0;
 
   public BasicClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, 
-          GNSNodeConfig<NodeIDType> gnsNodeConfig, RequestHandlerParameters parameters) throws IOException {
+          GNSNodeConfig<NodeIDType> gnsNodeConfig, LNSPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) throws IOException {
     this.localNameServer = localNameServer;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
@@ -105,13 +105,13 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     this.random = new Random(System.currentTimeMillis());
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
     this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
-    this.tcpTransport = initTransport();
+    this.tcpTransport = initTransport(demultiplexer);
   }
 
   @SuppressWarnings("unchecked") // calls a static method
-  private InterfaceJSONNIOTransport<NodeIDType> initTransport() throws IOException {
+  private InterfaceJSONNIOTransport<NodeIDType> initTransport(LNSPacketDemultiplexer demultiplexer) throws IOException {
     GNS.getLogger().info("Starting LNS listener on " + nodeAddress);
-    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(new LNSPacketDemultiplexer(this)));
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(demultiplexer));
     if (parameters.isEmulatePingLatencies()) {
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
     }

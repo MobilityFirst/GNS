@@ -98,9 +98,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   private LNSPacketDemultiplexer<NodeIDType> lnsPacketDemultiplexer;
   private ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public Intercessor(ClientRequestHandlerInterface<NodeIDType> handler) {
+  public Intercessor(ClientRequestHandlerInterface<NodeIDType> handler, LNSPacketDemultiplexer<NodeIDType> lnsPacketDemultiplexer) {
     this.handler = handler;
-    lnsPacketDemultiplexer = new LNSPacketDemultiplexer<NodeIDType>(handler);
+    this.lnsPacketDemultiplexer = lnsPacketDemultiplexer;
     if (debuggingEnabled) {
       GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.clientsupport.Intercessor *********");
     }
