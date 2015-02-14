@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
@@ -134,21 +136,39 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
   public AddRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
-    if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD && 
-            Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("CREATING AddRecordPacket PACKET " + json);
+    }
+    if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD
+            && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
       throw new JSONException("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
     }
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("ONE CREATING AddRecordPacket PACKET " + json);
+    }
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("TWO CREATING AddRecordPacket PACKET " + json);
+    }
     this.requestID = json.getInt(REQUESTID);
     this.LNSRequestID = json.getInt(LNSREQID);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
+     if (Config.debuggingEnabled) {
+      GNS.getLogger().info("THREE CREATING AddRecordPacket PACKET " + json);
+    }
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
     this.ttl = json.getInt(TIME_TO_LIVE);
-    this.activeNameServers = json.has(ACTIVE_NAMESERVERS) ? 
-            unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
+     if (Config.debuggingEnabled) {
+      GNS.getLogger().info("FOUR CREATING AddRecordPacket PACKET " + json);
+    }
+    this.activeNameServers = json.has(ACTIVE_NAMESERVERS)
+            ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("FINISHED CREATING AddRecordPacket PACKET " + json);
+    }
   }
 
   /**
@@ -235,7 +255,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
   public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
     this.activeNameServers = activeNameServers;
   }
-  
+
   // For InterfaceRequest
   @Override
   public String getServiceName() {

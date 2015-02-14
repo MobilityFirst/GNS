@@ -86,7 +86,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
    * Based on the packet type it forwards to active replica or replica controller.
    *
    * @param json JSON object received by NIO package.
-   * @return 
+   * @return
    */
   @Override
   public boolean handleJSONObject(final JSONObject json) {
@@ -94,7 +94,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
     try {
       final Packet.PacketType type = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().fine("MsgType " + type + " Msg " + json);
+        GNS.getLogger().info("MsgType " + type + " Msg " + json);
       }
       nameServer.getExecutorService().submit(new Runnable() {
         @Override
@@ -110,7 +110,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
               case ACTIVE_ADD:
               case ACTIVE_REMOVE:
               case ACTIVE_COORDINATION:
-                // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
+              // New addition to NSs to support update requests sent back to LNS. This is where the update confirmation
               // coming back from the LNS is handled.
               case UPDATE_CONFIRM:
               case ADD_CONFIRM:
@@ -118,6 +118,8 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
                 ActiveReplicaCoordinator appCoordinator = nameServer.getActiveReplicaCoordinator();
                 if (appCoordinator != null) {
                   appCoordinator.coordinateRequest(json);
+                } else {
+                  GNS.getLogger().severe("appCoordinator is null!");
                 }
                 break;
 
@@ -144,6 +146,8 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
                 ReplicaControllerCoordinator replicaController = nameServer.getReplicaControllerCoordinator();
                 if (replicaController != null) {
                   replicaController.coordinateRequest(json);
+                } else {
+                  GNS.getLogger().severe("replicaController is null!");
                 }
                 break;
 
@@ -157,6 +161,8 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
                 ActiveReplica activeReplica = nameServer.getActiveReplica();
                 if (activeReplica != null) {
                   activeReplica.handleIncomingPacket(json);
+                } else {
+                  GNS.getLogger().severe("activeReplica is null!");
                 }
                 break;
               default:

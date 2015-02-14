@@ -11,7 +11,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.gns.util.ConsistentHashing;
+//import edu.umass.cs.gns.util.ConsistentHashing;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -38,16 +38,16 @@ import org.json.JSONException;
  *
  * Also contains an implementation of the <code>Stringifiable</code> interface which allows
  * strings to be converted back to NodeIDTypes.
- * 
+ *
  * This also implements InterfaceReconfigurableNodeConfig which entails a separation of the activeReplica
- * and reconfigurator network ports. 
- * 
+ * and reconfigurator network ports.
+ *
  * The current implementation maintains three NodeIds for each node that is read from the hosts file.
- * A "top-level" id which is identical to the id read from the file, plus to additional ids. 
- * One for the activeReplica and one for the reconfigurator. See <code>NodeInfo</code>, 
- * <code>addHostInfo</code> and <code>readHostsFile</code> for the details on 
+ * A "top-level" id which is identical to the id read from the file, plus to additional ids.
+ * One for the activeReplica and one for the reconfigurator. See <code>NodeInfo</code>,
+ * <code>addHostInfo</code> and <code>readHostsFile</code> for the details on
  * how those are generated.
- * 
+ *
  * One caveat of the current implementation is that despite the use of NodeIDType throughout the code,
  * we only currently support String NodeIDTypes in this class.
  *
@@ -61,6 +61,14 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   private NodeIDType nodeID; // if this is null you should check isLocalNameServer; otherwise it might be invalid
   private boolean isLocalNameServer = false;
   private final String hostsFile;
+
+  // A hack for the transition. If set to true you'll just get
+  // node-1, node-2 instead of node-1_Reconfigurator and node-1_ActiveReplica
+  private boolean useOldCombinedNodeName = false;
+
+  public void setUseOldCombinedNodeName(boolean useOldCombinedNodeName) {
+    this.useOldCombinedNodeName = useOldCombinedNodeName;
+  }
 
   /**
    * Contains information about each name server. <Key = HostID, Value = NodeInfo>
@@ -138,11 +146,15 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    */
   @Override
   public Set<NodeIDType> getActiveReplicas() {
-    Set<NodeIDType> result = new HashSet<>();
-    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
-      result.add(hostInfo.getActiveReplicaID());
+    if (!useOldCombinedNodeName) {
+      Set<NodeIDType> result = new HashSet<>();
+      for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+        result.add(hostInfo.getActiveReplicaID());
+      }
+      return result;
+    } else {
+      return ImmutableSet.copyOf(hostInfoMapping.keySet());
     }
-    return result;
   }
 
   private NodeInfo<NodeIDType> getActiveReplicaInfo(NodeIDType id) {
@@ -161,11 +173,15 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    */
   @Override
   public Set<NodeIDType> getReconfigurators() {
-    Set<NodeIDType> result = new HashSet<>();
-    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
-      result.add(hostInfo.getReconfiguratorID());
+    if (!useOldCombinedNodeName) {
+      Set<NodeIDType> result = new HashSet<>();
+      for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+        result.add(hostInfo.getReconfiguratorID());
+      }
+      return result;
+    } else {
+      return ImmutableSet.copyOf(hostInfoMapping.keySet());
     }
-    return result;
   }
 
   private NodeInfo<NodeIDType> getReconfiguratorInfo(NodeIDType id) {
@@ -360,7 +376,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
       return null;
     }
     // If the local server is one of the server ids and not excluded return it.
-    if (serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
+    if (nodeID != null && serverIds.contains(nodeID) && excludeServers != null && !excludeServers.contains(nodeID)) {
       return nodeID;
     }
 
@@ -472,7 +488,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     // ok.. things are cool... actually update
     hostInfoMapping = newHostInfoMapping;
-    ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
+    //ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, getNodeIDs());
   }
 
   /**

@@ -24,7 +24,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.util.ConsistentHashing;
+//import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONArray;
@@ -847,7 +847,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     nameServerIDs.add("0");
     nameServerIDs.add("1");
     nameServerIDs.add("2");
-    ConsistentHashing.reInitialize(3, nameServerIDs);
+    //ConsistentHashing.reInitialize(3, nameServerIDs);
     MongoRecords instance = new MongoRecords(nodeID, -1);
     System.out.println("***ALL RECORDS***");
     instance.printAllEntries(DBNAMERECORD);

@@ -26,7 +26,8 @@ import java.util.TreeMap;
  *
  * @author Abhigyan
  */
-// FIXME: Use new one...
+// FIXME: Use new one..
+@Deprecated
 public class ConsistentHashing {
 
   private static int numReplicaControllers;

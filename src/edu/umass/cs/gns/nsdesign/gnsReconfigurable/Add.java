@@ -8,6 +8,7 @@ import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 
@@ -22,13 +23,17 @@ public class Add {
   public static void handleActiveAdd(AddRecordPacket addRecordPacket, GnsApplicationInterface gnsApp)
           throws JSONException, IOException, FailedDBOperationException {
 
-    if (Config.debuggingEnabled) GNS.getLogger().info("Add record at active replica. name = " + addRecordPacket.getName() +
-            " node id: " + gnsApp.getNodeID().toString());
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Add record at active replica. name = " + addRecordPacket.getName()
+              + " node id: " + gnsApp.getNodeID().toString());
+    }
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
 
     NameRecord nameRecord = new NameRecord(gnsApp.getDB(), addRecordPacket.getName(), Config.FIRST_VERSION,
-            valuesMap, addRecordPacket.getTTL());
+            valuesMap, addRecordPacket.getTTL(),
+            ((ConsistentReconfigurableNodeConfig) gnsApp.getGNSNodeConfig()).getReplicatedReconfigurators(addRecordPacket.getName()));
+
     try {
       NameRecord.addNameRecord(gnsApp.getDB(), nameRecord);
 

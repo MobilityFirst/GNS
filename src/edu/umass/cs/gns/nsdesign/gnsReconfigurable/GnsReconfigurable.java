@@ -19,10 +19,12 @@ import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.RetrievableDigest;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -63,7 +65,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   /**
    * Configuration for all nodes in GNS *
    */
-  private final GNSNodeConfig<NodeIDType> nodeConfig;
+  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 
   private PingManager<NodeIDType> pingManager;
 
@@ -77,12 +79,12 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
    * @param nioServer
    * @param mongoRecords
    */
-  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
+  public GnsReconfigurable(NodeIDType nodeID, GNSNodeConfig<NodeIDType> gnsNodeConfig,
           InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = nodeID;
 
-    this.nodeConfig = gnsNodeConfig;
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
 
     this.nioServer = nioServer;
 
@@ -112,7 +114,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   }
 
   @Override
-  public GNSNodeConfig<NodeIDType> getGNSNodeConfig() {
+  public InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig() {
     return nodeConfig;
   }
 
@@ -152,7 +154,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().finer("Handling " + packetType.name() + " packet: " + json.toString());
+        GNS.getLogger().info("Handling " + packetType.name() + " packet: " + json.toString());
       }
       switch (packetType) {
         case DNS:
@@ -178,7 +180,22 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
          * Packets sent from replica controller *
          */
         case ACTIVE_ADD: // sent when new name is added to GNS
-          AddRecordPacket<NodeIDType> addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("Calling handleActiveAdd with " + json);
+          }
+          AddRecordPacket<NodeIDType> addRecordPacket = null;
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("BEFORE CREATING PACKET " + json);
+          }
+          try {
+           addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
+          } catch (JSONException e) {
+            GNS.getLogger().severe("Problem creating AddRecordPacket: " + e);
+            break;
+          }
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("After packet calling handleActiveAdd with " + addRecordPacket.toString());
+          }
           Add.handleActiveAdd(addRecordPacket, this);
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
@@ -195,24 +212,9 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           return false;
       }
       executed = true;
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-    } catch (SignatureException e) {
-      e.printStackTrace();
-    } catch (InvalidKeySpecException e) {
-      e.printStackTrace();
-    } catch (InvalidKeyException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
-    } catch (FailedDBOperationException e) {
-      // all database operations throw this exception, therefore we keep throwing this exception upwards and catch this
-      // here.
-      // A database operation error would imply that the application hasn't been able to successfully execute
-      // the request. therefore, this method returns 'false', hoping that whoever calls handleDecision would retry
-      // the request.
+    } catch (JSONException | NoSuchAlgorithmException | SignatureException 
+            | InvalidKeySpecException | InvalidKeyException | IOException | FailedDBOperationException e) {
+      GNS.getLogger().severe("Problem handling packet: " + e);
       e.printStackTrace();
     }
     return executed;
@@ -299,7 +301,8 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
     while (true) {
       try {
         try {
-          NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl);
+          NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl,
+                  (Set<Object>) nodeConfig.getReplicatedReconfigurators(name));
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
           if (Config.debuggingEnabled) {
             GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);

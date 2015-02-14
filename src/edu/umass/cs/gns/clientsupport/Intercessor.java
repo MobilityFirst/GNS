@@ -10,6 +10,8 @@ import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.IntercessorInterface;
 import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
@@ -25,6 +27,7 @@ import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ValuesMap;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 /**
@@ -75,31 +78,16 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
   
-//  // NEW CODE
-//  private AbstractPacketDemultiplexer lnsPacketDemultiplexer;
-//  private InterfaceNodeConfig nodeConfig;
-//  private InetSocketAddress nodeAddress;
-//  private ClientRequestHandlerInterface<NodeIDType> handler;
-// 
-//
+  private AbstractPacketDemultiplexer lnsPacketDemultiplexer;
+  //private ClientRequestHandlerInterface<NodeIDType> handler;
+  private GNSNodeConfig nodeConfig;
+  private InetSocketAddress nodeAddress;
 
-//  public Intercessor(AbstractPacketDemultiplexer demultiplexer, InterfaceNodeConfig nodeConfig, InetSocketAddress nodeAddress) {
-//    this.handler = handler;
-//    this.nodeConfig = nodeConfig;
-//    this.nodeAddress = nodeAddress;
-//    this.lnsPacketDemultiplexer = demultiplexer;
-//    //lnsPacketDemultiplexer = new LNSPacketDemultiplexer<NodeIDType>(handler);
-//    if (debuggingEnabled) {
-//      GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.clientsupport.Intercessor *********");
-//    }
-//  }
-
-  
-  private LNSPacketDemultiplexer<NodeIDType> lnsPacketDemultiplexer;
-  private ClientRequestHandlerInterface<NodeIDType> handler;
-
-  public Intercessor(ClientRequestHandlerInterface<NodeIDType> handler, LNSPacketDemultiplexer<NodeIDType> lnsPacketDemultiplexer) {
-    this.handler = handler;
+  public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig nodeConfig,
+          AbstractPacketDemultiplexer lnsPacketDemultiplexer) {
+    //this.handler = handler;
+    this.nodeConfig = nodeConfig;
+    this.nodeAddress = nodeAddress;
     this.lnsPacketDemultiplexer = lnsPacketDemultiplexer;
     if (debuggingEnabled) {
       GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.clientsupport.Intercessor *********");
@@ -121,7 +109,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:
           ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json,
-                  handler.getGnsNodeConfig());
+                  nodeConfig);
           int id = packet.getRequestID();
           //Packet is a response and does not have a response error
           if (debuggingEnabled) {
@@ -133,7 +121,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
           }
           break;
         case DNS:
-          DNSPacket<NodeIDType> dnsResponsePacket = new DNSPacket<NodeIDType>(json, handler.getGnsNodeConfig());
+          DNSPacket<NodeIDType> dnsResponsePacket = new DNSPacket<NodeIDType>(json, nodeConfig);
           id = dnsResponsePacket.getQueryId();
           if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
             //Packet is a response and does not have a response error
@@ -159,7 +147,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
           }
           break;
         case SELECT_RESPONSE:
-          SelectHandler.processSelectResponsePackets(json, handler.getGnsNodeConfig());
+          SelectHandler.processSelectResponsePackets(json, nodeConfig);
           break;
       }
     } catch (JSONException e) {
@@ -283,7 +271,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       GNS.getLogger().info("Sending add: " + name + " / " + field + "->" + value);
     }
     AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value,
-            handler.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS);
+            nodeAddress, GNS.DEFAULT_TTL_SECONDS);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -315,7 +303,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       GNS.getLogger().fine("Sending remove: " + name);
     }
     RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<NodeIDType>(null, id, name,
-            handler.getNodeAddress());
+            nodeAddress);
     try {
       JSONObject json = pkt.toJSONObject();
       injectPacketIntoLNSQueue(json);
@@ -464,7 +452,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
             oldValue,
             argument,
             userJSON,
-            operation, handler.getNodeAddress(), GNS.DEFAULT_TTL_SECONDS,
+            operation, nodeAddress, GNS.DEFAULT_TTL_SECONDS,
             writer, signature, message);
     try {
       JSONObject json = packet.toJSONObject();

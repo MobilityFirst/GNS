@@ -40,7 +40,7 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
+  public static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
     int lnsReqID = handler.getUniqueRequestID();
@@ -61,7 +61,7 @@ public class AddRemove {
    * @throws NoSuchAlgorithmException
    * @throws UnsupportedEncodingException
    */
-  static void handlePacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler)
+  public static void handlePacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
     RemoveRecordPacket removeRecord = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
@@ -82,7 +82,7 @@ public class AddRemove {
   /**
    * Handles confirmation of add request from NS
    */
-  static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
+  public static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getLNSRequestID());
     if (Config.debuggingEnabled) {
@@ -111,7 +111,7 @@ public class AddRemove {
   /**
    * Handles confirmation of add request from NS
    */
-  static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
+  public static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
     if (Config.debuggingEnabled) {

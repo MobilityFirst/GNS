@@ -81,9 +81,9 @@ public class StartLocalNameServer {
   public static long voteIntervalMillis = 1000000000;
 
   /**
-   * * Set to true to enable all the debugging logging statements.
+   * * Set to true to enable all the debugging logging statements for the local name server.
    */
-  public static boolean debuggingEnabled = false;
+  public static boolean debuggingEnabled = true;
 
   /**
    * * Used for running experiments for Auspice paper.
@@ -575,7 +575,10 @@ public class StartLocalNameServer {
 
     try {
       //Start local name server
-      new LocalNameServer(new InetSocketAddress(address, port), new GNSNodeConfig(nsFile, true));
+       // a hack for the transition
+      GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(nsFile, true);
+      gnsNodeConfig.setUseOldCombinedNodeName(true);
+      new LocalNameServer(new InetSocketAddress(address, port), gnsNodeConfig);
     } catch (Exception e) {
       GNS.getLogger().severe("Problem starting LNS: " + e);
       e.printStackTrace();

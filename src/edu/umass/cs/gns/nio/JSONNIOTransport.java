@@ -236,13 +236,15 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
 	   * the sender when the same message is being
 	   * sent to a set of nodes including self. 
 	   */
+           
 	  try {
 		  jsonData = new JSONObject(jsonData.toString());
 	  } catch (JSONException e) {
 		  e.printStackTrace();
 		  return -1;
 	  }
-
+          if (DEBUG) log.info("SEND LOCAL, json: " + jsonData);
+          
 	  int length = jsonData.toString().length();
 	  ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
 	  jsonArray.add(jsonData);

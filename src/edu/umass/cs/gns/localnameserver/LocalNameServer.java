@@ -89,17 +89,16 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
             StartLocalNameServer.replicationFramework
     );
 
-    LNSPacketDemultiplexer demultiplexer = new LNSPacketDemultiplexer();
-    
     GNS.getLogger().info("Parameter values: " + parameters.toString());
+    LNSPacketDemultiplexer demultiplexer = new LNSPacketDemultiplexer();
+    this.intercessor = new Intercessor<NodeIDType>(nodeAddress, gnsNodeConfig, demultiplexer);
+    this.admintercessor = new Admintercessor<NodeIDType>();
     ClientRequestHandlerInterface<NodeIDType> requestHandler 
-            = new BasicClientRequestHandler<NodeIDType>(this, nodeAddress, gnsNodeConfig, demultiplexer, parameters);
+            = new BasicClientRequestHandler<NodeIDType>(intercessor, admintercessor, nodeAddress, gnsNodeConfig, demultiplexer, parameters);
     // Nice circular data structure...
     demultiplexer.setHandler(requestHandler);
 
-    this.intercessor = new Intercessor<NodeIDType>(requestHandler, demultiplexer);
     
-    this.admintercessor = new Admintercessor<NodeIDType>();
    
     if (!parameters.isExperimentMode()) { // creates exceptions with multiple local name servers on a machine
       GnsHttpServer.runHttp(requestHandler);

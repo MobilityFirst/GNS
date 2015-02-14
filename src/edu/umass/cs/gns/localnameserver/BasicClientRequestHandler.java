@@ -22,7 +22,8 @@ import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
-import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+//import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
@@ -55,7 +56,8 @@ import org.json.JSONException;
  */
 public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
 
-  private final LocalNameServer<NodeIDType> localNameServer;
+  private final Intercessor intercessor;
+  private final Admintercessor admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
@@ -80,6 +82,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
+  private final ConsistentReconfigurableNodeConfig nodeConfig;
+
   private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
 
   private final Random random;
@@ -94,11 +98,15 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   long receivedRequests = 0;
 
-  public BasicClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, 
-          GNSNodeConfig<NodeIDType> gnsNodeConfig, LNSPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) throws IOException {
-    this.localNameServer = localNameServer;
+  public BasicClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
+          InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
+          LNSPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) throws IOException {
+    this.intercessor = intercessor;
+    this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
+    // FOR NOW WE KEEP BOTH
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -134,18 +142,23 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @Override
+  public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig() {
+    return nodeConfig;
+  }
+
+  @Override
   public InetSocketAddress getNodeAddress() {
     return nodeAddress;
   }
 
   @Override
   public Intercessor getIntercessor() {
-    return localNameServer.getIntercessor();
+    return intercessor;
   }
-  
+
   @Override
   public Admintercessor getAdmintercessor() {
-    return localNameServer.getAdmintercessor();
+    return admintercessor;
   }
 
   @Override
@@ -233,14 +246,16 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet);
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet,
+            nodeConfig.getReplicatedReconfigurators(packet.getGuid()));
     cache.put(entry.getName(), entry);
     return entry;
   }
 
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet);
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet,
+            nodeConfig.getReplicatedReconfigurators(packet.getName()));
     cache.put(entry.getName(), entry);
     return entry;
   }
@@ -273,7 +288,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key) {
     switch (packet.getType()) {
       case ADD_CONFIRM:
-        cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
+        cache.put(name, new CacheEntry<NodeIDType>(name, nodeConfig.getReplicatedReconfigurators(name)));
+        //cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
         break;
       case REMOVE_CONFIRM:
         cache.invalidate(name);
@@ -347,7 +363,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     }
     return preamble + cacheTable.toString();
   }
-  
+
   static class CacheComparator implements Comparator<CacheEntry> {
 
     @Override
@@ -367,7 +383,8 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public Set<NodeIDType> getReplicaControllers(String name) {
     CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name);
+    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : nodeConfig.getReplicatedReconfigurators(name);
+    //return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name);
   }
 
   /**
@@ -379,20 +396,16 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   @Override
   public NodeIDType getClosestReplicaController(String name, Set<NodeIDType> nameServersQueried) {
-    try {
-      Set<NodeIDType> primaries = getReplicaControllers(name);
-      if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
-      }
-
-      NodeIDType x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
-      if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Closest Primary Name Server: " + x.toString() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
-      }
-      return x;
-    } catch (Exception e) {
-      return null;
+    Set<NodeIDType> primaries = getReplicaControllers(name);
+    if (parameters.isDebugMode()) {
+      GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
     }
+
+    NodeIDType x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
+    if (parameters.isDebugMode()) {
+      GNS.getLogger().info("Closest Primary Name Server: " + x.toString() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
+    }
+    return x;
   }
 
   /**
@@ -538,13 +551,13 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   public int getRequestsPerSecond() {
     return (int) Math.round(averageRequestsPerSecond.getAverage());
   }
-    
+
   @Override
   public void handleNameServerLoadPacket(JSONObject json) throws JSONException {
     NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
     nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
-  
+
   private ConcurrentHashMap<NodeIDType, Double> nameServerLoads;
 
   public ConcurrentHashMap<NodeIDType, Double> getNameServerLoads() {

@@ -132,7 +132,8 @@ public class StartNameServer {
     String nodeID = allValues.get(NSParameterNames.ID);
     
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(allValues.get(NSParameterNames.NS_FILE), nodeID);
-    
+    // a hack for the transition
+    gnsNodeConfig.setUseOldCombinedNodeName(true);
     new NameServer(nodeID, allValues, gnsNodeConfig);
   }
 

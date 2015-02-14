@@ -9,7 +9,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ConsistentHashing;
+//import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -62,14 +62,15 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param name
    * @param activeVersion
    * @param values
-   * @return
+   * @param ttl
    */
-  public NameRecord(BasicRecordMap recordMap, String name, int activeVersion, ValuesMap values, int ttl) {
+  public NameRecord(BasicRecordMap recordMap, String name, int activeVersion, ValuesMap values, int ttl,
+          Set<Object> replicaControllers) {
     this.recordMap = recordMap;
 
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
-    hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    hashMap.put(PRIMARY_NAMESERVERS, replicaControllers);
     hashMap.put(ACTIVE_VERSION, activeVersion);
     hashMap.put(OLD_ACTIVE_VERSION, 0);
     hashMap.put(TIME_TO_LIVE, ttl);

@@ -79,7 +79,7 @@ public class Packet {
     SELECT_RESPONSE(71, "edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket"),
     // stats collection for names
     NAMESERVER_SELECTION(80, "edu.umass.cs.gns.nsdesign.packet.NameServerSelectionPacket"),
-    ACTIVE_NAMESERVER_INFO(83, "edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket"),
+    //ACTIVE_NAMESERVER_INFO(83, "edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket"),
     // paxos
     PAXOS_PACKET(90, null),
     // group change

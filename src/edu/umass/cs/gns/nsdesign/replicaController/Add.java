@@ -21,7 +21,7 @@ import java.util.Set;
 
 /**
  * Includes code which a replica controller executes to add a name to GNS. If name servers are replicated,
- * then methods in this class will be executed after  the coordination among replica controllers at name servers
+ * then methods in this class will be executed after the coordination among replica controllers at name servers
  * is complete.
  * <p/>
  * This class contains static methods that will be called by ReplicaController.
@@ -39,25 +39,31 @@ public class Add {
    * Adds a name in the database at this replica controller and forwards the request to the active replica at
    * the same node. If name exists in database, it will send error message to the client.
    *
-   * @param addRecordPacket   Packet sent by client.
+   * @param addRecordPacket Packet sent by client.
    * @param replicaController ReplicaController object calling this method.
    */
   public static void executeAddRecord(AddRecordPacket addRecordPacket, ReplicaController replicaController,
-                                                  boolean recovery)
+          boolean recovery)
           throws JSONException, FailedDBOperationException, IOException {
 
-    if (Config.debuggingEnabled) GNS.getLogger().info("Executing ADD at replica controller " + addRecordPacket +
-            " Local name server address = " + addRecordPacket.getLnsAddress());
-    if (recovery) ReplicaControllerRecord.removeNameRecordPrimary(replicaController.getDB(), addRecordPacket.getName());
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Executing ADD at replica controller " + addRecordPacket
+              + " Local name server address = " + addRecordPacket.getLnsAddress());
+    }
+    if (recovery) {
+      ReplicaControllerRecord.removeNameRecordPrimary(replicaController.getDB(), addRecordPacket.getName());
+    }
 
-    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(), true);
+    ReplicaControllerRecord rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(),
+            replicaController.getNodeConfig().getReplicatedReconfigurators(addRecordPacket.getName()),
+            true);
 
     // if clauses used only during experiments
-    if (addRecordPacket.getActiveNameServers() != null){
+    if (addRecordPacket.getActiveNameServers() != null) {
       rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(),
               addRecordPacket.getActiveNameServers(), true);
-    } else if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.BEEHIVE) ||
-            Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC) ) {
+    } else if (Config.replicationFrameworkType.equals(ReplicationFrameworkType.BEEHIVE)
+            || Config.replicationFrameworkType.equals(ReplicationFrameworkType.STATIC)) {
       rcRecord = new ReplicaControllerRecord(replicaController.getDB(), addRecordPacket.getName(),
               getInitialReplicasForOtherReplicationSchemes(addRecordPacket.getName(), replicaController), true);
     }
@@ -70,16 +76,21 @@ public class Add {
           // change packet type and inform all active replicas.
           addRecordPacket.setType(Packet.PacketType.ACTIVE_ADD);
           addRecordPacket.setActiveNameServers(rcRecord.getActiveNameservers());
-          if (Config.debuggingEnabled) GNS.getLogger().info("Name: " + rcRecord.getName() +
-                  " Initial active replicas: " + Util.setOfNodeIdToString(rcRecord.getActiveNameservers()));
-          for (Object nodeID: rcRecord.getActiveNameservers()) {
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("Name: " + rcRecord.getName()
+                    + " Initial active replicas: " + Util.setOfNodeIdToString(rcRecord.getActiveNameservers()));
+          }
+          for (Object nodeID : rcRecord.getActiveNameservers()) {
+            if (Config.debuggingEnabled) GNS.getLogger().info("Sending ACTIVE_ADD to " + nodeID);
             replicaController.getNioServer().sendToID(nodeID, addRecordPacket.toJSONObject());
           }
         }
         if (!recovery) {
-           ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
-        if (Config.debuggingEnabled) GNS.getLogger().info("Add complete informing client. " + addRecordPacket
-                + " Local name server address = " + addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
+          ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("Add complete informing client. " + addRecordPacket
+                    + " Local name server address = " + addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
+          }
           replicaController.getNioServer().sendToAddress(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
         }
       }
@@ -87,9 +98,10 @@ public class Add {
       if (addRecordPacket.getNameServerID().equals(replicaController.getNodeID())) {
         // send error to client
         ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(NSResponseCode.DUPLICATE_ERROR, addRecordPacket);
-        if (Config.debuggingEnabled)
-          GNS.getLogger().info("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server address = " +
-                  addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().info("Record exists. sending failure: name = " + addRecordPacket.getName() + " Local name server address = "
+                  + addRecordPacket.getLnsAddress() + "Response code: " + confirmPkt);
+        }
         if (!recovery) {
           replicaController.getNioServer().sendToAddress(addRecordPacket.getLnsAddress(), confirmPkt.toJSONObject());
         }
@@ -129,7 +141,7 @@ public class Add {
    * to local name server that record is added.
    */
   public static void executeAddActiveConfirm(AddRecordPacket addRecordPacket,
-                                                         ReplicaController replicaController)
+          ReplicaController replicaController)
           throws JSONException {
     // no action needed.
 

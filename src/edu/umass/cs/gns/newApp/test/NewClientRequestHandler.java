@@ -13,18 +13,16 @@ import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
-import edu.umass.cs.gns.nio.JSONDelayEmulator;
-import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
-import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.util.GnsMessenger;
+//import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONObject;
@@ -54,9 +52,10 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
+public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
 
-  private final LocalNameServer<NodeIDType> localNameServer;
+  private final Intercessor intercessor;
+  private final Admintercessor admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
@@ -80,6 +79,8 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
    * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  
+  private final ConsistentReconfigurableNodeConfig nodeConfig;
 
   private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
 
@@ -95,12 +96,16 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
    */
   long receivedRequests = 0;
 
-  public ClientRequestHandler(LocalNameServer localNameServer, InetSocketAddress nodeAddress, 
-          GNSNodeConfig<NodeIDType> gnsNodeConfig, InterfaceJSONNIOTransport tcpTransport, 
-          RequestHandlerParameters parameters) throws IOException {
-    this.localNameServer = localNameServer;
+  public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
+          InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
+          InterfaceJSONNIOTransport<NodeIDType> tcpTransport,
+          AbstractPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) {
+    this.intercessor = intercessor;
+    this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
+     // FOR NOW WE KEEP BOTH
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -108,7 +113,6 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
     this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
     this.tcpTransport = tcpTransport;
-    //this.tcpTransport = initTransport();
   }
 
   /**
@@ -123,6 +127,11 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
   public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
     return gnsNodeConfig;
   }
+  
+  @Override
+  public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig() {
+    return nodeConfig;
+  }
 
   @Override
   public InetSocketAddress getNodeAddress() {
@@ -131,12 +140,12 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
 
   @Override
   public Intercessor getIntercessor() {
-    return localNameServer.getIntercessor();
+    return intercessor;
   }
   
   @Override
   public Admintercessor getAdmintercessor() {
-    return localNameServer.getAdmintercessor();
+    return admintercessor;
   }
 
   @Override
@@ -224,14 +233,16 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
    */
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet);
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet, 
+            nodeConfig.getReplicatedReconfigurators(packet.getGuid()));
     cache.put(entry.getName(), entry);
     return entry;
   }
 
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet);
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet, 
+            nodeConfig.getReplicatedReconfigurators(packet.getName()));
     cache.put(entry.getName(), entry);
     return entry;
   }
@@ -264,7 +275,8 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
   public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key) {
     switch (packet.getType()) {
       case ADD_CONFIRM:
-        cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
+        cache.put(name, new CacheEntry<NodeIDType>(name, nodeConfig.getReplicatedReconfigurators(name)));
+        //cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
         break;
       case REMOVE_CONFIRM:
         cache.invalidate(name);
@@ -358,7 +370,8 @@ public class ClientRequestHandler<NodeIDType> implements ClientRequestHandlerInt
   @Override
   public Set<NodeIDType> getReplicaControllers(String name) {
     CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name);
+    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : nodeConfig.getReplicatedReconfigurators(name);
+    //return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name);
   }
 
   /**

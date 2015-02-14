@@ -43,10 +43,11 @@ public class CommandRequest {
   public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("######## COMMAND PACKET RECEIVED: " + incomingJSON);
+      GNS.getLogger().info("######## COMMAND PACKET RECEIVED: " + incomingJSON);
     }
     final CommandPacket packet = new CommandPacket(incomingJSON);
-    // FIXME: Don't do this every time. Set the host field. Used by the help command and email module. 
+    // FIXME: Don't do this every time. 
+    // Set the host field. Used by the help command and email module. 
     commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":8080");
     final JSONObject jsonFormattedCommand = packet.getCommand();
     // Adds a field to the command to allow us to process the authentication of the signature

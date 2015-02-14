@@ -17,8 +17,9 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.StatsInfo;
-import edu.umass.cs.gns.util.ConsistentHashing;
+//import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
@@ -144,7 +145,9 @@ public class ReplicaControllerRecord<NodeIDType> {
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
-  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, boolean initialize) {
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name,
+          Set<Object> replicaControllers,
+          boolean initialize) {
 
     hashMap = new HashMap<ColumnField, Object>();
     hashMap.put(NAME, name);
@@ -152,12 +155,16 @@ public class ReplicaControllerRecord<NodeIDType> {
     if (initialize == false) {
       return;
     }
-    hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
-    hashMap.put(ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    
+    hashMap.put(PRIMARY_NAMESERVERS, replicaControllers);
+    //hashMap.put(PRIMARY_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    hashMap.put(ACTIVE_NAMESERVERS, replicaControllers);
+    //hashMap.put(ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
     if (Config.debuggingEnabled) {
-      GNS.getLogger().finer("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((HashSet<Object>) hashMap.get(ACTIVE_NAMESERVERS)));
+      GNS.getLogger().finer("@@@@@@@@@ RCR ACTIVE_NAMESERVERS: " + Util.setOfNodeIdToString((Set<NodeIDType>)hashMap.get(ACTIVE_NAMESERVERS)));
     }
-    hashMap.put(OLD_ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
+    hashMap.put(OLD_ACTIVE_NAMESERVERS, replicaControllers);
+    //hashMap.put(OLD_ACTIVE_NAMESERVERS, ConsistentHashing.getReplicaControllerSet(name));
 
     hashMap.put(ACTIVE_NAMESERVERS_RUNNING, true);
 
@@ -185,8 +192,9 @@ public class ReplicaControllerRecord<NodeIDType> {
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
-  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<NodeIDType> actives, boolean initialize) {
-    this(replicaControllerDB, name, initialize);
+  public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name, Set<NodeIDType> actives,
+          Set<Object> replicaControllers, boolean initialize) {
+    this(replicaControllerDB, name, replicaControllers, initialize);
 
     if (initialize == false) {
       return;
@@ -196,7 +204,7 @@ public class ReplicaControllerRecord<NodeIDType> {
 
     if (Config.debuggingEnabled) {
       GNS.getLogger().finer("@@@@@@@@@ RCR experiment ACTIVE_NAMESERVERS: "
-              + Util.setOfNodeIdToString((HashSet<Object>) hashMap.get(ACTIVE_NAMESERVERS)));
+              + Util.setOfNodeIdToString((Set<NodeIDType>) hashMap.get(ACTIVE_NAMESERVERS)));
     }
   }
 
@@ -227,7 +235,7 @@ public class ReplicaControllerRecord<NodeIDType> {
     if (Config.debuggingEnabled) {
       GNS.getLogger().finer("@@@@@@@@@ RCR from database ACTIVE_NAMESERVERS: "
               + ((hashMap.get(ACTIVE_NAMESERVERS) != null)
-                      ? Util.setOfNodeIdToString((HashSet<Object>) hashMap.get(ACTIVE_NAMESERVERS)) : "is null"));
+                      ? Util.setOfNodeIdToString((Set<NodeIDType>) hashMap.get(ACTIVE_NAMESERVERS)) : "is null"));
     }
   }
 
@@ -336,9 +344,9 @@ public class ReplicaControllerRecord<NodeIDType> {
    *
    * @return primaryNameservers as a set of Integers
    */
-  public HashSet<NodeIDType> getPrimaryNameservers() throws FieldNotFoundException {
+  public Set<NodeIDType> getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
-      return (HashSet<NodeIDType>) hashMap.get(PRIMARY_NAMESERVERS);
+      return (Set<NodeIDType>)hashMap.get(PRIMARY_NAMESERVERS);
     }
     throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
   }
@@ -948,7 +956,8 @@ public class ReplicaControllerRecord<NodeIDType> {
     Config.movingAverageWindowSize = 10;
     Object nodeID = "4";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt", nodeID);
-    ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
+    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    //ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
     // fixme set parameter to non-null in constructor
     BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
     replicaController.reset();
@@ -967,7 +976,8 @@ public class ReplicaControllerRecord<NodeIDType> {
       e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
     }
     // create the lazy record
-    record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", true);
+    record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", 
+            nodeConfig.getReplicatedReconfigurators("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"), true);
     System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
     System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver("12"));
     record.addNameServerStats(10, 50, 75);

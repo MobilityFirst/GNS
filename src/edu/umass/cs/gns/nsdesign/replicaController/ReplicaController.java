@@ -20,6 +20,7 @@ import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -65,6 +66,8 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
   private final BasicRecordMap replicaControllerDB;
 
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  
+  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 
   private final UniqueIDHashMap ongoingStopActiveRequests = new UniqueIDHashMap();
 
@@ -91,6 +94,7 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = nodeID;
     this.gnsNodeConfig = gnsNodeConfig;
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
     this.nioServer = nioServer;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
 
@@ -135,6 +139,10 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
   @Override
   public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
     return gnsNodeConfig;
+  }
+
+  public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig() {
+    return nodeConfig;
   }
 
   public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {

@@ -9,8 +9,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.util.ConsistentHashing;
-import java.util.HashSet;
+//import edu.umass.cs.gns.util.ConsistentHashing;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -54,7 +53,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
   /**
    * A list of primary name servers for the name
    */
-  private HashSet<NodeIDType> replicaControllers;
+  private Set<NodeIDType> replicaControllers;
   /**
    * A list of Active Nameservers for the name.
    */
@@ -67,7 +66,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    * @param replicaControllers
    * @param activeNameServers
    */
-  public CacheEntry(String name, HashSet<NodeIDType> replicaControllers, Set<NodeIDType> activeNameServers) {
+  public CacheEntry(String name, Set<NodeIDType> replicaControllers, Set<NodeIDType> activeNameServers) {
     this.name = name;
     this.replicaControllers = replicaControllers;
     this.activeNameServers = activeNameServers;
@@ -78,7 +77,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    *
    * @param packet DNS packet
    */
-  public CacheEntry(DNSPacket<NodeIDType> packet) {
+  public CacheEntry(DNSPacket<NodeIDType> packet, Set<NodeIDType> replicaControllers) {
     this.name = packet.getGuid();
     // this will depend on TTL sent by NS.
     // UPDATE: NEVER LET IT BE -1 which means infinite
@@ -102,7 +101,8 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
         this.timestampAddress.put(fieldKey, System.currentTimeMillis());
       }
     }
-    this.replicaControllers = (HashSet<NodeIDType>) ConsistentHashing.getReplicaControllerSet(name);
+    this.replicaControllers = replicaControllers;
+    //this.replicaControllers = (HashSet<NodeIDType>) ConsistentHashing.getReplicaControllerSet(name);
 //    this.activeNameServer = packet.getActiveNameServers();
   }
 
@@ -113,7 +113,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    * @param primaryNameServers
    */
   public CacheEntry(String name, Set<NodeIDType> primaryNameServers) {
-    this(name, (HashSet<NodeIDType>) primaryNameServers, primaryNameServers);
+    this(name, primaryNameServers, primaryNameServers);
   }
 
   /**
@@ -121,8 +121,9 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    *
    * @param packet
    */
-  public CacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    this(packet.getName(), (HashSet) ConsistentHashing.getReplicaControllerSet(packet.getName()),
+  public CacheEntry(RequestActivesPacket<NodeIDType> packet, Set<NodeIDType> replicaControllers) {
+    this(packet.getName(), replicaControllers,
+            //(HashSet) ConsistentHashing.getReplicaControllerSet(packet.getName()),
             packet.getActiveNameServers());
   }
 
@@ -169,7 +170,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
   /**
    * @return the primaryNameServer
    */
-  public synchronized HashSet<NodeIDType> getReplicaControllers() {
+  public synchronized Set<NodeIDType> getReplicaControllers() {
     return replicaControllers;
   }
 

@@ -40,6 +40,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -55,7 +56,7 @@ import java.util.ArrayList;
 public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplicable, InterfaceReconfigurable {
 
   private final NodeIDType nodeID;
-  private final InterfaceReconfigurableNodeConfig nodeConfig;
+  private final ConsistentReconfigurableNodeConfig nodeConfig;
   /**
    * Object provides interface to the database table storing name records
    */
@@ -68,7 +69,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   public App(NodeIDType id, InterfaceReconfigurableNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
-    this.nodeConfig = nodeConfig;
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig(nodeConfig);
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     if (Config.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Created " + nameRecordDB);
@@ -299,7 +300,8 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     while (true) {
       try {
         try {
-          NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, state1.valuesMap, state1.ttl);
+          NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, state1.valuesMap, state1.ttl,
+                  nodeConfig.getReplicatedReconfigurators(name));
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
           if (Config.debuggingEnabled) {
             GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);

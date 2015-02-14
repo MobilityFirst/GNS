@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
@@ -30,18 +31,27 @@ public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator 
   /**
    * Handles coordination among replicas for a request. Returns -1 in case of error, 0 otherwise.
    * Error could happen if replicable app is not initialized, or paxos instance for this name does not exist.
+   * 
+   * @param json
+   * @return 
    */
   @Override
-  public int coordinateRequest(JSONObject request) {
-    if (this.replicable == null) return -1; // replicable app not set
+  public int coordinateRequest(JSONObject json) {
+    if (this.replicable == null) {
+      GNS.getLogger().severe("replicable app not set!");
+      return -1; // replicable app not set
+    }
 
     try {
-      Packet.PacketType type = Packet.getPacketType(request);
+      Packet.PacketType type = Packet.getPacketType(json);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("MsgType " + type + " Msg " + json);
+      }
       switch (type) {
         // no coordination needed for any request.
-
+        
         case UPDATE: // set a field in update packet because LNS may not set this field correctly.
-          UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(request, gnsNodeConfig);
+          UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(json, gnsNodeConfig);
           update.setNameServerID(nodeID);
           replicable.handleDecision(null, update.toString(), false);
           break;
@@ -55,7 +65,7 @@ public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator 
         case UPDATE_CONFIRM:
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:
-          replicable.handleDecision(null, request.toString(), false);
+          replicable.handleDecision(null, json.toString(), false);
           break;
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
           // no action needed
