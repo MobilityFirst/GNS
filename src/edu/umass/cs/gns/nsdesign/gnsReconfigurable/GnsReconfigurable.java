@@ -180,22 +180,8 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
          * Packets sent from replica controller *
          */
         case ACTIVE_ADD: // sent when new name is added to GNS
-          if (Config.debuggingEnabled) {
-            GNS.getLogger().info("Calling handleActiveAdd with " + json);
-          }
           AddRecordPacket<NodeIDType> addRecordPacket = null;
-          if (Config.debuggingEnabled) {
-            GNS.getLogger().info("BEFORE CREATING PACKET " + json);
-          }
-          try {
-           addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
-          } catch (JSONException e) {
-            GNS.getLogger().severe("Problem creating AddRecordPacket: " + e);
-            break;
-          }
-          if (Config.debuggingEnabled) {
-            GNS.getLogger().info("After packet calling handleActiveAdd with " + addRecordPacket.toString());
-          }
+          addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
           Add.handleActiveAdd(addRecordPacket, this);
           break;
         case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
@@ -212,8 +198,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           return false;
       }
       executed = true;
-    } catch (JSONException | NoSuchAlgorithmException | SignatureException 
-            | InvalidKeySpecException | InvalidKeyException | IOException | FailedDBOperationException e) {
+    } catch (JSONException | NoSuchAlgorithmException | SignatureException | InvalidKeySpecException | InvalidKeyException | IOException | FailedDBOperationException e) {
       GNS.getLogger().severe("Problem handling packet: " + e);
       e.printStackTrace();
     }

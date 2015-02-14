@@ -53,11 +53,11 @@ public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeI
       String stringData = jsonData.toString();
       int dataLength = stringData.length();
       JSONObject dataCopy = new JSONObject(stringData);
-      if (Config.debuggingEnabled) GNS.getLogger().info("Sending to " + id + "data: " + dataCopy);
+      if (Config.debuggingEnabled) GNS.getLogger().fine("Sending to " + id + "data: " + dataCopy);
       int sent = gnsnioTransport.sendToID(id, dataCopy);
       if (sent < dataLength) {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().info("Retransmitting to " + id + " " + dataCopy);
+          GNS.getLogger().fine("Retransmitting to " + id + " " + dataCopy);
         }
         Retransmitter rtxTask = new Retransmitter(id, dataCopy, RTX_DELAY);
         scheduledThreadPoolExecutor.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore returned future
