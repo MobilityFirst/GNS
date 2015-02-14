@@ -45,7 +45,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 	@Override
 	public Set<NodeIDType> getValuesFromJSONArray(JSONArray array)
 			throws JSONException {
-		return this.getValuesFromJSONArray(array);
+		return this.nodeConfig.getValuesFromJSONArray(array);
 	}
 
 	@Override
