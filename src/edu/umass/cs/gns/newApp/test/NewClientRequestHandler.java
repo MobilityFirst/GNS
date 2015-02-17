@@ -14,7 +14,9 @@ import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
@@ -22,8 +24,13 @@ import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 //import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.gns.reconfiguration.examples.TestConfig;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.MovingAverage;
+import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -38,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.logging.Level;
 import org.json.JSONException;
 
 /**
@@ -52,7 +60,7 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
+public class NewClientRequestHandler<NodeIDType> implements EnhancedClientRequestHandlerInterface<NodeIDType> {
 
   private final Intercessor intercessor;
   private final Admintercessor admintercessor;
@@ -79,10 +87,12 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
    * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
-  
+
   private final ConsistentReconfigurableNodeConfig nodeConfig;
 
   private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
+  
+   private final JSONMessenger<NodeIDType> messenger;
 
   private final Random random;
 
@@ -97,14 +107,14 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
   long receivedRequests = 0;
 
   public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
-          InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig, 
-          InterfaceJSONNIOTransport<NodeIDType> tcpTransport,
+          InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
+          JSONMessenger<NodeIDType> messenger,
           AbstractPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) {
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
-     // FOR NOW WE KEEP BOTH
+    // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -112,7 +122,9 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
     this.random = new Random(System.currentTimeMillis());
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
     this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
-    this.tcpTransport = tcpTransport;
+    this.tcpTransport = messenger;
+    this.messenger = messenger;
+    
   }
 
   /**
@@ -127,7 +139,7 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
   public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
     return gnsNodeConfig;
   }
-  
+
   @Override
   public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig() {
     return nodeConfig;
@@ -142,7 +154,7 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
   public Intercessor getIntercessor() {
     return intercessor;
   }
-  
+
   @Override
   public Admintercessor getAdmintercessor() {
     return admintercessor;
@@ -233,7 +245,7 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
    */
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet, 
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet,
             nodeConfig.getReplicatedReconfigurators(packet.getGuid()));
     cache.put(entry.getName(), entry);
     return entry;
@@ -241,7 +253,7 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
 
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet, 
+    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet,
             nodeConfig.getReplicatedReconfigurators(packet.getName()));
     cache.put(entry.getName(), entry);
     return entry;
@@ -350,7 +362,7 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
     }
     return preamble + cacheTable.toString();
   }
-  
+
   static class CacheComparator implements Comparator<CacheEntry> {
 
     @Override
@@ -397,6 +409,51 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
     } catch (Exception e) {
       return null;
     }
+  }
+
+  @Override
+  public NodeIDType getRandomReplica() {
+    int index = (int) (this.gnsNodeConfig.getActiveReplicas().size() * Math.random());
+    return (NodeIDType) (this.gnsNodeConfig.getActiveReplicas().toArray()[index]);
+  }
+
+  @Override
+  public NodeIDType getRandomRCReplica() {
+    int index = (int) (this.gnsNodeConfig.getReconfigurators().size() * Math.random());
+    return (NodeIDType) (this.gnsNodeConfig.getReconfigurators().toArray()[index]);
+  }
+
+  @Override
+  public NodeIDType getFirstReplica() {
+    return this.gnsNodeConfig.getActiveReplicas().iterator().next();
+  }
+
+  @Override
+  public NodeIDType getFirstRCReplica() {
+    return this.gnsNodeConfig.getReconfigurators().iterator().next();
+  }
+
+  @Override
+  public CreateServiceName makeCreateNameRequest(String name, String state) {
+    CreateServiceName create = new CreateServiceName(null, name, 0, state);
+    return create;
+  }
+
+  @Override
+  public DeleteServiceName makeDeleteNameRequest(String name) {
+    DeleteServiceName delete = new DeleteServiceName(null, name, 0);
+    return delete;
+  }
+  
+  @Override
+  public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException {
+    NodeIDType id = getRandomRCReplica();
+    GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);
+    this.sendRequest(id, req.toJSONObject());
+  }
+
+  private void sendRequest(NodeIDType id, JSONObject json) throws JSONException, IOException {
+    this.messenger.send(new GenericMessagingTask<NodeIDType, Object>(id, json));
   }
 
   /**
@@ -542,13 +599,13 @@ public class NewClientRequestHandler<NodeIDType> implements ClientRequestHandler
   public int getRequestsPerSecond() {
     return (int) Math.round(averageRequestsPerSecond.getAverage());
   }
-    
+
   @Override
   public void handleNameServerLoadPacket(JSONObject json) throws JSONException {
     NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
     nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
   }
-  
+
   private ConcurrentHashMap<NodeIDType, Double> nameServerLoads;
 
   public ConcurrentHashMap<NodeIDType, Double> getNameServerLoads() {

@@ -18,13 +18,16 @@ import edu.umass.cs.gns.localnameserver.Update;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.MyLogger;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
@@ -38,9 +41,9 @@ import org.json.JSONObject;
  */
 public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
-  private ClientRequestHandlerInterface<NodeIDType> handler;
+  private EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
-  public void setHandler(ClientRequestHandlerInterface<NodeIDType> handler) {
+  public void setHandler(EnhancedClientRequestHandlerInterface<NodeIDType> handler) {
     this.handler = handler;
   }
 
@@ -100,11 +103,17 @@ public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemul
           case NAME_SERVER_LOAD:
             handler.handleNameServerLoadPacket(json);
             break;
-          // Add/remove // these have been converted to use handler
+          // Add/remove
           case ADD_RECORD:
+            AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
+            handler.sendRequest(handler.makeCreateNameRequest(addRecordPacket.getName(), addRecordPacket.getValue().toString()));
+            //
             AddRemove.handlePacketAddRecord(json, handler);
             break;
           case REMOVE_RECORD:
+            RemoveRecordPacket removeRecord = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
+            handler.sendRequest(handler.makeDeleteNameRequest(removeRecord.getName()));
+            //
             AddRemove.handlePacketRemoveRecord(json, handler);
             break;
           case ADD_CONFIRM:
@@ -123,7 +132,6 @@ public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemul
           case SELECT_RESPONSE:
             Select.handlePacketSelectResponse(json, handler);
             break;
-
           // Requests sent only during testing
           case NEW_ACTIVE_PROPOSE:
             LNSTestRequests.sendGroupChangeRequest(json, handler);
@@ -134,10 +142,6 @@ public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemul
           case COMMAND:
             CommandRequest.handlePacketCommandRequest(json, handler);
             break;
-//          case UPDATE_CONFIRM:
-//            ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
-//            GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[2], new Object[]{"App", " updated ", confirmPacket.getRequestID()});
-//            break;
           default:
             //isPacketTypeFound = false;
             GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS IGNORING: ", json});
@@ -159,13 +163,7 @@ public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemul
             break;
         }
       }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    } catch (UnknownHostException e) {
+    } catch (IOException | JSONException | NoSuchAlgorithmException e) {
       e.printStackTrace();
     }
     return true;

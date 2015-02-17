@@ -102,7 +102,8 @@ public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable
             int id = dumpRequestPacket.getId();
             GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
             JSONObject json = dumpRequestPacket.toJSONObject();
-            Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
+            Set<NodeIDType> serverIds = handler.getNodeConfig().getActiveReplicas();
+            //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
             Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT, null);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
@@ -133,7 +134,8 @@ public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + handler.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
+              Set<NodeIDType> serverIds = handler.getNodeConfig().getActiveReplicas();
+              //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT, null);
               // clear the cache
               handler.invalidateCache();
@@ -151,7 +153,10 @@ public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable
             case PINGTABLE:
               String node = new String(incomingPacket.getArgument());
               // null means return the LNS data
-              if (node == null || handler.getGnsNodeConfig().getNodeIDs().contains(node)) {
+              if (node == null || 
+                      handler.getNodeConfig().getActiveReplicas().contains(node))
+                      //handler.getGnsNodeConfig().getNodeIDs().contains(node)) 
+              {
                 if (node == null) {
                   jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", pingManager.tableToString(null));
@@ -205,7 +210,8 @@ public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable
               // send it on to the NSs
               GNS.getLogger().fine("LNSListenerAdmin (" + handler.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              serverIds = handler.getGnsNodeConfig().getNodeIDs();
+              serverIds = handler.getNodeConfig().getActiveReplicas();
+              //serverIds = handler.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT, null);
               break;
             default:

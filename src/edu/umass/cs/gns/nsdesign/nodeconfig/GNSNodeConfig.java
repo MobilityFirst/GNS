@@ -195,9 +195,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * Returns the "top-level" host ID for any given nodeID.
-   * 
+   *
    * @param id
-   * @return 
+   * @return
    */
   private NodeInfo<NodeIDType> getNodeInfoForAnyNode(NodeIDType id) {
     for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
@@ -250,25 +250,26 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * Returns the Admin port of a Nameserver.
+   * 
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
   public int getNSAdminRequestPort(NodeIDType id) {
-    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
+    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
   }
 
   /**
-   * Returns the NS ping port. Only valid for top-level nodes.
+   * Returns the NS ping port.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id
    * @return the port
    */
   public int getNSPingPort(NodeIDType id) {
-    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
+    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
       return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
     } else {
@@ -319,13 +320,16 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   /**
    * Updates the ping latency table for a node.
    * Only valid for top-level nodes.
+   *
    * @param id
-   * @param responseTime 
+   * @param responseTime
    */
   public void updatePingLatency(NodeIDType id, long responseTime) {
     NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
     if (nodeInfo != null) {
       nodeInfo.setPingLatency(responseTime);
+    } else {
+      GNS.getLogger().warning("Can't update latency for " + id.toString() + " which is not a top-level node.");
     }
   }
 

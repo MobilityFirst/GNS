@@ -284,7 +284,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   @Override
   public void putInitialState(String name, int epoch, String state) {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
     }
     TransferableNameRecordState state1;
     try {
@@ -304,7 +304,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
                   nodeConfig.getReplicatedReconfigurators(name));
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
           if (Config.debuggingEnabled) {
-            GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
+            GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
           }
         } catch (RecordExistsException e) {
           NameRecord nameRecord;

@@ -3,8 +3,9 @@
  * University of Massachusetts
  * All Rights Reserved
  */
-package edu.umass.cs.gns.nsdesign;
+package edu.umass.cs.gns.newApp;
 
+import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
@@ -17,9 +18,7 @@ import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
-import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,20 +34,14 @@ import java.util.logging.Level;
  * type operations. All of the things in here are for server administration and debugging.
  */
 @SuppressWarnings("unchecked")
-public class NSListenerAdmin extends Thread implements Shutdownable{
+public class AppAdmin extends Thread implements Shutdownable{
 
   /**
    * Socket over which active name server request arrive *
    */
   private ServerSocket serverSocket;
 
-  private final GnsReconfigurableInterface gnsReconfigurable;
-
-  private final ActiveReplicaCoordinator appCoordinator;
-
-  private final ReplicaController replicaController;
-
-  private final ReplicaControllerCoordinator rcCoordinator;
+  private final GnsApplicationInterface app;
 
   private final GNSNodeConfig gnsNodeConfig;
 
@@ -58,17 +51,12 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
    * @throws IOException
    */
   
-  public NSListenerAdmin(GnsReconfigurableInterface gnsReconfigurable, ActiveReplicaCoordinator appCoordinator,
-          ReplicaController replicaController, ReplicaControllerCoordinator rcCoordinator,
-          GNSNodeConfig gnsNodeConfig) {
+  public AppAdmin(GnsApplicationInterface app, GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
-    this.gnsReconfigurable = gnsReconfigurable;
-    this.appCoordinator = appCoordinator;
-    this.replicaController = replicaController;
-    this.rcCoordinator = rcCoordinator;
+    this.app = app;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
-      this.serverSocket = new ServerSocket(gnsNodeConfig.getNSAdminRequestPort(gnsReconfigurable.getNodeID()));
+      this.serverSocket = new ServerSocket(gnsNodeConfig.getNSAdminRequestPort(app.getNodeID()));
     } catch (IOException e) {
       GNS.getLogger().severe("Unable to create NSListenerAdmin server: " + e);
     }
@@ -80,7 +68,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("NS Node " + gnsReconfigurable.getNodeID().toString() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
+    GNS.getLogger().info("NS Node " + app.getNodeID().toString() + " starting Admin Request Server on port " + serverSocket.getLocalPort());
     while (true) {
       try {
         Socket socket = serverSocket.accept();
@@ -93,19 +81,19 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
 
             DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON, gnsNodeConfig);
 
-            dumpRequestPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
+            dumpRequestPacket.setPrimaryNameServer(app.getNodeID());
 
-            StatusClient.sendStatus(gnsReconfigurable.getNodeID(), "Dumping records");
+            StatusClient.sendStatus(app.getNodeID(), "Dumping records");
             JSONArray jsonArray = new JSONArray();
             // if there is an argument it is a TAGNAME we return all the records that have that tag
             if (dumpRequestPacket.getArgument() != null) {
               String tag = dumpRequestPacket.getArgument();
-              AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
+              AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(app.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.nextJSONObject();
                 try {
-                  nameRecord = new NameRecord(gnsReconfigurable.getDB(), json);
+                  nameRecord = new NameRecord(app.getDB(), json);
                 } catch (JSONException e) {
                   GNS.getLogger().severe("Problem parsing json into NameRecord: " + e + " JSON is " + json.toString());
                 }
@@ -126,12 +114,12 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
               // OTHERWISE WE RETURN ALL THE RECORD
             } else {
               //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
-              AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
+              AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(app.getDB());
               while (cursor.hasNext()) {
                 NameRecord nameRecord = null;
                 JSONObject json = cursor.nextJSONObject();
                 try {
-                  nameRecord = new NameRecord(gnsReconfigurable.getDB(), json);
+                  nameRecord = new NameRecord(app.getDB(), json);
                 } catch (JSONException e) {
                   GNS.getLogger().severe("Problem parsing record cursor into NameRecord: " + e + " JSON is " + json.toString());
                 }
@@ -141,7 +129,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
               }
             }
             if (GNS.getLogger().isLoggable(Level.FINER)) {
-              GNS.getLogger().finer("NSListenrAdmin for " + gnsReconfigurable.getNodeID() + " is " + jsonArray.toString());
+              GNS.getLogger().finer("NSListenrAdmin for " + app.getNodeID() + " is " + jsonArray.toString());
             }
             dumpRequestPacket.setJsonArray(jsonArray);
             Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), 
@@ -153,15 +141,15 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
             AdminRequestPacket adminRequestPacket = new AdminRequestPacket(incomingJSON);
             switch (adminRequestPacket.getOperation()) {
               case DELETEALLRECORDS:
-                GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling DELETEALLRECORDS request");
+                GNS.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Handling DELETEALLRECORDS request");
                 long startTime = System.currentTimeMillis();
                 int cnt = 0;
-                AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(gnsReconfigurable.getDB());
+                AbstractRecordCursor cursor = NameRecord.getAllRowsIterator(app.getDB());
                 while (cursor.hasNext()) {
-                  NameRecord nameRecord = new NameRecord(gnsReconfigurable.getDB(), cursor.nextJSONObject());
+                  NameRecord nameRecord = new NameRecord(app.getDB(), cursor.nextJSONObject());
                   //for (NameRecord nameRecord : NameServer.getAllNameRecords()) {
                   try {
-                    NameRecord.removeNameRecord(gnsReconfigurable.getDB(), nameRecord.getName());
+                    NameRecord.removeNameRecord(app.getDB(), nameRecord.getName());
                   } catch (FieldNotFoundException e) {
                     GNS.getLogger().severe("FieldNotFoundException. Field Name =  " + e.getMessage());
                     e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
@@ -169,40 +157,43 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                   //DBNameRecord.removeNameRecord(nameRecord.getName());
                   cnt++;
                 }
-                GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Deleting " + cnt + " records took "
+                GNS.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Deleting " + cnt + " records took "
                         + (System.currentTimeMillis() - startTime) + "ms");
                 break;
               // Clears the database and reinitializes all indices
               case RESETDB:
-                GNS.getLogger().fine("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Handling RESETDB request");
-                replicaController.reset();
-                rcCoordinator.reset();
-                appCoordinator.reset();
-                gnsReconfigurable.reset();
+                  // don't like this anyway
+//                GNS.getLogger().fine("NSListenerAdmin (" + app.getNodeID() + ") : Handling RESETDB request");
+//                replicaController.reset();
+//                rcCoordinator.reset();
+//                appCoordinator.reset();
+//                app.reset();
 
                 break;
               case PINGTABLE:
-                Object node = adminRequestPacket.getArgument();
-                if (node.equals(gnsReconfigurable.getNodeID())) {
-                  JSONObject jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", gnsReconfigurable.getPingManager().tableToString(gnsReconfigurable.getNodeID()));
-                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
-                } else {
-                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
-                }
+                // FIXME: Add these back in 
+//                Object node = adminRequestPacket.getArgument();
+//                if (node.equals(app.getNodeID())) {
+//                  JSONObject jsonResponse = new JSONObject();
+//                  jsonResponse.put("PINGTABLE", app.getPingManager().tableToString(app.getNodeID()));
+//                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
+//                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+//                } else {
+//                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
+//                }
                 break;
               case PINGVALUE:
-                Object node1 = adminRequestPacket.getArgument();
-                Object node2 = adminRequestPacket.getArgument2();
-                if (node1.equals(gnsReconfigurable.getNodeID())) {
-                  JSONObject jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGVALUE", gnsReconfigurable.getPingManager().nodeAverage(node2));
-                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
-                } else {
-                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
-                }
+                // FIXME: Add these back in 
+//                Object node1 = adminRequestPacket.getArgument();
+//                Object node2 = adminRequestPacket.getArgument2();
+//                if (node1.equals(app.getNodeID())) {
+//                  JSONObject jsonResponse = new JSONObject();
+//                  jsonResponse.put("PINGVALUE", app.getPingManager().nodeAverage(node2));
+//                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
+//                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+//                } else {
+//                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
+//                }
                 break;
               case CHANGELOGLEVEL:
                 Level level = Level.parse(adminRequestPacket.getArgument());
@@ -211,14 +202,14 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                 break;
               case CLEARCACHE:
                 // shouldn't ever toString this
-                GNS.getLogger().warning("NSListenerAdmin (" + gnsReconfigurable.getNodeID() + ") : Ignoring CLEARCACHE request");
+                GNS.getLogger().warning("NSListenerAdmin (" + app.getNodeID() + ") : Ignoring CLEARCACHE request");
                 break;
 
             }
             break;
           case STATUS_INIT:
             StatusClient.handleStatusInit(socket.getInetAddress());
-            StatusClient.sendStatus(gnsReconfigurable.getNodeID(), "NS Ready");
+            StatusClient.sendStatus(app.getNodeID(), "NS Ready");
             break;
         }
 
@@ -231,7 +222,6 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
         e.printStackTrace();
       }
     }
-
   }
 
   /**

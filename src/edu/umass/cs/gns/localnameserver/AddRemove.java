@@ -42,6 +42,9 @@ public class AddRemove {
    */
   public static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
+    
+    
+    
     AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
     int lnsReqID = handler.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);

@@ -5,6 +5,7 @@ import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
+import edu.umass.cs.gns.localnameserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.reconfiguration.examples.*;
@@ -44,61 +45,65 @@ public class DummyLNS<NodeIDType> {
   /**
    * Handles the client support processing for the local name server.
    */
-  private Intercessor<NodeIDType> intercessor;
+  private final Intercessor<NodeIDType> intercessor;
 
   /**
    * Handles administrative client support for the local name server.
    */
-  private Admintercessor<NodeIDType> admintercessor;
+  private final Admintercessor<NodeIDType> admintercessor;
   /**
    * Ping manager object for pinging other nodes and updating ping latencies.
    */
-  private PingManager<NodeIDType> pingManager;
+  private final PingManager<NodeIDType> pingManager;
   /**
    * We also keep a pointer to the lnsListenerAdmin so we can shut it down.
    */
-  private LNSListenerAdmin<NodeIDType> lnsListenerAdmin;
+  private final LNSListenerAdmin<NodeIDType> lnsListenerAdmin;
+  // Mostly kept for testing...
+  EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler;
 
-  private Logger log = Logger.getLogger(getClass().getName());
+  private final Logger log = Logger.getLogger(getClass().getName());
 
   DummyLNS(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
           JSONMessenger<NodeIDType> messenger) throws IOException {
     AbstractPacketDemultiplexer demultiplexer = new DummyLNSPacketDemultiplexer();
-    this.intercessor = new Intercessor<NodeIDType>(nodeAddress, gnsNodeConfig, demultiplexer);
-    this.admintercessor = new Admintercessor<NodeIDType>();
+    this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
+    this.admintercessor = new Admintercessor<>();
     this.nodeAddress = nodeAddress;
     this.nodeConfig = gnsNodeConfig;
     this.messenger = messenger;
     messenger.addPacketDemultiplexer(demultiplexer);
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(true);
-    ClientRequestHandlerInterface<NodeIDType> requestHandler
-            = new NewClientRequestHandler<NodeIDType>(intercessor, admintercessor, nodeAddress,
+    this.requestHandler
+            = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
                     gnsNodeConfig, messenger, demultiplexer, parameters);
     // Nice circular data structure...
     ((DummyLNSPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
-    //
+    // Start HTTP server
+    GnsHttpServer.runHttp(requestHandler);
+    // Start Ping servers
     GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
-    this.pingManager = new PingManager<NodeIDType>(null, gnsNodeConfig);
+    this.pingManager = new PingManager<>(null, gnsNodeConfig);
     pingManager.startPinging();
     //
     // After starting PingManager because it accesses PingManager.
-    (this.lnsListenerAdmin = new LNSListenerAdmin<NodeIDType>(requestHandler, pingManager)).start();
+    (this.lnsListenerAdmin = new LNSListenerAdmin<>(requestHandler, pingManager)).start();
 
     // The Admintercessor needs to use the LNSListenerAdmin;
     this.admintercessor.setListenerAdmin(lnsListenerAdmin);
 
   }
 
-  private CreateServiceName makeCreateNameRequest(String name, String state) {
-    CreateServiceName create = new CreateServiceName(null, name, 0, state);
-    return create;
-  }
-
-  private DeleteServiceName makeDeleteNameRequest(String name, String state) {
-    DeleteServiceName delete = new DeleteServiceName(null, name, 0);
-    return delete;
-  }
+//  private CreateServiceName makeCreateNameRequest(String name, String state) {
+//    CreateServiceName create = new CreateServiceName(null, name, 0, state);
+//    return create;
+//  }
+//
+//  private DeleteServiceName makeDeleteNameRequest(String name, String state) {
+//    DeleteServiceName delete = new DeleteServiceName(null, name, 0);
+//    return delete;
+//  }
 
   private int requestId = 0; // just for shits and giggles
 
@@ -109,39 +114,39 @@ public class DummyLNS<NodeIDType> {
     return packet;
   }
 
-  private NodeIDType getRandomReplica() {
-    int index = (int) (this.nodeConfig.getActiveReplicas().size() * Math.random());
-    return (NodeIDType) (this.nodeConfig.getActiveReplicas().toArray()[index]);
-  }
-
-  private NodeIDType getRandomRCReplica() {
-    int index = (int) (this.nodeConfig.getReconfigurators().size() * Math.random());
-    return (NodeIDType) (this.nodeConfig.getReconfigurators().toArray()[index]);
-  }
-
-  private NodeIDType getFirstReplica() {
-    return this.nodeConfig.getActiveReplicas().iterator().next();
-  }
-
-  private NodeIDType getFirstRCReplica() {
-    return this.nodeConfig.getReconfigurators().iterator().next();
-  }
+//  private NodeIDType getRandomReplica() {
+//    int index = (int) (this.nodeConfig.getActiveReplicas().size() * Math.random());
+//    return (NodeIDType) (this.nodeConfig.getActiveReplicas().toArray()[index]);
+//  }
+//
+//  private NodeIDType getRandomRCReplica() {
+//    int index = (int) (this.nodeConfig.getReconfigurators().size() * Math.random());
+//    return (NodeIDType) (this.nodeConfig.getReconfigurators().toArray()[index]);
+//  }
+//
+//  private NodeIDType getFirstReplica() {
+//    return this.nodeConfig.getActiveReplicas().iterator().next();
+//  }
+//
+//  private NodeIDType getFirstRCReplica() {
+//    return this.nodeConfig.getReconfigurators().iterator().next();
+//  }
 
   private void sendUpdateRequest(UpdatePacket req) throws JSONException, IOException, RequestParseException {
-    NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstReplica() : this.getRandomReplica());
+    NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? requestHandler.getFirstReplica() : requestHandler.getRandomReplica());
     log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending ", req.getRequestType(), " to ", id, ":", this.nodeConfig.getNodeAddress(id), ":", this.nodeConfig.getNodePort(id), ": ", req});
     req.setNameServerID(id); // necessary to get a confirmation back
     this.sendRequest(id, req.toJSONObject());
   }
 
   private void sendRequest(CreateServiceName req) throws JSONException, IOException {
-    NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
+    NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? requestHandler.getFirstRCReplica() : requestHandler.getRandomRCReplica());
     log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending ", req.getSummary(), " to ", id, ":", this.nodeConfig.getNodeAddress(id), ":", this.nodeConfig.getNodePort(id), ": ", req});
     this.sendRequest(id, req.toJSONObject());
   }
 
   private void sendRequest(DeleteServiceName req) throws JSONException, IOException {
-    NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
+    NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? requestHandler.getFirstRCReplica() : requestHandler.getRandomRCReplica());
     log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending ", req.getSummary(), " to ", id, ":", this.nodeConfig.getNodeAddress(id), ":", this.nodeConfig.getNodePort(id), ": ", req});
     this.sendRequest(id, req.toJSONObject());
   }
@@ -154,69 +159,6 @@ public class DummyLNS<NodeIDType> {
     return nodeAddress;
   }
 
-//  private class DummyLNSPacketDemultiplexer extends AbstractPacketDemultiplexer {
-//
-//    DummyLNSPacketDemultiplexer() {
-//      this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
-//      this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
-//      // From current LNS
-//      register(Packet.PacketType.DNS);
-//      register(Packet.PacketType.UPDATE);
-//      register(Packet.PacketType.ADD_RECORD);
-//      register(Packet.PacketType.COMMAND);
-//      register(Packet.PacketType.ADD_CONFIRM);
-//      register(Packet.PacketType.REMOVE_CONFIRM);
-//      register(Packet.PacketType.UPDATE_CONFIRM);
-//      register(Packet.PacketType.GROUP_CHANGE_COMPLETE);
-//      register(Packet.PacketType.NAME_SERVER_LOAD);
-//      register(Packet.PacketType.NEW_ACTIVE_PROPOSE);
-//      register(Packet.PacketType.REMOVE_RECORD);
-//      register(Packet.PacketType.REQUEST_ACTIVES);
-//      register(Packet.PacketType.SELECT_REQUEST);
-//      register(Packet.PacketType.SELECT_RESPONSE);
-//    }
-//
-//    @Override
-//    public boolean handleJSONObject(JSONObject json) {
-//      log.log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
-//      try {
-//        Packet.PacketType type = Packet.getPacketType(json);
-//        if (Config.debuggingEnabled) {
-//          GNS.getLogger().info("MsgType " + type + " Msg " + json);
-//        }
-//        if (type != null) {
-//          switch (type) {
-//            case UPDATE_CONFIRM:
-//              ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(json, nodeConfig);
-//              log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{"App", " updated ", confirmPacket.getRequestID()});
-//              break;
-//            default:
-//              break;
-//          }
-//        } else {
-//          switch (ReconfigurationPacket.getReconfigurationPacketType(json)) {
-//            case CREATE_SERVICE_NAME:
-//              CreateServiceName create = new CreateServiceName(json);
-//              log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{"App", " created ", create.getServiceName()});
-//              exists.put(create.getServiceName(), true);
-//              break;
-//              // We never receive this, but then again neither does the 
-//            case DELETE_SERVICE_NAME:
-//              DeleteServiceName delete = new DeleteServiceName(json);
-//              log.log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"App deleted ", delete.getServiceName()});
-//              exists.remove(delete.getServiceName());
-//              break;
-//            default:
-//              break;
-//          }
-//        }
-//      } catch (JSONException e) {
-//        // TODO Auto-generated catch block
-//        e.printStackTrace();
-//      }
-//      return true;
-//    }
-//  }
   public static void main(String[] args) throws IOException {
     InetSocketAddress address = new InetSocketAddress("127.0.0.1", 24398);
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
@@ -238,14 +180,14 @@ public class DummyLNS<NodeIDType> {
               + "  \"number\": \"%d\"}";
       String initValue = "initial_value";
 
-      localNameServer.sendRequest(localNameServer.makeCreateNameRequest(namePrefix + 0, initValue));
+      localNameServer.sendRequest(localNameServer.requestHandler.makeCreateNameRequest(namePrefix + 0, initValue));
 
       Thread.sleep(2000);
       for (int i = 0; i < numRequests; i++) {
         localNameServer.sendUpdateRequest(localNameServer.makeUpdateRequest(namePrefix + 0, String.format(updateValue, i)));
         Thread.sleep(2000);
       }
-      localNameServer.sendRequest(localNameServer.makeDeleteNameRequest(namePrefix + 0, initValue));
+      localNameServer.sendRequest(localNameServer.requestHandler.makeDeleteNameRequest(namePrefix + 0));
 
       //localNameServer.messenger.stop();
     } catch (IOException ioe) {
@@ -258,6 +200,6 @@ public class DummyLNS<NodeIDType> {
       // TODO Auto-generated catch block
       e.printStackTrace();
     }
-  //System.exit(0);
+    System.exit(0);
   }
 }
