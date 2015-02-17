@@ -84,7 +84,7 @@ public class NodeInfo<NodeIDType> {
   }
 
   /**
-   * Returns the node id of this node;
+   * Returns the top-level node id of this node;
    * 
    * @return 
    */
@@ -135,7 +135,7 @@ public class NodeInfo<NodeIDType> {
     return pingLatency;
   }
 
-  public synchronized void updatePingLatency(long pingLatency) {
+  public synchronized void setPingLatency(long pingLatency) {
     this.pingLatency = pingLatency;
   }
 

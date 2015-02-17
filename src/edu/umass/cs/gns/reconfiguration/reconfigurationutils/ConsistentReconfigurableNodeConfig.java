@@ -86,6 +86,16 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 		assert(reconfigurators!=null && !reconfigurators.isEmpty());
 		return reconfigurators.iterator().next();
 	}
+        
+        // NOT USED IN NEW APP. FOR BACKWARDS COMPATIBILITY WITH OLD APP.
+        // WILL BE REMOVED AFTER NEW APP IS TESTED.
+        /**
+         * Returns the hash for this name.
+         */
+        @Deprecated
+        public NodeIDType getReconfiguratorHash(String name) {
+          return this.CH_RC.getHash(name);
+        }
 
 	// refresh before returning
 	public Set<NodeIDType> getReplicatedActives(String name) {

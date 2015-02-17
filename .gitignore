@@ -10,3 +10,8 @@
 /scripts/3nodesnew/derby.log
 /scripts/3nodeslocal/paxosLog/
 /log/
+/scripts/newApp/log/
+/scripts/newApp/paxos_large_checkpoints/
+/scripts/newApp/paxos_logs/
+/scripts/newApp/reconfiguration_DB/
+/scripts/newApp/derby.log

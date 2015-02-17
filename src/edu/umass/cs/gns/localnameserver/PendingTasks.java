@@ -69,7 +69,7 @@ public class PendingTasks {
       long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout/10;
       requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
-        GNS.getLogger().fine("Active request queued: " + requestID);
+        GNS.getLogger().info("Active request queued: " + requestID);
         RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID, handler);
         handler.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
                 StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);

@@ -194,6 +194,23 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
+   * Returns the "top-level" host ID for any given nodeID.
+   * 
+   * @param id
+   * @return 
+   */
+  private NodeInfo<NodeIDType> getNodeInfoForAnyNode(NodeIDType id) {
+    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+      if (hostInfo.getId().equals(id)
+              || hostInfo.getActiveReplicaID().equals(id)
+              || hostInfo.getReconfiguratorID().equals(id)) {
+        return hostInfo;
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns the number of name server nodes.
    *
    * @return the number of nodes
@@ -244,7 +261,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
-   * Returns the NS ping port.
+   * Returns the NS ping port. Only valid for top-level nodes.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id
@@ -295,14 +312,20 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * @return
    */
   public long getPingLatency(NodeIDType id) {
-    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
+    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     return (nodeInfo == null) ? INVALID_PING_LATENCY : nodeInfo.getPingLatency();
   }
 
+  /**
+   * Updates the ping latency table for a node.
+   * Only valid for top-level nodes.
+   * @param id
+   * @param responseTime 
+   */
   public void updatePingLatency(NodeIDType id, long responseTime) {
     NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
     if (nodeInfo != null) {
-      nodeInfo.updatePingLatency(responseTime);
+      nodeInfo.setPingLatency(responseTime);
     }
   }
 
@@ -315,9 +338,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    */
   @Override
   public boolean nodeExists(NodeIDType id) {
-    return getNodeIDs().contains(id)
-            || getActiveReplicaInfo(id) != null
-            || getReconfiguratorInfo(id) != null;
+    return getNodeInfoForAnyNode(id) != null;
   }
 
   /**
@@ -372,7 +393,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * @return id of closest server or null if one can't be found
    */
   public NodeIDType getClosestServer(Set<NodeIDType> serverIds, Set<NodeIDType> excludeServers) {
-    if (serverIds == null) {
+    if (serverIds == null || serverIds.isEmpty()) {
       return null;
     }
     // If the local server is one of the server ids and not excluded return it.
@@ -387,12 +408,12 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
         continue;
       }
       long pingLatency = getPingLatency(serverId);
-      if (pingLatency >= 0 && pingLatency < lowestLatency) {
+      if (pingLatency < lowestLatency) {
         lowestLatency = pingLatency;
         nameServerID = serverId;
       }
     }
-
+    GNS.getLogger().info("Closest server is " + nameServerID);
     return nameServerID;
   }
 

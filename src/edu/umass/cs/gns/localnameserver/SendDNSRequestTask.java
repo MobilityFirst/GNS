@@ -80,7 +80,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       // If we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
-        GNS.getLogger().fine("Requesting new actives for " + incomingPacket.getGuid());
+        GNS.getLogger().info("Requesting new actives for " + incomingPacket.getGuid());
         requestNewActives(handler);
         // Cancel the task now. 
         // When the new actives are received, a new task in place of this task will be rescheduled.
@@ -207,7 +207,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
 
   private void requestNewActives(ClientRequestHandlerInterface<NodeIDType> handler) {
     if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
-      GNS.getLogger().fine("Invalid name server for " + incomingPacket.getGuid());
+      GNS.getLogger().info("Invalid name server for " + incomingPacket.getGuid());
     }
     SendDNSRequestTask queryTaskObject = new SendDNSRequestTask<NodeIDType>(lnsReqID, handler,  incomingPacket);
     PendingTasks.addToPendingRequests(handler.getRequestInfo(lnsReqID), queryTaskObject,

@@ -333,7 +333,7 @@ public class Admintercessor<NodeIDType> {
 
     StringBuilder result = new StringBuilder();
     // are there any NSs that didn't respond?
-    Set<NodeIDType> missingIDs = new HashSet(handler.getGnsNodeConfig().getNodeIDs());
+    Set<NodeIDType> missingIDs = new HashSet(handler.getGnsNodeConfig().getActiveReplicas());
     missingIDs.removeAll(recordsMap.keySet());
     if (missingIDs.size() > 0) {
       result.append("Missing NSs: " + Util.setOfNodeIdToString(missingIDs));

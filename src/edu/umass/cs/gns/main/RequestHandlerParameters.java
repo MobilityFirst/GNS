@@ -115,6 +115,10 @@ public class RequestHandlerParameters {
     return replicationFramework;
   }
 
+  public void setDebugMode(boolean debugMode) {
+    this.debugMode = debugMode;
+  }
+
   @Override
   public String toString() {
     return "RequestHandlerParameters{" + "debugMode=" + debugMode + ", experimentMode=" + experimentMode + ", emulatePingLatencies=" + emulatePingLatencies + ", variation=" + variation + ", adaptiveTimeout=" + adaptiveTimeout + ", outputSampleRate=" + outputSampleRate + ", queryTimeout=" + queryTimeout + ", maxQueryWaitTime=" + maxQueryWaitTime + ", cacheSize=" + cacheSize + ", loadDependentRedirection=" + loadDependentRedirection + ", replicationFramework=" + replicationFramework + '}';

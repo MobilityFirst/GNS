@@ -51,7 +51,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
       numAttempts++;
       // check whether actives received
       if (PendingTasks.isReplyReceived(requestID))  {
-        GNS.getLogger().fine("Reply received for requestID " + requestID);
+        GNS.getLogger().info("Reply received for requestID " + requestID);
 
         throw  new CancelExecutorTaskException();
       }

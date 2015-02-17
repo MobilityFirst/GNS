@@ -71,6 +71,7 @@ public class DummyLNS<NodeIDType> {
     this.messenger = messenger;
     messenger.addPacketDemultiplexer(demultiplexer);
     RequestHandlerParameters parameters = new RequestHandlerParameters();
+    parameters.setDebugMode(true);
     ClientRequestHandlerInterface<NodeIDType> requestHandler
             = new NewClientRequestHandler<NodeIDType>(intercessor, admintercessor, nodeAddress,
                     gnsNodeConfig, messenger, demultiplexer, parameters);
