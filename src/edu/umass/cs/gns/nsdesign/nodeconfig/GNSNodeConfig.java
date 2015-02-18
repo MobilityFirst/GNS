@@ -250,7 +250,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * Returns the Admin port of a Nameserver.
-   * 
+   *
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    *
    * @param id Nameserver id
@@ -417,7 +417,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
         nameServerID = serverId;
       }
     }
-    GNS.getLogger().info("Closest server is " + nameServerID);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Closest server is " + nameServerID);
+    }
     return nameServerID;
   }
 

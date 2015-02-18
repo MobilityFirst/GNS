@@ -51,6 +51,7 @@ public class PendingTasks {
    */
   /**
    * Request current set of actives for name, and queue this request to be executed once we receive the current actives.
+   *
    * @param requestInfo Information for this request stored at LNS.
    * @param task TimerTask to be executed once actives are received. Request represented in form of TimerTask
    * @param period Frequency at which TimerTask is repeated
@@ -66,20 +67,21 @@ public class PendingTasks {
       // if we get invalid active error a second time or later, it means the set of active replicas is being changed
       // and the new active replica has not received this information. Therefore, we will wait for a timeout value
       // before sending requests again.
-      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout/10;
+      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout / 10;
       requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
-        GNS.getLogger().info("Active request queued: " + requestID);
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("Active request queued: " + requestID);
+        }
         RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID, handler);
         handler.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
                 StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
       }
     } else {
-      GNS.getLogger().info("This request already in queue so not added to pending requests again. " + requestInfo);
+      GNS.getLogger().warning("This request already in queue so not added to pending requests again. " + requestInfo);
     }
 
   }
-
 
   /**
    * Received reply from primary with current actives, update the cache. If non-null set of actives received,
@@ -97,7 +99,7 @@ public class PendingTasks {
             || requestActivesPacket.getActiveNameServers().size() == 0) {
       GNS.getLogger().fine("Null set of actives received for name " + requestActivesPacket.getName()
               + " sending error");
-      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), 
+      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(),
               LNSEventCode.RC_NO_RECORD_ERROR, handler);
       return;
     }
@@ -166,7 +168,9 @@ public class PendingTasks {
         // remove request from queue
         if (handler.removeRequestInfo(task.requestInfo.getLnsReqID()) != null) {
           task.requestInfo.setFinishTime(); // set finish time for request
-          if (eventCode != null) task.requestInfo.addEventCode(eventCode);
+          if (eventCode != null) {
+            task.requestInfo.addEventCode(eventCode);
+          }
           GNS.getStatLogger().fine(task.requestInfo.getLogString());
           handler.getIntercessor().handleIncomingPacket(task.requestInfo.getErrorMessage());
         }
@@ -219,6 +223,7 @@ public class PendingTasks {
 
 /**
  * Represents a pending request of a name for which the set of active replicas is being obtained.
+ *
  * @author abhigyan
  */
 class PendingTask {

@@ -83,7 +83,7 @@ public class StartLocalNameServer {
   /**
    * * Set to true to enable all the debugging logging statements for the local name server.
    */
-  public static boolean debuggingEnabled = true;
+  public static boolean debuggingEnabled = false;
 
   /**
    * * Used for running experiments for Auspice paper.

@@ -64,17 +64,17 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
           GNS.getLogger().info("######################## Received " + json);
         }
       } else {
-        if (Config.debuggingEnabled) {
-          GNS.getLogger().info("######################## Coordinating " + type
-                  + (type.equals(Packet.PacketType.ACTIVE_COORDINATION)
-                          ? (" PaxosType: " + PaxosPacket.getPaxosPacketType(json)) : ""));
-        }
+//        if (Config.debuggingEnabled) {
+//          GNS.getLogger().info("######################## Coordinating " + type
+//                  + (type.equals(Packet.PacketType.ACTIVE_COORDINATION)
+//                          ? (" PaxosType: " + PaxosPacket.getPaxosPacketType(json)) : ""));
+//        }
         switch (type) {
           // coordination packets internal to paxos
-          case ACTIVE_COORDINATION:
-            Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
-            paxosManager.handleIncomingPacket(json);
-            break;
+//          case ACTIVE_COORDINATION:
+//            Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
+//            paxosManager.handleIncomingPacket(json);
+//            break;
           // call propose
           case UPDATE: // updates need coordination
             UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(json, unstringer);
@@ -86,7 +86,20 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
               GNS.getLogger().warning("Update no paxos state: " + update);
             }
             break;
-
+          // call createPaxosInstance
+          case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
+            // calling handle decision before creating paxos instance to insert state for name in database.
+            if (Config.debuggingEnabled) {
+              GNS.getLogger().info("*******Before creating paxos instance: " + request);
+            }
+            callHandleDecisionWithRetry(request, false);
+            AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(json, unstringer);
+            paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION,
+                    recordPacket.getActiveNameServers(), app);
+            if (Config.debuggingEnabled) {
+              GNS.getLogger().info("*******Added paxos instance:" + recordPacket.getName());
+            }
+            break;
           // call proposeStop
           case ACTIVE_REMOVE: // stop request for removing a name record
             if (Config.debuggingEnabled) {
@@ -110,20 +123,7 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
               noCoordinatorState = true;
             }
             break;
-          // call createPaxosInstance
-          case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
-            // calling handle decision before creating paxos instance to insert state for name in database.
-            if (Config.debuggingEnabled) {
-              GNS.getLogger().info("*******Before creating paxos instance: " + request);
-            }
-            callHandleDecisionWithRetry(request, false);
-            AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(json, unstringer);
-            paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION,
-                    recordPacket.getActiveNameServers(), app);
-            if (Config.debuggingEnabled) {
-              GNS.getLogger().info("*******Added paxos instance:" + recordPacket.getName());
-            }
-            break;
+
           case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
             // active replica has already put initial state for the name in DB. we only need to create paxos instance.
             NewActiveSetStartupPacket<NodeIDType> newActivePacket = new NewActiveSetStartupPacket<NodeIDType>(json, unstringer);

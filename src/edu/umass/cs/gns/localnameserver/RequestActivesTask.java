@@ -3,13 +3,13 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashSet;
 import java.util.TimerTask;
-
 
 /**
  * Send request to primary (replica controllers) to obtain set of actives (including retransmissions).
@@ -27,7 +27,9 @@ import java.util.TimerTask;
  */
 public class RequestActivesTask<NodeIDType> extends TimerTask {
 
-  /**number of messages sent to replica controllers*/
+  /**
+   * number of messages sent to replica controllers
+   */
   private int numAttempts = 0;
   private String name;
   private HashSet<NodeIDType> nameServersQueried;
@@ -45,25 +47,27 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
   }
 
   @Override
-  public void run()  {
+  public void run() {
     try {
 
       numAttempts++;
       // check whether actives received
-      if (PendingTasks.isReplyReceived(requestID))  {
-        GNS.getLogger().info("Reply received for requestID " + requestID);
+      if (PendingTasks.isReplyReceived(requestID)) {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("Reply received for requestID " + requestID);
+        }
 
-        throw  new CancelExecutorTaskException();
+        throw new CancelExecutorTaskException();
       }
 
       if (numAttempts > GNS.numPrimaryReplicas) {
         GNS.getLogger().warning("Error: No actives received for name: " + name + " after " + numAttempts + " attempts.");
         if (System.currentTimeMillis() - startTime > StartLocalNameServer.maxQueryWaitTime) {
           // max number of attempts have been made,
-          GNS.getLogger().severe("Error: No actives received for name  " + name + " after " + numAttempts +
-                  " attempts.");
+          GNS.getLogger().severe("Error: No actives received for name  " + name + " after " + numAttempts
+                  + " attempts.");
           PendingTasks.sendErrorMsgForName(name, requestID, LNSEventCode.RC_NO_RESPONSE_ERROR, handler);
-          throw  new CancelExecutorTaskException();
+          throw new CancelExecutorTaskException();
         }
       }
 
@@ -75,7 +79,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
         primaryID = handler.getClosestReplicaController(name, nameServersQueried);
         if (primaryID == null) {
           GNS.getLogger().severe("No primary NS available. name = " + name);
-          throw  new CancelExecutorTaskException();
+          throw new CancelExecutorTaskException();
         }
 
       }
@@ -92,10 +96,9 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
     }
   }
 
-
-
   /**
    * Send a request to primary to send actives.
+   *
    * @param name name for which actives are requested
    * @param primaryID ID of name server
    * @param requestID requestID for <code>RequestActivesPacket</code>
@@ -103,20 +106,20 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
   private void sendActivesRequestPacketToPrimary(String name, NodeIDType primaryID, int requestID) {
 
     RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);
-    try
-    {
+    try {
       JSONObject sendJson = packet.toJSONObject();
       handler.sendToNS(sendJson, primaryID);
-      if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID.toString()
-              + "\tname\t" + name);
-    } catch (JSONException e)
-    {
-      if (StartLocalNameServer.debuggingEnabled) GNS.getLogger().fine("JSON Exception in sending packet. name\t" + name);
+      if (StartLocalNameServer.debuggingEnabled) {
+        GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID.toString()
+                + "\tname\t" + name);
+      }
+    } catch (JSONException e) {
+      if (StartLocalNameServer.debuggingEnabled) {
+        GNS.getLogger().fine("JSON Exception in sending packet. name\t" + name);
+      }
       e.printStackTrace();
     }
 
   }
 
-
 }
-

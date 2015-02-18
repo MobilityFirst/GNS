@@ -44,19 +44,18 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   private final DNSPacket<NodeIDType> incomingPacket;
   private final int lnsReqID;
 
-  private final HashSet<NodeIDType> nameserversQueried= new HashSet<>();
+  private final HashSet<NodeIDType> nameserversQueried = new HashSet<>();
 
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
 
   public SendDNSRequestTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler,
-                            DNSPacket<NodeIDType> incomingPacket) {
+          DNSPacket<NodeIDType> incomingPacket) {
     this.lnsReqID = lnsReqID;
     this.handler = handler;
     this.incomingPacket = incomingPacket;
   }
-
 
   @Override
   // Pretty much the same code as in SendUpdatesTask
@@ -80,7 +79,9 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       // If we don't have one or more valid active replicas in the cache entry
       // we need to request a new set for this name.
       if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
-        GNS.getLogger().info("Requesting new actives for " + incomingPacket.getGuid());
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("Requesting new actives for " + incomingPacket.getGuid());
+        }
         requestNewActives(handler);
         // Cancel the task now. 
         // When the new actives are received, a new task in place of this task will be rescheduled.
@@ -104,18 +105,18 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   private boolean isResponseReceived(ClientRequestHandlerInterface<NodeIDType> handler) {
     DNSRequestInfo<NodeIDType> info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (info == null) {
-        if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
-          GNS.getLogger().fine("Query ID. Response recvd "
-                  + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + Util.setOfNodeIdToString(nameserversQueried) + "\t");
-        }
-        return true;
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+        GNS.getLogger().fine("Query ID. Response recvd "
+                + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + Util.setOfNodeIdToString(nameserversQueried) + "\t");
+      }
+      return true;
     } else if (requestActivesCount == -1) {
       requestActivesCount = info.getNumLookupActives();
     } else if (requestActivesCount != info.getNumLookupActives()) { //
       // invalid active response received in this case
       if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
-        GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + incomingPacket +
-        " Request actives count: " + requestActivesCount + " Request actives count: " + info.getNumLookupActives());
+        GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + incomingPacket
+                + " Request actives count: " + requestActivesCount + " Request actives count: " + info.getNumLookupActives());
       }
       return true;
     }
@@ -128,7 +129,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       if (System.currentTimeMillis() - requestInfo.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
         // remove from request info as LNS must clear all state for this request
         requestInfo = (DNSRequestInfo) handler.removeRequestInfo(lnsReqID);
-        if (requestInfo!=null) {
+        if (requestInfo != null) {
           // send error response to user and log error
           if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
             GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getGuid() + "/" + incomingPacket.getKey()
@@ -209,7 +210,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
       GNS.getLogger().info("Invalid name server for " + incomingPacket.getGuid());
     }
-    SendDNSRequestTask queryTaskObject = new SendDNSRequestTask<NodeIDType>(lnsReqID, handler,  incomingPacket);
+    SendDNSRequestTask queryTaskObject = new SendDNSRequestTask<NodeIDType>(lnsReqID, handler, incomingPacket);
     PendingTasks.addToPendingRequests(handler.getRequestInfo(lnsReqID), queryTaskObject,
             handler.getParameters().getQueryTimeout(), handler);
   }
@@ -230,7 +231,9 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       nameserversQueried.add(ns);
 
       DNSRequestInfo reqInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
-      if (reqInfo != null) reqInfo.addEventCode(LNSEventCode.CONTACT_ACTIVE);
+      if (reqInfo != null) {
+        reqInfo.addEventCode(LNSEventCode.CONTACT_ACTIVE);
+      }
       int clientQueryID = incomingPacket.getQueryId();
 
       // set this information in anticipation of creating the json object below

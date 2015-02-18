@@ -88,8 +88,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int PAXOS_ID_SIZE = 40; // FIXME: GUID is 20 bytes, but its hex-byte representation is bloated
 	private static final int PAUSE_STATE_SIZE = 256;
 	private static final int MAX_GROUP_SIZE = 256; // maximum size of a paxos replica group
-	private static final int MAX_LOG_MESSAGE_SIZE = 4096; // maximum size of a log message
-	private static final int MAX_CHECKPOINT_SIZE = 4096; // maximum size of a log message
+	private static final int MAX_LOG_MESSAGE_SIZE = 32768; // maximum size of a log message
+	private static final int MAX_CHECKPOINT_SIZE = 32768; // maximum size of a log message
 	private static final int TRUNCATED_STATE_SIZE = 2048; // max state size while java logging
 	private static final int MAX_OLD_DECISIONS =
 			PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
