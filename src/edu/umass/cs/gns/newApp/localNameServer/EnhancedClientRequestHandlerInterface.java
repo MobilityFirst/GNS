@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.newApp.test;
+package edu.umass.cs.gns.newApp.localNameServer;
 
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
@@ -13,6 +13,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServic
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import java.io.IOException;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -34,5 +35,7 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
   public DeleteServiceName makeDeleteNameRequest(String name);
   
   public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException;
+  
+  public boolean handleEvent(JSONObject json) throws JSONException;
 
 }

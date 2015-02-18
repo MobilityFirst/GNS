@@ -1,9 +1,8 @@
-package edu.umass.cs.gns.newApp.test;
+package edu.umass.cs.gns.newApp.localNameServer;
 
 import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
 import edu.umass.cs.gns.localnameserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
@@ -25,10 +24,12 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.net.InetSocketAddress;
@@ -37,7 +38,7 @@ import java.net.InetSocketAddress;
  * @author Westy
  * @param <NodeIDType>
  */
-public class DummyLNS<NodeIDType> {
+public class NewLocalNameServer<NodeIDType> {
 
   private final InetSocketAddress nodeAddress;
   private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
@@ -59,14 +60,15 @@ public class DummyLNS<NodeIDType> {
    * We also keep a pointer to the lnsListenerAdmin so we can shut it down.
    */
   private final LNSListenerAdmin<NodeIDType> lnsListenerAdmin;
-  // Mostly kept for testing...
+
   EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler;
 
+ 
   private final Logger log = Logger.getLogger(getClass().getName());
 
-  DummyLNS(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
+  NewLocalNameServer(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
           JSONMessenger<NodeIDType> messenger) throws IOException {
-    AbstractPacketDemultiplexer demultiplexer = new DummyLNSPacketDemultiplexer();
+    AbstractPacketDemultiplexer demultiplexer = new NewLNSPacketDemultiplexer();
     this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<>();
     this.nodeAddress = nodeAddress;
@@ -75,11 +77,9 @@ public class DummyLNS<NodeIDType> {
     messenger.addPacketDemultiplexer(demultiplexer);
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(true);
-    this.requestHandler
-            = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
-                    gnsNodeConfig, messenger, demultiplexer, parameters);
-    // Nice circular data structure...
-    ((DummyLNSPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
+    this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
+            gnsNodeConfig, messenger, parameters);
+    ((NewLNSPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
     // Start HTTP server
     GnsHttpServer.runHttp(requestHandler);
     // Start Ping servers
@@ -104,7 +104,6 @@ public class DummyLNS<NodeIDType> {
 //    DeleteServiceName delete = new DeleteServiceName(null, name, 0);
 //    return delete;
 //  }
-
   private int requestId = 0; // just for shits and giggles
 
   private UpdatePacket makeUpdateRequest(String name, String value) throws JSONException {
@@ -131,7 +130,6 @@ public class DummyLNS<NodeIDType> {
 //  private NodeIDType getFirstRCReplica() {
 //    return this.nodeConfig.getReconfigurators().iterator().next();
 //  }
-
   private void sendUpdateRequest(UpdatePacket req) throws JSONException, IOException, RequestParseException {
     NodeIDType id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? requestHandler.getFirstReplica() : requestHandler.getRandomReplica());
     log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending ", req.getRequestType(), " to ", id, ":", this.nodeConfig.getNodeAddress(id), ":", this.nodeConfig.getNodePort(id), ": ", req});
@@ -163,15 +161,15 @@ public class DummyLNS<NodeIDType> {
     InetSocketAddress address = new InetSocketAddress("127.0.0.1", 24398);
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
-    DummyLNS localNameServer = null;
+    NewLocalNameServer localNameServer = null;
     JSONMessenger messenger = new JSONMessenger<String>(
             (new JSONNIOTransport(address, nodeConfig, new PacketDemultiplexerDefault(),
                     true)).enableStampSenderPort());
-    localNameServer = new DummyLNS(address, nodeConfig, messenger);
+    localNameServer = new NewLocalNameServer(address, nodeConfig, messenger);
     //runTestAndStop(localNameServer);
   }
 
-  private static void runTestAndStop(DummyLNS localNameServer) {
+  private static void runTestAndStop(NewLocalNameServer localNameServer) {
     try {
       int numRequests = 2;
       String namePrefix = "name";

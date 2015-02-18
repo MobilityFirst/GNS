@@ -4,7 +4,7 @@
  * All Rights Reserved 
  *
  */
-package edu.umass.cs.gns.newApp.test;
+package edu.umass.cs.gns.newApp.localNameServer;
 
 import edu.umass.cs.gns.localnameserver.*;
 import com.google.common.cache.Cache;
@@ -13,7 +13,6 @@ import edu.umass.cs.gns.clientsupport.Admintercessor;
 import edu.umass.cs.gns.clientsupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
-import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessenger;
@@ -24,13 +23,14 @@ import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 //import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.reconfiguration.examples.TestConfig;
+import edu.umass.cs.gns.protocoltask.ProtocolEvent;
+import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.MovingAverage;
-import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -45,7 +45,6 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.logging.Level;
 import org.json.JSONException;
 
 /**
@@ -91,10 +90,13 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   private final ConsistentReconfigurableNodeConfig nodeConfig;
 
   private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
-  
-   private final JSONMessenger<NodeIDType> messenger;
+
+  private final JSONMessenger<NodeIDType> messenger;
 
   private final Random random;
+
+  private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
+  private final LNSProtocolTask<NodeIDType> protocolTask;
 
   /**
    * Host address of the local name server.
@@ -108,8 +110,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
-          JSONMessenger<NodeIDType> messenger,
-          AbstractPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) {
+          JSONMessenger<NodeIDType> messenger, RequestHandlerParameters parameters) {
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
@@ -124,9 +125,18 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
     this.tcpTransport = messenger;
     this.messenger = messenger;
-    
+    this.protocolExecutor = new ProtocolExecutor<>(messenger);
+    this.protocolTask = new LNSProtocolTask<>(this);
+    this.protocolExecutor.register(this.protocolTask.getEventTypes(), this.protocolTask);
   }
 
+  @Override
+  public boolean handleEvent(JSONObject json) throws JSONException {
+    BasicReconfigurationPacket<NodeIDType> rcEvent = 
+            (BasicReconfigurationPacket<NodeIDType>)ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
+    return this.protocolExecutor.handleEvent(rcEvent);
+  }
+  
   /**
    * @return the executorService
    */
@@ -444,7 +454,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     DeleteServiceName delete = new DeleteServiceName(null, name, 0);
     return delete;
   }
-  
+
   @Override
   public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException {
     NodeIDType id = getRandomRCReplica();

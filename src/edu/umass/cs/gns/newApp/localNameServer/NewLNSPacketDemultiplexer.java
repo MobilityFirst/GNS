@@ -5,11 +5,10 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.newApp.test;
+package edu.umass.cs.gns.newApp.localNameServer;
 
 import edu.umass.cs.gns.clientsupport.CommandRequest;
 import edu.umass.cs.gns.localnameserver.AddRemove;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.LNSTestRequests;
 import edu.umass.cs.gns.localnameserver.Lookup;
 import edu.umass.cs.gns.localnameserver.PendingTasks;
@@ -19,17 +18,13 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.MyLogger;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import org.json.JSONException;
@@ -38,8 +33,9 @@ import org.json.JSONObject;
 /**
  *
  * @author westy
+ * @param <NodeIDType>
  */
-public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
+public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
   private EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -47,7 +43,8 @@ public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemul
     this.handler = handler;
   }
 
-  public DummyLNSPacketDemultiplexer() {
+  public NewLNSPacketDemultiplexer() {
+    // probably should get these from the event handler
     this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
     this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
     // From current LNS
@@ -71,6 +68,11 @@ public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemul
   public boolean handleJSONObject(JSONObject json) {
     GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
     try {
+      if (ReconfigurationPacket.isReconfigurationPacket(json)) {
+        if (handler.handleEvent(json)) {
+          return true;
+        }
+      }
       Packet.PacketType type = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
         GNS.getLogger().info("MsgType " + type + " Msg " + json);
@@ -84,88 +86,75 @@ public class DummyLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemul
               // Lookup // these have been converted to use handler
               case DNS_SUBTYPE_QUERY:
                 Lookup.handlePacketLookupRequest(json, dnsPacket, handler);
-                break;
+                return true;
               case DNS_SUBTYPE_RESPONSE:
                 Lookup.handlePacketLookupResponse(json, dnsPacket, handler);
-                break;
+                return true;
               case DNS_SUBTYPE_ERROR_RESPONSE:
                 Lookup.handlePacketLookupErrorResponse(json, dnsPacket, handler);
-                break;
+                return true;
+              default:
+                GNS.getLogger().warning("Unknown DNS packet subtype: " + incomingPacketType);
+                return false;
             }
-            break;
           // Update // some of these have been converted to use handler
           case UPDATE:
             Update.handlePacketUpdate(json, handler);
-            break;
+            return true;
           case UPDATE_CONFIRM:
             Update.handlePacketConfirmUpdate(json, handler);
-            break;
+            return true;
           case NAME_SERVER_LOAD:
             handler.handleNameServerLoadPacket(json);
-            break;
+            return true;
           // Add/remove
           case ADD_RECORD:
             AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
             handler.sendRequest(handler.makeCreateNameRequest(addRecordPacket.getName(), addRecordPacket.getValue().toString()));
             //
-            AddRemove.handlePacketAddRecord(json, handler);
-            break;
+            //AddRemove.handlePacketAddRecord(json, handler);
+            return true;
           case REMOVE_RECORD:
             RemoveRecordPacket removeRecord = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
             handler.sendRequest(handler.makeDeleteNameRequest(removeRecord.getName()));
             //
-            AddRemove.handlePacketRemoveRecord(json, handler);
-            break;
+            //AddRemove.handlePacketRemoveRecord(json, handler);
+            return true;
           case ADD_CONFIRM:
             AddRemove.handlePacketConfirmAdd(json, handler);
-            break;
+            return true;
           case REMOVE_CONFIRM:
             AddRemove.handlePacketConfirmRemove(json, handler);
-            break;
+            return true;
           // Others
           case REQUEST_ACTIVES:
             PendingTasks.handleActivesRequestReply(json, handler);
-            break;
+            return true;
           case SELECT_REQUEST:
             Select.handlePacketSelectRequest(json, handler);
-            break;
+            return true;
           case SELECT_RESPONSE:
             Select.handlePacketSelectResponse(json, handler);
-            break;
+            return true;
           // Requests sent only during testing
           case NEW_ACTIVE_PROPOSE:
             LNSTestRequests.sendGroupChangeRequest(json, handler);
-            break;
+            return true;
           case GROUP_CHANGE_COMPLETE:
             LNSTestRequests.handleGroupChangeComplete(json);
-            break;
+            return true;
           case COMMAND:
             CommandRequest.handlePacketCommandRequest(json, handler);
-            break;
+            return true;
           default:
-            //isPacketTypeFound = false;
-            GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS IGNORING: ", json});
-            break;
-        }
-      } else {
-        switch (ReconfigurationPacket.getReconfigurationPacketType(json)) {
-          case CREATE_SERVICE_NAME:
-            CreateServiceName create = new CreateServiceName(json);
-            GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[2], new Object[]{"App", " created ", create.getServiceName()});
-            break;
-          // We never receive this, but then again neither does the 
-          case DELETE_SERVICE_NAME:
-            DeleteServiceName delete = new DeleteServiceName(json);
-            GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"App deleted ", delete.getServiceName()});
-            break;
-          default:
-            GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS IGNORING: ", json});
-            break;
+            GNS.getLogger().warning("************************* LNS IGNORING: " + json);
+            return false;
         }
       }
-    } catch (IOException | JSONException | NoSuchAlgorithmException e) {
+      GNS.getLogger().warning("************************* LNS CANT GET PACKET TYPE AND IGNORING: " + json);
+    } catch (IOException | JSONException e) {
       e.printStackTrace();
     }
-    return true;
+    return false;
   }
 }
