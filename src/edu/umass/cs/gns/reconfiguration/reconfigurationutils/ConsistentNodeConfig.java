@@ -51,9 +51,11 @@ public class ConsistentNodeConfig<NodeIDType> implements
 		return this.nodeConfig.getNodePort(id);
 	}
 
+	// FIXME: disallow the use of this method
 	@Override
 	public Set<NodeIDType> getNodeIDs() {
-		return this.nodeConfig.getNodeIDs();
+		throw new RuntimeException("The use of this method is not permitted");
+		//return this.nodeConfig.getNodeIDs();
 	}
 
 	@Override

@@ -744,8 +744,6 @@ public class NIOTransport<NodeIDType> implements Runnable {
               this.nodeConfig.getNodePort(this.myID));
     }
     serverChannel.socket().bind(isa);
-    log.log(Level.INFO, "Node {0} listening on {1}", new Object[]{myID, isa});
-    
 
     // Register the server socket channel, indicating an interest in
     // accepting new connections

@@ -292,15 +292,14 @@ public class TESTPaxosConfig {
 
 	public synchronized static void setRecovered(int id, String paxosID,
 			boolean b) {
-//		assert (id < MAX_NODE_ID) : " id = " + id + ", MAX_NODE_ID = "
-//				+ MAX_NODE_ID;
+		//assert (id < MAX_NODE_ID) : " id = " + id + ", MAX_NODE_ID = "+ MAX_NODE_ID;
 		if (paxosID.equals(TEST_GUID)) {
 			recovered[id] = b;
 		}
 	}
 
 	public synchronized static boolean getRecovered(int id, String paxosID) {
-//		assert (id < MAX_NODE_ID);
+		assert (id < MAX_NODE_ID);
 		if (paxosID.equals(TEST_GUID))
 			return recovered[id];
 		else

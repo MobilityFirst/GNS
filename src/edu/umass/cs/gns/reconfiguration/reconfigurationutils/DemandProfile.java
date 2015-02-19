@@ -13,7 +13,7 @@ import edu.umass.cs.gns.util.Util;
  * @author V. Arun
  */
 /*
- * This class maintains the demand profile for a single name and turns it into a JSONObject via its
+ * This class maintains the deman profile for a single name and returns it into a JSONObject via its
  * getStats() method.
  */
 public class DemandProfile extends AbstractDemandProfile {

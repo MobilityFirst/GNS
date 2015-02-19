@@ -41,10 +41,10 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 			new ConcurrentHashMap<IntegerPacketType, Boolean>();
 	
 	private InterfaceReconfiguratorCallback callback = null;
+	private InterfaceReconfiguratorCallback activeCallback = null; // for stops
 	protected JSONMessenger<NodeIDType> messenger;	
 
 	/********************* Start of abstract methods **********************************************/
-	//public abstract InterfaceApplication<RequestType> createApplication();
 	/* This method performs whatever replica coordination action is necessary to handle the request.
 	 */
 	public abstract boolean coordinateRequest(
@@ -90,6 +90,10 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 
 	protected final AbstractReplicaCoordinator<NodeIDType> setCallback(InterfaceReconfiguratorCallback callback) {
 		this.callback = callback;
+		return this;
+	}
+	protected final AbstractReplicaCoordinator<NodeIDType> setActiveCallback(InterfaceReconfiguratorCallback callback) {
+		this.activeCallback = callback;
 		return this;
 	}
 
@@ -185,9 +189,16 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 
 	
 	/*********************** Start of private helper methods **********************/
+	// Call back active replica for stop requests, else call default callback
 	private void callCallback(InterfaceRequest request, boolean handled) {
-		if(this.callback!=null) this.callback.executed(request, handled);
+		if (request instanceof InterfaceReconfigurableRequest
+				&& ((InterfaceReconfigurableRequest) request).isStop()
+				&& this.activeCallback != null)
+			this.activeCallback.executed(request, handled);
+		else if (this.callback != null)
+			this.callback.executed(request, handled);
 	}
+
 	private boolean needsCoordination(InterfaceRequest request) {
 		if (request instanceof InterfaceReplicableRequest
 				&& ((InterfaceReplicableRequest) request).needsCoordination()) {

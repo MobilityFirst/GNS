@@ -75,7 +75,6 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final String DUPLICATE_KEY = "23505";
 	private static final String DUPLICATE_TABLE = "X0Y32";
 	private static final String NONEXISTENT_TABLE = "42Y07";
-        private static final String NONEXISTENT_TABLE_ALSO = "42Y55";
 	private static final String USER = "user";
 	private static final String PASSWORD = "user";
 	private static final String DATABASE = "paxos_logs";
@@ -89,12 +88,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int PAXOS_ID_SIZE = 40; // FIXME: GUID is 20 bytes, but its hex-byte representation is bloated
 	private static final int PAUSE_STATE_SIZE = 256;
 	private static final int MAX_GROUP_SIZE = 256; // maximum size of a paxos replica group
-	private static final int MAX_LOG_MESSAGE_SIZE = 32672; // maximum size of a log message
-	private static final int MAX_CHECKPOINT_SIZE = 32672; // maximum size of a log message
+	private static final int MAX_LOG_MESSAGE_SIZE = 4096; // maximum size of a log message
+	private static final int MAX_CHECKPOINT_SIZE = 4096; // maximum size of a log message
 	private static final int TRUNCATED_STATE_SIZE = 2048; // max state size while java logging
 	private static final int MAX_OLD_DECISIONS =
 			PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
-	private static final boolean CLOB_OPTION = false;
+	private static final int MAX_VARCHAR_SIZE = 32672;
+	private static final boolean CHECKPOINT_CLOB_OPTION = (MAX_CHECKPOINT_SIZE > MAX_VARCHAR_SIZE);
+	private static final boolean LOG_MESSAGE_CLOB_OPTION = (MAX_LOG_MESSAGE_SIZE > MAX_VARCHAR_SIZE);
 	// needed for testing with recovery in the same JVM
 	private static final boolean DONT_SHUTDOWN_DB = true; 
 	
@@ -177,7 +178,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				pstmt.setInt(4, sb[1]);
 				pstmt.setInt(5, sb[2]);
 				pstmt.setInt(6, packet.getType().getInt());
-				pstmt.setString(7, packetString);
+				if(LOG_MESSAGE_CLOB_OPTION)
+					pstmt.setClob(7, new StringReader(packetString));
+				else pstmt.setString(7, packetString);
+				
 				pstmt.addBatch();
 				if ((i + 1) % 1000 == 0 || (i + 1) == packets.length) {
 					int[] executed = pstmt.executeBatch();
@@ -246,7 +250,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			insertCP.setInt(3, slot);
 			insertCP.setInt(4, ballot.ballotNumber);
 			insertCP.setInt(5, ballot.coordinatorID);
-			if (CLOB_OPTION)
+			if (CHECKPOINT_CLOB_OPTION)
 				insertCP.setClob(6, new StringReader(state));
 			else insertCP.setString(6, state);
 			insertCP.setString(7, paxosID);
@@ -378,7 +382,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			localLogMsgStmt.setInt(4, ballotnum);
 			localLogMsgStmt.setInt(5, coordinator);
 			localLogMsgStmt.setInt(6, type.getInt());
-			localLogMsgStmt.setString(7, message);
+			if(LOG_MESSAGE_CLOB_OPTION) 
+				localLogMsgStmt.setClob(7, new StringReader(message));
+			else localLogMsgStmt.setString(7, message);
+			
 			int rowcount = localLogMsgStmt.executeUpdate();
 			assert (rowcount == 1);
 			logged = true;
@@ -455,7 +462,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			rset = pstmt.executeQuery();
 			while (rset.next()) {
 				assert (hri == null); // exactly onece
-				String serialized = rset.getString(1);
+				String serialized = rset.getString(1); // no clob option
 				hri = new HotRestoreInfo(serialized);
 			}
 		} catch (SQLException sqle) {
@@ -517,7 +524,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			while (stateRS.next()) {
 				assert (state == null); // single result
 				state =
-						(!CLOB_OPTION ? stateRS.getString(1)
+						(!CHECKPOINT_CLOB_OPTION ? stateRS.getString(1)
 								: clobToString(stateRS.getClob(1)));
 			}
 		} catch (IOException e) {
@@ -565,16 +572,17 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			stateRS = this.checkpointStmt.executeQuery();
 			while (stateRS.next()) {
 				assert (sb == null); // single result
-				sb =
-						new SlotBallotState(stateRS.getInt(1),
-								stateRS.getInt(2), stateRS.getInt(3),
-								stateRS.getString(4));
-				versionMismatch =
-						(matchVersion && version != stateRS.getShort(5));
+				sb = new SlotBallotState(stateRS.getInt(1), stateRS.getInt(2),
+						stateRS.getInt(3),
+						(!CHECKPOINT_CLOB_OPTION ? stateRS.getString(4)
+								: clobToString(stateRS.getClob(4))));
+				versionMismatch = (matchVersion && version != stateRS
+						.getShort(5));
 			}
-		} catch (SQLException sqle) {
-			log.severe("SQLException while getting slot " + " : " + sqle);
-			sqle.printStackTrace();
+		} catch (SQLException | IOException e) {
+			log.severe((e instanceof SQLException ? "SQL" : "IO")
+					+ "Exception while getting slot " + " : " + e);
+			e.printStackTrace();
 		} finally {
 			cleanup(stateRS);
 			cleanup(conn);
@@ -671,12 +679,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				short version = cursorRset.getShort(2);
 				String members = cursorRset.getString(3);
 				String[] pieces = JSONUtils.jsonToStringArray(members);
-				String state = (readState ? cursorRset.getString(4) : null);
+				String state = (readState ? (!CHECKPOINT_CLOB_OPTION ? cursorRset
+						.getString(4) : clobToString(cursorRset.getClob(4)))
+						: null);
 				pri = new RecoveryInfo(paxosID, version, pieces, state);
 			}
-		} catch (SQLException | JSONException e) {
-			log.severe((e instanceof SQLException ? "SQL" : "JSON") +
-					"Exception in readNextCheckpoint: " + " : " + e);
+		} catch (SQLException | JSONException | IOException e) {
+			log.severe(e.getClass().getSimpleName()
+					+ " in readNextCheckpoint: " + " : " + e);
 		}
 		return pri;
 	}
@@ -704,13 +714,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		PaxosPacket packet = null;
 		try {
 			if (cursorRset != null && cursorRset.next()) {
-				String msg = cursorRset.getString(1);
+				String msg = (!LOG_MESSAGE_CLOB_OPTION ? cursorRset.getString(1) : clobToString(cursorRset.getClob(1)));
 				packet = PaxosPacket.getPaxosPacket(msg);
 			}
-		} catch (SQLException | JSONException e) {
-			log.severe("Node " + this.myID + " got " +
-					(e instanceof SQLException ? "SQL" : "JSON") +
-					"Exception in readNextMessage while reading: " + " : " + packet);
+		} catch (SQLException | JSONException | IOException e) {
+			log.severe("Node " + this.myID + " got "
+					+ e.getClass().getSimpleName()
+					+ " in readNextMessage while reading: " + " : " + packet);
 			e.printStackTrace();
 		}
 		return packet;
@@ -784,13 +794,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 			assert (!messagesRS.isClosed());
 			while (messagesRS.next()) {
-				String msg = messagesRS.getString(1);
+				String msg = (!LOG_MESSAGE_CLOB_OPTION ? messagesRS.getString(1) : clobToString(messagesRS.getClob(1)));
 				PaxosPacket packet = PaxosPacket.getPaxosPacket(msg);
 				messages.add(packet);
 			}
-		} catch (SQLException | JSONException e) {
-			log.severe((e instanceof SQLException ? "SQL":"JSON") + 
-				"Exception while getting slot for " + paxosID + ":");
+		} catch (SQLException | JSONException | IOException e) {
+			log.severe(e.getClass().getSimpleName()
+					+ " while getting slot for " + paxosID + ":");
 			e.printStackTrace();
 		} finally {
 			cleanup(pstmt, messagesRS);
@@ -1006,22 +1016,22 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private boolean createTables() {
 		boolean createdCheckpoint = false, createdMessages = false, createdPTable =
 				false;
-		String cmdC =
-				"create table " + getCTable() + " (paxos_id varchar(" +
-						PAXOS_ID_SIZE +
-						") not null, version smallint, members varchar(" +
-						MAX_GROUP_SIZE + "), slot int, " +
-						"ballotnum int, coordinator int, state varchar(" +
-						MAX_CHECKPOINT_SIZE + "), primary key (paxos_id))";
-		String cmdM =
-				"create table " +
-						getMTable() +
-						" (paxos_id varchar(" +
-						PAXOS_ID_SIZE +
-						") not null, " +
-						"version smallint, slot int, ballotnum int, coordinator int, packet_type int, message varchar(" +
-						MAX_LOG_MESSAGE_SIZE +
-						")/*, primary key(paxos_id, slot, ballotnum, coordinator, packet_type)*/)";
+		String cmdC = "create table " + getCTable() + " (paxos_id varchar("
+				+ PAXOS_ID_SIZE
+				+ ") not null, version smallint, members varchar("
+				+ MAX_GROUP_SIZE + "), slot int, "
+				+ "ballotnum int, coordinator int, state "
+				+ (CHECKPOINT_CLOB_OPTION ? "clob(" : "varchar(") + MAX_CHECKPOINT_SIZE
+				+ "), primary key (paxos_id))";
+		String cmdM = "create table "
+				+ getMTable()
+				+ " (paxos_id varchar("
+				+ PAXOS_ID_SIZE
+				+ ") not null, "
+				+ "version smallint, slot int, ballotnum int, coordinator int, packet_type int, message "
+				+ (LOG_MESSAGE_CLOB_OPTION ? "clob(" : "varchar(")
+				+ MAX_LOG_MESSAGE_SIZE
+				+ ")/*, primary key(paxos_id, slot, ballotnum, coordinator, packet_type)*/)";
 		/* We create a non-unique-key index below instead of (unique) primary 
 		 * key (commented out above) as otherwise we will get duplicate key
 		 * exceptions during batch inserts.
@@ -1034,7 +1044,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 						PAXOS_ID_SIZE + ") not null, serialized varchar(" +
 						PAUSE_STATE_SIZE +
 						") not null, primary key (paxos_id))";
-                  if (this.dbDirectoryExists()) this.dropTable(getPTable()); // using pause table unnecessarily slows down
+		if (this.dbDirectoryExists()) this.dropTable(getPTable()); // using pause table unnecessarily slows down
 																	// recovery significantly
 		Statement stmt = null;
 		Connection conn = null;
@@ -1095,8 +1105,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			dropped = true;
 			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node " , myID , " dropped pause table " , table});
 		} catch (SQLException sqle) {
-			if (!sqle.getSQLState().equals(NONEXISTENT_TABLE) && 
-                                !sqle.getSQLState().equals(NONEXISTENT_TABLE_ALSO)) {
+			if (!sqle.getSQLState().equals(NONEXISTENT_TABLE)) {
 				log.severe("Node " + this.myID + " could not drop table " +
 						table + ":" + sqle.getSQLState());
 				sqle.printStackTrace();
@@ -1139,9 +1148,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
 		// providing a user name and PASSWORD is optional in embedded derby
-                // CHANGED TO NOT INCLUDE ID BECAUSE IDS CREATED FROM STRINGS WERE BREAKING - Westy
-		//props.put("user", DerbyPaxosLogger.USER + this.myID);
-                props.put("user", DerbyPaxosLogger.USER);
+		props.put("user", DerbyPaxosLogger.USER);
 		props.put("password", DerbyPaxosLogger.PASSWORD);
 		String dbCreation = PROTOCOL + this.logDirectory + DATABASE;
 
@@ -1306,7 +1313,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				(getCheckpointState(paxosID, "state").equals("" + state));
 	}
 
-	protected boolean isLogged(String paxosID, int slot, int ballotnum,
+	// used only for testing
+	private boolean isLogged(String paxosID, int slot, int ballotnum,
 			int coordinator, String msg) {
 		PreparedStatement pstmt = null;
 		ResultSet messagesRS = null;
@@ -1321,15 +1329,16 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		try {
 			conn = this.getDefaultConn();
 			pstmt = conn.prepareStatement(cmd);
-			pstmt.setString(1, msg);
+			pstmt.setString(1, msg); // will not work for clobs
 			messagesRS = pstmt.executeQuery();
 			while (messagesRS.next() && !logged) {
-				String insertedMsg = messagesRS.getString(2);
+				String insertedMsg = (!LOG_MESSAGE_CLOB_OPTION ? messagesRS.getString(2) : clobToString(messagesRS.getClob(2)));
 				logged = msg.equals(insertedMsg);
 			}
-		} catch (SQLException sqle) {
-			log.severe("SQLException while getting slot " + " : " + sqle);
-
+		} catch (SQLException | IOException e) {
+			log.severe(e.getClass().getSimpleName() + " while getting slot "
+					+ " : " + e);
+			e.printStackTrace();
 		} finally {
 			cleanup(pstmt, messagesRS);
 			cleanup(conn);

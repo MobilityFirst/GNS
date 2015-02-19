@@ -31,7 +31,7 @@ import edu.umass.cs.gns.util.Stringifiable;
  */
 public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		InterfaceRepliconfigurable, InterfaceReconfiguratorDB<NodeIDType> {
-	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.RC_RECORD_REQUEST };
+	public static final ReconfigurationPacket.PacketType[] types = { };//ReconfigurationPacket.PacketType.RC_RECORD_REQUEST };
 
 	protected final NodeIDType myID;
 	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;

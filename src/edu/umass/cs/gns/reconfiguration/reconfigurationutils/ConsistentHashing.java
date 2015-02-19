@@ -58,17 +58,6 @@ public class ConsistentHashing<NodeIDType> {
 	private static int consistentHash(String name, int buckets) {
 		return Hashing.consistentHash(name.hashCode(), buckets);
 	}
-        
-        // NOT USED IN NEW APP. FOR BACKWARDS COMPATIBILITY WITH OLD APP.
-        // WILL BE REMOVED AFTER NEW APP IS TESTED.
-        /**
-         * Returns the hash for this name.
-         */
-        @Deprecated
-        public NodeIDType getHash(String name) {
-          int bucket = consistentHash(name, this.serversArray.length);
-          return (NodeIDType) this.serversArray[bucket % this.serversArray.length];
-        }
 
 	// Testing
 	private Set<?> getServers() {return this.servers;}

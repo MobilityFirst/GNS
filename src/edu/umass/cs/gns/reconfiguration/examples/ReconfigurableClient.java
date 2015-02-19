@@ -39,7 +39,7 @@ public class ReconfigurableClient {
 	}
 
 	private AppRequest makeRequest(String name, String value) {
-		AppRequest req = new AppRequest(name, 0, value, AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
+		AppRequest req = new AppRequest(name, value, AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
 		return req;
 	}
 	private CreateServiceName makeCreateNameRequest(String name, String state) {
@@ -70,16 +70,19 @@ public class ReconfigurableClient {
 	private void sendRequest(AppRequest req) throws JSONException, IOException, RequestParseException {
 		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstReplica() : this.getRandomReplica());
 		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getRequestType(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
+		this.exists.put(req.getServiceName(), true);
 		this.sendRequest(id, req.toJSONObject());
 	}
 	private void sendRequest(CreateServiceName req) throws JSONException, IOException {
 		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
 		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getSummary(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
+		this.exists.put(req.getServiceName(), true);
 		this.sendRequest(id, req.toJSONObject());
 	}
 	private void sendRequest(DeleteServiceName req) throws JSONException, IOException {
 		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
 		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getSummary(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
+		this.exists.put(req.getServiceName(), true);
 		this.sendRequest(id, req.toJSONObject());
 	}
 
@@ -98,28 +101,41 @@ public class ReconfigurableClient {
 		public boolean handleJSONObject(JSONObject json) {
 			log.log(Level.FINEST, MyLogger.FORMAT[1], new Object[]{"Client received: " , json});
 			try {
-				switch(ReconfigurationPacket.getReconfigurationPacketType(json)) {
-				case CREATE_SERVICE_NAME:
-					CreateServiceName create = new CreateServiceName(json);
-					log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{"App" , " created " , create.getServiceName()});
-					exists.put(create.getServiceName(), true);
-					break;
-				case DELETE_SERVICE_NAME:
-					DeleteServiceName delete = new DeleteServiceName(json);
-					log.log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"App deleted " ,delete.getServiceName()});
-					exists.remove(delete.getServiceName());
-					break;
-				default: break;
+				ReconfigurationPacket.PacketType rcType = ReconfigurationPacket.getReconfigurationPacketType(json);
+				if(rcType!=null) {
+					switch (ReconfigurationPacket
+							.getReconfigurationPacketType(json)) {
+					case CREATE_SERVICE_NAME:
+						CreateServiceName create = new CreateServiceName(json);
+						log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] {
+								"App", " created ", create.getServiceName() });
+						exists.remove(create.getServiceName());
+						break;
+					case DELETE_SERVICE_NAME:
+						DeleteServiceName delete = new DeleteServiceName(json);
+						log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] {
+								"App deleted ", delete.getServiceName() });
+						exists.remove(delete.getServiceName());
+						break;
+					default:
+						break;
+					}
 				}
 				AppRequest.PacketType type = AppRequest.PacketType.getPacketType(JSONPacket.getPacketType(json));
 				if(type!=null) {
 					switch(AppRequest.PacketType.getPacketType(JSONPacket.getPacketType(json))) {
 					case DEFAULT_APP_REQUEST:
+						AppRequest request = new AppRequest(json);
+						log.log(Level.INFO,
+								MyLogger.FORMAT[1],
+								new Object[] {
+										"App executed request",
+										request.getRequestID() + ":"
+												+ request.getValue() });
+						exists.remove(request.getServiceName());
 						break;
 					case APP_COORDINATION:
-						// FIXME:
-						throw new RuntimeException("Functionality not yet implemented");
-						//break;
+						throw new RuntimeException("Client received unexpected APP_COORDINATION message");
 					}
 				}
 			} catch (JSONException e) {
@@ -146,10 +162,10 @@ public class ReconfigurableClient {
 
 			client.sendRequest(client.makeCreateNameRequest(namePrefix+0, initValue));
 			while(client.exists.containsKey(namePrefix+0));
-			Thread.sleep(2000);
 			for(int i=0; i<numRequests; i++) {
 				client.sendRequest(client.makeRequest(namePrefix+0, requestValuePrefix+i));
-				Thread.sleep(2000);
+				while(client.exists.containsKey(namePrefix+0));
+				Thread.sleep(1000);
 			}
 			client.sendRequest(client.makeDeleteNameRequest(namePrefix+0, initValue));
 			client.messenger.stop();

@@ -27,8 +27,9 @@ public class UnreplicatedAppCoordinator<RequestType extends IntegerPacketType, N
 		return true;
 	}
 
-	@Override
-	public void deleteReplicaGroup(String serviceName) {
+	//@Override
+	public void deleteReplicaGroup(String serviceName, int epoch) {
+		// do nothing here
 	}
 
 	@Override
@@ -46,5 +47,10 @@ public class UnreplicatedAppCoordinator<RequestType extends IntegerPacketType, N
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
 		if(this.app instanceof InterfaceReconfigurable) return ((InterfaceReconfigurable)this.app).getStopRequest(name, epoch);
 		throw new RuntimeException("Can not get stop request for a non-reconfigurable app");
+	}
+
+	@Override
+	public void deleteReplicaGroup(String serviceName) {
+		// do nothing here
 	}
 }

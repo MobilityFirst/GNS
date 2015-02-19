@@ -338,7 +338,7 @@ public class PaxosAcceptor {
 					if (pismarray == null)
 						pismarray = new PaxosInstanceStateMachine[size];
 					pismarray[i] = new PaxosInstanceStateMachine(ID+i, (short) i,
-							(i % 3 == 0 ? coord : id), group, null, null, null);
+							(i % 3 == 0 ? coord : id), group, null, null, null, null);
 					pismMap.put(pismarray[i].getKey(), pismarray[i]);
 					pismarray[i].testingInit(0);
 				} else if (testMode.equals(InstanceType.ACCEPTOR)) {

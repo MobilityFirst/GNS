@@ -48,13 +48,14 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 	}
 
 	NoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
-			Stringifiable<Integer> unstringer, JSONMessenger<Integer> messenge) {
-		super(app, messenge);
+			Stringifiable<Integer> unstringer, JSONMessenger<Integer> msgr) {
+		super(app, msgr);
 		this.coordType = coordType;
 		this.registerCoordination(NoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
+		if(app instanceof NoopApp) ((NoopApp)app).setMessenger(msgr);
 		if (this.coordType.equals(CoordType.PAXOS)) {
-			this.paxosManager = new PaxosManager<Integer>(messenger.getMyID(),
-					unstringer, messenger, this);
+			this.paxosManager = new PaxosManager<Integer>(this.messenger.getMyID(),
+					unstringer, this.messenger, this);
 		} else
 			this.paxosManager = null;
 	}
@@ -63,7 +64,10 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
 		try {
+			// coordinate exactly once, and set self to entry replica
 			((NoopAppRequest) request).setNeedsCoordination(false);
+			((NoopAppRequest) request).setEntryReplica(this.getMyID());
+			// pick lazy or paxos coordinator, the defaults supported 
 			if (this.coordType.equals(CoordType.LAZY))
 				this.sendAllLazy((NoopAppRequest) request);
 			else if (this.coordType.equals(CoordType.PAXOS)) {
@@ -87,8 +91,7 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 	public boolean createReplicaGroup(String serviceName, int epoch,
 			String state, Set<Integer> nodes) {
 		if (this.coordType.equals(CoordType.LAZY)) {
-			CoordData data = new CoordData(serviceName, epoch, nodes);
-			this.groups.put(serviceName, data);
+			this.groups.put(serviceName, new CoordData(serviceName, epoch, nodes));
 		} else if (this.coordType.equals(CoordType.PAXOS)) {
 			this.paxosManager.createPaxosInstance(serviceName, (short) epoch,
 					nodes, this);
@@ -101,10 +104,12 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 		return true;
 	}
 
-	@Override
-	public void deleteReplicaGroup(String serviceName) {
-		if (this.coordType.equals(CoordType.LAZY))
+	//@Override
+	public void deleteReplicaGroup(String serviceName, int epoch) {
+		if (this.coordType.equals(CoordType.LAZY)) {
+			// FIXME: check epoch here
 			this.groups.remove(serviceName);
+		}
 		else if (this.coordType.equals(CoordType.PAXOS)) {
 			// FIXME: invoke paxosManager remove here
 		}
@@ -142,6 +147,11 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 		CoordData data = this.groups.get(name);
 		assert (data == null || data.name.equals(name));
 		return (data != null && data.epoch == epoch);
+	}
+
+	@Override
+	public void deleteReplicaGroup(String serviceName) {
+		throw new RuntimeException("Method not yet implemented");
 	}
 
 	/*

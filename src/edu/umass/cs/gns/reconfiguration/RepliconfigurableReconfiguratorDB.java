@@ -45,7 +45,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	protected Set<NodeIDType> getActiveReplicas(String name) {
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(name);
-		return record.getActiveReplicas();
+		return record!=null ? record.getActiveReplicas() : null;
 	}
 
 	/*

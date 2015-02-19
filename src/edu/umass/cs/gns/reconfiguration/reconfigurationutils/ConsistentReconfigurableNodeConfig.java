@@ -45,7 +45,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 	@Override
 	public Set<NodeIDType> getValuesFromJSONArray(JSONArray array)
 			throws JSONException {
-		return this.nodeConfig.getValuesFromJSONArray(array);
+		return this.getValuesFromJSONArray(array);
 	}
 
 	@Override
@@ -86,16 +86,6 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 		assert(reconfigurators!=null && !reconfigurators.isEmpty());
 		return reconfigurators.iterator().next();
 	}
-        
-        // NOT USED IN NEW APP. FOR BACKWARDS COMPATIBILITY WITH OLD APP.
-        // WILL BE REMOVED AFTER NEW APP IS TESTED.
-        /**
-         * Returns the hash for this name.
-         */
-        @Deprecated
-        public NodeIDType getReconfiguratorHash(String name) {
-          return this.CH_RC.getHash(name);
-        }
 
 	// refresh before returning
 	public Set<NodeIDType> getReplicatedActives(String name) {
@@ -132,6 +122,10 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 			}
 		}
 		return newNodes;
+	}
+	
+	public InterfaceReconfigurableNodeConfig<NodeIDType> getUnderlyingNodeConfig() {
+		return this.nodeConfig;
 	}
 	
 	// refresh consistent hash structure if changed

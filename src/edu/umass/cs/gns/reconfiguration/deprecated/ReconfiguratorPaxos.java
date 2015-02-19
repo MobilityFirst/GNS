@@ -52,8 +52,8 @@ public class ReconfiguratorPaxos<NodeIDType> extends
 	}
 
 	// FIXME: call paxosManager.remove(.)
-	@Override
-	public void deleteReplicaGroup(String serviceName) {
+	//@Override
+	public void deleteReplicaGroup(String serviceName, int epoch) {
 		throw new RuntimeException("Method not implemented yet");
 	}
 
@@ -73,5 +73,10 @@ public class ReconfiguratorPaxos<NodeIDType> extends
 			e.printStackTrace();
 		}
 		return request!=null ? handleIncoming(request) : false;
+	}
+
+	@Override
+	public void deleteReplicaGroup(String serviceName) {
+		throw new RuntimeException("Method not implemented yet");		
 	}
 }

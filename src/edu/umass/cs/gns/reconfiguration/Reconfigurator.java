@@ -76,6 +76,10 @@ public class Reconfigurator<NodeIDType> implements
 		this.DB.setCallback(this);
 		this.finishPendingReconfigurations();
 	}
+	
+	public ActiveReplica<NodeIDType> getReconfigurableReconfiguratorAsActiveReplica() {
+		return new ActiveReplica<NodeIDType>(this.DB, this.consistentNodeConfig, this.messenger);
+	}
 
 	@Override
 	public boolean handleJSONObject(JSONObject jsonObject) {
@@ -301,10 +305,9 @@ public class Reconfigurator<NodeIDType> implements
 	 * will ensure a similar property for the corresponding NodeIDType set.
 	 */
 	private Set<NodeIDType> shouldReconfigure(String name) {
-		// get current actives
+		// return null if no current actives
 		Set<NodeIDType> oldActives = this.DB.getActiveReplicas(name);
-		if (oldActives == null || oldActives.isEmpty())
-			return this.consistentNodeConfig.getReplicatedActives(name);
+		if (oldActives == null || oldActives.isEmpty()) return null;
 		// get new IP addresses (via consistent hashing if no oldActives
 		ArrayList<InetAddress> newActives = this.demandProfiler
 				.testAndSetReconfigured(name,

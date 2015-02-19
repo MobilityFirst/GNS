@@ -646,9 +646,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
 		// providing a user name and PASSWORD is optional in embedded derby
-                 // CHANGED TO NOT INCLUDE ID BECAUSE IDS CREATED FROM STRINGS WERE BREAKING - Westy
-		//props.put("user", USER + this.myID);
-                props.put("user", USER);
+		props.put("user", USER + this.myID);
 		props.put("password", PASSWORD);
 		String dbCreation = PROTOCOL + this.logDirectory + DATABASE;
 
@@ -847,7 +845,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				+ retrievedRecord;
 	}
 
-	private static InterfaceRequest getRandomInterfaceRequest(final String name) {
+	private static InterfaceRequest getRandomInterfaceRequest(String name) {
 		return new InterfaceRequest() {
 
 			@Override

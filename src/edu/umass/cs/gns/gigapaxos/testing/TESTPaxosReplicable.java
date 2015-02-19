@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 
 import org.json.JSONException;
@@ -16,44 +17,24 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
-import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.reconfiguration.RequestParseException;
 
 /**
  * @author V. Arun
  */
-public class TESTPaxosReplicable implements Replicable {
+public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 	private static final boolean DEBUG = PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
 	private InterfaceJSONNIOTransport<Integer> niot = null;
 
 	private HashMap<String, PaxosState> allState = new HashMap<String, PaxosState>();
-
-  @Override
-  public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public boolean handleRequest(InterfaceRequest request) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public InterfaceRequest getRequest(String stringified) throws RequestParseException {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
-  public Set<IntegerPacketType> getRequestTypes() {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
 
 	private class PaxosState {
 		private int seqnum = -1;
@@ -145,7 +126,8 @@ public class TESTPaxosReplicable implements Replicable {
 			// testing and logging below
 			this.notify(); // needed for paxos manager's unit-test
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
-			if (!doNotReplyToClient && niot != null) {
+			// FIXME: reply back only if not recovery and I am entry replica (untested change)
+			if (!doNotReplyToClient && niot != null && requestPacket.getEntryReplica()==this.getMyID()) {
 				if (DEBUG)
 					log.info("App sending response to client "
 							+ requestPacket.clientID + ": " + reqJson);
@@ -342,5 +324,27 @@ public class TESTPaxosReplicable implements Replicable {
 			}
 			return s;
 		}
+	}
+
+	@Override
+	public boolean handleRequest(InterfaceRequest request) {
+		return handleRequest(request, false);
+	}
+
+	@Override
+	public InterfaceRequest getRequest(String stringified)
+			throws RequestParseException {
+		throw new RuntimeException("Method not yet implemented");
+	}
+
+	@Override
+	public Set<IntegerPacketType> getRequestTypes() {
+		throw new RuntimeException("Method not yet implemented");
+	}
+
+	@Override
+	public boolean handleRequest(InterfaceRequest request,
+			boolean doNotReplyToClient) {
+		throw new RuntimeException("Method not yet implemented");
 	}
 }

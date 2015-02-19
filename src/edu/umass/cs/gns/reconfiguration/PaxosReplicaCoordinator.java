@@ -71,8 +71,13 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	 * is not yet implemented. We also need PaxosManager support 
 	 * for deleting a paxos group.
 	 */
+	//@Override
+	public void deleteReplicaGroup(String serviceName, int epoch) {
+		this.paxosManager.deletePaxosInstance(serviceName, (short)epoch);
+	}
+
 	@Override
 	public void deleteReplicaGroup(String serviceName) {
-		throw new RuntimeException("Method not yet implemented");
+		throw new RuntimeException("Method not implemented");
 	}
 }

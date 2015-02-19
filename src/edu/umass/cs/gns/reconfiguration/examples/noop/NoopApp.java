@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.reconfiguration.examples.noop;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
@@ -35,11 +38,18 @@ InterfaceReplicable, InterfaceReconfigurable {
 	private final int myID;
 	private final HashMap<String, AppData> appData = new HashMap<String,AppData>();
 	private final HashMap<String, AppData> prevEpochFinal = new HashMap<String,AppData>();
+	private JSONMessenger<Integer> messenger;
 
 	public NoopApp(int id) {
 		this.myID = id;
 	}
+	
+	// Need a messenger mainly to send back responses to the client.
+	protected void setMessenger(JSONMessenger<Integer> msgr) {
+		this.messenger = msgr;
+	}
 
+	// FIXME: return response to client
 	@Override
 	public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
 		try {
@@ -69,7 +79,20 @@ InterfaceReplicable, InterfaceReconfigurable {
 		this.appData.put(request.getServiceName(), data);
 		System.out.println("App-" + myID + " wrote " + data.name + ":"
 				+ data.epoch + " with state " + data.getState());
+		sendResponse(request);
 		return true;
+	}
+	
+	private void sendResponse(NoopAppRequest request) {
+		if (this.messenger == null || request.getEntryReplica()!=this.myID)
+			return;
+		InetSocketAddress sockAddr = new InetSocketAddress(
+				request.getSenderAddress(), request.getSenderPort());
+		try {
+			this.messenger.sendToAddress(sockAddr, request.toJSONObject());
+		} catch (JSONException | IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	private boolean processStopRequest(NoopAppRequest request) {

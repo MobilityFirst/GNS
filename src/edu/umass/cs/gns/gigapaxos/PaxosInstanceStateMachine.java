@@ -31,10 +31,8 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.util.DelayProfiler;
 import edu.umass.cs.gns.util.MatchKeyable;
-import edu.umass.cs.gns.util.ThreadUtils;
 import edu.umass.cs.gns.util.Util;
 
 /**
@@ -153,7 +151,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosInstanceStateMachine.class.getName()); 
 
 	PaxosInstanceStateMachine(String groupId, short version, int id, Set<Integer> gms, 
-			Replicable app, PaxosManager<?> pm, HotRestoreInfo hri) {
+			Replicable app, String initialState, PaxosManager<?> pm, HotRestoreInfo hri) {
 
 		/**************** final assignments ***********************
 		 * A paxos instance is born with a paxosID, version
@@ -172,10 +170,11 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 * or in PaxosCoordinatorState (for coordinators) that inherits from
 		 * PaxosInstanceState.
 		 */
-		if(pm!=null && hri==null) {initiateRecovery(pm.getPaxosLogger());}
-		else if(hri!=null) hotRestore(hri);
+		if(pm!=null && hri==null) {initiateRecovery(initialState);}
+		else if(hri!=null && initialState==null) hotRestore(hri);
 		else testingNoRecovery(); // used only for testing size
-
+		assert (hri == null || initialState == null) : "Can not specify initial state for existing, paused paxos instance";
+		
 		createActiveState(); // initialize active state, so that we can be deactivated if idle
 
 		if (!TESTPaxosConfig.MEMORY_TESTING && hri == null)
@@ -192,8 +191,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 							" members. ",
 							this.paxosState.toString(),
 							this.coordinator + "{App.state=[",
-							Util.prefix(this.clientRequestHandler.getState(this
-									.getPaxosID()), 64), "]}" });
+							(initialState == null ? Util.prefix(
+									this.clientRequestHandler.getState(this
+											.getPaxosID()), 64) : initialState),
+							"]}" });
 	}
 	public String getKey() {return this.getPaxosID();}
 	public Short getVersion() {return this.version;}
@@ -325,9 +326,9 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * the app state after executing the first request (slot 0)
 	 * is checkpointed, which we do).
 	 */
-	private boolean initiateRecovery(AbstractPaxosLogger paxosLogger) {
+	private boolean initiateRecovery(String initialState) {
 		String pid=this.getPaxosID();
-		SlotBallotState slotBallot = paxosLogger.getSlotBallotState(pid, this.getVersion()); // only place where version is checked
+		SlotBallotState slotBallot = this.paxosManager.getPaxosLogger().getSlotBallotState(pid, this.getVersion()); // only place where version is checked
 		if (!TESTPaxosConfig.MEMORY_TESTING && slotBallot != null)
 			log.log(Level.INFO, "{0}{1}{2}", new Object[] { this,
 					" recovered state: ",
@@ -353,6 +354,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		this.paxosState = new PaxosAcceptor(slotBallot!=null ? slotBallot.ballotnum : 0, 
 				slotBallot!=null ? slotBallot.coordinator: this.roundRobinCoordinator(0), 
 						slotBallot!=null ? slotBallot.slot+1 : 0,null); 
+		if(slotBallot==null) this.putInitialState(initialState);
 		if(slotBallot==null) TESTPaxosConfig.setRecovered(this.getNodeID(), pid, true);
 
 		return true; // return value will be ignored 
@@ -366,7 +368,20 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 				hri.accBallot.coordinatorID, hri.accSlot,hri);
 		return true;
 	}
-
+	
+	/* FIXME: untested and does not support an arbitrary initial slot number, 
+	 * which would be useful if we wanted to preserve slot numbers across
+	 * epochs.
+	 */
+	private boolean putInitialState(String initialState) {
+		if (this.getPaxosManager() == null || initialState==null)
+			return false;
+		AbstractPaxosLogger.checkpoint(this.getPaxosManager().getPaxosLogger(),
+				getPaxosID(), this.getVersion(), this.groupMembers, -1,
+				new Ballot(0, this.roundRobinCoordinator(0)), initialState,
+				this.paxosState.getGCSlot());
+		return true;
+	}
 
 	/* The one method for all message sending. 
 	 * Protected coz the logger also calls this. 
@@ -700,14 +715,9 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			String pid = this.getPaxosID();
 			while(!executed) {
 				executed = this.clientRequestHandler.handleDecision(pid, 
-						inorderDecision.getRequestValue(), (inorderDecision.isRecovery() 
-                                                        //|| (inorderDecision.getEntryReplica()!=this.getMyID())
-                                                        )); 
+						inorderDecision.getRequestValue(), (inorderDecision.isRecovery() /*||  
+								(inorderDecision.getEntryReplica()!=this.getMyID())*/)); 
 				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
-                                if (Config.debuggingEnabled) {
-                                  ThreadUtils.sleep(500);
-                                }
-                                
 			} execCount++;
 
 			// checkpoint if needed, must be atomic with the execution 

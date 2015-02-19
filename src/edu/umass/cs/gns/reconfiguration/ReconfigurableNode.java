@@ -25,7 +25,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 			throws IOException {
 		this.myID = id;
 		this.nodeConfig = nc;
-		
+
 		AbstractPacketDemultiplexer pd;
 
 		if (!nc.getActiveReplicas().contains(id)
@@ -53,6 +53,8 @@ public abstract class ReconfigurableNode<NodeIDType> {
 			pd.register(reconfigurator.getPacketTypes().toArray(),
 					reconfigurator);
 			messenger.addPacketDemultiplexer(pd);
+			// wrap reconfigurator in ActiveReplica to make it reconfigurable
+			//this.activeReplica = reconfigurator.getReconfigurableReconfiguratorAsActiveReplica();
 		}
 	}
 

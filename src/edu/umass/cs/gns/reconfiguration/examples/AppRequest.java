@@ -1,11 +1,15 @@
 package edu.umass.cs.gns.reconfiguration.examples;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
@@ -55,13 +59,16 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 	}
 
 	// These app keys by design need not be the same as those in BasicReconfigurationPacket
-	public enum Keys {SERVICE_NAME, EPOCH, REQUEST_ID, REQUEST_VALUE, IS_STOP, IS_COORDINATION};
+	public enum Keys {SERVICE_NAME, EPOCH, REQUEST_ID, REQUEST_VALUE, IS_STOP, IS_COORDINATION, CLIENT_IP, CLIENT_PORT};
 
 	private final String name;
 	private final int epoch;
 	private final int id;
 	private final boolean stop;
 	private final String value;
+
+	private InetAddress clientIP=null;
+	private int clientPort=-1;
 	
 	private boolean coordType = true;
 
@@ -80,7 +87,15 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		this.id = id;
 		this.stop = stop;
 		this.value = value;
-
+	}
+	public AppRequest(String name, String value, IntegerPacketType type, boolean stop) {
+		super(type);
+		this.name = name;
+		this.epoch = 0;
+		this.id = (int)(Math.random()*Integer.MAX_VALUE);
+		this.stop = stop;
+		this.value = value;
+		
 	}
 
 	public AppRequest(JSONObject json) throws JSONException {
@@ -91,6 +106,20 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		this.stop = json.getBoolean(Keys.IS_STOP.toString());
 		this.value = json.getString(Keys.REQUEST_VALUE.toString());
 		this.coordType = (json.has(Keys.IS_COORDINATION.toString()) ? json.getBoolean(Keys.IS_COORDINATION.toString()) : false);
+		/* We read from json using JSONNIOTransport convention, but there is no 
+		 * corresponding operation in toJSONObjectImpl().
+		 */
+		try {
+			InetSocketAddress isa = JSONNIOTransport.getSenderAddress(json);
+			this.clientIP = json.has(Keys.CLIENT_IP.toString()) ? InetAddress
+					.getByName(json.getString(Keys.CLIENT_IP.toString()).replaceAll("[^0-9.]*", ""))
+					: (isa != null ? isa.getAddress() : this.clientIP);
+			this.clientPort = json.has(Keys.CLIENT_PORT.toString()) ? json
+					.getInt(Keys.CLIENT_PORT.toString()) : (isa != null ? isa
+					.getPort() : this.clientPort);
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -106,6 +135,9 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 	public String getValue() {
 		return this.value;
 	}
+	public int getRequestID() {
+		return this.id;
+	}
 	
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
@@ -115,7 +147,16 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		json.put(Keys.IS_STOP.toString(), this.stop);
 		json.put(Keys.REQUEST_VALUE.toString(), this.value);
 		json.put(Keys.IS_COORDINATION.toString(), this.coordType);
+		if(this.clientIP!=null) json.put(Keys.CLIENT_IP.toString(), this.clientIP.toString());
+		if(this.clientPort > 0) json.put(Keys.CLIENT_PORT.toString(), this.clientPort);
 		return json;
+	}
+	
+	public InetAddress getSenderAddress() {
+		return this.clientIP;
+	}
+	public int getSenderPort() {
+		return this.clientPort;
 	}
 
 	public static void main(String[] args) {

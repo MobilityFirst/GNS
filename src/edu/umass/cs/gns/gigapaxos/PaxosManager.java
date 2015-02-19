@@ -171,17 +171,31 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	public boolean createPaxosInstance(String paxosID, short version,
 			Set<NodeIDType> gms, Replicable app) {
 		return this.createPaxosInstance(paxosID, version, this.myID, gms, app,
-			null, true);
+				null, null, true);
 	}
-
+	public boolean createPaxosInstance(String paxosID, short version,
+			Set<NodeIDType> gms, Replicable app, String initialState) {
+		return this.createPaxosInstance(paxosID, version, this.myID, gms, app,
+				initialState, null, true);
+	}
 	
 	public boolean createPaxosInstance(String paxosID, short version,
 			Set<NodeIDType> gms, InterfaceReplicable app) {
 		return this.createPaxosInstance(paxosID, version, this.myID, gms,
 				BackwardsCompatibility.InterfaceReplicableToReplicable(app),
-				null, true);
+				null, null, true);
+	}
+	public boolean createPaxosInstance(String paxosID, short version,
+			Set<NodeIDType> gms, InterfaceReplicable app, String initialState) {
+		return this.createPaxosInstance(paxosID, version, this.myID, gms,
+				BackwardsCompatibility.InterfaceReplicableToReplicable(app),
+				initialState, null, true);
 	}
 
+	public synchronized Set<NodeIDType> getPaxosNodeIDs(String paxosID, short version) {
+		return isActive(paxosID, version) ? this.getPaxosNodeIDs(paxosID) : null; 
+	}
+	
 	public Set<NodeIDType> getPaxosNodeIDs(String paxosID) {
 		/* Important to invoke getInstance anywhere we want to get from pinstance
 		 * because the instance may be paused.
@@ -191,9 +205,20 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			return this.integerMap.getIntArrayAsNodeSet(pism.getMembers());
 		return null;
 	}
+	
+	public boolean isActive(String paxosID, short version) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID); 
+		if(pism!=null && pism.isActive()) return true;
+		return false;
+	}
 
-	protected boolean createPaxosInstance(String paxosID, short version,
-			int id, Set<NodeIDType> gms, Replicable app, HotRestoreInfo hri,
+	/*
+	 * Synchronized in order to prevent duplicate instance creation under
+	 * concurrency. This is the only method that can actually create a paxos
+	 * instance. All other methods just call this method eventually.
+	 */
+	protected synchronized boolean createPaxosInstance(String paxosID, short version,
+			int id, Set<NodeIDType> gms, Replicable app, String initialState, HotRestoreInfo hri,
 			boolean tryRestore) {
 		if (this.isClosed() || id != myID)
 			return false;
@@ -201,11 +226,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID,
 				tryHotRestore, tryRestore);
 		if (pism != null)
-			return false;
+			return false; // initialState will also be ignored here
 
 		pism = new PaxosInstanceStateMachine(paxosID, version, id,
-				this.integerMap.put(gms), app != null ? app : this.myApp, this,
-				hri);
+				this.integerMap.put(gms), app != null ? app : this.myApp,
+				initialState, this, hri);
 		pinstances.put(paxosID, pism);
 		assert (this.getInstance(paxosID, false, false) != null);
 		/*
@@ -342,6 +367,12 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			}
 		}
 		return null;
+	}
+	
+	public void deletePaxosInstance(String paxosID, short version) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if (pism != null && pism.getVersion() == version) 
+			kill(pism);
 	}
 
 	/* Note: paxosLogger.removeAll() must be only used when a node is
@@ -681,7 +712,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 							hri.version,
 							myID,
 							this.integerMap.get(Util.arrayToIntSet(hri.members)),
-							this.myApp, hri, false);
+							this.myApp, null, hri, false);
 			}
 			else if(DEBUG) log.log(Level.INFO, "{0}{1}{2}{3}{4}", new Object[] {"Node", myID, " unable to hot restore instance ",
 					paxosID});
@@ -694,7 +725,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			int id, Set<NodeIDType> members, Replicable app, boolean restoration) {
 		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}{6}", new Object[] { "Node ",
 				this.myID, " ", paxosID, ":", version, " recovering"});
-		this.createPaxosInstance(paxosID, version, id, (members), app, null,
+		this.createPaxosInstance(paxosID, version, id, (members), app, null, null,
 			false);
 		PaxosInstanceStateMachine pism =
 				(this.getInstance(paxosID, true, false));
@@ -838,7 +869,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				this.createPaxosInstance(findGroup.getPaxosID(),
 					findGroup.getVersion(), this.myID,
 					this.integerMap.get(Util.arrayToIntSet(findGroup.group)),
-					myApp, null, false);
+					myApp, null, null, false);
 			}
 		}
 		try {
@@ -1057,7 +1088,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			for (int group = 0; group < numPaxosGroups; group++) {
 				// creating a paxos instance may induce recovery from disk
 				pms[node].createPaxosInstance(names[group], (short) 0, members[node],
-						Util.arrayToIntSet(members), apps[node], null, false);
+						Util.arrayToIntSet(members), apps[node], null, null, false);
 				if (numPaxosGroups > 1000
 						&& ((group % k == 0 && ((k *= 2) > 0)) || group % 100000 == 0)) {
 					System.out.print(group + " ");
