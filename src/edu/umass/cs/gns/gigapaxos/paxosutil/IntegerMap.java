@@ -80,6 +80,7 @@ public class IntegerMap<NodeIDType> {
 	private Integer getID(NodeIDType node) {
 		if (node == null) return null;
 		/*
+                //FIXME: Check that assumption 1 below is actually necessary
 		 * Relies on the following assumptions
 		 * 1) an Integer's hashcode is the integer value
 		 * itself, not a different integer value
@@ -91,7 +92,8 @@ public class IntegerMap<NodeIDType> {
 		 * machines (which would be a bad assumption
 		 * anyway).
 		 */
-		return node.hashCode();
+                // Changed this to only return postive values - Westy
+		return Math.abs(node.hashCode());
 	}
 
 	public static void main(String[] args) {

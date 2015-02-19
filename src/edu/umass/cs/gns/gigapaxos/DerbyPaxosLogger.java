@@ -39,6 +39,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -74,7 +76,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final boolean CONN_POOLING = true;
 	private static final String DUPLICATE_KEY = "23505";
 	private static final String DUPLICATE_TABLE = "X0Y32";
-	private static final String NONEXISTENT_TABLE = "42Y07";
+	private static final List<String> NONEXISTENT_TABLE = new ArrayList(Arrays.asList("42Y07", "42Y55", "42X01"));
 	private static final String USER = "user";
 	private static final String PASSWORD = "user";
 	private static final String DATABASE = "paxos_logs";
@@ -88,8 +90,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int PAXOS_ID_SIZE = 40; // FIXME: GUID is 20 bytes, but its hex-byte representation is bloated
 	private static final int PAUSE_STATE_SIZE = 256;
 	private static final int MAX_GROUP_SIZE = 256; // maximum size of a paxos replica group
-	private static final int MAX_LOG_MESSAGE_SIZE = 4096; // maximum size of a log message
-	private static final int MAX_CHECKPOINT_SIZE = 4096; // maximum size of a log message
+	private static final int MAX_LOG_MESSAGE_SIZE = 32672; // maximum size of a log message
+	private static final int MAX_CHECKPOINT_SIZE = 32672; // maximum size of a log message
 	private static final int TRUNCATED_STATE_SIZE = 2048; // max state size while java logging
 	private static final int MAX_OLD_DECISIONS =
 			PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
@@ -1105,7 +1107,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			dropped = true;
 			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node " , myID , " dropped pause table " , table});
 		} catch (SQLException sqle) {
-			if (!sqle.getSQLState().equals(NONEXISTENT_TABLE)) {
+                  if (!NONEXISTENT_TABLE.contains(sqle.getSQLState())) {
 				log.severe("Node " + this.myID + " could not drop table " +
 						table + ":" + sqle.getSQLState());
 				sqle.printStackTrace();
