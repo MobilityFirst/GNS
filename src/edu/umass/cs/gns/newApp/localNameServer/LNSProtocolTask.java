@@ -1,16 +1,23 @@
 package edu.umass.cs.gns.newApp.localNameServer;
 
+import edu.umass.cs.gns.localnameserver.AddRemove;
+import edu.umass.cs.gns.localnameserver.UpdateInfo;
 import edu.umass.cs.gns.main.GNS;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.util.NSResponseCode;
+import java.net.UnknownHostException;
+import org.json.JSONException;
 
 /**
  * @author Westy
@@ -75,7 +82,28 @@ public class LNSProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleCreate(CreateServiceName packet) {
-    GNS.getLogger().info("App created " + packet.getServiceName());
+    Integer lnsRequestID = requestHandler.getCreateMapping(packet.getServiceName());
+    if (lnsRequestID != null) {
+      GNS.getLogger().info("App created " + packet.getServiceName());
+      // Basically we gin up a confirmation packet for the original AddRecord packet and
+      // send it back to the originator of the request.
+      UpdateInfo info = (UpdateInfo) requestHandler.getRequestInfo(lnsRequestID);
+      if (info != null) {
+        AddRecordPacket originalPacket = (AddRecordPacket) info.getUpdatePacket();
+        ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
+        try {
+          AddRemove.handlePacketConfirmAdd(confirmPacket.toJSONObject(), requestHandler);
+        } catch (JSONException | UnknownHostException e) {
+          GNS.getLogger().severe("Unable to send create confirmation for " + packet.getServiceName() + ":" + e);
+        }
+      } else {
+        GNS.getLogger().severe("Unable to find request info for create confirmation for " + packet.getServiceName());
+      }
+    } else {
+      if (requestHandler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Ignoring spurious create confirmation for " + packet.getServiceName());
+      }
+    }
     return null;
     //return new GenericMessagingTask(null, packet);
   }

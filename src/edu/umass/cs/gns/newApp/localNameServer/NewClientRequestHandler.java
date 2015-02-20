@@ -22,8 +22,6 @@ import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
-//import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
@@ -70,6 +68,10 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   private final ConcurrentMap<Integer, RequestInfo> requestInfoMap;
   private final ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
+  // For backward compatibility between old Add and Remove record code and new name service code.
+  // Maps between service name and LNS Request ID (which is the key to the above maps).
+  private final ConcurrentMap<String, Integer> createServiceNameMap;
+  private final ConcurrentMap<String, Integer> removeServiceNameMap;
 
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS_SUBTYPE_QUERY record)
@@ -128,6 +130,8 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.protocolExecutor = new ProtocolExecutor<>(messenger);
     this.protocolTask = new LNSProtocolTask<>(this);
     this.protocolExecutor.register(this.protocolTask.getEventTypes(), this.protocolTask);
+    this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    this.removeServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
 
   @Override
@@ -187,6 +191,27 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   @Override
   public void addRequestInfo(int id, RequestInfo requestInfo) {
     requestInfoMap.put(id, requestInfo);
+  }
+  
+  // For backward compatibility between old Add and Remove record code and new name service code.
+  // Maps between service name and LNS Request ID (which is the key to the above maps).
+  @Override
+  public void addCreateMapping(String name, int id) {
+    createServiceNameMap.put(name, id);
+  }
+  
+  public Integer getCreateMapping(String name) {
+    return createServiceNameMap.get(name);
+  }
+  
+  @Override
+  public void addRemoveMapping(String name, int id) {
+    removeServiceNameMap.put(name, id);
+  }
+  
+  @Override
+  public Integer getRemoveMapping(String name) {
+    return removeServiceNameMap.get(name);
   }
 
   @Override

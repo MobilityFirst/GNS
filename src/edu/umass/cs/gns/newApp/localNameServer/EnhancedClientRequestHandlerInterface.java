@@ -37,5 +37,41 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
   public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException;
   
   public boolean handleEvent(JSONObject json) throws JSONException;
+  
+  /**
+   * Adds a mapping between a CreateServiceName request and a LNSREquestID.
+   * Provides backward compatibility between old Add and Remove record code and new name service code.
+   * 
+   * @param name
+   * @param id 
+   */
+  public void addCreateMapping(String name, int id);
+  
+  /**
+   * Looks up the mapping between a CreateServiceName request and a LNSREquestID.
+   * Provides backward compatibility between old Add and Remove record code and new name service code.
+   * 
+   * @param name
+   * @return 
+   */
+  public Integer getCreateMapping(String name);
+  
+  /**
+   * Adds a mapping between a RemoveServiceName request and a LNSREquestID.
+   * Provides backward compatibility between old Add and Remove record code and new name service code.
+   * 
+   * @param name
+   * @param id 
+   */
+  public void addRemoveMapping(String name, int id);
+  
+  /**
+   * Looks up the mapping between a RemoveServiceName request and a LNSREquestID.
+   * Provides backward compatibility between old Add and Remove record code and new name service code.
+   * 
+   * @param name
+   * @return 
+   */
+  public Integer getRemoveMapping(String name);
 
 }

@@ -76,7 +76,9 @@ public class NewLocalNameServer<NodeIDType> {
     this.messenger = messenger;
     messenger.addPacketDemultiplexer(demultiplexer);
     RequestHandlerParameters parameters = new RequestHandlerParameters();
-    parameters.setDebugMode(true);
+    //
+    parameters.setDebugMode(false);
+    //
     this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
             gnsNodeConfig, messenger, parameters);
     ((NewLNSPacketDemultiplexer) demultiplexer).setHandler(requestHandler);

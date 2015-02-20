@@ -42,19 +42,27 @@ public class AddRemove {
    */
   public static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
-    
-    
-    
     AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
     int lnsReqID = handler.getUniqueRequestID();
     UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
     handler.addRequestInfo(lnsReqID, info);
+    //
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
     handler.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
-    if (Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
     }
+  }
+
+  public static AddRecordPacket registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
+    int lnsReqID = handler.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
+    handler.addRequestInfo(lnsReqID, info);
+    // not sure why this isn't done like this above
+    addRecordPacket.setLNSRequestID(lnsReqID);
+    return addRecordPacket;
   }
 
   /**
@@ -76,10 +84,20 @@ public class AddRemove {
             System.currentTimeMillis());
     handler.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
 
-    if (Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Remove Task Scheduled. " + "Name: " + removeRecord.getName()
               + " Request: " + removeRecord.getRequestID());
     }
+  }
+  
+  public static RemoveRecordPacket registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
+    int lnsReqID = handler.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecordPacket.getName(), null, removeRecordPacket, handler);
+    handler.addRequestInfo(lnsReqID, info);
+    // not sure why this isn't done like this above
+    removeRecordPacket.setLNSRequestID(lnsReqID);
+    return removeRecordPacket;
   }
 
   /**
@@ -88,11 +106,11 @@ public class AddRemove {
   public static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getLNSRequestID());
-    if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("Confirm add packet: " + confirmAddPacket.toString());
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().info("Confirm add packet: " + confirmAddPacket.toString());
     }
     if (addInfo == null) {
-      if (Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().warning("Add confirmation return info not found.: lns request id = "
                 + confirmAddPacket.getLNSRequestID());
       }
@@ -117,11 +135,11 @@ public class AddRemove {
   public static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
-    if (Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Confirm remove packet: " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     }
     if (removeInfo == null) {
-      if (Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().warning("Remove confirmation return info not found.: lns request id = " + confirmRemovePacket.getLNSRequestID());
       }
     } else {
