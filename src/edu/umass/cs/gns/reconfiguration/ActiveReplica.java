@@ -174,7 +174,7 @@ public class ActiveReplica<NodeIDType> implements
 				|| startEpoch.getPrevEpochGroup().isEmpty()) {
 			// createReplicaGroup is a local operation
 			this.appCoordinator.createReplicaGroup(startEpoch.getServiceName(),
-					startEpoch.getEpochNumber(), null, // empty state
+					startEpoch.getEpochNumber(), startEpoch.getInitialState(),
 					startEpoch.getCurEpochGroup());
 			return mtasks; // and also send positive ack
 		}

@@ -20,12 +20,13 @@ public class StartEpoch<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> {
 
 	private enum Keys {
-		PREV_EPOCH_GROUP, CUR_EPOCH_GROUP, CREATOR
+		PREV_EPOCH_GROUP, CUR_EPOCH_GROUP, CREATOR, INITIAL_STATE
 	};
 
 	public final Set<NodeIDType> prevEpochGroup;
 	public final Set<NodeIDType> curEpochGroup;
 	public final InetSocketAddress creator;
+        public final String initialState;
 
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes, Set<NodeIDType> prevNodes) {
@@ -34,16 +35,18 @@ public class StartEpoch<NodeIDType> extends
 		this.prevEpochGroup = prevNodes;
 		this.curEpochGroup = curNodes;
 		this.creator = null;
+                this.initialState = null;
 	}
 
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
-			Set<NodeIDType> prevNodes, InetSocketAddress creator) {
+			Set<NodeIDType> prevNodes, InetSocketAddress creator, String initialState) {
 		super(initiator, ReconfigurationPacket.PacketType.START_EPOCH,
 				serviceName, epochNumber);
 		this.prevEpochGroup = prevNodes;
 		this.curEpochGroup = curNodes;
 		this.creator = creator;
+                this.initialState = initialState;
 	}
 
 	public StartEpoch(JSONObject json, Stringifiable<NodeIDType> unstringer)
@@ -65,6 +68,7 @@ public class StartEpoch<NodeIDType> extends
 		this.creator = (json.has(Keys.CREATOR.toString()) ? Util
 				.getInetSocketAddressFromString(json.getString(Keys.CREATOR
 						.toString())) : null);
+                this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
 	}
 
 	public JSONObject toJSONObjectImpl() throws JSONException {
@@ -87,7 +91,9 @@ public class StartEpoch<NodeIDType> extends
 			}
 		json.put(Keys.CUR_EPOCH_GROUP.toString(), curGroup);
 		json.put(Keys.CREATOR.toString(), this.creator);
-
+                if (initialState != null) {
+                  json.put(Keys.INITIAL_STATE.toString(), initialState);
+                }
 		return json;
 	}
 
@@ -110,6 +116,10 @@ public class StartEpoch<NodeIDType> extends
 				&& this.epochNumber == 0;
 	}
 
+        public String getInitialState() {
+          return initialState;
+        }
+        
 	public static void main(String[] args) {
 		int[] group = { 3, 45, 6, 19 };
 		StartEpoch<Integer> se = new StartEpoch<Integer>(4, "name1", 2,

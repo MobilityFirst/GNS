@@ -147,7 +147,7 @@ public class Reconfigurator<NodeIDType> implements
 		// commit initial "reconfiguration" intent
 		this.initiateReconfiguration(create.getServiceName(),
 				this.consistentNodeConfig.getReplicatedActives(create
-						.getServiceName()), create.getSender());
+						.getServiceName()), create.getSender(), create.getInitialState());
 		return null;
 	}
 	
@@ -190,7 +190,7 @@ public class Reconfigurator<NodeIDType> implements
 			DeleteServiceName delete,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
-				this.getMyID(), this.formStartEpoch(delete.getServiceName(), null, delete.getSender()),
+				this.getMyID(), this.formStartEpoch(delete.getServiceName(), null, delete.getSender(), null),
 				RequestTypes.REGISTER_RECONFIURATION_INTENT);
 		// coordinate intent with replicas
 		if(this.isReadyForReconfiguration(rcRecReq))
@@ -354,11 +354,12 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	// coordinate reconfiguration intent
-	private void initiateReconfiguration(String name, Set<NodeIDType> newActives, InetSocketAddress sender) {
+	private void initiateReconfiguration(String name, Set<NodeIDType> newActives, 
+                InetSocketAddress sender, String initialState) {
 		if(newActives==null) return;
 		// request to persistently log the intent to reconfigure
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
-				this.getMyID(), formStartEpoch(name, newActives, sender),
+				this.getMyID(), formStartEpoch(name, newActives, sender, initialState),
 				RequestTypes.REGISTER_RECONFIURATION_INTENT);
 		// coordinate intent with replicas
 		if(this.isReadyForReconfiguration(rcRecReq))
@@ -379,7 +380,7 @@ public class Reconfigurator<NodeIDType> implements
 		return record==null || record.getState().equals(RCStates.READY);
 	}
 	private void initiateReconfiguration(String name, Set<NodeIDType> newActives) {
-		this.initiateReconfiguration(name, newActives, null);
+		this.initiateReconfiguration(name, newActives, null, null);
 	}
 	private NodeIDType getMyID() {
 		return this.messenger.getMyID();
@@ -390,14 +391,14 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	private StartEpoch<NodeIDType> formStartEpoch(String name,
-			Set<NodeIDType> newActives, InetSocketAddress sender) {
+			Set<NodeIDType> newActives, InetSocketAddress sender, String initialState) {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(name);
 		StartEpoch<NodeIDType> startEpoch = (record != null) ? new StartEpoch<NodeIDType>(getMyID(), name,
 				record.getEpoch() + 1, newActives, record.getActiveReplicas(
 						record.getName(), record.getEpoch()))
 				: new StartEpoch<NodeIDType>(getMyID(), name, 0, newActives,
-						null, sender);	
+						null, sender, initialState);	
 		return startEpoch;
 	}
 	private String getTaskKey(Class<?> C, BasicReconfigurationPacket<?> rcPacket) {
@@ -431,7 +432,7 @@ public class Reconfigurator<NodeIDType> implements
 			ReconfigurationRecord<NodeIDType> record = this.DB.getReconfigurationRecord(name);
 			RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 					this.getMyID(), this.formStartEpoch(name,
-							record.getNewActives(), null),
+							record.getNewActives(), null, null),
 					RCRecordRequest.RequestTypes.REGISTER_RECONFIURATION_INTENT);
 			/* We spawn primary even though that may be unnecessary because we
 			 * don't know if or when any other reconfigurator might finish this

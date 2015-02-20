@@ -286,9 +286,9 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     if (Config.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
     }
-    TransferableNameRecordState state1;
+    TransferableNameRecordState weirdState;
     try {
-      state1 = new TransferableNameRecordState(state);
+      weirdState = new TransferableNameRecordState(state);
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON Exception in transferred state: " + state + "name " + name + " version " + epoch);
       e.printStackTrace();
@@ -300,7 +300,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     while (true) {
       try {
         try {
-          NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, state1.valuesMap, state1.ttl,
+          NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, weirdState.valuesMap, weirdState.ttl,
                   nodeConfig.getReplicatedReconfigurators(name));
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
           if (Config.debuggingEnabled) {
@@ -310,7 +310,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
           NameRecord nameRecord;
           try {
             nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
-            nameRecord.handleNewActiveStart(epoch, state1.valuesMap, state1.ttl);
+            nameRecord.handleNewActiveStart(epoch, weirdState.valuesMap, weirdState.ttl);
 
           } catch (FieldNotFoundException e1) {
             GNS.getLogger().severe("Field not found exception: " + e.getMessage());

@@ -24,6 +24,7 @@ import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
@@ -114,7 +115,9 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             // original AddRecordPacket packet. We could probably replace some of this once everything is working.
             AddRecordPacket addRecordPacket = AddRemove.registerPacketAddRecord(json, handler);
             handler.addCreateMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
-            handler.sendRequest(handler.makeCreateNameRequest(addRecordPacket.getName(), addRecordPacket.getValue().toString()));
+             ValuesMap valuesMap = new ValuesMap();
+             valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
+            handler.sendRequest(handler.makeCreateNameRequest(addRecordPacket.getName(), valuesMap.toString()));
             // original code
             //AddRemove.handlePacketAddRecord(json, handler);
             return true;
