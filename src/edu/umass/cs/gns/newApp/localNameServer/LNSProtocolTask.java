@@ -91,6 +91,7 @@ public class LNSProtocolTask<NodeIDType> implements
       if (info != null) {
         AddRecordPacket originalPacket = (AddRecordPacket) info.getUpdatePacket();
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
+        
         try {
           AddRemove.handlePacketConfirmAdd(confirmPacket.toJSONObject(), requestHandler);
         } catch (JSONException | UnknownHostException e) {

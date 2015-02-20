@@ -108,7 +108,8 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
 
   /**
    * Constructs a cache entry in the case where active name servers will be the same as replica controllers.
-   *
+   * SHOULD NOT BE USED IN THE NEW APP.
+   * 
    * @param name
    * @param primaryNameServers
    */

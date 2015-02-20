@@ -64,7 +64,7 @@ public class GnsReconLookup {
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
 
     if (Config.debuggingEnabled) {
-      GNS.getLogger().fine("Node " + gnsApp.getNodeID().toString() + "; DNS Query Packet: " + dnsPacket.toString());
+      GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() + "; DNS Query Packet: " + dnsPacket.toString());
     }
     // META COMMENT ABOUT THE COMMENT BELOW: 
     // Originally the responder field was used to communicate back to the client about which node responded to a query.

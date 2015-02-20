@@ -69,6 +69,8 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
 //                  + (type.equals(Packet.PacketType.ACTIVE_COORDINATION)
 //                          ? (" PaxosType: " + PaxosPacket.getPaxosPacketType(json)) : ""));
 //        }
+        // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
+        // UNTIL THE TRANSITION IS FINISHED
         switch (type) {
           // coordination packets internal to paxos
 //          case ACTIVE_COORDINATION:

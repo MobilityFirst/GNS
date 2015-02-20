@@ -65,6 +65,7 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
     register(Packet.PacketType.SELECT_RESPONSE);
   }
 
+  
   @Override
   public boolean handleJSONObject(JSONObject json) {
     GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
@@ -78,6 +79,8 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
       if (Config.debuggingEnabled) {
         GNS.getLogger().info("MsgType " + type + " Msg " + json);
       }
+      // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
+      // UNTIL THE TRANSITION IS FINISHED
       if (type != null) {
         switch (type) {
           case DNS:

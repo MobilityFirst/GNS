@@ -83,11 +83,14 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     boolean executed = false;
     try {
       JSONObject json = new JSONObject(request.toString());
+      // CHECK THIS!!!!!!
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name() + " packet: " + json.toString());
       }
+       // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
+       // UNTIL THE TRANSITION IS FINISHED
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests

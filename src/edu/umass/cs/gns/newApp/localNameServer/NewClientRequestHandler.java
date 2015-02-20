@@ -322,7 +322,9 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key) {
     switch (packet.getType()) {
       case ADD_CONFIRM:
-        cache.put(name, new CacheEntry<NodeIDType>(name, nodeConfig.getReplicatedReconfigurators(name)));
+        // 
+        cache.put(name, new CacheEntry<NodeIDType>(name, nodeConfig.getReplicatedReconfigurators(name),
+                nodeConfig.getReplicatedActives(name)));            
         //cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
         break;
       case REMOVE_CONFIRM:
