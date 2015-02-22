@@ -76,7 +76,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final boolean CONN_POOLING = true;
 	private static final String DUPLICATE_KEY = "23505";
 	private static final String DUPLICATE_TABLE = "X0Y32";
-	private static final List<String> NONEXISTENT_TABLE = new ArrayList(Arrays.asList("42Y07", "42Y55", "42X01"));
+	private static final List<String> NONEXISTENT_TABLE = new ArrayList<String>(Arrays.asList("42Y07", "42Y55"));
 	private static final String USER = "user";
 	private static final String PASSWORD = "user";
 	private static final String DATABASE = "paxos_logs";
@@ -1150,7 +1150,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
 		// providing a user name and PASSWORD is optional in embedded derby
-		props.put("user", DerbyPaxosLogger.USER);
+		props.put("user", DerbyPaxosLogger.USER + this.myID);
 		props.put("password", DerbyPaxosLogger.PASSWORD);
 		String dbCreation = PROTOCOL + this.logDirectory + DATABASE;
 
