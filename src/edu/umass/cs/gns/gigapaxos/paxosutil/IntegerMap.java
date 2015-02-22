@@ -79,12 +79,13 @@ public class IntegerMap<NodeIDType> {
 	 */
 	private Integer getID(NodeIDType node) {
 		if (node == null) return null;
-		/*
-           FIXME: Not sure why assumption 1 below is needed
-           
+		/*           
 		 * Relies on the following assumptions
 		 * 1) an Integer's hashcode is the integer value
-		 * itself, not a different integer value
+		 * itself, not a different integer value. This
+		 * assumption is needed primarily because -1
+		 * is a special "invalid" node ID and encoding
+		 * it to something else will break code.
 		 * 
 		 * 2) a String's hashcode does not change in the
 		 * lifetime of a JVM. We do *not* need the

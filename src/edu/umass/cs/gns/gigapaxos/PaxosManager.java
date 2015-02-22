@@ -66,7 +66,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	public static final boolean DEBUG = TESTPaxosConfig.DEBUG; // currently used only to debug pausing
 
 	private static final long MORGUE_DELAY = 30000;
-	private static final boolean MAINTAIN_CORPSES = false;
+	private static final boolean MAINTAIN_CORPSES = true;//false;
 	private static final int PINSTANCES_CAPACITY = 2000000;
 	private static final boolean CRASH_AND_RECOVER_ME_OPTION = false;
 	private static final boolean HIBERNATE_OPTION = false;
@@ -840,9 +840,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
-		}
-		else log.severe("Can't find group member in paxosID:version " +
-				paxosID + ":" + version);
+		} else
+			log.severe("Node" + myID + " can't find group member in " + paxosID
+					+ ":" + version + " : " + msg);
 	}
 
 	// process a request or send an answer
@@ -859,17 +859,17 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			}
 		}
 		else if (findGroup.group != null && findGroup.nodeID == this.myID) { // process an answer
-			PaxosInstanceStateMachine pism =
-					this.getInstance(findGroup.getPaxosID());
-			if (pism == null ||
-					(pism.getVersion() - findGroup.getVersion()) < 0) {
+			PaxosInstanceStateMachine pism = this.getInstance(findGroup
+					.getPaxosID());
+			if (pism == null
+					|| (pism.getVersion() - findGroup.getVersion()) < 0) {
 				// kill lower versions if any and create new paxos instance
-				if (pism.getVersion() - findGroup.getVersion() < 0)
+				if (pism != null
+						&& (pism.getVersion() - findGroup.getVersion() < 0))
 					this.kill(pism);
-				this.createPaxosInstance(findGroup.getPaxosID(),
-					findGroup.getVersion(), this.myID,
-					this.integerMap.get(Util.arrayToIntSet(findGroup.group)),
-					myApp, null, null, false);
+				this.createPaxosInstance(findGroup.getPaxosID(), findGroup
+						.getVersion(), this.myID, this.integerMap.get(Util
+						.arrayToIntSet(findGroup.group)), myApp, null, null, false);
 			}
 		}
 		try {

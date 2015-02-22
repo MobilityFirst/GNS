@@ -179,16 +179,15 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			return this.setState(rcRecReq.getServiceName(),
 					rcRecReq.getEpochNumber(),
 					ReconfigurationRecord.RCStates.READY);
-		} else if(rcRecReq.isDeleteConfirmation()) {
+		} else if (rcRecReq.isDeleteConfirmation()) {
 			// WAIT_ACK_STOP -> DELETE
 			log.log(Level.INFO, MyLogger.FORMAT[7],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
-							record.getEpoch(), record.getState(), "-> DELETE"});
+							record.getEpoch(), record.getState(), "-> DELETE" });
 
-			return this.deleteReconfigurationRecord(rcRecReq.getServiceName()) !=null;
-		}
-			else
+			return this.deleteReconfigurationRecord(rcRecReq.getServiceName()) != null;
+		} else
 			throw new RuntimeException("Received unexpected RCRecordRequest");
 	}
 

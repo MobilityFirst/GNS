@@ -197,6 +197,7 @@ public class Reconfigurator<NodeIDType> implements
 		// coordinate intent with replicas
 		if(this.isReadyForReconfiguration(rcRecReq))
 			this.DB.handleIncoming(rcRecReq); 		
+		else log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {"Discarding ", rcRecReq.getSummary()});
 		return null;
 	}
 	
@@ -264,11 +265,13 @@ public class Reconfigurator<NodeIDType> implements
 			// else I am secondary, so wait for primary's execution
 			else
 				this.spawnSecondaryReconfiguratorTask(rcRecReq);
-		} else if (handled && rcRecReq.isReconfigurationComplete()) {
+		} else if (handled
+				&& (rcRecReq.isReconfigurationComplete() || rcRecReq
+						.isDeleteConfirmation())) {
 			// remove commit start epoch task
 			this.protocolExecutor.remove(this.getTaskKey(
 					WaitCommitStartEpoch.class, rcPacket));
-		} 
+		}
 	}
 	
 

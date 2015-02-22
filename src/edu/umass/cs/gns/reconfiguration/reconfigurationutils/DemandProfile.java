@@ -22,7 +22,7 @@ public class DemandProfile extends AbstractDemandProfile {
 	};
 
 	private static final int DEFAULT_NUM_REQUESTS = 1;
-	private static final long MIN_RECONFIGURATION_INTERVAL = 1000;
+	private static final long MIN_RECONFIGURATION_INTERVAL = 000;
 	private static final long MIN_REQUESTS_BEFORE_RECONFIGURATION = DEFAULT_NUM_REQUESTS;
 
 	private double interArrivalTime = 0.0;

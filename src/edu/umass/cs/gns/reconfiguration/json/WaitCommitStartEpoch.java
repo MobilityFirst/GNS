@@ -18,8 +18,12 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.Reconfigurat
  * @author V. Arun
  */
 /*
- * This protocol task is initiated at a reconfigurator to await a majority of
- * acknowledgments for StartEpoch messages from active replicas.
+ * This protocol task is initiated at a reconfigurator in order to commit 
+ * the completion of the reconfiguration, i.e., to change the state of
+ * the reconfiguration record to READY or to execute the actual deletion
+ * of the record. We need a task for this because simply invoking
+ * handleIncoming (that in turn calls paxos propose(.)) does not suffice
+ * to ensure that the command will be committed.
  */
 public class WaitCommitStartEpoch<NodeIDType>
 		implements
@@ -39,9 +43,10 @@ public class WaitCommitStartEpoch<NodeIDType>
 		this.DB = DB;
 	}
 
-	// will keep restarting until explicitly removed by rconfigurator
+	// will keep restarting until explicitly removed by reconfigurator
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
+		// FIXME: need to check if I am obviated before restarting?
 		return start();
 	}
 

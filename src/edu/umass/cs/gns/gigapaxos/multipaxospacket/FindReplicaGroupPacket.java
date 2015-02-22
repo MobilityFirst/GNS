@@ -38,7 +38,7 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 		if(msg.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {
 			jsonGroup = msg.getJSONArray(PaxosPacket.NodeIDKeys.GROUP.toString());
 		}
-		if(jsonGroup.length()>0) {
+		if(jsonGroup!=null && jsonGroup.length()>0) {
 			this.group = new int[jsonGroup.length()];
 			for(int i=0; i<jsonGroup.length(); i++) {
 				this.group[i] = Integer.valueOf(jsonGroup.getString(i));
