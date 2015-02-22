@@ -26,25 +26,25 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 	/********************************* End of ReconfigurationpacketType ***********************/
 	public enum PacketType implements IntegerPacketType{
 
-		// events at active replica : actions at active replica
-		STOP_EPOCH (224), // : propose stop
+		// reconfigurator/active_replica -> active_replica
+		STOP_EPOCH (224), // : coordinate stop
 		START_EPOCH (226), // : request previous epoch final state
 		REQUEST_EPOCH_FINAL_STATE (227), // : send epoch final state
-		EPOCH_FINAL_STATE (228), // : record locally
-		DROP_EPOCH_FINAL_STATE (229), // : drop final state
+		EPOCH_FINAL_STATE (228), // : record state locally
+		DROP_EPOCH_FINAL_STATE (229), // : drop final state locally
 
-		// all events below are at reconfigurators
-		DEMAND_REPORT (230), // : starting point for reconfiguration, send stop_epoch if needed
+		// active_replica -> reconfigurator
+		DEMAND_REPORT(230), // : send stop_epoch if reconfiguration needed
 		ACK_STOP_EPOCH (231), // : record locally
 		ACK_START_EPOCH (232), // : record locally
-		ACK_EPOCH_FINAL_STATE (233), // : record locally; if majority, send drop_epoch_final_state
-		ACK_DROP_EPOCH_FINAL_STATE (234),
+		ACK_DROP_EPOCH_FINAL_STATE (233), // : record locally
 		
-		// the two packets below are sent from a client app
-		CREATE_SERVICE_NAME (235),
-		DELETE_SERVICE_NAME (236),
+		// app_client -> reconfigurator
+		CREATE_SERVICE_NAME (234), // : initiate create
+		DELETE_SERVICE_NAME (235), // : initiate delete
+		REQUEST_ACTIVE_REPLICAS (236),  // : send current active replicas
 		
-		// this type is relevant only between reconfigurators
+		// reconfigurator -> reconfigurator
 		RC_RECORD_REQUEST (237);
 		;
 
@@ -77,10 +77,12 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		typeMap.put(ReconfigurationPacket.PacketType.DEMAND_REPORT, DemandReport.class);
 		typeMap.put(ReconfigurationPacket.PacketType.ACK_STOP_EPOCH, AckStopEpoch.class);
 		typeMap.put(ReconfigurationPacket.PacketType.ACK_START_EPOCH, AckStartEpoch.class);
-		typeMap.put(ReconfigurationPacket.PacketType.ACK_EPOCH_FINAL_STATE, EpochFinalState.class);
 		typeMap.put(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE, AckDropEpochFinalState.class); 
+
 		typeMap.put(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME, CreateServiceName.class); 
 		typeMap.put(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME, DeleteServiceName.class); 
+		typeMap.put(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS, RequestActiveReplicas.class); 
+		
 		typeMap.put(ReconfigurationPacket.PacketType.RC_RECORD_REQUEST, RCRecordRequest.class); 
 
 		for(ReconfigurationPacket.PacketType type : ReconfigurationPacket.PacketType.intToType.values()) {

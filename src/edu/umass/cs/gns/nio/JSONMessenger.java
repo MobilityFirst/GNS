@@ -72,17 +72,9 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
 				
 				int length = jsonMsg.toString().length();
-				//int sent = 0;
 
 				// special case provision for InetSocketAddress
 				int sent = this.specialCaseSend(mtask.recipients[r], jsonMsg);
-				/*
-				if(mtask.recipients[r] instanceof InetSocketAddress) {
-					sent = this.nioTransport.sendToAddress((InetSocketAddress)mtask.recipients[r], jsonMsg);
-				} else {
-					sent = nioTransport.sendToID((NodeIDType)(mtask.recipients[r]), jsonMsg);
-				}
-				*/
 				
 				// check success or failure and react accordingly
 				if (sent == length) {

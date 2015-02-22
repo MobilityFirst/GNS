@@ -3,6 +3,7 @@ package edu.umass.cs.gns.reconfiguration;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,6 +29,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DemandReport
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RCRecordRequest.RequestTypes;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AggregateDemandProfiler;
@@ -196,6 +198,25 @@ public class Reconfigurator<NodeIDType> implements
 		if(this.isReadyForReconfiguration(rcRecReq))
 			this.DB.handleIncoming(rcRecReq); 		
 		return null;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public GenericMessagingTask<NodeIDType, ?>[] handleRequestActiveReplicas(
+			RequestActiveReplicas request,
+			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
+		ReconfigurationRecord<NodeIDType> record = this.DB
+				.getReconfigurationRecord(request.getServiceName());
+		Set<NodeIDType> actives = record.getActiveReplicas();
+		Set<InetSocketAddress> activeIPs = new HashSet<InetSocketAddress>();
+		for (NodeIDType node : actives) {
+			activeIPs.add(new InetSocketAddress(this.consistentNodeConfig
+					.getNodeAddress(node), this.consistentNodeConfig
+					.getNodePort(node)));
+		}
+		request.setActives(activeIPs);
+		GenericMessagingTask<InetSocketAddress, ?> mtask = new GenericMessagingTask<InetSocketAddress, Object>(
+				request.getSender(), request);
+		return (GenericMessagingTask<NodeIDType, ?>[]) (mtask.toArray()); // FIXME:
 	}
 	
 	/*

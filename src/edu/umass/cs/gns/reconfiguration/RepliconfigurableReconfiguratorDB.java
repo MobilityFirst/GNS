@@ -92,7 +92,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	 * this node is a part. The name of the group is the name of the first node
 	 * in the group.
 	 * 
-	 * FIXME:
+	 * FIXME: Need to add support for changing these groups midway.
 	 */
 	private boolean createDefaultGroups() {
 		Set<NodeIDType> reconfigurators = this.consistentNodeConfig

@@ -16,9 +16,11 @@ import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.gns.util.MyLogger;
 
 /**
@@ -39,16 +41,16 @@ public class ReconfigurableClient {
 	}
 
 	private AppRequest makeRequest(String name, String value) {
-		AppRequest req = new AppRequest(name, value, AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
-		return req;
+		return new AppRequest(name, value, AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
 	}
 	private CreateServiceName makeCreateNameRequest(String name, String state) {
-		CreateServiceName create = new CreateServiceName(null, name, 0, state);
-		return create;
+		return new CreateServiceName(null, name, 0, state);
 	}
 	private DeleteServiceName makeDeleteNameRequest(String name, String state) {
-		DeleteServiceName delete = new DeleteServiceName(null, name, 0);
-		return delete;
+		return new DeleteServiceName(null, name, 0);
+	}
+	private RequestActiveReplicas makeRequestActiveReplicas(String name) {
+		return new RequestActiveReplicas(null, name, 0);
 	}
 
 	private int getRandomReplica() {
@@ -73,13 +75,7 @@ public class ReconfigurableClient {
 		this.exists.put(req.getServiceName(), true);
 		this.sendRequest(id, req.toJSONObject());
 	}
-	private void sendRequest(CreateServiceName req) throws JSONException, IOException {
-		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
-		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getSummary(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
-		this.exists.put(req.getServiceName(), true);
-		this.sendRequest(id, req.toJSONObject());
-	}
-	private void sendRequest(DeleteServiceName req) throws JSONException, IOException {
+	private void sendRequest(BasicReconfigurationPacket<?> req) throws JSONException, IOException {
 		int id = (TestConfig.serverSelectionPolicy==TestConfig.ServerSelectionPolicy.FIRST ? this.getFirstRCReplica() : this.getRandomRCReplica());
 		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{"Sending " , req.getSummary(), " to ", id , ":" , this.nodeConfig.getNodeAddress(id) , ":" , this.nodeConfig.getNodePort(id) , ": ", req});
 		this.exists.put(req.getServiceName(), true);
@@ -96,6 +92,7 @@ public class ReconfigurableClient {
 			this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
 			this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
 			this.register(AppRequest.PacketType.DEFAULT_APP_REQUEST);
+			this.register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
 		}
 		@Override
 		public boolean handleJSONObject(JSONObject json) {
@@ -116,6 +113,15 @@ public class ReconfigurableClient {
 						log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] {
 								"App deleted ", delete.getServiceName() });
 						exists.remove(delete.getServiceName());
+						break;
+					case REQUEST_ACTIVE_REPLICAS:
+						RequestActiveReplicas reqActives = new RequestActiveReplicas(
+								json);
+						log.log(Level.INFO, MyLogger.FORMAT[3],
+								new Object[] { "App received active replicas for",
+										reqActives.getServiceName(), ":",
+										reqActives.getActives() });
+						exists.remove(reqActives.getServiceName());
 						break;
 					default:
 						break;
@@ -167,6 +173,8 @@ public class ReconfigurableClient {
 				while(client.exists.containsKey(namePrefix+0));
 				Thread.sleep(1000);
 			}
+			client.sendRequest(client.makeRequestActiveReplicas(namePrefix+0));
+			while(client.exists.containsKey(namePrefix+0));
 			client.sendRequest(client.makeDeleteNameRequest(namePrefix+0, initValue));
 			client.messenger.stop();
 		} catch(IOException ioe) {
@@ -179,6 +187,5 @@ public class ReconfigurableClient {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 	}
 }

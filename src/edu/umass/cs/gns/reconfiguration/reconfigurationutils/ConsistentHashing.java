@@ -12,27 +12,42 @@ import com.google.common.hash.Hashing;
 
 /* A utility class with mostly static methods to help with
  * consistent hashing related functions.
+ * 
+ * It is okay to suppress warnings about unchecked types
+ * of serversArray objects as they have to be of type
+ * NodeIDType.
  */
 public class ConsistentHashing<NodeIDType> {
 	
 	private static final int DEFAULT_NUM_REPLICAS = 3;
 	private int numReplicas;
-	private SortedSet<Object> servers = new TreeSet<Object>();
+	private SortedSet<NodeIDType> servers = new TreeSet<NodeIDType>();
 	private Object[] serversArray; // servers as array to avoid toArray() calls
 	
-	public ConsistentHashing(Object[] servers) {
+	public ConsistentHashing(NodeIDType[] servers) {
 		this.refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
-	public ConsistentHashing(Object[] servers, int numReplicas) {
+	public ConsistentHashing(NodeIDType[] servers, int numReplicas) {
 		this.refresh(servers, numReplicas);
 	}
-	
-	public void refresh(Object[] servers, int numReplicas) {
-		for(Object obj : servers) this.servers.add(obj);
+	public ConsistentHashing(Set<NodeIDType> servers) {
+		this.refresh(servers, DEFAULT_NUM_REPLICAS);
+	}
+
+	public void refresh(NodeIDType[] servers, int numReplicas) {
+		for(NodeIDType obj : servers) this.servers.add(obj);
 		this.serversArray = this.servers.toArray();
 		this.numReplicas = numReplicas;		
 	}
-	public void refresh(Object[] servers) {
+	public void refresh(Set<NodeIDType> servers, int numReplicas) {
+		for(NodeIDType obj : servers) this.servers.add(obj);
+		this.serversArray = this.servers.toArray();
+		this.numReplicas = numReplicas;		
+	}
+	public void refresh(NodeIDType[] servers) {
+		refresh(servers, DEFAULT_NUM_REPLICAS);
+	}
+	public void refresh(Set<NodeIDType> servers) {
 		refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
 	
@@ -60,10 +75,11 @@ public class ConsistentHashing<NodeIDType> {
 	}
 
         // NOT USED IN NEW APP. FOR BACKWARDS COMPATIBILITY WITH OLD APP.
-        // WILL BE REMOVED AFTER NEW APP IS TESTED.
+		// WILL BE REMOVED AFTER NEW APP IS TESTED.
         /**
          * Returns the hash for this name.
          */
+	    @SuppressWarnings("unchecked")
         @Deprecated
         public NodeIDType getHash(String name) {
           int bucket = consistentHash(name, this.serversArray.length);

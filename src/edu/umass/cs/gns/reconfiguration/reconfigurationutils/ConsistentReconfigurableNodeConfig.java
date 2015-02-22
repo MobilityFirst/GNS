@@ -32,9 +32,9 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 		this.activeReplicas = this.nodeConfig.getActiveReplicas();
 		this.reconfigurators = this.nodeConfig.getReconfigurators();
 		this.CH_RC = new ConsistentHashing<NodeIDType>(
-				this.reconfigurators.toArray());
+				this.reconfigurators);
 		this.CH_AR = new ConsistentHashing<NodeIDType>(
-				this.activeReplicas.toArray());
+				this.activeReplicas);
 	}
 
 	@Override
@@ -144,7 +144,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 		if (curActives.equals(this.getLastActives()))
 			return false;
 		this.setLastActives(curActives);
-		this.CH_AR.refresh(curActives.toArray());
+		this.CH_AR.refresh(curActives);
 		return true;
 	}
 
@@ -154,7 +154,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends ConsistentNo
 		if (curReconfigurators.equals(this.getLastReconfigurators()))
 			return false;
 		this.setLastReconfigurators(curReconfigurators);
-		this.CH_RC.refresh(curReconfigurators.toArray());
+		this.CH_RC.refresh(curReconfigurators);
 		return true;
 	}
 

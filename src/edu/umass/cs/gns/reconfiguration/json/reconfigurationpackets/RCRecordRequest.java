@@ -9,8 +9,8 @@ import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.Stringifiable;
 
 /*
- * This packet is for any state change to a reconfiguration record. It is currently used only to
- * mark the beginning of a reconfiguration.
+ * This packet is for any state change to a reconfiguration record. It is
+ * currently used only to mark the beginning of a reconfiguration.
  */
 public class RCRecordRequest<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> implements
@@ -26,20 +26,21 @@ public class RCRecordRequest<NodeIDType> extends
 
 	private final RequestTypes reqType;
 	public final StartEpoch<NodeIDType> startEpoch;
-	
+
 	private boolean coordType = true;
 
-	public RCRecordRequest(NodeIDType initiator, 
+	public RCRecordRequest(NodeIDType initiator,
 			StartEpoch<NodeIDType> startEpoch, RequestTypes reqType) {
-		super(initiator,
-				ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
+		super(initiator, ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
 				startEpoch.getServiceName(), startEpoch.getEpochNumber());
 		this.reqType = reqType;
 		this.startEpoch = startEpoch;
 	}
-	public RCRecordRequest(NodeIDType initiator, 
-			String serviceName, int epochNumber, RequestTypes reqType) {
-		super(initiator, ReconfigurationPacket.PacketType.RC_RECORD_REQUEST, serviceName, epochNumber);
+
+	public RCRecordRequest(NodeIDType initiator, String serviceName,
+			int epochNumber, RequestTypes reqType) {
+		super(initiator, ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
+				serviceName, epochNumber);
 		this.reqType = reqType;
 		this.startEpoch = null;
 	}
@@ -49,7 +50,7 @@ public class RCRecordRequest<NodeIDType> extends
 		super(json, unstringer);
 		this.reqType = RequestTypes.valueOf(json.get(
 				Keys.REQUEST_TYPE.toString()).toString());
-		this.coordType = false; //json.getBoolean(BasicReconfigurationPacket.Keys.IS_COORDINATION.toString());
+		this.coordType = false; // json.getBoolean(BasicReconfigurationPacket.Keys.IS_COORDINATION.toString());
 		this.startEpoch = json.has(Keys.START_EPOCH.toString()) ? new StartEpoch<NodeIDType>(
 				(JSONObject) json.get(Keys.START_EPOCH.toString()), unstringer)
 				: null;
@@ -66,16 +67,16 @@ public class RCRecordRequest<NodeIDType> extends
 					this.startEpoch.toJSONObject());
 		return json;
 	}
-	
+
 	public boolean isReconfigurationIntent() {
 		return this.reqType.equals(RequestTypes.REGISTER_RECONFIURATION_INTENT);
 	}
+
 	public boolean isReconfigurationComplete() {
-		return this.reqType.equals(RequestTypes.REGISTER_RECONFIGURATION_COMPLETE);
+		return this.reqType
+				.equals(RequestTypes.REGISTER_RECONFIGURATION_COMPLETE);
 	}
-	public boolean isDeleteIntent() {
-		return this.reqType.equals(RequestTypes.DELETE_RECORD_INTENT);
-	}
+
 	public boolean isDeleteConfirmation() {
 		return this.reqType.equals(RequestTypes.DELETE_RECORD_COMPLETE);
 	}

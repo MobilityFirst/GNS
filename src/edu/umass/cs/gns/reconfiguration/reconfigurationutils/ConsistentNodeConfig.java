@@ -19,7 +19,7 @@ public class ConsistentNodeConfig<NodeIDType> implements
 	public ConsistentNodeConfig(InterfaceNodeConfig<NodeIDType> nc) {
 		this.nodeConfig = nc;
 		this.nodes = this.nodeConfig.getNodeIDs();
-		this.CH = new ConsistentHashing<NodeIDType>(this.nodes.toArray());
+		this.CH = new ConsistentHashing<NodeIDType>(this.nodes);
 	}
 
 	private synchronized boolean refresh() {
@@ -27,7 +27,7 @@ public class ConsistentNodeConfig<NodeIDType> implements
 		if (curActives.equals(this.nodes))
 			return false;
 		this.nodes = (curActives);
-		this.CH.refresh(curActives.toArray());
+		this.CH.refresh(curActives);
 		return true;
 	}
 

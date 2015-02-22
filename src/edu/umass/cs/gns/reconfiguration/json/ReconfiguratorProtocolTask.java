@@ -23,6 +23,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ReconfigurationPacket.PacketType.DEMAND_REPORT,
 		ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME,
 		ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
+		ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS,
 		ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
 	};
 	private static final ReconfigurationPacket.PacketType[] types = 
