@@ -85,6 +85,9 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       JSONObject json = new JSONObject(request.toString());
       // CHECK THIS!!!!!!
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
+      if (Config.debuggingEnabled && noCoordinationState) {
+        GNS.getLogger().info("*********** APP " + nodeID + " packet has NO_COORDINATOR_STATE_MARKER: " + json.toString());
+      }
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (Config.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name() + " packet: " + json.toString());

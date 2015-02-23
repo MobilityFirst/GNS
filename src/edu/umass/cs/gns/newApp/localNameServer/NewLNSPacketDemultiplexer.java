@@ -21,12 +21,10 @@ import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -87,7 +85,7 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, handler.getGnsNodeConfig());
             Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
             switch (incomingPacketType) {
-              // Lookup // these have been converted to use handler
+              // Lookup
               case DNS_SUBTYPE_QUERY:
                 Lookup.handlePacketLookupRequest(json, dnsPacket, handler);
                 return true;

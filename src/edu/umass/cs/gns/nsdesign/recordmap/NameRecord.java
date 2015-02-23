@@ -32,7 +32,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * null value for the ACTIVE_VERSION and OLD_ACTIVE_VERSION field.
    */
-  public static final int NULL_VALUE_ACTIVE_VERSION = 0;
+  public static final int NULL_VALUE_ACTIVE_VERSION = -1;
 
   public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
   public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_NODE_ID_STRING);

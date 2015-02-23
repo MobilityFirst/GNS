@@ -80,6 +80,9 @@ public class GnsReconLookup {
     }
 
     if (noCoordinatorState) {
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("noCoordinatorState! returning error... DNS Query Packet: " + dnsPacket.toString());
+      }
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       if (!recovery) {
@@ -140,11 +143,13 @@ public class GnsReconLookup {
             }
           }
         } catch (FieldNotFoundException e) {
-          // Ignore field not found exceptions...
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
+          }
         }
 
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("Name record read is: " + nameRecord);
+          GNS.getLogger().info("Name record read is: " + nameRecord);
         }
         // Now we either have a name record with stuff it in or a null one
         // Time to send something back to the client
@@ -269,14 +274,14 @@ public class GnsReconLookup {
               // we return the single value of the key (old array-based return format)
               dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));
               if (Config.debuggingEnabled) {
-                GNS.getLogger().fine("NS sending DNS lookup response: Name = " + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue());
+                GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue());
               }
             }
             // or we're supposed to return all the keys so return the entire record
           } else if (dnsPacket.getKeys() != null || Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (Config.debuggingEnabled) {
-              GNS.getLogger().fine("NS sending multiple value DNS lookup response: Name = " + guid);
+              GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
             }
             // or we don't actually have the field
           } else { // send error msg.
