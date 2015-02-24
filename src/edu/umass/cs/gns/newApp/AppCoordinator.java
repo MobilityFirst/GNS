@@ -59,16 +59,10 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
     boolean noCoordinatorState = false;
     try {
       Packet.PacketType type = Packet.getPacketType(json);
-      if (type == null) {
+      if (type != null) {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().info("######################## Received " + json);
+          GNS.getLogger().info("######################## Received " + type + " : " + json);
         }
-      } else {
-//        if (Config.debuggingEnabled) {
-//          GNS.getLogger().info("######################## Coordinating " + type
-//                  + (type.equals(Packet.PacketType.ACTIVE_COORDINATION)
-//                          ? (" PaxosType: " + PaxosPacket.getPaxosPacketType(json)) : ""));
-//        }
         // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
         // UNTIL THE TRANSITION IS FINISHED
         switch (type) {
@@ -81,6 +75,7 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
           case UPDATE: // updates need coordination
             UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(json, unstringer);
             update.setNameServerID(nodeID);
+            GNS.getLogger().info("@@@@@@@@@@@@@@@@@@@@@ Proposing update for " + update.getName() + ": " + update.toString());
             String paxosID = paxosManager.propose(update.getName(), update.toString());
             if (paxosID == null) {
               callHandleDecision = update;
@@ -183,6 +178,10 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
 //          callHandleDecision.put(Config.NO_COORDINATOR_STATE_MARKER, 0);
 //        }
           callHandleDecisionWithRetry(callHandleDecision, false);
+        }
+      } else { // packet type was null
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().warning("Received unknown packet type " + json);
         }
       }
     } catch (JSONException e) {

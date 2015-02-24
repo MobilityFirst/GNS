@@ -63,7 +63,6 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
     register(Packet.PacketType.SELECT_RESPONSE);
   }
 
-  
   @Override
   public boolean handleJSONObject(JSONObject json) {
     GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
@@ -116,8 +115,8 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             // original AddRecordPacket packet. We could probably replace some of this once everything is working.
             AddRecordPacket addRecordPacket = AddRemove.registerPacketAddRecord(json, handler);
             handler.addCreateMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
-             ValuesMap valuesMap = new ValuesMap();
-             valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
+            ValuesMap valuesMap = new ValuesMap();
+            valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
             handler.sendRequest(handler.makeCreateNameRequest(addRecordPacket.getName(), valuesMap.toString()));
             // original code
             //AddRemove.handlePacketAddRecord(json, handler);
@@ -127,7 +126,7 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             // original RemoveRecordPacket packet. We could probably replace some of this once everything is working.
             // New code which creates RemoveService packets and sends them to the Reconfigurator.
             RemoveRecordPacket removeRecordPacket = AddRemove.registerPacketRemoveRecord(json, handler);
-            handler.addCreateMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
+            handler.addRemoveMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
             handler.sendRequest(handler.makeDeleteNameRequest(removeRecordPacket.getName()));
             // original code
             //AddRemove.handlePacketRemoveRecord(json, handler);

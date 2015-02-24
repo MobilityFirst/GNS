@@ -76,6 +76,17 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     }
     this.nioServer = nioServer;
   }
+  
+  private static PacketType[] types = {
+    PacketType.DNS,
+    PacketType.UPDATE,
+    PacketType.SELECT_REQUEST,
+    PacketType.SELECT_RESPONSE,
+    PacketType.ACTIVE_ADD,
+    PacketType.ACTIVE_REMOVE,
+    PacketType.UPDATE_CONFIRM,
+    PacketType.ADD_CONFIRM,
+    PacketType.REMOVE_CONFIRM};
 
   @Override
   public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
@@ -126,7 +137,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
           Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this,
                   noCoordinationState, doNotReplyToClient);
           break;
-        // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
+        // HANDLE CONFIRMATIONS COMING BACK FROM AN LNS (SIDE-TO-SIDE)
         case UPDATE_CONFIRM:
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:
@@ -169,17 +180,6 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       throw new RequestParseException(e);
     }
   }
-
-  private static PacketType[] types = {
-    PacketType.DNS,
-    PacketType.UPDATE,
-    PacketType.SELECT_REQUEST,
-    PacketType.SELECT_RESPONSE,
-    PacketType.ACTIVE_ADD,
-    PacketType.ACTIVE_REMOVE,
-    PacketType.UPDATE_CONFIRM,
-    PacketType.ADD_CONFIRM,
-    PacketType.REMOVE_CONFIRM};
 
   @Override
   public Set<IntegerPacketType> getRequestTypes() {

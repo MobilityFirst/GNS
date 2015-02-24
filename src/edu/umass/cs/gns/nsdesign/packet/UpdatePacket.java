@@ -7,7 +7,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stringifiable;
@@ -46,7 +46,8 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndLNS implements InterfaceRequest {
+public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndLNS implements 
+        InterfaceReplicableRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String LocalNSREQUESTID = "LNSreqID";
@@ -437,5 +438,14 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
 
   public void setRequestID(int requestID) {
     this.requestID = requestID;
+  }
+
+  @Override
+  public boolean needsCoordination() {
+   return true;
+  }
+
+  @Override
+  public void setNeedsCoordination(boolean b) {
   }
 }

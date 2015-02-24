@@ -10,6 +10,7 @@ import java.util.Set;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
@@ -20,6 +21,9 @@ import java.net.UnknownHostException;
 import org.json.JSONException;
 
 /**
+ * Currently boring use of ProtocolTask for the Local Name Server.
+ * The handleEvent doesn't return any messaging tasks.
+ * 
  * @author Westy
  *
  * @param <NodeIDType>
@@ -91,7 +95,7 @@ public class LNSProtocolTask<NodeIDType> implements
       if (info != null) {
         AddRecordPacket originalPacket = (AddRecordPacket) info.getUpdatePacket();
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
-        
+
         try {
           AddRemove.handlePacketConfirmAdd(confirmPacket.toJSONObject(), requestHandler);
         } catch (JSONException | UnknownHostException e) {
@@ -106,13 +110,33 @@ public class LNSProtocolTask<NodeIDType> implements
       }
     }
     return null;
-    //return new GenericMessagingTask(null, packet);
   }
 
   private GenericMessagingTask handleDelete(DeleteServiceName packet) {
-    GNS.getLogger().info("App deleted " + packet.getServiceName());
+    Integer lnsRequestID = requestHandler.getRemoveMapping(packet.getServiceName());
+    if (lnsRequestID != null) {
+      GNS.getLogger().info("App removed " + packet.getServiceName());
+      // Basically we gin up a confirmation packet for the original AddRecord packet and
+      // send it back to the originator of the request.
+      UpdateInfo info = (UpdateInfo) requestHandler.getRequestInfo(lnsRequestID);
+      if (info != null) {
+        RemoveRecordPacket originalPacket = (RemoveRecordPacket) info.getUpdatePacket();
+        ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
+
+        try {
+          AddRemove.handlePacketConfirmRemove(confirmPacket.toJSONObject(), requestHandler);
+        } catch (JSONException | UnknownHostException e) {
+          GNS.getLogger().severe("Unable to send remove confirmation for " + packet.getServiceName() + ":" + e);
+        }
+      } else {
+        GNS.getLogger().severe("Unable to find request info for remove confirmation for " + packet.getServiceName());
+      }
+    } else {
+      if (requestHandler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Ignoring spurious remove confirmation for " + packet.getServiceName());
+      }
+    }
     return null;
-    //return new GenericMessagingTask(null, packet);
   }
 
 }
