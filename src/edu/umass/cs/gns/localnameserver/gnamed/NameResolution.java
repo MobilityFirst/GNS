@@ -389,7 +389,7 @@ public class NameResolution {
     for (int i = 0; i < 4; i++) {
       response.removeAllRecords(i);
     }
-    if (rcode == Rcode.SERVFAIL) {
+    if (question != null) {
       response.addRecord(question, Section.QUESTION);
     }
     response.getHeader().setRcode(rcode);
