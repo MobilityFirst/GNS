@@ -19,16 +19,12 @@ import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -50,7 +46,7 @@ import org.json.JSONException;
  * Abstracts out the storing of request info, caching and communication needs of
  * a node.
  *
- * Note: This based on LNS code, but at some point the idea was that the LNS and NS
+ * Note: This is based on original LNS code, but at some point the idea was that the LNS and NS
  * could both use this interface. Not sure if that is going to happen now, but there
  * is a need for certain services at the NS that the LNS implements (like caching and
  * retransmission of lookups).
@@ -81,11 +77,6 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   private final Cache<String, CacheEntry<NodeIDType>> cache;
 
   /**
-   * Map of name record statistics *
-   */
-  private final ConcurrentMap<String, NameRecordStats> nameRecordStatsMap;
-
-  /**
    * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
@@ -105,11 +96,8 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * Host address of the local name server.
    */
   private final InetSocketAddress nodeAddress;
-
-  /**
-   * Instrumentation: Keep track of the number of requests coming in.
-   */
-  long receivedRequests = 0;
+  
+  private long receivedRequests = 0;
 
   public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
@@ -125,7 +113,6 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
-    this.nameRecordStatsMap = new ConcurrentHashMap<>(16, 0.75f, 5);
     this.tcpTransport = messenger;
     this.messenger = messenger;
     this.protocolExecutor = new ProtocolExecutor<>(messenger);
@@ -194,24 +181,37 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     requestInfoMap.put(id, requestInfo);
   }
 
-  // For backward compatibility between old Add and Remove record code and new name service code.
+  // These next four are for backward compatibility between old Add and Remove record 
+  // code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
   @Override
+  /**
+   * Creates a mapping between a create service name and the AddRecord that triggered it.
+   */
   public void addCreateMapping(String name, int id) {
     createServiceNameMap.put(name, id);
   }
 
   @Override
+  /**
+   * Looks up the mapping between a CreateServiceName and the AddRecord that triggered it.
+   */
   public Integer getCreateMapping(String name) {
     return createServiceNameMap.get(name);
   }
 
   @Override
+  /**
+   * Creates a mapping between a DeleteServiceName and the RemoveRecord that triggered it.
+   */
   public void addRemoveMapping(String name, int id) {
     removeServiceNameMap.put(name, id);
   }
 
   @Override
+  /**
+   * Looks up the mapping between a DeleteServiceName and the RemoveRecord that triggered it.
+   */
   public Integer getRemoveMapping(String name) {
     return removeServiceNameMap.get(name);
   }
@@ -409,7 +409,6 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     }
   }
 
-  // NETWORK METHODS
   /**
    **
    * Return a Set containing ids of primary replica for <i>name</i>
@@ -472,18 +471,6 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public CreateServiceName makeCreateNameRequest(String name, String state) {
-    CreateServiceName create = new CreateServiceName(null, name, 0, state);
-    return create;
-  }
-
-  @Override
-  public DeleteServiceName makeDeleteNameRequest(String name) {
-    DeleteServiceName delete = new DeleteServiceName(null, name, 0);
-    return delete;
-  }
-
-  @Override
   public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException {
     NodeIDType id = getRandomRCReplica();
     if (parameters.isDebugMode()) {
@@ -525,52 +512,33 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   // STATS MAP
   @Override
   public NameRecordStats getStats(String name) {
-    return nameRecordStatsMap.get(name);
+    throw new UnsupportedOperationException("Not supported.");
   }
 
   @Override
   @SuppressWarnings("unchecked") // don't understand why there is a warning here!
   public Set<String> getNameRecordStatsKeySet() {
-    return nameRecordStatsMap.keySet();
+    throw new UnsupportedOperationException("Not supported.");
   }
 
   @Override
   public void incrementLookupRequest(String name) {
-
-    if (nameRecordStatsMap.containsKey(name)) {
-      nameRecordStatsMap.get(name).incrementLookupCount();
-    } else {
-      NameRecordStats nameRecordStats = new NameRecordStats();
-      nameRecordStats.incrementLookupCount();
-      nameRecordStatsMap.put(name, nameRecordStats);
-    }
+    //throw new UnsupportedOperationException("Not supported.");
   }
 
   @Override
   public void incrementUpdateRequest(String name) {
-    if (nameRecordStatsMap.containsKey(name)) {
-      nameRecordStatsMap.get(name).incrementUpdateCount();
-    } else {
-      NameRecordStats nameRecordStats = new NameRecordStats();
-      nameRecordStats.incrementUpdateCount();
-      nameRecordStatsMap.put(name, nameRecordStats);
-    }
+    //throw new UnsupportedOperationException("Not supported.");
   }
 
   @Override
   public void incrementLookupResponse(String name) {
-    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
-    if (nameRecordStats != null) {
-      nameRecordStats.incrementLookupResponse();
-    }
+    //throw new UnsupportedOperationException("Not supported.");
   }
 
   @Override
   public void incrementUpdateResponse(String name) {
-    NameRecordStats nameRecordStats = nameRecordStatsMap.get(name);
-    if (nameRecordStats != null) {
-      nameRecordStats.incrementUpdateResponse();
-    }
+    //throw new UnsupportedOperationException("Not supported.");
   }
 
   /**
@@ -581,38 +549,11 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   @Override
   public String getNameRecordStatsMapLogString() {
-    StringBuilder str = new StringBuilder();
-    for (Map.Entry<String, NameRecordStats> entry : nameRecordStatsMap.entrySet()) {
-      str.append("\n");
-      str.append("Name " + entry.getKey());
-      str.append("->");
-      str.append(" " + entry.getValue().toString());
-    }
-    return "***NameRecordStatsMap***" + str.toString();
+    throw new UnsupportedOperationException("Not supported.");
   }
-
-  long lastRecordedTime = -1;
-  // Maintains a moving average of server request load to smooth out the burstiness.
-  private long deferedCnt = 0; // a little hair in case we are getting requests too fast for the nanosecond timer (is this likely?)
-  private MovingAverage averageRequestsPerSecond = new MovingAverage(40);
 
   @Override
   public void updateRequestStatistics() {
-    // first time do nothing
-    if (lastRecordedTime == -1) {
-      lastRecordedTime = System.nanoTime();
-      return;
-    }
-    long currentTime = System.nanoTime();
-    long timeDiff = currentTime - lastRecordedTime;
-    deferedCnt++;
-    // in case we are running faster than the clock
-    if (timeDiff != 0) {
-      // multiple by 1000 cuz we're computing Ops per SECOND
-      averageRequestsPerSecond.add((int) (deferedCnt * 1000000000L / timeDiff));
-      deferedCnt = 0;
-      lastRecordedTime = currentTime;
-    }
     receivedRequests++;
   }
 
@@ -633,39 +574,17 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   @Override
   public int getRequestsPerSecond() {
-    return (int) Math.round(averageRequestsPerSecond.getAverage());
+    return 0;
   }
 
   @Override
   public void handleNameServerLoadPacket(JSONObject json) throws JSONException {
-    NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
-    nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
-  }
-
-  private ConcurrentHashMap<NodeIDType, Double> nameServerLoads;
-
-  public ConcurrentHashMap<NodeIDType, Double> getNameServerLoads() {
-    return nameServerLoads;
+    throw new UnsupportedOperationException("Not supported.");
   }
 
   @Override
   public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs) {
-    if (serverIDs == null || serverIDs.size() == 0) {
-      return null;
-    }
-    NodeIDType selectServer = null;
-    // select server whose latency + load is minimum
-    double selectServerLatency = Double.MAX_VALUE;
-    for (NodeIDType x : serverIDs) {
-      if (getGnsNodeConfig().getPingLatency(x) > 0) {
-        double totallatency = 5 * nameServerLoads.get(x) + (double) getGnsNodeConfig().getPingLatency(x);
-        if (totallatency < selectServerLatency) {
-          selectServer = x;
-          selectServerLatency = totallatency;
-        }
-      }
-    }
-    return selectServer;
+    throw new UnsupportedOperationException("Not supported.");
   }
 
 }

@@ -30,10 +30,6 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
 
   public NodeIDType getFirstRCReplica();
 
-  public CreateServiceName makeCreateNameRequest(String name, String state);
-
-  public DeleteServiceName makeDeleteNameRequest(String name);
-  
   public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException;
   
   public boolean handleEvent(JSONObject json) throws JSONException;

@@ -8,7 +8,6 @@ import java.io.IOException;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
-import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
 import java.util.Set;
 
 /**
