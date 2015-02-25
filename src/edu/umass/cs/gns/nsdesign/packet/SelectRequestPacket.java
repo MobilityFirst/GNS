@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.clientsupport.SHA1HashFunction;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
@@ -18,7 +20,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
+public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS implements InterfaceRequest {
 
   public enum SelectOperation {
 
@@ -233,7 +235,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
 //  public void setNsID(NodeIDType nsID) {
 //    this.nsID = nsID;
 //  }
-
   public int getId() {
     return id;
   }
@@ -256,7 +257,6 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
 //  public NodeIDType getNameServerID() {
 //    return nsID;
 //  }
-
   public int getNsQueryId() {
     return nsQueryId;
   }
@@ -279,6 +279,17 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS {
 
   public void setQuery(String query) {
     this.query = query;
+  }
+
+  @Override
+  public String getServiceName() {
+    if (query != null) {
+      // FIXME: maybe cache this
+      return new String(SHA1HashFunction.getInstance().hash(this.query));
+    } else {
+      // FIXME:
+      return "SelectRequest";
+    }
   }
 
   public String getGuid() {

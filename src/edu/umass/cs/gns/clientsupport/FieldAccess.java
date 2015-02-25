@@ -375,9 +375,9 @@ public class FieldAccess {
    * @param handler
    * @return
    */
-  public static CommandResponse selectGroupSetupQuery(String accountGuid, String query, byte[] publicKeyBytes, int interval,
+  public static CommandResponse selectGroupSetupQuery(String accountGuid, String query, String publicKey, int interval,
           ClientRequestHandlerInterface handler) {
-    String guid = ClientUtils.createGuidStringFromPublicKey(publicKeyBytes);
+    String guid = ClientUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
     if (lookupGuidInfo(guid, handler) == null) {
       // This code is similar to the code in AddGuid command except that we're not checking signatures... yet.
@@ -397,7 +397,7 @@ public class FieldAccess {
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
-        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, name, guid, new String(publicKeyBytes), handler);
+        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, name, guid, publicKey, handler);
         if (!groupGuidCreateresult.getReturnValue().equals(OKRESPONSE)) {
           return groupGuidCreateresult;
         }

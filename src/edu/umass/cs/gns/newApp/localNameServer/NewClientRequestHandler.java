@@ -56,6 +56,7 @@ import org.json.JSONException;
  * retransmission of lookups).
  *
  * @author westy
+ * @param <NodeIDType>
  */
 public class NewClientRequestHandler<NodeIDType> implements EnhancedClientRequestHandlerInterface<NodeIDType> {
 
@@ -136,11 +137,11 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
-    BasicReconfigurationPacket<NodeIDType> rcEvent = 
-            (BasicReconfigurationPacket<NodeIDType>)ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
+    BasicReconfigurationPacket<NodeIDType> rcEvent
+            = (BasicReconfigurationPacket<NodeIDType>) ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
     return this.protocolExecutor.handleEvent(rcEvent);
   }
-  
+
   /**
    * @return the executorService
    */
@@ -192,23 +193,24 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public void addRequestInfo(int id, RequestInfo requestInfo) {
     requestInfoMap.put(id, requestInfo);
   }
-  
+
   // For backward compatibility between old Add and Remove record code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
   @Override
   public void addCreateMapping(String name, int id) {
     createServiceNameMap.put(name, id);
   }
-  
+
+  @Override
   public Integer getCreateMapping(String name) {
     return createServiceNameMap.get(name);
   }
-  
+
   @Override
   public void addRemoveMapping(String name, int id) {
     removeServiceNameMap.put(name, id);
   }
-  
+
   @Override
   public Integer getRemoveMapping(String name) {
     return removeServiceNameMap.get(name);
@@ -261,13 +263,12 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   /**
    **
-   * Returns true if the local name server cache contains DNS_SUBTYPE_QUERY record for the specified name, false otherwise
+   * Returns true if the local name server cache contains a record for the specified name, false otherwise.
    *
    * @param name Host/Domain name
    */
   @Override
   public boolean containsCacheEntry(String name) {
-    //return cache.getIfPresent(new NameAndRecordKey(name, recordKey)) != null;
     return cache.getIfPresent(name) != null;
   }
 
@@ -280,7 +281,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet,
+    CacheEntry<NodeIDType> entry = new CacheEntry<>(packet,
             nodeConfig.getReplicatedReconfigurators(packet.getGuid()));
     cache.put(entry.getName(), entry);
     return entry;
@@ -288,7 +289,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<NodeIDType>(packet,
+    CacheEntry<NodeIDType> entry = new CacheEntry<>(packet,
             nodeConfig.getReplicatedReconfigurators(packet.getName()));
     cache.put(entry.getName(), entry);
     return entry;
@@ -324,7 +325,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
       case ADD_CONFIRM:
         // 
         cache.put(name, new CacheEntry<NodeIDType>(name, nodeConfig.getReplicatedReconfigurators(name),
-                nodeConfig.getReplicatedActives(name)));            
+                nodeConfig.getReplicatedActives(name)));
         //cache.put(name, new CacheEntry<NodeIDType>(name, (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name)));
         break;
       case REMOVE_CONFIRM:
@@ -391,7 +392,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   @Override
   public String getCacheLogString(String preamble) {
     StringBuilder cacheTable = new StringBuilder();
-    List<CacheEntry<NodeIDType>> list = new ArrayList<CacheEntry<NodeIDType>>(cache.asMap().values());
+    List<CacheEntry<NodeIDType>> list = new ArrayList<>(cache.asMap().values());
     Collections.sort(list, new CacheComparator());
     for (CacheEntry entry : list) {
       cacheTable.append("\n");
@@ -485,12 +486,10 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   @Override
   public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException {
     NodeIDType id = getRandomRCReplica();
-    GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);
-    this.sendRequest(id, req.toJSONObject());
-  }
-
-  private void sendRequest(NodeIDType id, JSONObject json) throws JSONException, IOException {
-    this.messenger.send(new GenericMessagingTask<NodeIDType, Object>(id, json));
+    if (parameters.isDebugMode()) {
+      GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);
+    }
+    this.messenger.send(new GenericMessagingTask<NodeIDType, Object>(id, req.toJSONObject()));
   }
 
   /**

@@ -65,7 +65,9 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
 
   @Override
   public boolean handleJSONObject(JSONObject json) {
-    GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
+    }
     try {
       if (ReconfigurationPacket.isReconfigurationPacket(json)) {
         if (handler.handleEvent(json)) {
@@ -73,7 +75,7 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
         }
       }
       Packet.PacketType type = Packet.getPacketType(json);
-      if (Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("MsgType " + type + " Msg " + json);
       }
       // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
@@ -111,7 +113,7 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
           // Add/remove
           case ADD_RECORD:
             // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
-            // FIXME: Also a little bit of extra bookeeping going on here so we can get back to the 
+            // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
             // original AddRecordPacket packet. We could probably replace some of this once everything is working.
             AddRecordPacket addRecordPacket = AddRemove.registerPacketAddRecord(json, handler);
             handler.addCreateMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
@@ -122,9 +124,9 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             //AddRemove.handlePacketAddRecord(json, handler);
             return true;
           case REMOVE_RECORD:
-            // FIXME: Also a little bit of extra bookeeping going on here so we can get back to the 
-            // original RemoveRecordPacket packet. We could probably replace some of this once everything is working.
             // New code which creates RemoveService packets and sends them to the Reconfigurator.
+            // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
+            // original RemoveRecordPacket packet. We could probably replace some of this once everything is working.
             RemoveRecordPacket removeRecordPacket = AddRemove.registerPacketRemoveRecord(json, handler);
             handler.addRemoveMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
             handler.sendRequest(handler.makeDeleteNameRequest(removeRecordPacket.getName()));

@@ -132,7 +132,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
         if (requestInfo != null) {
           // send error response to user and log error
           if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
-            GNS.getLogger().fine("Query max wait time exceeded. " + incomingPacket.getGuid() + "/" + incomingPacket.getKey()
+            GNS.getLogger().info("Query max wait time exceeded. " + incomingPacket.getGuid() + "/" + incomingPacket.getKey()
                     + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
                     + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
           }

@@ -74,11 +74,11 @@ public class GNS {
   /**
    * default query timeout in ms.
    */
-  public static int DEFAULT_QUERY_TIMEOUT = 2000;
+  public static int DEFAULT_QUERY_TIMEOUT = 1000; // was 2
   /**
    * maximum query wait time in milliseconds
    */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 10000; // currently 10 seconds
+  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 4000; // was 10
   
   // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
   // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE

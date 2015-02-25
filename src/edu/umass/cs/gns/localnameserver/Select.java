@@ -27,8 +27,6 @@ public class Select {
     int queryId = handler.addSelectInfo(packet.getKey(), packet);
     packet.setLnsQueryId(queryId);
     JSONObject outgoingJSON = packet.toJSONObject();
-    // Pick one NS to send it to
-    // This should pick a Nameserver using the same method as a query!!
     Object serverID = pickNameServer(packet.getGuid(), handler);
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID.toString());
@@ -36,17 +34,19 @@ public class Select {
     handler.sendToNS(outgoingJSON, serverID);
   }
 
+   // This should pick a Nameserver using the same method as a query!!
   private static Object pickNameServer(String guid, ClientRequestHandlerInterface handler) {
     if (guid != null) {
       CacheEntry cacheEntry = handler.getCacheEntry(guid);
-      if (cacheEntry != null && cacheEntry.getActiveNameServers() != null && !cacheEntry.getActiveNameServers().isEmpty()) {
+      if (cacheEntry != null && cacheEntry.getActiveNameServers() != null 
+              && !cacheEntry.getActiveNameServers().isEmpty()) {
         Object id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (id != null) {
           return id;
         }
       }
     }
-    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getNodeIDs());
+    return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getActiveReplicas());
   }
 
   public static void handlePacketSelectResponse(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {

@@ -23,7 +23,7 @@ import org.json.JSONException;
 /**
  * Currently boring use of ProtocolTask for the Local Name Server.
  * The handleEvent doesn't return any messaging tasks.
- * 
+ *
  * @author Westy
  *
  * @param <NodeIDType>
@@ -36,10 +36,10 @@ public class LNSProtocolTask<NodeIDType> implements
     ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,};
 
   private String key = null;
-  private final EnhancedClientRequestHandlerInterface requestHandler;
+  private final EnhancedClientRequestHandlerInterface handler;
 
   public LNSProtocolTask(EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler) {
-    this.requestHandler = requestHandler;
+    this.handler = requestHandler;
   }
 
   @Override
@@ -54,7 +54,7 @@ public class LNSProtocolTask<NodeIDType> implements
 
   @Override
   public String refreshKey() {
-    return (this.key = (requestHandler.getNodeAddress().getHostString() + (int) (Math.random() * Integer.MAX_VALUE)));
+    return (this.key = (handler.getNodeAddress().getHostString() + (int) (Math.random() * Integer.MAX_VALUE)));
   }
 
   @Override
@@ -86,18 +86,20 @@ public class LNSProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleCreate(CreateServiceName packet) {
-    Integer lnsRequestID = requestHandler.getCreateMapping(packet.getServiceName());
+    Integer lnsRequestID = handler.getCreateMapping(packet.getServiceName());
     if (lnsRequestID != null) {
-      GNS.getLogger().info("App created " + packet.getServiceName());
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("App created " + packet.getServiceName());
+      }
       // Basically we gin up a confirmation packet for the original AddRecord packet and
       // send it back to the originator of the request.
-      UpdateInfo info = (UpdateInfo) requestHandler.getRequestInfo(lnsRequestID);
+      UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
       if (info != null) {
         AddRecordPacket originalPacket = (AddRecordPacket) info.getUpdatePacket();
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
 
         try {
-          AddRemove.handlePacketConfirmAdd(confirmPacket.toJSONObject(), requestHandler);
+          AddRemove.handlePacketConfirmAdd(confirmPacket.toJSONObject(), handler);
         } catch (JSONException | UnknownHostException e) {
           GNS.getLogger().severe("Unable to send create confirmation for " + packet.getServiceName() + ":" + e);
         }
@@ -105,7 +107,7 @@ public class LNSProtocolTask<NodeIDType> implements
         GNS.getLogger().severe("Unable to find request info for create confirmation for " + packet.getServiceName());
       }
     } else {
-      if (requestHandler.getParameters().isDebugMode()) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("Ignoring spurious create confirmation for " + packet.getServiceName());
       }
     }
@@ -113,18 +115,20 @@ public class LNSProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleDelete(DeleteServiceName packet) {
-    Integer lnsRequestID = requestHandler.getRemoveMapping(packet.getServiceName());
+    Integer lnsRequestID = handler.getRemoveMapping(packet.getServiceName());
     if (lnsRequestID != null) {
-      GNS.getLogger().info("App removed " + packet.getServiceName());
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("App removed " + packet.getServiceName());
+      }
       // Basically we gin up a confirmation packet for the original AddRecord packet and
       // send it back to the originator of the request.
-      UpdateInfo info = (UpdateInfo) requestHandler.getRequestInfo(lnsRequestID);
+      UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
       if (info != null) {
         RemoveRecordPacket originalPacket = (RemoveRecordPacket) info.getUpdatePacket();
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
 
         try {
-          AddRemove.handlePacketConfirmRemove(confirmPacket.toJSONObject(), requestHandler);
+          AddRemove.handlePacketConfirmRemove(confirmPacket.toJSONObject(), handler);
         } catch (JSONException | UnknownHostException e) {
           GNS.getLogger().severe("Unable to send remove confirmation for " + packet.getServiceName() + ":" + e);
         }
@@ -132,7 +136,7 @@ public class LNSProtocolTask<NodeIDType> implements
         GNS.getLogger().severe("Unable to find request info for remove confirmation for " + packet.getServiceName());
       }
     } else {
-      if (requestHandler.getParameters().isDebugMode()) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("Ignoring spurious remove confirmation for " + packet.getServiceName());
       }
     }

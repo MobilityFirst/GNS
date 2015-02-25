@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.commands.data;
 
-import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
@@ -44,10 +43,9 @@ public class SelectGroupSetupQuery extends GnsCommand {
     String accountGuid = json.getString(ACCOUNT_GUID);
     String query = json.getString(QUERY);
     String publicKey = json.getString(PUBLICKEY);
-    byte[] publicKeyBytes = Base64.decode(publicKey);
     int interval = json.optInt(INTERVAL, -1);
     
-    return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKeyBytes, interval, handler);
+    return FieldAccess.selectGroupSetupQuery(accountGuid, query, publicKey, interval, handler);
   }
 
   @Override

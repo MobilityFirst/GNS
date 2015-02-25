@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;
@@ -17,7 +18,7 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> {
+public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> implements InterfaceRequest {
 
   public enum ResponseCode {
 
@@ -197,5 +198,12 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
   public String getErrorMessage() {
     return errorMessage;
   }
+
+  @Override
+  public String getServiceName() {
+    // FIXME:
+    return "SelectResponse";
+  }
+            
 
 }

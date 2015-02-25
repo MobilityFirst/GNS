@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Set;
 import org.json.JSONException;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
-import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONMessenger;
@@ -66,16 +65,13 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
         // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
         // UNTIL THE TRANSITION IS FINISHED
         switch (type) {
-          // coordination packets internal to paxos
-//          case ACTIVE_COORDINATION:
-//            Packet.putPacketType(json, Packet.PacketType.PAXOS_PACKET);
-//            paxosManager.handleIncomingPacket(json);
-//            break;
           // call propose
           case UPDATE: // updates need coordination
             UpdatePacket<NodeIDType> update = new UpdatePacket<NodeIDType>(json, unstringer);
             update.setNameServerID(nodeID);
-            GNS.getLogger().info("@@@@@@@@@@@@@@@@@@@@@ Proposing update for " + update.getName() + ": " + update.toString());
+            if (Config.debuggingEnabled) {
+              GNS.getLogger().info("@@@@@@@@@@@@@@@@@@@@@ Proposing update for " + update.getName() + ": " + update.toString());
+            }
             String paxosID = paxosManager.propose(update.getName(), update.toString());
             if (paxosID == null) {
               callHandleDecision = update;
@@ -162,8 +158,8 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
           case SELECT_REQUEST:
           case SELECT_RESPONSE:
           case UPDATE_CONFIRM:
-          case ADD_CONFIRM:
-          case REMOVE_CONFIRM:
+          //case ADD_CONFIRM:
+          //case REMOVE_CONFIRM:
             // Packets sent from replica controller
             callHandleDecision = request;
 

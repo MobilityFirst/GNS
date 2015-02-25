@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
 //import edu.umass.cs.gns.packet.Packet.PacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
@@ -22,7 +23,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
+public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
 
   private final static String REQUESTID = "reqid";
   private final static String LNSREQUESTID = "lnsreqid";
@@ -154,5 +155,11 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket {
 
   public void setRequestID(int requestID) {
     this.requestID = requestID;
+  }
+
+  @Override
+  public String getServiceName() {
+    // FIXME:
+    return "ConfirmUpdate";
   }
 }
