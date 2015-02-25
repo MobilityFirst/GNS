@@ -38,7 +38,6 @@ import org.xbill.DNS.Type;
 import org.xbill.DNS.MXRecord;
 import org.xbill.DNS.NSRecord;
 import org.xbill.DNS.TextParseException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -81,6 +80,7 @@ public class NameResolution {
   /**
    * Sends the query to the GNS server.
    *
+   * @param gnsServer
    * @param query
    * @return A message with either a good response or an error.
    */
@@ -109,6 +109,7 @@ public class NameResolution {
    * Lookup the query in the GNS server.
    *
    * @param query
+   * @param handler
    * @return A message with either a good response or an error.
    */
   public static Message lookupGnsServer(Message query, ClientRequestHandlerInterface handler) {
@@ -239,6 +240,7 @@ public class NameResolution {
    * Looking up the local dns server cache
    *
    * @param query
+   * @param dnsCache
    * @return
    */
   public static Message lookupDnsCache(Message query, Cache dnsCache) {

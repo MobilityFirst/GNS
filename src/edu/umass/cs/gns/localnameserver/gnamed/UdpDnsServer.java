@@ -9,7 +9,6 @@
 package edu.umass.cs.gns.localnameserver.gnamed;
 
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.util.ThreadUtils;
@@ -57,6 +56,8 @@ public class UdpDnsServer extends Thread implements Shutdownable {
    *
    * A typical incantation thus looks like this:
    * <code>new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8")</code>
+   * @param gnsServerIP
+   * @param handler
    * @throws java.net.SocketException
    * @throws java.net.UnknownHostException
    */
