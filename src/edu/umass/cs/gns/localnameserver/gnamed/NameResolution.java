@@ -35,6 +35,12 @@ import org.xbill.DNS.Section;
 import org.xbill.DNS.SetResponse;
 import org.xbill.DNS.SimpleResolver;
 import org.xbill.DNS.Type;
+import org.xbill.DNS.MXRecord;
+import org.xbill.DNS.NSRecord;
+import org.xbill.DNS.TextParseException;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -120,37 +126,10 @@ public class NameResolution {
     final String domainName = querytoStringForGNS(rawName);
 
     if (debuggingEnabled) {
-      GNS.getLogger().fine("Trying GNS lookup for field " + fieldName + " in domain " + domainName);
+      GNS.getLogger().fine("Trying GNS lookup for domain " + domainName);
     }
 
-    GNS.getLogger().fine("GNS lookup: Field " + fieldName + " in domain " + domainName);
-    String guid = AccountAccess.lookupGuid(domainName, handler);
-    if (guid == null) {
-      if (debuggingEnabled) {
-        GNS.getLogger().fine("GNS lookup: Domain " + domainName + " not found, returning NXDOMAIN result.");
-      }
-      return errorMessage(query, Rcode.NXDOMAIN);
-    }
-
-    CommandResponse fieldResponse = FieldAccess.lookup(guid, fieldName, null, null, null, null, handler);
-    if (fieldResponse.isError()) {
-      if (debuggingEnabled) {
-        GNS.getLogger().fine("GNS lookup: Field " + fieldName + " in domain " + domainName + " not found, returning NXDOMAIN result.");
-      }
-      return errorMessage(query, Rcode.NXDOMAIN);
-    }
-    final String ip = fieldResponse.getReturnValue();
-    if (debuggingEnabled) {
-      GNS.getLogger().fine("Returning A Record with IP " + ip + " for " + requestedName);
-    }
-    // we'll need to change this to return other record types
-    ARecord gnsARecord;
-    try {
-      gnsARecord = new ARecord(requestedName, DClass.IN, 60, InetAddress.getByName(ip));
-    } catch (UnknownHostException e) {
-      return errorMessage(query, Rcode.NXDOMAIN);
-    }
-
+    /* Create a response message and add records later */
     Message response = new Message(query.getHeader().getID());
     response.getHeader().setFlag(Flags.QR);
     if (query.getHeader().getFlag(Flags.RD)) {
@@ -159,12 +138,101 @@ public class NameResolution {
     response.addRecord(query.getQuestion(), Section.QUESTION);
     response.getHeader().setFlag(Flags.AA);
 
-    // Write the response
-    response.addRecord(gnsARecord, Section.ANSWER);
+    //CommandResponse fieldResponse;
+    /* Request DNS fields of an alias and prepare a DNS response message */
+    ArrayList<String> fieldNames = new ArrayList<>(Arrays.asList("A", "NS", "CNAME", "SOA", "PTR", "MX"));
+    Boolean nameResolved = false;
+    String nameToResolve = domainName;
+
+    while (!nameResolved) {
+      CommandResponse fieldResponse = lookupGuidGnsServer(nameToResolve, null, fieldNames, handler);
+      if (fieldResponse == null || fieldResponse.isError()) {
+        GNS.getLogger().fine("GNS lookup for domain " + domainName + " failed.");
+        return errorMessage(query, Rcode.NXDOMAIN);
+      }
+      GNS.getLogger().fine("fieldResponse all field:" + fieldResponse.getReturnValue());
+    /* Parse the response from GNS and create DNS records*/
+      try {
+        JSONObject fieldResponseJson = new JSONObject(fieldResponse.getReturnValue());
+        if (fieldResponseJson.has("A")) {
+          String ip = fieldResponseJson.getString("A").replaceAll("\\[\"|\\\"]", "");
+          ARecord gnsARecord = new ARecord(new Name(nameToResolve), DClass.IN, 60, InetAddress.getByName(ip));
+          response.addRecord(gnsARecord, Section.ANSWER);
+          nameResolved = true;
+        }
+        if (fieldResponseJson.has("NS")) {
+          String ns = fieldResponseJson.getString("NS");
+          NSRecord nsRecord = new NSRecord(new Name(nameToResolve), DClass.IN, 120, new Name(ns));
+          response.addRecord(nsRecord, Section.AUTHORITY);
+
+        /* Resolve NS Record name to an IP address and add it to ADDITIONAL section */
+          CommandResponse nsResponse = lookupGuidGnsServer(ns, fieldName, null, handler);
+          if (nsResponse != null && !nsResponse.isError()) {
+            String address = nsResponse.getReturnValue().replaceAll("\\[\"|\\\"]", "");
+            GNS.getLogger().info("single field " + address);
+            ARecord nsARecord = new ARecord(new Name(ns), DClass.IN, 60, InetAddress.getByName(address));
+            response.addRecord(nsARecord, Section.ADDITIONAL);
+          }
+        }
+        if (fieldResponseJson.has("MX")) {
+          String mxname = fieldResponseJson.getString("MX");
+          MXRecord mxRecord = new MXRecord(new Name(nameToResolve), DClass.IN, 120, 100, new Name(mxname));
+          response.addRecord(mxRecord, Section.AUTHORITY);
+
+        /* Resolve MX Record name to an IP address and add it to ADDITIONAL section */
+          CommandResponse mxResponse = lookupGuidGnsServer(mxname, fieldName, null, handler);
+          if (mxResponse != null && !mxResponse.isError()) {
+            String address = mxResponse.getReturnValue().replaceAll("\\[\"|\\\"]", "");
+            GNS.getLogger().info("single field " + address);
+            ARecord mxARecord = new ARecord(new Name(mxname), DClass.IN, 60, InetAddress.getByName(address));
+            response.addRecord(mxARecord, Section.ADDITIONAL);
+          }
+        }
+        if (fieldResponseJson.has("CNAME")) {
+          /* Resolve CNAME alias to an IP address and add it to ADDITIONAL section */
+          String cname = fieldResponseJson.getString("CNAME");
+          CNAMERecord cnameRecord = new CNAMERecord(new Name(nameToResolve), DClass.IN, 60, new Name(cname));
+          response.addRecord(cnameRecord, Section.ANSWER);
+          nameToResolve = cname;
+          continue;
+        }
+        if (!nameResolved) {
+        /* We should reach here only if we fail to resolve to an IP address */
+          GNS.getLogger().fine("Couldn't resolve to an IP address for domain " + domainName);
+          break;
+        }
+      } catch (JSONException e) {
+        e.printStackTrace();
+        return errorMessage(query, Rcode.NXDOMAIN);
+      } catch (TextParseException e) {
+        e.printStackTrace();
+      } catch (UnknownHostException e) {
+        e.printStackTrace();
+      }
+    }
     if (debuggingEnabled) {
       GNS.getLogger().fine("Outgoing response from GNS: " + response.toString());
     }
     return response;
+  }
+
+  /**
+   * Lookup the fields for a guid in the GNS server.
+   *
+   * @param domainName
+   * @param fieldName
+   * @param fieldNames
+   * @param handler
+   * @return Reponse of gns guid field lookup
+   */
+  public static CommandResponse lookupGuidGnsServer(String domainName, String fieldName, ArrayList<String> fieldNames,
+                                                    ClientRequestHandlerInterface handler) {
+    String guid = AccountAccess.lookupGuid(domainName, handler);
+    if (guid == null) {
+      GNS.getLogger().fine("GNS lookup: Domain " + domainName + " not found.");
+      return null;
+    }
+    return FieldAccess.lookup(guid, fieldName, fieldNames, null, null, null, handler);
   }
 
   /**
