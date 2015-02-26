@@ -25,6 +25,7 @@ import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -539,8 +540,28 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     throw new UnsupportedOperationException("Not supported.");
   }
 
+  long lastRecordedTime = -1;
+  // Maintains a moving average of server request load to smooth out the burstiness.
+  private long deferedCnt = 0; // a little hair in case we are getting requests too fast for the nanosecond timer (is this likely?)
+  private final MovingAverage averageRequestsPerSecond = new MovingAverage(40);
+
   @Override
   public void updateRequestStatistics() {
+    // first time do nothing
+    if (lastRecordedTime == -1) {
+      lastRecordedTime = System.nanoTime();
+      return;
+    }
+    long currentTime = System.nanoTime();
+    long timeDiff = currentTime - lastRecordedTime;
+    deferedCnt++;
+    // in case we are running faster than the clock
+    if (timeDiff != 0) {
+      // multiple by 1000 cuz we're computing Ops per SECOND
+      averageRequestsPerSecond.add((int) (deferedCnt * 1000000000L / timeDiff));
+      deferedCnt = 0;
+      lastRecordedTime = currentTime;
+    }
     receivedRequests++;
   }
 
@@ -561,7 +582,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   @Override
   public int getRequestsPerSecond() {
-    return 0;
+    return (int) Math.round(averageRequestsPerSecond.getAverage());
   }
 
   @Override

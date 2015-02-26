@@ -11,7 +11,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-//import edu.umass.cs.gns.util.ConsistentHashing;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -135,6 +134,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * @return the set of IDs.
    */
   @Override
+  @Deprecated
   public Set<NodeIDType> getNodeIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }
@@ -249,10 +249,10 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
-   * Returns the Admin port of a Nameserver.
-   *
+   * Returns the associated Admin port for any node.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   *
+   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
+   * 
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
@@ -262,9 +262,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
-   * Returns the NS ping port.
+   * Returns the associated NS ping port for any node.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
-   *
+   * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    * @param id
    * @return the port
    */
@@ -278,7 +278,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
-   * Returns the IP address of a name server.
+   * Returns the IP address of a node.
    * Will return null if the node doesn't exist.
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
@@ -347,8 +347,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * **
-   * Returns port number for the specified port type. Return -1 if the specified port type does not exist.
-   *
+   * Returns port number for the specified port type. 
+   * Return -1 if the specified port type does not exist.
    * Only for "top-level" nodes, not active-replica and reconfigurator nodes.
    *
    * @param nameServerId Name server id //
@@ -373,6 +373,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    *
    * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
    */
+  @Deprecated
   public NodeIDType getClosestServer() {
     return GNSNodeConfig.this.getClosestServer(getNodeIDs());
   }
@@ -423,6 +424,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     return nameServerID;
   }
 
+  // Implement the Stringifiable interface
+  
   @SuppressWarnings("unchecked")
   @Override
   /**

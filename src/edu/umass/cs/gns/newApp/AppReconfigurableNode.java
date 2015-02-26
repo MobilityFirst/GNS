@@ -8,6 +8,7 @@ import java.io.IOException;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
+import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
 import java.util.Set;
 
 /**
@@ -44,7 +45,9 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
 
   // local setup
   public static void main(String[] args) throws IOException {
-    // change this to use GNSNodeConfig
+    // Use the NullDemandProfile until we figure out the issues with the default one.
+    // FIXME: Still doesn't work yet.
+    ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     try {
