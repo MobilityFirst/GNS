@@ -31,14 +31,19 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	private Set<NodeIDType> actives = null; // current epoch
 	private RCStates state = RCStates.READY;
 
-	private Set<NodeIDType> newActives = null; // next epoch during an epoch
-												// change
-	//private NodeIDType primary = null; // RC node leading epoch change
+	private Set<NodeIDType> newActives = null; // next epoch during epoch change
 
 	public ReconfigurationRecord(String name, int epoch,
 			Set<NodeIDType> newActives) {
 		this.name = name;
 		this.epoch = epoch;
+		this.newActives = newActives;
+	}
+	public ReconfigurationRecord(String name, int epoch, Set<NodeIDType> actives,
+			Set<NodeIDType> newActives) {
+		this.name = name;
+		this.epoch = epoch;
+		this.actives = actives;
 		this.newActives = newActives;
 	}
 

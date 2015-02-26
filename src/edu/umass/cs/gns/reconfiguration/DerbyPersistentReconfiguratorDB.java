@@ -63,6 +63,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private static final String RECONFIGURATION_RECORD_TABLE = "checkpoint";
 	private static final String PENDING_TABLE = "messages";
 	private static final String DEMAND_PROFILE_TABLE = "demand";
+	private static final String NODE_CONFIG_TABLE = "nodeconfig";
 	// private static final boolean DISABLE_LOGGING = false;
 	private static final boolean AUTO_COMMIT = true;
 	private static final int MAX_POOL_SIZE = 100;
@@ -76,7 +77,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private static final boolean LARGE_CHECKPOINTS_OPTION = true;
 
 	private static enum Columns {
-		SERVICE_NAME, EPOCH, RC_GROUP_NAME, ACTIVES, NEW_ACTIVES, RC_STATE, STRINGIFIED_RECORD, DEMAND_PROFILE
+		SERVICE_NAME, EPOCH, RC_GROUP_NAME, ACTIVES, NEW_ACTIVES, RC_STATE, STRINGIFIED_RECORD, DEMAND_PROFILE,
+		INET_ADDRESS, PORT, NODE_CONFIG_VERSION
 	};
 
 	private static final ArrayList<DerbyPersistentReconfiguratorDB<?>> instances = new ArrayList<DerbyPersistentReconfiguratorDB<?>>();
@@ -265,18 +267,18 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public ReconfigurationRecord<NodeIDType> deleteReconfigurationRecord(
+	public boolean deleteReconfigurationRecord(
 			String name) {
 		log.log(Level.INFO,
 				MyLogger.FORMAT[4],
 				new Object[] { "==============================> DerbyRCDB",
 						myID, name,
 						 " ->", "DELETE" });
-		ReconfigurationRecord<NodeIDType> record = this
+		boolean deleted = this
 				.deleteReconfigurationRecord(name, this.getRCRecordTable());
 		this.deleteReconfigurationRecord(name, this.getPendingTable());
 		this.deleteReconfigurationRecord(name, this.getDemandTable());
-		return record;
+		return deleted;
 	}
 
 	@Override
@@ -318,6 +320,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 					Columns.STRINGIFIED_RECORD.toString());
 			recordRS = pstmt.executeQuery();
 
+			/* FIXME: What if there is a crash between wipe out and the
+			 * fresh write? To handle this case, we need to write to
+			 * a tmp file and then 'mv' it to the actual file. The 
+			 * file system will ensure that the mv is atomic in case
+			 * of crashes.
+			 */
+			
 			// first wipe out the file
 			writer = new FileWriter(getCheckpointFile(rcGroup), false);
 			writer.close(); 
@@ -447,17 +456,18 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return true;
 	}
 
-	private ReconfigurationRecord<NodeIDType> deleteReconfigurationRecord(
+	private boolean deleteReconfigurationRecord(
 			String name, String table) {
 		String cmd = "delete from " + table + " where "
 				+ Columns.SERVICE_NAME.toString() + "=?";
 		PreparedStatement insertCP = null;
 		Connection conn = null;
+		int rowcount=0;
 		try {
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setString(1, name);
-			insertCP.executeUpdate();
+			rowcount = insertCP.executeUpdate();
 			conn.commit();
 		} catch (SQLException sqle) {
 			log.severe("SQLException while deleting RC record using " + cmd);
@@ -466,7 +476,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			cleanup(insertCP);
 			cleanup(conn);
 		}
-		return null;
+		return rowcount==1;
 	}
 
 	private synchronized JSONObject getDemandStatsJSON(String name) {
@@ -530,6 +540,43 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private String getCheckpointFile(String rcGroup) {
 		return this.getCheckpointDir() + rcGroup;
 	}
+	
+	public Set<String> getRCGroupNames() {
+		Set<String> groups = null;
+		PreparedStatement pstmt = null;
+		ResultSet recordRS = null;
+		Connection conn = null;
+		try {
+			conn = this.getDefaultConn();
+			/*
+			 * FIXME: Selects all RC group name records by asking for records
+			 * where service name equals RC group name. The index on RC group
+			 * names should make this query efficient but this performance needs
+			 * to be tested at scale.
+			 */
+			pstmt = this.getPreparedStatement(
+					conn,
+					this.getRCRecordTable(),
+					null,
+					Columns.SERVICE_NAME.toString(),
+					" where " + Columns.SERVICE_NAME.toString()
+							+ " in (select distinct "
+							+ Columns.RC_GROUP_NAME.toString() + " from "
+							+ this.getRCRecordTable() + ")");
+			recordRS = pstmt.executeQuery();
+			while (recordRS.next()) {
+				(groups == null ? (groups = new HashSet<String>()) : groups)
+						.add(recordRS.getString(1));
+			}
+		} catch (SQLException e) {
+			log.severe("SQLException while getting RC group names: ");
+			e.printStackTrace();
+		} finally {
+			cleanup(pstmt, recordRS);
+			cleanup(conn);
+		}
+		return groups;
+	}
 
 	/*
 	 * A reconfigurator needs two tables: one for all records and one for all
@@ -539,7 +586,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * demandProfile persistently as otherwise we will run out of memory.
 	 */
 	private boolean createTables() {
-		boolean createdRCRecordTable = false, createdPendingTable = false, createdDemandTable = false;
+		boolean createdRCRecordTable = false, createdPendingTable = false, createdDemandTable = false, createdNodeConfigTable = false;
 		// simply store everything in stringified form and pull all when needed
 		String cmdRCR = "create table " + getRCRecordTable() + " ("
 				+ Columns.SERVICE_NAME.toString() + " varchar(" + MAX_NAME_SIZE
@@ -549,19 +596,31 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				+ (RC_RECORD_CLOB_OPTION ? " clob(" : " varchar(")
 				+ MAX_RC_RECORD_SIZE + "), primary key ("
 				+ Columns.SERVICE_NAME + "))";
+		// index based on rc group name for optimizing checkpointing
 		String cmdRCRCI = "create index rc_group_index on "
 				+ getRCRecordTable() + "(" + Columns.RC_GROUP_NAME.toString()
 				+ ")";
+		// records with ongoing reconfigurations
 		String cmdP = "create table " + getPendingTable() + " ("
 				+ Columns.SERVICE_NAME.toString() + " varchar(" + MAX_NAME_SIZE
 				+ ") not null, primary key(" + Columns.SERVICE_NAME.toString()
 				+ "))";
+		// demand profiles of records, need not be fault-tolerant or precise
 		String cmdDP = "create table " + getDemandTable() + " ("
 				+ Columns.SERVICE_NAME.toString() + " varchar(" + MAX_NAME_SIZE
 				+ ") not null, " + Columns.DEMAND_PROFILE.toString()
 				+ (DEMAND_PROFILE_CLOB_OPTION ? " clob(" : " varchar(")
 				+ MAX_DEMAND_PROFILE_SIZE + "), primary key("
 				+ Columns.SERVICE_NAME.toString() + "))";
+		// node config information, needs to be correct under faults
+		String cmdNC = "create table " + getNodeConfigTable() + " ("
+				+ Columns.RC_GROUP_NAME.toString() + " varchar("
+				+ MAX_NAME_SIZE + ") not null, "
+				+ Columns.INET_ADDRESS.toString() + " varchar(256), "
+				+ Columns.PORT.toString() + " int, "
+				+ Columns.NODE_CONFIG_VERSION.toString() + " int, primary key("
+				+ Columns.RC_GROUP_NAME.toString() + ", "
+				+ Columns.NODE_CONFIG_VERSION + "))";
 
 		log.info(cmdDP);
 		Statement stmt = null;
@@ -573,6 +632,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 					&& createIndex(stmt, cmdRCRCI, getRCRecordTable());
 			createdPendingTable = createTable(stmt, cmdP, getRCRecordTable());
 			createdDemandTable = createTable(stmt, cmdDP, getDemandTable());
+			createdNodeConfigTable = createTable(stmt, cmdNC, getNodeConfigTable());
 			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {
 					"Created tables ", getRCRecordTable(), " and ",
 					getPendingTable() });
@@ -581,7 +641,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 					+ (createdRCRecordTable ? "" : getRCRecordTable()) + " "
 					+ (createdPendingTable ? "" : getPendingTable())
 					+ (createdDemandTable ? "" : getDemandTable()) + " "
-					+ cmdDP);
+					+ (createdNodeConfigTable ? "" : getNodeConfigTable()) + " "
+					);
 			sqle.printStackTrace();
 		} finally {
 			cleanup(stmt);
@@ -756,6 +817,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return DEMAND_PROFILE_TABLE + this.myID;
 	}
 
+	private String getNodeConfigTable() {
+		return NODE_CONFIG_TABLE + this.myID;
+	}
+
 	private void cleanup(FileWriter writer) {
 		try {
 			if (writer != null)
@@ -886,24 +951,6 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		rcDB.updateDemandStats(demandReport);
 	}
 
-	public static void main(String[] args) {
-		Util.assertAssertionsEnabled();
-		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
-		nc.localSetup(TestConfig.getNodes());
-		ConsistentReconfigurableNodeConfig<Integer> consistentNodeConfig = new ConsistentReconfigurableNodeConfig<Integer>(
-				nc);
-		DerbyPersistentReconfiguratorDB<Integer> rcDB = new DerbyPersistentReconfiguratorDB<Integer>(
-				consistentNodeConfig.getReconfigurators().iterator().next(),
-				consistentNodeConfig);
-		String name = "name0";
-
-		int numTests = 100;
-		for (int i = 0; i < numTests; i++)
-			testRCRecordReadAfterWrite(name, rcDB);
-		for (int i = 0; i < numTests; i++)
-			testDemandProfileUpdate(name, rcDB);
-	}
-
 	private static JSONObject combineStats(JSONObject historic,
 			JSONObject update) {
 		AbstractDemandProfile historicProfile = AbstractDemandProfile
@@ -924,5 +971,23 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		}
 		return (file.exists());
 	}
+	public static void main(String[] args) {
+		Util.assertAssertionsEnabled();
+		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
+		nc.localSetup(TestConfig.getNodes());
+		ConsistentReconfigurableNodeConfig<Integer> consistentNodeConfig = new ConsistentReconfigurableNodeConfig<Integer>(
+				nc);
+		DerbyPersistentReconfiguratorDB<Integer> rcDB = new DerbyPersistentReconfiguratorDB<Integer>(
+				consistentNodeConfig.getReconfigurators().iterator().next(),
+				consistentNodeConfig);
+		String name = "name0";
 
+		int numTests = 100;
+		for (int i = 0; i < numTests; i++)
+			testRCRecordReadAfterWrite(name, rcDB);
+		for (int i = 0; i < numTests; i++)
+			testDemandProfileUpdate(name, rcDB);
+		
+		System.out.println(rcDB.getRCGroupNames());
+	}
 }

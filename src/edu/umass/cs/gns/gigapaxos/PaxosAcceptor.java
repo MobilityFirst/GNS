@@ -116,6 +116,8 @@ public class PaxosAcceptor {
 	protected synchronized int getBallotNum() {return this.ballotNum;}
 	protected synchronized int getBallotCoord() {return this.ballotCoord;}
 
+	protected synchronized void setGCSlotAfterPuttingInitialSlot() {this.acceptedGCSlot=0;}
+
 	/* Note: We don't have public putSlot and putBallot methods as external 
 	 * entities have no business modifying paxos state directly. 
 	 */
@@ -143,7 +145,8 @@ public class PaxosAcceptor {
 		 * carry over across a view change.
 		 */
 		preply = new PrepareReplyPacket(myID, this.getBallot(), 
-				pruneAcceptedProposals(this.acceptedProposals.getMap(), prepare.firstUndecidedSlot)
+				pruneAcceptedProposals(this.acceptedProposals.getMap(), prepare.firstUndecidedSlot),
+				this.getGCSlot()
 				);
 		return preply;
 	}

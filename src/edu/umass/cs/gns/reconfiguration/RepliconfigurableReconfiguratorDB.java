@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.reconfiguration;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
@@ -65,6 +66,11 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		assert (reconfigurators != null && !reconfigurators.isEmpty());
 		return reconfigurators.iterator().next().toString();
 	}
+	
+	// Translate RC node to RC group name
+	private String getRCGroupName(NodeIDType node) {
+		return node.toString();
+	}
 
 	/*
 	 * Uses reflection to invoke appropriate method in AbstractReconfiguratorDB.
@@ -86,7 +92,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			String name) {
 		return this.app.getReconfigurationRecord(name);
 	}
-
+	
 	/*
 	 * Create one group for every set of contiguous nodes on the ring of which
 	 * this node is a part. The name of the group is the name of the first node
@@ -103,22 +109,22 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 					.getReplicatedReconfigurators(node.toString());
 			// if I am present, create group
 			if (group.contains(this.getMyID())) {
-				System.out.println("Creating reconfigurator group " + node.toString() + " with members "
-						+ group);
-				this.createReplicaGroup(node.toString(), 0, null, group);
+				System.out.println("Creating reconfigurator group "
+						+ node.toString() + " with members " + group);
+				this.createReplicaGroup(
+						node.toString(),
+						0,
+						this.getInitialRCGroupRecord(this.getRCGroupName(node),
+								group).toString(), group);
 			}
 		}
 		return false;
 	}
-
-	private String getRCGroupName(String serviceName) {
-		Set<NodeIDType> reconfigurators = this.consistentNodeConfig
-				.getReconfigurators();
-		if (reconfigurators != null && !reconfigurators.isEmpty())
-			return reconfigurators.iterator().next().toString();
-		return null;
+	
+	private ReconfigurationRecord<NodeIDType> getInitialRCGroupRecord(String groupName, Set<NodeIDType> group) {
+		return new ReconfigurationRecord<NodeIDType>(groupName, 0, group, group);
 	}
-
+	
 	// needed by Reconfigurator
 	protected String getDemandStats(String name) {
 		return this.app.getDemandStats(name);
@@ -135,5 +141,53 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	@Override
 	public Set<NodeIDType> getReplicaGroup(String serviceName) {
 		return super.getReplicaGroup(getRCGroupName(serviceName));
+	}
+	
+	private String getRCGroupName(String serviceName) {
+		return this.consistentNodeConfig.getFirstReconfigurator(serviceName)
+				.toString();
+	}	
+
+	/******************* Reconfigurator reconfiguration methods ***************/
+
+	/* Checks if I am affected because of the addition or deletion
+	 * of the node argument. The check is performed based on the 
+	 * RC groups actually present in the DB, not NodeConfig.
+	 */
+	protected boolean amAffected(NodeIDType node) {
+		boolean affected = false;
+		NodeIDType hashNode = this.consistentNodeConfig
+				.getFirstReconfigurator(node.toString());
+		Set<String> myRCGroupNames = this.app.getRCGroupNames();
+		/*
+		 * We need to fetch all current RC groups. These groups in general may
+		 * or may not be consistent with those dictated by NodeConfig.
+		 */
+		for (String rcGroup : myRCGroupNames) {
+			if (node.equals(rcGroup) || hashNode.equals(rcGroup))
+				affected = true;
+		}
+		return affected;
+	}
+	
+	/* This method gets RC group names based on NodeConfig. This
+	 * may in general be different from the RC groups actually
+	 * in the DB.
+	 */
+	protected Set<String> getNodeConfigRCGroupNames() {
+		Set<String> groupNames = new HashSet<String>();
+		Set<NodeIDType> reconfigurators = this.consistentNodeConfig
+				.getReconfigurators();
+		// iterate over all nodes
+		for (NodeIDType node : reconfigurators)
+			// if I am present, add to return set
+			if (this.consistentNodeConfig.getReplicatedReconfigurators(
+					node.toString()).contains(this.getMyID()))
+				groupNames.add(node.toString());
+		return groupNames;
+	}
+	
+	protected Set<String> getRCGroupNames() {
+		return this.app.getRCGroupNames();
 	}
 }

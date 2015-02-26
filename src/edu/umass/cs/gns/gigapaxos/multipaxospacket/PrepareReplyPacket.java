@@ -14,15 +14,17 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public final Ballot ballot;
 	public final int acceptor;
 	public final Map<Integer, PValuePacket> accepted;
+	
+	private int firstSlot; // can be valid even if accepted is null
 
-	public PrepareReplyPacket(int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted) {
+	public PrepareReplyPacket(int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted, int gcSlot) {
 		super(accepted==null || accepted.isEmpty() ? (PaxosPacket)null : accepted.values().iterator().next());
 		this.acceptor = receiverID;
 		this.ballot = ballot;
 		this.accepted = accepted==null ? new HashMap<Integer,PValuePacket>() : accepted;
+		this.firstSlot = gcSlot+1;
 		this.packetType = PaxosPacketType.PREPARE_REPLY;
 	}
-
 
 	public PrepareReplyPacket(JSONObject json) throws JSONException{
 		super(json);
@@ -31,6 +33,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 		this.acceptor = json.getInt(PaxosPacket.NodeIDKeys.ACCEPTOR.toString());
 		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
 		this.accepted = parseJsonForAccepted(json);
+		this.firstSlot = json.getInt(PaxosPacket.Keys.PREPARE_REPLY_FIRST_SLOT.toString());
 	}
 
 	private HashMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json) throws JSONException {
@@ -55,7 +58,12 @@ public class PrepareReplyPacket extends PaxosPacket {
 		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
 		assert(this.packetType == PaxosPacketType.PREPARE_REPLY);
 		addAcceptedToJSON(json);
+		json.put(PaxosPacket.Keys.PREPARE_REPLY_FIRST_SLOT.toString(), this.firstSlot);
 		return json;
+	}
+	
+	public void setFirstSlot(int gcSlot) {
+		this.firstSlot = gcSlot+1;
 	}
 
 	public int getMinSlot() {
@@ -65,11 +73,12 @@ public class PrepareReplyPacket extends PaxosPacket {
 		int minSlot = Integer.MAX_VALUE;
 		if(acceptedMap!=null && !acceptedMap.isEmpty()) {
 			for(Integer curSlot : acceptedMap.keySet()) {
-				if(curSlot < minSlot) minSlot = curSlot;
+				if(curSlot - minSlot < 0) minSlot = curSlot;
 			}
-		} else minSlot = -1;
+		} else minSlot = this.firstSlot;
 		return minSlot;
 	}
+	
 
 	private void addAcceptedToJSON(JSONObject json) throws JSONException{
 		if (accepted != null ) {
