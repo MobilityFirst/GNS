@@ -165,7 +165,8 @@ public class ReconfigurableClient {
 			String namePrefix = "name";
 			String requestValuePrefix = "request_value";
 			String initValue = "initial_value";
-
+                        client.sendRequest(client.makeRequestActiveReplicas(namePrefix+0));
+                        
 			client.sendRequest(client.makeCreateNameRequest(namePrefix+0, initValue));
 			while(client.exists.containsKey(namePrefix+0));
 			for(int i=0; i<numRequests; i++) {
