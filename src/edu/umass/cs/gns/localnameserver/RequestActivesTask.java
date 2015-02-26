@@ -3,8 +3,9 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.localNameServer.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -104,20 +105,22 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
    * @param requestID requestID for <code>RequestActivesPacket</code>
    */
   private void sendActivesRequestPacketToPrimary(String name, NodeIDType primaryID, int requestID) {
-
-    RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);
+    JSONObject sendJson;
     try {
-      JSONObject sendJson = packet.toJSONObject();
+      if (handler.isNewApp()) {
+        RequestActiveReplicas packet = new RequestActiveReplicas(null, name, 0);
+        ((EnhancedClientRequestHandlerInterface)handler).addRequestNameToIDMapping(name, requestID);
+        sendJson = packet.toJSONObject();
+      } else {
+        RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);
+        sendJson = packet.toJSONObject();
+      }
       handler.sendToNS(sendJson, primaryID);
-      if (StartLocalNameServer.debuggingEnabled) {
-        GNS.getLogger().fine("Send Active Request Packet to Primary. " + primaryID.toString()
-                + "\tname\t" + name);
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Send RequestActivesPacket for " + name + " to " + primaryID.toString());
       }
     } catch (JSONException e) {
-      if (StartLocalNameServer.debuggingEnabled) {
-        GNS.getLogger().fine("JSON Exception in sending packet. name\t" + name);
-      }
-      e.printStackTrace();
+      GNS.getLogger().severe("JSON Exception in sending RequestActives packet for " + name + ": " + e);
     }
 
   }

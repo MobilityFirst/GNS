@@ -32,6 +32,12 @@ import org.json.JSONException;
 public interface ClientRequestHandlerInterface<NodeIDType>  {
 
   /**
+   * A little hack so we can tell if we're running in the new app.
+   * @return 
+   */
+  public boolean isNewApp();
+  
+  /**
    * The executor that runs tasks.
    * 
    * @return the executorService

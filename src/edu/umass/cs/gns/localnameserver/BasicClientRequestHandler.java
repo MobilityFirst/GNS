@@ -127,6 +127,11 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     // id is null here because we're the LNS
     return new GnsMessenger(null, gnsNiot, executorService);
   }
+  
+  @Override
+  public boolean isNewApp() {
+    return false;
+  }
 
   /**
    * @return the executorService

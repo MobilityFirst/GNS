@@ -67,8 +67,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   private final ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
   // For backward compatibility between old Add and Remove record code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
-  private final ConcurrentMap<String, Integer> createServiceNameMap;
-  private final ConcurrentMap<String, Integer> removeServiceNameMap;
+  private final ConcurrentMap<String, Integer> serviceNameMap;
 
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS_SUBTYPE_QUERY record)
@@ -118,10 +117,14 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.protocolExecutor = new ProtocolExecutor<>(messenger);
     this.protocolTask = new LNSProtocolTask<>(this);
     this.protocolExecutor.register(this.protocolTask.getEventTypes(), this.protocolTask);
-    this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
-    this.removeServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    this.serviceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
 
+  @Override
+  public boolean isNewApp() {
+    return true;
+  }
+  
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
     BasicReconfigurationPacket<NodeIDType> rcEvent
@@ -188,32 +191,16 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   /**
    * Creates a mapping between a create service name and the AddRecord that triggered it.
    */
-  public void addCreateMapping(String name, int id) {
-    createServiceNameMap.put(name, id);
+  public void addRequestNameToIDMapping(String name, int id) {
+    serviceNameMap.put(name, id);
   }
 
   @Override
   /**
    * Looks up the mapping between a CreateServiceName and the AddRecord that triggered it.
    */
-  public Integer getCreateMapping(String name) {
-    return createServiceNameMap.get(name);
-  }
-
-  @Override
-  /**
-   * Creates a mapping between a DeleteServiceName and the RemoveRecord that triggered it.
-   */
-  public void addRemoveMapping(String name, int id) {
-    removeServiceNameMap.put(name, id);
-  }
-
-  @Override
-  /**
-   * Looks up the mapping between a DeleteServiceName and the RemoveRecord that triggered it.
-   */
-  public Integer getRemoveMapping(String name) {
-    return removeServiceNameMap.get(name);
+  public Integer getRequestNameToIDMapping(String name) {
+    return serviceNameMap.get(name);
   }
 
   @Override
@@ -471,7 +458,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public void sendRequest(BasicReconfigurationPacket req) throws JSONException, IOException {
+  public void sendRequestToReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException {
     NodeIDType id = getRandomRCReplica();
     if (parameters.isDebugMode()) {
       GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);

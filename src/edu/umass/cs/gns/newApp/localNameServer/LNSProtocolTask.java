@@ -6,16 +6,17 @@ import edu.umass.cs.gns.main.GNS;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.net.UnknownHostException;
 import org.json.JSONException;
@@ -33,7 +34,8 @@ public class LNSProtocolTask<NodeIDType> implements
 
   private static final ReconfigurationPacket.PacketType[] types = {
     ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME,
-    ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,};
+    ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
+    ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS};
 
   private String key = null;
   private final EnhancedClientRequestHandlerInterface handler;
@@ -79,14 +81,26 @@ public class LNSProtocolTask<NodeIDType> implements
       case DELETE_SERVICE_NAME:
         mtask = handleDelete((DeleteServiceName) packet);
         break;
+      case REQUEST_ACTIVE_REPLICAS:
+        mtask = handleRequestActives((RequestActiveReplicas) packet);
       default:
         throw new RuntimeException("Unrecognizable message");
     }
     return mtask != null ? mtask.toArray() : null;
   }
 
+  private GenericMessagingTask handleRequestActives(RequestActiveReplicas packet) {
+    Integer lnsRequestID = handler.getRequestNameToIDMapping(packet.getServiceName());
+     if (lnsRequestID != null) {
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("RequestActives for " + packet.getServiceName() + " returns " + packet.getActives());
+      }
+     }
+    return null;
+  }
+
   private GenericMessagingTask handleCreate(CreateServiceName packet) {
-    Integer lnsRequestID = handler.getCreateMapping(packet.getServiceName());
+    Integer lnsRequestID = handler.getRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("App created " + packet.getServiceName());
@@ -115,7 +129,7 @@ public class LNSProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleDelete(DeleteServiceName packet) {
-    Integer lnsRequestID = handler.getRemoveMapping(packet.getServiceName());
+    Integer lnsRequestID = handler.getRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("App removed " + packet.getServiceName());

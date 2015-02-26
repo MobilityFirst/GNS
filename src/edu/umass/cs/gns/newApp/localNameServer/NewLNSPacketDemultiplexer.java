@@ -46,6 +46,7 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
     // probably should get these from the event handler
     this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
     this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
+    this.register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
     // From current LNS
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);
@@ -113,10 +114,10 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
             // original AddRecordPacket packet. We could probably replace some of this once everything is working.
             AddRecordPacket addRecordPacket = AddRemove.registerPacketAddRecord(json, handler);
-            handler.addCreateMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
+            handler.addRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
             ValuesMap valuesMap = new ValuesMap();
             valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
-            handler.sendRequest(new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()));
+            handler.sendRequestToReconfigurator(new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()));
             // original code
             //AddRemove.handlePacketAddRecord(json, handler);
             return true;
@@ -125,8 +126,8 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
             // original RemoveRecordPacket packet. We could probably replace some of this once everything is working.
             RemoveRecordPacket removeRecordPacket = AddRemove.registerPacketRemoveRecord(json, handler);
-            handler.addRemoveMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
-            handler.sendRequest(new DeleteServiceName(null, removeRecordPacket.getName(), 0));
+            handler.addRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
+            handler.sendRequestToReconfigurator(new DeleteServiceName(null, removeRecordPacket.getName(), 0));
             // original code
             //AddRemove.handlePacketRemoveRecord(json, handler);
             return true;
