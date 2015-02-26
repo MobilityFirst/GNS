@@ -486,4 +486,27 @@ public class Reconfigurator<NodeIDType> implements
 	
 	/*************** Reconfigurator reconfiguration related methods ***************/
 
+	private boolean addReconfigurator(NodeIDType node) {
+		if(!this.DB.amAffected(node)) return false;
+		// get list of current NodeConfig groups
+		//Set<String> curGroups = this.DB.getNodeConfigRCGroupNames();
+		
+		// add node to NodeConfig and mark it as under flux
+		
+		// get list of updated groups from NodeConfig
+		
+		// for each pair of old/new groups, initiate group change if needed
+
+		return false;
+	}
+	
+	private boolean deleteReconfigurator(NodeIDType node) {
+		// logic similar to add
+		return false;
+	}
+	
+	private boolean initiateReconfiguration(String rcGroupName, Set<NodeIDType> oldGroup, Set<NodeIDType> newGroup) {
+		// spawn WaitAckStopEpoch task
+		return false;
+	}
 }

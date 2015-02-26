@@ -23,7 +23,7 @@ import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
  */
 
 public abstract class AbstractDemandProfile {
-	private static final Class<?> C = ReconfigurationConfig.DEFAULT_DEMAND_PROFILE_TYPE;
+	private static final Class<?> C = ReconfigurationConfig.getDemandProfile();
 
 	protected static enum Keys {
 		SERVICE_NAME
