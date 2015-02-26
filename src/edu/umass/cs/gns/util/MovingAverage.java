@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
 
 /**
  *
@@ -91,7 +92,7 @@ public class MovingAverage {
    * @param num New number added to the window
    ***********************************************************
    */
-  public void add(int num) {
+  public synchronized void add(int num) {
     sum += num;
     window.add(num);
     //Removed head when window is full.
@@ -105,9 +106,9 @@ public class MovingAverage {
    * Returns the moving average.<br/>
    * Returns 0 if the window is empty.
    ***********************************************************
-   * @return 
+   * @return
    */
-  public double getAverage() {
+  public synchronized double getAverage() {
     return (window.isEmpty()) ? 0 : (sum / window.size());
   }
 
@@ -116,9 +117,9 @@ public class MovingAverage {
    * Returns the median value in window.<br/>
    * Returns 0 if the window is empty.
    ***********************************************************
-   * @return 
+   * @return
    */
-  public double getMedian() {
+  public synchronized double getMedian() {
     if (window.isEmpty()) {
       return 0;
     }
@@ -171,5 +172,53 @@ public class MovingAverage {
     } catch (JSONException e) {
       System.out.println("Error: " + e); // Westy
     }
+    System.out.println("CHECKING FOR THREAD SAFETY. THIS WILL RUN FOREVER.");
+    final MovingAverage ma1 = new MovingAverage(20);
+    (new Thread() {
+      @Override
+      public void run() {
+        Random random = new Random();
+        while (true) {
+          ma1.add(random.nextInt(100));
+        }
+      }
+    }).start();
+    (new Thread() {
+      @Override
+      public void run() {
+        Random random = new Random();
+        while (true) {
+          ma1.add(random.nextInt(100));
+        }
+      }
+    }).start();
+    (new Thread() {
+      @Override
+      public void run() {
+        Random random = new Random();
+        while (true) {
+          ma1.add(random.nextInt(100));
+        }
+      }
+    }).start();
+    (new Thread() {
+      @Override
+      public void run() {
+        Random random = new Random();
+        while (true) {
+          ma1.add(random.nextInt(100));
+        }
+      }
+    }).start();
+    (new Thread() {
+      @Override
+      public void run() {
+        int x = 0;
+        while (true) {
+          ma1.getAverage();
+          ma1.getMedian();
+        }
+      }
+    }).start();
   }
 }
