@@ -157,7 +157,7 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public ReconfigurationRecord<NodeIDType> deleteReconfigurationRecord(
+	public boolean deleteReconfigurationRecord(
 			String name) {
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(name);
@@ -166,7 +166,7 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 				new Object[] { "==============================> DerbyRCDB",
 						myID, record.getName(), record.getEpoch(),
 						record.getState(), " -> DELETE" });
-		return this.rrMap.remove(name);
+		return this.rrMap.remove(name)!=null;
 	}
 	
 	@Override
@@ -177,5 +177,10 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	@Override
 	public void close() {
 		// do nothing
+	}
+
+	@Override
+	public Set<String> getRCGroupNames() {
+		throw new RuntimeException("Method not yet implemented");
 	}
 }

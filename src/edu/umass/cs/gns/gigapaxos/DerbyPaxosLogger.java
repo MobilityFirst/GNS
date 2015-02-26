@@ -318,7 +318,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		ResultSet checkpointRS = null;
 		Connection conn = null;
 		try {
-			/* All accepts at or below the most recent checkpointed slot are
+			/* All accepts at or above the most recent checkpointed slot are
 			 * retained. We retain the accept at the checkpoint slot to 
 			 * ensure that the accepted pvalues list is never empty unless 
 			 * there are truly no accepts beyond prepare.firstUndecidedSlot.

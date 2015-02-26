@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.reconfiguration;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -207,6 +208,8 @@ public class Reconfigurator<NodeIDType> implements
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(request.getServiceName());
+		if(record==null) return null;
+		//else 
 		Set<NodeIDType> actives = record.getActiveReplicas();
 		Set<InetSocketAddress> activeIPs = new HashSet<InetSocketAddress>();
 		for (NodeIDType node : actives) {
@@ -271,10 +274,10 @@ public class Reconfigurator<NodeIDType> implements
 			// remove commit start epoch task
 			this.protocolExecutor.remove(this.getTaskKey(
 					WaitCommitStartEpoch.class, rcPacket));
+			if(rcRecReq.isDeleteConfirmation()) sendDeleteConfirmationToClient(rcRecReq);
 		}
 	}
 	
-
 	/****************************** End of protocol task handler methods *********************/
 
 	/*********************** Private methods below **************************/
@@ -420,7 +423,7 @@ public class Reconfigurator<NodeIDType> implements
 				.getReconfigurationRecord(name);
 		StartEpoch<NodeIDType> startEpoch = (record != null) ? new StartEpoch<NodeIDType>(getMyID(), name,
 				record.getEpoch() + 1, newActives, record.getActiveReplicas(
-						record.getName(), record.getEpoch()))
+						record.getName(), record.getEpoch()), sender, initialState)
 				: new StartEpoch<NodeIDType>(getMyID(), name, 0, newActives,
 						null, sender, initialState);	
 		return startEpoch;
@@ -467,4 +470,20 @@ public class Reconfigurator<NodeIDType> implements
 			this.spawnPrimaryReconfiguratorTask(rcRecReq);
 		}
 	}
+
+	private void sendDeleteConfirmationToClient(RCRecordRequest<NodeIDType> rcRecReq) {
+		try {
+			this.messenger.sendToAddress(
+					rcRecReq.startEpoch.creator,
+					new DeleteServiceName(rcRecReq.startEpoch.creator, rcRecReq
+							.getServiceName(), rcRecReq.getEpochNumber() - 1)
+							.toJSONObject());
+		} catch (IOException | JSONException e) {
+			log.severe(this + " received " + e.getClass().getSimpleName() + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+	
+	/*************** Reconfigurator reconfiguration related methods ***************/
+
 }

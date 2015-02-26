@@ -26,26 +26,73 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 	/********************************* End of ReconfigurationpacketType ***********************/
 	public enum PacketType implements IntegerPacketType{
 
-		// reconfigurator/active_replica -> active_replica
-		STOP_EPOCH (224), // : coordinate stop
-		START_EPOCH (226), // : request previous epoch final state
-		REQUEST_EPOCH_FINAL_STATE (227), // : send epoch final state
-		EPOCH_FINAL_STATE (228), // : record state locally
-		DROP_EPOCH_FINAL_STATE (229), // : drop final state locally
+		/*
+		 * A typical sequence of events is as follows. Active replicas regularly
+		 * send DEMAND_REPORTs to reconfigurators. Upon the receipt of some (but
+		 * far from all) demand report, a reconfigurator might decide to
+		 * initiate a reconfiguration that proceeds as follows:
+		 * 
+		 * DEMAND_REPORT: coordinate "reconfiguration intent" RC_RECORD_REQUEST
+		 * with other reconfigurators.
+		 * 
+		 * RC_RECORD_REQUEST (RECONFIGURATION_INTENT) : send STOP_EPOCH to all
+		 * active replicas.
+		 * 
+		 * STOP_EPOCH: coordinate STOP_EPOCH with other active replicas.
+		 * 
+		 * PaxosPacket.DECISION(STOP_EPOCH) : send ACK_STOP_EPOCH to
+		 * reconfigurators.
+		 * 
+		 * ACK_STOP_EPOCH : send START_EPOCH to next epoch active replicas.
+		 * 
+		 * START_EPOCH : send REQUEST_EPOCH_FINAL_STATE to previous epoch active
+		 * replicas.
+		 * 
+		 * REQUEST_EPOCH_FINAL_STATE : send EPOCH_FINAL_STATE
+		 * 
+		 * EPOCH_FINAL_STATE : create new epoch group locally and send
+		 * ACK_START_EPOCH to initiating reconfigurator.
+		 * 
+		 * ACK_START_EPOCH : upon receiving a majority of these from the new
+		 * epoch, send DROP_EPOCH_FINAL_STATE to old epoch active replicas, and
+		 * and coordinate RC_RECORD_REQUEST marking "reconfiguration complete"
+		 * with other reconfigurators (although the reconfiguration is not
+		 * completely complete yet).
+		 * 
+		 * RC_RECORD_REQUEST (RECONFIGURATION_COMPLETE) : mark the reconfigured
+		 * name as READY to receive client requests.
+		 * 
+		 * DROP_EPOCH_FINAL_STATE : drop old, stopped epoch's final state and
+		 * send ACK_DROP_EPOCH_FINAL_STATE to reconfigurator.
+		 * 
+		 * ACK_DROP_EPOCH_FINAL_STATE : wait until all old epoch active replicas
+		 * have dropped their state, marking the final completion of the
+		 * reconfiguration.
+		 * 
+		 */
+
+		// reconfigurator -> active_replica
+		STOP_EPOCH(224), // : coordinate stop with other actives
+		START_EPOCH(226), // : request previous epoch final state
+		DROP_EPOCH_FINAL_STATE(227), // : drop final state locally
+
+		// active_replica -> active_replica
+		REQUEST_EPOCH_FINAL_STATE(228), // : send epoch final state
+		EPOCH_FINAL_STATE(229), // : record locally and ack to reconfigurator
 
 		// active_replica -> reconfigurator
 		DEMAND_REPORT(230), // : send stop_epoch if reconfiguration needed
-		ACK_STOP_EPOCH (231), // : record locally
-		ACK_START_EPOCH (232), // : record locally
-		ACK_DROP_EPOCH_FINAL_STATE (233), // : record locally
-		
+		ACK_STOP_EPOCH(231), // : record locally
+		ACK_START_EPOCH(232), // : record locally
+		ACK_DROP_EPOCH_FINAL_STATE(233), // : record locally
+
 		// app_client -> reconfigurator
-		CREATE_SERVICE_NAME (234), // : initiate create
-		DELETE_SERVICE_NAME (235), // : initiate delete
-		REQUEST_ACTIVE_REPLICAS (236),  // : send current active replicas
-		
+		CREATE_SERVICE_NAME(234), // : initiate create
+		DELETE_SERVICE_NAME(235), // : initiate delete
+		REQUEST_ACTIVE_REPLICAS(236), // : send current active replicas
+
 		// reconfigurator -> reconfigurator
-		RC_RECORD_REQUEST (237);
+		RC_RECORD_REQUEST(237);
 		;
 
 		private final int number;

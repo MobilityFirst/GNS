@@ -774,7 +774,7 @@ public class PaxosCoordinatorState  {
 		assert(inserted);
 
 		// Test prepare replies are ignored before prepare has been sent
-		PrepareReplyPacket preply = new PrepareReplyPacket(10, new Ballot(29, 42), null);
+		PrepareReplyPacket preply = new PrepareReplyPacket(10, new Ballot(29, 42), null, -1);
 		assert(pcs.waitforMyBallot==null); // prepare not sent yet
 		assert(pcs.canIgnorePrepareReply(preply, members));
 
@@ -785,9 +785,9 @@ public class PaxosCoordinatorState  {
 		assert(ballot.ballotNumber==ballotnum && ballot.coordinatorID==myID);
 
 		// Test lower ballot prepare replies are ignored
-		preply = new PrepareReplyPacket(10, new Ballot(ballot.ballotNumber-1, ballot.coordinatorID), null);
+		preply = new PrepareReplyPacket(10, new Ballot(ballot.ballotNumber-1, ballot.coordinatorID), null, -1);
 		assert(pcs.canIgnorePrepareReply(preply, members));
-		preply = new PrepareReplyPacket(10, new Ballot(ballot.ballotNumber, ballot.coordinatorID-1), null);
+		preply = new PrepareReplyPacket(10, new Ballot(ballot.ballotNumber, ballot.coordinatorID-1), null, -1);
 		assert(pcs.canIgnorePrepareReply(preply, members));
 		// Do not test !canIgnorePrepareReply yet
 
@@ -795,7 +795,7 @@ public class PaxosCoordinatorState  {
 		assert(!pcs.isActive());
 
 		Ballot preplyBallot = new Ballot(ballot.ballotNumber, ballot.coordinatorID);
-		preply = new PrepareReplyPacket(10, preplyBallot, null);
+		preply = new PrepareReplyPacket(10, preplyBallot, null, -1);
 		assert(!Util.contains(10, members));
 		assert(pcs.canIgnorePrepareReply(preply, members)); // coz 10 is not in members
 
@@ -810,7 +810,7 @@ public class PaxosCoordinatorState  {
 		HashMap<Integer,PValuePacket> accepted = new HashMap<Integer,PValuePacket>(); 
 		accepted.put(pvalues[0].slot, pvalues[0]);
 		System.out.println("Combining " + accepted);
-		preply = new PrepareReplyPacket(members[2], preplyBallot, accepted);
+		preply = new PrepareReplyPacket(members[2], preplyBallot, accepted, -1);
 		assert(!pcs.canIgnorePrepareReply(preply, members)); // finally a legitimate reply
 		assert(!pcs.isPrepareAcceptedByMajority(preply, members) && pcs.waitforMyBallot.alreadyHeardFrom(members[2])); 
 		assert(pcs.canIgnorePrepareReply(preply, members)); // no duplicates
@@ -823,7 +823,7 @@ public class PaxosCoordinatorState  {
 		accepted.put(pvalues[2].slot, pvalues[2]);
 		assert(pvalues[0].ballot.compareTo(pvalues[1].ballot) < 0);
 		System.out.println("Combining " + accepted);
-		preply = new PrepareReplyPacket(members[0], preplyBallot, accepted);
+		preply = new PrepareReplyPacket(members[0], preplyBallot, accepted, -1);
 		assert(!pcs.isPrepareAcceptedByMajority(preply, members) && pcs.canIgnorePrepareReply(preply, members)); // legitimate self-reply followed by duplicate
 
 		// prepare by members[4] including stop
@@ -835,15 +835,15 @@ public class PaxosCoordinatorState  {
 		accepted.put(pvalues[3].slot, pvalues[3]);
 		accepted.put(pvalues[4].slot, pvalues[4]);
 		accepted.put(pvalues[5].slot, pvalues[5]);
-		preply = new PrepareReplyPacket(members[4], preplyBallot, accepted);
+		preply = new PrepareReplyPacket(members[4], preplyBallot, accepted, -1);
 		assert(!pcs.isPrepareAcceptedByMajority(preply, members) && pcs.canIgnorePrepareReply(preply, members)); 
 
 		for(int i=0; i<members.length; i+=2) { // members 0, 2, 4, ...
-			preply = new PrepareReplyPacket(members[i], preplyBallot, null);
+			preply = new PrepareReplyPacket(members[i], preplyBallot, null, -1);
 			assert(!pcs.isPrepareAcceptedByMajority(preply, members) || (i==members.length-1 && (members.length%2==1)));
 		}
 		if(members.length%2==0) { // one more if even group size
-			preply = new PrepareReplyPacket(members[members.length-1], preplyBallot, null);			
+			preply = new PrepareReplyPacket(members[members.length-1], preplyBallot, null, -1);			
 			assert(pcs.isPrepareAcceptedByMajority(preply, members));
 		}
 		assert(pcs.waitforMyBallot.heardFromMajority());

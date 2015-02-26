@@ -13,7 +13,7 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 
 	public ReconfigurationRecord<NodeIDType> createReconfigurationRecord(
 			ReconfigurationRecord<NodeIDType> record);
-	public ReconfigurationRecord<NodeIDType> deleteReconfigurationRecord(
+	public boolean deleteReconfigurationRecord(
 			String name);
 
 	// update demand stats 
@@ -32,6 +32,8 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	
 	// names for which reconfiguration is incomplete, needed for recovery
 	public String[] getPendingReconfigurations();
+	
+	public Set<String> getRCGroupNames();
 	
 	// close DB
 	public void close();

@@ -337,18 +337,22 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		// update app state
 		if(slotBallot!=null && slotBallot.state!=null) this.clientRequestHandler.updateState(pid, slotBallot.state);
 
-		this.coordinator = new PaxosCoordinator(); // just a shell class to wrap coordinator state
-		if(slotBallot==null && roundRobinCoordinator(0)==this.getMyID()) this.coordinator.makeCoordinator(0, this.getMyID(), 
-				getMembers(), 0, true); // initial coordinator assumed, not prepared
-		/* Note: We don't have to create coordinator state here. It will get created if 
-		 * needed when the first external (non-recovery) packet is received. But we 
-		 * create the very first coordinator here as otherwise it is possible that 
-		 * no coordinator gets elected as follows: the lowest ID node wakes up and
-		 * either upon an external or self-poke message sends a prepare, but gets
-		 * no responses because no other node is up yet. In this case, the other
-		 * nodes when they boot up will not run for coordinator, and the lowest
-		 * ID node will not resend its prepare if no more requests come, so the
-		 * first request could be stuck in its pre-active queue for a long time.
+		this.coordinator = new PaxosCoordinator(); // just a shell class
+		// initial coordinator is assumed, not prepared
+		if (slotBallot == null && roundRobinCoordinator(0) == this.getMyID())
+			this.coordinator.makeCoordinator(0, this.getMyID(), getMembers(),
+					(initialState != null ? 1 : 0), true); // slotBallot==null
+		/*
+		 * Note: We don't have to create coordinator state here. It will get
+		 * created if needed when the first external (non-recovery) packet is
+		 * received. But we create the very first coordinator here as otherwise
+		 * it is possible that no coordinator gets elected as follows: the
+		 * lowest ID node wakes up and either upon an external or self-poke
+		 * message sends a prepare, but gets no responses because no other node
+		 * is up yet. In this case, the other nodes when they boot up will not
+		 * run for coordinator, and the lowest ID node will not resend its
+		 * prepare if no more requests come, so the first request could be stuck
+		 * in its pre-active queue for a long time.
 		 */
 
 		this.paxosState = new PaxosAcceptor(slotBallot!=null ? slotBallot.ballotnum : 0, 
@@ -369,20 +373,17 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		return true;
 	}
 	
-	/* FIXME: untested and does not support an arbitrary initial slot number, 
-	 * which would be useful if we wanted to preserve slot numbers across
-	 * epochs.
-	 */
 	private boolean putInitialState(String initialState) {
 		if (this.getPaxosManager() == null || initialState==null)
 			return false;
-		AbstractPaxosLogger.checkpoint(this.getPaxosManager().getPaxosLogger(),
-				getPaxosID(), this.getVersion(), this.groupMembers, -1,
-				new Ballot(0, this.roundRobinCoordinator(0)), initialState,
-				this.paxosState.getGCSlot());
+		this.handleCheckpoint(new StatePacket(initialBallot(), 0, initialState));
+		this.paxosState.setGCSlotAfterPuttingInitialSlot();
 		return true;
 	}
-
+	
+	private Ballot initialBallot() {
+		return new Ballot(0, this.roundRobinCoordinator(0));
+	}
 	/* The one method for all message sending. 
 	 * Protected coz the logger also calls this. 
 	 */
@@ -502,11 +503,21 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		if(PaxosAcceptor.ACCEPTED_PROPOSALS_ON_DISK) {
 			prepareReply.accepted.putAll(this.paxosManager.getPaxosLogger().getLoggedAccepts(
 					this.getPaxosID(), prepare.firstUndecidedSlot));
-			for(PValuePacket pvalue : prepareReply.accepted.values()) {
-				assert(this.paxosState.getBallot().compareTo(pvalue.ballot) >= 0) :
-					this.getNodeState() + ":" + pvalue;
-			}
+			for (PValuePacket pvalue : prepareReply.accepted.values())
+				assert (this.paxosState.getBallot().compareTo(pvalue.ballot) >= 0) : this
+						.getNodeState() + ":" + pvalue;
 		}
+		/* We need to special case this as there is no logged ACCEPT corresponding
+		 * to the initial state, so the coordinator must be explicitly informed
+		 * of firstSlot that is higher than gcSlot+1.
+		 * 
+		 * FIXME: better to change gcSlot to be equal to (as opposed to one less than)
+		 * the checkpoint slot.
+		 */
+		if (prepareReply.accepted.isEmpty()
+				&& this.paxosState.getGCSlot() == -1
+				&& this.paxosState.getSlot() == 1)
+			prepareReply.setFirstSlot(0);
 
 		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}{6}", new Object[]{this.getNodeState() , " sending ", 
 				prepareReply.accepted.size(), " accepted pvalues starting at ", 
@@ -654,7 +665,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 							this.paxosState.getSlot(),
 							" recieved out-of-order commit: ", committed });
 
-		return null; //this.fixLongDecisionGaps(committed);
+		return null; 
 	}
 
 	private ActivePaxosState createActiveState() {		
@@ -672,11 +683,15 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		ActivePaxosState activeState = markActiveState();
 
 		MessagingTask fixGapsRequest=null;
-		if((committed.slot - this.paxosState.getSlot() > SYNC_THRESHOLD) && activeState.canSync()) {
-			fixGapsRequest = this.requestMissingDecisions((committed.ballot.coordinatorID));
-			if(fixGapsRequest!=null) {
-				log.info(this.getNodeState() + " fixing gaps: " + fixGapsRequest);
-				activeState.justSyncd(); // don't need to put into map here again
+		if (((committed.slot - this.paxosState.getSlot() > SYNC_THRESHOLD) || (committed.slot > 0 && this.paxosState
+				.getSlot() == 0)) && activeState.canSync()) {
+			fixGapsRequest = this
+					.requestMissingDecisions((committed.ballot.coordinatorID));
+			if (fixGapsRequest != null) {
+				log.info(this.getNodeState() + " fixing gaps: "
+						+ fixGapsRequest);
+				activeState.justSyncd(); // don't need to put into map again
+											
 			}
 		}
 		return fixGapsRequest;
@@ -736,7 +751,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 	// Like extractExecuteAndCheckpoint but invoked upon checkpoint transfer
 	private synchronized MessagingTask handleCheckpoint(StatePacket statePacket) {
-		if(statePacket.slotNumber > this.paxosState.getSlot()) {
+		if(statePacket.slotNumber >= this.paxosState.getSlot()) {
 			// update acceptor (like extract)
 			this.paxosState.jumpSlot(statePacket.slotNumber+1);
 			// put checkpoint in app (like execute)
