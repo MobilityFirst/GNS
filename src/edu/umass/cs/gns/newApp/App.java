@@ -27,6 +27,7 @@ import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.nsdesign.packet.NoopPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
@@ -41,6 +42,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
 import java.security.InvalidKeyException;
@@ -86,7 +88,8 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     PacketType.ACTIVE_REMOVE,
     PacketType.UPDATE_CONFIRM,
     PacketType.ADD_CONFIRM,
-    PacketType.REMOVE_CONFIRM};
+    PacketType.REMOVE_CONFIRM,
+    PacketType.NOOP};
 
   @Override
   public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
@@ -143,6 +146,8 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
         case REMOVE_CONFIRM:
           LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, nodeConfig), this);
           break;
+        case NOOP:
+          break;
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);
           return false;
@@ -172,10 +177,15 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   }
 
   @Override
-  public InterfaceRequest getRequest(String stringified)
+  public InterfaceRequest getRequest(String string)
           throws RequestParseException {
+    GNS.getLogger().info(">>>>>>>>>>>>>>> GET REQUEST: " + string);
+    // Hack
+    if (RequestPacket.NO_OP.toString().equals(string)) {
+      return new NoopPacket();
+    }
     try {
-      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), nodeConfig);
+      return (InterfaceRequest) Packet.createInstance(new JSONObject(string), nodeConfig);
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }
@@ -249,7 +259,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   // FIXME: Not really sure what to do here...
   @Override
   public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-    return new OldActiveSetStopPacket(name, -1, -1, -1, (short) epoch, PacketType.ACTIVE_REMOVE);
+    return new NoopPacket();
 //    return new NoopAppRequest(name, epoch, (int) (Math.random() * Integer.MAX_VALUE),
 //            "", AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
   }

@@ -82,6 +82,7 @@ public class Packet {
     //ACTIVE_NAMESERVER_INFO(83, "edu.umass.cs.gns.nsdesign.packet.ActiveNameServerInfoPacket"),
     // paxos
     PAXOS_PACKET(90, null),
+    NOOP(99, null),
     // group change
     NEW_ACTIVE_PROPOSE(100, "edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket"),
     OLD_ACTIVE_STOP(101, null),
@@ -264,6 +265,8 @@ public class Packet {
         // paxos
         case PAXOS_PACKET:
           return null;
+        case NOOP:
+          return new edu.umass.cs.gns.nsdesign.packet.NoopPacket(json);
         // group change
         case NEW_ACTIVE_PROPOSE:
           return new edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket(json, unstringer);

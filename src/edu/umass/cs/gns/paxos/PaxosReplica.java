@@ -17,17 +17,11 @@ import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
 import edu.umass.cs.gns.paxos.paxospacket.SynchronizePacket;
 import edu.umass.cs.gns.paxos.paxospacket.SynchronizeReplyPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
@@ -97,7 +91,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
   /**
    * Special no-op command.
    */
-  static final String NO_OP = "NO_OP";
+  static final String NULL_OP = "NULL_OP";
 
   /**
    * ID of the paxos instance this replica belongs to.
@@ -949,9 +943,9 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
     if (debugMode) {
       GNS.getLogger().fine("\tPAXOS-PERFORM\t" + paxosID + "\t" + nodeID + "\t" + slotNumber + "\t" + req.value);
     }
-    if (req.value.equals(NO_OP)) {
+    if (req.value.equals(NULL_OP)) {
       if (debugMode) {
-        GNS.getLogger().fine(paxosID + "\t" + nodeID + " " + NO_OP + " decided in slot = " + slotNumber);
+        GNS.getLogger().fine(paxosID + "\t" + nodeID + " " + NULL_OP + " decided in slot = " + slotNumber);
       }
       return;
     }
@@ -1480,7 +1474,7 @@ public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> 
    */
   private void proposeNoopInSlot(int slot, Ballot<NodeIDType> b) throws JSONException {
     ProposalPacket<NodeIDType> proposalPacket = new ProposalPacket<NodeIDType>(slot,
-            new RequestPacket<NodeIDType>(null, PaxosReplica.NO_OP, PaxosPacketType.REQUEST, false),
+            new RequestPacket<NodeIDType>(null, PaxosReplica.NULL_OP, PaxosPacketType.REQUEST, false),
             PaxosPacketType.PROPOSAL, 0);
     initCommander(new PValuePacket<NodeIDType>(b, proposalPacket));
     if (debugMode) {

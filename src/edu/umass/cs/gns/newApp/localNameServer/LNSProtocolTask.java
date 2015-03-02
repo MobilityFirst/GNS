@@ -10,7 +10,6 @@ import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
@@ -83,6 +82,7 @@ public class LNSProtocolTask<NodeIDType> implements
         break;
       case REQUEST_ACTIVE_REPLICAS:
         mtask = handleRequestActives((RequestActiveReplicas) packet);
+        break;
       default:
         throw new RuntimeException("Unrecognizable message");
     }
@@ -93,7 +93,7 @@ public class LNSProtocolTask<NodeIDType> implements
     Integer lnsRequestID = handler.getRequestNameToIDMapping(packet.getServiceName());
      if (lnsRequestID != null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("RequestActives for " + packet.getServiceName() + " returns " + packet.getActives());
+        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% RequestActives for " + packet.getServiceName() + " returns " + packet.getActives());
       }
      }
     return null;
