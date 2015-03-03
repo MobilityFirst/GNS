@@ -19,10 +19,10 @@ public class MongoCollectionSpec {
   /**
    * Stores the name, primary key, and index of each collection we maintain in the mongo db.
    */
-  private String name;
-  private ColumnField primaryKey;
-  private BasicDBObject primaryIndex;
-  private List<BasicDBObject> otherIndexes = new ArrayList<BasicDBObject>();
+  private final String name;
+  private final ColumnField primaryKey;
+  private final BasicDBObject primaryIndex;
+  private final List<BasicDBObject> otherIndexes = new ArrayList<>();
 
   public MongoCollectionSpec(String name, ColumnField primaryKey) {
     this.name = name;
@@ -48,25 +48,6 @@ public class MongoCollectionSpec {
   
   public List<BasicDBObject> getOtherIndexes() {
     return otherIndexes;
-  }
-  
-  // maintains information about the collections we maintain in the mongo db
-  private static Map<String, MongoCollectionSpec> collectionSpecMap = new HashMap<String, MongoCollectionSpec>();
-
-  private static List<MongoCollectionSpec> collectionSpecs = new ArrayList<MongoCollectionSpec>();
-  
-  public static void addCollectionSpec(String name, ColumnField indexField) {
-    MongoCollectionSpec spec = new MongoCollectionSpec(name, indexField);
-    collectionSpecs.add(spec);
-    collectionSpecMap.put(name, spec);
-  }
-          
-  public static MongoCollectionSpec getCollectionSpec(String name) {
-    return collectionSpecMap.get(name);
-  }
-  
-  public static List<MongoCollectionSpec> allCollectionSpecs() {
-    return collectionSpecs;
   }
   
 }
