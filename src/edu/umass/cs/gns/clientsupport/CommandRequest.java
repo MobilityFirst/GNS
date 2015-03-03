@@ -43,7 +43,7 @@ public class CommandRequest {
   public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("######## COMMAND PACKET RECEIVED: " + incomingJSON);
+      GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
     }
     final CommandPacket packet = new CommandPacket(incomingJSON);
     // FIXME: Don't do this every time. 

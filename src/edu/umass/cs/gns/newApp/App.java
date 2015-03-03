@@ -78,7 +78,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     }
     this.nioServer = nioServer;
   }
-  
+
   private static PacketType[] types = {
     PacketType.DNS,
     PacketType.UPDATE,
@@ -106,8 +106,8 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       if (Config.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name() + " packet: " + json.toString());
       }
-       // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
-       // UNTIL THE TRANSITION IS FINISHED
+      // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
+      // UNTIL THE TRANSITION IS FINISHED
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests
@@ -179,7 +179,9 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   @Override
   public InterfaceRequest getRequest(String string)
           throws RequestParseException {
-    GNS.getLogger().info(">>>>>>>>>>>>>>> GET REQUEST: " + string);
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
+    }
     // Hack
     if (RequestPacket.NO_OP.toString().equals(string)) {
       return new NoopPacket();
@@ -257,19 +259,36 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
   }
 
   // FIXME: Not really sure what to do here...
+  /**
+   *
+   * @param name
+   * @param epoch
+   * @return
+   */
   @Override
   public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
     return new NoopPacket();
+    // Making these the sender and receiver -1 means that the old confirm code
+    // in Remove.executeActiveRemove won't execute which is what we want here... I think.
+    // It seems to work anyway.
+    //return new OldActiveSetStopPacket(name, -1, -1, -1, (short) epoch, PacketType.ACTIVE_REMOVE);
 //    return new NoopAppRequest(name, epoch, (int) (Math.random() * Integer.MAX_VALUE),
 //            "", AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
   }
 
-  private final static ArrayList<ColumnField> prevValueRequestFields = new ArrayList<>();
+//  private final static ArrayList<ColumnField> prevValueRequestFields = new ArrayList<>();
+//
+//  static {
+//    prevValueRequestFields.add(NameRecord.OLD_ACTIVE_VERSION);
+//    prevValueRequestFields.add(NameRecord.OLD_VALUES_MAP);
+//    prevValueRequestFields.add(NameRecord.TIME_TO_LIVE);
+//  }
+  private final static ArrayList<ColumnField> valueRequestFields = new ArrayList<>();
 
   static {
-    prevValueRequestFields.add(NameRecord.OLD_ACTIVE_VERSION);
-    prevValueRequestFields.add(NameRecord.OLD_VALUES_MAP);
-    prevValueRequestFields.add(NameRecord.TIME_TO_LIVE);
+    valueRequestFields.add(NameRecord.ACTIVE_VERSION);
+    valueRequestFields.add(NameRecord.VALUES_MAP);
+    valueRequestFields.add(NameRecord.TIME_TO_LIVE);
   }
 
   @Override
@@ -277,9 +296,17 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     ValuesMap value = null;
     int ttl = -1;
     try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, prevValueRequestFields);
-
-      value = nameRecord.getOldValuesOnVersionMatch(epoch);
+      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, valueRequestFields);
+      value = nameRecord.getValuesMap();
+      int recordVersion = nameRecord.getActiveVersion();
+      if (recordVersion != epoch) {
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " epoch mismatch epoch "
+                  + epoch + " record version" + recordVersion);
+        }
+      }
+      //NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, prevValueRequestFields);
+      //value = nameRecord.getOldValuesOnVersionMatch(epoch);
       ttl = nameRecord.getTimeToLive();
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception.");
@@ -355,8 +382,16 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     if (Config.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
     }
+    Integer recordEpoch = getEpoch(name);
     try {
-      NameRecord.removeNameRecord(nameRecordDB, name);
+      if (recordEpoch != null && recordEpoch == epoch) {
+        NameRecord.removeNameRecord(nameRecordDB, name);
+      } else {
+        if (Config.debuggingEnabled) {
+          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " epoch mismatch epoch "
+                  + epoch + " record version" + recordEpoch);
+        }
+      }
     } catch (FailedDBOperationException e) {
       GNS.getLogger().severe("Failed to delete record for " + name + " :" + e.getMessage());
       return false;

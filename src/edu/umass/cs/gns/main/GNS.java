@@ -21,11 +21,7 @@ public class GNS {
   public static final int DEFAULT_LNS_TCP_PORT = 24398;
   public static final int DEFAULT_LNS_PING_PORT = 24397;
   public static final int DEFAULT_LNS_ADMIN_PORT = 24396;
-  public static final int DEFAULT_LNS_ADMIN_RESPONSE_PORT = 24395;
-  public static final int DEFAULT_LNS_ADMIN_DUMP_RESPONSE_PORT = 24394;
-  public static final int DEFAULT_LNS_DBCLIENT_PORT = 24393;
   
-  public static final int NS_LOCAL_FIRST_NODE_PORT = 35000;
   public static final String GNS_URL_PATH = "GNS";
   
   public static final int CLIENTPORT = 24399;

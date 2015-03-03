@@ -44,14 +44,12 @@ import java.util.ArrayList;
  */
 public class Remove {
 
-
-  private static  ArrayList<ColumnField> activeStopFields = new ArrayList<ColumnField>();
+  private static ArrayList<ColumnField> activeStopFields = new ArrayList<ColumnField>();
 
   static {
     activeStopFields.add(NameRecord.ACTIVE_VERSION);
     activeStopFields.add(NameRecord.VALUES_MAP);
   }
-
 
   private static ArrayList<ColumnField> versionFields = new ArrayList<ColumnField>();
 
@@ -69,6 +67,7 @@ public class Remove {
    * TODO update this doc
    * Updates the database to indicate that this node is no longer an active replica, which effectively removes the
    * record from this active replica.
+   *
    * @param oldActiveStopPacket
    * @param gnsApp
    * @param noCoordinationState
@@ -77,8 +76,10 @@ public class Remove {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void executeActiveRemove(OldActiveSetStopPacket oldActiveStopPacket, GnsApplicationInterface gnsApp,
-                                                     boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
-    if (Config.debuggingEnabled) GNS.getLogger().info("Executing remove: " + oldActiveStopPacket);
+          boolean noCoordinationState, boolean recovery) throws IOException, FailedDBOperationException {
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Executing remove: " + oldActiveStopPacket);
+    }
 //    GNSMessagingTask msgTask = null;
     if (noCoordinationState == false) { // normal case:
       try {
@@ -94,7 +95,7 @@ public class Remove {
         e.printStackTrace();
       }
     } else {  // exceptional case: either request is retransmitted by RC. or this replica never received any state for
-    // this name.
+      // this name.
       try {
         int version = oldActiveStopPacket.getVersion();
         NameRecord nameRecord1 = NameRecord.getNameRecordMultiField(gnsApp.getDB(), oldActiveStopPacket.getName(),
@@ -103,8 +104,8 @@ public class Remove {
         GNS.getLogger().severe("Version to Be Stopped = " + version + " VersionStatus = " + versionStatus + " name = "
                 + oldActiveStopPacket.getName());
         if (versionStatus == NameRecord.VersionStatus.ActiveVersionEqualsVersion) { // this is the current active version
-          GNS.getLogger().severe("Case cannot happen because coordinator state would have exist = " +
-                  oldActiveStopPacket);
+          GNS.getLogger().severe("Case cannot happen because coordinator state would have exist = "
+                  + oldActiveStopPacket);
         } else if (versionStatus == NameRecord.VersionStatus.OldActiveVersionEqualsVersion) { // this is the old version
           // send confirmation to primary that this version is stopped.
           sendActiveRemovedConfirmationMsg(oldActiveStopPacket, gnsApp, recovery);
@@ -129,7 +130,7 @@ public class Remove {
    * replica controller.
    */
   private static void sendActiveRemovedConfirmationMsg(OldActiveSetStopPacket oldActiveStopPacket,
-                                                                  GnsApplicationInterface gnsApp, boolean recovery)
+          GnsApplicationInterface gnsApp, boolean recovery)
           throws JSONException, IOException {
     // confirm to primary name server that this set of actives has stopped
     if (oldActiveStopPacket.getActiveReceiver().equals(gnsApp.getNodeID())) {
@@ -139,11 +140,15 @@ public class Remove {
       if (!recovery) {
         gnsApp.getNioServer().sendToID(oldActiveStopPacket.getPrimarySender(), oldActiveStopPacket.toJSONObject());
       }
-      GNS.getLogger().fine("Active removed: Name Record updated. Sent confirmation to replica controller. Packet = " +
-              oldActiveStopPacket);
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("Active removed: Name Record updated. Sent confirmation to replica controller. Packet = "
+                + oldActiveStopPacket);
+      }
     } else {
       // other nodes do nothing.
-      GNS.getLogger().fine("Active removed: Name Record updated. OldVersion = " + oldActiveStopPacket.getVersion());
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().info("Active removed: Name Record updated. OldVersion = " + oldActiveStopPacket.getVersion());
+      }
     }
   }
 
