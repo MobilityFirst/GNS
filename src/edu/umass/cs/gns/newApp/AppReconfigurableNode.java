@@ -44,14 +44,14 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     return appCoordinator;
   }
 
-  // local setup
   public static void main(String[] args) throws IOException {
-    // Use the NullDemandProfile until we figure out the issues with the default one.
     //ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
     ReconfigurationConfig.setDemandProfile(DemandProfile.class);
     System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
     
+    // Change this to whatever your path is...
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+    
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     try {
       for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {

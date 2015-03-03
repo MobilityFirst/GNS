@@ -21,6 +21,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
@@ -120,7 +121,9 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     for (BasicDBObject index : spec.getOtherIndexes()) {
       db.getCollection(spec.getName()).createIndex(index);
     }
-    GNS.getLogger().info("Indexes initialized");
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("Indexes initialized");
+    }
   }
 
   @Override
@@ -336,7 +339,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         throw new JSONException(subKey + "." + e.getMessage());
       }
     } else {
-      Object result =  bson.get(key);
+      Object result = bson.get(key);
 //      if (Config.debugMode) {
 //        GNS.getLogger().info("###result=" + result);
 //      }
