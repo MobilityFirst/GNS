@@ -31,6 +31,7 @@ import edu.umass.cs.gns.nsdesign.packet.NoopPacket;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.nsdesign.packet.StopPacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
@@ -89,6 +90,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     PacketType.UPDATE_CONFIRM,
     PacketType.ADD_CONFIRM,
     PacketType.REMOVE_CONFIRM,
+    PacketType.STOP,
     PacketType.NOOP};
 
   @Override
@@ -145,6 +147,8 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:
           LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, nodeConfig), this);
+          break;
+        case STOP:
           break;
         case NOOP:
           break;
@@ -267,7 +271,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
    */
   @Override
   public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-    return new NoopPacket();
+    return new StopPacket(name, epoch);
     // Making these the sender and receiver -1 means that the old confirm code
     // in Remove.executeActiveRemove won't execute which is what we want here... I think.
     // It seems to work anyway.
