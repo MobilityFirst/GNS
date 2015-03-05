@@ -262,7 +262,6 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     return stateUpdated;
   }
 
-  // FIXME: Not really sure what to do here...
   /**
    *
    * @param name
@@ -392,8 +391,8 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
         NameRecord.removeNameRecord(nameRecordDB, name);
       } else {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " epoch mismatch epoch "
-                  + epoch + " record version" + recordEpoch);
+          GNS.getLogger().info("&&&&&&& APP " + nodeID + " not worrying about delete because epoch is "
+                  + epoch + " and record version is " + recordEpoch);
         }
       }
     } catch (FailedDBOperationException e) {

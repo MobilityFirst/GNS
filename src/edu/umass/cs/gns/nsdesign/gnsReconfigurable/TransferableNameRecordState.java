@@ -5,13 +5,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Represents the state for a name record that GNS will transfer to (or received from) coordinator, and other replicas.
+ * Represents the state for a name record that GNS will transfer to (or received from) coordinator,
+ * and other replicas.
+ * 
+ * Haven't figured out why this is needed. - Westy
  *
  * Created by abhigyan on 3/29/14.
  */
 public class TransferableNameRecordState {
   
-  final static String SEPARATOR = ":::";
+  final static String SEPARATOR = ":::"; // Made this something that probably won't appear in JSON. - Westy
 
   public final ValuesMap valuesMap;
   public final int ttl;
