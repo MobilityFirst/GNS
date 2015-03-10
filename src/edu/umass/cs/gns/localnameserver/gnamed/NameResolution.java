@@ -18,6 +18,8 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+
+import org.json.JSONArray;
 import org.xbill.DNS.ARecord;
 import org.xbill.DNS.CNAMERecord;
 import org.xbill.DNS.Cache;
@@ -156,42 +158,42 @@ public class NameResolution {
       try {
         JSONObject fieldResponseJson = new JSONObject(fieldResponse.getReturnValue());
         if (fieldResponseJson.has("A")) {
-          String ip = fieldResponseJson.getString("A").replaceAll("\\[\"|\\\"]", "");
+          String ip = (new JSONArray(fieldResponseJson.getString("A"))).get(0).toString();
           ARecord gnsARecord = new ARecord(new Name(nameToResolve), DClass.IN, 60, InetAddress.getByName(ip));
           response.addRecord(gnsARecord, Section.ANSWER);
           nameResolved = true;
         }
         if (fieldResponseJson.has("NS")) {
-          String ns = fieldResponseJson.getString("NS");
+          String ns = (new JSONArray(fieldResponseJson.getString("NS"))).get(0).toString();
           NSRecord nsRecord = new NSRecord(new Name(nameToResolve), DClass.IN, 120, new Name(ns));
           response.addRecord(nsRecord, Section.AUTHORITY);
 
         /* Resolve NS Record name to an IP address and add it to ADDITIONAL section */
           CommandResponse nsResponse = lookupGuidGnsServer(ns, fieldName, null, handler);
           if (nsResponse != null && !nsResponse.isError()) {
-            String address = nsResponse.getReturnValue().replaceAll("\\[\"|\\\"]", "");
+            String address =  (new JSONArray(nsResponse.getReturnValue())).get(0).toString();
             GNS.getLogger().info("single field " + address);
             ARecord nsARecord = new ARecord(new Name(ns), DClass.IN, 60, InetAddress.getByName(address));
             response.addRecord(nsARecord, Section.ADDITIONAL);
           }
         }
         if (fieldResponseJson.has("MX")) {
-          String mxname = fieldResponseJson.getString("MX");
+          String mxname = (new JSONArray(fieldResponseJson.getString("MX"))).get(0).toString();
           MXRecord mxRecord = new MXRecord(new Name(nameToResolve), DClass.IN, 120, 100, new Name(mxname));
           response.addRecord(mxRecord, Section.AUTHORITY);
 
         /* Resolve MX Record name to an IP address and add it to ADDITIONAL section */
           CommandResponse mxResponse = lookupGuidGnsServer(mxname, fieldName, null, handler);
           if (mxResponse != null && !mxResponse.isError()) {
-            String address = mxResponse.getReturnValue().replaceAll("\\[\"|\\\"]", "");
-            GNS.getLogger().info("single field " + address);
+            String address =  (new JSONArray(mxResponse.getReturnValue())).get(0).toString();
+            GNS.getLogger().fine("single field " + address);
             ARecord mxARecord = new ARecord(new Name(mxname), DClass.IN, 60, InetAddress.getByName(address));
             response.addRecord(mxARecord, Section.ADDITIONAL);
           }
         }
         if (fieldResponseJson.has("CNAME")) {
           /* Resolve CNAME alias to an IP address and add it to ADDITIONAL section */
-          String cname = fieldResponseJson.getString("CNAME");
+          String cname = (new JSONArray(fieldResponseJson.getString("CNAME"))).get(0).toString();
           CNAMERecord cnameRecord = new CNAMERecord(new Name(nameToResolve), DClass.IN, 60, new Name(cname));
           response.addRecord(cnameRecord, Section.ANSWER);
           nameToResolve = cname;
