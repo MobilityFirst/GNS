@@ -58,6 +58,7 @@ import java.util.ArrayList;
  */
 public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplicable, InterfaceReconfigurable {
 
+  private final static int INITIAL_RECORD_VERSION = 0;
   private final NodeIDType nodeID;
   private final ConsistentReconfigurableNodeConfig nodeConfig;
   /**
@@ -238,19 +239,36 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
     return null;
   }
 
+  /**
+   *
+   * @param name
+   * @param state
+   * @return
+   */
   @Override
   public boolean updateState(String name, String state) {
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating state: " + state);
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
     }
     boolean stateUpdated = false;
     try {
-      TransferableNameRecordState state1 = new TransferableNameRecordState(state);
-      NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-      nameRecord.updateState(state1.valuesMap, state1.ttl);
+      if (true) {
+        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
+        NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION, 
+                state1.valuesMap, state1.ttl,
+                nodeConfig.getReplicatedReconfigurators(name));
+        NameRecord.addNameRecord(nameRecordDB, nameRecord);
+      } else {
+        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
+        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
+        nameRecord.updateState(state1.valuesMap, state1.ttl);
+      }
       stateUpdated = true;
       // todo handle the case if record does not exist. for this update state should return record not found exception.
     } catch (JSONException e) {
+      e.printStackTrace();
+    } catch (RecordExistsException e) {
+      GNS.getLogger().severe("Record already exists: " + e.getMessage());
       e.printStackTrace();
     } catch (FieldNotFoundException e) {
       GNS.getLogger().severe("Field not found exception: " + e.getMessage());
@@ -304,7 +322,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       int recordVersion = nameRecord.getActiveVersion();
       if (recordVersion != epoch) {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " epoch mismatch epoch "
+          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " for " + name + " ignoring epoch mismatch: epoch "
                   + epoch + " record version" + recordVersion);
         }
       }
@@ -321,8 +339,14 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       return null;
     }
     if (value == null) {
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + " not found!");
+      }
       return null;
     } else {
+      if (Config.debuggingEnabled) {
+        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + ": " + new TransferableNameRecordState(value, ttl).toString());
+      }
       return new TransferableNameRecordState(value, ttl).toString();
     }
   }

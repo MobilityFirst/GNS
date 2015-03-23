@@ -165,6 +165,22 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     return null;
   }
+  
+  // a hack for the transition
+  /**
+   * Returns the host id of the ActiveReplica corresponding to the given InetSocketAddress
+   * @param host
+   * @return the host id 
+   */
+  public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host) {
+    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+      if (hostInfo.getIpAddress().equals(host.getAddress()) &&
+          hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort()) {
+        return hostInfo.getActiveReplicaID();
+      }
+    }
+    return null;
+  }
 
   /**
    * Returns the set of reconfigurator ids.

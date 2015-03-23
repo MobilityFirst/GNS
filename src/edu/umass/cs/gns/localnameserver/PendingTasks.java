@@ -91,14 +91,16 @@ public class PendingTasks {
    */
   public static void handleActivesRequestReply(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json, handler.getGnsNodeConfig());
-    if (StartLocalNameServer.debuggingEnabled) {
-      GNS.getLogger().fine("Recvd request actives packet: " + requestActivesPacket
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().info("Recvd request actives packet: " + requestActivesPacket
               + " name\t" + requestActivesPacket.getName());
     }
     if (requestActivesPacket.getActiveNameServers() == null
             || requestActivesPacket.getActiveNameServers().size() == 0) {
-      GNS.getLogger().fine("Null set of actives received for name " + requestActivesPacket.getName()
-              + " sending error");
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Null set of actives received for name " + requestActivesPacket.getName()
+                + " sending error");
+      }
       sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(),
               LNSEventCode.RC_NO_RECORD_ERROR, handler);
       return;
@@ -106,14 +108,14 @@ public class PendingTasks {
 
     if (handler.containsCacheEntry(requestActivesPacket.getName())) {
       handler.updateCacheEntry(requestActivesPacket);
-      if (StartLocalNameServer.debuggingEnabled) {
-        GNS.getLogger().fine("Updating cache Name:"
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Updating cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
     } else {
       handler.addCacheEntry(requestActivesPacket);
-      if (StartLocalNameServer.debuggingEnabled) {
-        GNS.getLogger().fine("Adding to cache Name:"
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Adding to cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
     }
@@ -131,7 +133,7 @@ public class PendingTasks {
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
     if (runTasks != null && runTasks.size() > 0) {
-      if (StartLocalNameServer.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount " + runTasks.size());
       }
       for (PendingTask task : runTasks) {
@@ -139,12 +141,12 @@ public class PendingTasks {
         task.requestInfo.unsetLookupActives();
         //
         if (task.period > 0) {
-          if (StartLocalNameServer.debuggingEnabled) {
+          if (handler.getParameters().isDebugMode()) {
             GNS.getLogger().fine(" Running Pending tasks. REPEAT!!");
           }
           handler.getExecutorService().scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
         } else {
-          if (StartLocalNameServer.debuggingEnabled) {
+          if (handler.getParameters().isDebugMode()) {
             GNS.getLogger().fine(" Pending tasks. No repeat.");
           }
           handler.getExecutorService().schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);

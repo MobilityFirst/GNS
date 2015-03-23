@@ -210,12 +210,12 @@ public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeI
   public boolean createReplicaGroup(String serviceName, int epoch,
           String state, Set<NodeIDType> nodes) {
     this.paxosManager.createPaxosInstance(serviceName, (short) epoch,
-            nodes, this);
+            nodes, this, state);
     /* FIXME: This putInitialState may not happen atomically with paxos
      * instance creation. However, gigapaxos currently has no way to 
      * specify any initial state.
      */
-    this.app.putInitialState(serviceName, epoch, state);
+    //this.app.putInitialState(serviceName, epoch, state);
     return true;
   }
 

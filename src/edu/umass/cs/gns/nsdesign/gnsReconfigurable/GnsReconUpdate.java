@@ -100,7 +100,7 @@ public class GnsReconUpdate {
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid + " Packet = " + updatePacket.toString());
         e.printStackTrace();
-        ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
+        ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         if (!recovery) {
           replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 

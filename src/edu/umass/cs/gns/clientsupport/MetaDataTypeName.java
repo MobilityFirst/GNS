@@ -43,19 +43,19 @@ public enum MetaDataTypeName {
     return prefix + "." + name();
   }
  
-  /**
-   *
-   * @return
-   */
-  public static String typesToString() {
-    StringBuilder result = new StringBuilder();
-    String prefix = "";
-    for (MetaDataTypeName type : MetaDataTypeName.values()) {
-      result.append(prefix);
-      result.append(type.name());
-      prefix = ", ";
-    }
-    return result.toString();
-  }
+//  /**
+//   * Currently unused.
+//   * @return
+//   */
+//  public static String typesToString() {
+//    StringBuilder result = new StringBuilder();
+//    String prefix = "";
+//    for (MetaDataTypeName type : MetaDataTypeName.values()) {
+//      result.append(prefix);
+//      result.append(type.name());
+//      prefix = ", ";
+//    }
+//    return result.toString();
+//  }
   
 }
