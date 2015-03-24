@@ -74,7 +74,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		assert (request instanceof BasicReconfigurationPacket<?>); 
 		// cast checked by assert above
 		BasicReconfigurationPacket<NodeIDType> rcPacket = (BasicReconfigurationPacket<NodeIDType>) request;
-		boolean handled = (Boolean) autoInvokeMethod(this, rcPacket,
+                boolean handled = (Boolean) autoInvokeMethod(this, rcPacket,
 				this.consistentNodeConfig);
 		return handled;
 	}

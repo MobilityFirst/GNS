@@ -45,8 +45,8 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
   }
 
   public static void main(String[] args) throws IOException {
-    ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
-    //ReconfigurationConfig.setDemandProfile(DemandProfile.class);
+    //ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
+    ReconfigurationConfig.setDemandProfile(DemandProfile.class);
     System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
     
     // Change this to whatever your path is...
