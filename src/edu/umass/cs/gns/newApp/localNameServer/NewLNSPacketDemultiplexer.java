@@ -51,14 +51,11 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.ADD_RECORD);
-    register(Packet.PacketType.COMMAND);
+    register(Packet.PacketType.REMOVE_RECORD);
     register(Packet.PacketType.ADD_CONFIRM);
     register(Packet.PacketType.REMOVE_CONFIRM);
     register(Packet.PacketType.UPDATE_CONFIRM);
-    register(Packet.PacketType.GROUP_CHANGE_COMPLETE);
-    register(Packet.PacketType.NAME_SERVER_LOAD);
-    register(Packet.PacketType.NEW_ACTIVE_PROPOSE);
-    register(Packet.PacketType.REMOVE_RECORD);
+    register(Packet.PacketType.COMMAND);
     register(Packet.PacketType.REQUEST_ACTIVES);
     register(Packet.PacketType.SELECT_REQUEST);
     register(Packet.PacketType.SELECT_RESPONSE);
@@ -79,8 +76,6 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("MsgType " + type + " Msg " + json);
       }
-      // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
-      // UNTIL THE TRANSITION IS FINISHED
       if (type != null) {
         switch (type) {
           case DNS:
@@ -147,13 +142,6 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
           case SELECT_RESPONSE:
             Select.handlePacketSelectResponse(json, handler);
             return true;
-          // Requests sent only during testing
-//          case NEW_ACTIVE_PROPOSE:
-//            LNSTestRequests.sendGroupChangeRequest(json, handler);
-//            return true;
-//          case GROUP_CHANGE_COMPLETE:
-//            LNSTestRequests.handleGroupChangeComplete(json);
-//            return true;
           case COMMAND:
             CommandRequest.handlePacketCommandRequest(json, handler);
             return true;

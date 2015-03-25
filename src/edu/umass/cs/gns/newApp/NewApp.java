@@ -56,7 +56,7 @@ import java.util.ArrayList;
  * @author Westy
  * @param <NodeIDType>
  */
-public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplicable, InterfaceReconfigurable {
+public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceReplicable, InterfaceReconfigurable {
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private final NodeIDType nodeID;
@@ -70,7 +70,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
    */
   private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
-  public App(NodeIDType id, InterfaceReconfigurableNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
+  public NewApp(NodeIDType id, InterfaceReconfigurableNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(nodeConfig);
@@ -323,7 +323,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
       if (recordVersion != epoch) {
         if (Config.debuggingEnabled) {
           GNS.getLogger().warning("&&&&&&& APP " + nodeID + " for " + name + " ignoring epoch mismatch: epoch "
-                  + epoch + " record version" + recordVersion);
+                  + epoch + " record version " + recordVersion);
         }
       }
       //NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, prevValueRequestFields);
@@ -415,7 +415,7 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
 //        NameRecord.removeNameRecord(nameRecordDB, name);
 //      } else {
         if (Config.debuggingEnabled) {
-          GNS.getLogger().info("&&&&&&& APP " + nodeID + " not worrying about delete because epoch is "
+          GNS.getLogger().info("&&&&&&& APP " + nodeID + " for " + name + " ignoring delete. Epoch is "
                   + epoch + " and record version is " + recordEpoch);
         }
       //}

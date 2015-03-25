@@ -29,13 +29,13 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class AppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeIDType> {
+public class NewAppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<NodeIDType> {
 
   private final NodeIDType nodeID;
   private final Stringifiable<NodeIDType> unstringer;
   private final PaxosManager<NodeIDType> paxosManager;
 
-  AppCoordinator(InterfaceReplicable app, Stringifiable<NodeIDType> unstringer, JSONMessenger<NodeIDType> messenge) {
+  NewAppCoordinator(InterfaceReplicable app, Stringifiable<NodeIDType> unstringer, JSONMessenger<NodeIDType> messenge) {
     super(app, messenge);
     this.paxosManager = new PaxosManager<NodeIDType>(messenger.getMyID(), unstringer, messenger, this);
     this.nodeID = messenger.getMyID();

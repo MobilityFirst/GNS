@@ -32,9 +32,9 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     if (this.mongoRecords == null) {
       this.mongoRecords = new MongoRecords<>(this.myID, Config.mongoPort);
     }
-    App app = new App(this.myID, this.nodeConfig, this.messenger, mongoRecords);
+    NewApp app = new NewApp(this.myID, this.nodeConfig, this.messenger, mongoRecords);
 
-    AppCoordinator appCoordinator = new AppCoordinator(app, this.nodeConfig, this.messenger);
+    NewAppCoordinator appCoordinator = new NewAppCoordinator(app, this.nodeConfig, this.messenger);
 
     // start the NSListenerAdmin thread
     new AppAdmin(app, (GNSNodeConfig) nodeConfig).start();
