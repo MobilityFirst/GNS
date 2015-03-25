@@ -406,23 +406,23 @@ public class App<NodeIDType> implements GnsApplicationInterface, InterfaceReplic
 
   @Override
   public boolean deleteFinalState(String name, int epoch) {
-    if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
-    }
+//    if (Config.debuggingEnabled) {
+//      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
+//    }
     Integer recordEpoch = getEpoch(name);
-    try {
-      if (recordEpoch != null && recordEpoch == epoch) {
-        NameRecord.removeNameRecord(nameRecordDB, name);
-      } else {
+    //try {
+//      if (recordEpoch != null && recordEpoch == epoch) {
+//        NameRecord.removeNameRecord(nameRecordDB, name);
+//      } else {
         if (Config.debuggingEnabled) {
           GNS.getLogger().info("&&&&&&& APP " + nodeID + " not worrying about delete because epoch is "
                   + epoch + " and record version is " + recordEpoch);
         }
-      }
-    } catch (FailedDBOperationException e) {
-      GNS.getLogger().severe("Failed to delete record for " + name + " :" + e.getMessage());
-      return false;
-    }
+      //}
+//    } catch (FailedDBOperationException e) {
+//      GNS.getLogger().severe("Failed to delete record for " + name + " :" + e.getMessage());
+//      return false;
+//    }
     return true;
   }
 
