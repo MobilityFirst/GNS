@@ -93,7 +93,7 @@ public class LNSProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleRequestActives(RequestActiveReplicas packet) {
-    Integer lnsRequestID = handler.getRequestNameToIDMapping(packet.getServiceName());
+    Integer lnsRequestID = handler.removeRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("%%%%%%%%%%%%%%%%%% RequestActives for " + packet.getServiceName() + " returns " + packet.getActives());
@@ -134,7 +134,7 @@ public class LNSProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleCreate(CreateServiceName packet) {
-    Integer lnsRequestID = handler.getRequestNameToIDMapping(packet.getServiceName());
+    Integer lnsRequestID = handler.removeRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("App created " + packet.getServiceName());
@@ -163,7 +163,7 @@ public class LNSProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleDelete(DeleteServiceName packet) {
-    Integer lnsRequestID = handler.getRequestNameToIDMapping(packet.getServiceName());
+    Integer lnsRequestID = handler.removeRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("App removed " + packet.getServiceName());

@@ -28,7 +28,9 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
 
   public NodeIDType getFirstRCReplica();
 
-  public void sendRequestToReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException;
+  public void sendRequestToRandomReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException;
+  
+  public void sendRequestToReconfigurator(BasicReconfigurationPacket req, NodeIDType id) throws JSONException, IOException;
   
   public boolean handleEvent(JSONObject json) throws JSONException;
   
@@ -49,5 +51,14 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
    * @return 
    */
   public Integer getRequestNameToIDMapping(String name);
+  
+  /**
+   * Removes the mapping between a ServiceName request and a LNSREquestID.
+   * Provides backward compatibility between old Add and Remove record code and new name service code.
+   * 
+   * @param name
+   * @return the request if or null if if can't be found
+   */
+  public Integer removeRequestNameToIDMapping(String name);
 
 }

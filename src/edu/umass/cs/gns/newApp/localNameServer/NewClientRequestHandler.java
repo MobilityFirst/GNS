@@ -190,7 +190,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   // Maps between service name and LNS Request ID (which is the key to the above maps).
   @Override
   /**
-   * Creates a mapping between a create service name and the AddRecord that triggered it.
+   * Creates a mapping between a create service name and the Add/RemoveRecord that triggered it.
    */
   public void addRequestNameToIDMapping(String name, int id) {
     serviceNameMap.put(name, id);
@@ -198,10 +198,18 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   /**
-   * Looks up the mapping between a CreateServiceName and the AddRecord that triggered it.
+   * Looks up the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
    */
   public Integer getRequestNameToIDMapping(String name) {
     return serviceNameMap.get(name);
+  }
+  
+  @Override
+  /**
+   * Looks up and removes the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   */
+  public Integer removeRequestNameToIDMapping(String name) {
+    return serviceNameMap.remove(name);
   }
 
   @Override
@@ -459,8 +467,12 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public void sendRequestToReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException {
+  public void sendRequestToRandomReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException {
     NodeIDType id = getRandomRCReplica();
+    sendRequestToReconfigurator(req, id);
+  }
+  
+  public void sendRequestToReconfigurator(BasicReconfigurationPacket req, NodeIDType id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {
       GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);
     }

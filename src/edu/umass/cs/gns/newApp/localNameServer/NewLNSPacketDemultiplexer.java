@@ -105,24 +105,26 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
             return true;
           // Add/remove
           case ADD_RECORD:
+             CreateDelete.handleAddPacket(json, handler);
             // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
             // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
             // original AddRecordPacket packet. We could probably replace some of this once everything is working.
-            AddRecordPacket addRecordPacket = AddRemove.registerPacketAddRecord(json, handler);
-            handler.addRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
-            ValuesMap valuesMap = new ValuesMap();
-            valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
-            handler.sendRequestToReconfigurator(new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()));
+            //AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
+            //handler.addRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
+            //ValuesMap valuesMap = new ValuesMap();
+            //valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
+            //handler.sendRequestToRandomReconfigurator(new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()));
             // original code
             //AddRemove.handlePacketAddRecord(json, handler);
             return true;
           case REMOVE_RECORD:
-            // New code which creates RemoveService packets and sends them to the Reconfigurator.
+            // New code which creates DeleteService packets and sends them to the Reconfigurator.
+            CreateDelete.handleRemovePacket(json, handler);
             // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
             // original RemoveRecordPacket packet. We could probably replace some of this once everything is working.
-            RemoveRecordPacket removeRecordPacket = AddRemove.registerPacketRemoveRecord(json, handler);
-            handler.addRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
-            handler.sendRequestToReconfigurator(new DeleteServiceName(null, removeRecordPacket.getName(), 0));
+            //RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
+            //handler.addRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
+            //handler.sendRequestToRandomReconfigurator(new DeleteServiceName(null, removeRecordPacket.getName(), 0));
             // original code
             //AddRemove.handlePacketRemoveRecord(json, handler);
             return true;

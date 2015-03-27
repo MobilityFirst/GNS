@@ -8,11 +8,9 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
@@ -55,16 +53,6 @@ public class AddRemove {
     }
   }
 
-  public static AddRecordPacket registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
-    int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
-    handler.addRequestInfo(lnsReqID, info);
-    // not sure why this isn't done like this above
-    addRecordPacket.setLNSRequestID(lnsReqID);
-    return addRecordPacket;
-  }
-
   /**
    *
    * @param json
@@ -90,16 +78,6 @@ public class AddRemove {
     }
   }
   
-  public static RemoveRecordPacket registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
-    int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecordPacket.getName(), null, removeRecordPacket, handler);
-    handler.addRequestInfo(lnsReqID, info);
-    // not sure why this isn't done like this above
-    removeRecordPacket.setLNSRequestID(lnsReqID);
-    return removeRecordPacket;
-  }
-
   /**
    * Handles confirmation of add request from NS
    */
@@ -107,7 +85,7 @@ public class AddRemove {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getLNSRequestID());
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("Confirm add packet: " + confirmAddPacket.toString());
+      GNS.getLogger().info("Confirm add packet for " + addInfo.getName() + ": " + confirmAddPacket.toString());
     }
     if (addInfo == null) {
       if (handler.getParameters().isDebugMode()) {
@@ -136,7 +114,7 @@ public class AddRemove {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
     UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().fine("Confirm remove packet: " + confirmRemovePacket.toString() + " remove info " + removeInfo);
+      GNS.getLogger().fine("Confirm remove packet for " + removeInfo.getName() + ": " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     }
     if (removeInfo == null) {
       if (handler.getParameters().isDebugMode()) {
