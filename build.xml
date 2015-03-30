@@ -70,7 +70,7 @@
       <copy todir="${dist}/conf">
         <fileset dir="${conf}" includes="**/*.xml, **/*.conf" />  
       </copy>
-      <copy file="${jarbuild}/GNS.jar" tofile="${dist.dir}/gnsserver-${VERSION}-${RELEASE}.jar"/>
+      <copy file="${jarbuild}/GNS.jar" tofile="${dist}/gnsserver-${VERSION}-${RELEASE}.jar"/>
     </target>
 
     <target name="all" depends="clean,jar"

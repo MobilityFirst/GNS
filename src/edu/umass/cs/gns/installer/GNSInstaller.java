@@ -185,12 +185,14 @@ public class GNSInstaller {
   /**
    * This is called to install and run the GNS on a single host. This is called concurrently in
    * one thread per each host.
+   * This assumes a configuration where there is an LNS running at every node (in addition to the 
+   * NS).
    * Copies the JAR and conf files and optionally resets some other stuff depending on the
    * update action given.
    * The name-server-info file is created using all the IP address of all the hosts.
    * Then the various servers are started on the host.
    *
-   * @param id
+   * @param nsId
    * @param hostname
    * @param action
    * @param removeLogs
