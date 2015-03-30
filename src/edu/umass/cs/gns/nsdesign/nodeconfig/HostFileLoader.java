@@ -30,8 +30,9 @@ public class HostFileLoader {
   /**
    * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
    * 
-   * The first line of the file can be a Long representing the file version. This will be ignored by this
-   * call. To read that call <code>readVersionLine</code>.
+   * The first line of the file can be a Long representing the file version. 
+   * This will be read ad saved by this call.
+   * To read that call <code>readVersionLine</code>.
    *
    * This currently supports three line formats (one of these per line):
    * <code>

@@ -31,7 +31,7 @@ public class StatusPane extends JPanel {
     this.id = id;
     initComponents();
   }
-  
+
   private static final int ADDRESSWIDTH = 350;
   private static final int PROGRESSWIDTH = 30;
   private static final int STATUSWIDTH = 700;
@@ -79,7 +79,9 @@ public class StatusPane extends JPanel {
     if (id != null) {
       stateLabel.setText("State");
       statusLabel.setText("Status");
-      progressBarHeaderLabel.setText("");
+      if (progressBarHeaderLabel != null) {
+        progressBarHeaderLabel.setText("");
+      }
       timeLabel.setText("Time");
     }
 
