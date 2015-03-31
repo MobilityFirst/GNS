@@ -9,7 +9,6 @@ import edu.umass.cs.gns.main.RequestHandlerParameters;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
@@ -21,7 +20,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import java.net.InetSocketAddress;
 
 /**
- * 
+ *
  * @author Westy
  * @param <NodeIDType>
  */
@@ -50,7 +49,6 @@ public class NewLocalNameServer<NodeIDType> {
 
   EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler;
 
- 
   private final Logger log = Logger.getLogger(getClass().getName());
 
   NewLocalNameServer(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
@@ -87,14 +85,26 @@ public class NewLocalNameServer<NodeIDType> {
   public InetSocketAddress getAddress() {
     return nodeAddress;
   }
-
-  public static void main(String[] args) throws IOException {
-    InetSocketAddress address = new InetSocketAddress("127.0.0.1", 24398);
-    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+  
+  private static void startLocalNameServer(String host, int port, String nodeConfigFilename) throws IOException {
+    InetSocketAddress address = new InetSocketAddress(host, port);
+    String filename = nodeConfigFilename;
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     JSONMessenger messenger = new JSONMessenger<String>(
             (new JSONNIOTransport(address, nodeConfig, new PacketDemultiplexerDefault(),
                     true)).enableStampSenderPort());
     NewLocalNameServer localNameServer = new NewLocalNameServer(address, nodeConfig, messenger);
   }
+
+  public static void main(String[] args) throws IOException {
+    if (args.length == 0) { // special case for testing
+      startLocalNameServer("127.0.0.1", 24398, Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info");
+    } else if (args.length == 3) {
+      startLocalNameServer(args[0], Integer.parseInt(args[1]), args[2]);
+    } else {
+      System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gns.newApp.localNameServer.NewLocalNameServer <host> <port> <nodeConfigFile>");
+    }
+  }
+
+  
 }

@@ -44,14 +44,16 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     return appCoordinator;
   }
 
-  public static void main(String[] args) throws IOException {
-    //ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
-    ReconfigurationConfig.setDemandProfile(DemandProfile.class);
-    System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
-    
+  private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
+    GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFilename, nodeID);
+    new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
+    new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
+  }
+
+  private static void startTestNodes() throws IOException {
     // Change this to whatever your path is...
     String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    
+
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     try {
       for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {
@@ -69,4 +71,19 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
       ioe.printStackTrace();
     }
   }
+
+  public static void main(String[] args) throws IOException {
+    //ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
+    ReconfigurationConfig.setDemandProfile(DemandProfile.class);
+    System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
+
+    if (args.length == 0) {
+      startTestNodes();
+    } else if (args.length == 2) {
+      startNodePair(args[0], args[1]);
+    } else {
+      System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gns.newApp.edu.umass.cs.gns.newApp.AppReconfigurableNode <NodeId> <nodeConfigFile>");
+    }
+  }
+  
 }

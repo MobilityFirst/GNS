@@ -225,6 +225,31 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     return null;
   }
+  
+  private NodeInfo<NodeIDType> getNodeInfoForTopLevelNode(NodeIDType id) {
+    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+      if (hostInfo.getId().equals(id)) {
+        return hostInfo;
+      }
+    }
+    return null;
+  }
+  
+  public NodeIDType getReplicaNodeIdForTopLevelNode(NodeIDType id) {
+    NodeInfo<NodeIDType> nodeInfo;
+    if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
+      return nodeInfo.getActiveReplicaID();
+    } 
+    return null;
+  }
+  
+  public NodeIDType getReconfiguratorNodeIdForTopLevelNode(NodeIDType id) {
+    NodeInfo<NodeIDType> nodeInfo;
+    if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
+      return nodeInfo.getReconfiguratorID();
+    } 
+    return null;
+  }
 
   /**
    * Returns the number of name server nodes.
