@@ -9,7 +9,7 @@ import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.DemandProfile;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.LocationBasedDemandProfile;
 import java.util.Set;
 
 /**
@@ -74,7 +74,8 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
 
   public static void main(String[] args) throws IOException {
     //ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
-    ReconfigurationConfig.setDemandProfile(DemandProfile.class);
+    //ReconfigurationConfig.setDemandProfile(DemandProfile.class);
+    ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
     System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
 
     if (args.length == 0) {

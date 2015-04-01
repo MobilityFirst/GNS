@@ -24,6 +24,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  *
  * Created by abhigyan on 3/27/14.
  */
+@Deprecated
 public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicable> implements Shutdownable {
 
   private ActiveReplicaApp activeReplicaApp;

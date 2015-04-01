@@ -36,10 +36,12 @@ public abstract class AbstractDemandProfile {
 	}
 
 	/*********************** Start of abstract methods ***************/
-	/*
+	/**
 	 * Creates a deep copy of this object. So, it must be the case that the return value != this,
 	 * but the return value.equals(this).
+         * @return a clone of this demand profile
 	 */
+        @Override
 	public abstract AbstractDemandProfile clone();
 
 	// Incorporate this new request information

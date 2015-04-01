@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Created by abhigyan on 2/26/14.
  */
+@Deprecated
 public class NameServer<NodeIDType> implements Shutdownable {
 
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(10); // worker thread pool

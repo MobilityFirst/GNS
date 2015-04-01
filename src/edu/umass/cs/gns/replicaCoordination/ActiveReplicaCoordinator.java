@@ -8,6 +8,7 @@ import org.json.JSONObject;
  */
 /* Work in progress. Inactive code.
  */
+@Deprecated
 public abstract class ActiveReplicaCoordinator implements Shutdownable{
 
 	/* coordinateRequest will look into the request type, e.g.,

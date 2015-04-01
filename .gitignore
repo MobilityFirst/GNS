@@ -16,3 +16,5 @@ build.number
 /scripts/newApp/paxos_logs/
 /scripts/newApp/reconfiguration_DB/
 /scripts/newApp/derby.log
+/derby.log
+/reconfiguration_DB/

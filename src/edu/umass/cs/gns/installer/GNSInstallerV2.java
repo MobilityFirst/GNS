@@ -122,7 +122,7 @@ public class GNSInstallerV2 {
       nsHosts = HostFileLoader.loadHostFile(hostsFile.toString());
     } catch (Exception e) {
       // should not happen as we've already verified this above
-      System.out.println("Problem loading the NS host file " + hostsFile + "; exiting.");
+      System.out.println("Problem loading the NS host file " + hostsFile + " : " + e);
       System.exit(1);
     }
 

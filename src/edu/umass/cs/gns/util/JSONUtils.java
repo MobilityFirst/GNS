@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.main.GNS;
 
-import edu.umass.cs.gns.nsdesign.Config;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;

@@ -12,11 +12,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
@@ -53,21 +57,22 @@ public class Util {
   public static final double movingAverage(long sample, double historicalAverage, double alpha) {
     return movingAverage((double) sample, historicalAverage, alpha);
   }
-  
-  public static String refreshKey(String id) {
-		return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
-	}
 
+  public static String refreshKey(String id) {
+    return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
+  }
 
   public static int roundToInt(double d) {
     return (int) Math.round(d);
   }
-  
+
   public static void assertAssertionsEnabled() {
-	  boolean assertOn = false;
-	  // *assigns* true if assertions are on.
-	  assert assertOn = true; 
-	  if(!assertOn) throw new RuntimeException("Asserts not enabled; enable assertions using the '-ea' JVM option");
+    boolean assertOn = false;
+    // *assigns* true if assertions are on.
+    assert assertOn = true;
+    if (!assertOn) {
+      throw new RuntimeException("Asserts not enabled; enable assertions using the '-ea' JVM option");
+    }
   }
 
   @SuppressWarnings("unchecked")
@@ -106,10 +111,12 @@ public class Util {
     }
     return result;
   }
-  
+
   public static String prefix(String str, int prefixLength) {
-	  if(str==null || str.length() <= prefixLength) return str;
-	  return str.substring(0, prefixLength);
+    if (str == null || str.length() <= prefixLength) {
+      return str;
+    }
+    return str.substring(0, prefixLength);
   }
 
   public static Set<Integer> arrayToIntSet(int[] array) {
@@ -119,7 +126,7 @@ public class Util {
     }
     return set;
   }
-  
+
   public static Set<String> nodeIdSetToStringSet(Set set) {
     Set<String> result = new HashSet<String>();
     for (Object id : set) {
@@ -164,17 +171,20 @@ public class Util {
     }
     return array;
   }
-  
+
   public static Integer[] intToIntegerArray(int[] array) {
-		if(array==null) return null;
-		else if(array.length==0) return new Integer[0];
-		Integer[] retarray = new Integer[array.length];
-		int i=0;
-		for(int member : array) {
-			retarray[i++] = member; 
-		}
-		return retarray;
-	}
+    if (array == null) {
+      return null;
+    } else if (array.length == 0) {
+      return new Integer[0];
+    }
+    Integer[] retarray = new Integer[array.length];
+    int i = 0;
+    for (int member : array) {
+      retarray[i++] = member;
+    }
+    return retarray;
+  }
 
   public static Integer[] objectToIntegerArray(Object[] objects) {
     if (objects == null) {
@@ -191,13 +201,13 @@ public class Util {
   }
 
   public static Set<String> arrayOfIntToStringSet(int[] array) {
-	  Set<String> set = new HashSet<String>();
-	  for(Integer member : array) {
-		  set.add(member.toString());
-	  }
-	  return set;
+    Set<String> set = new HashSet<String>();
+    for (Integer member : array) {
+      set.add(member.toString());
+    }
+    return set;
   }
-  
+
   public static String arrayOfIntToString(int[] array) {
     String s = "[";
     for (int i = 0; i < array.length; i++) {
@@ -206,29 +216,34 @@ public class Util {
     }
     return s;
   }
-  
+
   public static boolean contains(int member, int[] array) {
-	  for(int i=0; i<array.length; i++) if(array[i]==member) return true;
-	  return false;
+    for (int i = 0; i < array.length; i++) {
+      if (array[i] == member) {
+        return true;
+      }
+    }
+    return false;
   }
-  
+
   public static Set<String> arrayOfNodeIdsToStringSet(Object[] array) {
-	  Set<String> set = new HashSet<String>();
-	  for(Object member : array) {
-		  set.add(member.toString());
-	  }
-	  return set;
+    Set<String> set = new HashSet<String>();
+    for (Object member : array) {
+      set.add(member.toString());
+    }
+    return set;
   }
-  
-	// FIXME: Is there a sublinear method to return a random member from a set?
-	public static Object selectRandom(Collection<?> set) {
-		int random = (int) (Math.random() * set.size());
-		Iterator<?> iterator = set.iterator();
-		Object randomNode = null;
-		for (int i = 0; i <= random && iterator.hasNext(); i++)
-			randomNode = iterator.next();
-		return randomNode;
-	}
+
+  // FIXME: Is there a sublinear method to return a random member from a set?
+  public static Object selectRandom(Collection<?> set) {
+    int random = (int) (Math.random() * set.size());
+    Iterator<?> iterator = set.iterator();
+    Object randomNode = null;
+    for (int i = 0; i <= random && iterator.hasNext(); i++) {
+      randomNode = iterator.next();
+    }
+    return randomNode;
+  }
 
   /**
    * Converts a set of NodeIds to a string.
@@ -250,6 +265,42 @@ public class Util {
     return sb.toString();
   }
 
+  public static <K, V extends Comparable<? super V>> Map<K, V>
+          sortByValueIncreasing(Map<K, V> map) {
+    List<Map.Entry<K, V>> list
+            = new LinkedList<>(map.entrySet());
+    Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+      @Override
+      public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+        return (o1.getValue()).compareTo(o2.getValue());
+      }
+    });
+
+    Map<K, V> result = new LinkedHashMap<>();
+    for (Map.Entry<K, V> entry : list) {
+      result.put(entry.getKey(), entry.getValue());
+    }
+    return result;
+  }
+
+  public static <K, V extends Comparable<? super V>> Map<K, V>
+          sortByValueDecreasing(Map<K, V> map) {
+    List<Map.Entry<K, V>> list
+            = new LinkedList<>(map.entrySet());
+    Collections.sort(list, new Comparator<Map.Entry<K, V>>() {
+      @Override
+      public int compare(Map.Entry<K, V> o1, Map.Entry<K, V> o2) {
+        return (o2.getValue()).compareTo(o1.getValue());
+      }
+    });
+
+    Map<K, V> result = new LinkedHashMap<>();
+    for (Map.Entry<K, V> entry : list) {
+      result.put(entry.getKey(), entry.getValue());
+    }
+    return result;
+  }
+
   static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   static Random rnd = new Random(System.currentTimeMillis());
 
@@ -260,23 +311,25 @@ public class Util {
     }
     return sb.toString();
   }
-  
+
   public static InetSocketAddress getInetSocketAddressFromString(String s) {
-	  s = s.replaceAll("[^0-9.:]", "");
-	  String[] tokens = s.split(":");
-	  if(tokens.length<2) return null;
-	  return new InetSocketAddress(tokens[0], Integer.valueOf(tokens[1]));
+    s = s.replaceAll("[^0-9.:]", "");
+    String[] tokens = s.split(":");
+    if (tokens.length < 2) {
+      return null;
+    }
+    return new InetSocketAddress(tokens[0], Integer.valueOf(tokens[1]));
   }
-  
+
   public void assertEnabled() {
-	  try {
-		  assert(false);
-	  } catch(Exception e) {
-		  return;
-	  }
-	  throw new RuntimeException("Asserts not enabled; exiting");
+    try {
+      assert (false);
+    } catch (Exception e) {
+      return;
+    }
+    throw new RuntimeException("Asserts not enabled; exiting");
   }
-  
+
   // cute little hack to show us where
   private String stackTraceToString() {
     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
@@ -290,6 +343,6 @@ public class Util {
   }
 
   public static void main(String[] args) {
-	  System.out.println(Util.getInetSocketAddressFromString((new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)).toString()).getHostString());
+    System.out.println(Util.getInetSocketAddressFromString((new InetSocketAddress(InetAddress.getLoopbackAddress(), 0)).toString()).getHostString());
   }
 }
