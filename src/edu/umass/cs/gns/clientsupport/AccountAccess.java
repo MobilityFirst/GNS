@@ -282,7 +282,7 @@ public class AccountAccess {
    *
    * @param guid
    * @param code
-   * @return
+   * @return 
    */
   public static CommandResponse verifyAccount(String guid, String code, ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;

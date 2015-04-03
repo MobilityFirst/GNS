@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.activecode.ActiveCodeHandler;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -27,6 +28,7 @@ import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.RetrievableDigest;
 import edu.umass.cs.gns.util.ValuesMap;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,6 +72,11 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   private PingManager<NodeIDType> pingManager;
 
   private RetrievableDigest digester;
+  
+  /**
+   * Active code handler
+   */
+  private ActiveCodeHandler activeCodeHandler;
 
   /**
    * Construct the GnsReconfigurable object.
@@ -96,6 +103,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       this.pingManager.startPinging();
     }
     this.nameRecordDB = new MongoRecordMap<NodeIDType>(mongoRecords, MongoRecords.DBNAMERECORD);
+    this.activeCodeHandler = new ActiveCodeHandler(this, Config.activeCodeWorkerCount);
     try {
       this.digester = new RetrievableDigest(30000);
     } catch (NoSuchAlgorithmException ex) {
@@ -164,11 +172,11 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
-            GnsReconLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, recovery);
+            GnsReconLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, recovery, activeCodeHandler);
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery);
+          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery, activeCodeHandler);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);

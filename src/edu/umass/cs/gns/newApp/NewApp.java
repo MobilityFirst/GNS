@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.newApp;
 
+import edu.umass.cs.gns.activecode.ActiveCodeHandler;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -7,11 +8,14 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
@@ -45,6 +49,7 @@ import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.ValuesMap;
+
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -61,6 +66,8 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   private final static int INITIAL_RECORD_VERSION = 0;
   private final NodeIDType nodeID;
   private final ConsistentReconfigurableNodeConfig nodeConfig;
+  
+  
   /**
    * Object provides interface to the database table storing name records
    */
@@ -69,12 +76,17 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    * The Nio server
    */
   private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
+  /**
+   * Active code handler
+   */
+  private ActiveCodeHandler activeCodeHandler;
 
   public NewApp(NodeIDType id, InterfaceReconfigurableNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(nodeConfig);
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
+    this.activeCodeHandler = new ActiveCodeHandler(this, Config.activeCodeWorkerCount);
     if (Config.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Created " + nameRecordDB);
     }
@@ -119,12 +131,12 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
-            GnsReconLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, doNotReplyToClient);
+            GnsReconLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, doNotReplyToClient, activeCodeHandler);
           }
           break;
         case UPDATE:
           GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this,
-                  noCoordinationState, doNotReplyToClient);
+                  noCoordinationState, doNotReplyToClient, activeCodeHandler);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);

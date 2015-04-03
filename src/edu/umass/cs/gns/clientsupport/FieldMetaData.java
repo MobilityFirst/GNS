@@ -96,7 +96,9 @@ public class FieldMetaData {
     return handler.getIntercessor().sendUpdateRecord(guid, makeFieldMetaDataKey(type, key), value, null, -1, UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
-  //
+  public static void set(MetaDataTypeName type, String guid, String key, String value, ClientRequestHandlerInterface handler) {
+	  
+  }
 
   /**
    *

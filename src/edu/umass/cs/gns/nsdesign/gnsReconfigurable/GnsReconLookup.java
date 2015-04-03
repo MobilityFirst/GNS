@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.activecode.ActiveCodeHandler;
+import edu.umass.cs.gns.clientsupport.ActiveCode;
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
@@ -12,12 +14,15 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
+import edu.umass.cs.gns.nsdesign.clientsupport.NSFieldAccess;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
+
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -59,7 +64,7 @@ public class GnsReconLookup {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void executeLookupLocal(DNSPacket dnsPacket, GnsApplicationInterface gnsApp,
-          boolean noCoordinatorState, boolean recovery)
+          boolean noCoordinatorState, boolean recovery, ActiveCodeHandler activeCodeHandler)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
 
@@ -147,13 +152,38 @@ public class GnsReconLookup {
             GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
           }
         }
+        
+        ValuesMap newResult = null;
+        int hopLimit = 1;
+        
+        // Grab the code because it is of a different type
+        NameRecord codeRecord = null;
+        
+		try {
+			codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null, ColumnFieldType.LIST_STRING, ActiveCode.ON_READ);
+		} catch (RecordNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+        if(codeRecord != null && nameRecord != null &&
+         		activeCodeHandler.hasCode(codeRecord, "read")) {
+            try {           	
+            	ValuesMap oldResult = nameRecord.getValuesMap();
+            	ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
+            	String code64 = codeResult.get(0).toString();
+				newResult = activeCodeHandler.runCode(code64, guid, field, "read", oldResult, hopLimit);
+			} catch (Exception e) {
+				GNS.getLogger().info("Active code error: " + e.getMessage());
+			}
+        }
 
         if (Config.debuggingEnabled) {
           GNS.getLogger().info("Name record read is: " + nameRecord);
         }
         // Now we either have a name record with stuff it in or a null one
         // Time to send something back to the client
-        dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
+        dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp, newResult);
         if (!recovery) {
           gnsApp.getNioServer().sendToAddress(dnsPacket.getLnsAddress(), dnsPacket.toJSONObject());
         }
@@ -247,9 +277,11 @@ public class GnsReconLookup {
    *
    * @param dnsPacket
    * @param nameRecord
+ * @param newResult 
    * @return
    */
-  private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsApplicationInterface gnsApp) {
+  private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsApplicationInterface gnsApp, 
+		  ValuesMap newResult) {
     // change it to a response packet
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     dnsPacket.setResponder(gnsApp.getNodeID());
@@ -269,7 +301,10 @@ public class GnsReconLookup {
           if (key != null && nameRecord.containsKey(key)) {
             // if it's a USER JSON (new return format) access just return the entire map
             if (ColumnFieldType.USER_JSON.equals(dnsPacket.getReturnFormat())) {
-              dnsPacket.setRecordValue(nameRecord.getValuesMap());
+            	 if(newResult != null)
+                     dnsPacket.setRecordValue(newResult);
+            	 else
+            		 dnsPacket.setRecordValue(nameRecord.getValuesMap());
             } else {
               // we return the single value of the key (old array-based return format)
               dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));

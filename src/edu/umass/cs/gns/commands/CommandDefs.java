@@ -159,7 +159,12 @@ public class CommandDefs {
     "edu.umass.cs.gns.commands.admin.PingValue",
     "edu.umass.cs.gns.commands.admin.RTT",
     "edu.umass.cs.gns.commands.admin.RTTQuick",
-    "edu.umass.cs.gns.commands.admin.ConnectionCheck"
+    "edu.umass.cs.gns.commands.admin.ConnectionCheck",
+    
+    // Active code
+    "edu.umass.cs.gns.commands.activecode.Set",
+    "edu.umass.cs.gns.commands.activecode.Clear",
+    "edu.umass.cs.gns.commands.activecode.Get"
           
   };
 

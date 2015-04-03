@@ -172,5 +172,12 @@ public class Defs {
   public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   public static final String ACL_FIELD_NAME = "ACL";
+  
+  // Active code actions and fields
+  public final static String ACSET = "acSet";
+  public final static String ACGET = "acGet";
+  public final static String ACCLEAR = "acClear";
+  public final static String ACACTION = "acAction";
+  public final static String ACCODE = "acCode";
 
 }

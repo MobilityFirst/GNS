@@ -74,6 +74,9 @@ public class NSParameterNames {
   public static final String HELP_HEADER = "NOTE: Options whose description starts with [EXP] are needed only during " +
           "experiments and can be ignored otherwise.";
   public static final String HELP_FOOTER = "";
+  
+  // active code
+  public static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
   /**
    * Returns the list of command line options recognized by a name servers.
@@ -168,6 +171,9 @@ public class NSParameterNames {
     Option noPaxosLog = new Option(NO_PAXOS_LOG, false, "[EXP] Do not create paxos logs (supported by paxos package, not by multipaxos package)");
     Option multipaxos = new Option(USE_OLD_PAXOS, false, "Use multipaxos package (otherwise paxos package is used)");
     Option dummyGNS = new Option(DUMMY_GNS, false, "[EXP] Use a dummy GNS app instead of actual GNS");
+    
+    // active code
+    Option activeCodeWorkerCount = new Option(ACTIVE_CODE_WORKER_COUNT, true, "Number of active code workers");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -216,6 +222,9 @@ public class NSParameterNames {
     commandLineOptions.addOption(noPaxosLog);
     commandLineOptions.addOption(multipaxos);
     commandLineOptions.addOption(dummyGNS);
+    
+    commandLineOptions.addOption(activeCodeWorkerCount);
+    
     return commandLineOptions;
   }
 }

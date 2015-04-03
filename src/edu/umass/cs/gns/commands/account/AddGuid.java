@@ -10,6 +10,7 @@ package edu.umass.cs.gns.commands.account;
 import edu.umass.cs.gns.clientsupport.AccessSupport;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.AccountInfo;
+import edu.umass.cs.gns.clientsupport.ActiveCode;
 import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
@@ -21,10 +22,12 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.localnameserver.httpserver.Defs;
 import edu.umass.cs.gns.util.Base64;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -85,6 +88,9 @@ public class AddGuid extends GnsCommand {
             // give account guid read and write access to all fields in the new guid
             FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuid, handler);
             FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuid, handler);
+            // set up the active code fields
+            ActiveCode.initCodeFields(newGuid, handler);
+            
             return new CommandResponse(newGuid);
           } else {
             return result;

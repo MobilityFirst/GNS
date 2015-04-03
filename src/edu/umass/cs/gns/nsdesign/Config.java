@@ -88,6 +88,8 @@ public class Config {
   public static boolean readCoordination = false; // order read requests via paxos. this option give linearizable
   // consistency semantics for a name
   public static boolean eventualConsistency = false;
+  // number of active code workers
+  public static int activeCodeWorkerCount = 1;
   
   public static synchronized void initialize(HashMap<String, String> allValues) {
     if (initialized) {
@@ -221,6 +223,12 @@ public class Config {
     }
     if (Config.debuggingEnabled) {
       GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.nsdesign.Config *********");
+    }
+    
+    // active code params
+  
+    if (allValues.containsKey(NSParameterNames.ACTIVE_CODE_WORKER_COUNT)) {
+    	activeCodeWorkerCount = Integer.parseInt(allValues.get(NSParameterNames.ACTIVE_CODE_WORKER_COUNT));
     }
   }
   
