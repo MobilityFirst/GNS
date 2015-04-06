@@ -67,7 +67,8 @@ public abstract class AbstractDemandProfile {
 	public abstract void combine(AbstractDemandProfile update);
 
 	// The main reconfiguration policy
-	public abstract ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives);
+	public abstract ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives,
+                ConsistentReconfigurableNodeConfig nodeConfig);
 
 	/*
 	 * Tells us that the current demand profile was just used to perform reconfiguration. Useful for

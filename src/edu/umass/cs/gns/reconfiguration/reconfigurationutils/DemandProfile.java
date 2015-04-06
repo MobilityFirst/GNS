@@ -132,7 +132,8 @@ public class DemandProfile extends AbstractDemandProfile {
 	}
 
 	@Override
-	public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives) {
+	public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
+                ConsistentReconfigurableNodeConfig nodeConfig) {
 		if (this.lastReconfiguredProfile != null) {
 			if (System.currentTimeMillis()
 					- this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL)

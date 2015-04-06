@@ -77,7 +77,8 @@ public class NullDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives) {
+  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
+          ConsistentReconfigurableNodeConfig nodeConfig) {
     return null;
   }
 

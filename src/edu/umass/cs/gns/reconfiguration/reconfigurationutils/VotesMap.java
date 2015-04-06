@@ -71,6 +71,9 @@ public class VotesMap {
    * @param sender 
    */
   public void increment(InetAddress sender) {
+    if (storage == null) {
+      throw new RuntimeException("STORAGE IS NULL");
+    }
     try {
       storage.increment(sender.getHostAddress());
     } catch (JSONException e) {

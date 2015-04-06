@@ -52,7 +52,7 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
 
   private static void startTestNodes() throws IOException {
     // Change this to whatever your path is...
-    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-4-info";
 
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     try {

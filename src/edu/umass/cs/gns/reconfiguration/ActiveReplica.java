@@ -48,7 +48,7 @@ public class ActiveReplica<NodeIDType> implements
 	private final ActiveReplicaProtocolTask<NodeIDType> protocolTask;
 	private final JSONMessenger<NodeIDType> messenger;
 
-	private final AggregateDemandProfiler demandProfiler = new AggregateDemandProfiler();
+	private final AggregateDemandProfiler demandProfiler;
 	private final boolean noReporting;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
@@ -68,6 +68,7 @@ public class ActiveReplica<NodeIDType> implements
 				.setActiveCallback((InterfaceReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nodeConfig);
+                this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
 		this.messenger = messenger;
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(
 				messenger);

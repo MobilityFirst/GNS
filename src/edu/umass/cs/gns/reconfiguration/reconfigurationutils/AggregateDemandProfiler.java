@@ -20,9 +20,14 @@ import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 public class AggregateDemandProfiler {
 	private static final int DEFAULT_MAX_SIZE = 100000;
 	private static final int DEFAULT_PLUCK_SIZE = 100;
-
+        
+        private ConsistentReconfigurableNodeConfig nodeConfig;
 	private final HashMap<String, AbstractDemandProfile> map = new HashMap<String, AbstractDemandProfile>();
 
+        public AggregateDemandProfiler(ConsistentReconfigurableNodeConfig nodeConfig) {
+          this.nodeConfig = nodeConfig;
+        }
+        
 	public synchronized AbstractDemandProfile register(
 			InterfaceRequest request, InetAddress sender) {
 		String name = request.getServiceName();
@@ -46,17 +51,18 @@ public class AggregateDemandProfiler {
 			this.map.put(profile.getName(), profile);
 	}
 
-	public synchronized ArrayList<InetAddress> shouldReconfigure(String name, ArrayList<InetAddress> curActives) {
+	public synchronized ArrayList<InetAddress> shouldReconfigure(String name, 
+                ArrayList<InetAddress> curActives) {
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)
 			return null;
-		return demand.shouldReconfigure(curActives);
+		return demand.shouldReconfigure(curActives, nodeConfig);
 	}
 
 	public synchronized ArrayList<InetAddress> testAndSetReconfigured(String name, ArrayList<InetAddress> curActives) {
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		ArrayList<InetAddress> newActives = null;
-		if (demand == null || (newActives = demand.shouldReconfigure(curActives))==null)
+		if (demand == null || (newActives = demand.shouldReconfigure(curActives, nodeConfig))==null)
 			return curActives;
 		// else should reconfigure
 		demand.justReconfigured();
