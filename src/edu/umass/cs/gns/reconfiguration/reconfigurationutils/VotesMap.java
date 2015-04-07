@@ -10,6 +10,7 @@ package edu.umass.cs.gns.reconfiguration.reconfigurationutils;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,7 +20,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * A map between InetAddress and access counts.
+ * A map between InetAddress OR InetSocketAddress and access counts.
+ * Note: This supports both InetAddress and InetSocketAddress as keys, 
+ * but not in the same VotesMap.
  * 
  * @author westy
  */
@@ -80,6 +83,22 @@ public class VotesMap {
       GNS.getLogger().severe("Unable to parse JSON: " + e);
     }
   }
+  
+  /**
+   * Increments the value corresponding to the sender InetAddress by 1.
+   * 
+   * @param sender 
+   */
+  public void increment(InetSocketAddress sender) {
+    if (storage == null) {
+      throw new RuntimeException("STORAGE IS NULL");
+    }
+    try {
+      storage.increment(sender.getHostString() + ":" + sender.getPort());
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Unable to parse JSON: " + e);
+    }
+  }
 
   /**
    * Returns the top N vote getting InetAddresses in the map.
@@ -104,6 +123,46 @@ public class VotesMap {
       cnt++;
     }
     return result;
+  }
+  
+  /**
+   * Returns the top N vote getting InetSocketAddress in the map.
+   * Will return less if there are not N distinct entries.
+   * @param n
+   * @return an ArrayList of the top n
+   */
+  public ArrayList<InetSocketAddress> getTopNIPSocket(int n) {
+    ArrayList<InetSocketAddress> result = new ArrayList<>();
+    // convert the JSONObject into a Map and sort it by value decreasing
+    Map<String, Integer> map = Util.sortByValueDecreasing(toMap(storage));
+    int cnt = 0;
+    for (Map.Entry<String, Integer> entry : map.entrySet()) {
+      if (cnt >= n) {
+        break;
+      }
+      try {
+        result.add(parseIPSocketString(entry.getKey()));
+      } catch (UnknownHostException e) {
+        GNS.getLogger().severe("Unable to parse InetAddress: " + e);
+      }
+      cnt++;
+    }
+    return result;
+  }
+  
+  /**
+   * Parses a string of the form host:port into an InetSocketAddress.
+   * 
+   * @param string
+   * @return an InetSocketAddress
+   * @throws UnknownHostException 
+   */
+  private InetSocketAddress parseIPSocketString(String string) throws UnknownHostException {
+    String tokens[] = string.split(":");
+    if (tokens.length != 2) {
+      throw new UnknownHostException("Can't parse IPSocketString" + string);
+    }
+    return new InetSocketAddress(InetAddress.getByName(tokens[0]), Integer.parseInt(tokens[1]));
   }
 
   /**
@@ -130,6 +189,7 @@ public class VotesMap {
   }
 
   public static void main(String[] args) throws JSONException, UnknownHostException {
+    System.out.println("InetAddress");
     VotesMap votesMap1 = new VotesMap();
     VotesMap votesMap2 = new VotesMap();
 
@@ -150,6 +210,29 @@ public class VotesMap {
     votesMap1.combine(votesMap3);
     System.out.println(votesMap1);
     System.out.println(votesMap1.getTopN(10));
+    
+     System.out.println("InetSocketAddress");
+    VotesMap votesMap11 = new VotesMap();
+    VotesMap votesMap12 = new VotesMap();
+
+    votesMap11.increment(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 1000));
+    votesMap11.increment(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 2000));
+    votesMap11.increment(new InetSocketAddress(InetAddress.getByName("128.119.16.3"), 3000));
+
+    votesMap12.increment(new InetSocketAddress(InetAddress.getByName("10.0.1.2"), 4000));
+    votesMap12.increment(new InetSocketAddress(InetAddress.getByName("128.119.16.3"), 5000));
+    votesMap12.increment(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 1000));
+    votesMap12.increment(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 1000));
+    
+    VotesMap votesMap13 = new VotesMap(votesMap12);
+
+    System.out.println(votesMap11);
+    System.out.println(votesMap12);
+    votesMap11.combine(votesMap12);
+    System.out.println(votesMap11);
+    votesMap11.combine(votesMap13);
+    System.out.println(votesMap11);
+    System.out.println(votesMap11.getTopNIPSocket(10));
   }
   
   /**
