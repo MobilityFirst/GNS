@@ -51,7 +51,7 @@ public class Reconfigurator<NodeIDType> implements
 	protected final ReconfiguratorProtocolTask<NodeIDType> protocolTask;
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
-	private final AggregateDemandProfiler demandProfiler = new AggregateDemandProfiler();
+	private final AggregateDemandProfiler demandProfiler;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
@@ -65,6 +65,7 @@ public class Reconfigurator<NodeIDType> implements
 			JSONMessenger<NodeIDType> m) {
 		this.messenger = m;
 		this.consistentNodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(nc);
+                this.demandProfiler = new AggregateDemandProfiler(this.consistentNodeConfig);
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(
 				messenger);
 		this.protocolTask = new ReconfiguratorProtocolTask<NodeIDType>(
