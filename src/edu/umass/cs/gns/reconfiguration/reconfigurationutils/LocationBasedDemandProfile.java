@@ -10,8 +10,8 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Util;
-import java.util.HashSet;
-import java.util.Set;
+import java.net.UnknownHostException;
+import java.util.Arrays;
 import java.util.logging.Logger;
 
 /**
@@ -19,6 +19,12 @@ import java.util.logging.Logger;
  * It will select active name servers based on location of the demand.
  * It is based on the old LocationBasedReplication class, but doesn't
  * include checks for unreachable active servers or highly loaded servers.
+ * 
+ * NOTE THAT THIS CODE ASSUMES ONE ACTIVE REPLICA PER HOST. It won't
+ * break if there is more than one per host, but if want 10 active replicas 
+ * it's going to give you 10 separate IP addresses back even if there are multiple
+ * active replicas on some of those hosts. This is because we're only given
+ * InetAddresses. No ports here.
  *
  * @author Westy
  */
@@ -151,6 +157,19 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
+  public boolean shouldReport() {
+    if (getNumRequests() >= DEFAULT_NUM_REQUESTS) {
+      return true;
+    }
+    return false;
+  }
+
+  @Override
+  public void justReconfigured() {
+    this.lastReconfiguredProfile = this.clone();
+  }
+
+  @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives,
           ConsistentReconfigurableNodeConfig nodeConfig) {
     if (this.lastReconfiguredProfile != null) {
@@ -163,19 +182,82 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
         return null;
       }
     }
-    int numberOfReplicas = computeNumberOfReplicas(nodeConfig);
+    int numberOfReplicas = computeNumberOfReplicas(lookupCount, updateCount, nodeConfig.getActiveReplicas().size());
+
     LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP: " + this.votesMap
-            + " TOP: " + this.votesMap.getTopN(10) + " Lookup: " + lookupCount
+            + " TOP: " + this.votesMap.getTopN(numberOfReplicas) + " Lookup: " + lookupCount
             + " Update: " + updateCount + " ReplicaCount: " + numberOfReplicas);
 
-    return curActives;
+    return pickNewActiveReplicas(numberOfReplicas, curActives,
+            this.votesMap.getTopN(numberOfReplicas),
+            nodeConfig.getNodeIPs(nodeConfig.getActiveReplicas()));
   }
-  
-  private Set<InetAddress> chooseNewActives(ArrayList<InetAddress> curActives,
-          ConsistentReconfigurableNodeConfig nodeConfig) {
-    Set<InetAddress> newSet = new HashSet<>(curActives);
+
+  //
+  // Routines below for computing new actives list
+  //
+  /**
+   * Returns a list of new active replicas based on read / write load.
+   * Returns InetAddresses based on the number needed (which is calculated in computeNumberOfReplicas
+   * using read / write load), the current ones and the entire list available from nodeCOnfig.
+   *
+   * @param numReplica
+   * @param curActives
+   * @param nodeConfig
+   * @return a list of InetAddress
+   */
+  private ArrayList<InetAddress> pickNewActiveReplicas(int numReplica, ArrayList<InetAddress> curActives,
+          ArrayList<InetAddress> topN, ArrayList<InetAddress> allActives) {
+
+    // If we need more replicas than we have just return them all
+    if (numReplica >= allActives.size()) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> RETURNING ALL");
+      return allActives;
+    }
+
+    // Otherwise get the topN from the votes list
+    ArrayList<InetAddress> newActives = new ArrayList(topN);
+    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> TOP N: " + newActives);
+
+    // If we have too many in top N then remove some from the end and return this list.
+    // BTW: This is the only case that could maybe use some work because it 
+    // totally ignores the current active set.
+    if (numReplica < newActives.size()) {
+      return new ArrayList(newActives.subList(0, numReplica));
+    }
     
-    return newSet;
+    // Otherwise we need more than is contained in the top n.
+    // Tack on some extras starting with current actives.
+    if (newActives.size() < numReplica) {
+      for (InetAddress current : curActives) {
+        if (newActives.size() >= numReplica) {
+          break;
+        }
+        if (!newActives.contains(current)) {
+          newActives.add(current);
+        }
+      }
+    }
+
+    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH CURRENT ADDED: " + newActives);
+
+    // If we still need more add some random ones from the active replicas list
+    if (newActives.size() < numReplica) {
+      // Note here that since for testing (operationally will this be allowed?) we currently 
+      // allow multiple actives to reside on the same
+      // host differentiated by ports this loop might get the same ip multiple times. Nothing bad will
+      // happen because of the contains below, but still it's kind of dumb.
+      for (InetAddress ip : (ArrayList<InetAddress>) allActives) {
+        if (newActives.size() >= numReplica) {
+          break;
+        }
+        if (!newActives.contains(ip)) {
+          newActives.add(ip);
+        }
+      }
+    }
+    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH RANDOM ADDED: " + newActives);
+    return newActives;
   }
 
   /**
@@ -188,31 +270,25 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * Otherwise returns a value in the range {@link edu.umass.cs.gns.nsdesign.Config#minReplica} and
    * {@link edu.umass.cs.gns.nsdesign.Config#maxReplica}.
    */
-  private int computeNumberOfReplicas(ConsistentReconfigurableNodeConfig nodeConfig) {
-    int replicaCount;
-
+  private int computeNumberOfReplicas(int lookupCount, int updateCount, int actualReplicasCount) {
     if (Config.singleNS) {
-      replicaCount = 1;
+      return 1; // this seems straightforward
     } else if (updateCount == 0) {
       // no updates, replicate everywhere.
-      replicaCount = Math.min(nodeConfig.getActiveReplicas().size(), Config.maxReplica);
+      return Math.min(actualReplicasCount, Config.maxReplica);
     } else {
-      replicaCount = StrictMath.round(StrictMath.round(((double) lookupCount / ((double) updateCount * Config.normalizingConstant))));
-      replicaCount = Math.max(replicaCount, Config.minReplica);
-      if (replicaCount > nodeConfig.getActiveReplicas().size()) {
-        replicaCount = nodeConfig.getActiveReplicas().size();
-      }
-      replicaCount = Math.min(replicaCount, Config.maxReplica);
+      // Can't be bigger than the number of actual replicas or the max configured amount
+      return Math.min(Math.min(actualReplicasCount, Config.maxReplica),
+              // Or smaller than the min configured amount
+              Math.max(Config.minReplica,
+                      (int) StrictMath.round(((double) lookupCount
+                              / ((double) updateCount * Config.normalizingConstant)))));
     }
-
-    return replicaCount;
   }
 
-  @Override
-  public void justReconfigured() {
-    this.lastReconfiguredProfile = this.clone();
-  }
-
+  //
+  // Accessors
+  //
   public double getRequestRate() {
     return this.interArrivalTime > 0 ? 1.0 / this.interArrivalTime
             : 1.0 / (this.interArrivalTime + 1000);
@@ -226,15 +302,62 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return this.numTotalRequests;
   }
 
-  @Override
-  public boolean shouldReport() {
-    if (getNumRequests() >= DEFAULT_NUM_REQUESTS) {
-      return true;
-    }
-    return false;
-  }
-
   public VotesMap getVotesMap() {
     return votesMap;
+  }
+
+  public static void main(String[] args) throws UnknownHostException {
+    LocationBasedDemandProfile dp = new LocationBasedDemandProfile("Frank");
+    LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
+    LOG.info("20,0,3 = " + dp.computeNumberOfReplicas(20, 0, 3));
+    LOG.info("0,20,3 = " + dp.computeNumberOfReplicas(0, 20, 3));
+    LOG.info("20,20,3 = " + dp.computeNumberOfReplicas(20, 20, 3));
+    LOG.info("2000,100,3 = " + dp.computeNumberOfReplicas(2000, 100, 3));
+    LOG.info("100,200,3 = " + dp.computeNumberOfReplicas(100, 2000, 3));
+    LOG.info("0,0,200 = " + dp.computeNumberOfReplicas(0, 0, 200));
+    LOG.info("20,0,200 = " + dp.computeNumberOfReplicas(20, 0, 200));
+    LOG.info("0,20,200 = " + dp.computeNumberOfReplicas(0, 20, 200));
+    LOG.info("20,20,200 = " + dp.computeNumberOfReplicas(20, 20, 200));
+    LOG.info("2000,100,200 = " + dp.computeNumberOfReplicas(2000, 100, 200));
+    LOG.info("100,200,200 = " + dp.computeNumberOfReplicas(100, 2000, 200));
+    LOG.info("10000,200,200 = " + dp.computeNumberOfReplicas(10000, 200, 200));
+
+    // All the actives
+    ArrayList<InetAddress> allActives = new ArrayList(Arrays.asList(
+            InetAddress.getByName("128.119.1.1"),
+            InetAddress.getByName("128.119.1.2"),
+            InetAddress.getByName("128.119.1.3"),
+            InetAddress.getByName("128.119.1.4"),
+            InetAddress.getByName("128.119.1.5"),
+            InetAddress.getByName("128.119.1.6"),
+            InetAddress.getByName("128.119.1.7"),
+            InetAddress.getByName("128.119.1.8"),
+            InetAddress.getByName("128.119.1.9"),
+            InetAddress.getByName("128.119.1.10")));
+
+    // The list of current actives
+    ArrayList<InetAddress> curActives = new ArrayList(Arrays.asList(
+            InetAddress.getByName("128.119.1.1"),
+            InetAddress.getByName("128.119.1.2"),
+            InetAddress.getByName("128.119.1.3")));
+
+    // Simulates the top N vote getters
+    ArrayList<InetAddress> topN = new ArrayList(Arrays.asList(
+            InetAddress.getByName("128.119.1.2"),
+            InetAddress.getByName("128.119.1.3"),
+            InetAddress.getByName("128.119.1.4"),
+            InetAddress.getByName("128.119.1.5")));
+
+    // Try it with various numbers of active replicas needed
+    LOG.info("need 3: " + dp.pickNewActiveReplicas(3, curActives, topN, allActives));
+
+    LOG.info("need 4: " + dp.pickNewActiveReplicas(4, curActives, topN, allActives));
+
+    LOG.info("need 5: " + dp.pickNewActiveReplicas(5, curActives, topN, allActives));
+
+    LOG.info("need 6: " + dp.pickNewActiveReplicas(6, curActives, topN, allActives));
+
+    LOG.info("need 7: " + dp.pickNewActiveReplicas(7, curActives, topN, allActives));
+
   }
 }
