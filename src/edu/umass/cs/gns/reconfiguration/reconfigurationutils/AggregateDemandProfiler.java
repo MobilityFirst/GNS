@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
-
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
@@ -29,7 +29,10 @@ public class AggregateDemandProfiler {
         }
         
 	public synchronized AbstractDemandProfile register(
-			InterfaceRequest request, InetAddress sender) {
+			InterfaceRequest request, 
+                InetAddress sender
+                //InetSocketAddress sender // InetSocketAddress change
+        ) {
 		String name = request.getServiceName();
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)
@@ -53,6 +56,9 @@ public class AggregateDemandProfiler {
 
 	public synchronized ArrayList<InetAddress> shouldReconfigure(String name, 
                 ArrayList<InetAddress> curActives) {
+        // InetSocketAddress change
+        //public synchronized ArrayList<InetSocketAddress> shouldReconfigure(String name, 
+                //ArrayList<InetSocketAddress> curActives) {
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)
 			return null;
@@ -60,8 +66,13 @@ public class AggregateDemandProfiler {
 	}
 
 	public synchronized ArrayList<InetAddress> testAndSetReconfigured(String name, ArrayList<InetAddress> curActives) {
+        // InetSocketAddress change
+        //public synchronized ArrayList<InetSocketAddress> testAndSetReconfigured(String name, 
+                //ArrayList<InetSocketAddress> curActives) {
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		ArrayList<InetAddress> newActives = null;
+                // InetSocketAddress change
+                //ArrayList<InetSocketAddress> newActives = null;
 		if (demand == null || (newActives = demand.shouldReconfigure(curActives, nodeConfig))==null)
 			return curActives;
 		// else should reconfigure

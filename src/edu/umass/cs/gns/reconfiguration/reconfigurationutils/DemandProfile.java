@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Util;
+import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
@@ -60,7 +61,10 @@ public class DemandProfile extends AbstractDemandProfile {
 	 * profile.
 	 */
 	@Override
-	public void register(InterfaceRequest request, InetAddress sender) {
+	public void register(InterfaceRequest request, 
+          InetAddress sender) {
+          // InetSocketAddress change
+          //InetSocketAddress sender) {
 		if (!request.getServiceName().equals(this.name))
 			return;
 		this.numRequests++;
@@ -134,6 +138,9 @@ public class DemandProfile extends AbstractDemandProfile {
 	@Override
 	public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
                 ConsistentReconfigurableNodeConfig nodeConfig) {
+        // InetSocketAddress change
+        //public ArrayList<InetSocketAddress> shouldReconfigure(ArrayList<InetSocketAddress> curActives, 
+                //ConsistentReconfigurableNodeConfig nodeConfig) {
 		if (this.lastReconfiguredProfile != null) {
 			if (System.currentTimeMillis()
 					- this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL)

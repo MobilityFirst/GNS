@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
+import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
@@ -45,7 +46,10 @@ public abstract class AbstractDemandProfile {
 	public abstract AbstractDemandProfile clone();
 
 	// Incorporate this new request information
-	public abstract void register(InterfaceRequest request, InetAddress sender);
+	public abstract void register(InterfaceRequest request, 
+                InetAddress sender 
+                //InetSocketAddress sender // InetSocketAddress change
+        );
 
 	/*
 	 * A policy that tells whether it is time to report from an active replica to a reconfigurator.
@@ -69,6 +73,10 @@ public abstract class AbstractDemandProfile {
 	// The main reconfiguration policy
 	public abstract ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives,
                 ConsistentReconfigurableNodeConfig nodeConfig);
+        
+        // InetSocketAddress change
+        //public abstract ArrayList<InetSocketAddress> shouldReconfigure(ArrayList<InetSocketAddress> curActives,
+        //        ConsistentReconfigurableNodeConfig nodeConfig);
 
 	/*
 	 * Tells us that the current demand profile was just used to perform reconfiguration. Useful for

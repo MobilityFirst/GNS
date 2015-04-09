@@ -98,11 +98,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   @Override
   public void register(InterfaceRequest request, InetAddress sender) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  //@Override
-  public void registerNew(InterfaceRequest request, InetSocketAddress sender) {
+  // InetSocketAddress change
+  //public void register(InterfaceRequest request, InetSocketAddress sender) {
 
     if (!request.getServiceName().equals(this.name)) {
       return;
@@ -170,15 +167,11 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.lastReconfiguredProfile = this.clone();
   }
 
-  
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, ConsistentReconfigurableNodeConfig nodeConfig) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-  
-  //@Override
-  public ArrayList<InetSocketAddress> shouldReconfigureNew(ArrayList<InetSocketAddress> curActives,
-          ConsistentReconfigurableNodeConfig nodeConfig) {
+  // InetSocketAddress change
+//  public ArrayList<InetSocketAddress> shouldReconfigure(ArrayList<InetSocketAddress> curActives,
+//          ConsistentReconfigurableNodeConfig nodeConfig) {
     if (this.lastReconfiguredProfile != null) {
       if (System.currentTimeMillis()
               - this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL) {
@@ -193,10 +186,15 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
     LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP: " + this.votesMap
             + " TOP: " + this.votesMap.getTopN(numberOfReplicas) + " Lookup: " + lookupCount
+            // InetSocketAddress change
+            //+ " TOP: " + this.votesMap.getTopNIPSocket(numberOfReplicas) + " Lookup: " + lookupCount
+            
             + " Update: " + updateCount + " ReplicaCount: " + numberOfReplicas);
 
     return pickNewActiveReplicas(numberOfReplicas, curActives,
-            this.votesMap.getTopNIPSocket(numberOfReplicas),
+            this.votesMap.getTopN(numberOfReplicas),
+            // InetSocketAddress change
+            //this.votesMap.getTopNIPSocket(numberOfReplicas),
             nodeConfig.getNodeIPs(nodeConfig.getActiveReplicas()));
   }
 
@@ -213,8 +211,12 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * @param nodeConfig
    * @return a list of InetSocketAddress
    */
-  private ArrayList<InetSocketAddress> pickNewActiveReplicas(int numReplica, ArrayList<InetSocketAddress> curActives,
-          ArrayList<InetSocketAddress> topN, ArrayList<InetSocketAddress> allActives) {
+  private ArrayList<InetAddress> pickNewActiveReplicas(int numReplica, ArrayList<InetAddress> curActives,
+          ArrayList<InetAddress> topN, ArrayList<InetAddress> allActives) {
+  // InetSocketAddress change
+//  private ArrayList<InetSocketAddress> pickNewActiveReplicas(int numReplica, ArrayList<InetSocketAddress> curActives,
+//          ArrayList<InetSocketAddress> topN, ArrayList<InetSocketAddress> allActives) {
+  
 
     // If we need more replicas than we have just return them all
     if (numReplica >= allActives.size()) {
@@ -223,7 +225,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
 
     // Otherwise get the topN from the votes list
-    ArrayList<InetSocketAddress> newActives = new ArrayList(topN);
+    ArrayList<InetAddress> newActives = new ArrayList(topN);
+    // InetSocketAddress change
+    //ArrayList<InetSocketAddress> newActives = new ArrayList(topN);
     LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> TOP N: " + newActives);
 
     // If we have too many in top N then remove some from the end and return this list.
@@ -236,7 +240,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     // Otherwise we need more than is contained in the top n.
     // Tack on some extras starting with current actives.
     if (newActives.size() < numReplica) {
-      for (InetSocketAddress current : curActives) {
+      for (InetAddress current : curActives) {
+      // InetSocketAddress change
+      //for (InetSocketAddress current : curActives) {
         if (newActives.size() >= numReplica) {
           break;
         }
@@ -254,7 +260,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
       // allow multiple actives to reside on the same
       // host differentiated by ports this loop might get the same ip multiple times. Nothing bad will
       // happen because of the contains below, but still it's kind of dumb.
-      for (InetSocketAddress ip : (ArrayList<InetSocketAddress>) allActives) {
+      for (InetAddress ip : (ArrayList<InetAddress>) allActives) {
+      // InetSocketAddress change
+      //for (InetSocketAddress ip : (ArrayList<InetSocketAddress>) allActives) {
         if (newActives.size() >= numReplica) {
           break;
         }
@@ -312,7 +320,64 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   public VotesMap getVotesMap() {
     return votesMap;
   }
+  
+  public static void main(String[] args) throws UnknownHostException {
+    LocationBasedDemandProfile dp = new LocationBasedDemandProfile("Frank");
+    LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
+    LOG.info("20,0,3 = " + dp.computeNumberOfReplicas(20, 0, 3));
+    LOG.info("0,20,3 = " + dp.computeNumberOfReplicas(0, 20, 3));
+    LOG.info("20,20,3 = " + dp.computeNumberOfReplicas(20, 20, 3));
+    LOG.info("2000,100,3 = " + dp.computeNumberOfReplicas(2000, 100, 3));
+    LOG.info("100,200,3 = " + dp.computeNumberOfReplicas(100, 2000, 3));
+    LOG.info("0,0,200 = " + dp.computeNumberOfReplicas(0, 0, 200));
+    LOG.info("20,0,200 = " + dp.computeNumberOfReplicas(20, 0, 200));
+    LOG.info("0,20,200 = " + dp.computeNumberOfReplicas(0, 20, 200));
+    LOG.info("20,20,200 = " + dp.computeNumberOfReplicas(20, 20, 200));
+    LOG.info("2000,100,200 = " + dp.computeNumberOfReplicas(2000, 100, 200));
+    LOG.info("100,200,200 = " + dp.computeNumberOfReplicas(100, 2000, 200));
+    LOG.info("10000,200,200 = " + dp.computeNumberOfReplicas(10000, 200, 200));
 
+    // All the actives
+    ArrayList<InetAddress> allActives = new ArrayList(Arrays.asList(
+            InetAddress.getByName("128.119.1.1"),
+            InetAddress.getByName("128.119.1.2"),
+            InetAddress.getByName("128.119.1.3"),
+            InetAddress.getByName("128.119.1.4"),
+            InetAddress.getByName("128.119.1.5"),
+            InetAddress.getByName("128.119.1.6"),
+            InetAddress.getByName("128.119.1.7"),
+            InetAddress.getByName("128.119.1.8"),
+            InetAddress.getByName("128.119.1.9"),
+            InetAddress.getByName("128.119.1.10")));
+
+    // The list of current actives
+    ArrayList<InetAddress> curActives = new ArrayList(Arrays.asList(
+            InetAddress.getByName("128.119.1.1"),
+            InetAddress.getByName("128.119.1.2"),
+            InetAddress.getByName("128.119.1.3")));
+
+    // Simulates the top N vote getters
+    ArrayList<InetAddress> topN = new ArrayList(Arrays.asList(
+            InetAddress.getByName("128.119.1.2"),
+            InetAddress.getByName("128.119.1.3"),
+            InetAddress.getByName("128.119.1.4"),
+            InetAddress.getByName("128.119.1.5")));
+
+    // Try it with various numbers of active replicas needed
+    LOG.info("need 3: " + dp.pickNewActiveReplicas(3, curActives, topN, allActives));
+
+    LOG.info("need 4: " + dp.pickNewActiveReplicas(4, curActives, topN, allActives));
+
+    LOG.info("need 5: " + dp.pickNewActiveReplicas(5, curActives, topN, allActives));
+
+    LOG.info("need 6: " + dp.pickNewActiveReplicas(6, curActives, topN, allActives));
+
+    LOG.info("need 7: " + dp.pickNewActiveReplicas(7, curActives, topN, allActives));
+
+  }
+
+  // InetSocketAddress change
+  /*
   public static void main(String[] args) throws UnknownHostException {
     LocationBasedDemandProfile dp = new LocationBasedDemandProfile("Frank");
     LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
@@ -367,4 +432,5 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.info("need 7: " + dp.pickNewActiveReplicas(7, curActives, topN, allActives));
 
   }
+  */
 }

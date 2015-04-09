@@ -8,6 +8,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import java.net.InetSocketAddress;
 
 /**
  * @author Westy
@@ -44,7 +45,10 @@ public class NullDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public void register(InterfaceRequest request, InetAddress sender) {
+  public void register(InterfaceRequest request,
+          InetAddress sender) {
+          // InetSocketAddress change 
+          //InetSocketAddress sender) {
   }
 
   @Override
@@ -76,11 +80,19 @@ public class NullDemandProfile extends AbstractDemandProfile {
   public void combine(AbstractDemandProfile dp) {
   }
 
+  
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
           ConsistentReconfigurableNodeConfig nodeConfig) {
     return null;
   }
+  
+  // InetSocketAddress change 
+//  @Override
+//  public ArrayList<InetSocketAddress> shouldReconfigure(ArrayList<InetSocketAddress> curActives, 
+//          ConsistentReconfigurableNodeConfig nodeConfig) {
+//    return null;
+//  }
 
   @Override
   public void justReconfigured() {

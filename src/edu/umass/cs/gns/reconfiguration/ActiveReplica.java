@@ -36,6 +36,7 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigu
 import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.Util;
+import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
@@ -109,6 +110,11 @@ public class ActiveReplica<NodeIDType> implements
 				// update demand stats (for reconfigurator) if handled by app
 				updateDemandStats(request,
 						JSONPacket.getSenderAddress(jsonObject));
+                                // InetSocketAddress change
+//                                updateDemandStats(request,
+//                                    new InetSocketAddress(
+//                                      JSONPacket.getSenderAddress(jsonObject),
+//                                      JSONPacket.getSenderPort(jsonObject)));                      
 			}
 		} catch (RequestParseException rpe) {
 			rpe.printStackTrace();
@@ -287,7 +293,11 @@ public class ActiveReplica<NodeIDType> implements
 	 * stats based on a threshold number of requests before reporting to
 	 * reconfigurators.
 	 */
-	private void updateDemandStats(InterfaceRequest request, InetAddress sender) {
+	private void updateDemandStats(InterfaceRequest request, 
+                InetAddress sender
+                // InetSocketAddress change
+                //InetSocketAddress sender
+                ) {
 		if (this.noReporting)
 			return;
 

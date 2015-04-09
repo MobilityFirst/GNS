@@ -63,4 +63,12 @@ public abstract class JSONPacket {
 		}
 		return null;
 	}
+        
+        public static final Integer getSenderPort(JSONObject json)
+			throws JSONException {
+		if (json.has(JSONNIOTransport.DEFAULT_PORT_FIELD)) {
+                    return json.getInt(JSONNIOTransport.DEFAULT_PORT_FIELD);
+		}
+		return null;
+	}
 }

@@ -21,9 +21,9 @@ import org.json.JSONObject;
 
 /**
  * A map between InetAddress OR InetSocketAddress and access counts.
- * Note: This supports both InetAddress and InetSocketAddress as keys, 
+ * Note: This supports both InetAddress and InetSocketAddress as keys,
  * but not in the same VotesMap.
- * 
+ *
  * @author westy
  */
 public class VotesMap {
@@ -59,9 +59,10 @@ public class VotesMap {
       }
     }
   }
-  
+
   /**
    * Converts a VotesMap object into a JSONObject.
+   *
    * @return a JSONObject
    */
   public JSONObject toJSONObject() {
@@ -70,24 +71,26 @@ public class VotesMap {
 
   /**
    * Increments the value corresponding to the sender InetAddress by 1.
-   * 
-   * @param sender 
+   *
+   * @param sender
    */
   public void increment(InetAddress sender) {
     if (storage == null) {
       throw new RuntimeException("STORAGE IS NULL");
     }
-    try {
-      storage.increment(sender.getHostAddress());
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to parse JSON: " + e);
+    if (sender != null) { //not sure why this would happen, but just in case
+      try {
+        storage.increment(sender.getHostAddress());
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Unable to parse JSON: " + e);
+      }
     }
   }
-  
+
   /**
    * Increments the value corresponding to the sender InetAddress by 1.
-   * 
-   * @param sender 
+   *
+   * @param sender
    */
   public void increment(InetSocketAddress sender) {
     if (storage == null) {
@@ -103,6 +106,7 @@ public class VotesMap {
   /**
    * Returns the top N vote getting InetAddresses in the map.
    * Will return less if there are not N distinct entries.
+   *
    * @param n
    * @return an ArrayList of the top n
    */
@@ -124,10 +128,11 @@ public class VotesMap {
     }
     return result;
   }
-  
+
   /**
    * Returns the top N vote getting InetSocketAddress in the map.
    * Will return less if there are not N distinct entries.
+   *
    * @param n
    * @return an ArrayList of the top n
    */
@@ -149,13 +154,13 @@ public class VotesMap {
     }
     return result;
   }
-  
+
   /**
    * Parses a string of the form host:port into an InetSocketAddress.
-   * 
+   *
    * @param string
    * @return an InetSocketAddress
-   * @throws UnknownHostException 
+   * @throws UnknownHostException
    */
   private InetSocketAddress parseIPSocketString(String string) throws UnknownHostException {
     String tokens[] = string.split(":");
@@ -182,7 +187,7 @@ public class VotesMap {
       }
     }
   }
- 
+
   @Override
   public String toString() {
     return toJSONObject().toString();
@@ -200,7 +205,7 @@ public class VotesMap {
     votesMap2.increment(InetAddress.getByName("10.0.1.2"));
     votesMap2.increment(InetAddress.getByName("128.119.16.3"));
     votesMap2.increment(InetAddress.getByName("127.0.0.1"));
-    
+
     VotesMap votesMap3 = new VotesMap(votesMap2);
 
     System.out.println(votesMap1);
@@ -210,8 +215,8 @@ public class VotesMap {
     votesMap1.combine(votesMap3);
     System.out.println(votesMap1);
     System.out.println(votesMap1.getTopN(10));
-    
-     System.out.println("InetSocketAddress");
+
+    System.out.println("InetSocketAddress");
     VotesMap votesMap11 = new VotesMap();
     VotesMap votesMap12 = new VotesMap();
 
@@ -223,7 +228,7 @@ public class VotesMap {
     votesMap12.increment(new InetSocketAddress(InetAddress.getByName("128.119.16.3"), 5000));
     votesMap12.increment(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 1000));
     votesMap12.increment(new InetSocketAddress(InetAddress.getByName("127.0.0.1"), 1000));
-    
+
     VotesMap votesMap13 = new VotesMap(votesMap12);
 
     System.out.println(votesMap11);
@@ -234,10 +239,10 @@ public class VotesMap {
     System.out.println(votesMap11);
     System.out.println(votesMap11.getTopNIPSocket(10));
   }
-  
+
   /**
    * Converts a JSONObject with integer values into a map.
-   * 
+   *
    * @param json
    * @return a map
    */

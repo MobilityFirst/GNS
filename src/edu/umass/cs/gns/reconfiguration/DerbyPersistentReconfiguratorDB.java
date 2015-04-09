@@ -42,6 +42,7 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationReco
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.Util;
+import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
@@ -931,6 +932,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				+ (int) Math.random() * 256 + "." + (int) Math.random() * 256
 				+ "." + (int) Math.random() * 256);
 	}
+        
+        private static InetSocketAddress getRandomInetSocket() throws UnknownHostException {
+            return new InetSocketAddress(getRandomIPAddress(), 1000);
+        }
 
 	private static void testDemandProfileUpdate(String name,
 			DerbyPersistentReconfiguratorDB<Integer> rcDB) {
@@ -940,7 +945,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		for (int i = 0; i < numRequests; i++) {
 			try {
 				demandProfile.register(getRandomInterfaceRequest(name),
-						getRandomIPAddress());
+				        getRandomIPAddress()
+                                        // InetSocketAddress change
+                                        //getRandomInetSocket()
+                                );
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			}

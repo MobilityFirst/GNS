@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Util;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.logging.Logger;
@@ -99,9 +100,15 @@ public class LocationBasedDemandProfileInetAddress extends AbstractDemandProfile
   public static LocationBasedDemandProfileInetAddress createDemandProfile(String name) {
     return new LocationBasedDemandProfileInetAddress(name);
   }
-
+  
   @Override
   public void register(InterfaceRequest request, InetAddress sender) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  //@Override
+  public void register(InterfaceRequest request, //InetAddress sender
+          InetSocketAddress sender) {
 
     if (!request.getServiceName().equals(this.name)) {
       return;
@@ -168,8 +175,13 @@ public class LocationBasedDemandProfileInetAddress extends AbstractDemandProfile
   public void justReconfigured() {
     this.lastReconfiguredProfile = this.clone();
   }
+  
+  //@Override
+  public ArrayList<InetSocketAddress> shouldReconfigureNew(ArrayList<InetSocketAddress> curActives, ConsistentReconfigurableNodeConfig nodeConfig) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
 
-  @Override
+  
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives,
           ConsistentReconfigurableNodeConfig nodeConfig) {
     if (this.lastReconfiguredProfile != null) {
