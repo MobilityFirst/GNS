@@ -138,7 +138,7 @@ public class GNSInstallerV2 {
       lnsHosts = HostFileLoader.loadHostFile(hostsFile.toString());
       // should not happen as we've already verified this above
     } catch (Exception e) {
-      System.out.println("Problem loading the LNS host file " + hostsFile + "; exiting.");
+      System.out.println("Problem loading the LNS host file " + hostsFile + e);
       System.exit(1);
     }
     // FIXME: BROKEN FOR IDLESS LNS HOSTS
@@ -374,8 +374,8 @@ public class GNSInstallerV2 {
   private static void copyHostsFiles(String hostname, String lnsHostsFile, String nsHostsFile) {
     File keyFileName = getKeyFile();
     System.out.println("Copying hosts files");
-    RSync.upload(userName, hostname, keyFileName, lnsHostsFile, buildInstallFilePath(NS_HOSTS_FILENAME));
-    RSync.upload(userName, hostname, keyFileName, nsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
+    RSync.upload(userName, hostname, keyFileName, nsHostsFile, buildInstallFilePath(NS_HOSTS_FILENAME));
+    RSync.upload(userName, hostname, keyFileName, lnsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
   }
 
   @SuppressWarnings("unchecked")

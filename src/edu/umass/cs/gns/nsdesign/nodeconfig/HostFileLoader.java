@@ -26,6 +26,9 @@ public class HostFileLoader {
   private static Long fileVersion = INVALID_FILE_VERSION;
 
   private static final boolean debuggingEnabled = false;
+  
+  private static boolean hostFileHasNumbers = false;
+
 
   /**
    * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
@@ -48,6 +51,7 @@ public class HostFileLoader {
    * @return a List of hostnames
    */
   public static List<HostSpec> loadHostFile(String hostsFile) throws Exception {
+    hostFileHasNumbers = false;
     List<HostSpec> result = new ArrayList<HostSpec>();
     BufferedReader br = new BufferedReader(new FileReader(hostsFile));
     boolean readFirstLine = false;
@@ -73,8 +77,6 @@ public class HostFileLoader {
     }
     return result;
   }
-
-  private static boolean hostFileHasNumbers = false;
 
   private static HostSpec parseHostline(String line) throws IOException {
     String[] tokens = line.split("\\s+");
