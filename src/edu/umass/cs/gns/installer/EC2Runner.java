@@ -228,6 +228,9 @@ public class EC2Runner {
             case Mongo_2014_5_6_micro:
               installScript = null;
               break;
+            case Mongo_2014_5_6_small:
+              installScript = null;
+              break;
             default:
               System.out.println("Invalid combination of " + amiRecordType + " and " + dataStoreType);
               return;

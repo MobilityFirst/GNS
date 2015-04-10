@@ -34,7 +34,7 @@ import org.apache.commons.cli.ParseException;
  * on each host.
  *
  * Typical uses:
- * 
+ *
  * First time install:
  * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstallerV2 -scriptFile conf/ec2_mongo_java_install.bash -update ec2_dev_small
  *
@@ -58,6 +58,7 @@ public class GNSInstallerV2 {
   private static final String NS_CONF_FILENAME = "ns.conf";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
+  private static final String JAVA_COMMAND = "java -ea -Xms2048M -cp ";
 
   /**
    * Stores information about the hosts we're using.
@@ -219,7 +220,9 @@ public class GNSInstallerV2 {
           boolean deleteDatabase, String lnsHostsFile, String nsHostsFile, String scriptFile) throws UnknownHostException {
     if (!action.equals(InstallerAction.STOP)) {
       System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
-      makeInstallDir(hostname);
+      if (action == InstallerAction.UPDATE) {
+        makeInstallDir(hostname);
+      }
       killAllServers(hostname);
       if (scriptFile != null) {
         executeScriptFile(hostname, scriptFile);
@@ -238,7 +241,9 @@ public class GNSInstallerV2 {
           break;
       }
       // write the name-server-info
-      copyHostsFiles(hostname, lnsHostsFile, nsHostsFile);
+      if (action == InstallerAction.UPDATE) {
+        copyHostsFiles(hostname, lnsHostsFile, nsHostsFile);
+      }
       //writeNSFile(hostname);
       startServers(nsId, createLNS, hostname);
       System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
@@ -264,7 +269,7 @@ public class GNSInstallerV2 {
               + "if [ -f LNSlogfile ]; then\n"
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
-              + "nohup java -cp " + gnsJarFileName + " " + StartLNSClass + " "
+              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartLNSClass + " "
               + hostname + " "
               + GNS.DEFAULT_LNS_TCP_PORT + " "
               + NS_HOSTS_FILENAME + " "
@@ -279,7 +284,7 @@ public class GNSInstallerV2 {
               + "if [ -f NSlogfile ]; then\n"
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
-              + "nohup java -cp " + gnsJarFileName + " " + StartNSClass + " "
+              + "nohup java -ea -Xms2048M -cp " + gnsJarFileName + " " + StartNSClass + " "
               + nsId.toString() + " "
               + NS_HOSTS_FILENAME + " "
               //+ " -lnsfile " + LNS_HOSTS_FILENAME
@@ -350,7 +355,7 @@ public class GNSInstallerV2 {
   private static void killAllServers(String hostname) {
     System.out.println("Killing GNS servers");
     ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("killAllServers.sh"),
-            "pkill -f \"java -cp GNS.jar\"");
+            "pkill -f \"" + JAVA_COMMAND + gnsJarFileName + "\"");
     //"#!/bin/bash\nkillall java");
   }
 
@@ -368,6 +373,10 @@ public class GNSInstallerV2 {
             + "rm NSlogfile*\n"
             + "rm LNSlogfile*\n"
             + "rm -rf log\n"
+            + "rm -rf derby.log\n"
+            + "rm -rf paxos_logs\n"
+            + "rm -rf reconfiguration_DB\n"
+            + "rm -rf paxos_large_checkpoints\n"
             + "rm -rf paxoslog");
   }
 

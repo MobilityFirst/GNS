@@ -30,17 +30,17 @@ import org.apache.commons.cli.ParseException;
 /**
  * Installs n instances of the GNS Jars on remote hosts and executes them.
  * More specifically this copies the GNS JAR and all the required config files
- * to the remote host then starts a Name Server and a Local Name server
- * on each host.
- *
- * Typical use:
- *
- * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -update gns_dev
+ to the remote host then starts a Name Server and a Local Name server
+ on each host.
+
+ Typical use:
+
+ java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstallerOld -update gns_dev
  *
  *
  * @author westy
  */
-public class GNSInstaller {
+public class GNSInstallerOld {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String CONF_FOLDER = FILESEPARATOR + "conf";
@@ -633,7 +633,7 @@ public class GNSInstaller {
     @Override
     public void run() {
       try {
-        GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
+        GNSInstallerOld.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

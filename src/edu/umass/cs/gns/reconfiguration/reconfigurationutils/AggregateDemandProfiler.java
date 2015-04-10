@@ -30,14 +30,12 @@ public class AggregateDemandProfiler {
         
 	public synchronized AbstractDemandProfile register(
 			InterfaceRequest request, 
-                InetAddress sender
-                //InetSocketAddress sender // InetSocketAddress change
-        ) {
+                InetAddress sender) {
 		String name = request.getServiceName();
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)
 			demand = AbstractDemandProfile.createDemandProfile(name); // reflection
-		demand.register(request, sender);
+		demand.register(request, sender, nodeConfig);
 		this.map.put(name, demand);
 		return demand;
 	}
@@ -56,9 +54,6 @@ public class AggregateDemandProfiler {
 
 	public synchronized ArrayList<InetAddress> shouldReconfigure(String name, 
                 ArrayList<InetAddress> curActives) {
-        // InetSocketAddress change
-        //public synchronized ArrayList<InetSocketAddress> shouldReconfigure(String name, 
-                //ArrayList<InetSocketAddress> curActives) {
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)
 			return null;
@@ -66,13 +61,8 @@ public class AggregateDemandProfiler {
 	}
 
 	public synchronized ArrayList<InetAddress> testAndSetReconfigured(String name, ArrayList<InetAddress> curActives) {
-        // InetSocketAddress change
-        //public synchronized ArrayList<InetSocketAddress> testAndSetReconfigured(String name, 
-                //ArrayList<InetSocketAddress> curActives) {
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		ArrayList<InetAddress> newActives = null;
-                // InetSocketAddress change
-                //ArrayList<InetSocketAddress> newActives = null;
 		if (demand == null || (newActives = demand.shouldReconfigure(curActives, nodeConfig))==null)
 			return curActives;
 		// else should reconfigure

@@ -109,12 +109,7 @@ public class ActiveReplica<NodeIDType> implements
 				this.appCoordinator.handleIncoming(request);
 				// update demand stats (for reconfigurator) if handled by app
 				updateDemandStats(request,
-						JSONPacket.getSenderAddress(jsonObject));
-                                // InetSocketAddress change
-//                                updateDemandStats(request,
-//                                    new InetSocketAddress(
-//                                      JSONPacket.getSenderAddress(jsonObject),
-//                                      JSONPacket.getSenderPort(jsonObject)));                      
+						JSONPacket.getSenderAddress(jsonObject));                    
 			}
 		} catch (RequestParseException rpe) {
 			rpe.printStackTrace();
@@ -294,10 +289,7 @@ public class ActiveReplica<NodeIDType> implements
 	 * reconfigurators.
 	 */
 	private void updateDemandStats(InterfaceRequest request, 
-                InetAddress sender
-                // InetSocketAddress change
-                //InetSocketAddress sender
-                ) {
+                InetAddress sender) {
 		if (this.noReporting)
 			return;
 

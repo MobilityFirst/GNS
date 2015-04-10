@@ -56,6 +56,17 @@ public class AMIRecord {
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.AP_SOUTHEAST_2, new AMIRecord("ami-e5a03bdf", "Mongo_2014_5_6", "t1.micro"));
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-ab54f9b6", "Mongo_2014_5_6", "t1.micro"));
     records.put(AMIRecordType.Mongo_2014_5_6_micro, amiMap_Mongo_2014_5_6_micro);
+    
+    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6_small = new HashMap<RegionRecord, AMIRecord>();
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.US_EAST_1, new AMIRecord("ami-0479996c", "Mongo_2014_5_6", "t2.small"));
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.US_WEST_2, new AMIRecord("ami-b7fd8a87", "Mongo_2014_5_6", "t2.small"));
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.US_WEST_1, new AMIRecord("ami-fad4efbf", "Mongo_2014_5_6", "t2.small"));
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.EU_WEST_1, new AMIRecord("ami-dfef29a8", "Mongo_2014_5_6", "t2.small"));
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.AP_SOUTHEAST_1, new AMIRecord("ami-f26331a0", "Mongo_2014_5_6", "t2.small"));
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.AP_NORTHEAST_1, new AMIRecord("ami-d18dcad0", "Mongo_2014_5_6", "t2.small"));
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.AP_SOUTHEAST_2, new AMIRecord("ami-e5a03bdf", "Mongo_2014_5_6", "t2.small"));
+    amiMap_Mongo_2014_5_6_small.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-ab54f9b6", "Mongo_2014_5_6", "t2.small"));
+    records.put(AMIRecordType.Mongo_2014_5_6_small, amiMap_Mongo_2014_5_6_small);
     // our new mongo AMI
     HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6 = new HashMap<RegionRecord, AMIRecord>();
     amiMap_Mongo_2014_5_6.put(RegionRecord.US_EAST_1, new AMIRecord("ami-0479996c", "Mongo_2014_5_6", "m1.small"));

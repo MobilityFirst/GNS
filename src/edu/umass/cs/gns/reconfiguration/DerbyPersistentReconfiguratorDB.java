@@ -945,9 +945,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		for (int i = 0; i < numRequests; i++) {
 			try {
 				demandProfile.register(getRandomInterfaceRequest(name),
-				        getRandomIPAddress()
-                                        // InetSocketAddress change
-                                        //getRandomInetSocket()
+				        getRandomIPAddress(),
+                                        null
                                 );
 			} catch (UnknownHostException e) {
 				e.printStackTrace();

@@ -46,9 +46,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
 
   @Override
   public void register(InterfaceRequest request,
-          InetAddress sender) {
-          // InetSocketAddress change 
-          //InetSocketAddress sender) {
+          InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
   }
 
   @Override
@@ -86,13 +84,6 @@ public class NullDemandProfile extends AbstractDemandProfile {
           ConsistentReconfigurableNodeConfig nodeConfig) {
     return null;
   }
-  
-  // InetSocketAddress change 
-//  @Override
-//  public ArrayList<InetSocketAddress> shouldReconfigure(ArrayList<InetSocketAddress> curActives, 
-//          ConsistentReconfigurableNodeConfig nodeConfig) {
-//    return null;
-//  }
 
   @Override
   public void justReconfigured() {

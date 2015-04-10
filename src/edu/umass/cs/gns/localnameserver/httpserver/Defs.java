@@ -12,5 +12,5 @@ public class Defs {
     
     // can you say config file?
     public static int MAXALIASES = 100;
-    public static int MAXGUIDS = 100;
+    public static int MAXGUIDS = 500;
 }
