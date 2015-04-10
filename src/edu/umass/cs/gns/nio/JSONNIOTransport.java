@@ -123,9 +123,12 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
     int written = 0;
     int originalSize = jsonData.toString().length();
     //stampSenderInfo(jsonData);
-    String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-    written = this.sendUnderlying(isa, headeredMsg.getBytes())
-            - (headeredMsg.length() - originalSize); // subtract header length
+    byte[] headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString()).getBytes();
+    //String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
+    written = this.sendUnderlying(isa, headeredMsg) - 
+                          (headeredMsg.length - originalSize); // subtract header length
+//    written = this.sendUnderlying(isa, headeredMsg.getBytes())
+//            - (headeredMsg.length() - originalSize); // subtract header length
     assert (written < 0 || written == originalSize);
     return written;
   }
@@ -143,9 +146,12 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
 		  sendLocal(jsonData); 
 		  written = originalSize; // local send just passes pointers
 	  } else {
-		  String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
-		  written = (this.sendUnderlying(destID, headeredMsg.getBytes())
-				  - (headeredMsg.length() - originalSize)); // subtract header length
+                  byte[] headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString()).getBytes();
+		  //String headeredMsg = JSONMessageExtractor.prependHeader(jsonData.toString());
+                  written = this.sendUnderlying(destID, headeredMsg) - 
+                          (headeredMsg.length - originalSize); // subtract header length
+//		  written = (this.sendUnderlying(destID, headeredMsg.getBytes())
+//				  - (headeredMsg.length() - originalSize)); // subtract header length
 	  }
 	  assert(written < 0 || written == originalSize) : written + " != " + originalSize;
 	  return written;
