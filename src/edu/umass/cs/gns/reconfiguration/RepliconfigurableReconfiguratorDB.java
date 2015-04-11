@@ -10,6 +10,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfi
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
+import java.util.logging.Logger;
 
 /*
  * We need this class to extend both PaxosReplicationCoordinator and
@@ -21,6 +22,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	private static enum ReplicaCoordinator {
 		PAXOS, DYNAMO
 	};
+  
 
 	private static ReplicaCoordinator RC_REPLICA_COORDINATOR = ReplicaCoordinator.PAXOS;
 
@@ -52,10 +54,15 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	/*
 	 * FIXME: implement durability
 	 */
+        @Override
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
 		String rcGroupName = this.getRCGroupName(request);
-		assert (this.getReplicaGroup(rcGroupName) != null);
+                // In here while testing, but there is no reason for it to hold in general.
+//                if (this.getReplicaGroup(rcGroupName) == null) {
+//                  System.out.println("REPLICA GROUP IS NULL for rcgroup: " + rcGroupName + " servicename: " + request.getServiceName());
+//                }
+//		assert (this.getReplicaGroup(rcGroupName) != null);
 		return super.coordinateRequest(rcGroupName, request);
 	}
 

@@ -35,12 +35,12 @@ import org.apache.commons.cli.ParseException;
 
  Typical use:
 
- java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstallerOld -update gns_dev
+ java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstallerOldApp -update gns_dev
  *
  *
  * @author westy
  */
-public class GNSInstallerOld {
+public class GNSInstallerOldApp {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String CONF_FOLDER = FILESEPARATOR + "conf";
@@ -633,7 +633,7 @@ public class GNSInstallerOld {
     @Override
     public void run() {
       try {
-        GNSInstallerOld.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
+        GNSInstallerOldApp.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

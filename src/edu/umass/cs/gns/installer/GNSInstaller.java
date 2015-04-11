@@ -30,21 +30,21 @@ import org.apache.commons.cli.ParseException;
 /**
  * Installs n instances of the GNS Jars on remote hosts and executes them.
  * More specifically this copies the GNS JAR and all the required config files
- * to the remote host then starts a Name Server and a Local Name server
- * on each host.
- *
- * Typical uses:
- *
- * First time install:
- * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstallerV2 -scriptFile conf/ec2_mongo_java_install.bash -update ec2_dev_small
- *
- * Later updates:
- * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -update ec2_dev_small
+ to the remote host then starts a Name Server and a Local Name server
+ on each host.
+
+ Typical uses:
+
+ First time install:
+ java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -scriptFile conf/ec2_mongo_java_install.bash -update ec2_dev_small
+
+ Later updates:
+ java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -update ec2_dev_small
  *
  *
  * @author westy
  */
-public class GNSInstallerV2 {
+public class GNSInstaller {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
   private static final String CONF_FOLDER = FILESEPARATOR + "conf";
@@ -646,7 +646,7 @@ public class GNSInstallerV2 {
     @Override
     public void run() {
       try {
-        GNSInstallerV2.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
+        GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

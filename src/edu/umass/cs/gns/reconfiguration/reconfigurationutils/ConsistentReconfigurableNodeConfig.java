@@ -4,12 +4,9 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
-
 import org.json.JSONArray;
 import org.json.JSONException;
-
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import java.net.InetSocketAddress;
 
 /*
  * This class is a wrapper around NodeConfig to ensure that it is consistent,
@@ -77,17 +74,17 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
     return addresses;
   }
 
-  // consistent coz it always consults nodeConfig
-  public ArrayList<InetSocketAddress> getNodeIPSockets(Set<NodeIDType> nodeIDs) {
-    ArrayList<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>();
-    for (NodeIDType id : nodeIDs) {
-      addresses.add(new InetSocketAddress(
-              this.nodeConfig.getNodeAddress(id),
-              this.nodeConfig.getNodePort(id)));
-    }
-    assert (addresses != null);
-    return addresses;
-  }
+//  // consistent coz it always consults nodeConfig
+//  public ArrayList<InetSocketAddress> getNodeIPSockets(Set<NodeIDType> nodeIDs) {
+//    ArrayList<InetSocketAddress> addresses = new ArrayList<InetSocketAddress>();
+//    for (NodeIDType id : nodeIDs) {
+//      addresses.add(new InetSocketAddress(
+//              this.nodeConfig.getNodeAddress(id),
+//              this.nodeConfig.getNodePort(id)));
+//    }
+//    assert (addresses != null);
+//    return addresses;
+//  }
 
   // refresh before returning
   public Set<NodeIDType> getReplicatedReconfigurators(String name) {
@@ -155,33 +152,33 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 
   // Maps a set of InetSocketAddress to a set of nodes.
   // Some model as the code above, but this one might not need that hair.
-  public Set<NodeIDType> getIPSocketToNodeIDs(ArrayList<InetSocketAddress> newAddresses,
-          Set<NodeIDType> oldNodes) {
-    Set<NodeIDType> newNodes = new HashSet<NodeIDType>(); // return value
-    ArrayList<InetSocketAddress> unassigned = new ArrayList<InetSocketAddress>();
-    for (InetSocketAddress address : newAddresses) {
-      unassigned.add(address);
-    }
-    // assign old nodes first if they match any new address
-    for (NodeIDType oldNode : oldNodes) {
-      InetSocketAddress oldAddress = new InetSocketAddress(this.nodeConfig.getNodeAddress(oldNode),
-              this.nodeConfig.getNodePort(oldNode));
-      if (unassigned.contains(oldAddress)) {
-        newNodes.add(oldNode);
-        unassigned.remove(oldAddress);
-      }
-    }
-    // assign any node to unassigned addresses
-    for (NodeIDType node : this.nodeConfig.getNodeIDs()) {
-      InetSocketAddress address = new InetSocketAddress(this.nodeConfig.getNodeAddress(node),
-              this.nodeConfig.getNodePort(node));
-      if (unassigned.contains(address)) {
-        newNodes.add(node);
-        unassigned.remove(address);
-      }
-    }
-    return newNodes;
-  }
+//  public Set<NodeIDType> getIPSocketToNodeIDs(ArrayList<InetSocketAddress> newAddresses,
+//          Set<NodeIDType> oldNodes) {
+//    Set<NodeIDType> newNodes = new HashSet<NodeIDType>(); // return value
+//    ArrayList<InetSocketAddress> unassigned = new ArrayList<InetSocketAddress>();
+//    for (InetSocketAddress address : newAddresses) {
+//      unassigned.add(address);
+//    }
+//    // assign old nodes first if they match any new address
+//    for (NodeIDType oldNode : oldNodes) {
+//      InetSocketAddress oldAddress = new InetSocketAddress(this.nodeConfig.getNodeAddress(oldNode),
+//              this.nodeConfig.getNodePort(oldNode));
+//      if (unassigned.contains(oldAddress)) {
+//        newNodes.add(oldNode);
+//        unassigned.remove(oldAddress);
+//      }
+//    }
+//    // assign any node to unassigned addresses
+//    for (NodeIDType node : this.nodeConfig.getNodeIDs()) {
+//      InetSocketAddress address = new InetSocketAddress(this.nodeConfig.getNodeAddress(node),
+//              this.nodeConfig.getNodePort(node));
+//      if (unassigned.contains(address)) {
+//        newNodes.add(node);
+//        unassigned.remove(address);
+//      }
+//    }
+//    return newNodes;
+//  }
 
   public InterfaceReconfigurableNodeConfig<NodeIDType> getUnderlyingNodeConfig() {
     return this.nodeConfig;

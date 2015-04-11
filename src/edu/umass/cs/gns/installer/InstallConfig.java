@@ -80,7 +80,7 @@ public class InstallConfig {
     this.username = properties.getProperty(USER_NAME, System.getProperty("user.name"));
     this.keyFile = properties.getProperty(KEY_FILE);
     this.hostType = properties.getProperty(HOST_TYPE, "linux");
-    this.dataStoreType = DataStoreType.valueOf(properties.getProperty(DATA_STORE_NAME, GNSInstallerOld.DEFAULT_DATA_STORE_TYPE.name()).toUpperCase());
+    this.dataStoreType = DataStoreType.valueOf(properties.getProperty(DATA_STORE_NAME, GNSInstaller.DEFAULT_DATA_STORE_TYPE.name()).toUpperCase());
     this.installPath = properties.getProperty(INSTALL_PATH);
   }
 

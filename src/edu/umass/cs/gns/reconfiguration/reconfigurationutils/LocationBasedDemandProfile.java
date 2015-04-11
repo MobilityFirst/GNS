@@ -32,9 +32,18 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     SERVICE_NAME, STATS, RATE, NUM_REQUESTS, NUM_TOTAL_REQUESTS, VOTES_MAP, LOOKUP_COUNT, UPDATE_COUNT
   };
 
-  private static final int DEFAULT_NUM_REQUESTS = 1;
-  private static final long MIN_RECONFIGURATION_INTERVAL = 000;
-  private static final long MIN_REQUESTS_BEFORE_RECONFIGURATION = 1;
+  /**
+   * Don't worry about reconfiguring until this may requests come in.
+   */
+  private static final int DEFAULT_NUM_REQUESTS = 50;
+  /**
+   * Don't reconfigure more often than this time interval. Both of these need to be satisfied.
+   */
+  private static final long MIN_RECONFIGURATION_INTERVAL = 3600; // milleseconds
+  /**
+   * Don't reconfigure more often than this many requests. Both of these need to be satisfied.
+   */
+  private static final long MIN_REQUESTS_BEFORE_RECONFIGURATION = 100;
 
   private double interArrivalTime = 0.0;
   private long lastRequestTime = 0;
