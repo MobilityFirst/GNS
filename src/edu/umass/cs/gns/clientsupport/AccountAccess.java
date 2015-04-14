@@ -495,7 +495,7 @@ public class AccountAccess {
         }
       }
       // otherwise roll it back
-      accountInfo.removeGuid(guid);
+      //accountInfo.removeGuid(guid);
       return new CommandResponse(BADRESPONSE + " " + returnCode.getProtocolCode() + " " + name);
     } catch (JSONException e) {
       return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());

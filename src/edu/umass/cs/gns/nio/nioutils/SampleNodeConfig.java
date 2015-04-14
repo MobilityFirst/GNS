@@ -171,4 +171,9 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
     return nodes;
   }
 
+  @Override
+  public long getVersion() {
+    return 0l;
+  }
+
 }

@@ -100,6 +100,11 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
       public Set<Integer> getValuesFromJSONArray(JSONArray array) throws JSONException {
         throw new UnsupportedOperationException("Not supported yet.");
       }
+      
+      @Override
+      public long getVersion() {
+        return 0l;
+      }
     };
     this.nioTransport = new NIOTransport(ID, nodeConfig, new JSONMessageExtractor(this));
     new Thread(nioTransport).start();

@@ -7,6 +7,7 @@ import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType>
  */
 
 /* An interface to translate from integer IDs to socket addresses.
@@ -21,6 +22,12 @@ public interface InterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeIDTyp
     public abstract int getNodePort(NodeIDType id);
 
     public abstract Set<NodeIDType> getNodeIDs();
+    
+    /**
+     * Returns the version number of the NodeConfig.
+     * @return 
+     */
+    public abstract long getVersion();
     
     //public abstract void register(Runnable callback);
 

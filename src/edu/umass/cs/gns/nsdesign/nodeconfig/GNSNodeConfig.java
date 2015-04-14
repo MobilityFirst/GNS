@@ -57,6 +57,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   public static final long INVALID_PING_LATENCY = -1L;
   public static final int INVALID_PORT = -1;
 
+  private long version = 0l;
   private NodeIDType nodeID; // if this is null you should check isLocalNameServer; otherwise it might be invalid
   private boolean isLocalNameServer = false;
   private final String hostsFile;
@@ -522,6 +523,11 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     String, Integer, InetAddress
   }
 
+  @Override
+  public long getVersion() {
+    return version;
+  }
+
   ///
   /// READING AND RECHECKING OF HOSTS FILE
   ///
@@ -538,6 +544,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     List<HostSpec> hosts = null;
     try {
       hosts = HostFileLoader.loadHostFile(hostsFile);
+      version = HostFileLoader.getFileVersion();
     } catch (Exception e) {
       e.printStackTrace();
       throw new IOException("Problem loading hosts file: " + e);

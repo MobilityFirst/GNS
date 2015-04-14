@@ -15,15 +15,10 @@ import edu.umass.cs.gns.localnameserver.Select;
 import edu.umass.cs.gns.localnameserver.Update;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
 import java.util.logging.Level;
 import org.json.JSONException;
@@ -63,6 +58,7 @@ public class NewLNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
 
   @Override
   public boolean handleJSONObject(JSONObject json) {
+    handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
     }

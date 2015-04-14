@@ -68,13 +68,15 @@ public class GNS {
   public static int numPrimaryReplicas = DEFAULT_NUM_PRIMARY_REPLICAS;
   public static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
   /**
-   * default query timeout in ms.
+   * Default query timeout in ms.
    */
   public static int DEFAULT_QUERY_TIMEOUT = 1000; // was 2
   /**
-   * maximum query wait time in milliseconds
+   * Maximum query wait time in milliseconds. After this amount of time
+   * a negative response will be sent back to a client indicating that a 
+   * record could not be found.
    */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 6000; // was 10
+  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 4000; // was 10
   
   // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
   // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE

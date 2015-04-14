@@ -24,10 +24,11 @@ import org.json.JSONException;
  */
 public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
 
-  private  HashMap<Integer, NodeInfo> nodesInfo;
+  private HashMap<Integer, NodeInfo> nodesInfo;
 
   /**
    * Stores list of nodes, their IP address, and port numbers
+   *
    * @param nodeConfigFile
    */
   public PaxosNodeConfig(String nodeConfigFile) {
@@ -45,8 +46,6 @@ public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
     }
   }
 
-
-
   private void readConfigFile(String configFile) {
     nodesInfo = new HashMap<Integer, NodeInfo>();
     try {
@@ -54,7 +53,9 @@ public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
 
       while (true) {
         String line = br.readLine();
-        if (line == null) break;
+        if (line == null) {
+          break;
+        }
         String[] tokens = line.split("\\s+");
         nodesInfo.put(Integer.parseInt(tokens[0]),
                 new NodeInfo(Integer.parseInt(tokens[0]),
@@ -72,14 +73,13 @@ public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
 
   @Override
   public boolean nodeExists(Integer ID) {
-    return  nodesInfo.containsKey(ID);
+    return nodesInfo.containsKey(ID);
   }
 
 //  @Override
 //  public int getNodeCount() {
 //    return nodesInfo.size();
 //  }
-
   @Override
   public Set<Integer> getNodeIDs() {
     return nodesInfo.keySet();
@@ -87,20 +87,24 @@ public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
 
   @Override
   public InetAddress getNodeAddress(Integer ID) {
-    if (nodeExists(ID)) return  nodesInfo.get(ID).getAddress();
+    if (nodeExists(ID)) {
+      return nodesInfo.get(ID).getAddress();
+    }
     return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
   public int getNodePort(Integer ID) {
-    if (nodeExists(ID)) return  nodesInfo.get(ID).getPort();
+    if (nodeExists(ID)) {
+      return nodesInfo.get(ID).getPort();
+    }
     return -1;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
-@Override
-public Integer valueOf(String nodeAsString) {
-	return Integer.valueOf(nodeAsString);
-}
+  @Override
+  public Integer valueOf(String nodeAsString) {
+    return Integer.valueOf(nodeAsString);
+  }
 
   @Override
   public Set<Integer> getValuesFromStringSet(Set<String> strNodes) {
@@ -111,11 +115,15 @@ public Integer valueOf(String nodeAsString) {
   public Set<Integer> getValuesFromJSONArray(JSONArray array) throws JSONException {
     throw new UnsupportedOperationException("Not supported yet.");
   }
+
+  @Override
+  public long getVersion() {
+    return 0l;
+  }
 }
 
-
-
 class NodeInfo {
+
   private InetAddress address;
   private int port;
   private int ID;

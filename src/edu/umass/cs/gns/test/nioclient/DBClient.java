@@ -92,6 +92,11 @@ class DBClient<NodeIDType> {
       public Set<Integer> getValuesFromJSONArray(JSONArray array) throws JSONException {
         throw new UnsupportedOperationException("Not supported yet.");
       }
+      @Override
+      public long getVersion() {
+        return 0l;
+      }
+      
     };
     this.nioTransport = new NIOTransport(0, nodeConfig, new JSONMessageExtractor(demux));
     new Thread(nioTransport).start();

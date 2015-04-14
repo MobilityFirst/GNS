@@ -73,4 +73,9 @@ public class ConsistentNodeConfig<NodeIDType> implements
 			throws JSONException {
 		return this.nodeConfig.getValuesFromJSONArray(array);
 	}
+
+        @Override
+        public long getVersion() {
+          return this.nodeConfig.getVersion();
+        }
 }
