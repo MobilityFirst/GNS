@@ -33,17 +33,17 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   };
 
   /**
-   * Don't worry about reconfiguring until this may requests come in.
+   * Don't worry about reconfiguring until this many requests come in.
    */
-  private static final int DEFAULT_NUM_REQUESTS = 50;
+  private static final int DEFAULT_NUM_REQUESTS = 10;
   /**
    * Don't reconfigure more often than this time interval. Both of these need to be satisfied.
    */
-  private static final long MIN_RECONFIGURATION_INTERVAL = 3600; // milleseconds
+  private static final long MIN_RECONFIGURATION_INTERVAL = 10000; // milleseconds
   /**
    * Don't reconfigure more often than this many requests. Both of these need to be satisfied.
    */
-  private static final long MIN_REQUESTS_BEFORE_RECONFIGURATION = 100;
+  private static final long MIN_REQUESTS_BEFORE_RECONFIGURATION = 10;
 
   private double interArrivalTime = 0.0;
   private long lastRequestTime = 0;
@@ -66,8 +66,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.numRequests = dp.numRequests;
     this.numTotalRequests = dp.numTotalRequests;
     this.votesMap = new VotesMap(dp.votesMap);
-    this.updateCount = dp.updateCount;
     this.lookupCount = dp.lookupCount;
+    this.updateCount = dp.updateCount;
   }
 
   public LocationBasedDemandProfile(JSONObject json) throws JSONException {
@@ -76,8 +76,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.numRequests = json.getInt(Keys.NUM_REQUESTS.toString());
     this.numTotalRequests = json.getInt(Keys.NUM_TOTAL_REQUESTS.toString());
     this.votesMap = new VotesMap(json.getJSONObject(Keys.VOTES_MAP.toString()));
-    this.updateCount = json.getInt(Keys.UPDATE_COUNT.toString());
     this.lookupCount = json.getInt(Keys.LOOKUP_COUNT.toString());
+    this.updateCount = json.getInt(Keys.UPDATE_COUNT.toString());
     //LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP AFTER READ: " + this.votesMap);
   }
 
@@ -91,8 +91,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
       json.put(Keys.NUM_REQUESTS.toString(), getNumRequests());
       json.put(Keys.NUM_TOTAL_REQUESTS.toString(), getNumTotalRequests());
       json.put(Keys.VOTES_MAP.toString(), getVotesMap().toJSONObject());
-      json.put(Keys.UPDATE_COUNT.toString(), this.lookupCount);
-      json.put(Keys.LOOKUP_COUNT.toString(), this.updateCount);
+      json.put(Keys.LOOKUP_COUNT.toString(), this.lookupCount);
+      json.put(Keys.UPDATE_COUNT.toString(), this.updateCount);
     } catch (JSONException je) {
       je.printStackTrace();
     }

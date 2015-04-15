@@ -166,18 +166,21 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     return null;
   }
-  
+
   // a hack for the transition
   /**
    * Returns the host id of the ActiveReplica corresponding to the given InetSocketAddress
+   *
    * @param host
-   * @return the host id 
+   * @return the host id
    */
   public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host) {
-    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
-      if (hostInfo.getIpAddress().equals(host.getAddress()) &&
-          hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort()) {
-        return hostInfo.getActiveReplicaID();
+    if (host != null) { // should not happen but just in case
+      for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+        if (hostInfo.getIpAddress().equals(host.getAddress())
+                && hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort()) {
+          return hostInfo.getActiveReplicaID();
+        }
       }
     }
     return null;
@@ -226,7 +229,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     return null;
   }
-  
+
   private NodeInfo<NodeIDType> getNodeInfoForTopLevelNode(NodeIDType id) {
     for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
       if (hostInfo.getId().equals(id)) {
@@ -235,20 +238,20 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     }
     return null;
   }
-  
+
   public NodeIDType getReplicaNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
     if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
       return nodeInfo.getActiveReplicaID();
-    } 
+    }
     return null;
   }
-  
+
   public NodeIDType getReconfiguratorNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
     if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
       return nodeInfo.getReconfiguratorID();
-    } 
+    }
     return null;
   }
 
@@ -294,7 +297,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * Returns the associated Admin port for any node.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
-   * 
+   *
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
@@ -307,6 +310,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * Returns the associated NS ping port for any node.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
+   *
    * @param id
    * @return the port
    */
@@ -389,7 +393,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * **
-   * Returns port number for the specified port type. 
+   * Returns port number for the specified port type.
    * Return -1 if the specified port type does not exist.
    * Only for "top-level" nodes, not active-replica and reconfigurator nodes.
    *
@@ -467,7 +471,6 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   // Implement the Stringifiable interface
-  
   @SuppressWarnings("unchecked")
   @Override
   /**

@@ -58,7 +58,7 @@ public class GNSInstaller {
   private static final String NS_CONF_FILENAME = "ns.conf";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
-  private static final String JAVA_COMMAND = "java -ea -Xms2048M -cp ";
+  private static final String JAVA_COMMAND = "java -ea -Xms1024M -cp ";
 
   /**
    * Stores information about the hosts we're using.
@@ -284,7 +284,7 @@ public class GNSInstaller {
               + "if [ -f NSlogfile ]; then\n"
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
-              + "nohup java -ea -Xms2048M -cp " + gnsJarFileName + " " + StartNSClass + " "
+              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartNSClass + " "
               + nsId.toString() + " "
               + NS_HOSTS_FILENAME + " "
               //+ " -lnsfile " + LNS_HOSTS_FILENAME
