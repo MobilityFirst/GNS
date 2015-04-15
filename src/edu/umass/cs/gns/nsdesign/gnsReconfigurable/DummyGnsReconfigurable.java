@@ -7,10 +7,11 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.pingNew.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -58,7 +59,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
 
     if (!Config.emulatePingLatencies) {
       // when emulating ping latencies we do not
-      this.pingManager = new PingManager<NodeIDType>(nodeID, gnsNodeConfig);
+      this.pingManager = new PingManager<NodeIDType>(nodeID, new ConsistentReconfigurableNodeConfig(gnsNodeConfig));
       this.pingManager.startPinging();
     }
   }
@@ -285,4 +286,5 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
   public Integer getEpoch(String name) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
+
 }

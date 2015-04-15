@@ -5,7 +5,6 @@ import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.ping.PingManager;
 
 /**
  * Interface for the GNS app. We have only one working implementation of this interface
@@ -20,5 +19,4 @@ public interface GnsReconfigurableInterface<NodeIDType> extends GnsApplicationIn
 
   void reset() throws FailedDBOperationException;
 
-  PingManager getPingManager();
 }

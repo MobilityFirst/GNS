@@ -9,7 +9,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
-import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.pingNew.PingManager;
 import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -153,8 +153,7 @@ public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable
             case PINGTABLE:
               String node = new String(incomingPacket.getArgument());
               // null means return the LNS data
-              if (node == null || 
-                      handler.getNodeConfig().getActiveReplicas().contains(node))
+              if (node == null || handler.getNodeConfig().getActiveReplicas().contains(node))
                       //handler.getGnsNodeConfig().getNodeIDs().contains(node)) 
               {
                 if (node == null) {

@@ -17,7 +17,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 /**
- * The PingServer class handles the client side of the GNS ping protocol.
+ * The PingServer class handles the server side of the GNS ping protocol.
+ * It bounces back the data it gets to the client.
  * The PingClient class handles the flip side of this protocol.
  * 
  * @author westy

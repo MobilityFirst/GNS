@@ -36,6 +36,7 @@ import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.pingNew.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
@@ -61,6 +62,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   private final static int INITIAL_RECORD_VERSION = 0;
   private final NodeIDType nodeID;
   private final ConsistentReconfigurableNodeConfig nodeConfig;
+  private final PingManager pingManager;
   /**
    * Object provides interface to the database table storing name records
    */
@@ -74,10 +76,10 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(nodeConfig);
+    this.pingManager = new PingManager<NodeIDType>(nodeID, this.nodeConfig);
+    this.pingManager.startPinging();
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
-    if (Config.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Created " + nameRecordDB);
-    }
+    GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Created " + nameRecordDB);
     this.nioServer = nioServer;
   }
 
@@ -466,5 +468,10 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   @Override
   public InterfaceJSONNIOTransport getNioServer() {
     return nioServer;
+  }
+
+  @Override
+  public PingManager getPingManager() {
+    return pingManager;
   }
 }

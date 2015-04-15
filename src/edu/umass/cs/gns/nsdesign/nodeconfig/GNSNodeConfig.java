@@ -358,6 +358,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * @param id Server id
    * @return
    */
+  @Override
   public long getPingLatency(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     return (nodeInfo == null) ? INVALID_PING_LATENCY : nodeInfo.getPingLatency();
@@ -370,12 +371,13 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * @param id
    * @param responseTime
    */
+  @Override
   public void updatePingLatency(NodeIDType id, long responseTime) {
-    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
+    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
       nodeInfo.setPingLatency(responseTime);
     } else {
-      GNS.getLogger().warning("Can't update latency for " + id.toString() + " which is not a top-level node.");
+      GNS.getLogger().warning("Can't update latency for " + id.toString() + ".");
     }
   }
 

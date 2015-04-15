@@ -17,7 +17,7 @@ import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.ping.PingManager;
+import edu.umass.cs.gns.pingNew.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
@@ -92,7 +92,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       // when emulating ping latencies we do not measure ping latencies but instead emulate ping latencies given
       // in config file.
       // Abhigyan: Move pingmanager object in NameServer.java?
-      this.pingManager = new PingManager<NodeIDType>(nodeID, gnsNodeConfig);
+      this.pingManager = new PingManager<NodeIDType>(nodeID, new ConsistentReconfigurableNodeConfig(gnsNodeConfig));
       this.pingManager.startPinging();
     }
     this.nameRecordDB = new MongoRecordMap<NodeIDType>(mongoRecords, MongoRecords.DBNAMERECORD);

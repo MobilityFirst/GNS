@@ -171,29 +171,27 @@ public class AppAdmin extends Thread implements Shutdownable{
 
                 break;
               case PINGTABLE:
-                // FIXME: Add these back in 
-//                Object node = adminRequestPacket.getArgument();
-//                if (node.equals(app.getNodeID())) {
-//                  JSONObject jsonResponse = new JSONObject();
-//                  jsonResponse.put("PINGTABLE", app.getPingManager().tableToString(app.getNodeID()));
-//                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-//                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
-//                } else {
-//                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
-//                }
+                Object node = adminRequestPacket.getArgument();
+                if (node.equals(app.getNodeID())) {
+                  JSONObject jsonResponse = new JSONObject();
+                  jsonResponse.put("PINGTABLE", app.getPingManager().tableToString(app.getNodeID()));
+                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+                } else {
+                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
+                }
                 break;
               case PINGVALUE:
-                // FIXME: Add these back in 
-//                Object node1 = adminRequestPacket.getArgument();
-//                Object node2 = adminRequestPacket.getArgument2();
-//                if (node1.equals(app.getNodeID())) {
-//                  JSONObject jsonResponse = new JSONObject();
-//                  jsonResponse.put("PINGVALUE", app.getPingManager().nodeAverage(node2));
-//                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-//                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
-//                } else {
-//                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
-//                }
+                Object node1 = adminRequestPacket.getArgument();
+                Object node2 = adminRequestPacket.getArgument2();
+                if (node1.equals(app.getNodeID())) {
+                  JSONObject jsonResponse = new JSONObject();
+                  jsonResponse.put("PINGVALUE", app.getPingManager().nodeAverage(node2));
+                  AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+                } else {
+                  GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
+                }
                 break;
               case CHANGELOGLEVEL:
                 Level level = Level.parse(adminRequestPacket.getArgument());
