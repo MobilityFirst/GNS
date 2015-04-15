@@ -5,14 +5,12 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.ping;
+package edu.umass.cs.gns.util;
 
 import java.util.HashMap;
 
 /**
- * Simple implementation of a Spare Matrix.
- * There are probably better ways to do this if you're worried about efficiency 
- * than nested hashmaps, but this is simple.
+ * Simple implementation of a Sparse Matrix using nested HashMaps.
  *
  * @author westy
  * @param <U>

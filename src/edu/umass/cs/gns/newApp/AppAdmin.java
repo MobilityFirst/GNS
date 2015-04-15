@@ -56,7 +56,7 @@ public class AppAdmin extends Thread implements Shutdownable{
     this.app = app;
     this.gnsNodeConfig = gnsNodeConfig;
     try {
-      this.serverSocket = new ServerSocket(gnsNodeConfig.getNSAdminRequestPort(app.getNodeID()));
+      this.serverSocket = new ServerSocket(gnsNodeConfig.getAdminPort(app.getNodeID()));
     } catch (IOException e) {
       GNS.getLogger().severe("Unable to create NSListenerAdmin server: " + e);
     }

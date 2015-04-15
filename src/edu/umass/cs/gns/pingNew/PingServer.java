@@ -5,11 +5,12 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.ping;
+package edu.umass.cs.gns.pingNew;
 
 import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -22,17 +23,16 @@ import java.net.InetAddress;
  * @author westy
  * @param <NodeIDType>
  */
-@Deprecated
 public class PingServer<NodeIDType> extends Thread{
 
   private final NodeIDType nodeID;
-  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
-  public PingServer(final NodeIDType nodeID, final GNSNodeConfig<NodeIDType> gnsNodeConfig) {
+  public PingServer(final NodeIDType nodeID, final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig) {
     this.nodeID = nodeID;
-    this.gnsNodeConfig = gnsNodeConfig;
+    this.nodeConfig = nodeConfig;
   }
 
 
@@ -40,7 +40,7 @@ public class PingServer<NodeIDType> extends Thread{
   public void run() {
 
     try {
-      serverSocket = new DatagramSocket(nodeID == null ? GNS.DEFAULT_LNS_PING_PORT : gnsNodeConfig.getPingPort(nodeID));
+      serverSocket = new DatagramSocket(nodeID == null ? GNS.DEFAULT_LNS_PING_PORT : nodeConfig.getPingPort(nodeID));
       byte[] receiveData = new byte[1024];
       byte[] sendData;
       while (true) {
@@ -89,7 +89,8 @@ public class PingServer<NodeIDType> extends Thread{
     String configFile = args[0];
     String nodeID = "0";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
-    PingServer pingServer = new PingServer(nodeID, gnsNodeConfig);
+    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    PingServer pingServer = new PingServer(nodeID, nodeConfig);
     new Thread(pingServer).start();
 //    startServer();
   }

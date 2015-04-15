@@ -50,9 +50,30 @@ public class ConsistentNodeConfig<NodeIDType> implements
 	public int getNodePort(NodeIDType id) {
 		return this.nodeConfig.getNodePort(id);
 	}
+        
+        @Override
+        public int getAdminPort(NodeIDType id) {
+		return this.nodeConfig.getAdminPort(id);
+	}
+        
+        @Override
+        public int getPingPort(NodeIDType id) {
+           return this.nodeConfig.getPingPort(id);
+        }
+
+        @Override
+        public long getPingLatency(NodeIDType id) {
+          return this.nodeConfig.getPingLatency(id);
+        }
+
+        @Override
+        public void updatePingLatency(NodeIDType id, long responseTime) {
+          this.nodeConfig.updatePingLatency(id, responseTime);
+        }
 
 	// FIXME: disallow the use of this method
 	@Override
+        @Deprecated
 	public Set<NodeIDType> getNodeIDs() {
 		throw new RuntimeException("The use of this method is not permitted");
 		//return this.nodeConfig.getNodeIDs();
@@ -78,4 +99,6 @@ public class ConsistentNodeConfig<NodeIDType> implements
         public long getVersion() {
           return this.nodeConfig.getVersion();
         }
+
+ 
 }

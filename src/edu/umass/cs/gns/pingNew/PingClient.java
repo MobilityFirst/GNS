@@ -5,11 +5,11 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.ping;
+package edu.umass.cs.gns.pingNew;
 
 import edu.umass.cs.gns.main.GNS;
-
 import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentMap;
  * @author westy
  * @param <NodeIDType>
  */
-@Deprecated
 public class PingClient<NodeIDType> {
 
   private DatagramSocket clientSocket;
@@ -36,12 +35,12 @@ public class PingClient<NodeIDType> {
   // Records the send time of each request
   private final ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
   private final Random randomID = new Random();
-  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
   private Thread receiveThread;
   private boolean shutdown = false;
 
-  public PingClient(GNSNodeConfig<NodeIDType> gnsNodeConfig) {
-    this.gnsNodeConfig = gnsNodeConfig;
+  public PingClient(ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig) {
+    this.nodeConfig = nodeConfig;
     try {
       clientSocket = new DatagramSocket();
       startReceiveThread();
@@ -58,8 +57,8 @@ public class PingClient<NodeIDType> {
    * @throws IOException 
    */
   public long sendPing(NodeIDType nodeId) throws IOException, InterruptedException {
-    InetAddress IPAddress = gnsNodeConfig.getNodeAddress(nodeId);
-    int port = gnsNodeConfig.getPingPort(nodeId);
+    InetAddress IPAddress = nodeConfig.getNodeAddress(nodeId);
+    int port = nodeConfig.getPingPort(nodeId);
     byte[] sendData;
     // make an id and turn it into a string for sending out
     int id = nextRequestID();
@@ -185,8 +184,9 @@ public class PingClient<NodeIDType> {
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     String nodeID = "0";
-    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
-    PingClient pingClient = new PingClient(gnsNodeConfig1);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
+    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    PingClient pingClient = new PingClient(nodeConfig);
     while (true) {
       GNS.getLogger().info("RTT = " + pingClient.sendPing("0"));
       Thread.sleep(1000);

@@ -20,6 +20,38 @@ public interface InterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeIDTyp
     public abstract InetAddress getNodeAddress(NodeIDType id);
 
     public abstract int getNodePort(NodeIDType id);
+    
+    /**
+     * Returns the administrator port for the given node.
+     * 
+     * @param id
+     * @return 
+     */
+    public abstract int getAdminPort(NodeIDType id);
+    
+    /**
+     * Returns the ping port for the given node.
+     * 
+     * @param id
+     * @return 
+     */
+    public abstract int getPingPort(NodeIDType id);
+    
+    /**
+     * Returns the average ping latency to the given node.
+     * 
+     * @param id
+     * @return 
+     */
+    public long getPingLatency(NodeIDType id);
+    
+    /** 
+     * Stores the average ping latency to the given node.
+     * 
+     * @param id
+     * @param responseTime 
+     */
+    public void updatePingLatency(NodeIDType id, long responseTime);
 
     public abstract Set<NodeIDType> getNodeIDs();
     

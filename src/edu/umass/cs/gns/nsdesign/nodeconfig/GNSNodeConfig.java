@@ -265,7 +265,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
   }
 
   /**
-   * Returns the TCP port of a nameserver.
+   * Returns the TCP port of a Node.
    * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
@@ -295,26 +295,26 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
 
   /**
    * Returns the associated Admin port for any node.
-   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
+   * Will return INVALID_PORT if the node doesn't exist.
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id Nameserver id
    * @return the active nameserver information port of a nameserver. *
    */
-  public int getNSAdminRequestPort(NodeIDType id) {
+  public int getAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     return (nodeInfo == null) ? INVALID_PORT : nodeInfo.getStartingPortNumber() + GNS.PortType.NS_ADMIN_PORT.getOffset();
   }
 
   /**
    * Returns the associated NS ping port for any node.
-   * Will return INVALID_NAME_SERVER_ID if the node doesn't exist.
+   * Will return INVALID_PORT if the node doesn't exist.
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id
    * @return the port
    */
-  public int getNSPingPort(NodeIDType id) {
+  public int getPingPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
       return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
@@ -407,9 +407,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
       case NS_TCP_PORT:
         return getNodePort(nameServerId);
       case NS_ADMIN_PORT:
-        return getNSAdminRequestPort(nameServerId);
+        return getAdminPort(nameServerId);
       case NS_PING_PORT:
-        return getNSPingPort(nameServerId);
+        return getPingPort(nameServerId);
     }
     return -1;
   }
