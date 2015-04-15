@@ -153,35 +153,35 @@ public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable
             case PINGTABLE:
               String node = new String(incomingPacket.getArgument());
               // null means return the LNS data
-              if (node == null || handler.getNodeConfig().getActiveReplicas().contains(node))
+              if (node == null || node.equals("LNS") || handler.getNodeConfig().getActiveReplicas().contains(node))
                       //handler.getGnsNodeConfig().getNodeIDs().contains(node)) 
               {
-                if (node == null) {
+                if (node == null || node.equals("LNS")) {
+                  // Get results from this LNS
                   jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", pingManager.tableToString(null));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 } else {
+                  // forward the packet on to the appropriate host
                   incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
-                  //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
-                jsonResponse.put("ERROR", "Bad host number");
+                jsonResponse.put("ERROR", "Bad host number " + node);
                 responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                 returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
-                //returnResponsePacketToSender(incomingPacket.gethandlerId(), responsePacket);
               }
               break;
             case PINGVALUE:
               NodeIDType node1 = (NodeIDType) new String(incomingPacket.getArgument());
               NodeIDType node2 = (NodeIDType) new String(incomingPacket.getArgument2());
-              // null means return the LNS data
-              if (node1 == null || handler.getGnsNodeConfig().nodeExists(node1)
+              // null or LNS means return the LNS data
+              if (node1 == null || node1.equals("LNS") || handler.getGnsNodeConfig().nodeExists(node1)
                       && handler.getGnsNodeConfig().nodeExists(node2)) {
-                if (node1 == null) {
+                if (node1 == null || node1.equals("LNS")) {
                   // handle it here
                   jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", pingManager.nodeAverage(node2));
@@ -196,7 +196,7 @@ public class LNSListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
-                jsonResponse.put("ERROR", "Bad host number");
+                jsonResponse.put("ERROR", "Bad host number " + node1);
                 responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                 returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 //returnResponsePacketToSender(incomingPacket.gethandlerId(), responsePacket);
