@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.database.AbstractRecordCursor;

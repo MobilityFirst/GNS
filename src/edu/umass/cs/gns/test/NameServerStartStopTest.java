@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.NameServer;
 
 import java.io.IOException;

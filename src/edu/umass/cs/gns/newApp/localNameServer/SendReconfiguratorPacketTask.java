@@ -10,7 +10,6 @@ package edu.umass.cs.gns.newApp.localNameServer;
 import edu.umass.cs.gns.localnameserver.*;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.util.Util;
 import java.io.IOException;

@@ -9,7 +9,7 @@ package edu.umass.cs.gns.pingNew;
 
 import edu.umass.cs.gns.util.SparseMatrix;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;

@@ -4,7 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.pingNew.PingManager;

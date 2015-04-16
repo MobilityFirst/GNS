@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.nsdesign.nodeconfig;
+package edu.umass.cs.gns.nodeconfig;
 
 import edu.umass.cs.gns.main.GNS;
 import java.io.BufferedReader;

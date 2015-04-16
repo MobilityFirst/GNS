@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.statusdisplay;
 
 //import edu.umass.cs.gns.util.ConfigFileInfo;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.GEOLocator;
   import edu.umass.cs.gns.util.ScreenUtils;
 import java.io.IOException;

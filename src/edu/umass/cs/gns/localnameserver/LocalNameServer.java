@@ -14,7 +14,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.pingNew.PingManager;
 //import edu.umass.cs.gns.test.StartExperiment;

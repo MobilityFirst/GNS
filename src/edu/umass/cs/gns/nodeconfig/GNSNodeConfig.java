@@ -4,7 +4,7 @@
  * All Rights Reserved 
  *
  */
-package edu.umass.cs.gns.nsdesign.nodeconfig;
+package edu.umass.cs.gns.nodeconfig;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;

@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
 import java.util.ArrayList;

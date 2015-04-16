@@ -7,7 +7,7 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;

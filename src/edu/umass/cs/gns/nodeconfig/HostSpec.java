@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.nsdesign.nodeconfig;
+package edu.umass.cs.gns.nodeconfig;
 
 /**
  * A tuple of NodeId and hostname.

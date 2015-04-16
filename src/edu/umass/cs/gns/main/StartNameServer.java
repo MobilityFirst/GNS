@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.main;
 
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.NSParameterNames;
 import edu.umass.cs.gns.nsdesign.NameServer;
 import org.apache.commons.cli.*;

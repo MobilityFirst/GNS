@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.nodeconfig;
+package edu.umass.cs.gns.nodeconfig;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -16,7 +16,7 @@ import edu.umass.cs.gns.nio.JSONDelayEmulator;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;

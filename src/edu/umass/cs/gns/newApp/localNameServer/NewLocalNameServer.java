@@ -14,7 +14,7 @@ import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.pingNew.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
