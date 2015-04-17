@@ -79,7 +79,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     this.pingManager = new PingManager<NodeIDType>(nodeID, this.nodeConfig);
     this.pingManager.startPinging();
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
-    GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Created " + nameRecordDB);
+    GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.nioServer = nioServer;
   }
 

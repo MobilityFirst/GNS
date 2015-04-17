@@ -578,7 +578,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     // select server whose latency + load is minimum
     double selectServerLatency = Double.MAX_VALUE;
     for (NodeIDType x : serverIDs) {
-      if (getGnsNodeConfig().getPingLatency(x) > 0) {
+      if (getGnsNodeConfig().getPingLatency(x) != GNSNodeConfig.INVALID_PING_LATENCY) {
         double totallatency = 5 * nameServerLoads.get(x) + (double) getGnsNodeConfig().getPingLatency(x);
         if (totallatency < selectServerLatency) {
           selectServer = x;

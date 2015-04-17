@@ -461,7 +461,7 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
         continue;
       }
       long pingLatency = getPingLatency(serverId);
-      if (pingLatency < lowestLatency) {
+      if (pingLatency != INVALID_PING_LATENCY && pingLatency < lowestLatency) {
         lowestLatency = pingLatency;
         nameServerID = serverId;
       }

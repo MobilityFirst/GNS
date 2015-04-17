@@ -55,7 +55,7 @@ public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterf
           int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
           NodeIDType newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(),nsIndex);
           added = newActiveNameServerSet.add(newActiveNameServerId)
-                  && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != -1;
+                  && rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) != GNSNodeConfig.INVALID_PING_LATENCY;
         } while (!added && numTries < NUM_RETRY);
       }
 

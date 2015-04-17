@@ -39,6 +39,7 @@ public interface InterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeIDTyp
     
     /**
      * Returns the average ping latency to the given node.
+     * Returns GNSNodeConfig.INVALID_PING_LATENCY if the value cannot be determined.
      * 
      * @param id
      * @return 

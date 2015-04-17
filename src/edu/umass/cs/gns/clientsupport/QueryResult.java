@@ -28,11 +28,11 @@ public class QueryResult<NodeIDType> implements Serializable{
   /**
    * Set if the response is not an error.
    */
-  private ValuesMap valuesMap;
+  private ValuesMap valuesMap = null;
   /**
    * Set if the response is an error.
    */
-  private NSResponseCode errorCode;
+  private NSResponseCode errorCode = null;
   /** 
    * Instrumentation - records the time between the LNS sending the request to the NS and the return message.
    */

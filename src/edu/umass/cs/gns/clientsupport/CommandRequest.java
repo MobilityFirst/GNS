@@ -42,7 +42,7 @@ public class CommandRequest {
    */
   public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
-    if (Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
     }
     final CommandPacket packet = new CommandPacket(incomingJSON);
@@ -51,7 +51,7 @@ public class CommandRequest {
     commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":8080");
     final JSONObject jsonFormattedCommand = packet.getCommand();
     // Adds a field to the command to allow us to process the authentication of the signature
-    addMessageWithoutSignatureToCommand(jsonFormattedCommand);
+    addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
     final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
     // This separate thread  makes it actually work.
     // I thought we were in a separate worker thread from 
@@ -64,7 +64,7 @@ public class CommandRequest {
           // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
           CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
                   handler.getReceivedRequests(), handler.getRequestsPerSecond());
-          if (Config.debuggingEnabled) {
+          if (handler.getParameters().isDebugMode()) {
             GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
           }
           handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
@@ -79,13 +79,13 @@ public class CommandRequest {
   // this little dance is because we need to remove the signature to get the message that was signed
   // alternatively we could have the client do it but that just means a longer message
   // OR we could put the signature outside the command in the packet, but some packets don't need a signature
-  private static void addMessageWithoutSignatureToCommand(JSONObject command) throws JSONException {
+  private static void addMessageWithoutSignatureToCommand(JSONObject command, ClientRequestHandlerInterface handler) throws JSONException {
     if (command.has(SIGNATURE)) {
       String signature = command.getString(SIGNATURE);
       command.remove(SIGNATURE);
       String commandSansSignature = CanonicalJSON.getCanonicalForm(command);
       //String commandSansSignature = JSONUtils.getCanonicalJSONString(command);
-      if (Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("########CANONICAL JSON: " + commandSansSignature);
       }
       command.put(SIGNATURE, signature);

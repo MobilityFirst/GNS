@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.nsdesign.replicationframework;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
@@ -72,7 +73,7 @@ public class LocationBasedReplication<NodeIDType> implements ReplicationFramewor
             retries += 1;
             int nsIndex = random.nextInt(rc.getGnsNodeConfig().getNumberOfNodes());
             NodeIDType newActiveNameServerId = getSetIndex(rc.getGnsNodeConfig().getNodeIDs(), nsIndex);
-            if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == -1) {
+            if (rc.getGnsNodeConfig().getPingLatency(newActiveNameServerId) == GNSNodeConfig.INVALID_PING_LATENCY) {
               continue;
             }
             added = newActiveNameServerSet.add(newActiveNameServerId);

@@ -172,10 +172,10 @@ public class Lookup {
    */
   public static void sendDNSResponseBackToSource(DNSPacket packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == null) {
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().fine("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
       handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().fine("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
+      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().info("Sending back to Node " + packet.getSourceId() + ":" + packet.toJSONObject().toString());
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());
     }
   }

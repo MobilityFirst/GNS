@@ -233,8 +233,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
 
     }
     Long receiptTime = System.currentTimeMillis(); // instrumentation
-    QueryResult result = queryResultMap.get(id);
-    queryResultMap.remove(id);
+    QueryResult result = queryResultMap.remove(id);
+    //queryResultMap.remove(id);
     Long sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime - sentTime;
