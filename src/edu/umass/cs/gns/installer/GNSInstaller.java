@@ -9,11 +9,13 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.statusdisplay.StatusListener;
+import edu.umass.cs.gns.util.Format;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -189,6 +191,8 @@ public class GNSInstaller {
     if (action != InstallerAction.STOP) {
       updateNodeConfigAndSendOutServerInit();
     }
+    
+    System.out.println("Finished " + name + " " + action.name() + " at " + Format.formatDateTimeOnly(new Date()));
   }
 
   public enum InstallerAction {

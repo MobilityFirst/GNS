@@ -42,6 +42,7 @@ public class CommandRequest {
    */
   public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
+    final Long receiptTime = System.currentTimeMillis(); // instrumentation
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
     }
@@ -53,27 +54,43 @@ public class CommandRequest {
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
     final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+
+    try {
+      CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
+      // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
+      CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
+              handler.getReceivedRequests(), handler.getRequestsPerSecond(),
+              System.currentTimeMillis() - receiptTime);
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+      }
+      handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem  executing command: " + e);
+      e.printStackTrace();
+    }
     // This separate thread  makes it actually work.
     // I thought we were in a separate worker thread from 
     // the NIO message handling thread. Turns out not.
-    (new Thread() {
-      @Override
-      public void run() {
-        try {
-          CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
-          // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
-          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
-                  handler.getReceivedRequests(), handler.getRequestsPerSecond());
-          if (handler.getParameters().isDebugMode()) {
-            GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
-          }
-          handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
-        } catch (JSONException e) {
-          GNS.getLogger().severe("Problem  executing command: " + e);
-          e.printStackTrace();
-        }
-      }
-    }).start();
+//    (new Thread() {
+//      @Override
+//      public void run() {
+//        try {
+//          CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
+//          // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
+//          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
+//                  handler.getReceivedRequests(), handler.getRequestsPerSecond(),
+//          System.currentTimeMillis() - receiptTime);
+//          if (handler.getParameters().isDebugMode()) {
+//            GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+//          }
+//          handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
+//        } catch (JSONException e) {
+//          GNS.getLogger().severe("Problem  executing command: " + e);
+//          e.printStackTrace();
+//        }
+//      }
+//    }).start();
   }
 
   // this little dance is because we need to remove the signature to get the message that was signed

@@ -22,6 +22,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
   private final static String RETURNVALUE = "returnValue";
   private final static String ERRORCODE = "errorCode";
   private final static String LNSROUNDTRIPTIME = "lnsRtt";
+  private final static String LNSPROCESSINGTIME = "lnsTime";
   private final static String RESPONDER = "responder";
   private final static String REQUESTCNT = "requestCnt";
   private final static String REQUESTRATE = "requestRate";
@@ -43,6 +44,10 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
    */
   private final long LNSRoundTripTime; // how long this query took from the LNS out and back
   /**
+   * Total command processing time at the LNS.
+   */
+  private final long LNSProcessingTime; // how long this query took inside the LNS
+  /**
    * Instrumentation - what nameserver responded to this query
    */
   private final NodeIDType responder;
@@ -62,12 +67,14 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
    * @param response
    * @param requestCnt - current number of requests handled by the LNS (can be used to tell how busy LNS is)
    */
-  public CommandValueReturnPacket(int requestId, CommandResponse<NodeIDType> response, long requestCnt, int requestRate) {
+  public CommandValueReturnPacket(int requestId, CommandResponse<NodeIDType> response, long requestCnt, int requestRate,
+          long lnsProcTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.requestId = requestId;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
     this.LNSRoundTripTime = response.getLNSRoundTripTime();
+    this.LNSProcessingTime = lnsProcTime; 
     this.responder = response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
@@ -93,6 +100,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
     this.requestCnt = json.getLong(REQUESTCNT);
     //
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
+    this.LNSProcessingTime = json.optLong(LNSPROCESSINGTIME, -1);
     this.responder = json.has(RESPONDER) ? unstringer.valueOf(json.getString(RESPONDER)) : null;
   }
 
@@ -117,6 +125,9 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
     if (LNSRoundTripTime != -1) {
       json.put(LNSROUNDTRIPTIME, LNSRoundTripTime);
     }
+    if (LNSProcessingTime != -1) {
+      json.put(LNSPROCESSINGTIME, LNSProcessingTime);
+    }
     // instrumentation
     if (responder != null) {
       json.put(RESPONDER, responder);
@@ -138,6 +149,10 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
 
   public long getLNSRoundTripTime() {
     return LNSRoundTripTime;
+  }
+
+  public long getLNSProcessingTime() {
+    return LNSProcessingTime;
   }
 
   public NodeIDType getResponder() {
