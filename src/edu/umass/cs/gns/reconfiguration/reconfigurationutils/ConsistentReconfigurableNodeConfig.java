@@ -113,7 +113,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
    * It is somewhat nontrivial only because there is a many-to-one mapping
    * from nodes to addresses, so a simple reverse lookup is not meaningful.
    */
-  public Set<NodeIDType> getIPToNodeIDs(ArrayList<InetAddress> newAddresses,
+  public Set<NodeIDType> getIPToActiveReplicaIDs(ArrayList<InetAddress> newAddresses,
           Set<NodeIDType> oldNodes) {
     Set<NodeIDType> newNodes = new HashSet<NodeIDType>(); // return value
     ArrayList<InetAddress> unassigned = new ArrayList<InetAddress>();
@@ -129,7 +129,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
       }
     }
     // assign any node to unassigned addresses
-    for (NodeIDType node : this.nodeConfig.getNodeIDs()) {
+    for (NodeIDType node : this.nodeConfig.getActiveReplicas()) {
       InetAddress address = this.nodeConfig.getNodeAddress(node);
       if (unassigned.contains(address)) {
         newNodes.add(node);
