@@ -58,6 +58,9 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    * A list of Active Nameservers for the name.
    */
   private Set<NodeIDType> activeNameServers;
+  private long activeNameServersTimestamp = 0;
+  
+  private static final long MAX_REPLICA_AGE = 10000; // in milleseconds
 
   /**
    * Constructs a cache entry for a name from a list of replica controllers and a list of active replicas.
@@ -70,6 +73,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
     this.name = name;
     this.replicaControllers = replicaControllers;
     this.activeNameServers = activeNameServers;
+    this.activeNameServersTimestamp = System.currentTimeMillis();
   }
 
   /**
@@ -143,8 +147,6 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
       } catch (JSONException e) {
         GNS.getLogger().severe("Unabled to update cache entry for key " + fieldKey + ":" + e);
       }
-//      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
-//      valuesMap.putAsArray(fieldKey, fieldValue);
       // set the timestamp for that field
       this.timestampAddress.put(fieldKey, System.currentTimeMillis());
     }
@@ -152,7 +154,8 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
   }
 
   public synchronized void updateCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    activeNameServers = packet.getActiveNameServers();
+    this.activeNameServers = packet.getActiveNameServers();
+    this.activeNameServersTimestamp = System.currentTimeMillis();
   }
 
   public synchronized void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet) {
@@ -241,11 +244,13 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
 
   /**
    * Returns true if a non-empty set of active name servers is stored in cache.
+   * Also checks age against MAX_REPLICA_AGE.
    *
    * @return true if a non-empty set of active name servers is stored in cache
    */
   public synchronized boolean isValidNameserver() {
-    return activeNameServers != null && activeNameServers.size() != 0;
+    return activeNameServers != null && activeNameServers.size() != 0
+            && System.currentTimeMillis() - this.activeNameServersTimestamp < MAX_REPLICA_AGE;
   }
 
   public synchronized int timeSinceAddressCached(String key) {
@@ -257,7 +262,8 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
   }
 
   public synchronized void invalidateActiveNameServer() {
-    activeNameServers = null;
+    this.activeNameServers = null;
+    this.activeNameServersTimestamp = 0;
   }
 
   /**
@@ -272,7 +278,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
     entry.append("Name:" + getName());
     //entry.append(" Key: " + getRecordKey().getName());
     entry.append("\n    TTLAddress:" + timeToLiveInSeconds);
-    entry.append("\n    TimestampAddress: " + timeStampHashToString(timestampAddress, timeToLiveInSeconds * 1000));
+    entry.append("\n    Timestamp: " + timeStampHashToString(timestampAddress, timeToLiveInSeconds * 1000));
     entry.append("\n    PrimaryNS:[");
     boolean first = true;
     for (NodeIDType id : replicaControllers) {
@@ -298,6 +304,8 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
       }
     }
     entry.append("]");
+    entry.append("\n    ActiveNSTimestamp: " + activeNameServersTimestamp + 
+            " age: " + (System.currentTimeMillis() -  activeNameServersTimestamp) + "ms");
     // NULL MEANS THE VALUE IS INVALID
     entry.append("\n    Value:" + (valuesMap == null ? "INVALID" : valuesMap.toString()));
     return entry.toString();

@@ -33,17 +33,17 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   };
 
   /**
-   * Don't worry about reconfiguring until this many requests come in.
+   * Only report this often.
    */
-  private static final int DEFAULT_NUM_REQUESTS = 10000000;
+  private static final int NUMBER_OF_REQUESTS_BETWEEN_REPORTS = 100;
   /**
    * Don't reconfigure more often than this time interval. Both of these need to be satisfied.
    */
-  private static final long MIN_RECONFIGURATION_INTERVAL = 60000; // milleseconds
+  private static final long MIN_RECONFIGURATION_INTERVAL = 20000; // milleseconds
   /**
    * Don't reconfigure more often than this many requests. Both of these need to be satisfied.
    */
-  private static final long MIN_REQUESTS_BEFORE_RECONFIGURATION = 500;
+  private static final long NUMBER_OF_REQUESTS_BETWEEN_RECONFIGURATIONS = 100;
 
   private double interArrivalTime = 0.0;
   private long lastRequestTime = 0;
@@ -129,7 +129,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     } else {
       lookupCount++;
     }
-    //LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP: " + this.votesMap);
+    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER REGISTER:" + this.toString());
   }
 
   private InetAddress findActiveReplicaClosestToSender(InetAddress sender, List<InetAddress> allActives) {
@@ -185,12 +185,12 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.updateCount += update.updateCount;
     this.lookupCount += update.lookupCount;
     this.votesMap.combine(update.getVotesMap());
-    //LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP AFTER COMBINE: " + this.votesMap);
+    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER COMBINE:" + this.toString());
   }
 
   @Override
   public boolean shouldReport() {
-    if (getNumRequests() >= DEFAULT_NUM_REQUESTS) {
+    if (getNumRequests() >= NUMBER_OF_REQUESTS_BETWEEN_REPORTS) {
       return true;
     }
     return false;
@@ -199,17 +199,24 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   @Override
   public void justReconfigured() {
     this.lastReconfiguredProfile = this.clone();
+    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER CLONE:" + this.lastReconfiguredProfile.toString());
   }
 
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, ConsistentReconfigurableNodeConfig nodeConfig) {
     if (this.lastReconfiguredProfile != null) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: " + this.lastReconfiguredProfile.toString());
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> CURRENT: " + this.toString());
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> interval: "
+              + (System.currentTimeMillis() - this.lastReconfiguredProfile.lastRequestTime)); 
       if (System.currentTimeMillis()
               - this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL) {
         return null;
       }
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> request diff: "
+              + (this.numTotalRequests - this.lastReconfiguredProfile.numTotalRequests));
       if (this.numTotalRequests
-              - this.lastReconfiguredProfile.numTotalRequests < MIN_REQUESTS_BEFORE_RECONFIGURATION) {
+              - this.lastReconfiguredProfile.numTotalRequests < NUMBER_OF_REQUESTS_BETWEEN_RECONFIGURATIONS) {
         return null;
       }
     }
@@ -237,6 +244,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * @param nodeConfig
    * @return a list of InetSocketAddress
    */
+  // NEED TO PICK A FRACTIONAL AMOUNT FOR LOCALITY-BASED ONES
   private ArrayList<InetAddress> pickNewActiveReplicas(int numReplica, ArrayList<InetAddress> curActives,
           ArrayList<InetAddress> topN, ArrayList<InetAddress> allActives) {
 
@@ -337,8 +345,34 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return votesMap;
   }
 
+  @Override
+  public String toString() {
+    return "LocationBasedDemandProfile{" + "interArrivalTime=" + interArrivalTime + ", lastRequestTime=" + lastRequestTime + ", numRequests=" + numRequests + ", numTotalRequests=" + numTotalRequests + ", lastReconfiguredProfile=" + lastReconfiguredProfile + ", votesMap=" + votesMap + ", lookupCount=" + lookupCount + ", updateCount=" + updateCount + '}';
+  }
+  
+  /**
+   * JUST FOR TESTING!
+   * @param dp 
+   */
+  public LocationBasedDemandProfile() {
+    super("FRANK");
+    this.interArrivalTime = 2.0;
+    this.lastRequestTime = System.currentTimeMillis();
+    this.numRequests = 100;
+    this.numTotalRequests = 200;
+    this.votesMap = new VotesMap();
+    this.lookupCount = 40;
+    this.updateCount = 50;
+  }
+
   public static void main(String[] args) throws UnknownHostException {
-    LocationBasedDemandProfile dp = new LocationBasedDemandProfile("Frank");
+    LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
+    LOG.info(dp.toString());
+    LOG.info(dp.clone().toString());
+    //testThings(dp);
+  }
+    
+  private static void testThings(LocationBasedDemandProfile dp)  throws UnknownHostException {
     LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
     LOG.info("20,0,3 = " + dp.computeNumberOfReplicas(20, 0, 3));
     LOG.info("0,20,3 = " + dp.computeNumberOfReplicas(0, 20, 3));
@@ -395,62 +429,4 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.info("need 7: " + dp.pickNewActiveReplicas(7, curActives, topN, allActives));
 
   }
-
-  // InetSocketAddress change
-  /*
-   public static void main(String[] args) throws UnknownHostException {
-   LocationBasedDemandProfile dp = new LocationBasedDemandProfile("Frank");
-   LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
-   LOG.info("20,0,3 = " + dp.computeNumberOfReplicas(20, 0, 3));
-   LOG.info("0,20,3 = " + dp.computeNumberOfReplicas(0, 20, 3));
-   LOG.info("20,20,3 = " + dp.computeNumberOfReplicas(20, 20, 3));
-   LOG.info("2000,100,3 = " + dp.computeNumberOfReplicas(2000, 100, 3));
-   LOG.info("100,200,3 = " + dp.computeNumberOfReplicas(100, 2000, 3));
-   LOG.info("0,0,200 = " + dp.computeNumberOfReplicas(0, 0, 200));
-   LOG.info("20,0,200 = " + dp.computeNumberOfReplicas(20, 0, 200));
-   LOG.info("0,20,200 = " + dp.computeNumberOfReplicas(0, 20, 200));
-   LOG.info("20,20,200 = " + dp.computeNumberOfReplicas(20, 20, 200));
-   LOG.info("2000,100,200 = " + dp.computeNumberOfReplicas(2000, 100, 200));
-   LOG.info("100,200,200 = " + dp.computeNumberOfReplicas(100, 2000, 200));
-   LOG.info("10000,200,200 = " + dp.computeNumberOfReplicas(10000, 200, 200));
-
-   // All the actives
-   ArrayList<InetSocketAddress> allActives = new ArrayList(Arrays.asList(
-   new InetSocketAddress(InetAddress.getByName("128.119.1.1"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.2"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.3"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.4"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.5"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.6"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.7"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.8"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.9"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.10"), 1000)));
-
-   // The list of current actives
-   ArrayList<InetSocketAddress> curActives = new ArrayList(Arrays.asList(
-   new InetSocketAddress(InetAddress.getByName("128.119.1.1"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.2"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.3"),1000)));
-
-   // Simulates the top N vote getters
-   ArrayList<InetSocketAddress> topN = new ArrayList(Arrays.asList(
-   new InetSocketAddress(InetAddress.getByName("128.119.1.2"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.3"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.4"),1000),
-   new InetSocketAddress(InetAddress.getByName("128.119.1.5"), 1000)));
-
-   // Try it with various numbers of active replicas needed
-   LOG.info("need 3: " + dp.pickNewActiveReplicas(3, curActives, topN, allActives));
-
-   LOG.info("need 4: " + dp.pickNewActiveReplicas(4, curActives, topN, allActives));
-
-   LOG.info("need 5: " + dp.pickNewActiveReplicas(5, curActives, topN, allActives));
-
-   LOG.info("need 6: " + dp.pickNewActiveReplicas(6, curActives, topN, allActives));
-
-   LOG.info("need 7: " + dp.pickNewActiveReplicas(7, curActives, topN, allActives));
-
-   }
-   */
 }

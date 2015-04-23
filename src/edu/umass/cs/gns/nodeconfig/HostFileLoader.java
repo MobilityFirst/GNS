@@ -26,24 +26,26 @@ public class HostFileLoader {
   private static Long fileVersion = INVALID_FILE_VERSION;
 
   private static final boolean debuggingEnabled = false;
-  
-  private static boolean hostFileHasNumbers = false;
 
+  private static boolean hostFileHasNodeIds = false;
 
   /**
    * Reads a host file (hosts addresses one per line) and returns a list of HostSpec objects.
-   * 
-   * The first line of the file can be a Long representing the file version. 
-   * This will be read ad saved by this call.
+   * The first line of the file can be a Long representing the file version.
+   * This will be read and saved by this call.
    * To read that call <code>readVersionLine</code>.
    *
-   * This currently supports three line formats (one of these per line):
+   * This currently supports these line formats (one of these per line):
    * <code>
    * {hostname}
    * or
-   * {number}{whitespace}{hostname}
+   * {hostname}{whitespace}{ip Address} // mainly for LNS hosts files
    * or
-   * {number}{whitespace}{hostname}{whitespace}{startingport}
+   * {nodeId}{whitespace}{hostname}{whitespace}{startingport}
+   * or
+   * {nodeId}{whitespace}{hostname}{whitespace}{ip Address}
+   * or
+   * {nodeId}{whitespace}{hostname}{whitespace}{startingport}{whitespace}{ip Address}
    * </code>
    * Also, you can't mix the above line formats in one file.
    *
@@ -51,7 +53,7 @@ public class HostFileLoader {
    * @return a List of hostnames
    */
   public static List<HostSpec> loadHostFile(String hostsFile) throws Exception {
-    hostFileHasNumbers = false;
+    hostFileHasNodeIds = false;
     List<HostSpec> result = new ArrayList<HostSpec>();
     BufferedReader br = new BufferedReader(new FileReader(hostsFile));
     boolean readFirstLine = false;
@@ -78,28 +80,68 @@ public class HostFileLoader {
     return result;
   }
 
+  /**
+   * Handles these cases:
+   *
+   * hostname
+   * hostname ipAddressInDotNotation
+   * id hostname port
+   * id hostname ipAddressInDotNotation
+   * id hostname port ipAddressInDotNotation
+   *
+   * @param line
+   * @return
+   * @throws IOException
+   */
   private static HostSpec parseHostline(String line) throws IOException {
     String[] tokens = line.split("\\s+");
     if (tokens.length > 1) {
-      String idString = tokens[0];
-      Integer port = tokens.length > 2 ? Integer.parseInt(tokens[2]) : null;
-      hostFileHasNumbers = true;
-      // Parse as an Integer if we can otherwise a String.
-      Object nodeID = -1;
-      try {
-        nodeID = Integer.parseInt(idString);
-      } catch (NumberFormatException e) {
-        nodeID = idString;
+      // hostname ipAddressInDotNotation (FOR LNS ONLY)
+      if (tokens.length == 2 && tokens[1].contains(".")) {
+        return new HostSpec(tokens[0], tokens[0], tokens[1], null);
+        // id hostname port
+        // id hostname ipAddressInDotNotation
+        // id hostname port ipAddressInDotNotation
+      } else {
+        String idString = tokens[0];
+        String externalIP = null;
+        Integer port = null;
+        if (tokens.length > 2) {
+          if (tokens[2].contains(".")) {
+            externalIP = tokens[2];
+            port = null;
+          } else {
+            port = Integer.parseInt(tokens[2]);
+          }
+        }
+        if (tokens.length > 3) {
+          if (port == null) {
+            throw new IOException("Bad port spec on line " + line + ": " + tokens[2]);
+          }
+          externalIP = tokens[3];
+        }
+        hostFileHasNodeIds = true;
+        // Parse as an Integer if we can otherwise a String.
+        Object nodeID = -1;
+        try {
+          nodeID = Integer.parseInt(idString);
+        } catch (NumberFormatException e) {
+          nodeID = idString;
+        }
+        if (debuggingEnabled) {
+          GNS.getLogger().info("Read ID: " + nodeID);
+        }
+//        if (tokens[1].contains(".") && !tokens[1].equals("127.0.0.1")) {
+//          throw new IOException("Bad hostname " + tokens[1] + ". Should not be an ip address.");
+//        }
+        return new HostSpec(nodeID, tokens[1], externalIP, port);
       }
-      if (debuggingEnabled) {
-        GNS.getLogger().info("Read ID: " + nodeID);
-      }
-      return new HostSpec(nodeID, tokens[1], port);
+      // hostname
     } else if (tokens.length == 1) {
-      if (hostFileHasNumbers) {
+      if (hostFileHasNodeIds) {
         throw new IOException("Can't mix format with IDs provided and not provided:" + line);
       }
-      return new HostSpec(tokens[0], tokens[0], null);
+      return new HostSpec(tokens[0], tokens[0], null, null);
     } else {
       throw new IOException("Bad host format:" + line);
     }

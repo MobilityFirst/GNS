@@ -335,7 +335,10 @@ public class Reconfigurator<NodeIDType> implements
 	private Set<NodeIDType> shouldReconfigure(String name) {
 		// return null if no current actives
 		Set<NodeIDType> oldActives = this.DB.getActiveReplicas(name);
-		if (oldActives == null || oldActives.isEmpty()) return null;
+		if (oldActives == null || oldActives.isEmpty()) {
+                  log.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> OLD ACTIVES FOR " + name + " IS NULL!");
+                  return null;
+                }
 		// get new IP addresses (via consistent hashing if no oldActives
 		ArrayList<InetAddress> newActives = this.demandProfiler
 				.testAndSetReconfigured(name,
@@ -343,7 +346,7 @@ public class Reconfigurator<NodeIDType> implements
 		assert (newActives != null);
 		// get new actives based on new IP addresses
 		return (newActives.equals(oldActives)) ? null
-				: (this.consistentNodeConfig.getIPToNodeIDs(newActives, oldActives));
+				: (this.consistentNodeConfig.getIPToActiveReplicaIDs(newActives, oldActives));
 	}
 
 	// combine json stats from report into existing demand profile

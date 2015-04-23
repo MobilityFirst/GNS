@@ -8,7 +8,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import java.io.IOException;
 import java.util.logging.Logger;
-
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
@@ -63,7 +62,7 @@ public class NewLocalNameServer<NodeIDType> {
     messenger.addPacketDemultiplexer(demultiplexer);
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     //
-    parameters.setDebugMode(false);
+    parameters.setDebugMode(true);
     //
     this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
             gnsNodeConfig, messenger, parameters);

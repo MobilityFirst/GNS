@@ -223,8 +223,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				new Object[] { "==============================> DerbyRCDB",
 						myID, record.getName(), record.getEpoch(),
 						record.getState(), " ->", epoch, state,
-						record.getNewActives() });
-		record.setState(name, epoch, state);
+						newActives
+                                                //record.getNewActives()
+                                });
+		record.setState(name, epoch, state, newActives);
 		this.setPending(name, true);
 		this.putReconfigurationRecord(record);
 		return true;

@@ -377,16 +377,16 @@ public class GNSInstallerOldApp {
   @SuppressWarnings("unchecked")
   // Probably unnecessary at this point.
   private static void updateNodeConfigAndSendOutServerInit() {
-    GNSNodeConfig nodeConfig = new GNSNodeConfig();
-    Set< String> ids = new HashSet<>();
-    for (HostInfo info : hostTable.values()) {
-      if (info.getNsId() != null) {
-        nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
-        ids.add(info.getNsId());
-      }
-    }
-    // now we send out packets telling all the hosts where to send their status updates
-    StatusListener.sendOutServerInitPackets(nodeConfig, ids);
+//    GNSNodeConfig nodeConfig = new GNSNodeConfig();
+//    Set< String> ids = new HashSet<>();
+//    for (HostInfo info : hostTable.values()) {
+//      if (info.getNsId() != null) {
+//        nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
+//        ids.add(info.getNsId());
+//      }
+//    }
+//    // now we send out packets telling all the hosts where to send their status updates
+//    StatusListener.sendOutServerInitPackets(nodeConfig, ids);
   }
 
   /**

@@ -6,12 +6,14 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.gns.nio.JSONPacket;
-
 public class StringifiableDefault<ObjectType> implements Stringifiable<ObjectType> {
+  
+        private static final Logger LOG = Logger.getLogger(StringifiableDefault.class.getName());
+        
 	Object seedObj;
 	public StringifiableDefault(Object obj) {
 		this.seedObj = obj;
@@ -42,12 +44,18 @@ public class StringifiableDefault<ObjectType> implements Stringifiable<ObjectTyp
 	private InetSocketAddress toInetSocketAddress(String string) {
 		String[] tokens = string.split(":");
 		if(tokens.length!=2) return null;
+                String addressPart = tokens[0];
+                // deals with ec2-23-21-160-80.compute-1.amazonaws.com/10.154.130.201
+                if (addressPart.indexOf("/") != -1) {
+                  addressPart = addressPart.substring(addressPart.indexOf("/") + 1);
+                }
 		InetAddress IP = null;
 		int port = -1;
 		try {
-			IP = InetAddress.getByName(tokens[0].replaceAll("[^0-9.]*", ""));
+			IP = InetAddress.getByName(addressPart.replaceAll("[^0-9.]*", ""));
 			port = Integer.valueOf(tokens[1]);
 		} catch (UnknownHostException | NumberFormatException e) {
+                        LOG.severe("StringifiableDefault:: Error while converting " + string + " to InetSocketAddress: " + e);
 			e.printStackTrace();
 			return null;
 		}

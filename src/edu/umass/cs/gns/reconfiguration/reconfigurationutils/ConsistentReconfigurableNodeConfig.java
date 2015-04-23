@@ -113,6 +113,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
    * It is somewhat nontrivial only because there is a many-to-one mapping
    * from nodes to addresses, so a simple reverse lookup is not meaningful.
    */
+  // Changed this to only return ActiveReplicas - Westy
   public Set<NodeIDType> getIPToActiveReplicaIDs(ArrayList<InetAddress> newAddresses,
           Set<NodeIDType> oldNodes) {
     Set<NodeIDType> newNodes = new HashSet<NodeIDType>(); // return value

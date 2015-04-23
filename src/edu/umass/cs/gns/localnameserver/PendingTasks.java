@@ -92,13 +92,13 @@ public class PendingTasks {
   public static void handleActivesRequestReply(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json, handler.getGnsNodeConfig());
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("Recvd request actives packet: " + requestActivesPacket
+      GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Recvd request actives packet: " + requestActivesPacket
               + " name\t" + requestActivesPacket.getName());
     }
     if (requestActivesPacket.getActiveNameServers() == null
             || requestActivesPacket.getActiveNameServers().size() == 0) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Null set of actives received for name " + requestActivesPacket.getName()
+        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Null set of actives received for name " + requestActivesPacket.getName()
                 + " sending error");
       }
       sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(),
@@ -109,13 +109,13 @@ public class PendingTasks {
     if (handler.containsCacheEntry(requestActivesPacket.getName())) {
       handler.updateCacheEntry(requestActivesPacket);
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Updating cache Name:"
+        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Updating cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
     } else {
       handler.addCacheEntry(requestActivesPacket);
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Adding to cache Name:"
+        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Adding to cache Name:"
                 + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
       }
     }

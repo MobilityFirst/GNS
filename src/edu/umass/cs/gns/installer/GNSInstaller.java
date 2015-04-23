@@ -6,9 +6,7 @@ import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
-import edu.umass.cs.gns.statusdisplay.StatusListener;
 import edu.umass.cs.gns.util.Format;
 import java.io.File;
 import java.net.URISyntaxException;
@@ -16,9 +14,7 @@ import java.net.UnknownHostException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -188,9 +184,9 @@ public class GNSInstaller {
     } catch (InterruptedException e) {
       System.out.println("Problem joining threads: " + e);
     }
-    if (action != InstallerAction.STOP) {
-      updateNodeConfigAndSendOutServerInit();
-    }
+//    if (action != InstallerAction.STOP) {
+//      updateNodeConfigAndSendOutServerInit();
+//    }
     
     System.out.println("Finished " + name + " " + action.name() + " at " + Format.formatDateTimeOnly(new Date()));
   }
@@ -391,20 +387,20 @@ public class GNSInstaller {
     RSync.upload(userName, hostname, keyFileName, lnsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
   }
 
-  @SuppressWarnings("unchecked")
-  // Probably unnecessary at this point.
-  private static void updateNodeConfigAndSendOutServerInit() {
-    GNSNodeConfig nodeConfig = new GNSNodeConfig();
-    Set< String> ids = new HashSet<>();
-    for (HostInfo info : hostTable.values()) {
-      if (info.getNsId() != null) {
-        nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
-        ids.add(info.getNsId());
-      }
-    }
-    // now we send out packets telling all the hosts where to send their status updates
-    StatusListener.sendOutServerInitPackets(nodeConfig, ids);
-  }
+//  @SuppressWarnings("unchecked")
+//  // Probably unnecessary at this point.
+//  private static void updateNodeConfigAndSendOutServerInit() {
+//    GNSNodeConfig nodeConfig = new GNSNodeConfig();
+//    Set< String> ids = new HashSet<>();
+//    for (HostInfo info : hostTable.values()) {
+//      if (info.getNsId() != null) {
+//        nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
+//        ids.add(info.getNsId());
+//      }
+//    }
+//    // now we send out packets telling all the hosts where to send their status updates
+//    StatusListener.sendOutServerInitPackets(nodeConfig, ids);
+//  }
 
   /**
    * Figures out the locations of the JAR and conf files.

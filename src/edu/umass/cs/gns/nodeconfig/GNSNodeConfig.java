@@ -176,8 +176,15 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    */
   public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host) {
     if (host != null) { // should not happen but just in case
+      GNS.getLogger().info("********** HOST ADDRESS IS " + host.getAddress().getHostAddress());
       for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
-        if (hostInfo.getIpAddress().equals(host.getAddress())
+        if (// Either the hosts address are the same
+                (hostInfo.getIpAddress().equals(host.getAddress())
+                // Or the the IP address are the same (handles the case where the above is
+                // is a LAN address)
+                || (hostInfo.getExternalIP() != null
+                    && hostInfo.getExternalIP().equals(host.getAddress().getHostAddress())))
+                // and the ports are the same
                 && hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort()) {
           return hostInfo.getActiveReplicaID();
         }
@@ -560,7 +567,8 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
     ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> newHostInfoMapping
             = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>(16, 0.75f, 8);
     for (HostSpec<NodeIDType> spec : hosts) {
-      addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(), spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT);
+      addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(), spec.getExternalIP(),
+              spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT);
     }
     // some idiot checking of the given Id
     if (!isLocalNameServer) {
@@ -585,13 +593,13 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * @param longitude
    */
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
-          int startingPort, long pingLatency, double latitude, double longitude) {
+          String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
     String idString = id.toString();
     NodeIDType activeReplicaID = valueOf(idString + "_ActiveReplica");
     NodeIDType ReconfiguratorID = valueOf(idString + "_Reconfigurator");
     NodeInfo<NodeIDType> nodeInfo = new NodeInfo<NodeIDType>(id, activeReplicaID, ReconfiguratorID,
-            ipAddress, startingPort, pingLatency, latitude, longitude);
+            ipAddress, externalIP, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
     mapping.put(id, nodeInfo);
   }
@@ -602,8 +610,9 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
    * @param id
    * @param ipAddress
    */
-  private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress, Integer startingPort) {
-    addHostInfo(mapping, id, ipAddress, startingPort != null ? startingPort : GNS.STARTINGPORT, 0, 0, 0);
+  private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
+          String externalIP, Integer startingPort) {
+    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort : GNS.STARTINGPORT, 0, 0, 0);
   }
 
   private static final long updateCheckPeriod = 60000; // 60 seconds
@@ -658,21 +667,6 @@ public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeCon
       GNS.getLogger().severe("Problem reading hosts file:" + e);
       return false;
     }
-  }
-
-  /**
-   * Adds a NodeInfo object to the list maintained by this config instance.
-   *
-   * @param id
-   * @param ipAddress
-   * @param startingPort
-   * @param pingLatency
-   * @param latitude
-   * @param longitude
-   */
-  public void addHostInfo(NodeIDType id, String ipAddress,
-          int startingPort, long pingLatency, double latitude, double longitude) {
-    addHostInfo(hostInfoMapping, id, ipAddress, startingPort, pingLatency, latitude, longitude);
   }
 
   @Override

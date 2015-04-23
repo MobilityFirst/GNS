@@ -80,49 +80,49 @@ public class NewAppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<No
             }
             break;
           // call createPaxosInstance
-          case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
-            // calling handle decision before creating paxos instance to insert state for name in database.
-            if (Config.debuggingEnabled) {
-              GNS.getLogger().info("*******Before creating paxos instance: " + request);
-            }
-            callHandleDecisionWithRetry(request, false);
-            AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(json, unstringer);
-            paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION,
-                    recordPacket.getActiveNameServers(), app);
-            if (Config.debuggingEnabled) {
-              GNS.getLogger().info("*******Added paxos instance:" + recordPacket.getName());
-            }
-            break;
+//          case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
+//            // calling handle decision before creating paxos instance to insert state for name in database.
+//            if (Config.debuggingEnabled) {
+//              GNS.getLogger().info("*******Before creating paxos instance: " + request);
+//            }
+//            callHandleDecisionWithRetry(request, false);
+//            AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(json, unstringer);
+//            paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION,
+//                    recordPacket.getActiveNameServers(), app);
+//            if (Config.debuggingEnabled) {
+//              GNS.getLogger().info("*******Added paxos instance:" + recordPacket.getName());
+//            }
+//            break;
           // call proposeStop
-          case ACTIVE_REMOVE: // stop request for removing a name record
-            if (Config.debuggingEnabled) {
-              GNS.getLogger().info("*******Before proposing remove: " + request);
-            }
-            OldActiveSetStopPacket<NodeIDType> stopPacket1 = new OldActiveSetStopPacket<NodeIDType>(json, unstringer);
-            paxosID = paxosManager.proposeStop(stopPacket1.getName(), stopPacket1.toString(), stopPacket1.getVersion());
-            if (paxosID == null) {
-              callHandleDecision = stopPacket1;
-              noCoordinatorState = true;
-            }
-            if (Config.debuggingEnabled) {
-              GNS.getLogger().info("*******Remove proposed: " + request);
-            }
-            break;
-          case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
-            OldActiveSetStopPacket<NodeIDType> stopPacket2 = new OldActiveSetStopPacket<NodeIDType>(json, unstringer);
-            paxosID = paxosManager.proposeStop(stopPacket2.getName(), stopPacket2.toString(), stopPacket2.getVersion());
-            if (paxosID == null) {
-              callHandleDecision = stopPacket2;
-              noCoordinatorState = true;
-            }
-            break;
+//          case ACTIVE_REMOVE: // stop request for removing a name record
+//            if (Config.debuggingEnabled) {
+//              GNS.getLogger().info("*******Before proposing remove: " + request);
+//            }
+//            OldActiveSetStopPacket<NodeIDType> stopPacket1 = new OldActiveSetStopPacket<NodeIDType>(json, unstringer);
+//            paxosID = paxosManager.proposeStop(stopPacket1.getName(), stopPacket1.toString(), stopPacket1.getVersion());
+//            if (paxosID == null) {
+//              callHandleDecision = stopPacket1;
+//              noCoordinatorState = true;
+//            }
+//            if (Config.debuggingEnabled) {
+//              GNS.getLogger().info("*******Remove proposed: " + request);
+//            }
+//            break;
+//          case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
+//            OldActiveSetStopPacket<NodeIDType> stopPacket2 = new OldActiveSetStopPacket<NodeIDType>(json, unstringer);
+//            paxosID = paxosManager.proposeStop(stopPacket2.getName(), stopPacket2.toString(), stopPacket2.getVersion());
+//            if (paxosID == null) {
+//              callHandleDecision = stopPacket2;
+//              noCoordinatorState = true;
+//            }
+//            break;
 
-          case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
-            // active replica has already put initial state for the name in DB. we only need to create paxos instance.
-            NewActiveSetStartupPacket<NodeIDType> newActivePacket = new NewActiveSetStartupPacket<NodeIDType>(json, unstringer);
-            paxosManager.createPaxosInstance(newActivePacket.getName(), newActivePacket.getNewActiveVersion(),
-                    newActivePacket.getNewActiveNameServers(), app);
-            break;
+//          case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
+//            // active replica has already put initial state for the name in DB. we only need to create paxos instance.
+//            NewActiveSetStartupPacket<NodeIDType> newActivePacket = new NewActiveSetStartupPacket<NodeIDType>(json, unstringer);
+//            paxosManager.createPaxosInstance(newActivePacket.getName(), newActivePacket.getNewActiveVersion(),
+//                    newActivePacket.getNewActiveNameServers(), app);
+//            break;
 
           // no coordination needed for these requests
           case DNS:

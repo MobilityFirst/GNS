@@ -157,6 +157,11 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		this.epoch = epoch;
 		this.state = state;
 	}
+        
+        public void setState(String name, int epoch, RCStates state, Set<NodeIDType> newActives) {
+          this.setState(name, epoch, state); 
+          this.newActives = newActives; 
+        }
 
 	public String getName() {
 		return this.name;

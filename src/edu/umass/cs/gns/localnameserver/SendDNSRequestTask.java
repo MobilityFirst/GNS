@@ -16,6 +16,7 @@ import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.TimerTask;
 import java.util.logging.Level;
 
@@ -89,7 +90,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       }
 
       // the cache contains a set of valid active replicas
-      NodeIDType ns = selectNS(cacheEntry);
+      NodeIDType ns = selectNS(cacheEntry.getActiveNameServers());
 
       sendLookupToNS(ns);
 
@@ -215,13 +216,13 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
             handler.getParameters().getQueryTimeout(), handler);
   }
 
-  private NodeIDType selectNS(CacheEntry cacheEntry) {
+  private NodeIDType selectNS(Set<NodeIDType> replicas) {
     NodeIDType ns;
     if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
-      ns = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(), cacheEntry.getActiveNameServers(),
+      ns = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(), (Set) replicas,
               nameserversQueried);
     } else {
-      ns = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(), nameserversQueried);
+      ns = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(replicas, nameserversQueried);
     }
     return ns;
   }

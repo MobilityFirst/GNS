@@ -30,9 +30,14 @@ public class NodeInfo<NodeIDType> {
   private InetAddress ipAddress = null;
 
   /**
-   * IP address of the name server *
+   * IP address of the name server - should be a host name*
    */
   private final String ipAddressString;
+  
+  /**
+   * External IP address of the name server - should be in dot format *
+   */
+  private final String externalIP;
 
   /**
    * Starting port number *
@@ -70,13 +75,14 @@ public class NodeInfo<NodeIDType> {
    ***********************************************************
    */
   public NodeInfo(NodeIDType id, NodeIDType activeReplicaID, NodeIDType reconfiguratorID,
-          String ipAddressString, int startingPortNumber, 
+          String ipAddressString, String externalIP, int startingPortNumber, 
           long pingLatency, double latitude, double longitude) {
 
     this.id = id;
     this.activeReplicaID = activeReplicaID;
     this.reconfiguratorID = reconfiguratorID;
     this.ipAddressString = ipAddressString;
+    this.externalIP = externalIP;
     this.startingPortNumber = startingPortNumber;
     this.pingLatency = pingLatency;
     this.latitude = latitude;
@@ -121,6 +127,10 @@ public class NodeInfo<NodeIDType> {
       }
     }
     return ipAddress;
+  }
+
+  public String getExternalIP() {
+    return externalIP;
   }
 
   public int getStartingPortNumber() {
