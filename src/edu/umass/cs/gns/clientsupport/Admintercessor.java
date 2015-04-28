@@ -63,16 +63,16 @@ public class Admintercessor<NodeIDType> {
    * This is where the final dump response results are put once we see the sentinel packet.
    */
   private ConcurrentMap<Integer, Map<NodeIDType, TreeSet<NameRecord>>> dumpResult;
-  
+
   /**
-   * 
+   *
    */
   LNSListenerAdmin listenerAdmin = null;
 
   /**
    * Sets the listener admin.
-   * 
-   * @param listenerAdmin 
+   *
+   * @param listenerAdmin
    */
   public void setListenerAdmin(LNSListenerAdmin listenerAdmin) {
     this.listenerAdmin = listenerAdmin;
@@ -341,6 +341,9 @@ public class Admintercessor<NodeIDType> {
     }
     // process all the entries into a nice string
     for (Map.Entry<NodeIDType, TreeSet<NameRecord>> entry : recordsMap.entrySet()) {
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("RECEIVED DUMP RECORD FROM NS: " + entry.getKey());
+      }
       result.append("Nameserver: " + entry.getKey().toString()
               + " (" + handler.getGnsNodeConfig().getNodeAddress(entry.getKey()).getHostName() + ")");
       result.append(LINE_SEPARATOR);

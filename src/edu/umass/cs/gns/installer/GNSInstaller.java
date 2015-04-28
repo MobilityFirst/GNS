@@ -28,16 +28,16 @@ import org.apache.commons.cli.ParseException;
 /**
  * Installs n instances of the GNS Jars on remote hosts and executes them.
  * More specifically this copies the GNS JAR and all the required config files
- to the remote host then starts a Name Server and a Local Name server
- on each host.
-
- Typical uses:
-
- First time install:
- java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -scriptFile conf/ec2_mongo_java_install.bash -update ec2_dev_small
-
- Later updates:
- java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -update ec2_dev_small
+ * to the remote host then starts a Name Server and a Local Name server
+ * on each host.
+ *
+ * Typical uses:
+ *
+ * First time install:
+ * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -scriptFile conf/ec2_mongo_java_install.bash -update ec2_dev_small
+ *
+ * Later updates:
+ * java -cp GNS.jar edu.umass.cs.gns.installer.GNSInstaller -update ec2_dev_small
  *
  *
  * @author westy
@@ -111,7 +111,6 @@ public class GNSInstaller {
     System.out.println("Install Path: " + installPath);
   }
 
-  // THIS WILL NEED TO CHANGE WHEN WE GO TO IDLESS LNS HOSTS
   private static void loadHostsFiles(String configName) {
     List<HostSpec> nsHosts = null;
 
@@ -187,7 +186,7 @@ public class GNSInstaller {
 //    if (action != InstallerAction.STOP) {
 //      updateNodeConfigAndSendOutServerInit();
 //    }
-    
+
     System.out.println("Finished " + name + " " + action.name() + " at " + Format.formatDateTimeOnly(new Date()));
   }
 
@@ -235,16 +234,12 @@ public class GNSInstaller {
       }
       switch (action) {
         case UPDATE:
-          copyJarAndConfFiles(hostname);
+          copyJarAndConfFiles(hostname, createLNS);
+          copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
           break;
         case RESTART:
           break;
       }
-      // write the name-server-info
-      if (action == InstallerAction.UPDATE) {
-        copyHostsFiles(hostname, lnsHostsFile, nsHostsFile);
-      }
-      //writeNSFile(hostname);
       startServers(nsId, createLNS, hostname);
       System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
     } else {
@@ -272,6 +267,7 @@ public class GNSInstaller {
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartLNSClass + " "
               + hostname + " "
               + GNS.DEFAULT_LNS_TCP_PORT + " "
+              // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
               + NS_HOSTS_FILENAME + " "
               // + " -configFile lns.conf "
               + " > LNSlogfile 2>&1 &");
@@ -300,11 +296,13 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void copyJarAndConfFiles(String hostname) {
+  private static void copyJarAndConfFiles(String hostname, boolean createLNS) {
     File keyFileName = getKeyFile();
     System.out.println("Copying jar and conf files");
     RSync.upload(userName, hostname, keyFileName, gnsJarFileLocation, buildInstallFilePath(gnsJarFileName));
-    RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
+    if (createLNS) {
+      RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
+    }
     RSync.upload(userName, hostname, keyFileName, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
   }
 
@@ -384,7 +382,9 @@ public class GNSInstaller {
     File keyFileName = getKeyFile();
     System.out.println("Copying hosts files");
     RSync.upload(userName, hostname, keyFileName, nsHostsFile, buildInstallFilePath(NS_HOSTS_FILENAME));
-    RSync.upload(userName, hostname, keyFileName, lnsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
+    if (lnsHostsFile != null) {
+      RSync.upload(userName, hostname, keyFileName, lnsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
+    }
   }
 
 //  @SuppressWarnings("unchecked")
@@ -401,7 +401,6 @@ public class GNSInstaller {
 //    // now we send out packets telling all the hosts where to send their status updates
 //    StatusListener.sendOutServerInitPackets(nodeConfig, ids);
 //  }
-
   /**
    * Figures out the locations of the JAR and conf files.
    *
@@ -598,9 +597,9 @@ public class GNSInstaller {
       if (runsetUpdate != null) {
         updateRunSet(runsetUpdate, InstallerAction.UPDATE, removeLogs, deleteDatabase, lnsHostFile, nsHostFile, scriptFile);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetUpdate, InstallerAction.RESTART, removeLogs, deleteDatabase, lnsHostFile, nsHostFile, scriptFile);
+        updateRunSet(runsetRestart, InstallerAction.RESTART, removeLogs, deleteDatabase, lnsHostFile, nsHostFile, scriptFile);
       } else if (runsetStop != null) {
-        updateRunSet(runsetUpdate, InstallerAction.STOP, false, false, null, null, null);
+        updateRunSet(runsetStop, InstallerAction.STOP, false, false, null, null, null);
       } else {
         printUsage();
         System.exit(1);
