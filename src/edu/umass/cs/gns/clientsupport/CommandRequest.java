@@ -10,7 +10,6 @@ import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.util.CanonicalJSON;

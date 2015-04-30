@@ -32,7 +32,7 @@ public class AclRetrieveSelf extends AclRetrieve {
 
   @Override
   public String getCommandDescription() {
-    return "Returns the access control list for a guids's field. See below for description of ACL type and signature.";
+    return "Returns the access control list for a guids's field.";
 
   }
 }

@@ -7,12 +7,14 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
+import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
+import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.security.InvalidKeyException;
@@ -47,7 +49,8 @@ public class AclAdd extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
-    String accesser = json.getString(ACCESSER); // who is getting access
+    // The guid that wants to access this field
+    String accesser = json.getString(ACCESSER);
     // allows someone other than guid to change the acl, defaults to guid
     String writer = json.optString(WRITER, guid);
     String accessType = json.getString(ACLTYPE);
@@ -57,8 +60,19 @@ public class AclAdd extends GnsCommand {
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return new CommandResponse(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
+    String accessorPublicKey;
+    if (EVERYONE.equals(accesser)) {
+      accessorPublicKey = EVERYONE;
+    } else {
+      GuidInfo accessorGuidInfo;
+      if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler)) == null) {
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accesser);
+      } else {
+        accessorPublicKey = accessorGuidInfo.getPublicKey();
+      }
+    }
     NSResponseCode responseCode;
-    if (!(responseCode = FieldMetaData.add(access, guid, field, accesser, writer, signature, message, handler)).isAnError()) {
+    if (!(responseCode = FieldMetaData.add(access, guid, field, accessorPublicKey, writer, signature, message, handler)).isAnError()) {
       return new CommandResponse(OKRESPONSE);
     } else {
       return new CommandResponse(responseCode.getProtocolCode());

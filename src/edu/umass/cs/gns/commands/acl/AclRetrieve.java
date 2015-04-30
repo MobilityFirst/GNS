@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
+import edu.umass.cs.gns.clientsupport.ClientUtils;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
@@ -56,13 +57,14 @@ public class AclRetrieve extends GnsCommand {
     if ((access = MetaDataTypeName.valueOf(accessType)) == null) {
       return new CommandResponse(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
-    return new CommandResponse(new JSONArray(FieldMetaData.lookup(access, guid, field, reader, signature,
-            message, handler)).toString());
+    JSONArray guids = ClientUtils.convertPublicKeysToGuids(new JSONArray(FieldMetaData.lookup(access,
+            guid, field, reader, signature, message, handler)));
+    return new CommandResponse(guids.toString());
   }
 
   @Override
   public String getCommandDescription() {
-    return "Returns the access control list for a guids's field. See below for description of ACL type and signature.";
+    return "Returns the access control list for a guids's field.";
 
   }
 }

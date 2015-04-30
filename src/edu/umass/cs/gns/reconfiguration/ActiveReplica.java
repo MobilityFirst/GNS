@@ -36,7 +36,6 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigu
 import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.Util;
-import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun

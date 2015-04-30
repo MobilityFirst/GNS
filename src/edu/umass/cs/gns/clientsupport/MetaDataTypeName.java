@@ -17,6 +17,8 @@ import static edu.umass.cs.gns.clientsupport.InternalField.makeInternalFieldStri
 public enum MetaDataTypeName {
   READ_WHITELIST("ACL"), 
   WRITE_WHITELIST("ACL"), 
+  READ_WHITELIST_GUID("ACL"), 
+  WRITE_WHITELIST_GUID("ACL"), 
   READ_BLACKLIST("ACL"), 
   WRITE_BLACKLIST("ACL"), 
   TIMESTAMP("MD");

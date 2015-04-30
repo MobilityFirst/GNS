@@ -30,6 +30,7 @@ import org.json.JSONObject;
  * There is a cyclic dependency between ActiveReplica and ActiveReplicaApp. 
  * Cyclic dependency = bad design.
  */
+@Deprecated
 public class ActiveReplicaApp implements Reconfigurable, Replicable {
 
   public Application app = null;

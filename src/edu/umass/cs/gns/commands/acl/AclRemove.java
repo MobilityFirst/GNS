@@ -7,9 +7,11 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
+import edu.umass.cs.gns.clientsupport.AccountAccess;
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.FieldMetaData;
+import edu.umass.cs.gns.clientsupport.GuidInfo;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
@@ -47,7 +49,8 @@ public class AclRemove extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
-    String accesser = json.getString(ACCESSER); // who is losing access
+    // The guid that is losing access to this field
+    String accesser = json.getString(ACCESSER);
     // allows someone other than guid to change the acl, defaults to guid
     String writer = json.optString(WRITER, guid);
     String accessType = json.getString(ACLTYPE);
@@ -58,7 +61,21 @@ public class AclRemove extends GnsCommand {
       return new CommandResponse(BADRESPONSE + " " + BADACLTYPE + "Should be one of " + MetaDataTypeName.values().toString());
     }
     NSResponseCode responseCode;
-    if (!(responseCode = FieldMetaData.remove(access, guid, field, accesser, writer, signature, message, handler)).isAnError()) {
+    // We need the public key
+
+    String accessorPublicKey;
+    if (EVERYONE.equals(accesser)) {
+      accessorPublicKey = EVERYONE;
+    } else {
+      GuidInfo accessorGuidInfo;
+      if ((accessorGuidInfo = AccountAccess.lookupGuidInfo(accesser, handler)) == null) {
+        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accesser);
+      } else {
+        accessorPublicKey = accessorGuidInfo.getPublicKey();
+      }
+    }
+    if (!(responseCode = FieldMetaData.remove(access, guid, field, accessorPublicKey,
+            writer, signature, message, handler)).isAnError()) {
       return new CommandResponse(OKRESPONSE);
     } else {
       return new CommandResponse(responseCode.getProtocolCode());
@@ -68,7 +85,7 @@ public class AclRemove extends GnsCommand {
   @Override
   public String getCommandDescription() {
     return "Updates the access control list of the given GUID's field to remove the accesser guid."
-            + "See below for description of ACL type and signature.";
+            + "Accessor should be the guid or group guid to be removed.";
 
   }
 }

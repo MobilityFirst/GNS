@@ -18,17 +18,13 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.Add;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconLookup;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconUpdate;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.Remove;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.Select;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
-import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NoopPacket;
-import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.nsdesign.packet.StopPacket;
@@ -88,8 +84,8 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     PacketType.UPDATE,
     PacketType.SELECT_REQUEST,
     PacketType.SELECT_RESPONSE,
-    PacketType.ACTIVE_ADD,
-    PacketType.ACTIVE_REMOVE,
+    //PacketType.ACTIVE_ADD,
+    //PacketType.ACTIVE_REMOVE,
     PacketType.UPDATE_CONFIRM,
     PacketType.ADD_CONFIRM,
     PacketType.REMOVE_CONFIRM,
@@ -137,15 +133,18 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
         /**
          * Packets sent from replica controller *
          */
-        case ACTIVE_ADD: // sent when new name is added to GNS
-          AddRecordPacket<NodeIDType> addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
-          Add.handleActiveAdd(addRecordPacket, this);
-          break;
-        case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this,
-                  noCoordinationState, doNotReplyToClient);
-          break;
+//        case ACTIVE_ADD: // sent when new name is added to GNS
+//          AddRecordPacket<NodeIDType> addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
+//          Add.handleActiveAdd(addRecordPacket, this);
+//          break;
+//        case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
+//          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this,
+//                  noCoordinationState, doNotReplyToClient);
+//          break;
         // HANDLE CONFIRMATIONS COMING BACK FROM AN LNS (SIDE-TO-SIDE)
+        // THIS CODE IS GOING TO BECOME OBSOLETE ONCE WE FINISH THE LNS
+        // REDESIGN. ACTIVE REPLICAS WILL BE ABLE TO DO REQUESTS TO OTHER 
+        // ACTIVE REPLICAS.
         case UPDATE_CONFIRM:
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:

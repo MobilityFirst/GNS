@@ -33,7 +33,7 @@ public class AclAddSelf extends AclAdd {
   @Override
   public String getCommandDescription() {
     return "Updates the access control list of the given GUID's field to include the accesser guid. " + NEWLINE
-            + "Accessor guid can be guid or group guid or " + EVERYONE + " which means anyone." + NEWLINE
+            + "Accessor should a guid or group guid or " + EVERYONE + " which means anyone." + NEWLINE
             + "Field can be also be " + ALLFIELDS + " which means all fields can be read by the accessor." + NEWLINE
             + "See below for description of ACL type and signature.";
   }
