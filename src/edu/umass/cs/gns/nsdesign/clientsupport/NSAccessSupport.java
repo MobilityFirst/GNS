@@ -18,7 +18,6 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
-import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
@@ -28,7 +27,12 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
-import java.util.Collection;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.Signature;
+import java.security.SignatureException;
 
 /**
  * Provides signing and ACL checks for commands.
@@ -174,10 +178,11 @@ public class NSAccessSupport {
     } else if (allowedUsers.contains(EVERYONE)) {
       return true;
     } else {
-      // see if allowed users (the list of guids and group guids that is in the ACL) intersects with the groups that this
+      // see if allowed users (the public keys for the guids and group guids that is in the ACL) 
+      // intersects with the groups that this
       // guid is a member of (which is stored with this guid)
-      // FIX THIS: allowedUsers is PUBLIC KEYS WHERE GROUP IS GUIDS!!
-      return !Sets.intersection(allowedUsers, NSGroupAccess.lookupGroups(accessorGuid, activeReplica, lnsAddress)).isEmpty();
+      return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers), 
+              NSGroupAccess.lookupGroups(accessorGuid, activeReplica, lnsAddress)).isEmpty();
     }
   }
 

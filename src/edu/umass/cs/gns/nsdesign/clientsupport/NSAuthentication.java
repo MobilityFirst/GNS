@@ -42,14 +42,41 @@ public class NSAuthentication {
       }
       return NSResponseCode.BAD_GUID_ERROR;
     }
+    // First we do the ACL check
     String publicKey;
+    boolean aclCheckPassed = false;
     if (accessorGuid.equals(guid)) {
+      // The simple case where we're accesing our own guid
       publicKey = guidInfo.getPublicKey();
+      aclCheckPassed = true;
     } else {
+      // Otherwise we attempt to find the public key for the accessorGuid in the ACL of the guid being
+      // accesssed.
       publicKey = lookupPublicKey(guid, field, accessorGuid, access, gnsApp, lnsAddress);
-      if (publicKey == null) {
-        return NSResponseCode.BAD_ACCESSOR_ERROR;
+      if (publicKey != null) {
+        // If we found the public key in the lookupPublicKey call then our access control list
+        // check is done.
+        aclCheckPassed = true;
+        // otherwise handle the other cases (group guid in acl) with a last ditch lookup
+      } else {
+        GuidInfo accessorGuidInfo;
+        if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp, lnsAddress)) != null) {
+          if (Config.debuggingEnabled) {
+            GNS.getLogger().info("================> Catchall lookup returned: " + accessorGuidInfo);
+          }
+          publicKey = accessorGuidInfo.getPublicKey();
+        }
       }
+    }
+    if (publicKey == null) {
+      // If we haven't found the publicKey of the accessorGuid yet it's not allowed access
+      return NSResponseCode.BAD_ACCESSOR_ERROR;
+    } else if (!aclCheckPassed) {
+      // Otherwise, in case we found the public key by looking on another server
+      // but we still need to verify the ACL.
+      // Our last attempt to check the ACL - handles all the edge cases like group guid in acl
+      // FIXME: This ACL check Probably does more than it needs to.
+      aclCheckPassed = NSAccessSupport.verifyAccess(access, guidInfo, field, accessorGuid, gnsApp, lnsAddress);
     }
 
     if (signature == null) {
@@ -65,8 +92,8 @@ public class NSAuthentication {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         }
         return NSResponseCode.SIGNATURE_ERROR;
-      } else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, accessorGuid,
-              gnsApp, lnsAddress)) {
+      //} else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, accessorGuid, gnsApp, lnsAddress)) {
+      } else if (!aclCheckPassed) {
         if (Config.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         }
@@ -81,7 +108,7 @@ public class NSAuthentication {
    * ACL of the guid for the given field.
    * Will resort to a lookup on another server in certain circumstances.
    * Like when an ACL uses the EVERYONE flag.
-   * 
+   *
    * @param guid
    * @param field
    * @param accessorGuid
@@ -89,7 +116,7 @@ public class NSAuthentication {
    * @param gnsApp
    * @param lnsAddress
    * @return
-   * @throws FailedDBOperationException 
+   * @throws FailedDBOperationException
    */
   private static String lookupPublicKey(String guid, String field, String accessorGuid,
           MetaDataTypeName access, GnsApplicationInterface gnsApp, InetSocketAddress lnsAddress)

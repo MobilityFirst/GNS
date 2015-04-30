@@ -5,9 +5,9 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
+import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -45,6 +45,18 @@ public class ClientUtils {
     for (int i = 0; i < publicKeys.length(); i++) {
       try {
         guids.put(createGuidStringFromPublicKey(publicKeys.getString(i)));
+      } catch (IllegalArgumentException e) {
+        // ignore any bogus publicKeys
+      }
+    }
+    return guids;
+  }
+  
+  public static Set<String> convertPublicKeysToGuids(Set<String> publicKeys) {
+    Set<String> guids = new HashSet<>();
+    for (String publicKey : publicKeys) {
+      try {
+        guids.add(createGuidStringFromPublicKey(publicKey));
       } catch (IllegalArgumentException e) {
         // ignore any bogus publicKeys
       }
