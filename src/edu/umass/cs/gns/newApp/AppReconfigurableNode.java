@@ -2,14 +2,13 @@ package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import java.io.IOException;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.LocationBasedDemandProfile;
 import java.util.Set;
 
 /**
@@ -20,7 +19,7 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
 
   private MongoRecords<NodeIDType> mongoRecords = null;
 
-  public AppReconfigurableNode(NodeIDType nodeID, InterfaceReconfigurableNodeConfig<NodeIDType> nc)
+  public AppReconfigurableNode(NodeIDType nodeID, GNSInterfaceNodeConfig<NodeIDType> nc)
           throws IOException {
     super(nodeID, nc);
 
@@ -32,7 +31,7 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     if (this.mongoRecords == null) {
       this.mongoRecords = new MongoRecords<>(this.myID, Config.mongoPort);
     }
-    NewApp app = new NewApp(this.myID, this.nodeConfig, this.messenger, mongoRecords);
+    NewApp app = new NewApp(this.myID, (GNSInterfaceNodeConfig)this.nodeConfig, this.messenger, mongoRecords);
 
     NewAppCoordinator appCoordinator = new NewAppCoordinator(app, this.nodeConfig, this.messenger);
 

@@ -9,6 +9,7 @@ package edu.umass.cs.gns.pingNew;
 
 import edu.umass.cs.gns.main.GNS;
 
+import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
@@ -27,11 +28,11 @@ import java.net.InetAddress;
 public class PingServer<NodeIDType> extends Thread{
 
   private final NodeIDType nodeID;
-  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
+  private final GNSConsistentNodeConfig<NodeIDType> nodeConfig;
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
-  public PingServer(final NodeIDType nodeID, final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig) {
+  public PingServer(final NodeIDType nodeID, final GNSConsistentNodeConfig<NodeIDType> nodeConfig) {
     this.nodeID = nodeID;
     this.nodeConfig = nodeConfig;
   }
@@ -90,7 +91,7 @@ public class PingServer<NodeIDType> extends Thread{
     String configFile = args[0];
     String nodeID = "0";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
-    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
     PingServer pingServer = new PingServer(nodeID, nodeConfig);
     new Thread(pingServer).start();
 //    startServer();

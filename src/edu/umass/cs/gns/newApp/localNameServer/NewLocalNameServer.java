@@ -12,11 +12,11 @@ import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.pingNew.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.net.InetSocketAddress;
 
 /**
@@ -71,7 +71,7 @@ public class NewLocalNameServer<NodeIDType> {
     GnsHttpServer.runHttp(requestHandler);
     // Start Ping servers
     GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
-    this.pingManager = new PingManager<>(null, new ConsistentReconfigurableNodeConfig(gnsNodeConfig));
+    this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig(gnsNodeConfig));
     pingManager.startPinging();
     //
     // After starting PingManager because it accesses PingManager.

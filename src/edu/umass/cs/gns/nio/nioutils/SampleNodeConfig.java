@@ -170,30 +170,4 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
     }
     return nodes;
   }
-
-  @Override
-  public long getVersion() {
-    return 0l;
-  }
-
-  @Override
-  public int getAdminPort(NodeIDType id) {
-    throw new UnsupportedOperationException("Not supported yet."); 
-  }
-
-  @Override
-  public int getPingPort(NodeIDType id) {
-    throw new UnsupportedOperationException("Not supported yet."); 
-  }
-
-  @Override
-  public long getPingLatency(NodeIDType id) {
-    throw new UnsupportedOperationException("Not supported yet."); 
-  }
-
-  @Override
-  public void updatePingLatency(NodeIDType id, long responseTime) {
-    throw new UnsupportedOperationException("Not supported yet."); 
-  }
-
 }

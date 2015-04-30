@@ -52,7 +52,7 @@ import org.json.JSONException;
  *
  * @param <NodeIDType>
  */
-public class GNSNodeConfig<NodeIDType> implements InterfaceReconfigurableNodeConfig<NodeIDType>, Shutdownable {
+public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDType>, Shutdownable {
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final int INVALID_PORT = -1;

@@ -13,12 +13,12 @@ import edu.umass.cs.gns.localnameserver.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.pingNew.PingManager;
 //import edu.umass.cs.gns.test.StartExperiment;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.Inet4Address;
@@ -109,7 +109,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
       GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
-      this.pingManager = new PingManager<NodeIDType>(null, new ConsistentReconfigurableNodeConfig(gnsNodeConfig));
+      this.pingManager = new PingManager<NodeIDType>(null, new GNSConsistentReconfigurableNodeConfig(gnsNodeConfig));
       pingManager.startPinging();
     }
 

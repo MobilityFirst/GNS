@@ -14,6 +14,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
@@ -39,7 +42,6 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
@@ -57,7 +59,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private final NodeIDType nodeID;
-  private final ConsistentReconfigurableNodeConfig nodeConfig;
+  private final GNSConsistentReconfigurableNodeConfig nodeConfig;
   private final PingManager pingManager;
   /**
    * Object provides interface to the database table storing name records
@@ -68,10 +70,10 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    */
   private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
 
-  public NewApp(NodeIDType id, InterfaceReconfigurableNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
+  public NewApp(NodeIDType id, GNSInterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
-    this.nodeConfig = new ConsistentReconfigurableNodeConfig(nodeConfig);
+    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig(nodeConfig);
     this.pingManager = new PingManager<NodeIDType>(nodeID, this.nodeConfig);
     this.pingManager.startPinging();
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);

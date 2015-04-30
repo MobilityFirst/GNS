@@ -9,6 +9,7 @@ package edu.umass.cs.gns.pingNew;
 
 import edu.umass.cs.gns.util.SparseMatrix;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
@@ -35,12 +36,12 @@ public class PingManager<NodeIDType> implements Shutdownable {
   private final PingServer<NodeIDType> pingServer;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
   private final SparseMatrix<NodeIDType, Integer, Long> pingTable; // the place we store all the sampled rtt values
-  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
+  private final GNSConsistentNodeConfig<NodeIDType> nodeConfig;
   private Thread managerThread;
 
   private final boolean debug = false;
 
-  public PingManager(NodeIDType nodeId, ConsistentReconfigurableNodeConfig<NodeIDType> gnsNodeConfig) {
+  public PingManager(NodeIDType nodeId, GNSConsistentNodeConfig<NodeIDType> gnsNodeConfig) {
     this.nodeId = nodeId;
     this.nodeConfig = gnsNodeConfig;
     this.pingClient = new PingClient<NodeIDType>(gnsNodeConfig);
@@ -189,7 +190,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
     String configFile = args[0];
     String nodeID = "0";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
-    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
     new PingManager(nodeID, nodeConfig).startPinging();
   }
   public final static String NEWLINE = System.getProperty("line.separator");

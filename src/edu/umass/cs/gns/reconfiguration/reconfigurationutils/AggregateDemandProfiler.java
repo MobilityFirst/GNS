@@ -28,6 +28,10 @@ public class AggregateDemandProfiler {
           this.nodeConfig = nodeConfig;
         }
         
+        public AggregateDemandProfiler() {
+          this.nodeConfig = null;
+        }
+        
 	public synchronized AbstractDemandProfile register(
 			InterfaceRequest request, 
                 InetAddress sender) {

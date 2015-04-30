@@ -8,6 +8,7 @@
 package edu.umass.cs.gns.pingNew;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
@@ -35,11 +36,11 @@ public class PingClient<NodeIDType> {
   // Records the send time of each request
   private final ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
   private final Random randomID = new Random();
-  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
+  private final GNSConsistentNodeConfig<NodeIDType> nodeConfig;
   private Thread receiveThread;
   private boolean shutdown = false;
 
-  public PingClient(ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig) {
+  public PingClient(GNSConsistentNodeConfig<NodeIDType> nodeConfig) {
     this.nodeConfig = nodeConfig;
     try {
       clientSocket = new DatagramSocket();
@@ -185,7 +186,7 @@ public class PingClient<NodeIDType> {
     String configFile = args[0];
     String nodeID = "0";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
-    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
     PingClient pingClient = new PingClient(nodeConfig);
     while (true) {
       GNS.getLogger().info("RTT = " + pingClient.sendPing("0"));

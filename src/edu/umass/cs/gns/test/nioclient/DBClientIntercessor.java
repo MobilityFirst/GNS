@@ -101,30 +101,6 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
         throw new UnsupportedOperationException("Not supported yet.");
       }
       
-      @Override
-      public long getVersion() {
-        return 0l;
-      }
-
-      @Override
-      public int getAdminPort(Integer id) {
-        throw new UnsupportedOperationException("Not supported yet."); 
-      }
-
-      @Override
-      public int getPingPort(Integer id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-      }
-
-      @Override
-      public long getPingLatency(Integer id) {
-        throw new UnsupportedOperationException("Not supported yet.");
-      }
-
-      @Override
-      public void updatePingLatency(Integer id, long responseTime) {
-        throw new UnsupportedOperationException("Not supported yet."); 
-      }
     };
     this.nioTransport = new NIOTransport(ID, nodeConfig, new JSONMessageExtractor(this));
     new Thread(nioTransport).start();

@@ -3,6 +3,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
@@ -59,7 +60,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
 
     if (!Config.emulatePingLatencies) {
       // when emulating ping latencies we do not
-      this.pingManager = new PingManager<NodeIDType>(nodeID, new ConsistentReconfigurableNodeConfig(gnsNodeConfig));
+      this.pingManager = new PingManager<NodeIDType>(nodeID, new GNSConsistentNodeConfig<>(gnsNodeConfig));
       this.pingManager.startPinging();
     }
   }
