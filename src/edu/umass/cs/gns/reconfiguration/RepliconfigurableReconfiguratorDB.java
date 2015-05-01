@@ -57,11 +57,12 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	/*
 	 * FIXME: implement durability
 	 */
+        @Override
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
 		String rcGroupName = this.getRCGroupName(request.getServiceName());
 		//assert (this.getReplicaGroup(rcGroupName) != null);
-		assert(request.getServiceName().equals(rcGroupName) || request.getServiceName().equals("name0")) : rcGroupName + " " + request;
+		//assert(request.getServiceName().equals(rcGroupName) || request.getServiceName().equals("name0")) : rcGroupName + " " + request;
 		return super.coordinateRequest(rcGroupName, request);
 	}
 	
