@@ -8,13 +8,12 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Util;
-import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
  */
 /*
- * This class maintains the demand profile for a single name and turns it into a JSONObject via its
+ * This class maintains the deman profile for a single name and returns it into a JSONObject via its
  * getStats() method.
  */
 public class DemandProfile extends AbstractDemandProfile {
@@ -61,8 +60,7 @@ public class DemandProfile extends AbstractDemandProfile {
 	 * profile.
 	 */
 	@Override
-	public void register(InterfaceRequest request, 
-          InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
+	public void register(InterfaceRequest request, InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
 		if (!request.getServiceName().equals(this.name))
 			return;
 		this.numRequests++;

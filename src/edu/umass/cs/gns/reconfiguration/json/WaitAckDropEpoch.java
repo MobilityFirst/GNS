@@ -22,49 +22,55 @@ import edu.umass.cs.gns.util.MyLogger;
  * @author V. Arun
  */
 /*
- * This protocol task is initiated at a reconfigurator to await a majority of acknowledgments from
- * active replicas for StopEpoch messages.
+ * This protocol task is initiated at a reconfigurator to await a majority of
+ * acknowledgments from active replicas for StopEpoch messages.
  */
 public class WaitAckDropEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private final DropEpochFinalState<NodeIDType> dropEpoch;
-	private final Set<NodeIDType> group; // just convenient to remember this
+	private static final long RESTART_PERIOD = 8000;
 
-	private String key = null;
+	private final NodeIDType myID;
+	private final DropEpochFinalState<NodeIDType> dropEpoch;
+	private final StartEpoch<NodeIDType> startEpoch;
+
+	private final String key;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
 
-	public WaitAckDropEpoch(StartEpoch<NodeIDType> startEpoch, RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
+	public WaitAckDropEpoch(StartEpoch<NodeIDType> startEpoch,
+			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		super(startEpoch.getPrevEpochGroup()); // default is all?
-		this.dropEpoch = new DropEpochFinalState<NodeIDType>(
-				startEpoch.getSender(), startEpoch.getServiceName(),
-				startEpoch.getEpochNumber()-1, false);
-		this.group = startEpoch.getPrevEpochGroup();
+		this.dropEpoch = new DropEpochFinalState<NodeIDType>(DB.getMyID(),
+				startEpoch.getServiceName(), startEpoch.getEpochNumber() - 1,
+				false);
+		this.startEpoch = startEpoch;
+		this.myID = DB.getMyID();
+		this.key = this.refreshKey();
+		this.setPeriod(RESTART_PERIOD);
 	}
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		return start();
+		// send StartEpoch to all new actives and await a majority
+		GenericMessagingTask<NodeIDType, ?> mtask1 = new GenericMessagingTask<NodeIDType, DropEpochFinalState<NodeIDType>>(
+				this.startEpoch.getPrevEpochGroup().toArray(), this.dropEpoch);
+		return mtask1.toArray();
 	}
 
+	// We skip the first period before sending out drop epochs.
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
-		// send StartEpoch to all new actives and await a majority
-		GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, DropEpochFinalState<NodeIDType>>(
-				this.group.toArray(), this.dropEpoch);
-		return mtask.toArray();
+		return null;
 	}
 
 	@Override
 	public String refreshKey() {
-		return (this.key = this.getClass().getSimpleName()
-				+ this.dropEpoch.getInitiator() + ":"
-				+ this.dropEpoch.getServiceName() + ":"
-				+ this.dropEpoch.getEpochNumber());
-		//return (this.key = Util.refreshKey(this.dropEpoch.getSender().toString()));
+		return (this.getClass().getSimpleName() + myID + ":"
+				+ this.dropEpoch.getServiceName() + ":" + this.dropEpoch
+					.getEpochNumber());
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE };
@@ -82,7 +88,8 @@ public class WaitAckDropEpoch<NodeIDType>
 
 	@Override
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
-		assert(event.getType().equals(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE));
+		assert (event.getType()
+				.equals(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE));
 		return true;
 	}
 
@@ -90,11 +97,11 @@ public class WaitAckDropEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
-		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[]{getClass().getSimpleName(), dropEpoch.getInitiator(), "received ACK",
-				dropEpoch.getSummary()});
+		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this,
+				"received ACK", dropEpoch.getSummary() });
 		return null;
 	}
-	
+
 	public static void main(String[] args) {
 	}
 }

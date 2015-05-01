@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.reconfiguration;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +19,8 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServic
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DemandReport;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StopEpoch;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
@@ -32,6 +36,7 @@ import edu.umass.cs.gns.util.Stringifiable;
 public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		InterfaceRepliconfigurable, InterfaceReconfiguratorDB<NodeIDType> {
 	public static final ReconfigurationPacket.PacketType[] types = { };//ReconfigurationPacket.PacketType.RC_RECORD_REQUEST };
+	public static enum RecordNames {NODE_CONFIG};
 
 	protected final NodeIDType myID;
 	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
@@ -71,6 +76,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
 			boolean doNotReplyToClient) {
+		log.info(this + " executing " + request);
 		assert (request instanceof BasicReconfigurationPacket<?>); 
 		// cast checked by assert above
 		BasicReconfigurationPacket<NodeIDType> rcPacket = (BasicReconfigurationPacket<NodeIDType>) request;
@@ -143,28 +149,42 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	 */
 	public boolean handleRCRecordRequest(RCRecordRequest<NodeIDType> rcRecReq) {
 		
-		log.info("ARDB"+this.myID+" received RCRecordRequest " + rcRecReq);
 		// create RC record upon a name creation request
 		if (rcRecReq.startEpoch.isInitEpoch()
 				&& this.getReconfigurationRecord(rcRecReq.getServiceName()) == null)
 			this.createReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
-					rcRecReq.getServiceName(), -1,
+					rcRecReq.getServiceName(), rcRecReq.startEpoch.getEpochNumber() - 1,
 					rcRecReq.startEpoch.curEpochGroup));
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(rcRecReq.getServiceName());
+		assert(record!=null);
 
-		if (!this.isLegitTransition(rcRecReq, record))
+		log.info("ARDB"+this.myID+" received RCRecordRequest " + rcRecReq + "\n rcRecord = " + record);
+
+		// verify legitimate transition and legitimate node config change
+		if (!this.isLegitTransition(rcRecReq, record)
+				|| !this.isLegitimateNodeConfigChange(rcRecReq, record))
 			return false;
+		
+		// wait till node config change is complete
+		if (rcRecReq.isNodeConfigChange()
+				&& rcRecReq.isReconfigurationComplete()) {
+			this.selfWait();
+			this.deleteReconfigurators(rcRecReq.getEpochNumber() - 1);
+			this.updateNodeConfig(rcRecReq.getEpochNumber());
+			System.out.println(this + " NODE_CONFIG change complete");
+		}
 
+		boolean handled = false;
 		if (rcRecReq.isReconfigurationIntent()) {
 			// READY -> WAIT_ACK_STOP
-			log.log(Level.INFO, MyLogger.FORMAT[9],
+			log.log(Level.INFO, MyLogger.FORMAT[10],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "->",
 							rcRecReq.getEpochNumber()-1,
-							ReconfigurationRecord.RCStates.WAIT_ACK_STOP });
-			return this.setStateInitReconfiguration(rcRecReq.getServiceName(),
+							ReconfigurationRecord.RCStates.WAIT_ACK_STOP, rcRecReq.startEpoch.getCurEpochGroup() });
+			handled = this.setStateInitReconfiguration(rcRecReq.getServiceName(),
 					rcRecReq.getEpochNumber() - 1,
 					ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
 					rcRecReq.startEpoch.getCurEpochGroup(), rcRecReq.getInitiator());
@@ -176,9 +196,18 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							record.getEpoch(), record.getState(), "->",
 							rcRecReq.getEpochNumber(),
 							ReconfigurationRecord.RCStates.READY });
-			return this.setState(rcRecReq.getServiceName(),
+			handled = this.setState(rcRecReq.getServiceName(),
 					rcRecReq.getEpochNumber(),
 					ReconfigurationRecord.RCStates.READY);
+			// notify to wake up node config completion wait
+			if (this.isRCGroupName(record.getName())) {
+				log.info(this
+						+ " selfNotifying upon completing reconfiguration of "
+						+ rcRecReq.getServiceName()
+						+ (this.isNodeConfigChangeComplete() ? " **all done**"
+								: ""));
+				selfNotify();
+			}
 		} else if (rcRecReq.isDeleteConfirmation()) {
 			// WAIT_ACK_STOP -> DELETE
 			log.log(Level.INFO, MyLogger.FORMAT[7],
@@ -186,9 +215,39 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "-> DELETE" });
 
-			return this.deleteReconfigurationRecord(rcRecReq.getServiceName());
+			handled = this.deleteReconfigurationRecord(rcRecReq.getServiceName());
 		} else
 			throw new RuntimeException("Received unexpected RCRecordRequest");
+		return handled;
+	}
+
+	// FIXME: keep close to getRCGroupName in RepliconfigurableReconfiguratorDB
+	protected boolean isRCGroupName(String name) {
+		return this.getRCGroupName(name).equals(name);
+	}
+
+	/*
+	 * Checks that oldGroup is current group and newGroup differs from old by
+	 * exactly one node.
+	 */
+	private boolean isLegitimateNodeConfigChange(
+			RCRecordRequest<NodeIDType> rcRecReq,
+			ReconfigurationRecord<NodeIDType> record) {
+		if (!rcRecReq.getServiceName().equals(
+				RecordNames.NODE_CONFIG.toString()))
+			return true;
+		boolean consistent = rcRecReq.startEpoch.getPrevEpochGroup().equals(
+				record.getActiveReplicas());
+		Set<NodeIDType> oldGroup = rcRecReq.startEpoch.getPrevEpochGroup();
+		Set<NodeIDType> newGroup = rcRecReq.startEpoch.getCurEpochGroup();
+		consistent = consistent
+				&& differByOne(oldGroup, newGroup);
+		return consistent;
+	}
+	
+	private boolean differByOne(Set<NodeIDType> s1, Set<NodeIDType> s2) {
+		return (s1.containsAll(s2) && (s1.size()==(s2.size()+1))) ||
+				(s2.containsAll(s1) && (s2.size()==(s1.size()+1)));
 	}
 
 	public String toString() {
@@ -234,7 +293,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 	@Override
 	public Set<IntegerPacketType> getRequestTypes() {
-		throw new RuntimeException("Method should never have been called");
+		return null;
 	}
 
 	// FIXME: Replicable and Reconfigurable methods are unimplemented below.
@@ -242,12 +301,14 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	// Reconfigurable methods below
 	@Override
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-		throw new RuntimeException("Method not yet implemented");
+		StopEpoch<NodeIDType> stop = new StopEpoch<NodeIDType>(this.getMyID(), name, epoch);
+		assert(stop instanceof InterfaceReplicableRequest);
+		return stop;
 	}
 
 	@Override
 	public String getFinalState(String name, int epoch) {
-		throw new RuntimeException("Method not yet implemented");
+		return null;
 	}
 
 	@Override
@@ -266,6 +327,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	 */
 	private boolean isLegitTransition(RCRecordRequest<NodeIDType> rcRecReq,
 			ReconfigurationRecord<NodeIDType> record) {
+		assert(record!=null) : rcRecReq;
 		// always ignore lower epochs
 		if (rcRecReq.getEpochNumber() - record.getEpoch() < 0)
 			return false;
@@ -333,5 +395,110 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					|| record.getState().equals(RCStates.READY);
 		}
 		return false;
+	}
+	
+	/* Checks if all new RC groups are ready.
+	 * FIXME: This check should be done atomically, and we also need to 
+	 * check for the new NC group itself existing.
+	 */
+	private boolean isNodeConfigChangeComplete() {
+		Map<String, Set<NodeIDType>> newRCGroups = this.getNewRCGroups();
+		boolean complete = true;
+		for(String newRCGroup : newRCGroups.keySet()) {
+			ReconfigurationRecord<NodeIDType> record = this.getReconfigurationRecord(newRCGroup);
+			complete = complete
+					&& record.getState().equals(RCStates.READY)
+					&& record.getActiveReplicas().equals(
+							newRCGroups.get(newRCGroup));
+			if(!complete) break;
+		}
+		return complete;
+	}
+	
+	protected Map<String, Set<NodeIDType>> getNewRCGroups() {
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		return this.getRCGroups(this.getMyID(), ncRecord.getNewActives());
+	}
+	
+	/* FIXME: This method currently reconstructs a new consistent hashing structure afresh
+	 * each time it is called, which may be inefficient. But it is unclear where we can
+	 * store it in a manner that is safe, so we just reconstruct it from the DB on demand.
+	 */
+	protected Map<String, Set<NodeIDType>> getRCGroups(NodeIDType rc,
+			Set<NodeIDType> allRCs, boolean print) {
+		assert (rc != null && allRCs != null);
+		ConsistentHashing<NodeIDType> newRCCH = new ConsistentHashing<NodeIDType>(
+				allRCs);
+		HashMap<String, Set<NodeIDType>> groups = new HashMap<String, Set<NodeIDType>>();
+		String s = "RC groups with " + allRCs + " at " + getMyID() + " = ";
+		// compute RC groups as in createDefaultGroups
+		for (NodeIDType node : allRCs) {
+			Set<NodeIDType> group = newRCCH.getReplicatedServers(node
+					.toString());
+			if (group.contains(rc)) {
+				s += " [" + (node + ":" + group) + "] ";
+				groups.put(this.getRCGroupName(node), group);
+			}
+		}
+		if(print) System.out.println(s+"\n");
+
+		return groups;
+	}
+	protected Map<String, Set<NodeIDType>> getRCGroups(NodeIDType rc,
+			Set<NodeIDType> allRCs) {
+		return this.getRCGroups(rc, allRCs, false);
+	}
+	
+	private NodeIDType getMyID() {
+		return this.myID;
+	}
+	
+	private synchronized void selfWait() {
+		try {
+			while (!this.isNodeConfigChangeComplete())
+				this.wait(); 
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	private synchronized void selfNotify() {
+		this.notify();
+	}
+	
+	// FIXME: check if this can this really be a noop.
+	public boolean handleStopEpoch(StopEpoch<NodeIDType> stopEpoch) {
+		log.info(this + " stopped " + stopEpoch.getSummary());
+		return true;
+	}
+
+	protected String getRCGroupName(NodeIDType node) {
+		return node.toString();
+	}
+	protected String getRCGroupName(String name) {
+		if(name.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString()))
+			return name;
+		else return this.getRCGroupName(this.consistentNodeConfig.getFirstReconfigurator(name));
+	}
+	
+	/*
+	 * Insert next nodeConfig version into DB. We have the necessary nodeID info
+	 * from the NODE_CONFIG reconfiguration record, but we do need
+	 * consistentNodeConfig for the corresponding InetSocketAddresses.
+	 * 
+	 * FIXME: This should probably be done atomically, not one record at a time.
+	 */
+	protected boolean updateNodeConfig(int version) {
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		boolean added = true;
+		for (NodeIDType rc : ncRecord.getNewActives())
+			added = added
+					&& this.addReconfigurator(rc,
+							this.consistentNodeConfig.getNodeSocketAddress(rc),
+							version);
+		return added;
 	}
 }

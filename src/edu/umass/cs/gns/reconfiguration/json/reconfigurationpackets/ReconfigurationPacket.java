@@ -92,7 +92,10 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		REQUEST_ACTIVE_REPLICAS(236), // : send current active replicas
 
 		// reconfigurator -> reconfigurator
-		RC_RECORD_REQUEST(237);
+		RC_RECORD_REQUEST(237),
+		
+		// admin -> reconfigurator
+		RECONFIGURE_RC_NODE_CONFIG (238);
 		;
 
 		private final int number;
@@ -131,6 +134,8 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		typeMap.put(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS, RequestActiveReplicas.class); 
 		
 		typeMap.put(ReconfigurationPacket.PacketType.RC_RECORD_REQUEST, RCRecordRequest.class); 
+
+		typeMap.put(ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG, ReconfigureRCNodeConfig.class); 
 
 		for(ReconfigurationPacket.PacketType type : ReconfigurationPacket.PacketType.intToType.values()) {
 			assert(getPacketTypeClassName(type)!=null) : type;

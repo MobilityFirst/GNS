@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.reconfiguration.reconfigurationutils;
+package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Util;

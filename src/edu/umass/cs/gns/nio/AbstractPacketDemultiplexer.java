@@ -26,7 +26,7 @@ public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemu
    * ******************************** Start of new, untested parts **************************
    */
   private final ScheduledExecutorService executor
-          = Executors.newScheduledThreadPool(40);  // FIXME: Not sure on what basis to set pool size
+          = Executors.newScheduledThreadPool(5);  // FIXME: Not sure on what basis to set pool size
   private final HashMap<Integer, Boolean> demuxTypes
           = new HashMap<Integer, Boolean>();
   private final HashMap<Integer, InterfacePacketDemultiplexer> demuxMap

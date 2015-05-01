@@ -91,14 +91,21 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 	public boolean createReplicaGroup(String serviceName, int epoch,
 			String state, Set<Integer> nodes) {
 		if (this.coordType.equals(CoordType.LAZY)) {
-			this.groups.put(serviceName, new CoordData(serviceName, epoch, nodes));
+			this.groups.put(serviceName, new CoordData(serviceName, epoch,
+					nodes));
 		} else if (this.coordType.equals(CoordType.PAXOS)) {
-			this.paxosManager.createPaxosInstance(serviceName, (short) epoch,
-					nodes, this);
+			while (!this.paxosManager.existsOrHigher(serviceName, (short) epoch)
+					&& !this.paxosManager.createPaxosInstance(serviceName,
+							(short) epoch, nodes, this, state)) {
+				// lower epoch exists, so wait for it to be killed
+				this.paxosManager.waitCanCreateOrExists(serviceName,
+						(short) epoch);
+			}
 		}
-		/* FIXME: This putInitialState may not happen atomically with paxos
-		 * instance creation. However, gigapaxos currently has no way to 
-		 * specify any initial state.
+		/* FIXME: This should not needed as state is already supplied to
+		 * createPaxosInstance, but we need it right now to set the 
+		 * epoch correctly. This will be unnecessary when paxos apps
+		 * are epoch-unaware.
 		 */
 		this.app.putInitialState(serviceName, epoch, state);
 		return true;
@@ -142,7 +149,7 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 				"Can not get stop request for a non-reconfigurable app");
 	}
 
-	// FIXME: unused method
+	// FIXME: unused method that exists only to prevent warnings
 	public boolean existsGroup(String name, int epoch) {
 		CoordData data = this.groups.get(name);
 		assert (data == null || data.name.equals(name));

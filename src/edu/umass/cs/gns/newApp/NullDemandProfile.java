@@ -45,8 +45,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public void register(InterfaceRequest request,
-          InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
+  public void register(InterfaceRequest request, InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
   }
 
   @Override

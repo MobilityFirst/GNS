@@ -104,7 +104,7 @@ public class ExampleNode {
 		PingPongProtocolTask task =
 				new PingPongProtocolTask(this.myID, nodes, 1);
 		log.info("Node" + myID + " spawning reliableSend protocol task");
-		this.protocolExecutor.schedule(task);
+		this.protocolExecutor.spawn(task);
 		return task;
 	}
 

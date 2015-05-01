@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.reconfiguration.reconfigurationutils;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -8,7 +9,12 @@ import org.json.JSONException;
 
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 
-public class ConsistentNodeConfig<NodeIDType> implements
+/* This class isn't really used for anything other than as 
+ * a parent for ConsistentReconfigurableNodeConfig, so it
+ * has been declared abstract (even though it has no 
+ * abstract methods).
+ */
+public abstract class ConsistentNodeConfig<NodeIDType> implements
 		InterfaceNodeConfig<NodeIDType> {
 
 	private final InterfaceNodeConfig<NodeIDType> nodeConfig;
@@ -50,10 +56,14 @@ public class ConsistentNodeConfig<NodeIDType> implements
 	public int getNodePort(NodeIDType id) {
 		return this.nodeConfig.getNodePort(id);
 	}
-        
+	
+	public InetSocketAddress getNodeSocketAddress(NodeIDType id) {
+		InetAddress ip = this.getNodeAddress(id);
+		return (ip!=null ? new InetSocketAddress(ip, this.getNodePort(id)) : null);
+	}
+
 	// FIXME: disallow the use of this method
 	@Override
-        @Deprecated
 	public Set<NodeIDType> getNodeIDs() {
 		throw new RuntimeException("The use of this method is not permitted");
 		//return this.nodeConfig.getNodeIDs();
@@ -74,5 +84,4 @@ public class ConsistentNodeConfig<NodeIDType> implements
 			throws JSONException {
 		return this.nodeConfig.getValuesFromJSONArray(array);
 	}
- 
 }

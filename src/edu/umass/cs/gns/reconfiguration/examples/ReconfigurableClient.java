@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.reconfiguration.examples;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,12 +16,14 @@ import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONPacket;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
+import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigureRCNodeConfig;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.gns.util.MyLogger;
 
@@ -93,6 +97,7 @@ public class ReconfigurableClient {
 			this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
 			this.register(AppRequest.PacketType.DEFAULT_APP_REQUEST);
 			this.register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
+			this.register(ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG);
 		}
 		@Override
 		public boolean handleJSONObject(JSONObject json) {
@@ -166,18 +171,24 @@ public class ReconfigurableClient {
 			String requestValuePrefix = "request_value";
 			String initValue = "initial_value";
                         client.sendRequest(client.makeRequestActiveReplicas(namePrefix+0));
-                        
+            long sleepTime = 1600;
+            
 			client.sendRequest(client.makeCreateNameRequest(namePrefix+0, initValue));
 			while(client.exists.containsKey(namePrefix+0));
 			for(int i=0; i<numRequests; i++) {
 				client.sendRequest(client.makeRequest(namePrefix+0, requestValuePrefix+i));
 				while(client.exists.containsKey(namePrefix+0));
-				Thread.sleep(800);
+				Thread.sleep(sleepTime);
 			}
 			client.sendRequest(client.makeRequestActiveReplicas(namePrefix+0));
 			while(client.exists.containsKey(namePrefix+0));
 			client.sendRequest(client.makeDeleteNameRequest(namePrefix+0, initValue));
 			while(client.exists.containsKey(namePrefix+0));
+			Thread.sleep(sleepTime);
+			
+			// add node
+			client.sendRequest(new ReconfigureRCNodeConfig<Integer>(null, 1103, new InetSocketAddress(InetAddress.getByName("localhost"), 3103)));
+			while(client.exists.containsKey(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString()));
 			Thread.sleep(500);
 			client.messenger.stop();
 		} catch(IOException ioe) {

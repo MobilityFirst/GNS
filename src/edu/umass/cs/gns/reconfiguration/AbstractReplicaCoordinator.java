@@ -42,6 +42,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	
 	private InterfaceReconfiguratorCallback callback = null;
 	private InterfaceReconfiguratorCallback activeCallback = null; // for stops
+	private boolean largeCheckpoints = false;
 	protected JSONMessenger<NodeIDType> messenger;	
 
 	/********************* Start of abstract methods **********************************************/
@@ -157,6 +158,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
 		return this.app.getStopRequest(name, epoch);
 	}
+	
 	@Override
 	public String getFinalState(String name, int epoch) {
 		return this.app.getFinalState(name, epoch);
@@ -209,6 +211,13 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	public NodeIDType getMyID() {
 		assert(this.messenger!=null);
 		return this.messenger.getMyID();
+	}
+	
+	public boolean hasLargeCheckpoints() {
+		return this.largeCheckpoints;
+	}
+	public void setLargeCheckpoints() {
+		this.largeCheckpoints = true;
 	}
 	/*********************** End of private helper methods ************************/
 

@@ -45,13 +45,14 @@ public class WaitPrimaryExecution<NodeIDType> extends
 	private static ReconfigurationPacket.PacketType[] types = {};
 
 	private boolean started = false;
-	private String key = null;
+	private final String key;
 
 	public WaitPrimaryExecution(NodeIDType myID,
 			StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB,
 			Set<NodeIDType> replicas) {
 		super(startEpoch, DB);
+		this.key = this.refreshKey();
 	}
 
 	/*
@@ -81,7 +82,7 @@ public class WaitPrimaryExecution<NodeIDType> extends
 
 	@Override
 	public String refreshKey() {
-		return (this.key = this.getClass().getSimpleName() + this.DB.getMyID()
+		return (this.getClass().getSimpleName() + this.DB.getMyID()
 				+ ":" + this.startEpoch.getServiceName() + ":"
 				+ this.startEpoch.getEpochNumber());
 		//return (this.key = Util.refreshKey(this.DB.getMyID().toString()));
@@ -123,7 +124,7 @@ public class WaitPrimaryExecution<NodeIDType> extends
 					.getMyID(), this.startEpoch,
 					RequestTypes.REGISTER_RECONFIGURATION_COMPLETE));
 			// cancel task
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{this.getClass().getSimpleName(), "canceling itself"});
+			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{this, "canceling itself"});
 			ProtocolExecutor.cancel(this);
 		}
 		return false;

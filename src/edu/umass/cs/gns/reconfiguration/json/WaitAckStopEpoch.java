@@ -34,7 +34,9 @@ public class WaitAckStopEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private String key = null;
+	private static final long RESTART_PERIOD = 1000;
+	
+	private final String key;
 	private final StopEpoch<NodeIDType> stopEpoch;
 	protected final StartEpoch<NodeIDType> startEpoch; // just convenient to
 														// remember this
@@ -47,11 +49,13 @@ public class WaitAckStopEpoch<NodeIDType>
 	public WaitAckStopEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		super(startEpoch.getPrevEpochGroup(), 1); // default is all?
-		this.stopEpoch = new StopEpoch<NodeIDType>(startEpoch.getSender(),
-				startEpoch.getServiceName(), startEpoch.getEpochNumber() - 1);
+		this.stopEpoch = new StopEpoch<NodeIDType>(DB.getMyID(),
+				startEpoch.getPrevGroupName(), startEpoch.getEpochNumber() - 1);
 		this.startEpoch = startEpoch;
 		this.nodeIterator = startEpoch.getPrevEpochGroup().iterator();
 		this.DB = DB;
+		this.key = this.refreshKey();
+		this.setPeriod(RESTART_PERIOD);
 	}
 
 	@Override
@@ -75,7 +79,7 @@ public class WaitAckStopEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
-		if (this.startEpoch.isInitEpoch()) {
+		if (this.startEpoch.noPrevEpochGroup()) {
 			// spoof AckStopEpoch to self
 			return new GenericMessagingTask<NodeIDType, AckStopEpoch<NodeIDType>>(
 					this.DB.getMyID(), new AckStopEpoch<NodeIDType>(
@@ -104,11 +108,9 @@ public class WaitAckStopEpoch<NodeIDType>
 	 */
 	@Override
 	public String refreshKey() {
-		return (this.key = this.getClass().getSimpleName() + this.DB.getMyID()
-				+ ":" + this.startEpoch.getServiceName() + ":"
+		return (this.getClass().getSimpleName() + this.DB.getMyID()
+				+ ":" + this.startEpoch.getPrevGroupName() + ":"
 				+ (this.startEpoch.getEpochNumber() - 1));
-		// return (this.key =
-		// Util.refreshKey(this.stopEpoch.getSender().toString()));
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_STOP_EPOCH };
@@ -134,9 +136,8 @@ public class WaitAckStopEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, PacketType, String>[] ptasks) {
-		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {
-				getClass().getSimpleName(), this.stopEpoch.getInitiator(),
-				" starting epoch ", this.startEpoch.getSummary() });
+		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
+				"starting epoch", this.startEpoch.getSummary() });
 		// no next epoch group means delete record
 		if (this.startEpoch.getCurEpochGroup() == null || this.startEpoch.getCurEpochGroup().isEmpty()) {
 			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
@@ -154,6 +155,10 @@ public class WaitAckStopEpoch<NodeIDType>
 				RCRecordRequest.RequestTypes.DELETE_RECORD_COMPLETE);
 		return (new GenericMessagingTask<NodeIDType, Object>(this.DB.getMyID(),
 				rcRecReq)).toArray();
+	}
+	
+	public String toString() {
+		return this.getKey();
 	}
 
 	public static void main(String[] args) {

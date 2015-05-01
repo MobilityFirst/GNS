@@ -4,6 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.Stringifiable;
@@ -26,7 +27,6 @@ public class RCRecordRequest<NodeIDType> extends
 
 	private final RequestTypes reqType;
 	public final StartEpoch<NodeIDType> startEpoch;
-
 	private boolean coordType = true;
 
 	public RCRecordRequest(NodeIDType initiator,
@@ -50,7 +50,7 @@ public class RCRecordRequest<NodeIDType> extends
 		super(json, unstringer);
 		this.reqType = RequestTypes.valueOf(json.get(
 				Keys.REQUEST_TYPE.toString()).toString());
-		this.coordType = false; // json.getBoolean(BasicReconfigurationPacket.Keys.IS_COORDINATION.toString());
+		this.coordType = false; 
 		this.startEpoch = json.has(Keys.START_EPOCH.toString()) ? new StartEpoch<NodeIDType>(
 				(JSONObject) json.get(Keys.START_EPOCH.toString()), unstringer)
 				: null;
@@ -94,5 +94,10 @@ public class RCRecordRequest<NodeIDType> extends
 	@Override
 	public void setNeedsCoordination(boolean b) {
 		this.coordType = b;
+	}
+
+	public boolean isNodeConfigChange() {
+		return this.getServiceName().equals(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString());
 	}
 }

@@ -221,6 +221,12 @@ public abstract class AbstractPaxosLogger {
 			int[] group, int slot, Ballot ballot, String state, int gcSlot);
 
 	public abstract StatePacket getStatePacket(String paxosID);
+	
+	public abstract void copyEpochFinalCheckpointState(String paxosID, short version);
+	
+	public abstract String getEpochFinalCheckpointState(String paxosID, short version);
+
+	public abstract boolean deleteEpochFinalCheckpointState(String paxosID, short version);
 
 	// recovery methods
 	public abstract RecoveryInfo getRecoveryInfo(String paxosID);

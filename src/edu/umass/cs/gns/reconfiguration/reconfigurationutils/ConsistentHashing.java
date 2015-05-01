@@ -26,6 +26,7 @@ import edu.umass.cs.gns.util.Util;
 public class ConsistentHashing<NodeIDType> {
 
 	private static final int DEFAULT_NUM_REPLICAS = 3;
+	
 	private static MessageDigest md;
 	static {
 		try {
@@ -34,6 +35,8 @@ public class ConsistentHashing<NodeIDType> {
 			e.printStackTrace();
 		}
 	}
+	
+	private boolean replicateAll = false;
 	private int numReplicas;
 	private SortedMap<Integer, NodeIDType> servers = new TreeMap<Integer, NodeIDType>();
 
@@ -48,17 +51,24 @@ public class ConsistentHashing<NodeIDType> {
 	public ConsistentHashing(Set<NodeIDType> servers) {
 		this.refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
+	public ConsistentHashing(Set<NodeIDType> servers, boolean replicateAll) {
+		this.replicateAll = replicateAll;
+		this.refresh(servers, DEFAULT_NUM_REPLICAS);
+	}
 
 	public void refresh(NodeIDType[] servers, int numReplicas) {
+		this.servers = new TreeMap<Integer, NodeIDType>();
 		for (NodeIDType server : servers)
 			this.servers.put(hash(server.toString()), server);
-		this.numReplicas = numReplicas;
+		this.numReplicas = (replicateAll ? this.servers.size() : numReplicas);
 	}
 
 	public void refresh(Set<NodeIDType> servers, int numReplicas) {
+		this.servers = new TreeMap<Integer, NodeIDType>();
 		for (NodeIDType server : servers)
 			this.servers.put(hash(server.toString()), server);
-		this.numReplicas = numReplicas;
+		this.numReplicas = (replicateAll ? this.servers.size() : numReplicas);
+
 	}
 
 	public void refresh(NodeIDType[] servers) {
@@ -79,6 +89,7 @@ public class ConsistentHashing<NodeIDType> {
 
 	public ArrayList<NodeIDType> getReplicatedServersArray(String name, int k) {
 		int hash = hash(name);
+		//if(name.equals("1103")) System.out.println("hash(1103) = " + hash);
 		SortedMap<Integer, NodeIDType> tailMap = this.servers.tailMap(hash);
 		Iterator<Integer> iterator = tailMap.keySet().iterator();
 		ArrayList<NodeIDType> replicas = new ArrayList<NodeIDType>();
@@ -87,6 +98,8 @@ public class ConsistentHashing<NodeIDType> {
 				iterator = this.servers.keySet().iterator();
 			replicas.add(this.servers.get(iterator.next()));
 		}
+		//if(name.equals("1103")) System.out.println("hash(1103) = " + hash);
+
 		return replicas;
 	}
 
@@ -107,13 +120,14 @@ public class ConsistentHashing<NodeIDType> {
 
 	/*
 	 * Bad idea to use hashCode here because we need this hash to be consistent
-	 * across platforms.
+	 * across platforms. Needs to be synchronized as md is not thread safe.
 	 */
-	private static int hash(String name) {
+	private synchronized static int hash(String name) {
 		byte[] digest = md.digest(name.getBytes());
 		int hash = 0;
 		for (int i = 0; i < digest.length; i++)
 			hash = (hash ^ (digest[i] << (i % 4)));
+		md.reset();
 		return hash;
 	}
 
@@ -127,12 +141,19 @@ public class ConsistentHashing<NodeIDType> {
 		String[] names = { "World", "Hello", "Hello World", "1", "10", "12",
 				"9", "34" };
 		ConsistentHashing<String> ch = new ConsistentHashing<String>(names);
-		System.out.println("Ring ordering = " + ch.getServers());
+		System.out.println("ring ordering = " + ch.getServers());
 		for (int i = 0; i < names.length; i++) {
 			String name = "fbdsjlfbnlsfs" + i;
 			System.out.println("Replicated servers for " + name + " = "
 					+ ch.getReplicatedServersArray(name, 4));
 			assert (ch.getNode(names[i]).equals(names[i]));
 		}
+		
+		Integer[] ids = {1100, 1101, 1102};
+		ConsistentHashing<Integer> chi = new ConsistentHashing<Integer>(ids);
+		System.out.println("ring ordering = " + chi.getServers());
+		Integer[] ids1 = {1100, 1101, 1102, 1103};
+		ConsistentHashing<Integer> chi1 = new ConsistentHashing<Integer>(ids1);
+		System.out.println("ring ordering = " + chi1.getServers());
 	}
 }

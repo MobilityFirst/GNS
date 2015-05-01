@@ -1,8 +1,10 @@
 package edu.umass.cs.gns.reconfiguration.json;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,71 +22,96 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.Reconfigurat
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestEpochFinalState;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.Util;
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
-public class WaitEpochFinalState<NodeIDType> extends
+public class WaitEpochFinalState<NodeIDType>
+		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private final StartEpoch<NodeIDType> startEpoch; // message that started the epoch change
+	private static final long RESTART_PERIOD = 4000;
+
+	private final StartEpoch<NodeIDType> startEpoch;
 	private final AbstractReplicaCoordinator<NodeIDType> appCoordinator;
 	private final RequestEpochFinalState<NodeIDType> reqState;
 	private Iterator<NodeIDType> prevGroupIterator;
 	private boolean first = true;
+	private final Map<NodeIDType, String> notifiees = new HashMap<NodeIDType, String>();
 
-	private String key = null;
-	
+	private final String key;
+
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
-	
-	public WaitEpochFinalState(NodeIDType myID, StartEpoch<NodeIDType> startEpoch, AbstractReplicaCoordinator<NodeIDType> appCoordinator) {
+
+	public WaitEpochFinalState(NodeIDType myID,
+			StartEpoch<NodeIDType> startEpoch,
+			AbstractReplicaCoordinator<NodeIDType> appCoordinator) {
 		super(startEpoch.getPrevEpochGroup(), 1);
 		this.startEpoch = startEpoch;
 		this.appCoordinator = appCoordinator;
 		this.prevGroupIterator = this.startEpoch.getPrevEpochGroup().iterator();
-		this.reqState = new RequestEpochFinalState<NodeIDType>(myID, 
-				startEpoch.getServiceName(), (startEpoch.getEpochNumber()-1));;
+		this.reqState = new RequestEpochFinalState<NodeIDType>(myID,
+				startEpoch.getPrevGroupName(),
+				(startEpoch.getEpochNumber() - 1));
+		this.key = this.refreshKey();
+		this.setPeriod(RESTART_PERIOD);
+		this.notifiees.put(this.startEpoch.getInitiator(),
+				this.startEpoch.getKey());
 	}
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		if(!this.prevGroupIterator.hasNext()) this.prevGroupIterator = this.startEpoch.getPrevEpochGroup().iterator();
-		return start();
+		if (!this.prevGroupIterator.hasNext())
+			this.prevGroupIterator = this.startEpoch.getPrevEpochGroup()
+					.iterator();
+		GenericMessagingTask<NodeIDType, ?>[] mtasks = start();
+		if (mtasks != null)
+			System.out.println(getKey() + " resending request to "
+					+ mtasks[0].recipients[0]);
+		return mtasks;
 	}
 
 	@Override
-	public GenericMessagingTask<NodeIDType,?>[] start() {
-		if(!this.prevGroupIterator.hasNext()) return null;
+	public GenericMessagingTask<NodeIDType, ?>[] start() {
+		if (!this.prevGroupIterator.hasNext())
+			return null;
 		// Try myself first if I am in both old and new groups
-		NodeIDType target = this.positionIterator(); 
-		GenericMessagingTask<NodeIDType,?> mtask = new GenericMessagingTask<NodeIDType,Object>(target, 
-				this.reqState);
+		NodeIDType target = this.positionIterator();
+		GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, Object>(
+				target, this.reqState);
 		return mtask.toArray();
 	}
-	
+
 	private NodeIDType positionIterator() {
-		NodeIDType myID = this.reqState.getInitiator();
-		if(!this.first || !this.startEpoch.getPrevEpochGroup().contains(myID)) 
+		NodeIDType myID = this.appCoordinator.getMyID();
+		// if contains me or not first time
+		if (!this.startEpoch.getPrevEpochGroup().contains(myID) || !this.first
+				|| (this.first = false))
 			return this.prevGroupIterator.next();
-		first = false;
-		while(this.prevGroupIterator.hasNext() && this.prevGroupIterator.next()!=myID);
-		return myID;
+		// else if contains me and first time
+		while (this.prevGroupIterator.hasNext()
+				&& !this.prevGroupIterator.next().equals(myID))
+			;
+		return myID; // leave iterator at self
 	}
 
 	@Override
 	public String refreshKey() {
-		return (this.key = Util.refreshKey(this.reqState.getInitiator().toString()));
+		return (this.getClass().getSimpleName() + this.appCoordinator.getMyID()
+				+ ":" + this.reqState.getServiceName() + ":"
+				+ this.reqState.getEpochNumber() + (!reqState.getServiceName()
+				.equals(this.startEpoch.getServiceName()) ? ":"
+				+ this.startEpoch.getServiceName() + ":"
+				+ this.startEpoch.getEpochNumber() : ""));
 	}
 
-	protected static final ReconfigurationPacket.PacketType[] types = {
-		ReconfigurationPacket.PacketType.EPOCH_FINAL_STATE
-	};
-	
+	protected static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.EPOCH_FINAL_STATE };
+
 	@Override
 	public Set<PacketType> getEventTypes() {
-		return new HashSet<ReconfigurationPacket.PacketType>(Arrays.asList(types));
+		return new HashSet<ReconfigurationPacket.PacketType>(
+				Arrays.asList(types));
 	}
 
 	@Override
@@ -95,42 +122,65 @@ public class WaitEpochFinalState<NodeIDType> extends
 	@Override
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		ReconfigurationPacket.PacketType type = event.getType();
-		if(type==null) return false;
+		if (type == null)
+			return false;
 		boolean handled = false;
-		switch(type) {
+		switch (type) {
 		case EPOCH_FINAL_STATE:
 			@SuppressWarnings("unchecked")
-			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>)event;
+			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>) event;
 			handled = checkEpochFinalState(event);
-			this.appCoordinator.createReplicaGroup(state.getServiceName(), state.getEpochNumber()+1,  
-				state.getState(), this.startEpoch.getCurEpochGroup());		
-			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[]{
-					this.getClass().getSimpleName(), this.appCoordinator.getMyID(), "received",
-					state.getSummary()});
-			default:
-				break;
+			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
+					"received", state });
+			this.appCoordinator.createReplicaGroup(
+					this.startEpoch.getServiceName(),
+					this.startEpoch.getEpochNumber(), state.getState(),
+					this.startEpoch.getCurEpochGroup());
+		default:
+			break;
 		}
-		return handled; 
+		return handled;
 	}
+
+	public String toString() {
+		return this.getKey();
+	}
+
 	private boolean checkEpochFinalState(ProtocolEvent<PacketType, String> event) {
 		// FIXME: What is there to check here other than the type?
 		return true;
 	}
+
+	public String addNotifiee(NodeIDType node, String key) {
+		return this.notifiees.put(node, key);
+	}
+
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, PacketType, String>[] ptasks) {
-		AckStartEpoch<NodeIDType> ackStartEpoch = new AckStartEpoch<NodeIDType>(this.startEpoch.getInitiator(), 
-			startEpoch.getServiceName(), startEpoch.getEpochNumber(), this.appCoordinator.getMyID());
-		GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, 
-				AckStartEpoch<NodeIDType>>(this.startEpoch.getInitiator(), ackStartEpoch);
-		ackStartEpoch.setKey(this.startEpoch.getKey());
-		log.log(Level.INFO, MyLogger.FORMAT[5], new Object[]{this.getClass().getSimpleName() , ackStartEpoch.getSender() , "sending"
-				, ackStartEpoch.getSummary(), "to RC"
-				, this.startEpoch.getInitiator()});
-		return mtask.toArray();
+
+		return this.getAckStarts();
 	}
-	
+
+	public GenericMessagingTask<NodeIDType, ?>[] getAckStarts() {
+		Set<GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>> mtasks = new HashSet<GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>>();
+		for (NodeIDType node : this.notifiees.keySet()) {
+
+			AckStartEpoch<NodeIDType> ackStartEpoch = new AckStartEpoch<NodeIDType>(
+					node, startEpoch.getServiceName(),
+					startEpoch.getEpochNumber(), this.appCoordinator.getMyID());
+			// need to explicitly set key as ackStart is going to different task
+			ackStartEpoch.setKey(this.notifiees.get(node));
+			mtasks.add(new GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>(
+					node, ackStartEpoch));
+			log.log(Level.INFO, MyLogger.FORMAT[5], new Object[] { this,
+					"sending", ackStartEpoch.getSummary(), "to RC" + node,
+					"with key", this.notifiees.get(node) });
+		}
+		return mtasks.toArray(mtasks.iterator().next().toArray());
+	}
+
 	public static void main(String[] args) {
-		
+
 	}
 }

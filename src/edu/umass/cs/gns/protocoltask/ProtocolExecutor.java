@@ -107,7 +107,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * Refer also to schedule.
 	 */
 	public void spawn(ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
-		wrapSpawn(actualTask);
+		if (actualTask instanceof SchedulableProtocolTask)
+			schedule((SchedulableProtocolTask<NodeIDType, EventType, KeyType>)actualTask);
+		else
+			wrapSpawn(actualTask);
 	}
 
 	// wraps protocol task into wrapper before spawning
@@ -128,7 +131,10 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	private synchronized void insert(
 			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		while (task.getKey() == null
-				|| this.protocolTasks.containsKey(task.getKey())) {
+				|| this.isRunning(task.getKey())) {
+			log.warning("Node" + myID + " trying to insert "
+					+ (task.getKey() == null ? "null" : "duplicate") + " key "
+					+ task.getKey());
 			task.refreshKey();
 		}
 		log.info("Node" + myID + " inserting key " + task.getKey()
@@ -162,19 +168,27 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * is removed from the hashmap.
 	 */
 	public void schedule(
-			ProtocolTask<NodeIDType, EventType, KeyType> actualTask, long period) {
+			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask, long period) {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = wrapSpawn(actualTask);
 		// schedule restarts
 		Restarter restarter = new Restarter(task);
-		if (period > DEFAULT_RESTART_PERIOD)
+		if (period < DEFAULT_RESTART_PERIOD)
 			log.severe("Specifying a period of less than "
 					+ DEFAULT_RESTART_PERIOD + " milliseconds is a bad idea");
 		task.setFuture(this.executor.scheduleWithFixedDelay(restarter, period,
 				period, TimeUnit.MILLISECONDS));
 	}
 
-	public void schedule(ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
+	public void schedule(SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
+		if(actualTask instanceof ThresholdProtocolTask) 
+			this.schedule(actualTask, ((ThresholdProtocolTask<NodeIDType,EventType,KeyType>)actualTask).getPeriod());
+		else
 		this.schedule(actualTask, DEFAULT_RESTART_PERIOD);
+	}
+	
+	public ProtocolTask<NodeIDType, EventType, KeyType> getTask(KeyType key) {
+		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> wrapper = this.retrieve(key);
+		return (wrapper!=null ?  wrapper.task : null);
 	}
 
 	private synchronized ProtocolTaskWrapper<NodeIDType, EventType, KeyType> retrieve(
@@ -195,15 +209,15 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	/*
 	 * remove must also cancel the scheduled future if one exists.
 	 */
-	private synchronized void remove(
+	private synchronized ProtocolTask<?,?,?> remove(
 			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
-		if(task==null) return;
+		if(task==null) return null;
 		if (task.getFuture() != null)
 			task.getFuture().cancel(true);
-		this.protocolTasks.remove(task.getKey());
+		return this.protocolTasks.remove(task.getKey());
 	}
-	public synchronized void remove(KeyType key) {
-		remove(this.retrieve(key));
+	public synchronized ProtocolTask<?,?,?> remove(KeyType key) {
+		return remove(this.retrieve(key));
 	}
 
 	private class Restarter implements Runnable {

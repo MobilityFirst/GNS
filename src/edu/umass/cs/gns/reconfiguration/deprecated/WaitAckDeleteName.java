@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.reconfiguration.json;
+package edu.umass.cs.gns.reconfiguration.deprecated;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,9 +16,9 @@ import edu.umass.cs.gns.util.Util;
  * @author V. Arun
  */
 /*
- * FIXME: This task needs to stop epoch followed by drop epoch (without an 
- * intervening start epoch as in a group change). Currently, it is just a
- * copy of WaitAckDropEpoch.
+ * FIXME: This task needs to stop epoch followed by drop epoch (without an
+ * intervening start epoch as in a group change). Currently, it is just a copy
+ * of WaitAckDropEpoch.
  * 
  * This task also needs to remove the name from the reconfigurator group.
  */

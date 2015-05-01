@@ -25,6 +25,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
 		ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS,
 		ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
+		ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG,
 	};
 	private static final ReconfigurationPacket.PacketType[] types = 
 			ReconfigurationPacket.concatenate(localTypes, 

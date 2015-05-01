@@ -9,7 +9,6 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
-import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
@@ -37,18 +36,15 @@ public abstract class AbstractDemandProfile {
 	}
 
 	/*********************** Start of abstract methods ***************/
-	/**
+	/*
 	 * Creates a deep copy of this object. So, it must be the case that the return value != this,
 	 * but the return value.equals(this).
-         * @return a clone of this demand profile
 	 */
-        @Override
 	public abstract AbstractDemandProfile clone();
 
 	// Incorporate this new request information
 	public abstract void register(InterfaceRequest request, 
-                InetAddress sender,
-                ConsistentReconfigurableNodeConfig nodeConfig
+                InetAddress sender,ConsistentReconfigurableNodeConfig nodeConfig
         );
 
 	/*
@@ -73,7 +69,7 @@ public abstract class AbstractDemandProfile {
 	// The main reconfiguration policy
 	public abstract ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives,
                 ConsistentReconfigurableNodeConfig nodeConfig);
-      
+
 	/*
 	 * Tells us that the current demand profile was just used to perform reconfiguration. Useful for
 	 * implementing policies based on the difference between the current demand profile and the one

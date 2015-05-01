@@ -7,8 +7,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
+
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import java.net.InetSocketAddress;
 
 /**
  * @author V. Arun
@@ -31,10 +31,8 @@ public class AggregateDemandProfiler {
         public AggregateDemandProfiler() {
           this.nodeConfig = null;
         }
-        
 	public synchronized AbstractDemandProfile register(
-			InterfaceRequest request, 
-                InetAddress sender) {
+			InterfaceRequest request, InetAddress sender) {
 		String name = request.getServiceName();
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)
@@ -56,8 +54,7 @@ public class AggregateDemandProfiler {
 			this.map.put(profile.getName(), profile);
 	}
 
-	public synchronized ArrayList<InetAddress> shouldReconfigure(String name, 
-                ArrayList<InetAddress> curActives) {
+	public synchronized ArrayList<InetAddress> shouldReconfigure(String name, ArrayList<InetAddress> curActives) {
 		AbstractDemandProfile demand = this.getDemandProfile(name);
 		if (demand == null)
 			return null;

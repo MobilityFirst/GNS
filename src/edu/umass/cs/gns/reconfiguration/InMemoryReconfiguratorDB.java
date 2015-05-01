@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.reconfiguration;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -182,5 +184,30 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	@Override
 	public Set<String> getRCGroupNames() {
 		throw new RuntimeException("Method not yet implemented");
+	}
+
+	@Override
+	public String getFinalState(String name, int epoch) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean addReconfigurator(NodeIDType node,
+			InetSocketAddress sockAddr, int version) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean deleteReconfigurators(int version) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

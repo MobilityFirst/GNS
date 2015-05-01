@@ -1,7 +1,9 @@
 package edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.Set;
 
@@ -19,34 +21,54 @@ import edu.umass.cs.gns.util.Util;
 public class StartEpoch<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> {
 
-	private enum Keys {
-		PREV_EPOCH_GROUP, CUR_EPOCH_GROUP, CREATOR, INITIAL_STATE
+	public static enum Keys {
+		PREV_EPOCH_GROUP, CUR_EPOCH_GROUP, CREATOR, INITIAL_STATE, PREV_GROUP_NAME, NEWLY_ADDED_NODES, NODE_ID, SOCKET_ADDRESS
 	};
 
 	public final Set<NodeIDType> prevEpochGroup;
 	public final Set<NodeIDType> curEpochGroup;
-	public final InetSocketAddress creator;
-        public final String initialState;
+	public final InetSocketAddress creator; // for creation (or first) epoch
+	public final String initialState;
+	public final String prevGroupName; // for merge or split group operations
+
+	// used only in case of new RC node addition
+	public final Map<NodeIDType, InetSocketAddress> newlyAddedNodes;
 
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes, Set<NodeIDType> prevNodes) {
-		super(initiator, ReconfigurationPacket.PacketType.START_EPOCH,
-				serviceName, epochNumber);
-		this.prevEpochGroup = prevNodes;
-		this.curEpochGroup = curNodes;
-		this.creator = null;
-                this.initialState = null;
+		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
+				null, null, null);
 	}
 
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
-			Set<NodeIDType> prevNodes, InetSocketAddress creator, String initialState) {
+			Set<NodeIDType> prevNodes, String prevGroupName) {
+		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
+				prevGroupName, null, null, null);
+	}
+
+	public StartEpoch(NodeIDType initiator, String serviceName,
+			int epochNumber, Set<NodeIDType> curNodes,
+			Set<NodeIDType> prevNodes, InetSocketAddress creator,
+			String initialState,
+			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
+		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
+				creator, initialState, newlyAddedNodes);
+	}
+
+	public StartEpoch(NodeIDType initiator, String serviceName,
+			int epochNumber, Set<NodeIDType> curNodes,
+			Set<NodeIDType> prevNodes, String prevGroupName,
+			InetSocketAddress creator, String initialState,
+			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		super(initiator, ReconfigurationPacket.PacketType.START_EPOCH,
 				serviceName, epochNumber);
 		this.prevEpochGroup = prevNodes;
 		this.curEpochGroup = curNodes;
 		this.creator = creator;
-                this.initialState = initialState;
+		this.prevGroupName = prevGroupName;
+		this.initialState = initialState;
+		this.newlyAddedNodes = newlyAddedNodes;
 	}
 
 	public StartEpoch(JSONObject json, Stringifiable<NodeIDType> unstringer)
@@ -68,33 +90,45 @@ public class StartEpoch<NodeIDType> extends
 		this.creator = (json.has(Keys.CREATOR.toString()) ? Util
 				.getInetSocketAddressFromString(json.getString(Keys.CREATOR
 						.toString())) : null);
-                this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
+		this.prevGroupName = (json.has(Keys.PREV_GROUP_NAME.toString()) ? json
+				.getString(Keys.PREV_GROUP_NAME.toString()) : null);
+		this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
+
+		this.newlyAddedNodes = (json.has(Keys.NEWLY_ADDED_NODES.toString()) ? this
+				.arrayToMap(
+						json.getJSONArray(Keys.NEWLY_ADDED_NODES.toString()),
+						unstringer) : null);
 	}
 
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
 
-		JSONArray prevGroup = new JSONArray();
-		if (this.prevEpochGroup != null) {
-			int i = 0;
-			for (NodeIDType s : this.prevEpochGroup) {
-				prevGroup.put(i++, s);
-			}
-		}
-		json.put(Keys.PREV_EPOCH_GROUP.toString(), prevGroup);
+		json.put(Keys.PREV_EPOCH_GROUP.toString(),
+				this.toJSONArray(prevEpochGroup));
+		json.put(Keys.CUR_EPOCH_GROUP.toString(),
+				this.toJSONArray(curEpochGroup));
 
-		JSONArray curGroup = new JSONArray();
-		int i = 0;
-		if(this.curEpochGroup!=null)
-			for (NodeIDType s : this.curEpochGroup) {
-				curGroup.put(i++, s);
-			}
-		json.put(Keys.CUR_EPOCH_GROUP.toString(), curGroup);
 		json.put(Keys.CREATOR.toString(), this.creator);
-                if (initialState != null) {
-                  json.put(Keys.INITIAL_STATE.toString(), initialState);
-                }
+		if (this.prevGroupName != null)
+			json.put(Keys.PREV_GROUP_NAME.toString(), this.prevGroupName);
+		if (initialState != null)
+			json.put(Keys.INITIAL_STATE.toString(), initialState);
+		if (this.newlyAddedNodes != null)
+			json.put(Keys.NEWLY_ADDED_NODES.toString(),
+					this.mapToArray(newlyAddedNodes));
+
 		return json;
+	}
+
+	private JSONArray toJSONArray(Set<NodeIDType> set) throws JSONException {
+		int i = 0;
+		// okay if set is null
+		JSONArray jsonArray = new JSONArray(set);
+		if (set != null)
+			for (NodeIDType member : set) {
+				jsonArray.put(i++, member.toString());
+			}
+		return jsonArray;
 	}
 
 	public Set<NodeIDType> getCurEpochGroup() {
@@ -112,14 +146,37 @@ public class StartEpoch<NodeIDType> extends
 	}
 
 	public boolean isInitEpoch() {
-		return (this.prevEpochGroup == null || this.prevEpochGroup.isEmpty())
-				&& this.epochNumber == 0;
+		return (this.noPrevEpochGroup() && this.epochNumber == 0)
+				|| (this.prevGroupName != null && !this.prevGroupName
+						.equals(this.getServiceName()));
 	}
 
-        public String getInitialState() {
-          return initialState;
-        }
-        
+	public boolean noPrevEpochGroup() {
+		return this.prevEpochGroup == null || this.prevEpochGroup.isEmpty();
+	}
+
+	public boolean hasPrevEpochGroup() {
+		return !this.noPrevEpochGroup();
+	}
+
+	public String getInitialState() {
+		return initialState;
+	}
+
+	public String getPrevGroupName() {
+		return this.prevGroupName != null ? this.prevGroupName : this
+				.getServiceName();
+	}
+
+	public boolean isSplitOrMerge() {
+		return this.getPrevGroupName() != null
+				&& !this.getPrevGroupName().equals(this.getServiceName());
+	}
+	
+	public boolean hasNewlyAddedNodes() {
+		return this.newlyAddedNodes!=null && !this.newlyAddedNodes.isEmpty();
+	}
+
 	public static void main(String[] args) {
 		int[] group = { 3, 45, 6, 19 };
 		StartEpoch<Integer> se = new StartEpoch<Integer>(4, "name1", 2,
@@ -136,5 +193,33 @@ public class StartEpoch<NodeIDType> extends
 		} catch (JSONException je) {
 			je.printStackTrace();
 		}
+	}
+
+	// Utility method for newly added nodes
+	private Map<NodeIDType, InetSocketAddress> arrayToMap(JSONArray jArray,
+			Stringifiable<NodeIDType> unstringer) throws JSONException {
+		Map<NodeIDType, InetSocketAddress> map = new HashMap<NodeIDType, InetSocketAddress>();
+		for (int i = 0; i < jArray.length(); i++) {
+			JSONObject jElement = jArray.getJSONObject(i);
+			assert (jElement.has(Keys.NODE_ID.toString()) && jElement
+					.has(Keys.SOCKET_ADDRESS.toString()));
+			map.put(unstringer.valueOf(jElement.getString(Keys.NODE_ID
+					.toString())), Util.getInetSocketAddressFromString(jElement
+					.getString(Keys.SOCKET_ADDRESS.toString())));
+		}
+		return map;
+	}
+
+	// Utility method for newly added nodes
+	private JSONArray mapToArray(Map<NodeIDType, InetSocketAddress> map)
+			throws JSONException {
+		JSONArray jArray = new JSONArray();
+		for (NodeIDType node : map.keySet()) {
+			JSONObject jElement = new JSONObject();
+			jElement.put(Keys.NODE_ID.toString(), node.toString());
+			jElement.put(Keys.SOCKET_ADDRESS.toString(), map.get(node).toString());
+			jArray.put(jElement);
+		}
+		return jArray;
 	}
 }

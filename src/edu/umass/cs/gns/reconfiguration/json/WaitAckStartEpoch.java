@@ -23,8 +23,8 @@ import edu.umass.cs.gns.util.MyLogger;
  * @author V. Arun
  */
 /*
- * This protocol task is initiated at a reconfigurator to await a majority of acknowledgments for
- * StartEpoch messages from active replicas.
+ * This protocol task is initiated at a reconfigurator to await a majority of
+ * acknowledgments for StartEpoch messages from active replicas.
  */
 public class WaitAckStartEpoch<NodeIDType>
 		extends
@@ -34,17 +34,23 @@ public class WaitAckStartEpoch<NodeIDType>
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
 
 	private boolean done = false;
-	private String key = null;
+	private final String key;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
-	
+
 	public WaitAckStartEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		super(startEpoch.getCurEpochGroup(), startEpoch.getCurEpochGroup()
 				.size() / 2 + 1);
-		this.startEpoch = startEpoch;
+		// need to recreate start epoch to set initiator to self
+		this.startEpoch = new StartEpoch<NodeIDType>(DB.getMyID(),
+				startEpoch.getServiceName(), startEpoch.getEpochNumber(),
+				startEpoch.curEpochGroup, startEpoch.prevEpochGroup,
+				startEpoch.prevGroupName, startEpoch.creator,
+				startEpoch.initialState, startEpoch.newlyAddedNodes);
 		this.DB = DB;
+		this.key = this.refreshKey();
 	}
 
 	@Override
@@ -62,10 +68,9 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public String refreshKey() {
-		return (this.key = this.getClass().getSimpleName() + this.DB.getMyID()
-				+ ":" + this.startEpoch.getServiceName() + ":"
-				+ this.startEpoch.getEpochNumber());
-		//return (this.key = Util.refreshKey(this.startEpoch.getSender().toString()));
+		return (this.getClass().getSimpleName() + this.DB.getMyID() + ":"
+				+ this.startEpoch.getServiceName() + ":" + this.startEpoch
+					.getEpochNumber());
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_START_EPOCH, };
@@ -83,7 +88,7 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
-		assert(event.getType().equals(types[0]));
+		assert (event.getType().equals(types[0]));
 		if (isDone()) {
 			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this,
 					"successfully processed", event.getType(),
@@ -93,32 +98,37 @@ public class WaitAckStartEpoch<NodeIDType>
 		return !isDone();
 	}
 
+	/*
+	 * FIXME: shoud maybe spawn WaitAckDropEoch only after all new actives have
+	 * sent acked start epoch as opposed to just a majority. An alternative is
+	 * to delay WaitAckDropEoch a bit to allow all new actives to have acked
+	 * starting the new epoch.
+	 */
 	// Send dropEpoch when startEpoch is acked by majority
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 
-		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[]{
-				getClass().getSimpleName(),
-				this.startEpoch.getInitiator(),
-				" received MAJORITY ackStartEpoch for ",
+		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {
+				this,
+				" received MAJORITY ACKs for ",
 				startEpoch.getSummary(),
 				(this.startEpoch.creator != null ? "; sending ack to client "
-						+ this.startEpoch.creator : "")});
-		
+						+ this.startEpoch.creator : "") });
+
 		this.setDone(true);
 		// multicast start epoch confirmation message
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest(
-				this.DB.getMyID(),
-				this.startEpoch,
+				this.DB.getMyID(), this.startEpoch,
 				RCRecordRequest.RequestTypes.REGISTER_RECONFIGURATION_COMPLETE);
 		GenericMessagingTask<NodeIDType, ?> epochStartCommit = new GenericMessagingTask(
 				this.DB.getMyID(), rcRecReq);
-		//this.DB.handleIncoming(rcRecReq);
+		// this.DB.handleIncoming(rcRecReq);
 		GenericMessagingTask<NodeIDType, ?>[] mtasks = null;
-		if (!this.startEpoch.isInitEpoch()) { // not creation epoch
-			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch, this.DB);
+		if (this.startEpoch.hasPrevEpochGroup()) { // need to drop prev epoch
+			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
+					this.DB);
 			// propagate start epoch confirmation to all
 			mtasks = epochStartCommit.toArray();
 		} else if (this.startEpoch.creator != null) { // creation epoch
@@ -131,12 +141,18 @@ public class WaitAckStartEpoch<NodeIDType>
 							this.startEpoch.getServiceName(), 0, null)));
 		} else
 			assert (false);
-		//ProtocolExecutor.timedCancel(this); // default action will do timed cancel
+		// default action will do timed cancel
 		return mtasks;
 	}
-	
-	private synchronized boolean isDone() { return done;}
-	private void setDone(boolean b) {this.done = b;}
+
+	private synchronized boolean isDone() {
+		return done;
+	}
+
+	private void setDone(boolean b) {
+		this.done = b;
+	}
+
 	public String toString() {
 		return this.getClass().getSimpleName() + this.DB.getMyID();
 	}

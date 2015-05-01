@@ -1,7 +1,12 @@
 package edu.umass.cs.gns.reconfiguration;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,7 +53,7 @@ public class ActiveReplica<NodeIDType> implements
 	private final ActiveReplicaProtocolTask<NodeIDType> protocolTask;
 	private final JSONMessenger<NodeIDType> messenger;
 
-	private final AggregateDemandProfiler demandProfiler;
+	private final AggregateDemandProfiler demandProfiler = new AggregateDemandProfiler();
 	private final boolean noReporting;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
@@ -68,7 +73,6 @@ public class ActiveReplica<NodeIDType> implements
 				.setActiveCallback((InterfaceReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nodeConfig);
-                this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
 		this.messenger = messenger;
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(
 				messenger);
@@ -108,37 +112,31 @@ public class ActiveReplica<NodeIDType> implements
 				this.appCoordinator.handleIncoming(request);
 				// update demand stats (for reconfigurator) if handled by app
 				updateDemandStats(request,
-						JSONPacket.getSenderAddress(jsonObject));                    
+						JSONPacket.getSenderAddress(jsonObject));
 			}
 		} catch (RequestParseException rpe) {
 			rpe.printStackTrace();
 		} catch (JSONException je) {
 			je.printStackTrace();
 		}
-
 		return false; // neither reconfiguration packet nor app request
 	}
 
 	@Override
 	public void executed(InterfaceRequest request, boolean handled) {
-		StopEpoch<NodeIDType> stopEpoch = (StopEpoch<NodeIDType>) (this.callbackMap
-				.get(request.getServiceName()));
-		if (stopEpoch == null)
-			return;
-		/*
-		 * Currently, the map is being maintained to translate from the app stop
-		 * request to StopRequest from a reconfigurator to an active replica.
-		 * But if we know the request is of type InterfaceReconfigurableRequest,
-		 * we can get the name and epoch, and simply send the ack stop message
-		 * to all RCs.
-		 */
-		this.callbackMap.remove(stopEpoch.getServiceName());
+		assert (request instanceof InterfaceReconfigurableRequest);
+		int epoch = ((InterfaceReconfigurableRequest) request).getEpochNumber();
+		StopEpoch<NodeIDType> stopEpoch = null;
 		if (handled)
-			this.sendAckStopEpoch(stopEpoch);
+			while ((stopEpoch = this.callbackMap.notifyStop(
+					request.getServiceName(), epoch)) != null)
+				this.sendAckStopEpoch(stopEpoch);
 	}
 
 	public Set<IntegerPacketType> getPacketTypes() {
 		Set<IntegerPacketType> types = this.getAppPacketTypes();
+		if (types == null)
+			types = new HashSet<IntegerPacketType>();
 		for (IntegerPacketType type : this.getActiveReplicaPacketTypes()) {
 			types.add(type);
 		}
@@ -163,8 +161,8 @@ public class ActiveReplica<NodeIDType> implements
 		StartEpoch<NodeIDType> startEpoch = ((StartEpoch<NodeIDType>) event);
 		this.logEvent(event);
 		GenericMessagingTask<NodeIDType, ?>[] mtasks = (new GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>(
-				startEpoch.getInitiator(), new AckStartEpoch<NodeIDType>(
-						startEpoch.getInitiator(), startEpoch.getServiceName(),
+				startEpoch.getSender(), new AckStartEpoch<NodeIDType>(
+						startEpoch.getSender(), startEpoch.getServiceName(),
 						startEpoch.getEpochNumber(), getMyID()))).toArray();
 		// send positive ack even if app has moved on
 		if (this.alreadyMovedOn(startEpoch))
@@ -179,22 +177,53 @@ public class ActiveReplica<NodeIDType> implements
 					startEpoch.getCurEpochGroup());
 			return mtasks; // and also send positive ack
 		}
-
-		// FIXME: start only if not already running
-		// else request previous epoch state using a threshold protocoltask
-		ptasks[0] = new WaitEpochFinalState<NodeIDType>(getMyID(),
-				((StartEpoch<NodeIDType>) event), this.appCoordinator);
+		/*
+		 * Else request previous epoch state using a threshold protocoltask. We
+		 * spawn WaitEpochFinalState as opposed to simply returning it in
+		 * ptasks[0] as otherwise we could end up creating tasks with duplicate
+		 * keys.
+		 */
+		this.spawnWaitEpochFinalState(startEpoch);
 		return null; // no messaging if asynchronously fetching state
+	}
+
+	// synchronized to ensure atomic testAndStart property
+	private synchronized void spawnWaitEpochFinalState(
+			StartEpoch<NodeIDType> startEpoch) {
+		WaitEpochFinalState<NodeIDType> waitFinal = new WaitEpochFinalState<NodeIDType>(
+				getMyID(), startEpoch, this.appCoordinator);
+		if (!this.protocolExecutor.isRunning(waitFinal.getKey()))
+			this.protocolExecutor.spawn(waitFinal);
+		else {
+			WaitEpochFinalState<NodeIDType> running = (WaitEpochFinalState<NodeIDType>) this.protocolExecutor
+					.getTask(waitFinal.getKey());
+			if (running != null)
+				running.addNotifiee(startEpoch.getInitiator(),
+						startEpoch.getKey());
+		}
+	}
+
+	private String getTaskKeyPrev(Class<?> C,
+			BasicReconfigurationPacket<?> rcPacket) {
+		return getTaskKey(C, rcPacket.getServiceName(),
+				rcPacket.getEpochNumber() - 1);
+	}
+
+	private String getTaskKey(Class<?> C, String name, int epoch) {
+		return C.getSimpleName() + this.getMyID() + ":" + name + ":" + epoch;
 	}
 
 	public GenericMessagingTask<NodeIDType, ?>[] handleStopEpoch(
 			StopEpoch<NodeIDType> stopEpoch,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		this.logEvent(stopEpoch);
-		if (this.noStateOrAlreadyMovedOn(stopEpoch))
+		if (this.noStateOrAlreadyMovedOn(stopEpoch)) {
+			log.info(this + " has no state or already moved on "
+					+ stopEpoch.getSummary());
 			return this.sendAckStopEpoch(stopEpoch).toArray(); // still send ack
+		}
 		// else coordinate stop with callback
-		this.callbackMap.put(stopEpoch);
+		this.callbackMap.addStopNotifiee(stopEpoch);
 		this.appCoordinator.handleIncoming(this.appCoordinator.getStopRequest(
 				stopEpoch.getServiceName(), stopEpoch.getEpochNumber()));
 		return null; // need to wait until callback
@@ -211,7 +240,26 @@ public class ActiveReplica<NodeIDType> implements
 				getMyID(), dropEpoch);
 		GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>>(
 				dropEpoch.getInitiator(), ackDrop);
+		log.info(this + " sending " + ackDrop.getSummary() + " to "
+				+ ackDrop.getInitiator() + ": " + ackDrop);
+		this.garbageCollectPendingTasks(dropEpoch);
 		return mtask.toArray();
+	}
+
+	// drop any pending task (only WaitEpochFinalState possible) upon dropEpoch
+	private void garbageCollectPendingTasks(
+			DropEpochFinalState<NodeIDType> dropEpoch) {
+		/*
+		 * Can drop waiting on epoch final state of the epoch just before the
+		 * epoch being dropped as we don't have to bother starting the dropped
+		 * epoch after all.
+		 */
+		boolean removed = (this.protocolExecutor.remove(getTaskKeyPrev(
+				WaitEpochFinalState.class, dropEpoch)) != null);
+		if (removed)
+			System.out.println(this + " removed WaitEpochFinalState"
+					+ dropEpoch.getServiceName() + ":"
+					+ (dropEpoch.getEpochNumber() - 1));
 	}
 
 	public GenericMessagingTask<NodeIDType, ?>[] handleRequestEpochFinalState(
@@ -221,14 +269,19 @@ public class ActiveReplica<NodeIDType> implements
 		this.logEvent(event);
 		EpochFinalState<NodeIDType> epochState = new EpochFinalState<NodeIDType>(
 				request.getInitiator(), request.getServiceName(),
-				request.getEpochNumber(), this.appCoordinator.getFinalState(
+				request.getEpochNumber(), this.getFinalState(
 						request.getServiceName(), request.getEpochNumber()));
 		GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>> mtask = null;
 
 		if (epochState.getState() != null) {
+			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this,
+					"returning to ", request.getInitiator(), epochState });
 			mtask = new GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>>(
 					request.getInitiator(), epochState);
-		}
+		} else
+			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
+					"****not returning*****", epochState });
+
 		return (mtask != null ? mtask.toArray() : null);
 	}
 
@@ -240,18 +293,55 @@ public class ActiveReplica<NodeIDType> implements
 
 	/*********************** Private methods below ************************************/
 
+	private String getFinalState(String name, int epoch) {
+		String state = this.appCoordinator.getFinalState(name, epoch);
+		if (state == null || !this.appCoordinator.hasLargeCheckpoints())
+			return state;
+
+		String actualState = null;
+		BufferedReader br = null;
+		try {
+			// read state from file
+			if (new File(state).exists()) {
+				br = new BufferedReader(new InputStreamReader(
+						new FileInputStream(state)));
+				String line = null;
+				while ((line = br.readLine()) != null) {
+					actualState = (actualState == null ? line
+							: (actualState + line));
+				}
+			}
+		} catch (IOException e) {
+			log.severe(this + " unable to read actual state from file");
+			e.printStackTrace();
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException e) {
+				log.severe(this + " unable to close checkpoint file " + state);
+				e.printStackTrace();
+			}
+		}
+		return actualState;
+	}
+
 	private boolean noStateOrAlreadyMovedOn(BasicReconfigurationPacket<?> packet) {
-		if (this.appCoordinator.getEpoch(packet.getServiceName()) == null
-				|| (this.appCoordinator.getEpoch(packet.getServiceName())
-						- packet.getEpochNumber() > 0))
+		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());
+		// no state or higher epoch
+		if (epoch == null || (epoch - packet.getEpochNumber() > 0))
 			return true;
+		// FIXME: same epoch but no replica group (or stopped)
+		else if (epoch == packet.getEpochNumber()
+				&& this.appCoordinator.getReplicaGroup(packet.getServiceName()) == null) {
+			return true;
+		}
 		return false;
 	}
 
 	private boolean alreadyMovedOn(BasicReconfigurationPacket<?> packet) {
-		if (this.appCoordinator.getEpoch(packet.getServiceName()) != null
-				&& this.appCoordinator.getEpoch(packet.getServiceName())
-						- packet.getEpochNumber() >= 0)
+		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());
+		if (epoch != null && epoch - packet.getEpochNumber() >= 0)
 			return true;
 		return false;
 	}
@@ -287,8 +377,7 @@ public class ActiveReplica<NodeIDType> implements
 	 * stats based on a threshold number of requests before reporting to
 	 * reconfigurators.
 	 */
-	private void updateDemandStats(InterfaceRequest request, 
-                InetAddress sender) {
+	private void updateDemandStats(InterfaceRequest request, InetAddress sender) {
 		if (this.noReporting)
 			return;
 
@@ -360,7 +449,7 @@ public class ActiveReplica<NodeIDType> implements
 			StopEpoch<NodeIDType> stopEpoch) {
 		// inform reconfigurator
 		AckStopEpoch<NodeIDType> ackStopEpoch = new AckStopEpoch<NodeIDType>(
-				getMyID(), stopEpoch);
+				stopEpoch.getInitiator(), stopEpoch);
 		GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, Object>(
 				(stopEpoch.getInitiator()), ackStopEpoch);
 		log.log(Level.INFO, MyLogger.FORMAT[5], new Object[] { this, "sending",
@@ -374,7 +463,7 @@ public class ActiveReplica<NodeIDType> implements
 		log.log(Level.INFO,
 				MyLogger.FORMAT[6],
 				new Object[] { this, "received", event.getType(),
-						event.getServiceName(), event.getEpochNumber(), "from",
-						event.getSender(), event });
+						event.getServiceName(), event.getEpochNumber(),
+						"from " + event.getSender(), event });
 	}
 }

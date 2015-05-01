@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
 package edu.umass.cs.gns.newApp;
 
 import com.google.common.net.InetAddresses;
@@ -9,7 +16,6 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.VotesMap;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetAddress;
 import java.net.UnknownHostException;

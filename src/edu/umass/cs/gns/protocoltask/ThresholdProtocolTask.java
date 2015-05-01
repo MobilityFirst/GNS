@@ -26,6 +26,7 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 	private final Waitfor<NodeIDType> waitfor;
 	private final int threshold;
 	private boolean thresholdHandlerInvoked=false;
+	private long restartPeriod = ProtocolExecutor.DEFAULT_RESTART_PERIOD;
 
 	public ThresholdProtocolTask(Set<NodeIDType> nodes) { // default all
 		this.waitfor = new Waitfor<NodeIDType>(nodes);
@@ -82,6 +83,13 @@ public abstract class ThresholdProtocolTask<NodeIDType,EventType,KeyType> implem
 			return null;
 		return new GenericMessagingTask<NodeIDType,Object>(fix(this.waitfor.getMembersHeardFrom(),
 				mtask.recipients), mtask.msgs);
+	}
+	
+	public void setPeriod(long restartPeriod) {
+		this.restartPeriod = restartPeriod;
+	}
+	public long getPeriod() {
+		return this.restartPeriod;
 	}
 
 	private Object[] fix(Set<NodeIDType> filter, Object[] original) {

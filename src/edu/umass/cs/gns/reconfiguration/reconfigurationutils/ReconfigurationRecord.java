@@ -149,44 +149,22 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		// FIXME: add some actual logic here :)
 		return true;
 	}
-
 	public void setState(String name, int epoch, RCStates state) {
 		assert (this.name.equals(name));
 		assert (this.epoch == epoch || state.equals(RCStates.WAIT_ACK_START) || state
 				.equals(RCStates.READY)) : this.epoch + "!=" + epoch;
 		this.epoch = epoch;
-		this.state = state;
+		this.state = state;		
 	}
-        
-        public void setState(String name, int epoch, RCStates state, Set<NodeIDType> newActives) {
-          this.setState(name, epoch, state); 
-          this.newActives = newActives; 
-        }
+	public void setState(String name, int epoch, RCStates state, Set<NodeIDType> newActives) {
+		this.setState(name, epoch, state);
+		this.newActives = newActives;
+	}
 
 	public String getName() {
 		return this.name;
 	}
-	
-	/*
-	public NodeIDType getPrimary() {
-		return this.primary;
-	}
-	public void setPrimary(NodeIDType id) {
-		this.primary = id;
-	}
-	*/
-	
-	private static boolean setEquals(Set<?> set1, Set<?> set2) {
-		return (set1==null && set2==null) || (set1!=null && set2 !=null && set1.equals(set2));
-	}
-	
-	// FIXME: Ignores the "primary" field that needs to be deprecated
-	public boolean equals(ReconfigurationRecord<NodeIDType> record) {
-		return this.name.equals(record.getName()) && this.state.equals(record.getState()) &&
-				this.epoch==record.getEpoch() && setEquals(this.actives, record.getActiveReplicas()) &&
-				this.newActives.equals(record.getNewActives());
-	}
-
+			
 	public static void main(String[] args) {
 		try {
 			Util.assertAssertionsEnabled();

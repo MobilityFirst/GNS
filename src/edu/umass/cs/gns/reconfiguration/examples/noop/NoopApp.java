@@ -16,6 +16,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.gns.reconfiguration.Reconfigurator;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.examples.AppRequest;
 
@@ -71,7 +72,7 @@ InterfaceReplicable, InterfaceReconfigurable {
 		AppData data = this.appData.get(request.getServiceName());
 		if (data == null) {
 			System.out.println("App-" + myID + " has no record for "
-					+ request.getServiceName());
+					+ request.getServiceName() + " for " + request);
 			return false;
 		}
 		assert (data != null);
@@ -97,9 +98,12 @@ InterfaceReplicable, InterfaceReconfigurable {
 
 	private boolean processStopRequest(NoopAppRequest request) {
 		AppData data = this.appData.remove(request.getServiceName());
-		if(data==null) return false;
+		if (data == null)
+			return false;
+		// else
 		this.prevEpochFinal.put(request.getServiceName(), data);
-		System.out.println("App-"+myID+" stopped " + data.name+":"+(data.epoch) + " with state "+data.getState());
+		System.out.println("App-" + myID + " stopped " + data.name + ":"
+				+ (data.epoch) + " with state " + data.getState());
 		return true;
 	}
 
@@ -110,6 +114,8 @@ InterfaceReplicable, InterfaceReconfigurable {
 		try {
 			request = new NoopAppRequest(new JSONObject(stringified));
 		} catch (JSONException je) {
+			Reconfigurator.log.info(myID + " unable to parse request "
+					+ stringified);
 			throw new RequestParseException(je);
 		}
 		return request;
@@ -131,7 +137,7 @@ InterfaceReplicable, InterfaceReconfigurable {
 	public String getState(String name) {
 		//throw new RuntimeException("Method not yet implemented");
 		AppData data = this.appData.get(name);
-		return (data!=null ? data.getState() : null);
+		return (data!=null ? data.getState() : ((data = this.prevEpochFinal.get(name))!=null ? data.getState() : null));
 	}
 
 	@Override
@@ -141,7 +147,7 @@ InterfaceReplicable, InterfaceReconfigurable {
 		 * otherwise putInitialState will be called.
 		 */
 		if(data==null) data = new AppData(name, 0, state);
-		data.setState(state);
+		this.appData.put(name, data);
 		return true;
 	}
 

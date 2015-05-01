@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.reconfiguration;
 
+import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.Set;
 
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DemandReport;
@@ -33,7 +35,14 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	// names for which reconfiguration is incomplete, needed for recovery
 	public String[] getPendingReconfigurations();
 	
+	// get current RC group names from the DB
 	public Set<String> getRCGroupNames();
+	
+	public boolean addReconfigurator(NodeIDType node, InetSocketAddress sockAddr, int version);
+
+	public boolean deleteReconfigurators(int version);
+
+	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig();
 	
 	// close DB
 	public void close();

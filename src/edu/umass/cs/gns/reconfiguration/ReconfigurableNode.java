@@ -45,16 +45,16 @@ public abstract class ReconfigurableNode<NodeIDType> {
 					createAppCoordinator(), nc, messenger);
 			// getPacketTypes includes app's packets
 			pd.register(activeReplica.getPacketTypes(), activeReplica);
-			messenger.addPacketDemultiplexer(pd);
 		} else if (nc.getReconfigurators().contains(id)) {
 			// create reconfigurator
 			Reconfigurator<NodeIDType> reconfigurator = new Reconfigurator<NodeIDType>(
 					nc, messenger);
 			pd.register(reconfigurator.getPacketTypes().toArray(),
 					reconfigurator);
-			messenger.addPacketDemultiplexer(pd);
+			
 			// wrap reconfigurator in ActiveReplica to make it reconfigurable
-			//this.activeReplica = reconfigurator.getReconfigurableReconfiguratorAsActiveReplica();
+			this.activeReplica = reconfigurator.getReconfigurableReconfiguratorAsActiveReplica();
+			pd.register(activeReplica.getPacketTypes(), this.activeReplica);
 		}
 	}
 

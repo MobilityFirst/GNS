@@ -201,14 +201,28 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		 * because the instance may be paused.
 		 */
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID); //this.pinstances.get(paxosID);
-		if (pism != null)
+		if (pism != null) {
 			return this.integerMap.getIntArrayAsNodeSet(pism.getMembers());
+		}
 		return null;
 	}
 	
+	// exists and is active
 	public boolean isActive(String paxosID, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID); 
+		if(pism!=null && pism.isActive() && pism.getVersion()==version) return true;
+		return false;
+	}
+	public boolean isActive(String paxosID) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		log.info(myID + " pism is " + pism);
 		if(pism!=null && pism.isActive()) return true;
+		log.info(myID + " pism is " + pism + " is not active ");
+		return false;
+	}
+	public boolean isStopped(String paxosID) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if(pism!=null && pism.isStopped()) return true;
 		return false;
 	}
 
@@ -225,23 +239,34 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		boolean tryHotRestore = (hasRecovered() && hri == null);
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID,
 				tryHotRestore, tryRestore);
-		if (pism != null)
+		if (pism != null) {
+			log.info("Node" + myID + " has pre-existing paxos instance "
+					+ pism.getPaxosID() + ":" + pism.getVersion());
 			return false; // initialState will also be ignored here
-
+		}
 		pism = new PaxosInstanceStateMachine(paxosID, version, id,
 				this.integerMap.put(gms), app != null ? app : this.myApp,
 				initialState, this, hri);
 		pinstances.put(paxosID, pism);
 		assert (this.getInstance(paxosID, false, false) != null);
+		log.info(myID + " successfully created paxos instance "
+				+ pism.getPaxosIDVersion());
 		/*
 		 * Note: rollForward can not be done inside the instance as we first need to update the
 		 * instance map here so that networking (trivially sending message to self) works.
 		 */
 		if (!tryHotRestore)
 			rollForward(paxosID);
+		
+		// keepalives only if needed
 		if (!TESTPaxosConfig.isCrashed(this.myID))
 			this.FD.sendKeepAlive(gms);
 		return true;
+	}
+	
+	private boolean canCreateOrExists(String paxosID, short version) {
+		PaxosInstanceStateMachine pism  = this.getInstance(paxosID);
+		return (pism==null || (pism.getVersion()==version));
 	}
 
 	// Called by external entities, so we need to fix node IDs
@@ -297,7 +322,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				processFindReplicaGroup(new FindReplicaGroupPacket(jsonMsg));
 				break;
 			default: // paxos protocol messages
-				assert (jsonMsg.has(PaxosPacket.PAXOS_ID));
+				assert (jsonMsg.has(PaxosPacket.PAXOS_ID)) : jsonMsg;
 				String paxosID = jsonMsg.getString(PaxosPacket.PAXOS_ID);
 				PaxosInstanceStateMachine pism = this.getInstance(paxosID); // exact match including version
 				if (pism != null)
@@ -326,10 +351,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null) {
 			matched = true;
+			log.fine(myID+" proposing to " + pism.getPaxosIDVersion() + " : " + requestPacket);
 			requestPacket.putPaxosID(paxosID, pism.getVersion());
 			this.handleIncomingPacket(requestPacket.toJSONObject());
-		}
-		return matched ? paxosID : null;
+		} else log.warning(myID + " could not find paxos instance " + paxosID + " for request " + requestPacket);
+		return matched ? pism.getPaxosIDVersion() : null;
 	}
 
 	/*
@@ -359,20 +385,53 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		if (pism != null && pism.getVersion() == version) {
 			RequestPacket request = (new RequestPacket(-1, value, true))
 					.setReturnRequestValue();
-			request.putPaxosID(paxosID, version); 
+			request.putPaxosID(paxosID, version);
 			try {
 				return this.propose(paxosID, request);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-		}
+		} else
+			log.warning("Node"
+					+ myID
+					+ " not proposing stop request for "
+					+ paxosID
+					+ ":"
+					+ version
+					+ " : "
+					+ (pism == null ? " no paxos instance found " : paxosID
+							+ ":" + pism.getVersion() + " pre-exists"));
 		return null;
+	}
+	
+	public String getFinalState(String paxosID, short version) {
+		return this.paxosLogger.getEpochFinalCheckpointState(paxosID, version);
 	}
 	
 	public void deletePaxosInstance(String paxosID, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version) 
 			kill(pism);
+		// FIXME: should we delete prev epoch final state?
+	}
+
+	public boolean deleteFinalState(String paxosID, short version) {
+		return this.paxosLogger.deleteEpochFinalCheckpointState(paxosID,
+				version);
+	}
+
+	public boolean deleteFinalState(String paxosID, short version,
+			int prevVersions) {
+		for (short i = 0; i < prevVersions; i++)
+			this.deleteFinalState(paxosID, (short) (version - i));
+		return this.deleteFinalState(paxosID, version);
+	}
+	
+	// forces a checkpoint, but not guaranteed to happen immediately
+	public void forceCheckpoint(String paxosID) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if (pism != null)
+			pism.forceCheckpoint();
 	}
 
 	/* Note: paxosLogger.removeAll() must be only used when a node is
@@ -606,12 +665,13 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	protected synchronized void kill(PaxosInstanceStateMachine pism) {
 		if (pism == null || this.isClosed()) return;
 		while (!pism.kill()) {
-			log.severe("Problem stopping paxos instance " + pism.getPaxosID());
+			log.severe("Problem stopping paxos instance " + pism.getPaxosID() + ":"+pism.getVersion());
 		}
 		this.pinstances.remove(pism.getPaxosID());
 		this.corpses.put(pism.getPaxosID(), pism);
 		timer.schedule(new Cremator(pism.getPaxosID(), this.corpses),
 			MORGUE_DELAY);
+		this.notifyUponKill();
 	}
 
 	// For testing. Similar to hibernate without checkpoint and immediately restore (from older checkpoint)
@@ -636,8 +696,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		if (HIBERNATE_OPTION) {
 			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {"Node ", myID, " trying to hibernate ",
 					pism.getPaxosID()});
-			boolean stopped = pism.tryForcedCheckpointAndStop(); // could also do forceStop() here, but might be
-																	// wasteful
+			boolean stopped = pism.tryForcedCheckpointAndStop();
+			
 			if (stopped) {
 				this.pinstances.remove(pism.getPaxosID());
 				hibernated = true;
@@ -820,6 +880,29 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			ie.printStackTrace();
 		}
 	}
+	
+	public synchronized void waitCanCreateOrExists(String paxosID, short version) {
+		try {
+			while (!this.canCreateOrExists(paxosID, version))
+				wait();
+		} catch (InterruptedException ie) {
+			ie.printStackTrace();
+		}
+	}
+	public synchronized void notifyUponKill() {
+		notify();
+	}
+	
+	public boolean exists(String paxosID, short version) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if(pism!=null && pism.getVersion()==version) return true;
+		return false;
+	}
+	public boolean existsOrHigher(String paxosID, short version) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if(pism!=null && (pism.getVersion() - version >= 0)) return true;
+		return false;
+	}
 
 	/****************** End of methods to gracefully finish processing **************/
 
@@ -867,9 +950,17 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				if (pism != null
 						&& (pism.getVersion() - findGroup.getVersion() < 0))
 					this.kill(pism);
-				this.createPaxosInstance(findGroup.getPaxosID(), findGroup
+				boolean created = this.createPaxosInstance(findGroup.getPaxosID(), findGroup
 						.getVersion(), this.myID, this.integerMap.get(Util
 						.arrayToIntSet(findGroup.group)), myApp, null, null, false);
+				if (created)
+					log.info("Node"
+							+ myID
+							+ " created paxos instance "
+							+ findGroup.getPaxosID()
+							+ ":"
+							+ findGroup.getVersion()
+							+ " from nothing because it apparently missed its birthing");
 			}
 		}
 		try {
