@@ -8,10 +8,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nsdesign.Config;
-import static edu.umass.cs.gns.nsdesign.Config.readCoordination;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
@@ -52,15 +49,12 @@ public class NewAppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<No
       throw new RequestParseException(e);
     }
     InterfaceRequest callHandleDecision = null;
-    boolean noCoordinatorState = false;
     try {
       Packet.PacketType type = Packet.getPacketType(json);
       if (type != null) {
         if (Config.debuggingEnabled) {
           GNS.getLogger().info("######################## Received " + type + " : " + json);
         }
-        // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
-        // UNTIL THE TRANSITION IS FINISHED
         switch (type) {
           // call propose
           case UPDATE: // updates need coordination
@@ -72,104 +66,14 @@ public class NewAppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<No
             String paxosID = paxosManager.propose(update.getName(), update.toString());
             if (paxosID == null) {
               callHandleDecision = update;
-              noCoordinatorState = true;
               GNS.getLogger().warning("Update no paxos state: " + update);
             }
-            break;
-          // call createPaxosInstance
-//          case ACTIVE_ADD:  // createPaxosInstance when name is added for the first time
-//            // calling handle decision before creating paxos instance to insert state for name in database.
-//            if (Config.debuggingEnabled) {
-//              GNS.getLogger().info("*******Before creating paxos instance: " + request);
-//            }
-//            callHandleDecisionWithRetry(request, false);
-//            AddRecordPacket<NodeIDType> recordPacket = new AddRecordPacket<NodeIDType>(json, unstringer);
-//            paxosManager.createPaxosInstance(recordPacket.getName(), (short) Config.FIRST_VERSION,
-//                    recordPacket.getActiveNameServers(), app);
-//            if (Config.debuggingEnabled) {
-//              GNS.getLogger().info("*******Added paxos instance:" + recordPacket.getName());
-//            }
-//            break;
-          // call proposeStop
-//          case ACTIVE_REMOVE: // stop request for removing a name record
-//            if (Config.debuggingEnabled) {
-//              GNS.getLogger().info("*******Before proposing remove: " + request);
-//            }
-//            OldActiveSetStopPacket<NodeIDType> stopPacket1 = new OldActiveSetStopPacket<NodeIDType>(json, unstringer);
-//            paxosID = paxosManager.proposeStop(stopPacket1.getName(), stopPacket1.toString(), stopPacket1.getVersion());
-//            if (paxosID == null) {
-//              callHandleDecision = stopPacket1;
-//              noCoordinatorState = true;
-//            }
-//            if (Config.debuggingEnabled) {
-//              GNS.getLogger().info("*******Remove proposed: " + request);
-//            }
-//            break;
-//          case OLD_ACTIVE_STOP: // (sent by active replica) stop request on a group change
-//            OldActiveSetStopPacket<NodeIDType> stopPacket2 = new OldActiveSetStopPacket<NodeIDType>(json, unstringer);
-//            paxosID = paxosManager.proposeStop(stopPacket2.getName(), stopPacket2.toString(), stopPacket2.getVersion());
-//            if (paxosID == null) {
-//              callHandleDecision = stopPacket2;
-//              noCoordinatorState = true;
-//            }
-//            break;
-
-//          case NEW_ACTIVE_START_PREV_VALUE_RESPONSE: // (sent by active replica) createPaxosInstance after a group change
-//            // active replica has already put initial state for the name in DB. we only need to create paxos instance.
-//            NewActiveSetStartupPacket<NodeIDType> newActivePacket = new NewActiveSetStartupPacket<NodeIDType>(json, unstringer);
-//            paxosManager.createPaxosInstance(newActivePacket.getName(), newActivePacket.getNewActiveVersion(),
-//                    newActivePacket.getNewActiveNameServers(), app);
-//            break;
-
-          // no coordination needed for these requests
-          case DNS:
-            DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, unstringer);
-            String name = dnsPacket.getGuid();
-
-            // Send the current set of active replicas for this name to the LNS to keep it updated of the
-            // current replica set. This message is necessary for the case when the active replica set has
-            // changed but the old and new replicas share some members (which is actually quite common).
-            // Why is this necessary? Let's say closest name server to a LNS in the previous replica set was quite far, but
-            // in the new replica set the closest name server is very near to LNS. If we do not inform the LNS of
-            // current active replica set, it will continue sending requests to the far away name server.
-            Set<NodeIDType> nodeIds = paxosManager.getPaxosNodeIDs(name);
-            if (nodeIds != null) {
-              RequestActivesPacket<NodeIDType> requestActives = new RequestActivesPacket<NodeIDType>(name, dnsPacket.getLnsAddress(), 0, nodeID);
-              requestActives.setActiveNameServers(nodeIds);
-              messenger.sendToAddress(dnsPacket.getLnsAddress(), requestActives.toJSONObject());
-            }
-            if (readCoordination && dnsPacket.isQuery()) {
-              // Originally the responder field was used to communicate back to the client about which node responded to a query.
-              // Now it appears someone is using it for another purpose, undocumented. This seems like a bad idea.
-              // Get your own field! - Westy
-              dnsPacket.setResponder(nodeID);
-              paxosID = paxosManager.propose(dnsPacket.getGuid(), dnsPacket.toString());
-              if (paxosID == null) {
-                callHandleDecision = dnsPacket;
-                noCoordinatorState = true;
-              }
-            } else {
-              callHandleDecision = request;
-            }
-            break;
-          case SELECT_REQUEST:
-          case SELECT_RESPONSE:
-          case UPDATE_CONFIRM:
-          //case ADD_CONFIRM:
-          //case REMOVE_CONFIRM:
-            // Packets sent from replica controller
-            callHandleDecision = request;
-
             break;
           default:
             GNS.getLogger().severe("Packet type not found in coordination: " + type);
             break;
         }
         if (callHandleDecision != null) {
-          // FIXME: verify that NO_COORDINATOR_STATE_MARKER isn't needed
-//        if (noCoordinatorState) {
-//          callHandleDecision.put(Config.NO_COORDINATOR_STATE_MARKER, 0);
-//        }
           callHandleDecisionWithRetry(callHandleDecision, false);
         }
       } else { // packet type was null
@@ -178,8 +82,6 @@ public class NewAppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<No
         }
       }
     } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (IOException e) {
       e.printStackTrace();
     }
 

@@ -109,8 +109,6 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
       if (Config.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name() + " packet: " + json.toString());
       }
-      // SOME OF THE CODE BELOW IS NOT APPLICABLE IN THE NEW APP AND IS INCLUDED JUST FOR DOC PURPOSES
-      // UNTIL THE TRANSITION IS FINISHED
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests
@@ -132,21 +130,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
         case SELECT_RESPONSE:
           Select.handleSelectResponse(json, this);
           break;
-        /**
-         * Packets sent from replica controller *
-         */
-//        case ACTIVE_ADD: // sent when new name is added to GNS
-//          AddRecordPacket<NodeIDType> addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
-//          Add.handleActiveAdd(addRecordPacket, this);
-//          break;
-//        case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-//          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this,
-//                  noCoordinationState, doNotReplyToClient);
-//          break;
         // HANDLE CONFIRMATIONS COMING BACK FROM AN LNS (SIDE-TO-SIDE)
-        // THIS CODE IS GOING TO BECOME OBSOLETE ONCE WE FINISH THE LNS
-        // REDESIGN. ACTIVE REPLICAS WILL BE ABLE TO DO REQUESTS TO OTHER 
-        // ACTIVE REPLICAS.
         case UPDATE_CONFIRM:
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:
