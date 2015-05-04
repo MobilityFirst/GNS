@@ -13,6 +13,7 @@ import edu.umass.cs.gns.util.Stringifiable;
  * To change this template use File | Settings | File Templates.
  * @param <NodeIDType>
  */
+@Deprecated
 public class AcceptReplyPacket<NodeIDType> extends PaxosPacket {
     /**
      * nodeID of the node that sent the message

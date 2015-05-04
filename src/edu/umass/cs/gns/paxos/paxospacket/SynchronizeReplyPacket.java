@@ -15,6 +15,7 @@ import java.util.ArrayList;
  * Time: 7:45 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class SynchronizeReplyPacket<NodeIDType> extends PaxosPacket {
 
   /**

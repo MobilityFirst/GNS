@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Deprecated
 public class PreparePacket<NodeIDType> extends PaxosPacket {
 
   private NodeIDType coordinatorID;

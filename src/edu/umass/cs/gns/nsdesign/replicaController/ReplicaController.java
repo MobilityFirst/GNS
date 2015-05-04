@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @param <NodeIDType>
  */
+@Deprecated
 public class ReplicaController<NodeIDType> implements Replicable, InterfaceReplicable, ReconfiguratorInterface, Shutdownable {
 
   public static final int RC_TIMEOUT_MILLIS = 3000;

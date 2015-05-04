@@ -22,6 +22,7 @@ import org.json.JSONException;
  * Time: 7:48 PM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class PaxosNodeConfig implements InterfaceNodeConfig<Integer> {
 
   private HashMap<Integer, NodeInfo> nodesInfo;

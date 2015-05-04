@@ -11,6 +11,7 @@ import org.json.JSONObject;
  * Time: 10:13 AM
  * To change this template use File | Settings | File Templates.
  */
+@Deprecated
 public class StatePacket extends PaxosPacket {
 
   public Ballot b;

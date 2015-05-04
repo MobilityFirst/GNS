@@ -12,6 +12,7 @@ import java.util.Properties;
 /**
  * Created by abhigyan on 2/13/14.
  */
+@Deprecated
 public class TestConfig {
 
   int numPaxosReplicas;

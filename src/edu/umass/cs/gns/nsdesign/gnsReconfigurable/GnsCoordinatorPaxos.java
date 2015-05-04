@@ -26,6 +26,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 3/28/14.
  */
+@Deprecated
 public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
 
   private static final long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;

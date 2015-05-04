@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,6 +32,7 @@ import java.util.Set;
  * This was Hardeep's implementation of beehive DHT routing.
  * 
  */
+@Deprecated
 public class BeehiveReplication<NodeIDType> {
 
   private static int numNodes;

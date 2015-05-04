@@ -12,6 +12,7 @@ import java.util.Set;
  * Created by abhigyan on 4/30/14.
  * @param <NodeIDType>
  */
+@Deprecated
 public class ReplicationOutput<NodeIDType> {
 
   // all replicas for a name

@@ -8,6 +8,7 @@ import java.util.Set;
 /**
  * @author V. Arun
  */
+@Deprecated
 public class ReplicableApp implements Replicable {
 
   Application app;

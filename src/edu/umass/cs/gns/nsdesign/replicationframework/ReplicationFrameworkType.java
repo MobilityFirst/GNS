@@ -28,6 +28,7 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
  *
  * @author westy, Abhigyan
  */
+@Deprecated
 public enum ReplicationFrameworkType {
   LOCATION,  // Main replication algorithm
   RANDOM,

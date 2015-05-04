@@ -25,13 +25,13 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
 import java.util.Set;
 
 /**
  * Coordinates requests among replicas of replica controllers by using paxos consensus protocol.
  * Created by abhigyan on 3/30/14.
  */
+@Deprecated
 public class ReplicaControllerCoordinatorPaxos<NodeIDType> extends AbstractReplicaCoordinator implements ReplicaControllerCoordinator {
 
   private static final long HANDLE_DECISION_RETRY_INTERVAL_MILLIS = 1000;

@@ -4,6 +4,7 @@ import edu.umass.cs.gns.main.GNS;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public enum PaxosPacketType {
   
   REQUEST(1),

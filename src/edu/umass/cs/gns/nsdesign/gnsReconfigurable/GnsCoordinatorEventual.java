@@ -28,6 +28,7 @@ import java.util.Set;
  * Created by abhigyan on 3/28/14.
  * @param <NodeIDType>
  */
+@Deprecated
 public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator{
 
   private NodeIDType nodeID;

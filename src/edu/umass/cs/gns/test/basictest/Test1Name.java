@@ -3,8 +3,8 @@ package edu.umass.cs.gns.test.basictest;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.localnameserver.LocalNameServer;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;

@@ -8,6 +8,7 @@ import edu.umass.cs.gns.paxos.Ballot;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.io.Serializable;
 
+@Deprecated
 public class PValuePacket<NodeIDType> extends PaxosPacket implements Serializable {
 
   public Ballot<NodeIDType> ballot;

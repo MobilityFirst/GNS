@@ -16,6 +16,7 @@ import org.json.JSONObject;
  * the currently static class PaxosManager. We probably need an instantiable
  * version of PaxosManager anyway that is customized for replica controllers.
  */
+@Deprecated
 public class ReplicaControllerPaxos {
 
 

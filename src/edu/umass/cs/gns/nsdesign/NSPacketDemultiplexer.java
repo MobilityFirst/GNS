@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
  * <p/>
  * Created by abhigyan on 2/26/14.
  */
+@Deprecated
 public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
   private NameServer nameServer;

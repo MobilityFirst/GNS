@@ -2,6 +2,7 @@ package edu.umass.cs.gns.nsdesign.packet;
 
 import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
@@ -13,10 +14,12 @@ import org.json.JSONObject;
  * plus a possible error code (could be null)
  * plus instrumentation.
  *
- * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent.
+ * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent
+ * insofar as the fields in the JOSN Object is concerned.
+ *
  * @param <NodeIDType>
  */
-public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
+public class CommandValueReturnPacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String RETURNVALUE = "returnValue";
@@ -74,7 +77,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
     this.LNSRoundTripTime = response.getLNSRoundTripTime();
-    this.LNSProcessingTime = lnsProcTime; 
+    this.LNSProcessingTime = lnsProcTime;
     this.responder = response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
@@ -165,6 +168,11 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket {
 
   public int getRequestRate() {
     return requestRate;
+  }
+
+  @Override
+  public String getServiceName() {
+    return "BOGUS";
   }
 
 }

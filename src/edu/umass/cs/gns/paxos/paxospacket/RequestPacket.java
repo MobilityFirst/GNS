@@ -8,6 +8,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.Random;
 
+@Deprecated
 public class RequestPacket<NodeIDType> extends PaxosPacket implements Serializable {
 
   public NodeIDType clientID;

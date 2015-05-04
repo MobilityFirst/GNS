@@ -13,7 +13,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.OKRESPONSE;
 import static edu.umass.cs.gns.clientsupport.Defs.TOMANYGUIDS;
 import static edu.umass.cs.gns.clientsupport.Defs.VERIFICATIONERROR;
 import edu.umass.cs.gns.database.ColumnFieldType;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -392,7 +392,7 @@ public class FieldAccess {
       }
       if (!accountInfo.isVerified()) {
         return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
-      } else if (accountInfo.getGuids().size() > edu.umass.cs.gns.localnameserver.httpserver.Defs.MAXGUIDS) {
+      } else if (accountInfo.getGuids().size() > edu.umass.cs.gns.clientCommandProcessor.httpserver.Defs.MAXGUIDS) {
         return new CommandResponse(BADRESPONSE + " " + TOMANYGUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.

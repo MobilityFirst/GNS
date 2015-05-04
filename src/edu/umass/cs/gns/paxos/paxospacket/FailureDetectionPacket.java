@@ -4,6 +4,7 @@ import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Deprecated
 public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 
   /**

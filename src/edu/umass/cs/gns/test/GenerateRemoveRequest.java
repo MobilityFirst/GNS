@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.test;
 
-import edu.umass.cs.gns.localnameserver.LNSPacketDemultiplexer;
+import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import org.json.JSONException;
@@ -14,9 +14,9 @@ class GenerateRemoveRequest<NodeIDType> extends TimerTask {
 
   private final int requestCount;
   private final String name;
-  private final LNSPacketDemultiplexer packetDemultiplexer;
+  private final CCPPacketDemultiplexer packetDemultiplexer;
 
-  public GenerateRemoveRequest(String name, int count, LNSPacketDemultiplexer packetDemultiplexer) {
+  public GenerateRemoveRequest(String name, int count, CCPPacketDemultiplexer packetDemultiplexer) {
 
     this.requestCount = count;
     this.name = name;

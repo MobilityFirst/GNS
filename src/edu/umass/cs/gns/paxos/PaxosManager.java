@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  *
  */
+@Deprecated
 public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
   static final String PAXOS_ID = "PXS";

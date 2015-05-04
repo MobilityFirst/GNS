@@ -12,7 +12,7 @@ import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.clientsupport.GroupAccess;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.security.InvalidKeyException;

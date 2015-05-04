@@ -8,6 +8,7 @@ import java.util.HashMap;
 /**
  * Created by abhigyan on 1/9/14.
  */
+@Deprecated
 public class PaxosCoordinator {
 //  /**
 //   * If activeCoordinator == true, this replica is coordinator.

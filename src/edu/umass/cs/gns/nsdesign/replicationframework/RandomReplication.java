@@ -22,6 +22,7 @@ import java.util.Set;
  * @author Abhigyan
  * @param <NodeIDType>
  ************************************************************/
+@Deprecated
 public class RandomReplication<NodeIDType> implements ReplicationFrameworkInterface<NodeIDType> {
   @Override
   public ReplicationOutput newActiveReplica(ReconfiguratorInterface<NodeIDType> rc, ReplicaControllerRecord<NodeIDType> rcRecord, int numReplica, int count)

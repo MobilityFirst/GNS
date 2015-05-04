@@ -80,7 +80,7 @@ public class GNSInstaller {
   private static String lnsConfFileName;
   private static String nsConfFileName;
 
-  private static final String StartLNSClass = "edu.umass.cs.gns.newApp.localNameServer.NewLocalNameServer";
+  private static final String StartLNSClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.NewClientCommandProcessor";
   private static final String StartNSClass = "edu.umass.cs.gns.newApp.AppReconfigurableNode";
 
   private static final String CHANGETOINSTALLDIR

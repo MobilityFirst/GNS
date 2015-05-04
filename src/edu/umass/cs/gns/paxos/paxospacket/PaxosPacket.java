@@ -3,6 +3,7 @@ package edu.umass.cs.gns.paxos.paxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Deprecated
 public abstract class PaxosPacket {
 
   public static final String PACKET_TYPE_FIELD_NAME = "PT";

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.test.connecttime;
 
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.test.WorkloadParams;
 
 /**

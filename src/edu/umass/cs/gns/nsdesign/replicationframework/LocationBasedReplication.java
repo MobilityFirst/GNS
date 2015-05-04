@@ -23,6 +23,7 @@ import java.util.Set;
  * @author Abhigyan
  * @param <NodeIDType>
  */
+@Deprecated
 public class LocationBasedReplication<NodeIDType> implements ReplicationFrameworkInterface<NodeIDType> {
 
   /**

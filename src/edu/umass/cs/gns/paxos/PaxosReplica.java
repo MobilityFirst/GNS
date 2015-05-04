@@ -84,6 +84,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Time: 12:09 AM
  * @param <NodeIDType>
  */
+@Deprecated
 public class PaxosReplica<NodeIDType> extends PaxosReplicaInterface<NodeIDType> implements Serializable {
 
   public static String Version = "$Revision$";

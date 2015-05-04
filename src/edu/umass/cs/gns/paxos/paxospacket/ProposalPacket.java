@@ -6,6 +6,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
+@Deprecated
 public class ProposalPacket<NodeIDType> extends PaxosPacket implements Serializable {
 
   public int slot;

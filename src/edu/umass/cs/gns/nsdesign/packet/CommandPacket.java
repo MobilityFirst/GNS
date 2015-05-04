@@ -1,15 +1,17 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
+import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * Packet format sent from a client and handled by a local name server.
- * 
+ *
  */
-public class CommandPacket extends BasicPacket {
+public class CommandPacket extends BasicPacket implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String SENDERADDRESS = JSONNIOTransport.DEFAULT_IP_FIELD;
@@ -33,7 +35,6 @@ public class CommandPacket extends BasicPacket {
    * Almost always has a GUID field or NAME (for HRN records) field.
    */
   private final JSONObject command;
-  
 
   /**
    *
@@ -88,5 +89,22 @@ public class CommandPacket extends BasicPacket {
   public JSONObject getCommand() {
     return command;
   }
-  
+
+  @Override
+  public String getServiceName() {
+    try {
+      if (command != null) {
+        if (command.has(Defs.GUID)) {
+          return command.getString(Defs.GUID);
+        }
+        if (command.has(Defs.NAME)) {
+          return command.getString(Defs.NAME);
+        }
+      }
+    } catch (JSONException e) {
+      // Just ignore it
+    }
+    return "Unknown";
+  }
+
 }

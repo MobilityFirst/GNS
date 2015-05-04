@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Time: 4:31 PM
  * @param <NodeIDType>
  */
+@Deprecated
 public class PaxosLogAnalyzer<NodeIDType> {
   // could consider renaming class
 

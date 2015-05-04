@@ -22,6 +22,7 @@ import java.util.Set;
  * Time: 8:57 PM
  * @param <NodeIDType>
  */
+@Deprecated
 public class DefaultPaxosInterface<NodeIDType> implements Replicable {
   
   // NOTE: We have hardcoded that nodeID = 0 will respond to client. Therefore, in our tests

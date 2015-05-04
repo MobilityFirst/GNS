@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.clientsupport;
 
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;

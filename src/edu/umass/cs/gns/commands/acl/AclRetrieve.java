@@ -14,7 +14,7 @@ import edu.umass.cs.gns.clientsupport.FieldMetaData;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;

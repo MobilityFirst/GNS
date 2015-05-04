@@ -10,6 +10,7 @@ import java.util.Set;
  * Created by abhigyan on 1/13/14.
  * @param <NodeIDType>
  */
+@Deprecated
 public abstract class PaxosReplicaInterface<NodeIDType>{
 
   public abstract String getPaxosID();

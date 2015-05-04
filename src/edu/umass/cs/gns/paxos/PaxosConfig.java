@@ -13,6 +13,7 @@ import java.util.Properties;
  *
  * Created by abhigyan on 3/7/14.
  */
+@Deprecated
 public class PaxosConfig {
 
 

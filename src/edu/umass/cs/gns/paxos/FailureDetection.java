@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.util.Stringifiable;
@@ -16,6 +15,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
+@Deprecated
 public class FailureDetection<NodeIDType> {
 
   /**

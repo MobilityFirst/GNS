@@ -12,6 +12,7 @@ import org.json.JSONObject;
  * To change this template use File | Settings | File Templates.
  * @param <NodeIDType>
  */
+@Deprecated
 public class SynchronizePacket<NodeIDType> extends PaxosPacket {
 
   public NodeIDType nodeID;

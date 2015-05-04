@@ -9,6 +9,7 @@ import java.util.Set;
 /**
  * @author V. Arun
  */
+@Deprecated
 public class ReconfigurableApp implements Reconfigurable {
 
   Application app = null;

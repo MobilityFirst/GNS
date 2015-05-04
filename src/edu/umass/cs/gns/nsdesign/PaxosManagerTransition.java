@@ -19,6 +19,7 @@ import java.util.Set;
  * propose/proposeStop methods.
  * 
  */
+@Deprecated
 public class PaxosManagerTransition<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
   private PaxosManager<NodeIDType> paxosManager;

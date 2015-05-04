@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
-import edu.umass.cs.gns.localnameserver.IntercessorInterface;
+import edu.umass.cs.gns.clientCommandProcessor.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;

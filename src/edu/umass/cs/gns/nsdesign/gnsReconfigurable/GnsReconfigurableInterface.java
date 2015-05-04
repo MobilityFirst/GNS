@@ -15,6 +15,7 @@ import edu.umass.cs.gns.nsdesign.Shutdownable;
  * Created by abhigyan on 5/19/14.
  * @param <NodeIDType>
  */
+@Deprecated
 public interface GnsReconfigurableInterface<NodeIDType> extends GnsApplicationInterface, Replicable, Reconfigurable, Shutdownable{
 
   void reset() throws FailedDBOperationException;

@@ -34,6 +34,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 4/27/14.
  */
+@Deprecated
 public class StaticReplicationCoordinator<NodeIDType> extends ActiveReplicaCoordinator{
 
   private NodeIDType nodeID;

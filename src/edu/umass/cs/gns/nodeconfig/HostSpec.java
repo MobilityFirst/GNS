@@ -7,17 +7,30 @@
  */
 package edu.umass.cs.gns.nodeconfig;
 
+import edu.umass.cs.gns.util.NetworkUtils;
+import java.net.UnknownHostException;
+
 /**
  * A tuple of NodeId and hostname.
+ *
  * @param <NodeIDType>
  */
 public class HostSpec<NodeIDType> {
+
   private final NodeIDType id;
   private final String name;
   private final String externalIP;
   private final Integer startPort;
 
   public HostSpec(NodeIDType id, String name, String externalIP, Integer startPort) {
+    if ("127.0.0.1".equals(name) || "localhost".equals(name)) {
+      try {
+        name = NetworkUtils.getLocalHostLANAddress().getHostAddress();
+      } catch (UnknownHostException e) {
+        // punt if we can't get it
+      }
+    }
+
     this.id = id;
     this.name = name;
     this.externalIP = externalIP;
@@ -39,5 +52,5 @@ public class HostSpec<NodeIDType> {
   public Integer getStartPort() {
     return startPort;
   }
-  
+
 }

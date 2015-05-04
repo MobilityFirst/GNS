@@ -2,6 +2,7 @@ package edu.umass.cs.gns.paxos;
 
 import java.io.Serializable;
 
+@Deprecated
 public class Ballot<NodeIDType> implements Comparable<Ballot>, Serializable{
 	public int ballotNumber;
 	public NodeIDType coordinatorID;

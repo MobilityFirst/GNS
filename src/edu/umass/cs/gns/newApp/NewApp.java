@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.newApp;
 
+import edu.umass.cs.gns.clientsupport.CommandHandler;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -14,7 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
@@ -25,6 +26,8 @@ import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconLookup;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconUpdate;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.Select;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
+import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.NoopPacket;
@@ -43,13 +46,18 @@ import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Westy
@@ -69,7 +77,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    * The Nio server
    */
   private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
-
+  
   public NewApp(NodeIDType id, GNSInterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
@@ -92,7 +100,9 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     PacketType.ADD_CONFIRM,
     PacketType.REMOVE_CONFIRM,
     PacketType.STOP,
-    PacketType.NOOP};
+    PacketType.NOOP,
+    PacketType.COMMAND,
+    PacketType.COMMAND_RETURN_VALUE};
 
   @Override
   public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
@@ -140,6 +150,12 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
           break;
         case NOOP:
           break;
+        case COMMAND:
+          CommandHandler.handleCommandPacketForApp(json, this);
+          break;
+        case COMMAND_RETURN_VALUE:
+          CommandHandler.handleCommandReturnValuePacketForApp(json, this);
+          break;
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);
           return false;
@@ -168,13 +184,35 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     return executed;
   }
 
+  class CommandQuery {
+
+    private String host;
+    private int port;
+
+    public CommandQuery(String host, int port) {
+      this.host = host;
+      this.port = port;
+    }
+
+    public String getHost() {
+      return host;
+    }
+
+    public int getPort() {
+      return port;
+    }
+
+  }
+
+  private final ConcurrentMap<Integer, CommandQuery> outStandingQueries = new ConcurrentHashMap<Integer, CommandQuery>(10, 0.75f, 3);
+
   @Override
   public InterfaceRequest getRequest(String string)
           throws RequestParseException {
     if (Config.debuggingEnabled) {
       GNS.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     }
-    // Hack
+    // Special case handling of NoopPacket packets
     if (RequestPacket.NO_OP.toString().equals(string)) {
       return new NoopPacket();
     }
@@ -241,7 +279,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     try {
       if (true) {
         TransferableNameRecordState state1 = new TransferableNameRecordState(state);
-        NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION, 
+        NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
                 state1.valuesMap, state1.ttl,
                 nodeConfig.getReplicatedReconfigurators(name));
         NameRecord.addNameRecord(nameRecordDB, nameRecord);
@@ -401,11 +439,11 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
 //      if (recordEpoch != null && recordEpoch == epoch) {
 //        NameRecord.removeNameRecord(nameRecordDB, name);
 //      } else {
-        if (Config.debuggingEnabled) {
-          GNS.getLogger().info("&&&&&&& APP " + nodeID + " for " + name + " ignoring delete. Epoch is "
-                  + epoch + " and record version is " + recordEpoch);
-        }
-      //}
+    if (Config.debuggingEnabled) {
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + " for " + name + " ignoring delete. Epoch is "
+              + epoch + " and record version is " + recordEpoch);
+    }
+    //}
 //    } catch (FailedDBOperationException e) {
 //      GNS.getLogger().severe("Failed to delete record for " + name + " :" + e.getMessage());
 //      return false;

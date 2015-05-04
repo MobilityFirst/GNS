@@ -4,7 +4,7 @@
  */
 package edu.umass.cs.gns.util;
 
-import edu.umass.cs.gns.localnameserver.httpserver.Defs;
+import edu.umass.cs.gns.clientCommandProcessor.httpserver.Defs;
 import edu.umass.cs.gns.main.GNS;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;

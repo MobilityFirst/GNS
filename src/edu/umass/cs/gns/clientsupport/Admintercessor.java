@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.clientsupport;
 
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.localnameserver.LNSListenerAdmin;
+import edu.umass.cs.gns.clientCommandProcessor.CCPListenerAdmin;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import static edu.umass.cs.gns.clientsupport.Defs.BADRESPONSE;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetSocketAddress;
@@ -67,14 +67,14 @@ public class Admintercessor<NodeIDType> {
   /**
    *
    */
-  LNSListenerAdmin listenerAdmin = null;
+  CCPListenerAdmin listenerAdmin = null;
 
   /**
    * Sets the listener admin.
    *
    * @param listenerAdmin
    */
-  public void setListenerAdmin(LNSListenerAdmin listenerAdmin) {
+  public void setListenerAdmin(CCPListenerAdmin listenerAdmin) {
     this.listenerAdmin = listenerAdmin;
   }
 

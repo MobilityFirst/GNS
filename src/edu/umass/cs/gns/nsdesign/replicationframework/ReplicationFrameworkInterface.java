@@ -16,6 +16,7 @@ import edu.umass.cs.gns.nsdesign.replicaController.ReconfiguratorInterface;
  * 
  * @param <NodeIDType>
  */
+@Deprecated
 public interface ReplicationFrameworkInterface<NodeIDType> {
 
   public final static int NUM_RETRY = 1000;

@@ -19,6 +19,7 @@ import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
  * for the members being retrieved below, they might as well be defined as
  * public final members here and accessed directly.
  */
+@Deprecated
 public interface NameServerInterface {
 
   public ActiveReplicaCoordinator getActiveReplicaCoordinator();

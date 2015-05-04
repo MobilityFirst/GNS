@@ -13,6 +13,7 @@ import org.json.JSONObject;
 // fixme delete this file
 /* Work in progress. Inactive code.
  */
+@Deprecated
 public class ActiveReplicaPaxos {
 
 	PaxosManager paxosManager=null;

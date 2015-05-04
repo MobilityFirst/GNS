@@ -11,6 +11,7 @@ import java.util.Set;
  * Created by abhigyan on 3/5/14.
  * @param <NodeIdType>
  */
+@Deprecated
 public abstract class AbstractPaxosManager<NodeIdType> {
 
   /**

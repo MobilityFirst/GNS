@@ -10,7 +10,6 @@ import static edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.*;
 import edu.umass.cs.gns.paxos.paxospacket.PreparePacket;
 import edu.umass.cs.gns.paxos.paxospacket.ProposalPacket;
 import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
-import edu.umass.cs.gns.util.Util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -106,6 +105,7 @@ import java.util.concurrent.locks.ReentrantLock;
  * Date: 7/24/13
  * Time: 8:16 AM
  */
+@Deprecated
 public class PaxosLogger<NodeIDType> extends Thread {
 
   /**

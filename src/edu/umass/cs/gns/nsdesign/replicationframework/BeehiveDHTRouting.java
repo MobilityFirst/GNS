@@ -17,6 +17,7 @@ import java.util.TreeMap;
  *
  *  This was xiaozheng's implementation of beehive DHT routing.
  */
+@Deprecated
 public class BeehiveDHTRouting {
 	
 	private Random random;

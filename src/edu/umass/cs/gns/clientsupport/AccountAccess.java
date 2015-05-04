@@ -8,7 +8,7 @@ package edu.umass.cs.gns.clientsupport;
 import edu.umass.cs.gns.util.Base64;
 import static edu.umass.cs.gns.clientsupport.Defs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
-import edu.umass.cs.gns.localnameserver.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
