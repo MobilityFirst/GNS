@@ -67,7 +67,9 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
           // max number of attempts have been made,
           GNS.getLogger().severe("Error: No actives received for name  " + name + " after " + numAttempts
                   + " attempts.");
-          PendingTasks.sendErrorMsgForName(name, requestID, LNSEventCode.RC_NO_RESPONSE_ERROR, handler);
+          PendingTasks.sendErrorMsgForName(name, requestID, 
+                  //LNSEventCode.RC_NO_RESPONSE_ERROR, 
+                  handler);
           throw new CancelExecutorTaskException();
         }
       }

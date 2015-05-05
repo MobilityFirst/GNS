@@ -111,9 +111,9 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
 
       updateInfo.setSuccess(false);
       updateInfo.setFinishTime();
-      updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
-      String updateStats = updateInfo.getLogString();
-      GNS.getStatLogger().info(updateStats);
+      //updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
+//      String updateStats = updateInfo.getLogString();
+//      GNS.getStatLogger().info(updateStats);
 
       return true;
     }
@@ -135,9 +135,9 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
     }
 
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
-    if (info != null) {
-      info.addEventCode(LNSEventCode.CONTACT_RC);
-    }
+//    if (info != null) {
+//      info.addEventCode(LNSEventCode.CONTACT_RC);
+//    }
     replicaControllersQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {

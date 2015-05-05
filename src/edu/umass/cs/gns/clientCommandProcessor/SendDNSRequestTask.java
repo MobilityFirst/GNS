@@ -140,8 +140,8 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
           Lookup.sendDNSResponseBackToSource(new DNSPacket<NodeIDType>(requestInfo.getErrorMessage(), handler.getGnsNodeConfig()), handler);
           requestInfo.setSuccess(false);
           requestInfo.setFinishTime();
-          requestInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
-          GNS.getStatLogger().fine(requestInfo.getLogString());
+          //requestInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
+          //GNS.getStatLogger().fine(requestInfo.getLogString());
           return true;
         }
       }
@@ -179,8 +179,8 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     info.setFinishTime();
     info.setSuccess(true);
     info.setCacheHit(true);
-    info.addEventCode(LNSEventCode.CACHE_HIT);
-    GNS.getStatLogger().info(info.getLogString());
+    //info.addEventCode(LNSEventCode.CACHE_HIT);
+    //GNS.getStatLogger().info(info.getLogString());
     if (GNS.getLogger().isLoggable(Level.FINER)) {
       if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
         GNS.getLogger().finer(handler.getCacheLogString("LNS CACHE: "));
@@ -232,9 +232,9 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       nameserversQueried.add(ns);
 
       DNSRequestInfo reqInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
-      if (reqInfo != null) {
-        reqInfo.addEventCode(LNSEventCode.CONTACT_ACTIVE);
-      }
+//      if (reqInfo != null) {
+//        reqInfo.addEventCode(LNSEventCode.CONTACT_ACTIVE);
+//      }
       int clientQueryID = incomingPacket.getQueryId();
 
       // set this information in anticipation of creating the json object below

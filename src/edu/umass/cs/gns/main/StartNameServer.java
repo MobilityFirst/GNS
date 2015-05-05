@@ -21,6 +21,7 @@ import java.util.Properties;
  *
  * Created by abhigyan on 2/28/14.
  */
+@Deprecated
 public class StartNameServer {
 
   /**

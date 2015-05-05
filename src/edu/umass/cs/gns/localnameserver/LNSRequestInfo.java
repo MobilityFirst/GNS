@@ -1,27 +1,34 @@
-package edu.umass.cs.gns.clientCommandProcessor;
-
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import org.json.JSONObject;
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
+package edu.umass.cs.gns.localnameserver;
 
 /**
- * Class represents the abstract class in which CPP stores info for each ongoing request,
- * from the time it is received by a CPP until a success/failure response is returned.
+ * Class represents the abstract class in which LNS stores info for each ongoing request,
+ * from the time it is received by a LNS until a success/failure response is returned.
  * Only a single instance of this class is defined during the lifetime of a request.
  *
  * Some fields in this class are necessary to implement functionality of a local name server, while
  * some are there only to collect and log statistics for a request.
  *
- * Created by abhigyan on 5/29/14.
  */
-public abstract class RequestInfo {
+public class LNSRequestInfo {
 
-  protected String name;
+  private final String name;
+  
+  private final String clientHost;
+  
+  private final int clientPort;
 
   /** Unique request ID assigned to this request by the local name server */
-  protected int cppReqID;
+  private final int lnsReqID;
 
   /** Time that CPP started processing this request */
-  protected long startTime;
+  protected final long startTime;
 
   /** True if CPP is requesting current set of active replicas for this request. False, otherwise */
   private boolean lookupActives = false;
@@ -29,48 +36,44 @@ public abstract class RequestInfo {
   /** Number of times this request has initiated lookup actives operation.
    * This could be always zero for some types of requests (namely ADD and REMOVE) that are
    * sent only to replica controllers (and never to active replicas) */
-  protected int numLookupActives = 0;
+  private int numLookupActives = 0;
 
-
-  /***********
-   * Fields only for collecting statistics for a request and write log entries
-   ***********/
-
-  protected Packet.PacketType requestType;
-
+  // Instrumentation
+  
   /** Time that LNS completed processing this request */
-  protected long finishTime =  -1;
+  private long finishTime =  -1;
 
   /** Whether requests is finally successful or not. */
-  protected boolean success = false;
+  private boolean success = false;
 
-  // Abstract methods
-
-  /** 
-   * Returns the log entry that we will log at local name server
-   * @return  */
-  public abstract String getLogString();
-
-  /** 
-   * Returns the error message to be sent to client if name server returns no response to a request.
-   * @return  */
-  public abstract JSONObject getErrorMessage();
-
-
-  // methods that are implemented
+public LNSRequestInfo(int lnsReqId, String name, String host, int port) {
+    this.lnsReqID = lnsReqId;
+    this.name = name;
+    this.clientHost = host;
+    this.clientPort = port;
+    this.startTime = System.currentTimeMillis();
+    this.numLookupActives = 0;
+  }
 
   public synchronized String getName() {
     return name;
   }
+  
+  public String getHost() {
+    return clientHost;
+  }
 
-  public synchronized int getCPPReqID() {
-    return cppReqID;
+  public int getPort() {
+    return clientPort;
+  }
+
+  public synchronized int getLNSReqID() {
+    return lnsReqID;
   }
 
   public synchronized long getStartTime() {
     return startTime;
   }
-
 
   /** 
    * Time duration for which the request was under processing at the local name server.

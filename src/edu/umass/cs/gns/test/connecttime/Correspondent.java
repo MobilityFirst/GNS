@@ -2,7 +2,6 @@ package edu.umass.cs.gns.test.connecttime;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.clientCommandProcessor.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.workloads.ExponentialDistribution;
 
@@ -21,6 +20,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 5/13/14.
  */
+@Deprecated
 public class Correspondent<NodeIDType> implements Runnable{
 
   private ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
@@ -105,9 +105,9 @@ public class Correspondent<NodeIDType> implements Runnable{
       }
 
       if (valueFromGns != null && valueFromMobile != null && valueFromMobile.equals(valueFromGns)) {
-        GNS.getStatLogger().info("\tSuccess-ConnectTime\t" + connectTime + "\t");
+        //GNS.getStatLogger().info("\tSuccess-ConnectTime\t" + connectTime + "\t");
       } else if (numTimeout + 1 == maxNumTimeout){
-        GNS.getStatLogger().info("\tFailed-ConnectTime\t" + (connectTime + timeoutSec*1000) + "\t");
+        //GNS.getStatLogger().info("\tFailed-ConnectTime\t" + (connectTime + timeoutSec*1000) + "\t");
       } else {
         long delay = Math.max(timeoutSec * 1000 - valueReadTime, 0);
         executor.schedule(new ReadTask(connectTime + timeoutSec*1000, numTimeout + 1), delay, TimeUnit.MILLISECONDS);

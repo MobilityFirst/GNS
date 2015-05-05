@@ -97,12 +97,12 @@ public class AddRemove {
       handler.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
       addInfo.setSuccess(confirmAddPacket.isSuccess());
       addInfo.setFinishTime();
-      if (confirmAddPacket.isSuccess()) {
-        addInfo.addEventCode(LNSEventCode.SUCCESS);
-      } else {
-        addInfo.addEventCode(LNSEventCode.OTHER_ERROR);
-      }
-      GNS.getStatLogger().info(addInfo.getLogString());
+//      if (confirmAddPacket.isSuccess()) {
+//        addInfo.addEventCode(LNSEventCode.SUCCESS);
+//      } else {
+//        addInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+//      }
+      //GNS.getStatLogger().info(addInfo.getLogString());
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket, handler);
     }
   }
@@ -125,13 +125,13 @@ public class AddRemove {
       handler.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       removeInfo.setSuccess(confirmRemovePacket.isSuccess());
       removeInfo.setFinishTime();
-      if (confirmRemovePacket.isSuccess()) {
-        removeInfo.addEventCode(LNSEventCode.SUCCESS);
-      } else {
-        removeInfo.addEventCode(LNSEventCode.OTHER_ERROR);
-      }
-      String stats = removeInfo.getLogString();
-      GNS.getStatLogger().fine(stats);
+//      if (confirmRemovePacket.isSuccess()) {
+//        removeInfo.addEventCode(LNSEventCode.SUCCESS);
+//      } else {
+//        removeInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+//      }
+//      String stats = removeInfo.getLogString();
+//      GNS.getStatLogger().fine(stats);
       Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket, handler);
     }
   }

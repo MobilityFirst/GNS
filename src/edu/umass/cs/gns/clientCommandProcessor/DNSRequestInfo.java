@@ -39,7 +39,7 @@ public class DNSRequestInfo<NodeIDType> extends RequestInfo{
   public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket<NodeIDType> incomingPacket, 
           Stringifiable<NodeIDType> unstringer) {
     this.requestType = Packet.PacketType.DNS;
-    this.lnsReqID = lnsReqId;
+    this.cppReqID = lnsReqId;
     this.name = name;
     this.startTime = System.currentTimeMillis();
 
@@ -80,7 +80,7 @@ public class DNSRequestInfo<NodeIDType> extends RequestInfo{
     str.append("\t" + numLookupActives);
     str.append("\t[]");
     str.append("\t");
-    str.append(getEventCodesString());
+    //str.append(getEventCodesString());
     return str.toString();
   }
 

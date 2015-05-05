@@ -17,6 +17,7 @@ import java.rmi.RemoteException;
  *
  * Created by abhigyan on 5/25/14.
  */
+@Deprecated
 public interface ClientRMIInterface extends Remote{
 
   public NSResponseCode sendAddRecord(String name, String key, ResultValue value)throws RemoteException;

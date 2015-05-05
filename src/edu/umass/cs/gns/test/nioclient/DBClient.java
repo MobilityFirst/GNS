@@ -29,6 +29,7 @@ import org.json.JSONArray;
  * Created by abhigyan on 6/19/14.
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 class DBClient<NodeIDType> {
 
   public static final String DEFAULT_PORT_FIELD = "_port";

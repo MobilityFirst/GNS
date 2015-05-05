@@ -38,6 +38,7 @@ import com.amazonaws.services.simpledb.model.DomainMetadataRequest;
 import com.amazonaws.services.simpledb.model.DomainMetadataResult;
 import com.amazonaws.services.simpledb.model.ListDomainsRequest;
 import com.amazonaws.services.simpledb.model.ListDomainsResult;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -49,10 +50,13 @@ import java.util.Set;
  */
 public class AWSStatusCheck {
 
+  private static final String FILESEPARATOR = System.getProperty("file.separator");
   /*
    * Important: Be sure to fill in your AWS access credentials in the AwsCredentials.properties
    * file before you try to run this.
    */
+  private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
+
   static AmazonEC2 ec2;
   static AmazonS3 s3;
   static AmazonSimpleDB sdb;
@@ -61,36 +65,22 @@ public class AWSStatusCheck {
    *
    */
   private static void init() throws Exception {
-    AWSCredentials credentials = new PropertiesCredentials(
-            AWSStatusCheck.class.getResourceAsStream("resources/AwsCredentials.properties"));
+    AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
 
     ec2 = new AmazonEC2Client(credentials);
     s3 = new AmazonS3Client(credentials);
     sdb = new AmazonSimpleDBClient(credentials);
   }
-  private static ArrayList<String> endpoints =
-          new ArrayList<>(Arrays.asList(
-          "ec2.us-east-1.amazonaws.com",
-          "ec2.us-west-1.amazonaws.com",
-          "ec2.us-west-2.amazonaws.com",
-          "ec2.eu-west-1.amazonaws.com",
-          "ec2.ap-southeast-1.amazonaws.com",
-          "ec2.ap-northeast-1.amazonaws.com",
-          "ec2.sa-east-1.amazonaws.com"));
-  
-  /* instance
-   * securitygroup
-   * elasticIP? - probably not
-   * create instance
-   * wait a while
-   * SSH to instance
-   * run install script
-   * start appropriate server(s) - use nohup?
-   * 
-   * scatter them around regions and zones
-   * 
-   * run an NS, LNS, and HTTP server on each host
-   */
+  private static ArrayList<String> endpoints
+          = new ArrayList<>(Arrays.asList(
+                          "ec2.us-east-1.amazonaws.com",
+                          "ec2.us-west-1.amazonaws.com",
+                          "ec2.us-west-2.amazonaws.com",
+                          "ec2.eu-west-1.amazonaws.com",
+                          "ec2.eu-west-2.amazonaws.com",
+                          "ec2.ap-southeast-1.amazonaws.com",
+                          "ec2.ap-northeast-1.amazonaws.com",
+                          "ec2.sa-east-1.amazonaws.com"));
 
   public static void main(String[] args) throws Exception {
 
@@ -99,7 +89,6 @@ public class AWSStatusCheck {
     /*
      * Amazon EC2
      */
-
     for (String endpoint : endpoints) {
       try {
         ec2.setEndpoint(endpoint);
@@ -136,7 +125,7 @@ public class AWSStatusCheck {
         System.out.println("Error Code: " + ase.getErrorCode());
         System.out.println("Request ID: " + ase.getRequestId());
       }
-      
+
       /*
        * Amazon SimpleDB
        *

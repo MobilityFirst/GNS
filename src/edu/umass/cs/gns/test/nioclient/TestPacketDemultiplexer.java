@@ -26,6 +26,7 @@ import java.util.TimerTask;
  * Created by abhigyan on 6/20/14.
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class TestPacketDemultiplexer extends AbstractPacketDemultiplexer {
 
   private Timer t = new Timer();

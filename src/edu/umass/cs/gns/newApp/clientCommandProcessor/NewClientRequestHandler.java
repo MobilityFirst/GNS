@@ -573,7 +573,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     deferedCnt++;
     // in case we are running faster than the clock
     if (timeDiff != 0) {
-      // multiple by 1000 cuz we're computing Ops per SECOND
+      // multiple by 1,000,000,000 cuz we're computing Ops per SECOND
       averageRequestsPerSecond.add((int) (deferedCnt * 1000000000L / timeDiff));
       deferedCnt = 0;
       lastRecordedTime = currentTime;

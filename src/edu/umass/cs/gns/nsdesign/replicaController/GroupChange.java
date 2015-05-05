@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class GroupChange {
 
   /**
@@ -148,8 +149,8 @@ public class GroupChange {
         }
         // Next step: stop old actives
         if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID())) {// if I have proposed this change, I will start actives group change process
-          GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
-                  + activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
+//          GNS.getStatLogger().info("\tGroupChange\tname" + rcRecord.getName() + "\tversion\t"
+//                  + activeProposalPacket.getVersion() + "\tNewActives\t" + activeProposalPacket.getProposedActiveNameServers() + "\t");
           // todo could use failure detector here
           // todo if NameServer.getManager().isNodeUp(activeProposalPacket.getProposingNode()) == false
           // todo then proposing node has failed, so I will start group change

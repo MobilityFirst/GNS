@@ -3,7 +3,6 @@ package edu.umass.cs.gns.test.rmiclient;
 
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
@@ -22,6 +21,7 @@ import java.rmi.registry.Registry;
  *
  * Created by abhigyan on 5/25/14.
  */
+@Deprecated
 public class TestClient{
   private TestClient() {}
 
@@ -60,7 +60,7 @@ public class TestClient{
       response = stub.sendRemoveRecord(name);
       assert response == NSResponseCode.NO_ERROR;
 
-      GNS.getStatLogger().info("Client for 1 name successful. Client exiting.");
+      //GNS.getStatLogger().info("Client for 1 name successful. Client exiting.");
       System.exit(0);
     } catch (Exception e) {
       System.err.println("Client exception: " + e.toString());

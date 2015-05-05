@@ -44,6 +44,7 @@ import java.util.TimerTask;
  *
  * @author abhigyan
  */
+@Deprecated
 public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
 
   private static ArrayList<ColumnField> computeNewActivesFields = new ArrayList<ColumnField>();
@@ -76,7 +77,7 @@ public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
 
     GNS.getLogger().info("ComputeNewActives started: " + replicationRound);
 
-    GNS.getStatLogger().info("Current request loads at name servers: " + replicaController.getNsRequestRates());
+    //GNS.getStatLogger().info("Current request loads at name servers: " + replicaController.getNsRequestRates());
 
     int numNamesRead = 0; // number of names read from db
     int numGroupChanges = 0;  // number of names for which group changes is started.
@@ -191,10 +192,10 @@ public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
             replicaController,rcRecord, numReplica, count);
     newActiveNameServers = replicationOutput.getReplicas();
 
-    GNS.getStatLogger().info("ComputeNewActives: Round:" + count + " Name:" + rcRecord.getName()
-            + " OldReplicas:" + oldActiveNameServers + " NumberReplicaNew:" + numReplica
-            + " NewReplicaSet:" + newActiveNameServers
-            + " Locality-based-replicas:" + replicationOutput.getLocalityBasedReplicas());
+//    GNS.getStatLogger().info("ComputeNewActives: Round:" + count + " Name:" + rcRecord.getName()
+//            + " OldReplicas:" + oldActiveNameServers + " NumberReplicaNew:" + numReplica
+//            + " NewReplicaSet:" + newActiveNameServers
+//            + " Locality-based-replicas:" + replicationOutput.getLocalityBasedReplicas());
     return newActiveNameServers;
   }
 
@@ -242,8 +243,8 @@ public class ComputeNewActivesTask<NodeIDType> extends TimerTask {
     }
 
 
-    GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t" + rcRecord.getName() + "\tLookup\t" + lookup +
-            "\tUpdate\t" + update + "\tReplicaCount\t" + replicaCount);
+//    GNS.getStatLogger().info("\tComputeNewActives-ReplicaCount\tName\t" + rcRecord.getName() + "\tLookup\t" + lookup +
+//            "\tUpdate\t" + update + "\tReplicaCount\t" + replicaCount);
 
     return replicaCount;
   }

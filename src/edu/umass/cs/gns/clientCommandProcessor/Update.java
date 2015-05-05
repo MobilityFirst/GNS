@@ -82,11 +82,11 @@ public class Update {
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
       updateInfo.setSuccess(confirmPkt.isSuccess());
       updateInfo.setFinishTime();
-      updateInfo.addEventCode(LNSEventCode.SUCCESS);
+      //updateInfo.addEventCode(LNSEventCode.SUCCESS);
       // instrumentation?
-      if (r.nextDouble() <= handler.getParameters().getOutputSampleRate()) {
-        GNS.getStatLogger().info(updateInfo.getLogString());
-      }
+//      if (r.nextDouble() <= handler.getParameters().getOutputSampleRate()) {
+//        GNS.getStatLogger().info(updateInfo.getLogString());
+//      }
     } else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)) {
       // NOTE: we are NOT removing request info as processing for this request is still ongoing
       UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(confirmPkt.getLNSRequestID());
@@ -94,7 +94,7 @@ public class Update {
         if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
         return;
       }
-      updateInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
+      //updateInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
       // if error type is invalid active error, we fetch a fresh set of actives from replica controllers and try again
       handleInvalidActiveError(updateInfo, handler);
     } else { // In all other types of errors, we immediately send response to client.
@@ -107,10 +107,10 @@ public class Update {
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
       updateInfo.setSuccess(confirmPkt.isSuccess());
       updateInfo.setFinishTime();
-      updateInfo.addEventCode(LNSEventCode.OTHER_ERROR);
-      if (r.nextDouble() <= handler.getParameters().getOutputSampleRate()) {
-        GNS.getStatLogger().info(updateInfo.getLogString());
-      }
+      //updateInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+//      if (r.nextDouble() <= handler.getParameters().getOutputSampleRate()) {
+//        GNS.getStatLogger().info(updateInfo.getLogString());
+//      }
     }
   }
 
@@ -129,7 +129,7 @@ public class Update {
     // clear out current cache
     handler.invalidateActiveNameServer(updateInfo.getName());
     // create objects that must be passed to PendingTasks
-    SendUpdatesTask task = new SendUpdatesTask(updateInfo.getLnsReqID(), handler, updatePacket);
+    SendUpdatesTask task = new SendUpdatesTask(updateInfo.getCPPReqID(), handler, updatePacket);
 //    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
 
     PendingTasks.addToPendingRequests(updateInfo, task, handler.getParameters().getQueryTimeout(), handler);

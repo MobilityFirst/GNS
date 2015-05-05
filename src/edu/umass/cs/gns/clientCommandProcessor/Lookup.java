@@ -83,10 +83,10 @@ public class Lookup {
       }
       requestInfo.setSuccess(true);
       requestInfo.setFinishTime();
-      requestInfo.addEventCode(LNSEventCode.SUCCESS);
-      if (random.nextDouble() < handler.getParameters().getOutputSampleRate()) {
-        GNS.getStatLogger().info(requestInfo.getLogString());
-      }
+      //requestInfo.addEventCode(LNSEventCode.SUCCESS);
+//      if (random.nextDouble() < handler.getParameters().getOutputSampleRate()) {
+        //GNS.getStatLogger().info(requestInfo.getLogString());
+//      }
 
       if (handler.getParameters().isAdaptiveTimeout()) {
         long responseTimeSample = requestInfo.getResponseLatency();
@@ -117,12 +117,12 @@ public class Lookup {
       DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(dnsPacket.getQueryId());
 
       if (requestInfo == null) {
-        GNS.getLogger().severe("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
+        GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
         return;
       }
-      requestInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
+      //requestInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
       // create objects to be passed to PendingTasks
-      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(requestInfo.getLnsReqID(), handler, requestInfo.getIncomingPacket());
+      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(requestInfo.getCPPReqID(), handler, requestInfo.getIncomingPacket());
 
       PendingTasks.addToPendingRequests(requestInfo, queryTaskObject, handler.getParameters().getQueryTimeout(), handler);
 
@@ -131,18 +131,18 @@ public class Lookup {
     } else { // other types of errors, forward error response to client
       DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
       if (requestInfo == null) {
-        GNS.getLogger().severe("LNSListenerResponse: No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
+        GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
         return;
       }
       requestInfo.setSuccess(false);
       requestInfo.setFinishTime();
-      requestInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+      //requestInfo.addEventCode(LNSEventCode.OTHER_ERROR);
       if (handler.getParameters().isDebugMode()) GNS.getLogger().info("Forwarding incoming error packet for query "
               + requestInfo.getIncomingPacket().getQueryId() + ": " + dnsPacket.toJSONObject());
       // set the correct id for the client
       dnsPacket.getHeader().setId(requestInfo.getIncomingPacket().getQueryId());
       sendDNSResponseBackToSource(dnsPacket, handler);
-      GNS.getStatLogger().fine(requestInfo.getLogString());
+      //GNS.getStatLogger().fine(requestInfo.getLogString());
 
 
     }

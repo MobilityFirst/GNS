@@ -1,7 +1,13 @@
 package edu.umass.cs.gns.clientCommandProcessor;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
+import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.nsdesign.packet.Packet;
+import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.*;
+import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
@@ -26,7 +32,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
   private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface<NodeIDType> handler) {
-    this.lnsReqID = lnsRequestID;
+    this.cppReqID = lnsRequestID;
     this.name = name;
     this.startTime = System.currentTimeMillis();
     this.nameserverID = nameserverId;
@@ -51,15 +57,21 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
       success += "-Update";
     }
     return getFinalString(success, name, getResponseLatency(), 0, nameserverID, handler.getNodeAddress(),
-            getLnsReqID(), numLookupActives, System.currentTimeMillis(), getEventCodesString());
+            getCPPReqID(), numLookupActives, System.currentTimeMillis()
+            //, getEventCodesString()
+    );
   }
 
   private String getFinalString(String queryStatus, String name, long latency, int numTransmissions,
           NodeIDType nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
-          long curTime, String eventCodes) {
+          long curTime 
+          //,String eventCodes
+  ) {
     return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" 
             + (nameServerID != null ? nameServerID.toString() : "LNS") + "\t"
-            + address.toString() + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + curTime + "\t" + eventCodes;
+            + address.toString() + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + curTime + "\t"
+            //+ eventCodes
+            ;
   }
 
   @Override

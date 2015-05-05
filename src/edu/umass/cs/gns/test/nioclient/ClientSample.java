@@ -22,6 +22,7 @@ import java.net.InetAddress;
  * Created by abhigyan on 6/21/14.
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class ClientSample extends AbstractPacketDemultiplexer {
 
   private final InetAddress lnsAddress;

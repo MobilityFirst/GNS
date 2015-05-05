@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
  * Created by abhigyan on 5/20/14.
  * @param <NodeIDType>
  */
+@Deprecated
 public class SendRequestLoadTask<NodeIDType> extends TimerTask{
 
   // the average outgoing traffic rate (in msgs/sec) sent by this task
@@ -57,8 +58,8 @@ public class SendRequestLoadTask<NodeIDType> extends TimerTask{
 
     if (taskRunCount > 0) {
       double reqRate = (curReqCount - prevReqCount) * 1000.0 / (curTime - prevRunTime);
-      GNS.getStatLogger().info("\tRequestRate\tnode\t" + activeReplica.getNodeID() + "\treqRate\t"
-              + reqRate + "\t");
+//      GNS.getStatLogger().info("\tRequestRate\tnode\t" + activeReplica.getNodeID() + "\treqRate\t"
+//              + reqRate + "\t");
       NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(activeReplica.getNodeID(), null, reqRate);
 
       try {

@@ -47,6 +47,7 @@ import org.json.JSONArray;
  * Created by abhigyan on 6/19/14.
  */
 @SuppressWarnings("unchecked")
+@Deprecated
 public class DBClientIntercessor extends AbstractPacketDemultiplexer implements IntercessorInterface {
 
   private ConcurrentHashMap<Integer, JSONObject> reqIDToJSON = new ConcurrentHashMap<>(); // map from request ID to packets
@@ -228,7 +229,7 @@ public class DBClientIntercessor extends AbstractPacketDemultiplexer implements 
      */
 
     // restrict logging level to INFO to see only meaningful messages
-    GNS.consoleOutputLevel = GNS.statConsoleOutputLevel = GNS.fileLoggingLevel = GNS.statFileLoggingLevel = "INFO";
+    GNS.consoleOutputLevel = GNS.fileLoggingLevel  = "INFO";
     GNS.getLogger().info("Starting test with fake local name server .. ");
     int lnsPort = 21323;
     int clientPort = 31323;

@@ -21,6 +21,7 @@ import java.util.Properties;
 /**
  * Starts a single instance of the Local Nameserver with the specified parameters.
  */
+@Deprecated
 public class StartLocalNameServer {
 
   public static final String HELP = "help";
@@ -528,12 +529,12 @@ public class StartLocalNameServer {
       if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
         GNS.consoleOutputLevel = allValues.get(CONSOLE_OUTPUT_LEVEL);
       }
-      if (allValues.containsKey(STAT_FILE_LOGGING_LEVEL)) {
-        GNS.statFileLoggingLevel = allValues.get(STAT_FILE_LOGGING_LEVEL);
-      }
-      if (allValues.containsKey(STAT_CONSOLE_OUTPUT_LEVEL)) {
-        GNS.statConsoleOutputLevel = allValues.get(STAT_CONSOLE_OUTPUT_LEVEL);
-      }
+//      if (allValues.containsKey(STAT_FILE_LOGGING_LEVEL)) {
+//        GNS.statFileLoggingLevel = allValues.get(STAT_FILE_LOGGING_LEVEL);
+//      }
+//      if (allValues.containsKey(STAT_CONSOLE_OUTPUT_LEVEL)) {
+//        GNS.statConsoleOutputLevel = allValues.get(STAT_CONSOLE_OUTPUT_LEVEL);
+//      }
 
       emulatePingLatencies = allValues.containsKey(EMULATE_PING_LATENCIES)
               && Boolean.parseBoolean(allValues.get(EMULATE_PING_LATENCIES));

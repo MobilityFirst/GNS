@@ -108,12 +108,12 @@ public class Config {
     if (allValues.containsKey(NSParameterNames.CONSOLE_OUTPUT_LEVEL)) {
       GNS.consoleOutputLevel = allValues.get(NSParameterNames.CONSOLE_OUTPUT_LEVEL);
     }
-    if (allValues.containsKey(NSParameterNames.STAT_FILE_LOGGING_LEVEL)) {
-      GNS.statFileLoggingLevel = allValues.get(NSParameterNames.STAT_FILE_LOGGING_LEVEL);
-    }
-    if (allValues.containsKey(NSParameterNames.STAT_CONSOLE_OUTPUT_LEVEL)) {
-      GNS.statConsoleOutputLevel = allValues.get(NSParameterNames.STAT_CONSOLE_OUTPUT_LEVEL);
-    }
+//    if (allValues.containsKey(NSParameterNames.STAT_FILE_LOGGING_LEVEL)) {
+//      GNS.statFileLoggingLevel = allValues.get(NSParameterNames.STAT_FILE_LOGGING_LEVEL);
+//    }
+//    if (allValues.containsKey(NSParameterNames.STAT_CONSOLE_OUTPUT_LEVEL)) {
+//      GNS.statConsoleOutputLevel = allValues.get(NSParameterNames.STAT_CONSOLE_OUTPUT_LEVEL);
+//    }
     
     if (allValues.containsKey(NSParameterNames.WORKER_THREAD_COUNT)) {
       workerThreadCount = Integer.parseInt(allValues.get(NSParameterNames.WORKER_THREAD_COUNT));

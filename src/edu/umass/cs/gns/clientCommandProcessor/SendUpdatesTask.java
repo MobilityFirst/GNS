@@ -132,8 +132,8 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
           }
           info.setFinishTime();
           info.setSuccess(false);
-          info.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
-          GNS.getStatLogger().info(info.getLogString());
+          //info.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
+          //GNS.getStatLogger().info(info.getLogString());
         }
         return true;
       }
@@ -180,7 +180,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       return;
     }
     UpdateInfo<NodeIDType> info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
-    if (info != null) info.addEventCode(LNSEventCode.CONTACT_ACTIVE);
+    //if (info != null) info.addEventCode(LNSEventCode.CONTACT_ACTIVE);
     activesQueried.add(nameServerID);
     // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
     // create the packet that we'll send to the primary

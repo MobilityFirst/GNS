@@ -1,7 +1,9 @@
 /*
- * Copyright (C) 2013
+ * Copyright (C) 2015
  * University of Massachusetts
  * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
  */
 package edu.umass.cs.gns.localnameserver;
 
@@ -13,8 +15,6 @@ import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,14 +25,10 @@ import org.json.JSONObject;
  */
 public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
-  LocalNameServer lns;
+  RequestHandlerInterface handler;
 
-  private static final ConcurrentMap<Integer, LNSCommandInfo> outstandingRequests = new ConcurrentHashMap<>(10, 0.75f, 3);
-
-  private final boolean debuggingEnabled = true;
-
-  public LNSPacketDemultiplexer(LocalNameServer lns) {
-    this.lns = lns;
+  public LNSPacketDemultiplexer(RequestHandlerInterface handler) {
+    this.handler = handler;
     register(Packet.PacketType.COMMAND);
     register(Packet.PacketType.COMMAND_RETURN_VALUE);
   }
@@ -46,8 +42,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
    */
   @Override
   public boolean handleJSONObject(JSONObject json) {
-    if (debuggingEnabled) {
-      GNS.getLogger().info("#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#>>>>>>>>> Incoming packet: " + json);
+    if (handler.isDebugMode()) {
+      GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>> Incoming packet: " + json);
     }
     boolean isPacketTypeFound = true;
     try {
@@ -71,26 +67,29 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
     CommandPacket packet = new CommandPacket(json);
     // Squirrel away the host and port so we know where to send the command return value
-    outstandingRequests.put(packet.getRequestId(), new LNSCommandInfo(packet.getSenderAddress(), packet.getSenderPort()));
+    handler.addRequestInfo(packet.getRequestId(), 
+            new LNSRequestInfo(packet.getRequestId(), 
+                    packet.getServiceName(),
+                    packet.getSenderAddress(), packet.getSenderPort()));
     // remove these so the stamper will put new ones in so the packet will find it's way back here
     json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
     json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
     // Send it to the client command handler
-    Object node = lns.getNodeConfig().getClosestServer(lns.getNodeConfig().getActiveReplicas());
-    lns.getTcpTransport().sendToID(node, json);
+    InetSocketAddress address = handler.getNodeConfig().getClosestServer(handler.getNodeConfig().getActiveReplicas());
+    handler.getTcpTransport().sendToAddress(address, json);
   }
 
   public void handleCommandReturnValuePacket(JSONObject json) throws JSONException, IOException {
-    CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json, lns.getNodeConfig());
+    CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json, handler.getNodeConfig());
     int id = returnPacket.getRequestId();
-    LNSCommandInfo sentInfo;
-    if ((sentInfo = outstandingRequests.get(id)) != null) {
-      outstandingRequests.remove(id);
-      if (debuggingEnabled) {
-        GNS.getLogger().info("#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#$#>>>>>>>>> LNS IS SENDING VALUE BACK TO "
+    LNSRequestInfo sentInfo;
+    if ((sentInfo = handler.getRequestInfo(id)) != null) {
+      handler.removeRequestInfo(id);
+      if (handler.isDebugMode()) {
+        GNS.getLogger().info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< LNS IS SENDING VALUE BACK TO "
                 + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
       }
-      lns.getTcpTransport().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
+      handler.getTcpTransport().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
               json);
     } else {
       GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);

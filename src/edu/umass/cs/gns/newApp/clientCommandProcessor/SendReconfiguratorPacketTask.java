@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientCommandProcessor.LNSEventCode;
+//import edu.umass.cs.gns.clientCommandProcessor.LNSEventCode;
 import edu.umass.cs.gns.clientCommandProcessor.UpdateInfo;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
@@ -97,7 +97,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
         }
         updateInfo.setSuccess(false);
         updateInfo.setFinishTime();
-        updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
+        //updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
         return true;
       } else {
         if (handler.getParameters().isDebugMode()) {

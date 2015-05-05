@@ -4,7 +4,6 @@ package edu.umass.cs.gns.test.rmiclient;
 import edu.umass.cs.gns.clientsupport.QueryResult;
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.clientCommandProcessor.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -22,6 +21,7 @@ import java.rmi.server.UnicastRemoteObject;
  *
  * Created by abhigyan on 5/25/14.
  */
+@Deprecated
 public class LNSSideImplementation implements ClientRMIInterface {
 
   public static String LNS_NAME = "Hello";

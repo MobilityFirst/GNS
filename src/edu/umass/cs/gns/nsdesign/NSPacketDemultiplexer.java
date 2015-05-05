@@ -24,22 +24,22 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
 
   private int msgCount = 0;
 
-  private int prevMsgCount = 0;
+  //private int prevMsgCount = 0;
 
-  private int intervalCount = 0;
+  //private int intervalCount = 0;
 
   public NSPacketDemultiplexer(final NameServer nameServer, final NodeIDType nodeID) {
     this.nameServer = nameServer;
-    this.nameServer.getExecutorService().scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        intervalCount += 1;
-
-        GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount "
-                + (getMsgCount() - prevMsgCount) + " Node " + nodeID.toString() + " ");
-        prevMsgCount = msgCount;
-      }
-    }, 0, 10, TimeUnit.SECONDS);
+//    this.nameServer.getExecutorService().scheduleAtFixedRate(new TimerTask() {
+//      @Override
+//      public void run() {
+//        intervalCount += 1;
+//
+//        GNS.getStatLogger().info(" Interval " + intervalCount + " TotalMsgCount " + getMsgCount() + " IntervalMsgCount "
+//                + (getMsgCount() - prevMsgCount) + " Node " + nodeID.toString() + " ");
+//        prevMsgCount = msgCount;
+//      }
+//    }, 0, 10, TimeUnit.SECONDS);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.SELECT_REQUEST);

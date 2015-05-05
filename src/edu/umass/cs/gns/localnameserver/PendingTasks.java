@@ -1,15 +1,21 @@
-package edu.umass.cs.gns.clientCommandProcessor;
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
+package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Collections;
+import java.util.Set;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -17,28 +23,19 @@ import java.util.concurrent.TimeUnit;
  * that name in a queue while their set of active replicas is being obtained. If local name server successfully obtains
  * the set of active replicas, all queued up requests for that name are executed. If set of active replicas of a name
  * is not received until a given timeout, error messages are sent to clients for all queued up requests for that name.
- *
- *
- *
- * @see edu.umass.cs.gns.clientCommandProcessor.RequestActivesTask
- *
- * @author abhigyan
  */
 public class PendingTasks {
-
-  /**
-   * **********BEGIN: Accesses to these fields is synchronized*****************
-   */
+  
   /**
    * This key of this map is name/GUID and values are a list of pending requests for that name that will be executed
    * after we receive the set of active replicas for name.
    */
-  private static HashMap<String, ArrayList<PendingTask>> allTasks = new HashMap<String, ArrayList<PendingTask>>();
+  private ConcurrentHashMap<String, ArrayList<PendingTask>> allTasks = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   /**
    * Set of request IDs of <code>RequestActivesTask</code> that are currently running.
    */
-  private static HashSet<Integer> requestActivesOngoing = new HashSet<Integer>();
+  private Set<Integer> requestActivesOngoing = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
 
   /**
    * The request ID for next <code>RequestActivesTask</code> is uniquely determined by incrementing this value by 1.
@@ -56,7 +53,7 @@ public class PendingTasks {
    * @param task TimerTask to be executed once actives are received. Request represented in form of TimerTask
    * @param period Frequency at which TimerTask is repeated
    */
-  public static void addToPendingRequests(RequestInfo requestInfo, TimerTask task, int period, ClientRequestHandlerInterface handler) {
+  public void addToPendingRequests(LNSRequestInfo requestInfo, TimerTask task, int period, RequestHandlerInterface handler) {
     if (requestInfo != null && requestInfo.setLookupActives()) {
       // if lookupActives is true, means this request is not already in pending request queue. so, we add this to queue
       String name = requestInfo.getName();
@@ -67,15 +64,15 @@ public class PendingTasks {
       // if we get invalid active error a second time or later, it means the set of active replicas is being changed
       // and the new active replica has not received this information. Therefore, we will wait for a timeout value
       // before sending requests again.
-      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout / 10;
+      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : LocalNameServer.REQUEST_ACTIVES_QUERY_TIMEOUT / 10;
       //requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
-        if (handler.getParameters().isDebugMode()) {
+        if (handler.isDebugMode()) {
           GNS.getLogger().info("Active request queued: " + requestID);
         }
         RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID, handler);
         handler.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
-                StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+                LocalNameServer.REQUEST_ACTIVES_QUERY_TIMEOUT, TimeUnit.MILLISECONDS);
       }
     } else {
       GNS.getLogger().warning("This request already in queue so not added to pending requests again. " + requestInfo);
@@ -89,15 +86,15 @@ public class PendingTasks {
    *
    * @throws org.json.JSONException
    */
-  public static void handleActivesRequestReply(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json, handler.getGnsNodeConfig());
-    if (handler.getParameters().isDebugMode()) {
+  public void handleActivesRequestReply(JSONObject json, RequestHandlerInterface handler) throws JSONException {
+    RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json, handler.getNodeConfig());
+    if (handler.isDebugMode()) {
       GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Recvd request actives packet: " + requestActivesPacket
               + " name\t" + requestActivesPacket.getName());
     }
     if (requestActivesPacket.getActiveNameServers() == null
             || requestActivesPacket.getActiveNameServers().size() == 0) {
-      if (handler.getParameters().isDebugMode()) {
+      if (handler.isDebugMode()) {
         GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Null set of actives received for name " + requestActivesPacket.getName()
                 + " sending error");
       }
@@ -107,19 +104,19 @@ public class PendingTasks {
       return;
     }
 
-    if (handler.containsCacheEntry(requestActivesPacket.getName())) {
-      handler.updateCacheEntry(requestActivesPacket);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Updating cache Name:"
-                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
-      }
-    } else {
-      handler.addCacheEntry(requestActivesPacket);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Adding to cache Name:"
-                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
-      }
-    }
+//    if (handler.containsCacheEntry(requestActivesPacket.getName())) {
+//      handler.updateCacheEntry(requestActivesPacket);
+//      if (handler.getParameters().isDebugMode()) {
+//        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Updating cache Name:"
+//                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
+//      }
+//    } else {
+//      handler.addCacheEntry(requestActivesPacket);
+//      if (handler.getParameters().isDebugMode()) {
+//        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Adding to cache Name:"
+//                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
+//      }
+//    }
 
     runPendingRequestsForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), handler);
 
@@ -130,24 +127,24 @@ public class PendingTasks {
    *
    * @param requestID request ID of the <code>RequestActivesPacket</code>
    */
-  public static void runPendingRequestsForName(String name, int requestID, ClientRequestHandlerInterface handler) {
+  public void runPendingRequestsForName(String name, int requestID, RequestHandlerInterface handler) {
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
     if (runTasks != null && runTasks.size() > 0) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Running pending tasks:\tname\t" + name + "\tCount " + runTasks.size());
+      if (handler.isDebugMode()) {
+        GNS.getLogger().fine("Running pending tasks: name " + name + " Count " + runTasks.size());
       }
       for (PendingTask task : runTasks) {
         // update request info to reset lookup actives
         task.requestInfo.unsetLookupActives();
         //
         if (task.period > 0) {
-          if (handler.getParameters().isDebugMode()) {
+          if (handler.isDebugMode()) {
             GNS.getLogger().fine(" Running Pending tasks. REPEAT!!");
           }
           handler.getExecutorService().scheduleAtFixedRate(task.timerTask, 0, task.period, TimeUnit.MILLISECONDS);
         } else {
-          if (handler.getParameters().isDebugMode()) {
+          if (handler.isDebugMode()) {
             GNS.getLogger().fine(" Pending tasks. No repeat.");
           }
           handler.getExecutorService().schedule(task.timerTask, 0, TimeUnit.MILLISECONDS);
@@ -161,9 +158,9 @@ public class PendingTasks {
    *
    * @param requestID request ID of the <code>RequestActivesPacket</code>
    */
-  public static void sendErrorMsgForName(String name, int requestID, 
+  public void sendErrorMsgForName(String name, int requestID, 
           //LNSEventCode eventCode, 
-          ClientRequestHandlerInterface handler) {
+          RequestHandlerInterface handler) {
 
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
 
@@ -171,13 +168,15 @@ public class PendingTasks {
       GNS.getLogger().fine("Running pending tasks. Sending error messages: Count " + runTasks.size());
       for (PendingTask task : runTasks) {
         // remove request from queue
-        if (handler.removeRequestInfo(task.requestInfo.getCPPReqID()) != null) {
+        if (handler.removeRequestInfo(task.requestInfo.getLNSReqID()) != null) {
           task.requestInfo.setFinishTime(); // set finish time for request
 //          if (eventCode != null) {
 //            task.requestInfo.addEventCode(eventCode);
 //          }
           //GNS.getStatLogger().fine(task.requestInfo.getLogString());
-          handler.getIntercessor().handleIncomingPacket(task.requestInfo.getErrorMessage());
+          
+          // FIX ME ADD THIS BACK ON SOME FORM!!!
+          //handler.getIntercessor().handleIncomingPacket(task.requestInfo.getErrorMessage());
         }
       }
     }
@@ -193,7 +192,7 @@ public class PendingTasks {
    * @return requestID of the <code>RequestActivesTask</code> to be created,
    * and -1 if a <code>RequestActivesTask</code> already exists for this name and a new task should not be created.
    */
-  private static synchronized int addRequestToQueue(String name, PendingTask task) {
+  private int addRequestToQueue(String name, PendingTask task) {
     int requestID = -1;
     if (!allTasks.containsKey(name)) {
       allTasks.put(name, new ArrayList<PendingTask>());
@@ -201,7 +200,7 @@ public class PendingTasks {
         requestIDCounter = 0;// reset counter
       }
       requestID = ++requestIDCounter;
-      requestActivesOngoing.add(requestIDCounter);
+      //requestActivesOngoing.add(requestIDCounter);
     }
     allTasks.get(name).add(task);
     return requestID;
@@ -210,11 +209,11 @@ public class PendingTasks {
   /**
    * Checks whether reply for this request ID is received
    */
-  public static synchronized boolean isReplyReceived(int requestID) {
+  public boolean isReplyReceived(int requestID) {
     return !requestActivesOngoing.contains(requestID);
   }
 
-  private static synchronized ArrayList<PendingTask> removeAllRequestsFromQueue(String name, int requestID) {
+  private synchronized ArrayList<PendingTask> removeAllRequestsFromQueue(String name, int requestID) {
     ArrayList<PendingTask> runTasks;
     runTasks = allTasks.remove(name);
     requestActivesOngoing.remove(requestID);
@@ -238,7 +237,7 @@ class PendingTask {
   /**
    * Log entry at local name server in case we don't get actives for this name.
    */
-  public RequestInfo requestInfo;
+  public LNSRequestInfo requestInfo;
   /**
    * Period > 0 for recurring tasks, = 0 for one time tasks.
    */
@@ -246,7 +245,7 @@ class PendingTask {
 
   public TimerTask timerTask;
 
-  public PendingTask(String name, TimerTask timerTask, int period, RequestInfo requestInfo) {
+  public PendingTask(String name, TimerTask timerTask, int period, LNSRequestInfo requestInfo) {
     this.name = name;
     this.timerTask = timerTask;
     this.period = period;
