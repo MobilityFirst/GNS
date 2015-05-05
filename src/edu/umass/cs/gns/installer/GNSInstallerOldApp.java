@@ -256,7 +256,7 @@ public class GNSInstallerOldApp {
               + "fi\n"
               + "nohup java -cp " + gnsJarFileName + " " + StartLNSClass + " "
               + " -address " + hostname
-              + " -port " + GNS.DEFAULT_LNS_TCP_PORT
+              + " -port " + GNS.DEFAULT_CPP_TCP_PORT
               + " -nsfile " + NS_HOSTS_FILENAME
               + " -configFile lns.conf "
               + " > LNSlogfile 2>&1 &");

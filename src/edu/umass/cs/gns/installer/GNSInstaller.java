@@ -5,6 +5,7 @@ import edu.umass.cs.aws.networktools.ExecuteBash;
 import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.database.DataStoreType;
+import edu.umass.cs.gns.localnameserver.LocalNameServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.util.Format;
@@ -80,7 +81,8 @@ public class GNSInstaller {
   private static String lnsConfFileName;
   private static String nsConfFileName;
 
-  private static final String StartLNSClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.NewClientCommandProcessor";
+  private static final String StartLNSClass = "edu.umass.cs.gns.localnameserver.LocalNameServer";
+  private static final String StartCPPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.NewClientCommandProcessor";
   private static final String StartNSClass = "edu.umass.cs.gns.newApp.AppReconfigurableNode";
 
   private static final String CHANGETOINSTALLDIR
@@ -199,12 +201,10 @@ public class GNSInstaller {
 
   /**
    * This is called to install and run the GNS on a single host. This is called concurrently in
-   * one thread per each host.
-   * This assumes a configuration where there is an LNS running at every node (in addition to the
-   * NS).
+   * one thread per each host. LNSs will be run on hosts according to the contents of the lns hosts
+   * file.
    * Copies the JAR and conf files and optionally resets some other stuff depending on the
    * update action given.
-   * The name-server-info file is created using all the IP address of all the hosts.
    * Then the various servers are started on the host.
    *
    * @param nsId
@@ -249,7 +249,8 @@ public class GNSInstaller {
   }
 
   /**
-   * Starts an LNS, NS server on the remote host.
+   * Starts a pair of active replica / reconfigurator on each host in the ns hosts file
+   * plus lns servers on each host in the lns hosts file.
    *
    * @param id
    * @param hostname
@@ -265,8 +266,8 @@ public class GNSInstaller {
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartLNSClass + " "
-              + hostname + " "
-              + GNS.DEFAULT_LNS_TCP_PORT + " "
+              //+ hostname + " "
+              //+ LocalNameServer.DEFAULT_LNS_TCP_PORT + " "
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
               + NS_HOSTS_FILENAME + " "
               // + " -configFile lns.conf "
@@ -283,9 +284,21 @@ public class GNSInstaller {
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartNSClass + " "
               + nsId.toString() + " "
               + NS_HOSTS_FILENAME + " "
-              //+ " -lnsfile " + LNS_HOSTS_FILENAME
               //+ " -configFile ns.conf "
               + " > NSlogfile 2>&1 &");
+      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName, buildInstallFilePath("runCPP.sh"),
+              "#!/bin/bash\n"
+              + CHANGETOINSTALLDIR
+              + "if [ -f CPPlogfile ]; then\n"
+              + "mv --backup=numbered CPPlogfile CPPlogfile.save\n"
+              + "fi\n"
+              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartCPPClass + " "
+              + hostname + " "
+              + GNS.DEFAULT_CPP_TCP_PORT + " "
+              // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the CPP needs this
+              + NS_HOSTS_FILENAME + " "
+              // + " -configFile lns.conf "
+              + " > CPPlogfile 2>&1 &");
     }
     System.out.println("All servers started");
   }

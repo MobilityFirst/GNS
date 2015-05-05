@@ -280,7 +280,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public int getNodePort(NodeIDType id) {
-    // handle special case for LNS node
+    // handle special case for CPP node
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getPort();
     }
@@ -339,7 +339,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public InetAddress getNodeAddress(NodeIDType id) {
-    // handle special case for LNS node
+    // handle special case for CPP node
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getAddress();
     }

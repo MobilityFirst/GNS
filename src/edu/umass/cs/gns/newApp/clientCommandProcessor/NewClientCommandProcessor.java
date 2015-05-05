@@ -63,7 +63,7 @@ public class NewClientCommandProcessor<NodeIDType> {
     messenger.addPacketDemultiplexer(demultiplexer);
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     //
-    parameters.setDebugMode(true);
+    parameters.setDebugMode(false);
     //
     this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
             gnsNodeConfig, messenger, parameters);
@@ -71,7 +71,7 @@ public class NewClientCommandProcessor<NodeIDType> {
     // Start HTTP server
     GnsHttpServer.runHttp(requestHandler);
     // Start Ping servers
-    GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_LNS_PING_PORT);
+    GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CPP_PING_PORT);
     this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig(gnsNodeConfig));
     pingManager.startPinging();
     //
@@ -100,7 +100,7 @@ public class NewClientCommandProcessor<NodeIDType> {
   public static void main(String[] args) throws IOException {
     if (args.length == 0) { // special case for testing
       startClientCommandProcessor(NetworkUtils.getLocalHostLANAddress().getHostAddress(), 
-              GNS.DEFAULT_LNS_TCP_PORT, Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info");
+              GNS.DEFAULT_CPP_TCP_PORT, Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info");
     } else if (args.length == 3) {
       startClientCommandProcessor(args[0], Integer.parseInt(args[1]), args[2]);
     } else {

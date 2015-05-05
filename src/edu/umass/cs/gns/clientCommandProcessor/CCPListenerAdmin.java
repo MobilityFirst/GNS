@@ -56,7 +56,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
    */
   public CCPListenerAdmin(ClientRequestHandlerInterface<NodeIDType> handler, PingManager<NodeIDType> pingManager) throws IOException {
     super("ListenerAdmin");
-    this.serverSocket = new ServerSocket(GNS.DEFAULT_LNS_ADMIN_PORT);
+    this.serverSocket = new ServerSocket(GNS.DEFAULT_CPP_ADMIN_PORT);
     replicationMap = new HashMap<>();
     this.handler = handler;
     this.pingManager = pingManager;
@@ -69,7 +69,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
   @Override
   public void run() {
     int numRequest = 0;
-    GNS.getLogger().info("LNS Node " + handler.getNodeAddress() + " starting Admin Server on port " + serverSocket.getLocalPort());
+    GNS.getLogger().info("CPP Node " + handler.getNodeAddress() + " starting Admin Server on port " + serverSocket.getLocalPort());
     while (true) {
       Socket socket;
       JSONObject incomingJSON;
@@ -165,7 +165,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 } else {
                   // forward the packet on to the appropriate host
-                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CPP_ADMIN_PORT));
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
@@ -190,7 +190,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                   returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
                 } else {
                   // send it to the server that can handle it
-                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_LNS_ADMIN_PORT));
+                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CPP_ADMIN_PORT));
                   //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
                 }

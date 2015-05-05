@@ -18,15 +18,12 @@ public class GNS {
   
   public static final int STARTINGPORT = 24400;
   // FIXME: clean this up and make config settable
-  public static final int DEFAULT_LNS_TCP_PORT = 24398;
-  public static final int DEFAULT_LNS_PING_PORT = 24397;
-  public static final int DEFAULT_LNS_ADMIN_PORT = 24396;
+  public static final int DEFAULT_CPP_TCP_PORT = 20398;
+  public static final int DEFAULT_CPP_PING_PORT = 20397;
+  public static final int DEFAULT_CPP_ADMIN_PORT = 20396;
   
   public static final String GNS_URL_PATH = "GNS";
   
-  public static final int CLIENTPORT = 24399;
-  
-
   // This is designed so we can run multiple NSs on the same host if needed
   public enum PortType {
 
