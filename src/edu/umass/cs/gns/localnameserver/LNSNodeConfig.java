@@ -13,13 +13,13 @@ import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -48,7 +48,10 @@ import org.json.JSONException;
  * <code>addHostInfo</code> and <code>readHostsFile</code> for the details on
  * how those are generated.
  */
-public class LNSNodeConfig implements Stringifiable<Object>, Shutdownable, InterfaceNodeConfig<Object> {
+public class LNSNodeConfig implements  
+        InterfaceNodeConfig<InetSocketAddress>,
+        InterfaceReconfigurableNodeConfig<InetSocketAddress>, 
+        Shutdownable{
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final int INVALID_PORT = -1;
@@ -173,12 +176,12 @@ public class LNSNodeConfig implements Stringifiable<Object>, Shutdownable, Inter
    * @return
    */
   @Override
-  public boolean nodeExists(Object address) {
+  public boolean nodeExists(InetSocketAddress address) {
     return address instanceof InetSocketAddress && getNodeInfoForAnyNode((InetSocketAddress)address) != null;
   }
   
   @Override
-  public InetAddress getNodeAddress(Object address) {
+  public InetAddress getNodeAddress(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
       return ((InetSocketAddress)address).getAddress();
     } else {
@@ -187,7 +190,7 @@ public class LNSNodeConfig implements Stringifiable<Object>, Shutdownable, Inter
   }
 
   @Override
-  public int getNodePort(Object address) {
+  public int getNodePort(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
       return ((InetSocketAddress)address).getPort();
     } else {
@@ -197,105 +200,7 @@ public class LNSNodeConfig implements Stringifiable<Object>, Shutdownable, Inter
 
   @Override
   public Set getNodeIDs() {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
-  /**
-   * Selects the closest Name Server from a set of Name Servers.
-   *
-   * @param servers
-   * @return id of closest server or INVALID_NAME_SERVER_ID if one can't be found
-   */
-  public InetSocketAddress getClosestServer(Set<InetSocketAddress> servers) {
-    return getClosestServer(servers, null);
-  }
-
-  /**
-   * Selects the closest Name Server from a set of Name Servers.
-   * excludeNameServers is a set of Name Servers from the first list to not consider.
-   * If the local server is one of the serverIds and not excluded this will return it.
-   *
-   * @param serverIds
-   * @param excludeServers
-   * @return id of closest server or null if one can't be found
-   */
-  public InetSocketAddress getClosestServer(Set<InetSocketAddress> serverIds, Set<InetSocketAddress> excludeServers) {
-    if (serverIds == null || serverIds.isEmpty()) {
-      return null;
-    }
-
-    long lowestLatency = Long.MAX_VALUE;
-    InetSocketAddress serverAddress = null;
-    for (InetSocketAddress serverId : serverIds) {
-      if (excludeServers != null && excludeServers.contains(serverId)) {
-        continue;
-      }
-      long pingLatency = getPingLatency(serverId);
-      if (pingLatency != INVALID_PING_LATENCY && pingLatency < lowestLatency) {
-        lowestLatency = pingLatency;
-        serverAddress = serverId;
-      }
-    }
-    if (Config.debuggingEnabled) {
-      GNS.getLogger().info("Closest server is " + serverAddress);
-    }
-    return serverAddress;
-  }
-
-  // Implement the Stringifiable interface
-  @SuppressWarnings("unchecked")
-  @Override
-  /**
-   * Converts a string representation of a node id into the appropriate node id type.
-   */
-  public Object valueOf(String nodeAsString) throws IllegalArgumentException {
-    switch (getObject()) {
-      case String:
-        return nodeAsString;
-      case Integer:
-        return Integer.valueOf(nodeAsString.trim());
-      case InetAddress:
-        try {
-          return InetAddress.getByName(nodeAsString.trim());
-        } catch (UnknownHostException e) {
-          throw new IllegalArgumentException("Cannot parse node as an InetAddress");
-        }
-      default:
-        throw new IllegalArgumentException("Bad Object");
-    }
-  }
-
-  @Override
-  public Set<Object> getValuesFromStringSet(Set<String> strNodes) {
-    Set<Object> nodes = new HashSet<>();
-    for (String strNode : strNodes) {
-      nodes.add(valueOf(strNode));
-    }
-    return nodes;
-  }
-
-  @Override
-  public Set<Object> getValuesFromJSONArray(JSONArray array) throws JSONException {
-    Set<Object> nodes = new HashSet<>();
-    for (int i = 0; i < array.length(); i++) {
-      nodes.add(valueOf(array.getString(i)));
-    }
-    return nodes;
-  }
-
-  /**
-   * Returns the appropriate NodeIDClass corresponding to the Object.
-   *
-   * @return NodeIDClass enum
-   */
-  private NodeIDClass getObject() {
-    //FIXME: FOR NOW WE ONLY SUPPORT STRINGS
-    return NodeIDClass.valueOf(String.class.getSimpleName());
-  }
-
-  private enum NodeIDClass {
-
-    String, Integer, InetAddress
+    return getActiveReplicas();
   }
 
   public long getVersion() {
@@ -351,8 +256,8 @@ public class LNSNodeConfig implements Stringifiable<Object>, Shutdownable, Inter
           String externalIP, int startingPort, long pingLatency, double latitude, double longitude) {
     // FIXME: THIS IS GOING TO BLOW UP FOR NON-STRING IDS!
     String idString = id.toString();
-    Object activeReplicaID = valueOf(idString + "_ActiveReplica");
-    Object ReconfiguratorID = valueOf(idString + "_Reconfigurator");
+    Object activeReplicaID = idString + "_ActiveReplica";
+    Object ReconfiguratorID = idString + "_Reconfigurator";
     LNSNodeInfo nodeInfo = new LNSNodeInfo(id, activeReplicaID, ReconfiguratorID,
             ipAddress, externalIP, startingPort, pingLatency, latitude, longitude);
     GNS.getLogger().fine(nodeInfo.toString());
@@ -451,5 +356,20 @@ public class LNSNodeConfig implements Stringifiable<Object>, Shutdownable, Inter
     System.out.println(gnsNodeConfig.getActiveReplicas());
     System.out.println(gnsNodeConfig.getReconfigurators());
     System.exit(0);
+  }
+
+  @Override
+  public InetSocketAddress valueOf(String strValue) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<InetSocketAddress> getValuesFromStringSet(Set<String> strNodes) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public Set<InetSocketAddress> getValuesFromJSONArray(JSONArray array) throws JSONException {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

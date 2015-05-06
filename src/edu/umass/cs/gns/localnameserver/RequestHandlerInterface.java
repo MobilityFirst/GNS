@@ -10,19 +10,19 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import java.net.InetSocketAddress;
+import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * An interface that supports everything that a GNS-enabled server needs to process packets.
  * 
  * @author westy
- * @param <NodeIDType>
  */
-public interface RequestHandlerInterface<NodeIDType> {
+public interface RequestHandlerInterface {
   
-  public InterfaceJSONNIOTransport<NodeIDType> getTcpTransport();
+  public InterfaceJSONNIOTransport getTcpTransport();
 
-  public LNSNodeConfig getNodeConfig();
+  public LNSConsistentReconfigurableNodeConfig getNodeConfig();
 
   public InetSocketAddress getNodeAddress();
   
@@ -36,6 +36,12 @@ public interface RequestHandlerInterface<NodeIDType> {
 
   public LNSRequestInfo getRequestInfo(int id);
   
+  public PendingTasks getPendingTasks();
+  
   public boolean isDebugMode();
+  
+  public InetSocketAddress getClosestServer(Set<InetSocketAddress> servers);
+  
+  public InetSocketAddress getClosestServer(Set<InetSocketAddress> serverIds, Set<InetSocketAddress> excludeServers);
   
 }

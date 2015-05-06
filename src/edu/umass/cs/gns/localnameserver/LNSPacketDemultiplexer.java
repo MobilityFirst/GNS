@@ -75,12 +75,12 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
     json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
     json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
     // Send it to the client command handler
-    InetSocketAddress address = handler.getNodeConfig().getClosestServer(handler.getNodeConfig().getActiveReplicas());
+    InetSocketAddress address = handler.getClosestServer(handler.getNodeConfig().getActiveReplicas());
     handler.getTcpTransport().sendToAddress(address, json);
   }
 
   public void handleCommandReturnValuePacket(JSONObject json) throws JSONException, IOException {
-    CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json, handler.getNodeConfig());
+    CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     int id = returnPacket.getRequestId();
     LNSRequestInfo sentInfo;
     if ((sentInfo = handler.getRequestInfo(id)) != null) {
@@ -94,6 +94,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
     } else {
       GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);
     }
+    
   }
 
 }

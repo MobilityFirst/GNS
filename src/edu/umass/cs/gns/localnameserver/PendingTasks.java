@@ -12,10 +12,11 @@ import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -25,23 +26,28 @@ import java.util.concurrent.TimeUnit;
  * is not received until a given timeout, error messages are sent to clients for all queued up requests for that name.
  */
 public class PendingTasks {
-  
+
   /**
-   * This key of this map is name/GUID and values are a list of pending requests for that name that will be executed
+   * This key of this map is guid and values are a list of pending requests for that name that will be executed
    * after we receive the set of active replicas for name.
    */
-  private ConcurrentHashMap<String, ArrayList<PendingTask>> allTasks = new ConcurrentHashMap<>(10, 0.75f, 3);
+  private final Map<String, ArrayList<PendingTask>> allTasks;
 
   /**
    * Set of request IDs of <code>RequestActivesTask</code> that are currently running.
    */
-  private Set<Integer> requestActivesOngoing = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+  private final Set<Integer> requestActivesOngoing;
 
   /**
    * The request ID for next <code>RequestActivesTask</code> is uniquely determined by incrementing this value by 1.
    * This assignment of request IDs ensures uniqueness.
    */
   private static int requestIDCounter = 0;
+
+  public PendingTasks() {
+    allTasks = new HashMap<>();
+    requestActivesOngoing = new HashSet<>();
+  }
 
   /**
    * **********END: Accesses to these fields is synchronized*****************
@@ -52,6 +58,7 @@ public class PendingTasks {
    * @param requestInfo Information for this request stored at LNS.
    * @param task TimerTask to be executed once actives are received. Request represented in form of TimerTask
    * @param period Frequency at which TimerTask is repeated
+   * @param handler
    */
   public void addToPendingRequests(LNSRequestInfo requestInfo, TimerTask task, int period, RequestHandlerInterface handler) {
     if (requestInfo != null && requestInfo.setLookupActives()) {
@@ -65,7 +72,6 @@ public class PendingTasks {
       // and the new active replica has not received this information. Therefore, we will wait for a timeout value
       // before sending requests again.
       long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : LocalNameServer.REQUEST_ACTIVES_QUERY_TIMEOUT / 10;
-      //requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
         if (handler.isDebugMode()) {
           GNS.getLogger().info("Active request queued: " + requestID);
@@ -98,9 +104,7 @@ public class PendingTasks {
         GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Null set of actives received for name " + requestActivesPacket.getName()
                 + " sending error");
       }
-      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(),
-              //LNSEventCode.RC_NO_RECORD_ERROR, 
-              handler);
+      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), handler);
       return;
     }
 
@@ -117,7 +121,6 @@ public class PendingTasks {
 //                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
 //      }
 //    }
-
     runPendingRequestsForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), handler);
 
   }
@@ -158,7 +161,7 @@ public class PendingTasks {
    *
    * @param requestID request ID of the <code>RequestActivesPacket</code>
    */
-  public void sendErrorMsgForName(String name, int requestID, 
+  public void sendErrorMsgForName(String name, int requestID,
           //LNSEventCode eventCode, 
           RequestHandlerInterface handler) {
 
@@ -170,11 +173,6 @@ public class PendingTasks {
         // remove request from queue
         if (handler.removeRequestInfo(task.requestInfo.getLNSReqID()) != null) {
           task.requestInfo.setFinishTime(); // set finish time for request
-//          if (eventCode != null) {
-//            task.requestInfo.addEventCode(eventCode);
-//          }
-          //GNS.getStatLogger().fine(task.requestInfo.getLogString());
-          
           // FIX ME ADD THIS BACK ON SOME FORM!!!
           //handler.getIntercessor().handleIncomingPacket(task.requestInfo.getErrorMessage());
         }
@@ -183,16 +181,13 @@ public class PendingTasks {
   }
 
   /**
-   * ***************Start of synchronized methods******************************************************
-   */
-  /**
    *
    * @param name name of the request
    * @param task task to be added to queue
    * @return requestID of the <code>RequestActivesTask</code> to be created,
    * and -1 if a <code>RequestActivesTask</code> already exists for this name and a new task should not be created.
    */
-  private int addRequestToQueue(String name, PendingTask task) {
+  private synchronized int addRequestToQueue(String name, PendingTask task) {
     int requestID = -1;
     if (!allTasks.containsKey(name)) {
       allTasks.put(name, new ArrayList<PendingTask>());
@@ -209,7 +204,7 @@ public class PendingTasks {
   /**
    * Checks whether reply for this request ID is received
    */
-  public boolean isReplyReceived(int requestID) {
+  public synchronized boolean isReplyReceived(int requestID) {
     return !requestActivesOngoing.contains(requestID);
   }
 

@@ -215,7 +215,7 @@ public class Packet {
         case COMMAND:
           return new edu.umass.cs.gns.nsdesign.packet.CommandPacket(json);
         case COMMAND_RETURN_VALUE:
-          return new edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket(json, unstringer);
+          return new edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket(json);
         // Remove
         case REMOVE_RECORD:
           return new edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket(json, unstringer);

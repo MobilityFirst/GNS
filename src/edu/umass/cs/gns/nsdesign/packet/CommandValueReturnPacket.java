@@ -4,7 +4,6 @@ import edu.umass.cs.gns.clientsupport.CommandResponse;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -17,9 +16,8 @@ import org.json.JSONObject;
  * THIS EXACT CLASS IS ALSO IN THE CLIENT so they need to be kept consistent
  * insofar as the fields in the JOSN Object is concerned.
  *
- * @param <NodeIDType>
  */
-public class CommandValueReturnPacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
+public class CommandValueReturnPacket extends BasicPacket implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String RETURNVALUE = "returnValue";
@@ -53,7 +51,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket implements
   /**
    * Instrumentation - what nameserver responded to this query
    */
-  private final NodeIDType responder;
+  private final String responder;
   /**
    * Instrumentation - the request counter from the LNS)
    */
@@ -69,9 +67,11 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket implements
    * @param requestId
    * @param response
    * @param requestCnt - current number of requests handled by the LNS (can be used to tell how busy LNS is)
+   * @param requestRate
+   * @param lnsProcTime
    */
-  public CommandValueReturnPacket(int requestId, CommandResponse<NodeIDType> response, long requestCnt, int requestRate,
-          long lnsProcTime) {
+  public CommandValueReturnPacket(int requestId, CommandResponse<String> response, long requestCnt, 
+          int requestRate, long lnsProcTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.requestId = requestId;
     this.returnValue = response.getReturnValue();
@@ -89,7 +89,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket implements
    * @param json
    * @throws JSONException
    */
-  public CommandValueReturnPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
+  public CommandValueReturnPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.requestId = json.getInt(REQUESTID);
     this.returnValue = json.getString(RETURNVALUE);
@@ -104,7 +104,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket implements
     //
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
     this.LNSProcessingTime = json.optLong(LNSPROCESSINGTIME, -1);
-    this.responder = json.has(RESPONDER) ? unstringer.valueOf(json.getString(RESPONDER)) : null;
+    this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : null;
   }
 
   /**
@@ -158,7 +158,7 @@ public class CommandValueReturnPacket<NodeIDType> extends BasicPacket implements
     return LNSProcessingTime;
   }
 
-  public NodeIDType getResponder() {
+  public String getResponder() {
     return responder;
   }
 
