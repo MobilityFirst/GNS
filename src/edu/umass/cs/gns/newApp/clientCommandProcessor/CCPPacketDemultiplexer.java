@@ -29,7 +29,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public class NewCCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
+public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
   private EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -37,7 +37,7 @@ public class NewCCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemulti
     this.handler = handler;
   }
 
-  public NewCCPPacketDemultiplexer() {
+  public CCPPacketDemultiplexer() {
     // probably should get these from the event handler
     this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
     this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);

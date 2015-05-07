@@ -13,6 +13,7 @@ import org.apache.commons.cli.*;
  * <p>
  * Created by abhigyan on 2/28/14.
  */
+@Deprecated
 public class NSParameterNames {
 
   public static final String CONFIG_FILE = "configFile";

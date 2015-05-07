@@ -81,7 +81,7 @@ public class GNSInstaller {
   private static String nsConfFileName;
 
   private static final String StartLNSClass = "edu.umass.cs.gns.localnameserver.LocalNameServer";
-  private static final String StartCPPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.NewClientCommandProcessor";
+  private static final String StartCPPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor";
   private static final String StartNSClass = "edu.umass.cs.gns.newApp.AppReconfigurableNode";
 
   private static final String CHANGETOINSTALLDIR
@@ -281,7 +281,9 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartNSClass + " "
+              + "-id "
               + nsId.toString() + " "
+              + "-nsfile "
               + NS_HOSTS_FILENAME + " "
               //+ " -configFile ns.conf "
               + " > NSlogfile 2>&1 &");
@@ -292,9 +294,12 @@ public class GNSInstaller {
               + "mv --backup=numbered CPPlogfile CPPlogfile.save\n"
               + "fi\n"
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartCPPClass + " "
+              + "-host "
               + hostname + " "
+              + "-port "
               + GNS.DEFAULT_CPP_TCP_PORT + " "
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the CPP needs this
+              + "-nsfile "
               + NS_HOSTS_FILENAME + " "
               // + " -configFile lns.conf "
               + " > CPPlogfile 2>&1 &");

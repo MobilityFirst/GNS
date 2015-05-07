@@ -2,13 +2,19 @@ package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessorOptions;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
+import static edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions.*;
 import java.io.IOException;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.gns.util.ParametersAndOptions;
+import static edu.umass.cs.gns.util.ParametersAndOptions.HELP;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,7 +37,7 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     if (this.mongoRecords == null) {
       this.mongoRecords = new MongoRecords<>(this.myID, Config.mongoPort);
     }
-    NewApp app = new NewApp(this.myID, (GNSInterfaceNodeConfig)this.nodeConfig, this.messenger, mongoRecords);
+    NewApp app = new NewApp(this.myID, (GNSInterfaceNodeConfig) this.nodeConfig, this.messenger, mongoRecords);
 
     NewAppCoordinator appCoordinator = new NewAppCoordinator(app, this.nodeConfig, this.messenger);
 
@@ -43,7 +49,7 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     return appCoordinator;
   }
 
-  private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
+  private static void startNodePair(String nodeID, String nodeConfigFilename, Map<String, String> options) throws IOException {
     GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFilename, nodeID);
     new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
     new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
@@ -72,18 +78,22 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
   }
 
   public static void main(String[] args) throws IOException {
+    Map<String, String> options
+            = ParametersAndOptions.getParametersAsHashMap(AppReconfigurableNode.class.getCanonicalName(),
+                    AppReconfigurableNodeOptions.getAllOptions(), args);
+    if (options.containsKey(HELP)) {
+      ParametersAndOptions.printUsage(AppReconfigurableNode.class.getCanonicalName(),
+              AppReconfigurableNodeOptions.getAllOptions());
+      System.exit(0);
+    }
     //ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
     //ReconfigurationConfig.setDemandProfile(DemandProfile.class);
     ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
     System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
-
-    if (args.length == 0) {
+    if (args.length == 0) { // for testing
       startTestNodes();
-    } else if (args.length == 2) {
-      startNodePair(args[0], args[1]);
     } else {
-      System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gns.newApp.edu.umass.cs.gns.newApp.AppReconfigurableNode <NodeId> <nodeConfigFile>");
+      startNodePair(options.get(ID), options.get(NS_FILE), options);
     }
   }
-  
 }
