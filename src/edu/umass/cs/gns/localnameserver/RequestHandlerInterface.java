@@ -44,4 +44,16 @@ public interface RequestHandlerInterface {
   
   public InetSocketAddress getClosestServer(Set<InetSocketAddress> serverIds, Set<InetSocketAddress> excludeServers);
   
+  public void invalidateCache();
+  
+  public boolean containsCacheEntry(String name);
+  
+  public void updateCacheEntry(String name, String value);
+  
+  public String getValueIfValid(String name);
+  
+  public void updateCacheEntry(String name, Set<InetSocketAddress> actives);
+  
+  public Set<InetSocketAddress> getActivesIfValid(String name);
+ 
 }

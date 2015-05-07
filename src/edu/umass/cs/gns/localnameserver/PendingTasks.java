@@ -63,7 +63,7 @@ public class PendingTasks {
   public void addToPendingRequests(LNSRequestInfo requestInfo, TimerTask task, int period, RequestHandlerInterface handler) {
     if (requestInfo != null && requestInfo.setLookupActives()) {
       // if lookupActives is true, means this request is not already in pending request queue. so, we add this to queue
-      String name = requestInfo.getName();
+      String name = requestInfo.getServiceName();
       PendingTask pendingTask = new PendingTask(name, task, period, requestInfo);
       int requestID = addRequestToQueue(name, pendingTask);
 
@@ -108,17 +108,17 @@ public class PendingTasks {
       return;
     }
 
-//    if (handler.containsCacheEntry(requestActivesPacket.getName())) {
+//    if (handler.containsCacheEntry(requestActivesPacket.getServiceName())) {
 //      handler.updateCacheEntry(requestActivesPacket);
 //      if (handler.getParameters().isDebugMode()) {
 //        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Updating cache Name:"
-//                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
+//                + requestActivesPacket.getServiceName() + " Actives: " + requestActivesPacket.getActiveNameServers());
 //      }
 //    } else {
 //      handler.addCacheEntry(requestActivesPacket);
 //      if (handler.getParameters().isDebugMode()) {
 //        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Adding to cache Name:"
-//                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
+//                + requestActivesPacket.getServiceName() + " Actives: " + requestActivesPacket.getActiveNameServers());
 //      }
 //    }
     runPendingRequestsForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), handler);

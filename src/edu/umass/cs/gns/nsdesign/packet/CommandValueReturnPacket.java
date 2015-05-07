@@ -19,7 +19,9 @@ import org.json.JSONObject;
  */
 public class CommandValueReturnPacket extends BasicPacket implements InterfaceRequest {
 
-  private final static String REQUESTID = "reqID";
+  private final static String CLIENTREQUESTID = "reqID";
+  private final static String LNSREQUESTID = "LNSreqID";
+  private final static String SERVICENAME = "srvceName";
   private final static String RETURNVALUE = "returnValue";
   private final static String ERRORCODE = "errorCode";
   private final static String LNSROUNDTRIPTIME = "lnsRtt";
@@ -31,9 +33,17 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   /**
    * Identifier of the request.
    */
-  private final int requestId;
+  private final int clientRequestId;
   /**
-   * The returned value - will most likely become a JSONObject soon
+   * The service name from the request. Usually the guid or HRN.
+   */
+  private final String serviceName;
+  /**
+   * LNS identifier used by the LNS.
+   */
+  private final int LNSRequestId;
+  /**
+   * The returned value.
    */
   private final String returnValue;
   /**
@@ -70,10 +80,12 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
    * @param requestRate
    * @param lnsProcTime
    */
-  public CommandValueReturnPacket(int requestId, CommandResponse<String> response, long requestCnt, 
+  public CommandValueReturnPacket(int requestId, int LNSRequestId, String serviceName, CommandResponse<String> response, long requestCnt,
           int requestRate, long lnsProcTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
-    this.requestId = requestId;
+    this.clientRequestId = requestId;
+    this.LNSRequestId = LNSRequestId;
+    this.serviceName = serviceName;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
     this.LNSRoundTripTime = response.getLNSRoundTripTime();
@@ -91,7 +103,13 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
    */
   public CommandValueReturnPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
-    this.requestId = json.getInt(REQUESTID);
+    this.clientRequestId = json.getInt(CLIENTREQUESTID);
+    if (json.has(LNSREQUESTID)) {
+     this.LNSRequestId = json.getInt(LNSREQUESTID);
+    } else {
+     this.LNSRequestId = -1;
+    }
+    this.serviceName = json.getString(SERVICENAME);
     this.returnValue = json.getString(RETURNVALUE);
     if (json.has(ERRORCODE)) {
       this.errorCode = NSResponseCode.getResponseCode(json.getInt(ERRORCODE));
@@ -117,7 +135,11 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
-    json.put(REQUESTID, this.requestId);
+    json.put(CLIENTREQUESTID, this.clientRequestId);
+    if (this.LNSRequestId != -1) {
+      json.put(LNSREQUESTID, this.LNSRequestId);
+    }
+    json.put(SERVICENAME, this.serviceName);
     json.put(RETURNVALUE, returnValue);
     if (errorCode != null) {
       json.put(ERRORCODE, errorCode.getCodeValue());
@@ -138,8 +160,17 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     return json;
   }
 
-  public int getRequestId() {
-    return requestId;
+  public int getClientRequestId() {
+    return clientRequestId;
+  }
+
+  @Override
+  public String getServiceName() {
+    return serviceName;
+  }
+
+  public int getLNSRequestId() {
+    return LNSRequestId;
   }
 
   public String getReturnValue() {
@@ -168,11 +199,6 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
 
   public int getRequestRate() {
     return requestRate;
-  }
-
-  @Override
-  public String getServiceName() {
-    return "BOGUS";
   }
 
 }

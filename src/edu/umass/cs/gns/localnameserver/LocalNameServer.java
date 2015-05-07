@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import static edu.umass.cs.gns.localnameserver.LNSNodeConfig.INVALID_PING_LATENCY;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
@@ -31,31 +33,35 @@ import java.util.logging.Logger;
  */
 public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
-  public static final int REQUEST_ACTIVES_QUERY_TIMEOUT = 1000; 
-  public static final int MAX_QUERY_WAIT_TIME = 4000;
- 
+  public static final int REQUEST_ACTIVES_QUERY_TIMEOUT = 1000; // milleseconds
+  public static final int MAX_QUERY_WAIT_TIME = 4000; // milleseconds
+  public static final int DEFAULT_VALUE_CACHE_TTL = 10000; // milleseconds
+
   private static final Logger LOG = Logger.getLogger(LocalNameServer.class.getName());
-  
+
   public final static int DEFAULT_LNS_TCP_PORT = 24398;
-  
+
   private static final ConcurrentMap<Integer, LNSRequestInfo> outstandingRequests = new ConcurrentHashMap<>(10, 0.75f, 3);
 
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
-  
-  private final PendingTasks  pendingTasks = new PendingTasks();
-   
+
+  private final PendingTasks pendingTasks = new PendingTasks();
+
+  private final Cache<String, CacheEntry> cache;
+
   private InterfaceJSONNIOTransport tcpTransport;
   private final LNSNodeConfig nodeConfig;
   private final LNSConsistentReconfigurableNodeConfig crnodeConfig;
   private final InetSocketAddress nodeAddress;
   private final AbstractPacketDemultiplexer demultiplexer;
   private boolean debuggingEnabled = true;
-  
+
   public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
     this.nodeAddress = nodeAddress;
     this.nodeConfig = nodeConfig;
     this.crnodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
     this.demultiplexer = new LNSPacketDemultiplexer(this);
+    this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
     try {
       this.tcpTransport = initTransport(demultiplexer);
     } catch (IOException e) {
@@ -76,21 +82,21 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     tcpTransport.stop();
     demultiplexer.stop();
   }
-  
+
   public static void main(String[] args) {
     try {
-    String nodeFilename;
-    if (args.length == 1) {
-       nodeFilename = args[0];
-    } else { // special case for testing
-      nodeFilename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    }
-    InetSocketAddress address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-             DEFAULT_LNS_TCP_PORT);
-    new LocalNameServer(address, new LNSNodeConfig(nodeFilename));
+      String nodeFilename;
+      if (args.length == 1) {
+        nodeFilename = args[0];
+      } else { // special case for testing
+        nodeFilename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+      }
+      InetSocketAddress address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
+              DEFAULT_LNS_TCP_PORT);
+      new LocalNameServer(address, new LNSNodeConfig(nodeFilename));
     } catch (IOException e) {
       System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gns.localnameserver <nodeConfigFile>");
-    }    
+    }
   }
 
   @Override
@@ -141,8 +147,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   @Override
   public PendingTasks getPendingTasks() {
     return pendingTasks;
-  }   
-  
+  }
+
   /**
    * Selects the closest Name Server from a set of Name Servers.
    *
@@ -186,5 +192,59 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     }
     return serverAddress;
   }
+
+  // Caching
+
+  @Override
+  public void updateCacheEntry(String name, String value) {
+    CacheEntry cacheEntry = cache.getIfPresent(name);
+    if (cacheEntry != null) {
+      cacheEntry.updateCacheEntry(value);
+    } else {
+      CacheEntry entry = new CacheEntry(name, value);
+      cache.put(entry.getName(), entry);
+    }
+  }
+
+  @Override
+  public String getValueIfValid(String name) {
+    CacheEntry cacheEntry = cache.getIfPresent(name);
+    if (cacheEntry != null && cacheEntry.isValidValue()) {
+      return cacheEntry.getValue();
+    } else {
+      return null;
+    }
+  }
   
+  @Override
+  public void updateCacheEntry(String name, Set<InetSocketAddress> actives) {
+    CacheEntry cacheEntry = cache.getIfPresent(name);
+    if (cacheEntry != null) {
+      cacheEntry.updateCacheEntry(actives);
+    } else {
+      CacheEntry entry = new CacheEntry(name, actives);
+      cache.put(entry.getName(), entry);
+    }
+  }
+
+  @Override
+  public Set<InetSocketAddress> getActivesIfValid(String name) {
+    CacheEntry cacheEntry = cache.getIfPresent(name);
+    if (cacheEntry != null && cacheEntry.isValidValue()) {
+      return cacheEntry.getActiveNameServers();
+    } else {
+      return null;
+    }
+  }
+
+  @Override
+  public void invalidateCache() {
+    cache.invalidateAll();
+  }
+
+  @Override
+  public boolean containsCacheEntry(String name) {
+    return cache.getIfPresent(name) != null;
+  }
+
 }

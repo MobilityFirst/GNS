@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
@@ -15,6 +16,8 @@ import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Random;
+import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,7 +28,8 @@ import org.json.JSONObject;
  */
 public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
 
-  RequestHandlerInterface handler;
+  private final RequestHandlerInterface handler;
+  private final Random random = new Random();
 
   public LNSPacketDemultiplexer(RequestHandlerInterface handler) {
     this.handler = handler;
@@ -65,36 +69,64 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
   }
 
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
+   
     CommandPacket packet = new CommandPacket(json);
+    int requestId = random.nextInt();
+    packet.setLNSRequestId(requestId);
     // Squirrel away the host and port so we know where to send the command return value
-    handler.addRequestInfo(packet.getRequestId(), 
-            new LNSRequestInfo(packet.getRequestId(), 
+    handler.addRequestInfo(requestId,
+            new LNSRequestInfo(requestId,
                     packet.getServiceName(),
-                    packet.getSenderAddress(), packet.getSenderPort()));
-    // remove these so the stamper will put new ones in so the packet will find it's way back here
-    json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
-    json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+                    packet.getCommandName(),
+                    packet.getSenderAddress(),
+                    packet.getSenderPort()));
     // Send it to the client command handler
-    InetSocketAddress address = handler.getClosestServer(handler.getNodeConfig().getActiveReplicas());
-    handler.getTcpTransport().sendToAddress(address, json);
+    Set<InetSocketAddress> actives;
+    if ((actives = handler.getActivesIfValid(packet.getServiceName())) != null) {
+      
+    } else {
+      // replace this with a call to request actives
+      actives = handler.getNodeConfig().getActiveReplicas(); 
+    }
+    InetSocketAddress address = handler.getClosestServer(actives);
+    JSONObject outputPacket = packet.toJSONObject();
+    // Remove these so the stamper will put new ones in so the packet will find it's way back here.
+    outputPacket.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
+    outputPacket.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+    handler.getTcpTransport().sendToAddress(address, outputPacket);
   }
 
   public void handleCommandReturnValuePacket(JSONObject json) throws JSONException, IOException {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
-    int id = returnPacket.getRequestId();
+    int id = returnPacket.getLNSRequestId();
     LNSRequestInfo sentInfo;
     if ((sentInfo = handler.getRequestInfo(id)) != null) {
-      handler.removeRequestInfo(id);
-      if (handler.isDebugMode()) {
-        GNS.getLogger().info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< LNS IS SENDING VALUE BACK TO "
-                + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
+      // doublecheck that it is for the same service name
+      if (sentInfo.getServiceName().equals(returnPacket.getServiceName())) {
+        String serviceName = returnPacket.getServiceName();
+        handler.removeRequestInfo(id);
+        // update cache - if the service name isn't missing (invalid)
+        // and if it is a READ command
+        // FIXME: THIS ISN'T GOING TO WORK WITHOUT MORE INFO ABOUT THE REQUEST
+        if (!CommandPacket.BOGUS_SERVICE_NAME.equals(serviceName) &&
+                sentInfo.getCommandType().equals(Defs.NEWREAD)) {
+          handler.updateCacheEntry(serviceName, returnPacket.getReturnValue());
+        }
+        // send the response back
+        if (handler.isDebugMode()) {
+          GNS.getLogger().info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< LNS IS SENDING VALUE BACK TO "
+                  + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
+        }
+        handler.getTcpTransport().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
+                json);
+      } else {
+        GNS.getLogger().severe("Command response packet mismatch: " + sentInfo.getServiceName() 
+                + " vs. " + returnPacket.getServiceName());
       }
-      handler.getTcpTransport().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
-              json);
     } else {
-      GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);
+      GNS.getLogger().severe("Command response packet info not found for " + id + ": " + json);
     }
-    
+
   }
 
 }

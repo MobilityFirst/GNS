@@ -66,7 +66,9 @@ public class CommandHandler {
     try {
       CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
       // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
-      CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
+      CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
+              packet.getLNSRequestId(),
+              packet.getServiceName(), returnValue,
               handler.getReceivedRequests(), handler.getRequestsPerSecond(),
               System.currentTimeMillis() - receiptTime);
       if (handler.getParameters().isDebugMode()) {
@@ -86,7 +88,7 @@ public class CommandHandler {
 //        try {
 //          CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
 //          // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
-//          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getRequestId(), returnValue,
+//          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(), returnValue,
 //                  handler.getReceivedRequests(), handler.getRequestsPerSecond(),
 //          System.currentTimeMillis() - receiptTime);
 //          if (handler.getParameters().isDebugMode()) {
@@ -187,7 +189,7 @@ public class CommandHandler {
   public static void handleCommandPacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandPacket packet = new CommandPacket(json);
     // Squirrel away the host and port so we know where to send the command return value
-    outStandingQueries.put(packet.getRequestId(), new CommandQuery(packet.getSenderAddress(), packet.getSenderPort()));
+    outStandingQueries.put(packet.getClientRequestId(), new CommandQuery(packet.getSenderAddress(), packet.getSenderPort()));
     // remove these so the stamper will put new ones in so the packet will find it's way back here
     json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
     json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
@@ -197,7 +199,7 @@ public class CommandHandler {
 
   public static void handleCommandReturnValuePacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
-    int id = returnPacket.getRequestId();
+    int id = returnPacket.getClientRequestId();
     CommandQuery sentInfo;
     if ((sentInfo = outStandingQueries.get(id)) != null) {
       outStandingQueries.remove(id);

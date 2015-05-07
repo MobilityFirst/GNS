@@ -11,14 +11,16 @@ package edu.umass.cs.gns.localnameserver;
  * Class represents the abstract class in which LNS stores info for each ongoing request,
  * from the time it is received by a LNS until a success/failure response is returned.
  * Only a single instance of this class is defined during the lifetime of a request.
- *
- * Some fields in this class are necessary to implement functionality of a local name server, while
- * some are there only to collect and log statistics for a request.
+
+ Some fields in this class are necessary to implement functionality of a local serviceName server, while
+ some are there only to collect and log statistics for a request.
  *
  */
 public class LNSRequestInfo {
 
-  private final String name;
+  private final String serviceName;
+  
+  private final String commandType;
   
   private final String clientHost;
   
@@ -27,7 +29,7 @@ public class LNSRequestInfo {
   /** Unique request ID assigned to this request by the local name server */
   private final int lnsReqID;
 
-  /** Time that CPP started processing this request */
+  /** Time that CPP started processing this request. */
   protected final long startTime;
 
   /** True if CPP is requesting current set of active replicas for this request. False, otherwise */
@@ -46,17 +48,22 @@ public class LNSRequestInfo {
   /** Whether requests is finally successful or not. */
   private boolean success = false;
 
-public LNSRequestInfo(int lnsReqId, String name, String host, int port) {
+public LNSRequestInfo(int lnsReqId, String name, String commandtype, String host, int port) {
     this.lnsReqID = lnsReqId;
-    this.name = name;
+    this.serviceName = name;
+    this.commandType = commandtype;
     this.clientHost = host;
     this.clientPort = port;
     this.startTime = System.currentTimeMillis();
     this.numLookupActives = 0;
   }
 
-  public synchronized String getName() {
-    return name;
+  public synchronized String getServiceName() {
+    return serviceName;
+  }
+
+  public String getCommandType() {
+    return commandType;
   }
   
   public String getHost() {
@@ -76,7 +83,7 @@ public LNSRequestInfo(int lnsReqId, String name, String host, int port) {
   }
 
   /** 
-   * Time duration for which the request was under processing at the local name server.
+   * Time duration for which the request was under processing at the local serviceName server.
    * @return 
    */
   public synchronized long getResponseLatency() {
