@@ -2,8 +2,6 @@ package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessorOptions;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
@@ -55,10 +53,7 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
   }
 
-  private static void startTestNodes() throws IOException {
-    // Change this to whatever your path is...
-    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-
+  private static void startTestNodes(String filename) throws IOException {
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
     try {
       for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {
@@ -90,10 +85,14 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     //ReconfigurationConfig.setDemandProfile(DemandProfile.class);
     ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
     System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
-    if (args.length == 0) { // for testing
-      startTestNodes();
-    } else {
+    if (options.get(TEST) != null && options.get(NS_FILE) != null) { // for testing
+      startTestNodes(options.get(NS_FILE));
+    } else if (options.get(ID) != null && options.get(NS_FILE) != null) {
       startNodePair(options.get(ID), options.get(NS_FILE), options);
+    } else {
+      ParametersAndOptions.printUsage(AppReconfigurableNode.class.getCanonicalName(),
+              AppReconfigurableNodeOptions.getAllOptions());
+      System.exit(0);
     }
   }
 }

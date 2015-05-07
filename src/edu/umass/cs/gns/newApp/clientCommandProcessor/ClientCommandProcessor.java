@@ -83,7 +83,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     messenger.addPacketDemultiplexer(demultiplexer);
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     //
-    parameters.setDebugMode(false);
+    parameters.setDebugMode(options.containsKey(DEBUG));
     //
     this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
             gnsNodeConfig, messenger, parameters);

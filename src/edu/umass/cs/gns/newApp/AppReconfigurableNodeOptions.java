@@ -25,6 +25,7 @@ public class AppReconfigurableNodeOptions {
   public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
   public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
   public static final String DEBUG = "debug";
+  public static final String TEST = "test";
  
 
   public static Options getAllOptions() {
@@ -34,7 +35,8 @@ public class AppReconfigurableNodeOptions {
     Option nsFile = new Option(NS_FILE, true, "File with node configuration of all name servers");
     Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
     Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
-    Option debug = new Option(DEBUG, true, "Enables debugging output");
+    Option debug = new Option(DEBUG, "Enables debugging output");
+    Option test = new Option(TEST, "Runs multiple test nodes on one machine");
             
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -44,6 +46,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(fileLoggingLevel);
     commandLineOptions.addOption(consoleOutputLevel);
     commandLineOptions.addOption(debug);
+    commandLineOptions.addOption(test);
 
     return commandLineOptions;
   }
