@@ -178,11 +178,11 @@ public class CommandHandler {
 
   static {
     try {
-      cppAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNS.DEFAULT_CPP_TCP_PORT);
+      cppAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNS.DEFAULT_CCP_TCP_PORT);
       GNS.getLogger().info("CPP Address is " + cppAddress);
     } catch (UnknownHostException e) {
       GNS.getLogger().info("Unabled to determine CPP address: " + e);
-      cppAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CPP_TCP_PORT);
+      cppAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CCP_TCP_PORT);
     }
   }
 

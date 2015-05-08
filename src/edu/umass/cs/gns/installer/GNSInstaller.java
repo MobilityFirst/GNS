@@ -81,7 +81,7 @@ public class GNSInstaller {
   private static String nsConfFileName;
 
   private static final String StartLNSClass = "edu.umass.cs.gns.localnameserver.LocalNameServer";
-  private static final String StartCPPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor";
+  private static final String StartCCPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor";
   private static final String StartNSClass = "edu.umass.cs.gns.newApp.AppReconfigurableNode";
 
   private static final String CHANGETOINSTALLDIR
@@ -165,13 +165,15 @@ public class GNSInstaller {
    * @param lnsHostsFile
    * @param nsHostsFile
    * @param scriptFile
+   * @param runAsRoot
    */
   public static void updateRunSet(String name, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
-          String lnsHostsFile, String nsHostsFile, String scriptFile) {
-    ArrayList<Thread> threads = new ArrayList<Thread>();
+          String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot) {
+    ArrayList<Thread> threads = new ArrayList<>();
     for (HostInfo info : hostTable.values()) {
-      threads.add(new UpdateThread(info.getHostname(), info.getNsId(), info.isCreateLNS(), action, removeLogs, deleteDatabase,
-              lnsHostsFile, nsHostsFile, scriptFile));
+      threads.add(new UpdateThread(info.getHostname(), info.getNsId(), info.isCreateLNS(),
+              action, removeLogs, deleteDatabase,
+              lnsHostsFile, nsHostsFile, scriptFile, runAsRoot));
     }
     for (Thread thread : threads) {
       thread.start();
@@ -207,26 +209,31 @@ public class GNSInstaller {
    * Then the various servers are started on the host.
    *
    * @param nsId
+   * @param createLNS
    * @param hostname
    * @param action
    * @param removeLogs
    * @param deleteDatabase
    * @param scriptFile
+   * @param lnsHostsFile
+   * @param nsHostsFile
+   * @param runAsRoot
    * @throws java.net.UnknownHostException
    */
-  public static void updateAndRunGNS(String nsId, boolean createLNS, String hostname, InstallerAction action, boolean removeLogs,
-          boolean deleteDatabase, String lnsHostsFile, String nsHostsFile, String scriptFile) throws UnknownHostException {
+  public static void updateAndRunGNS(String nsId, boolean createLNS, String hostname, InstallerAction action,
+          boolean removeLogs, boolean deleteDatabase,
+          String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot) throws UnknownHostException {
     if (!action.equals(InstallerAction.STOP)) {
       System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
       if (action == InstallerAction.UPDATE) {
         makeInstallDir(hostname);
       }
-      killAllServers(hostname);
+      killAllServers(hostname, runAsRoot);
       if (scriptFile != null) {
         executeScriptFile(hostname, scriptFile);
       }
       if (removeLogs) {
-        removeLogFiles(hostname);
+        removeLogFiles(hostname, runAsRoot);
       }
       if (deleteDatabase) {
         deleteDatabase(hostname);
@@ -239,10 +246,10 @@ public class GNSInstaller {
         case RESTART:
           break;
       }
-      startServers(nsId, createLNS, hostname);
+      startServers(nsId, createLNS, hostname, runAsRoot);
       System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
     } else {
-      killAllServers(hostname);
+      killAllServers(hostname, runAsRoot);
       System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " has been stopped ####");
     }
   }
@@ -254,7 +261,7 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void startServers(String nsId, boolean createLNS, String hostname) {
+  private static void startServers(String nsId, boolean createLNS, String hostname, boolean runAsRoot) {
     File keyFileName = getKeyFile();
     if (createLNS) {
       System.out.println("Starting local name servers");
@@ -264,6 +271,7 @@ public class GNSInstaller {
               + "if [ -f LNSlogfile ]; then\n"
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
+              //+ ((runAsRoot) ? "sudo " : "")
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartLNSClass + " "
               //+ hostname + " "
               //+ LocalNameServer.DEFAULT_LNS_TCP_PORT + " "
@@ -280,6 +288,7 @@ public class GNSInstaller {
               + "if [ -f NSlogfile ]; then\n"
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
+              //+ ((runAsRoot) ? "sudo " : "")
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartNSClass + " "
               + "-id "
               + nsId.toString() + " "
@@ -287,22 +296,25 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               //+ " -configFile ns.conf "
               + " > NSlogfile 2>&1 &");
-      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName, buildInstallFilePath("runCPP.sh"),
+      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName,
+              //runAsRoot,
+              buildInstallFilePath("runCCP.sh"),
               "#!/bin/bash\n"
               + CHANGETOINSTALLDIR
-              + "if [ -f CPPlogfile ]; then\n"
-              + "mv --backup=numbered CPPlogfile CPPlogfile.save\n"
+              + "if [ -f CCPlogfile ]; then\n"
+              + "mv --backup=numbered CCPlogfile CCPlogfile.save\n"
               + "fi\n"
-              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartCPPClass + " "
+              + ((runAsRoot) ? "sudo " : "")
+              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartCCPClass + " "
               + "-host "
               + hostname + " "
               + "-port "
-              + GNS.DEFAULT_CPP_TCP_PORT + " "
-              // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the CPP needs this
+              + GNS.DEFAULT_CCP_TCP_PORT + " "
+              // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the CCP needs this
               + "-nsfile "
               + NS_HOSTS_FILENAME + " "
               // + " -configFile lns.conf "
-              + " > CPPlogfile 2>&1 &");
+              + " > CCPlogfile 2>&1 &");
     }
     System.out.println("All servers started");
   }
@@ -367,10 +379,13 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void killAllServers(String hostname) {
+  private static void killAllServers(String hostname, boolean runAsRoot) {
     System.out.println("Killing GNS servers");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("killAllServers.sh"),
-            "pkill -f \"" + JAVA_COMMAND + gnsJarFileName + "\"");
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
+            //runAsRoot,
+            buildInstallFilePath("killAllServers.sh"),
+            ((runAsRoot) ? "sudo " : "")
+            + "pkill -f \"" + JAVA_COMMAND + gnsJarFileName + "\"");
     //"#!/bin/bash\nkillall java");
   }
 
@@ -380,18 +395,30 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void removeLogFiles(String hostname) {
+  private static void removeLogFiles(String hostname, boolean runAsRoot) {
     System.out.println("Removing log files");
-    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(), buildInstallFilePath("removelogs.sh"),
+    ExecuteBash.executeBashScriptNoSudo(userName, hostname, getKeyFile(),
+            //runAsRoot,
+            buildInstallFilePath("removelogs.sh"),
             "#!/bin/bash\n"
             + CHANGETOINSTALLDIR
+            + ((runAsRoot) ? "sudo " : "")
             + "rm NSlogfile*\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm LNSlogfile*\n"
+            + ((runAsRoot) ? "sudo " : "")
+            + "rm CCPlogfile*\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm -rf log\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm -rf derby.log\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm -rf paxos_logs\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm -rf reconfiguration_DB\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm -rf paxos_large_checkpoints\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm -rf paxoslog");
   }
 
@@ -404,20 +431,6 @@ public class GNSInstaller {
     }
   }
 
-//  @SuppressWarnings("unchecked")
-//  // Probably unnecessary at this point.
-//  private static void updateNodeConfigAndSendOutServerInit() {
-//    GNSNodeConfig nodeConfig = new GNSNodeConfig();
-//    Set< String> ids = new HashSet<>();
-//    for (HostInfo info : hostTable.values()) {
-//      if (info.getNsId() != null) {
-//        nodeConfig.addHostInfo(info.getNsId(), info.getHostname(), GNS.STARTINGPORT, 0, info.getLocation().getY(), info.getLocation().getX());
-//        ids.add(info.getNsId());
-//      }
-//    }
-//    // now we send out packets telling all the hosts where to send their status updates
-//    StatusListener.sendOutServerInitPackets(nodeConfig, ids);
-//  }
   /**
    * Figures out the locations of the JAR and conf files.
    *
@@ -541,6 +554,7 @@ public class GNSInstaller {
     Option stop = OptionBuilder.withArgName("installation name").hasArg()
             .withDescription("stops GNS servers in a installation")
             .create("stop");
+    Option root = new Option("root", "run the installation as root");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(update);
@@ -550,6 +564,7 @@ public class GNSInstaller {
     commandLineOptions.addOption(deleteDatabase);
     commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(scriptFile);
+    commandLineOptions.addOption(root);
     commandLineOptions.addOption(help);
 
     CommandLineParser parser = new GnuParser();
@@ -574,6 +589,7 @@ public class GNSInstaller {
       boolean removeLogs = parser.hasOption("removeLogs");
       boolean deleteDatabase = parser.hasOption("deleteDatabase");
       String scriptFile = parser.getOptionValue("scriptFile");
+      boolean runAsRoot = parser.hasOption("root");
 
       if (dataStoreName != null) {
         try {
@@ -612,11 +628,13 @@ public class GNSInstaller {
       RSync.setVerbose(true);
 
       if (runsetUpdate != null) {
-        updateRunSet(runsetUpdate, InstallerAction.UPDATE, removeLogs, deleteDatabase, lnsHostFile, nsHostFile, scriptFile);
+        updateRunSet(runsetUpdate, InstallerAction.UPDATE, removeLogs, deleteDatabase,
+                lnsHostFile, nsHostFile, scriptFile, runAsRoot);
       } else if (runsetRestart != null) {
-        updateRunSet(runsetRestart, InstallerAction.RESTART, removeLogs, deleteDatabase, lnsHostFile, nsHostFile, scriptFile);
+        updateRunSet(runsetRestart, InstallerAction.RESTART, removeLogs, deleteDatabase,
+                lnsHostFile, nsHostFile, scriptFile, runAsRoot);
       } else if (runsetStop != null) {
-        updateRunSet(runsetStop, InstallerAction.STOP, false, false, null, null, null);
+        updateRunSet(runsetStop, InstallerAction.STOP, false, false, null, null, null, runAsRoot);
       } else {
         printUsage();
         System.exit(1);
@@ -644,9 +662,10 @@ public class GNSInstaller {
     private final String lnsHostsFile;
     private final String nsHostsFile;
     private final String scriptFile;
+    private final boolean runAsRoot;
 
     public UpdateThread(String hostname, String nsId, boolean createLNS, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
-            String lnsHostsFile, String nsHostsFile, String scriptFile) {
+            String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot) {
       this.hostname = hostname;
       this.nsId = nsId;
       this.createLNS = createLNS;
@@ -656,13 +675,14 @@ public class GNSInstaller {
       this.scriptFile = scriptFile;
       this.lnsHostsFile = lnsHostsFile;
       this.nsHostsFile = nsHostsFile;
-
+      this.runAsRoot = runAsRoot;
     }
 
     @Override
     public void run() {
       try {
-        GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase, lnsHostsFile, nsHostsFile, scriptFile);
+        GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase,
+                lnsHostsFile, nsHostsFile, scriptFile, runAsRoot);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

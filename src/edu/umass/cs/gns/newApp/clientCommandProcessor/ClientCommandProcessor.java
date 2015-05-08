@@ -155,7 +155,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     }
     if (args.length == 0) { // special case for testing
       startClientCommandProcessor(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-              GNS.DEFAULT_CPP_TCP_PORT, Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info", options);
+              GNS.DEFAULT_CCP_TCP_PORT, Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info", options);
     } else {
       startClientCommandProcessor(options.get(HOST),
               Integer.parseInt(options.get(PORT)),

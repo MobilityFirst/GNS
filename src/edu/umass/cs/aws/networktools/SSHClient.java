@@ -64,18 +64,18 @@ public class SSHClient {
       Channel channel = session.openChannel("exec");
       //((ChannelExec) channel).setCommand(command);
 
-//      if (useSudo && sudoPasswd != null) {
-//        ((ChannelExec) channel).setCommand("sudo -S -p '' " + command);
-//      } else if (useSudo) {
-//        ((ChannelExec) channel).setCommand("sudo -p '' " + command);
-//      } else {
-//        ((ChannelExec) channel).setCommand(command);
-//      }
-      if (useSudo) {
+      if (useSudo && sudoPasswd != null) {
         ((ChannelExec) channel).setCommand("sudo -S -p '' " + command);
+      } else if (useSudo) {
+        ((ChannelExec) channel).setCommand("sudo -p '' " + command);
       } else {
         ((ChannelExec) channel).setCommand(command);
       }
+//      if (useSudo) {
+//        ((ChannelExec) channel).setCommand("sudo -S -p '' " + command);
+//      } else {
+//        ((ChannelExec) channel).setCommand(command);
+//      }
 
       // ??? NOT SURE WHY THIS IS HERE
       channel.setInputStream(null);
@@ -317,10 +317,10 @@ public class SSHClient {
   }
  
   public static void main(String[] arg) {
-    String host = "ec2-23-20-89-45.compute-1.amazonaws.com";
+    String host = "23.21.160.80";
     String scriptPath = "/Users/westy/Documents/Code/GNRS-westy/scripts/5nodesregions/";
     String script = "installnosudo.sh";
-    File keyFile = new File("/Users/westy/Fred.pem");
+    File keyFile = new File("/Users/westy/.ssh/aws.pem");
 
     scpTo("ec2-user", host, keyFile, scriptPath + script, script);
     SSHClient.execWithSudoNoPass("ec2-user", host, keyFile, "chmod ugo+x " + script);
