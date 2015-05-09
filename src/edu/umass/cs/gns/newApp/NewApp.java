@@ -86,7 +86,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     this.nodeID = id;
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(nodeConfig);
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
-    this.activeCodeHandler = new ActiveCodeHandler(this, Config.activeCodeWorkerCount);
+    this.activeCodeHandler = new ActiveCodeHandler(this, Config.activeCodeWorkerCount, Config.activeCodeBlacklistSeconds);
     if (Config.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Created " + nameRecordDB);
     }

@@ -23,6 +23,11 @@ public class ActiveCodeGuidQuerier {
 		this.in = in;
 	}
 	
+	/**
+	 * Queries (read or write) a guid
+	 * @param acqreq the request params
+	 * @return the response
+	 */
 	private ActiveCodeQueryResponse queryGuid(ActiveCodeQueryRequest acqreq) {
 		try {
 			ActiveCodeMessage acm = new ActiveCodeMessage();
@@ -34,7 +39,7 @@ public class ActiveCodeGuidQuerier {
 		    ActiveCodeMessage acmqr = ActiveCodeUtils.getMessage(in);
 		    return acmqr.acqresp;
 		    
-		} catch (IOException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		// Return an empty response to designate failure
@@ -43,9 +48,9 @@ public class ActiveCodeGuidQuerier {
 	
 	/**
 	 * Reads a guid by passing the query on to the GNS process
-	 * @param guid
-	 * @param field
-	 * @return
+	 * @param guid the guid
+	 * @param field the field
+	 * @return the ValuesMap response
 	 */
 	public ValuesMap readGuid(String guid, String field) {
 		ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, null, "read");
@@ -65,10 +70,10 @@ public class ActiveCodeGuidQuerier {
 	/**
 	 * Writes to a guid by passing the query on to the GNS process
 	 * (Only local guid currently supported)
-	 * @param guid
-	 * @param field
-	 * @param newValue
-	 * @return
+	 * @param guid the guid
+	 * @param field the field
+	 * @param newValue the new values as a ValuesMap object
+	 * @return whether or not the write succeeded
 	 */
 	public boolean writeGuid(String guid, String field, ValuesMap newValue) {
 		ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, newValue.toString(), "write");

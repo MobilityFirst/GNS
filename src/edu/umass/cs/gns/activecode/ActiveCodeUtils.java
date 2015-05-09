@@ -47,14 +47,21 @@ public class ActiveCodeUtils {
 		out.println(data64);
 	}
 	
-	public static ActiveCodeMessage getMessage(BufferedReader in) throws IOException {
-		String res64 = in.readLine();
+	public static ActiveCodeMessage getMessage(BufferedReader in) {
+		String res64 = null;
+		
+		try {
+			res64 = in.readLine();
+		} catch (IOException e) {
+			// We timed out, but that's OK
+		}
 		
 		if(res64 == null) {
-			//ActiveCodeMessage acm = new ActiveCodeMessage();
-			//acm.finished = true;
-			//return acm;
-			return new ActiveCodeMessage();
+			// We crashed, but still mark the request as finished
+			ActiveCodeMessage acm = new ActiveCodeMessage();
+			acm.finished = true;
+			acm.crashed = true;
+			return acm;
 		}
 		
 		byte[] res = Base64.getDecoder().decode(res64);

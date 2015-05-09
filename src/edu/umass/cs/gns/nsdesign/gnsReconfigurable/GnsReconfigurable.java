@@ -103,7 +103,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       this.pingManager.startPinging();
     }
     this.nameRecordDB = new MongoRecordMap<NodeIDType>(mongoRecords, MongoRecords.DBNAMERECORD);
-    this.activeCodeHandler = new ActiveCodeHandler(this, Config.activeCodeWorkerCount);
+    this.activeCodeHandler = new ActiveCodeHandler(this, Config.activeCodeWorkerCount, Config.activeCodeBlacklistSeconds);
     try {
       this.digester = new RetrievableDigest(30000);
     } catch (NoSuchAlgorithmException ex) {

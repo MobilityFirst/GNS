@@ -22,7 +22,7 @@ public class ClientPool {
 	}
 	
 	public void addClient(Thread t) {
-		clients.put(t.getId(), new ActiveCodeClient(app, true, true));
+		clients.put(t.getId(), new ActiveCodeClient(app, true));
 	}
 	
 	public ActiveCodeClient getClient(Thread t) {

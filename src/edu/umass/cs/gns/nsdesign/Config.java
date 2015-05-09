@@ -90,6 +90,7 @@ public class Config {
   public static boolean eventualConsistency = false;
   // number of active code workers
   public static int activeCodeWorkerCount = 1;
+  public static long activeCodeBlacklistSeconds = 10;
   
   public static synchronized void initialize(HashMap<String, String> allValues) {
     if (initialized) {

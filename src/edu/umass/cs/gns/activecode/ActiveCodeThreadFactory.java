@@ -15,6 +15,9 @@ public class ActiveCodeThreadFactory implements ThreadFactory {
 		this.clientPool = clientPool;
 	}
 	
+	/**
+	 * Creates a new thread and also spawns a new worker associated with the thread
+	 */
 	public Thread newThread(Runnable r) {
 		Thread t = new Thread(r);
 		clientPool.addClient(t);

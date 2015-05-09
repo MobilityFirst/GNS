@@ -29,6 +29,12 @@ public class ActiveCodeQueryHelper {
 		this.app = app;
 	}
 
+	/**
+	 * Reads a local guid/field from the GNS
+	 * @param guid the guid
+	 * @param field the field
+	 * @return the ValuesMap object encapsulated in a ActiveCodeQueryResponse object
+	 */
 	private ActiveCodeQueryResponse readLocalGuid(String guid, String field) {
 		String valuesMapString = null;
 		boolean success = false;
@@ -48,6 +54,13 @@ public class ActiveCodeQueryHelper {
 		return new ActiveCodeQueryResponse(success, valuesMapString);
 	}
 	
+	/**
+	 * Writes a values map to a field for a given local guid
+	 * @param guid the guid
+	 * @param field the field
+	 * @param valuesMapString the values map object
+	 * @return an ActiveCodeQueryResponse object indicating the status of the write
+	 */
 	private ActiveCodeQueryResponse writeLocalGuid(String guid, String field, String valuesMapString) {
 		boolean success = false;
 		
@@ -65,6 +78,12 @@ public class ActiveCodeQueryHelper {
 		return new ActiveCodeQueryResponse(success, null);
 	}
 
+	/**
+	 * Handles query requests from the child active code worker processes
+	 * @param currentGuid the guid
+	 * @param acqreq the query request object
+	 * @return the response, which may contain values read, or just status for a write
+	 */
 	public ActiveCodeQueryResponse handleQuery(String currentGuid, ActiveCodeQueryRequest acqreq) {		
 		// Do a local read/write
 		if(acqreq.guid == null || acqreq.guid.equals(currentGuid)) {
@@ -77,7 +96,7 @@ public class ActiveCodeQueryHelper {
 		// Otherwise, we need to do an external read
 		else {
 			if(acqreq.action.equals("read")) {
-				
+				// TODO
 			}
 		}
 		
