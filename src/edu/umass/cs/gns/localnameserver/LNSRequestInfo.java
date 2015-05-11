@@ -7,6 +7,8 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+
 /**
  * Class represents the abstract class in which LNS stores info for each ongoing request,
  * from the time it is received by a LNS until a success/failure response is returned.
@@ -18,29 +20,13 @@ package edu.umass.cs.gns.localnameserver;
  */
 public class LNSRequestInfo {
 
-  private final String serviceName;
-  
-  private final String commandType;
-  
-  private final String clientHost;
-  
-  private final int clientPort;
+  private final CommandPacket commandPacket;
 
   /** Unique request ID assigned to this request by the local name server */
   private final int lnsReqID;
 
   /** Time that CPP started processing this request. */
   protected final long startTime;
-
-  /** True if CPP is requesting current set of active replicas for this request. False, otherwise */
-  private boolean lookupActives = false;
-
-  /** Number of times this request has initiated lookup actives operation.
-   * This could be always zero for some types of requests (namely ADD and REMOVE) that are
-   * sent only to replica controllers (and never to active replicas) */
-  private int numLookupActives = 0;
-
-  // Instrumentation
   
   /** Time that LNS completed processing this request */
   private long finishTime =  -1;
@@ -48,30 +34,30 @@ public class LNSRequestInfo {
   /** Whether requests is finally successful or not. */
   private boolean success = false;
 
-public LNSRequestInfo(int lnsReqId, String name, String commandtype, String host, int port) {
+public LNSRequestInfo(int lnsReqId, CommandPacket commandPacket) {
     this.lnsReqID = lnsReqId;
-    this.serviceName = name;
-    this.commandType = commandtype;
-    this.clientHost = host;
-    this.clientPort = port;
     this.startTime = System.currentTimeMillis();
-    this.numLookupActives = 0;
+    this.commandPacket = commandPacket;
   }
 
   public synchronized String getServiceName() {
-    return serviceName;
+    return commandPacket.getServiceName();
+  }
+
+  public CommandPacket getCommandPacket() {
+    return commandPacket;
   }
 
   public String getCommandType() {
-    return commandType;
+    return commandPacket.getCommandName();
   }
   
   public String getHost() {
-    return clientHost;
+    return commandPacket.getSenderAddress();
   }
 
   public int getPort() {
-    return clientPort;
+    return commandPacket.getSenderPort();
   }
 
   public synchronized int getLNSReqID() {
@@ -104,34 +90,6 @@ public LNSRequestInfo(int lnsReqId, String name, String commandtype, String host
 
   public synchronized void setSuccess(boolean success) {
     this.success = success;
-  }
-
-  public synchronized boolean isLookupActives() {
-    return lookupActives;
-  }
-
-  /** 
-   * Returns true if actives are currently not being requested currently. Otherwise false.
-   * @return 
-   */
-  public synchronized boolean setLookupActives() {
-    if (lookupActives) {
-      return false;
-    } else {
-      lookupActives = true;
-      numLookupActives += 1;
-      return true;
-    }
-  }
-
-  /** After active replicas are received for this request, reset the lookup actives variables */
-  public synchronized void unsetLookupActives() {
-    assert lookupActives;
-    lookupActives = false;
-  }
-
-  public synchronized int getNumLookupActives() {
-    return numLookupActives;
   }
 
 }

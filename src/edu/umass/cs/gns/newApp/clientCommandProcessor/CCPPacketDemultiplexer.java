@@ -39,9 +39,9 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
 
   public CCPPacketDemultiplexer() {
     // probably should get these from the event handler
-    this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
-    this.register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
-    this.register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
+    register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
+    register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
+    register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
     // From current LNS
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);

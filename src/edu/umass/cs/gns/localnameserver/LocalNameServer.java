@@ -18,6 +18,9 @@ import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.NetworkUtils;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -26,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Logger;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  *
@@ -45,13 +50,13 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
 
-  private final PendingTasks pendingTasks = new PendingTasks();
-
   private final Cache<String, CacheEntry> cache;
-
+  
   private InterfaceJSONNIOTransport tcpTransport;
+  private JSONMessenger messenger;
+  private ProtocolExecutor protocolExecutor;
   private final LNSNodeConfig nodeConfig;
-  private final LNSConsistentReconfigurableNodeConfig crnodeConfig;
+  private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress nodeAddress;
   private final AbstractPacketDemultiplexer demultiplexer;
   private boolean debuggingEnabled = true;
@@ -59,19 +64,23 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
     this.nodeAddress = nodeAddress;
     this.nodeConfig = nodeConfig;
-    this.crnodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
+    this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
     this.demultiplexer = new LNSPacketDemultiplexer(this);
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
     try {
       this.tcpTransport = initTransport(demultiplexer);
+       messenger = new JSONMessenger<String>(tcpTransport);
+       this.protocolExecutor = new ProtocolExecutor<>(messenger);
     } catch (IOException e) {
       LOG.info("Unabled to start LNS listener: " + e);
+      System.exit(0);
     }
   }
 
   private InterfaceJSONNIOTransport initTransport(AbstractPacketDemultiplexer demultiplexer) throws IOException {
     LOG.info("Starting LNS listener on " + nodeAddress);
-    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crnodeConfig, new JSONMessageExtractor(demultiplexer));
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, new JSONMessageExtractor(demultiplexer));
+   
     new Thread(gnsNiot).start();
     // id is null here because we're the LNS
     return new JSONMessenger<>(gnsNiot);
@@ -79,8 +88,10 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   @Override
   public void shutdown() {
+    messenger.stop();
     tcpTransport.stop();
     demultiplexer.stop();
+    protocolExecutor.stop();
   }
 
   public static void main(String[] args) {
@@ -105,8 +116,13 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   @Override
+  public ProtocolExecutor getProtocolExecutor() {
+    return protocolExecutor;
+  }
+
+  @Override
   public LNSConsistentReconfigurableNodeConfig getNodeConfig() {
-    return crnodeConfig;
+    return crNodeConfig;
   }
 
   @Override
@@ -142,11 +158,6 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   @Override
   public LNSRequestInfo getRequestInfo(int id) {
     return outstandingRequests.get(id);
-  }
-
-  @Override
-  public PendingTasks getPendingTasks() {
-    return pendingTasks;
   }
 
   /**
@@ -246,5 +257,20 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public boolean containsCacheEntry(String name) {
     return cache.getIfPresent(name) != null;
   }
+  
+  @Override
+  public boolean handleEvent(JSONObject json) throws JSONException {
+    BasicReconfigurationPacket rcEvent
+            = (BasicReconfigurationPacket) ReconfigurationPacket.getReconfigurationPacket(json, nodeConfig);
+    return this.protocolExecutor.handleEvent(rcEvent);
+  }
 
+  @Override
+  public void sendToClosestServer(Set<InetSocketAddress> actives, JSONObject packet) throws IOException {
+    InetSocketAddress address = getClosestServer(actives);
+    // Remove these so the stamper will put new ones in so the packet will find it's way back here.
+    packet.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
+    packet.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+    getTcpTransport().sendToAddress(address, packet);
+  }
 }

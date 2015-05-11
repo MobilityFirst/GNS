@@ -9,9 +9,13 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * An interface that supports everything that a GNS-enabled server needs to process packets.
@@ -36,8 +40,6 @@ public interface RequestHandlerInterface {
 
   public LNSRequestInfo getRequestInfo(int id);
   
-  public PendingTasks getPendingTasks();
-  
   public boolean isDebugMode();
   
   public InetSocketAddress getClosestServer(Set<InetSocketAddress> servers);
@@ -55,5 +57,11 @@ public interface RequestHandlerInterface {
   public void updateCacheEntry(String name, Set<InetSocketAddress> actives);
   
   public Set<InetSocketAddress> getActivesIfValid(String name);
+  
+  public ProtocolExecutor getProtocolExecutor();
+  
+  public boolean handleEvent(JSONObject json) throws JSONException;
+  
+  public void sendToClosestServer(Set<InetSocketAddress> actives, JSONObject packet) throws IOException;
  
 }

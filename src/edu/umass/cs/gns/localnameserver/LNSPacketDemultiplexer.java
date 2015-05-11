@@ -14,8 +14,12 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
 import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import org.json.JSONException;
@@ -33,6 +37,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
 
   public LNSPacketDemultiplexer(RequestHandlerInterface handler) {
     this.handler = handler;
+    register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
     register(Packet.PacketType.COMMAND);
     register(Packet.PacketType.COMMAND_RETURN_VALUE);
   }
@@ -51,49 +56,56 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
     }
     boolean isPacketTypeFound = true;
     try {
-      switch (Packet.getPacketType(json)) {
-        case COMMAND:
-          handleCommandPacket(json);
-          break;
-        case COMMAND_RETURN_VALUE:
-          handleCommandReturnValuePacket(json);
-          break;
-        default:
-          isPacketTypeFound = false;
-          break;
+      if (ReconfigurationPacket.isReconfigurationPacket(json)) {
+        switch (ReconfigurationPacket.getReconfigurationPacketType(json)) {
+          case REQUEST_ACTIVE_REPLICAS:
+            handleRequestActives(json);
+            break;
+          default:
+            isPacketTypeFound = false;
+            break;
+        }
+      } else {
+        switch (Packet.getPacketType(json)) {
+          case COMMAND:
+            handleCommandPacket(json);
+            break;
+          case COMMAND_RETURN_VALUE:
+            handleCommandReturnValuePacket(json);
+            break;
+          default:
+            isPacketTypeFound = false;
+            break;
+        }
       }
     } catch (JSONException | IOException e) {
-      e.printStackTrace();
+      GNS.getLogger().warning("Problem parsing packet from " + json + ": " + e);
     }
+
     return isPacketTypeFound;
   }
 
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
-   
+
     CommandPacket packet = new CommandPacket(json);
     int requestId = random.nextInt();
     packet.setLNSRequestId(requestId);
     // Squirrel away the host and port so we know where to send the command return value
-    handler.addRequestInfo(requestId,
-            new LNSRequestInfo(requestId,
-                    packet.getServiceName(),
-                    packet.getCommandName(),
-                    packet.getSenderAddress(),
-                    packet.getSenderPort()));
+    LNSRequestInfo requestInfo = new LNSRequestInfo(requestId, packet);
+    handler.addRequestInfo(requestId, requestInfo);
+
     // Send it to the client command handler
     Set<InetSocketAddress> actives;
-    if ((actives = handler.getActivesIfValid(packet.getServiceName())) != null) {
-      
+    if ((actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName())) != null) {
+    //if ((actives = handler.getActivesIfValid(packet.getServiceName())) != null) {
+      if (handler.isDebugMode()) {
+        GNS.getLogger().info("Found actives in cache: " + actives);
+      }
+      handler.sendToClosestServer(actives, packet.toJSONObject());
     } else {
-      // replace this with a call to request actives
-      actives = handler.getNodeConfig().getActiveReplicas(); 
+      RequestActives requestActives = new RequestActives(requestInfo, handler);
+      handler.getProtocolExecutor().schedule(requestActives);
     }
-    InetSocketAddress address = handler.getClosestServer(actives);
-    JSONObject outputPacket = packet.toJSONObject();
-    // Remove these so the stamper will put new ones in so the packet will find it's way back here.
-    outputPacket.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
-    outputPacket.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
-    handler.getTcpTransport().sendToAddress(address, outputPacket);
   }
 
   public void handleCommandReturnValuePacket(JSONObject json) throws JSONException, IOException {
@@ -108,8 +120,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
         // update cache - if the service name isn't missing (invalid)
         // and if it is a READ command
         // FIXME: THIS ISN'T GOING TO WORK WITHOUT MORE INFO ABOUT THE REQUEST
-        if (!CommandPacket.BOGUS_SERVICE_NAME.equals(serviceName) &&
-                sentInfo.getCommandType().equals(Defs.NEWREAD)) {
+        if (!CommandPacket.BOGUS_SERVICE_NAME.equals(serviceName)
+                && sentInfo.getCommandType().equals(Defs.NEWREAD)) {
           handler.updateCacheEntry(serviceName, returnPacket.getReturnValue());
         }
         // send the response back
@@ -120,11 +132,22 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
         handler.getTcpTransport().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
                 json);
       } else {
-        GNS.getLogger().severe("Command response packet mismatch: " + sentInfo.getServiceName() 
+        GNS.getLogger().severe("Command response packet mismatch: " + sentInfo.getServiceName()
                 + " vs. " + returnPacket.getServiceName());
       }
     } else {
       GNS.getLogger().severe("Command response packet info not found for " + id + ": " + json);
+    }
+  }
+
+  private void handleRequestActives(JSONObject json) {
+    if (handler.isDebugMode()) {
+      GNS.getLogger().info(")))))))))))))))))))))))))))) REQUEST ACTIVES: " + json.toString());
+    }
+    try {
+      handler.updateCacheEntry(null, new RequestActiveReplicas(json).getActives());
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem parsing RequestActiveReplicas packet info not found from " + json + ": " + e);
     }
 
   }
