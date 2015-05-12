@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.newApp;
 
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.*;
 import java.net.InetAddress;
 import java.util.ArrayList;
@@ -45,7 +46,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public void register(InterfaceRequest request, InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
+  public void register(InterfaceRequest request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
   }
 
   @Override
@@ -80,7 +81,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
   
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
-          ConsistentReconfigurableNodeConfig<?> nodeConfig) {
+          InterfaceGetActiveIPs nodeConfig) {
     return null;
   }
 

@@ -6,7 +6,6 @@ import java.util.Set;
 import edu.umass.cs.gns.util.Stringifiable;
 
 /**
- * @author V. Arun
  * @param <NodeIDType>
  */
 

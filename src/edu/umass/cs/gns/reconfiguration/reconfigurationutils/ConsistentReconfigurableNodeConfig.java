@@ -22,7 +22,8 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
  */
 public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		ConsistentNodeConfig<NodeIDType> implements
-		InterfaceModifiableActiveConfig<NodeIDType>, InterfaceModifiableRCConfig<NodeIDType> {
+		InterfaceModifiableActiveConfig<NodeIDType>, InterfaceModifiableRCConfig<NodeIDType>,
+                InterfaceGetActiveIPs {
 	private final SimpleReconfiguratorNodeConfig<NodeIDType> nodeConfig;
 	private Set<NodeIDType> activeReplicas; // most recent cached copy
 	private Set<NodeIDType> reconfigurators; // most recent cached copy
@@ -79,6 +80,11 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		assert (addresses != null);
 		return addresses;
 	}
+        
+        @Override
+        public ArrayList<InetAddress> getActiveIPs() {
+          return getNodeIPs(getActiveReplicas());
+        }
 
 	// refresh before returning
 	public Set<NodeIDType> getReplicatedReconfigurators(String name) {
@@ -218,4 +224,6 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	public long getVersion() {
 		return this.nodeConfig.getVersion();
 	}
+
+  
 }

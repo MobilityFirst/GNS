@@ -8,6 +8,7 @@
 package edu.umass.cs.gns.newApp;
 
 import com.google.common.net.InetAddresses;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import java.util.ArrayList;
@@ -15,7 +16,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AbstractDemandProfile;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.Util;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -114,7 +114,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public void register(InterfaceRequest request, InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
+  public void register(InterfaceRequest request, InetAddress sender, InterfaceGetActiveIPs nodeConfig) {
     if (!request.getServiceName().equals(this.name)) {
       return;
     }
@@ -129,7 +129,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
 
     if (sender != null) { // should not happen, but just in case
-      this.votesMap.increment(findActiveReplicaClosestToSender(sender, nodeConfig.getNodeIPs(nodeConfig.getActiveReplicas())));
+      this.votesMap.increment(findActiveReplicaClosestToSender(sender, nodeConfig.getActiveIPs()));
     }
 
     if (request instanceof InterfaceReplicableRequest
@@ -212,7 +212,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, ConsistentReconfigurableNodeConfig<?> nodeConfig) {
+  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, InterfaceGetActiveIPs nodeConfig) {
     if (this.lastReconfiguredProfile != null) {
       LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: " + this.lastReconfiguredProfile.toString());
       LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> CURRENT: " + this.toString());
@@ -229,16 +229,16 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
         return null;
       }
     }
-    int numberOfReplicas = computeNumberOfReplicas(lookupCount, updateCount, nodeConfig.getActiveReplicas().size());
+    int numberOfReplicas = computeNumberOfReplicas(lookupCount, updateCount, nodeConfig.getActiveIPs().size());
 
     LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP: " + this.votesMap
             + " TOP: " + this.votesMap.getTopN(numberOfReplicas) + " Lookup: " + lookupCount
             + " Update: " + updateCount + " ReplicaCount: " + numberOfReplicas);
 
-    return null; //FIXME
-//    return pickNewActiveReplicas(numberOfReplicas, curActives,
-//            this.votesMap.getTopN(numberOfReplicas),
-//            nodeConfig.getNodeIPs(nodeConfig.getActiveReplicas()));
+  
+    return pickNewActiveReplicas(numberOfReplicas, curActives,
+            this.votesMap.getTopN(numberOfReplicas),
+            nodeConfig.getActiveIPs());
   }
 
   //

@@ -69,7 +69,6 @@ public class ActiveReplica<NodeIDType> implements
 				.setActiveCallback((InterfaceReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nodeConfig);
-                // WORK IN PROGRESS... DO NOT REMOVE
                 this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
 		this.messenger = messenger;
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(
