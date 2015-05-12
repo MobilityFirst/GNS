@@ -19,7 +19,7 @@ import edu.umass.cs.gns.util.StringifiableDefault;
  */
 public class CreateServiceName extends BasicReconfigurationPacket<InetSocketAddress> implements InterfaceReplicableRequest {
 
-	public static enum Keys {INITIAL_STATE};
+	public static enum Keys {INITIAL_STATE, NO_OP};
 
 	public static final Stringifiable<InetSocketAddress> unstringer = new StringifiableDefault<InetSocketAddress>(
 			new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));

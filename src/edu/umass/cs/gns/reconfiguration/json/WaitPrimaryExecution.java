@@ -3,19 +3,13 @@ package edu.umass.cs.gns.reconfiguration.json;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
-import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.RepliconfigurableReconfiguratorDB;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RCRecordRequest;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RCRecordRequest.RequestTypes;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.gns.util.MyLogger;
 
 /*
  * This task waits for a single replica in a replicated application to finish
@@ -41,10 +35,11 @@ import edu.umass.cs.gns.util.MyLogger;
 public class WaitPrimaryExecution<NodeIDType> extends
 		WaitAckStopEpoch<NodeIDType> {
 
+	private static final long RESTART_PERIOD = 30000;
+	
 	// no types, just waiting to restart reconfiguration or die if obviated
 	private static ReconfigurationPacket.PacketType[] types = {};
 
-	private boolean started = false;
 	private final String key;
 
 	public WaitPrimaryExecution(NodeIDType myID,
@@ -94,40 +89,9 @@ public class WaitPrimaryExecution<NodeIDType> extends
 		return new HashSet<PacketType>(Arrays.asList(ReconfigurationPacket
 				.concatenate(WaitAckStopEpoch.types, types)));
 	}
-
-	/*
-	 * receipt of reconfiguration completion confirmation should change DB state
-	 * to READY and cancel self.
-	 */
+	
 	@Override
-	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
-		if (started)
-			return super.handleEvent(event); // same as WaitAckStopEpoch
-		// else wait to see if we can cancel self before (delayed) start()
-		assert (getEventTypes().contains(event.getType()));
-		BasicReconfigurationPacket<?> rcPacket = (BasicReconfigurationPacket<?>) event;
-		// if ackStartEpoch or ackDropEpoch and matching name and epoch
-		if ((rcPacket.getType().equals(
-				ReconfigurationPacket.PacketType.ACK_START_EPOCH)
-				&& rcPacket.getServiceName().equals(
-						this.startEpoch.getServiceName()) && rcPacket
-				.getEpochNumber() == this.startEpoch.getEpochNumber())
-				|| rcPacket
-						.getType()
-						.equals(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE)
-				&& rcPacket.getServiceName().equals(
-						this.startEpoch.getServiceName())
-				&& rcPacket.getEpochNumber() + 1 == this.startEpoch
-						.getEpochNumber()) {
-			// change DB state to READY marking reconfiguration as complete
-			this.DB.handleIncoming(new RCRecordRequest<NodeIDType>(this.DB
-					.getMyID(), this.startEpoch,
-					RequestTypes.REGISTER_RECONFIGURATION_COMPLETE));
-			// cancel task
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[]{this, "canceling itself"});
-			ProtocolExecutor.cancel(this);
-		}
-		return false;
+	public long getPeriod() {
+		return RESTART_PERIOD;
 	}
-
 }

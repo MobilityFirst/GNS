@@ -74,9 +74,4 @@ public class ReconfiguratorPaxos<NodeIDType> extends
 		}
 		return request!=null ? handleIncoming(request) : false;
 	}
-
-	@Override
-	public void deleteReplicaGroup(String serviceName) {
-		throw new RuntimeException("Method not implemented yet");		
-	}
 }

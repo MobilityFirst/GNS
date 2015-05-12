@@ -1,10 +1,6 @@
 package edu.umass.cs.gns.reconfiguration;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.util.HashSet;
 import java.util.Set;
@@ -73,6 +69,7 @@ public class ActiveReplica<NodeIDType> implements
 				.setActiveCallback((InterfaceReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nodeConfig);
+                // WORK IN PROGRESS... DO NOT REMOVE
                 this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
 		this.messenger = messenger;
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(
@@ -270,7 +267,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.logEvent(event);
 		EpochFinalState<NodeIDType> epochState = new EpochFinalState<NodeIDType>(
 				request.getInitiator(), request.getServiceName(),
-				request.getEpochNumber(), this.getFinalState(
+				request.getEpochNumber(), this.appCoordinator.getFinalState(
 						request.getServiceName(), request.getEpochNumber()));
 		GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>> mtask = null;
 
@@ -293,39 +290,6 @@ public class ActiveReplica<NodeIDType> implements
 	/********************* End of protocol task handler methods ************************/
 
 	/*********************** Private methods below ************************************/
-
-	private String getFinalState(String name, int epoch) {
-		String state = this.appCoordinator.getFinalState(name, epoch);
-		if (state == null || !this.appCoordinator.hasLargeCheckpoints())
-			return state;
-
-		String actualState = null;
-		BufferedReader br = null;
-		try {
-			// read state from file
-			if (new File(state).exists()) {
-				br = new BufferedReader(new InputStreamReader(
-						new FileInputStream(state)));
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					actualState = (actualState == null ? line
-							: (actualState + line));
-				}
-			}
-		} catch (IOException e) {
-			log.severe(this + " unable to read actual state from file");
-			e.printStackTrace();
-		} finally {
-			try {
-				if (br != null)
-					br.close();
-			} catch (IOException e) {
-				log.severe(this + " unable to close checkpoint file " + state);
-				e.printStackTrace();
-			}
-		}
-		return actualState;
-	}
 
 	private boolean noStateOrAlreadyMovedOn(BasicReconfigurationPacket<?> packet) {
 		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());
@@ -450,7 +414,10 @@ public class ActiveReplica<NodeIDType> implements
 			StopEpoch<NodeIDType> stopEpoch) {
 		// inform reconfigurator
 		AckStopEpoch<NodeIDType> ackStopEpoch = new AckStopEpoch<NodeIDType>(
-				stopEpoch.getInitiator(), stopEpoch);
+				stopEpoch.getInitiator(), stopEpoch,
+				(stopEpoch.shouldGetFinalState() ? this.appCoordinator
+						.getFinalState(stopEpoch.getServiceName(),
+								stopEpoch.getEpochNumber()) : null));
 		GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, Object>(
 				(stopEpoch.getInitiator()), ackStopEpoch);
 		log.log(Level.INFO, MyLogger.FORMAT[5], new Object[] { this, "sending",

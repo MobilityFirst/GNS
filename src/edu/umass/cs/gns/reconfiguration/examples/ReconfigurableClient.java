@@ -26,6 +26,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.Reconfigurat
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigureRCNodeConfig;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.gns.util.StringifiableDefault;
 
 /**
 @author V. Arun
@@ -128,6 +129,18 @@ public class ReconfigurableClient {
 										reqActives.getActives() });
 						exists.remove(reqActives.getServiceName());
 						break;
+					case RECONFIGURE_RC_NODE_CONFIG:
+						ReconfigureRCNodeConfig<Integer> rcnc = new ReconfigureRCNodeConfig<Integer>(
+								json, new StringifiableDefault<Integer>(0));
+						log.log(Level.INFO,
+								MyLogger.FORMAT[3],
+								new Object[] {
+										"Received node config change confirmation for adding",
+										rcnc.newlyAddedNodes, "and deleting",
+										rcnc.deletedNodes });
+						exists.remove(rcnc.getServiceName());
+						break;
+
 					default:
 						break;
 					}

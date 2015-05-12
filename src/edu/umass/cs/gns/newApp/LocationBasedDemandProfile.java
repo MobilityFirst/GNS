@@ -212,7 +212,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   }
 
   @Override
-  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, ConsistentReconfigurableNodeConfig nodeConfig) {
+  public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, ConsistentReconfigurableNodeConfig<?> nodeConfig) {
     if (this.lastReconfiguredProfile != null) {
       LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: " + this.lastReconfiguredProfile.toString());
       LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> CURRENT: " + this.toString());
@@ -235,9 +235,10 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
             + " TOP: " + this.votesMap.getTopN(numberOfReplicas) + " Lookup: " + lookupCount
             + " Update: " + updateCount + " ReplicaCount: " + numberOfReplicas);
 
-    return pickNewActiveReplicas(numberOfReplicas, curActives,
-            this.votesMap.getTopN(numberOfReplicas),
-            nodeConfig.getNodeIPs(nodeConfig.getActiveReplicas()));
+    return null; //FIXME
+//    return pickNewActiveReplicas(numberOfReplicas, curActives,
+//            this.votesMap.getTopN(numberOfReplicas),
+//            nodeConfig.getNodeIPs(nodeConfig.getActiveReplicas()));
   }
 
   //

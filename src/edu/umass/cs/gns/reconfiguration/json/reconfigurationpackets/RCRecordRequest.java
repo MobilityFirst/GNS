@@ -22,7 +22,8 @@ public class RCRecordRequest<NodeIDType> extends
 	};
 
 	public static enum RequestTypes {
-		REGISTER_RECONFIURATION_INTENT, REGISTER_RECONFIGURATION_COMPLETE, CREATE_RECONFIGURATION_RECORD, DELETE_RECORD_INTENT, DELETE_RECORD_COMPLETE
+		REGISTER_RECONFIURATION_INTENT, REGISTER_RECONFIGURATION_COMPLETE, CREATE_RECONFIGURATION_RECORD, DELETE_RECORD_INTENT, DELETE_RECORD_COMPLETE,
+		MERGE_REQUEST
 	};
 
 	private final RequestTypes reqType;
@@ -71,6 +72,9 @@ public class RCRecordRequest<NodeIDType> extends
 	public boolean isReconfigurationIntent() {
 		return this.reqType.equals(RequestTypes.REGISTER_RECONFIURATION_INTENT);
 	}
+	public boolean isReconfigurationMerge() {
+		return this.reqType.equals(RequestTypes.MERGE_REQUEST);
+	}
 
 	public boolean isReconfigurationComplete() {
 		return this.reqType
@@ -99,5 +103,8 @@ public class RCRecordRequest<NodeIDType> extends
 	public boolean isNodeConfigChange() {
 		return this.getServiceName().equals(
 				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString());
+	}
+	public RequestTypes getRCRequestType() {
+		return this.reqType;
 	}
 }

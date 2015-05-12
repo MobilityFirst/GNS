@@ -31,6 +31,10 @@ public interface InterfaceReconfigurable extends InterfaceApplication {
 	 */
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch);
 
+	/*
+	 * The following methods are automatically provided if
+	 * PaxosReplicaCoordinator is used.
+	 */
 	public String getFinalState(String name, int epoch);
 
 	public void putInitialState(String name, int epoch, String state);

@@ -35,13 +35,15 @@ public class WaitAckStopEpoch<NodeIDType>
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
 	private static final long RESTART_PERIOD = 1000;
-	
+
 	private final String key;
 	private final StopEpoch<NodeIDType> stopEpoch;
 	protected final StartEpoch<NodeIDType> startEpoch; // just convenient to
 														// remember this
 	protected final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
 	private Iterator<NodeIDType> nodeIterator = null;
+
+	private String finalState = null;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
@@ -50,7 +52,8 @@ public class WaitAckStopEpoch<NodeIDType>
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		super(startEpoch.getPrevEpochGroup(), 1); // default is all?
 		this.stopEpoch = new StopEpoch<NodeIDType>(DB.getMyID(),
-				startEpoch.getPrevGroupName(), startEpoch.getEpochNumber() - 1);
+				startEpoch.getPrevGroupName(), startEpoch.getPrevEpochNumber(),
+				startEpoch.isMerge());
 		this.startEpoch = startEpoch;
 		this.nodeIterator = startEpoch.getPrevEpochGroup().iterator();
 		this.DB = DB;
@@ -60,9 +63,14 @@ public class WaitAckStopEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		if (this.amObviated())
+		if (this.amObviated()) {
+			log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] { this,
+					"canceling itself as obviated" });
 			ProtocolExecutor.cancel(this);
-		;
+			return null;
+		}
+		// else
+		System.out.println(this.refreshKey() + " resending " + this.stopEpoch);
 		return start();
 	}
 
@@ -79,7 +87,7 @@ public class WaitAckStopEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
-		if (this.startEpoch.noPrevEpochGroup()) {
+		if (this.startEpoch.noPrevEpochGroup()) { // creation epoch
 			// spoof AckStopEpoch to self
 			return new GenericMessagingTask<NodeIDType, AckStopEpoch<NodeIDType>>(
 					this.DB.getMyID(), new AckStopEpoch<NodeIDType>(
@@ -91,8 +99,7 @@ public class WaitAckStopEpoch<NodeIDType>
 					.toArray();
 		}
 		// else send stopEpoch sequentially to old actives and await a response
-		return (this.startEpoch.getPrevEpochGroup() != null && !this.startEpoch
-				.getPrevEpochGroup().isEmpty()) ? new GenericMessagingTask<NodeIDType, StopEpoch<NodeIDType>>(
+		return this.startEpoch.hasPrevEpochGroup() ? new GenericMessagingTask<NodeIDType, StopEpoch<NodeIDType>>(
 				getNextNode(), this.stopEpoch).toArray() : null;
 	}
 
@@ -108,9 +115,9 @@ public class WaitAckStopEpoch<NodeIDType>
 	 */
 	@Override
 	public String refreshKey() {
-		return (this.getClass().getSimpleName() + this.DB.getMyID()
-				+ ":" + this.startEpoch.getPrevGroupName() + ":"
-				+ (this.startEpoch.getEpochNumber() - 1));
+		return (this.getClass().getSimpleName() + this.DB.getMyID() + ":"
+				+ this.startEpoch.getPrevGroupName() + ":" + (this.startEpoch
+				.getEpochNumber() - 1));
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_STOP_EPOCH };
@@ -129,6 +136,12 @@ public class WaitAckStopEpoch<NodeIDType>
 	@Override
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType().equals(types[0]));
+		@SuppressWarnings("unchecked")
+		// asserted above
+		AckStopEpoch<NodeIDType> ackStopEpoch = (AckStopEpoch<NodeIDType>) event;
+		// finalState can not be null
+		if (this.stopEpoch.shouldGetFinalState())
+			return (this.finalState = ackStopEpoch.getFinalState()) != null;
 		return true;
 	}
 
@@ -139,13 +152,24 @@ public class WaitAckStopEpoch<NodeIDType>
 		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
 				"starting epoch", this.startEpoch.getSummary() });
 		// no next epoch group means delete record
-		if (this.startEpoch.getCurEpochGroup() == null || this.startEpoch.getCurEpochGroup().isEmpty()) {
+		if (this.startEpoch.getCurEpochGroup() == null
+				|| this.startEpoch.getCurEpochGroup().isEmpty()) {
 			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
 					this.DB);
 			return this.getDeleteConfirmation();
-		}
-		// else start next epoch group
-		ptasks[0] = new WaitAckStartEpoch<NodeIDType>(this.startEpoch, this.DB);
+		} else if (this.startEpoch.isMerge()) {
+			ptasks[0] = new WaitCommitStartEpoch<NodeIDType>(
+					new RCRecordRequest<NodeIDType>(this.DB.getMyID(),
+					// just to update initialState with the received state
+							new StartEpoch<NodeIDType>(this.startEpoch,
+									this.finalState),
+							RCRecordRequest.RequestTypes.MERGE_REQUEST),
+					this.DB);
+		} else
+			// else start next epoch group
+			ptasks[0] = new WaitAckStartEpoch<NodeIDType>(this.startEpoch,
+					this.DB);
+
 		return null; // ptasks[0].start() will actually send the startEpoch
 	}
 
@@ -156,7 +180,7 @@ public class WaitAckStopEpoch<NodeIDType>
 		return (new GenericMessagingTask<NodeIDType, Object>(this.DB.getMyID(),
 				rcRecReq)).toArray();
 	}
-	
+
 	public String toString() {
 		return this.getKey();
 	}

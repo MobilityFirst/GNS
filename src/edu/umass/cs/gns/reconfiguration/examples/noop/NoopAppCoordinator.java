@@ -90,17 +90,15 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 	@Override
 	public boolean createReplicaGroup(String serviceName, int epoch,
 			String state, Set<Integer> nodes) {
+		boolean created = false;
 		if (this.coordType.equals(CoordType.LAZY)) {
 			this.groups.put(serviceName, new CoordData(serviceName, epoch,
 					nodes));
 		} else if (this.coordType.equals(CoordType.PAXOS)) {
-			while (!this.paxosManager.existsOrHigher(serviceName, (short) epoch)
-					&& !this.paxosManager.createPaxosInstance(serviceName,
-							(short) epoch, nodes, this, state)) {
-				// lower epoch exists, so wait for it to be killed
-				this.paxosManager.waitCanCreateOrExists(serviceName,
-						(short) epoch);
-			}
+			this.paxosManager.waitCanCreateOrExistsOrHigher(serviceName,
+					(short) epoch);
+			created = this.paxosManager.createPaxosInstance(serviceName,
+					(short) epoch, nodes, this, state); 
 		}
 		/* FIXME: This should not needed as state is already supplied to
 		 * createPaxosInstance, but we need it right now to set the 
@@ -108,7 +106,7 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 		 * are epoch-unaware.
 		 */
 		this.app.putInitialState(serviceName, epoch, state);
-		return true;
+		return created;
 	}
 
 	//@Override
@@ -154,11 +152,6 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 		CoordData data = this.groups.get(name);
 		assert (data == null || data.name.equals(name));
 		return (data != null && data.epoch == epoch);
-	}
-
-	@Override
-	public void deleteReplicaGroup(String serviceName) {
-		throw new RuntimeException("Method not yet implemented");
 	}
 
 	/*

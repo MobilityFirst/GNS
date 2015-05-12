@@ -160,7 +160,7 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 
 	@Override
 	public boolean deleteReconfigurationRecord(
-			String name) {
+			String name, int epoch) {
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(name);
 		log.log(Level.INFO,
@@ -179,11 +179,6 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	@Override
 	public void close() {
 		// do nothing
-	}
-
-	@Override
-	public Set<String> getRCGroupNames() {
-		throw new RuntimeException("Method not yet implemented");
 	}
 
 	@Override
@@ -210,4 +205,31 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+
+	@Override
+	public boolean mergeState(String name, int epoch, String mergee,
+			String state) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void clearMerged(String name, int epoch) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public Set<String> getRCGroupNames() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<String, Set<NodeIDType>> getRCGroups() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

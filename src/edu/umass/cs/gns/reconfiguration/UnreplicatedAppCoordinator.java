@@ -27,11 +27,6 @@ public class UnreplicatedAppCoordinator<RequestType extends IntegerPacketType, N
 		return true;
 	}
 
-	//@Override
-	public void deleteReplicaGroup(String serviceName, int epoch) {
-		// do nothing here
-	}
-
 	@Override
 	public Set<NodeIDType> getReplicaGroup(String serviceName) {
 		return null;
@@ -50,7 +45,7 @@ public class UnreplicatedAppCoordinator<RequestType extends IntegerPacketType, N
 	}
 
 	@Override
-	public void deleteReplicaGroup(String serviceName) {
+	public void deleteReplicaGroup(String serviceName, int epoch) {
 		// do nothing here
 	}
 }

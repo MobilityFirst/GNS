@@ -104,9 +104,9 @@ public abstract class ProtocolPacket<NodeIDType, EventType> implements
 		JSONObject json = toJSONObjectImpl();
 		// Packet.putPacketType(json, this.getType());
 		this.putPacketType(json, getType());
-		json.put(Keys.SENDER.toString(), this.sender);
-		json.put(Keys.INITIATOR.toString(), this.initiator);
-		json.put(Keys.KEY.toString(), this.key);
+		json.putOpt(Keys.SENDER.toString(), this.sender);
+		json.putOpt(Keys.INITIATOR.toString(), this.initiator);
+		json.putOpt(Keys.KEY.toString(), this.key);
 		return json;
 	}
 

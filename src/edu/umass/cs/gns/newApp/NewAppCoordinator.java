@@ -119,7 +119,7 @@ public class NewAppCoordinator<NodeIDType> extends AbstractReplicaCoordinator<No
   }
 
   @Override
-  public void deleteReplicaGroup(String serviceName) {
+  public void deleteReplicaGroup(String serviceName, int epoch) {
     // FIXME: invoke paxosManager remove here
   }
 

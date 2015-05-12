@@ -85,6 +85,14 @@ public class MessagingTask {
 		}
 		return ppArray;
 	}
+	public static PaxosPacket[] toPaxosPacketArray(PaxosPacket[] array1, PaxosPacket[] array2) {
+		int size1 = (array1!=null ? array1.length : 0); 
+		int size2 = (array2!=null ? array2.length : 0);
+		PaxosPacket[] combined = new PaxosPacket[size1+size2];
+		if(array1!=null) for(int i=0; i<array1.length; i++) combined[i] = array1[i];
+		if(array2!=null) for(int j=size1; j<size1+size2; j++) combined[j] = array2[j-size1];
+		return combined;
+	}
 
 	// Mostly just pretty printing
 	public String toString() {

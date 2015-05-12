@@ -21,10 +21,10 @@ public class AggregateDemandProfiler {
 	private static final int DEFAULT_MAX_SIZE = 100000;
 	private static final int DEFAULT_PLUCK_SIZE = 100;
         
-        private ConsistentReconfigurableNodeConfig nodeConfig;
+        private ConsistentReconfigurableNodeConfig<?> nodeConfig;
 	private final HashMap<String, AbstractDemandProfile> map = new HashMap<String, AbstractDemandProfile>();
 
-        public AggregateDemandProfiler(ConsistentReconfigurableNodeConfig nodeConfig) {
+        public AggregateDemandProfiler(ConsistentReconfigurableNodeConfig<?> nodeConfig) {
           this.nodeConfig = nodeConfig;
         }
         

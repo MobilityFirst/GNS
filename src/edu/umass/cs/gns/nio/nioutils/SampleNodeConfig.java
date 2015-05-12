@@ -170,4 +170,5 @@ public class SampleNodeConfig<NodeIDType> implements InterfaceNodeConfig<NodeIDT
     }
     return nodes;
   }
+
 }

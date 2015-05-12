@@ -4,12 +4,18 @@ import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -20,9 +26,11 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,6 +51,7 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigu
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.DemandProfile;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.gns.reconfiguration.reconfigurationutils.StringLocker;
 import edu.umass.cs.gns.util.MyLogger;
 import edu.umass.cs.gns.util.Util;
 
@@ -79,9 +88,14 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private static final String CHECKPOINT_TRANSFER_DIR = "paxos_large_checkpoints";
 	private static final boolean LARGE_CHECKPOINTS_OPTION = true;
 	private static final int MAX_FILENAME_LENGTH = 128;
+	private static final String CHARSET = "ISO-8859-1";
 
 	private static enum Columns {
 		SERVICE_NAME, EPOCH, RC_GROUP_NAME, ACTIVES, NEW_ACTIVES, RC_STATE, STRINGIFIED_RECORD, DEMAND_PROFILE, INET_ADDRESS, PORT, NODE_CONFIG_VERSION, RC_NODE_ID
+	};
+
+	private static enum Keys {
+		INET_SOCKET_ADDRESS, FILENAME
 	};
 
 	private static final ArrayList<DerbyPersistentReconfiguratorDB<?>> instances = new ArrayList<DerbyPersistentReconfiguratorDB<?>>();
@@ -89,6 +103,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	public String logDirectory;
 
 	private ComboPooledDataSource dataSource = null;
+
+	private ServerSocket serverSock = null;
+
+	private StringLocker stringLocker = new StringLocker();
 
 	private boolean closed = true;
 
@@ -308,16 +326,27 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		 * always have the RC group as the record name. But we also need to be
 		 * able to initially create these records including through paxos, so we
 		 * allow such records to be inserted if no record for that group name
-		 * exists in the DB.
+		 * exists in the DB. Note that we need both parts of the conjunction in
+		 * the first clause below because in the case of node additions,
+		 * record.getName() will equal rcGroupName but this node may not yet
+		 * know about the existence of this node and that it corresponds to an
+		 * RC group name.
 		 */
-		if (!record.getName().equals(rcGroupName)
-				&& !this.isRCGroupName(record.getName())
-				|| this.getReconfigurationRecord(rcGroupName) == null)
+		if ((!record.getName().equals(rcGroupName) && !this
+				.isRCGroupName(record.getName()))
+				|| (record.getName().equals(rcGroupName) && this
+						.getReconfigurationRecord(rcGroupName) == null))
 			this.putReconfigurationRecord(record);
 	}
 
 	@Override
-	public boolean deleteReconfigurationRecord(String name) {
+	public synchronized boolean deleteReconfigurationRecord(String name,
+			int epoch) {
+		ReconfigurationRecord<NodeIDType> record = this
+				.getReconfigurationRecord(name);
+		if (record == null || record.getEpoch() != epoch)
+			return false;
+
 		log.log(Level.INFO, MyLogger.FORMAT[4],
 				new Object[] { "==============================> ", this, name,
 						" ->", "DELETE" });
@@ -348,61 +377,64 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	// write records to a file and return filename
 	@Override
-	public synchronized String getState(String rcGroup) {
-		Integer epoch = this.getEpoch(rcGroup);
-		if (epoch == null)
-			return null;
+	public String getState(String rcGroup) {
+		synchronized (this.stringLocker.get(rcGroup)) {
+			String cpFilename = getCheckpointFile(rcGroup);
+			if (!this.createCheckpointFile(cpFilename))
+				return null;
 
-		if (!this.createCheckpointFile(rcGroup, epoch))
-			return null;
+			PreparedStatement pstmt = null;
+			ResultSet recordRS = null;
+			Connection conn = null;
 
-		PreparedStatement pstmt = null;
-		ResultSet recordRS = null;
-		Connection conn = null;
-		FileWriter writer = null;
-		String s = "";
+			FileWriter writer = null;
+			FileOutputStream fos = null;
+			boolean exceptions = false;
+			String debug = "";
 
-		try {
-			conn = this.getDefaultConn();
-			pstmt = this.getPreparedStatement(conn, getRCRecordTable(), null,
-					Columns.STRINGIFIED_RECORD.toString(), " where "
-							+ Columns.RC_GROUP_NAME.toString() + "='" + rcGroup
-							+ "'");
-			recordRS = pstmt.executeQuery();
+			try {
+				conn = this.getDefaultConn();
+				pstmt = this.getPreparedStatement(conn, getRCRecordTable(),
+						null, Columns.STRINGIFIED_RECORD.toString(), " where "
+								+ Columns.RC_GROUP_NAME.toString() + "='"
+								+ rcGroup + "'");
+				recordRS = pstmt.executeQuery();
 
-			/*
-			 * FIXME: What if there is a crash between wipe out and the fresh
-			 * write? To handle this case, we need to write to a tmp file and
-			 * then 'mv' it to the actual file. The file system will ensure that
-			 * the mv is atomic in case of crashes.
-			 */
+				// first wipe out the file
+				(writer = new FileWriter(cpFilename, false)).close();
+				;
+				// then start appending to the clean slate
+				fos = new FileOutputStream(new File(cpFilename));
+				// writer = new FileWriter(cpFilename, true);
 
-			// first wipe out the file
-			writer = new FileWriter(getCheckpointFile(rcGroup, epoch), false);
-			writer.close();
-			// then start appending to the clean slate
-			writer = new FileWriter(getCheckpointFile(rcGroup, epoch), true);
-
-			while (recordRS.next()) {
-				String msg = recordRS.getString(1);
-				ReconfigurationRecord<NodeIDType> rcRecord = new ReconfigurationRecord<NodeIDType>(
-						new JSONObject(msg), this.consistentNodeConfig);
-				writer.write(rcRecord.toString() + "\n"); // append to file
-				s += rcRecord;
+				while (recordRS.next()) {
+					String msg = recordRS.getString(1);
+					ReconfigurationRecord<NodeIDType> rcRecord = new ReconfigurationRecord<NodeIDType>(
+							new JSONObject(msg), this.consistentNodeConfig);
+					// writer.write(rcRecord.toString() + "\n"); // append to
+					// file
+					fos.write((rcRecord.toString() + "\n").getBytes(CHARSET));
+					debug += rcRecord;
+				}
+			} catch (SQLException | JSONException | IOException e) {
+				log.severe(e.getClass().getSimpleName()
+						+ " while creating checkpoint for " + rcGroup + ":");
+				e.printStackTrace();
+				exceptions = true;
+			} finally {
+				cleanup(pstmt, recordRS);
+				cleanup(conn);
+				cleanup(writer);
+				cleanup(fos);
 			}
-		} catch (SQLException | JSONException | IOException e) {
-			log.severe(e.getClass().getSimpleName()
-					+ " while creating checkpoint for " + rcGroup + ":");
-			e.printStackTrace();
-		} finally {
-			cleanup(pstmt, recordRS);
-			cleanup(conn);
-			cleanup(writer);
+			log.info(myID + " returning state for " + rcGroup + ":"
+					+ this.getCheckpointDir() + rcGroup + " ; wrote to file:\n"
+					+ debug);
+			// return filename, not actual checkpoint
+			return !exceptions
+					&& this.deleteOldCheckpoints(rcGroup, cpFilename) ? this
+					.getCheckpointURL(cpFilename) : null;
 		}
-		log.info(myID + " returning state for " + rcGroup + ":"
-				+ this.getCheckpointDir() + rcGroup + " ; wrote to file:\n" + s);
-		// return filename, not actual checkpoint
-		return this.getCheckpointFile(rcGroup, epoch);
 	}
 
 	/*
@@ -412,47 +444,50 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 */
 	@Override
 	public synchronized boolean updateState(String rcGroup, String state) {
-		// treat rcGroup as filename and read records from it
-		BufferedReader br = null;
-		if (state == null)
-			return false;
-		try {
-			// read state from file
-			if (LARGE_CHECKPOINTS_OPTION
-					&& state.length() < MAX_FILENAME_LENGTH
-					&& (new File(state)).exists()) {
-				br = new BufferedReader(new InputStreamReader(
-						new FileInputStream(state)));
-				String line = null;
-				while ((line = br.readLine()) != null) {
-					this.putReconfigurationRecordIfNotName(
-							new ReconfigurationRecord<NodeIDType>(
-									new JSONObject(line),
-									this.consistentNodeConfig), rcGroup);
-				}
-			} else { // state is actually the state
-				String[] lines = state.split("\n");
-				for (String line : lines) {
-					this.putReconfigurationRecordIfNotName(
-							new ReconfigurationRecord<NodeIDType>(
-									new JSONObject(line),
-									this.consistentNodeConfig), rcGroup);
-				}
-			}
-		} catch (IOException | JSONException e) {
-			log.severe("Node" + myID + " unable to insert checkpoint");
-			e.printStackTrace();
-		} finally {
+		synchronized (this.stringLocker.get(rcGroup)) {
+			// treat rcGroup as filename and read records from it
+			BufferedReader br = null;
+			if ((state = this.getRemoteCheckpoint(rcGroup, state)) == null)
+				return false;
 			try {
-				if (br != null)
-					br.close();
-			} catch (IOException e) {
-				log.severe("Node" + myID + " unable to close checkpoint file");
+				// read state from file
+				if (LARGE_CHECKPOINTS_OPTION
+						&& state.length() < MAX_FILENAME_LENGTH
+						&& (new File(state)).exists()) {
+					br = new BufferedReader(new InputStreamReader(
+							new FileInputStream(state)));
+					String line = null;
+					while ((line = br.readLine()) != null) {
+						this.putReconfigurationRecordIfNotName(
+								new ReconfigurationRecord<NodeIDType>(
+										new JSONObject(line),
+										this.consistentNodeConfig), rcGroup);
+					}
+				} else { // state is actually the state
+					String[] lines = state.split("\n");
+					for (String line : lines) {
+						this.putReconfigurationRecordIfNotName(
+								new ReconfigurationRecord<NodeIDType>(
+										new JSONObject(line),
+										this.consistentNodeConfig), rcGroup);
+					}
+				}
+			} catch (IOException | JSONException e) {
+				log.severe("Node" + myID + " unable to insert checkpoint");
 				e.printStackTrace();
+			} finally {
+				try {
+					if (br != null)
+						br.close();
+				} catch (IOException e) {
+					log.severe("Node" + myID
+							+ " unable to close checkpoint file");
+					e.printStackTrace();
+				}
 			}
-		}
 
-		return true;
+			return true;
+		}
 	}
 
 	@Override
@@ -585,7 +620,172 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			return false;
 		setClosed(false); // setting open
 		initAdjustNodeConfig();
-		return true;
+		return initCheckpointServer();
+	}
+
+	private boolean initCheckpointServer() {
+		try {
+			this.serverSock = new ServerSocket();
+			this.serverSock.bind(new InetSocketAddress(
+					this.consistentNodeConfig.getNodeAddress(myID), 0));
+			;
+			(new Thread(new CheckpointServer())).start();
+			return true;
+		} catch (IOException e) {
+			log.severe(this
+					+ " unable to open server socket for large checkpoint transfers");
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	private class CheckpointServer implements Runnable {
+
+		@Override
+		public void run() {
+			Socket sock = null;
+			try {
+				while ((sock = serverSock.accept()) != null) {
+					(new Thread(new CheckpointTransporter(sock))).start();
+				}
+			} catch (IOException e) {
+				log.severe(myID
+						+ " incurred IOException while processing checkpoint transfer request");
+				e.printStackTrace();
+			}
+		}
+	}
+
+	private class CheckpointTransporter implements Runnable {
+
+		final Socket sock;
+
+		CheckpointTransporter(Socket sock) {
+			this.sock = sock;
+		}
+
+		@Override
+		public void run() {
+			transferCheckpoint(sock);
+		}
+	}
+
+	// synchronized prevents concurrent file delete
+	private synchronized void transferCheckpoint(Socket sock) {
+		BufferedReader brSock = null, brFile = null;
+		try {
+			brSock = new BufferedReader(new InputStreamReader(
+					sock.getInputStream()));
+			// first and only line is request
+			String request = brSock.readLine();
+			if ((new File(request).exists())) {
+				// request is filename
+				brFile = new BufferedReader(new InputStreamReader(
+						new FileInputStream(request)));
+				// file successfully open if here
+				OutputStream outStream = sock.getOutputStream();
+				String line = null; // each line is a record
+				while ((line = brFile.readLine()) != null)
+					outStream.write(line.getBytes(CHARSET));
+				outStream.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (brSock != null)
+					brSock.close();
+				if (brFile != null)
+					brFile.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	private String getRemoteCheckpoint(String rcGroup, String url) {
+		if (url == null)
+			return url;
+		String filename = url;
+		JSONObject jsonUrl;
+		try {
+			jsonUrl = new JSONObject(url);
+			if (jsonUrl.has(Keys.INET_SOCKET_ADDRESS.toString())
+					&& jsonUrl.has(Keys.FILENAME.toString())) {
+				filename = jsonUrl.getString(Keys.FILENAME.toString());
+				File file = new File(filename);
+				if (!file.exists()) { // fetch from remote
+					InetSocketAddress sockAddr = Util
+							.getInetSocketAddressFromString(jsonUrl
+									.getString(Keys.INET_SOCKET_ADDRESS
+											.toString()));
+					assert (sockAddr != null);
+					filename = this.getRemoteCheckpoint(rcGroup, sockAddr, url);
+				}
+			}
+		} catch (JSONException e) {
+			// do nothing, will return filename
+		}
+		return filename;
+	}
+
+	// FIXME: crash may result in half written file
+	private synchronized String getRemoteCheckpoint(String rcGroupName,
+			InetSocketAddress sockAddr, String remoteFilename) {
+		String request = remoteFilename + "\n";
+		Socket sock = null;
+		FileOutputStream fos = null;
+		String localCPFilename = null;
+		try {
+			sock = new Socket(sockAddr.getAddress(), sockAddr.getPort());
+			sock.getOutputStream().write(request.getBytes(CHARSET));
+			InputStream inStream = (sock.getInputStream());
+			if (!this.createCheckpointFile(localCPFilename = this
+					.getCheckpointFile(rcGroupName)))
+				return null;
+			fos = new FileOutputStream(new File(localCPFilename));
+			byte[] buf = new byte[1024];
+			int nread = 0;
+			int nTotalRead = 0;
+			// read from sock, write to file
+			while ((nread = inStream.read(buf)) >= 0) {
+				nTotalRead += nread;
+				fos.write(buf, 0, nread);
+			}
+			// FIXME: check exact expected file size
+			if (nTotalRead <= 0)
+				localCPFilename = null;
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				if (fos != null)
+					fos.close();
+				if (sock != null)
+					sock.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return localCPFilename;
+	}
+
+	private String getCheckpointURL(String localFilename) {
+		String url = null;
+		try {
+			JSONObject jsonUrl = new JSONObject();
+			jsonUrl.put(Keys.INET_SOCKET_ADDRESS.toString(),
+					new InetSocketAddress(this.serverSock.getInetAddress(),
+							this.serverSock.getLocalPort()));
+			jsonUrl.put(Keys.FILENAME.toString(), localFilename);
+			url = jsonUrl.toString();
+		} catch (JSONException je) {
+			log.severe(this
+					+ " incurred JSONException while encoding URL for filename "
+					+ localFilename);
+		}
+		return url;
 	}
 
 	private boolean makeCheckpointTransferDir() {
@@ -599,8 +799,83 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return this.logDirectory + CHECKPOINT_TRANSFER_DIR + "/" + myID + "/";
 	}
 
-	private String getCheckpointFile(String rcGroup, int epoch) {
-		return this.getCheckpointDir() + rcGroup + ":" + epoch;
+	private String getCheckpointFile(String rcGroupName) {
+		return this.getCheckpointDir() + rcGroupName + "."
+				+ System.currentTimeMillis(); // + ":" + epoch;
+	}
+
+	/*
+	 * Deletes all but the most recent checkpoint for the RC group name. We
+	 * could track recency based on timestamps using either the timestamp in the
+	 * filename or the OS file creation time. Here, we just supply the latest
+	 * checkpoint filename explicitly as we know it when this method is called
+	 * anyway.
+	 */
+	private boolean deleteOldCheckpoints(final String rcGroupName,
+			String latestCPFilename) {
+		File dir = new File(getCheckpointDir());
+		assert (dir.exists());
+		// get files matching the prefix for this rcGroupName's checkpoints
+		File[] foundFiles = dir.listFiles(new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				return name.startsWith(rcGroupName);
+			}
+		});
+		// delete all but the most recent
+		boolean allDeleted = true;
+		for (Filename f : this.getAllButLatestTwo(foundFiles))
+			allDeleted = allDeleted && this.deleteFile(f.file);
+		return allDeleted;
+	}
+
+	private synchronized boolean deleteFile(File f) {
+		return f.delete();
+	}
+
+	private Set<Filename> getAllButLatestTwo(File[] files) {
+		TreeSet<Filename> allFiles = new TreeSet<Filename>();
+		TreeSet<Filename> oldFiles = new TreeSet<Filename>();
+		for (File file : files)
+			allFiles.add(new Filename(file));
+		if (allFiles.size() <= 2)
+			return oldFiles;
+		Iterator<Filename> iter = allFiles.iterator();
+		for (int i = 0; i < allFiles.size() - 2; i++)
+			oldFiles.add(iter.next());
+
+		return oldFiles;
+	}
+
+	private class Filename implements Comparable<Filename> {
+		final File file;
+
+		Filename(File f) {
+			this.file = f;
+		}
+
+		@Override
+		public int compareTo(
+				DerbyPersistentReconfiguratorDB<NodeIDType>.Filename o) {
+			long t1 = file.lastModified();
+			long t2 = o.file.lastModified();
+			if (t1 < t2)
+				return -1;
+			else if (t1 == t2)
+				return 0;
+			else
+				return 1;
+		}
+	}
+
+	public Map<String, Set<NodeIDType>> getRCGroups() {
+		Set<String> rcGroupNames = this.getRCGroupNames();
+		Map<String, Set<NodeIDType>> rcGroups = new HashMap<String, Set<NodeIDType>>();
+		for (String rcGroupName : rcGroupNames) {
+			Set<NodeIDType> groupMembers = this.getReconfigurationRecord(
+					rcGroupName).getActiveReplicas();
+			rcGroups.put(rcGroupName, groupMembers);
+		}
+		return rcGroups;
 	}
 
 	public Set<String> getRCGroupNames() {
@@ -896,6 +1171,16 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		}
 	}
 
+	private void cleanup(FileOutputStream fos) {
+		try {
+			if (fos != null)
+				fos.close();
+		} catch (IOException ioe) {
+			log.severe("Could not close file writer " + fos);
+			ioe.printStackTrace();
+		}
+	}
+
 	private void cleanup(Connection conn) {
 		try {
 			if (conn != null && CONN_POOLING) {
@@ -1001,8 +1286,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		for (int i = 0; i < numRequests; i++) {
 			try {
 				demandProfile.register(getRandomInterfaceRequest(name),
-						getRandomIPAddress(), 
-                                                null);
+						getRandomIPAddress(), null);
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			}
@@ -1023,12 +1307,12 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return historicProfile.getStats();
 	}
 
-	private boolean createCheckpointFile(String rcGroup, int epoch) {
-		File file = new File(this.getCheckpointFile(rcGroup, epoch));
+	private synchronized boolean createCheckpointFile(String filename) {
+		File file = new File(filename);
 		try {
-			file.createNewFile(); // will create only if exists
+			file.createNewFile(); // will create only if not exists
 		} catch (IOException e) {
-			log.severe("Unable to create checkpoint file for " + rcGroup);
+			log.severe("Unable to create checkpoint file for " + filename);
 			e.printStackTrace();
 		}
 		return (file.exists());
@@ -1082,8 +1366,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			conn.commit();
 			added = true;
 		} catch (SQLException sqle) {
-			if(!sqle.getSQLState().equals(DUPLICATE_KEY)) {
-				log.severe("SQLException while inserting RC record using " + cmd);
+			if (!sqle.getSQLState().equals(DUPLICATE_KEY)) {
+				log.severe("SQLException while inserting RC record using "
+						+ cmd);
 				sqle.printStackTrace();
 			}
 		} finally {
@@ -1198,5 +1483,34 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		for (NodeIDType node : this.consistentNodeConfig.getReconfigurators())
 			if (!rcMap.containsKey(node))
 				this.consistentNodeConfig.removeReconfigurator(node);
+	}
+
+	/*
+	 * The double synchronized is because we need to synchronize over "this" to
+	 * perform testAndSet checks over record, but we have to do that before,
+	 * never after, stringLocker lock.
+	 */
+	@Override
+	public boolean mergeState(String rcGroupName, int epoch, String mergee,
+			String state) {
+		synchronized (this.stringLocker.get(rcGroupName)) {
+			synchronized (this) {
+				ReconfigurationRecord<NodeIDType> record = this
+						.getReconfigurationRecord(rcGroupName);
+				if (record.getEpoch() == epoch
+						&& !record.mergedContains(mergee))
+					if (this.updateState(rcGroupName, state))
+						return record.insertMerged(mergee);
+				return false;
+			}
+		}
+	}
+
+	@Override
+	public synchronized void clearMerged(String rcGroupName, int epoch) {
+		ReconfigurationRecord<NodeIDType> record = this
+				.getReconfigurationRecord(rcGroupName);
+		record.clearMerged();
+		this.putReconfigurationRecord(record);
 	}
 }

@@ -891,14 +891,14 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 */
 	public synchronized ArrayList<PValuePacket> getLoggedDecisions(
 			String paxosID, int minSlot, int maxSlot) {
+		ArrayList<PValuePacket> decisions = new ArrayList<PValuePacket>();
 		if (maxSlot - minSlot <= 0)
-			return null;
+			return decisions;
 		ArrayList<PaxosPacket> list = this.getLoggedMessages(paxosID,
 				" and packet_type=" + PaxosPacketType.DECISION.getInt()
 						+ " and " + getIntegerGTEConstraint("slot", minSlot)
 						+ " and " + getIntegerLTConstraint("slot", maxSlot)); // wraparound-arithmetic
 		assert (list != null);
-		ArrayList<PValuePacket> decisions = new ArrayList<PValuePacket>();
 		for (PaxosPacket p : list)
 			decisions.add((PValuePacket) p);
 		return decisions;

@@ -239,14 +239,23 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		boolean tryHotRestore = (hasRecovered() && hri == null);
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID,
 				tryHotRestore, tryRestore);
-		if (pism != null) {
+		if (pism != null && (pism.getVersion() - version >= 0)) 
+			return true;
+		
+		if (pism != null && (pism.getVersion() - version < 0)) {
 			log.info("Node" + myID + " has pre-existing paxos instance "
 					+ pism.getPaxosID() + ":" + pism.getVersion());
 			return false; // initialState will also be ignored here
 		}
-		pism = new PaxosInstanceStateMachine(paxosID, version, id,
-				this.integerMap.put(gms), app != null ? app : this.myApp,
-				initialState, this, hri);
+
+		try {
+			pism = new PaxosInstanceStateMachine(paxosID, version, id,
+					this.integerMap.put(gms), app != null ? app : this.myApp,
+					initialState, this, hri);
+		} catch(PaxosInstanceCreationException pice) {
+			pice.printStackTrace();
+			return false;
+		}
 		pinstances.put(paxosID, pism);
 		assert (this.getInstance(paxosID, false, false) != null);
 		log.info(myID + " successfully created paxos instance "
@@ -264,9 +273,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return true;
 	}
 	
-	private boolean canCreateOrExists(String paxosID, short version) {
+	private boolean canCreateOrExistsOrHigher(String paxosID, short version) {
 		PaxosInstanceStateMachine pism  = this.getInstance(paxosID);
-		return (pism==null || (pism.getVersion()==version));
+		return (pism==null || (pism.getVersion() - version >= 0));
 	}
 
 	// Called by external entities, so we need to fix node IDs
@@ -313,7 +322,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			RequestPacket.addDebugInfo(jsonMsg, ("i" + myID));
 			assert (Packet.getPacketType(jsonMsg) == PacketType.PAXOS_PACKET);
 			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg); // will throw exception if no PAXOS_PACKET_TYPE
-
+			
 			switch (paxosPacketType) {
 			case FAILURE_DETECT:
 				FD.receive(new FailureDetectionPacket<NodeIDType>(jsonMsg, unstringer));
@@ -425,6 +434,15 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		for (short i = 0; i < prevVersions; i++)
 			this.deleteFinalState(paxosID, (short) (version - i));
 		return this.deleteFinalState(paxosID, version);
+	}
+	
+	/* The Integer return value as opposed to int is convenient
+	 * to say that there is no epoch.
+	 */
+	public Integer getVersion(String paxosID) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if (pism != null) return (int)pism.getVersion();
+		return null;
 	}
 	
 	// forces a checkpoint, but not guaranteed to happen immediately
@@ -881,9 +899,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		}
 	}
 	
-	public synchronized void waitCanCreateOrExists(String paxosID, short version) {
+	public synchronized void waitCanCreateOrExistsOrHigher(String paxosID, short version) {
 		try {
-			while (!this.canCreateOrExists(paxosID, version))
+			while (!this.canCreateOrExistsOrHigher(paxosID, version))
 				wait();
 		} catch (InterruptedException ie) {
 			ie.printStackTrace();

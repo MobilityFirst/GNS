@@ -41,13 +41,16 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	public WaitAckStartEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
-		super(startEpoch.getCurEpochGroup(), startEpoch.getCurEpochGroup()
-				.size() / 2 + 1);
+		super(
+				startEpoch.getCurEpochGroup(),
+				(!startEpoch.isMerge() ? startEpoch.getCurEpochGroup().size() / 2 + 1
+						: 1));
 		// need to recreate start epoch to set initiator to self
 		this.startEpoch = new StartEpoch<NodeIDType>(DB.getMyID(),
 				startEpoch.getServiceName(), startEpoch.getEpochNumber(),
 				startEpoch.curEpochGroup, startEpoch.prevEpochGroup,
-				startEpoch.prevGroupName, startEpoch.creator,
+				startEpoch.prevGroupName, startEpoch.isMerge,
+				startEpoch.prevEpoch, startEpoch.creator,
 				startEpoch.initialState, startEpoch.newlyAddedNodes);
 		this.DB = DB;
 		this.key = this.refreshKey();
@@ -60,9 +63,19 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
-		// send StartEpoch to all new actives and await a majority
-		GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>>(
-				this.startEpoch.getCurEpochGroup().toArray(), this.startEpoch);
+		/*
+		 * Send StartEpoch to all new actives and await a majority. But if the
+		 * startEpoch is a merge request, we only need to sequentially send
+		 * startEpoch requests and it suffices to get an ack from one.
+		 * 
+		 * Should send startEpoch only to self in case of merge operations.
+		 */
+		assert(!this.startEpoch.isMerge() || this.startEpoch.curEpochGroup.contains(this.DB.getMyID()));
+		GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>> mtask = !this.startEpoch
+				.isMerge() ? new GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>>(
+				this.startEpoch.getCurEpochGroup().toArray(), this.startEpoch)
+				: new GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>>(
+						this.DB.getMyID(), this.startEpoch);
 		return mtask.toArray();
 	}
 
@@ -119,7 +132,7 @@ public class WaitAckStartEpoch<NodeIDType>
 
 		this.setDone(true);
 		// multicast start epoch confirmation message
-		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest(
+		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 				this.DB.getMyID(), this.startEpoch,
 				RCRecordRequest.RequestTypes.REGISTER_RECONFIGURATION_COMPLETE);
 		GenericMessagingTask<NodeIDType, ?> epochStartCommit = new GenericMessagingTask(
@@ -141,6 +154,10 @@ public class WaitAckStartEpoch<NodeIDType>
 							this.startEpoch.getServiceName(), 0, null)));
 		} else
 			assert (false);
+		
+		// FIXME: cancel pending merge tasks.
+		if(this.startEpoch.isMerge()) {/*cancel here how??*/}
+		
 		// default action will do timed cancel
 		return mtasks;
 	}

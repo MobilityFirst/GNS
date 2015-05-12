@@ -167,7 +167,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * present in the hashmap. The periodic invocation will stop once the task
 	 * is removed from the hashmap.
 	 */
-	public void schedule(
+	public synchronized void schedule(
 			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask, long period) {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = wrapSpawn(actualTask);
 		// schedule restarts
@@ -180,10 +180,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	}
 
 	public void schedule(SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
-		if(actualTask instanceof ThresholdProtocolTask) 
-			this.schedule(actualTask, ((ThresholdProtocolTask<NodeIDType,EventType,KeyType>)actualTask).getPeriod());
-		else
-		this.schedule(actualTask, DEFAULT_RESTART_PERIOD);
+		this.schedule(actualTask, actualTask.getPeriod());
 	}
 	
 	public ProtocolTask<NodeIDType, EventType, KeyType> getTask(KeyType key) {
@@ -282,7 +279,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	public synchronized static void enqueueCancel(Object key) {
 		canceledKeys.add(key);
 	}
-	public synchronized static boolean removable(Object key) {
+	private synchronized static boolean removable(Object key) {
 		return canceledKeys.remove(key);
 	}
 

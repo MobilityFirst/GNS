@@ -19,7 +19,7 @@ import edu.umass.cs.gns.util.Util;
 public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 
 	public static enum Keys {
-		NAME, EPOCH, RC_STATE, ACTIVES, NEW_ACTIVES, ACKED_START, ACKED_DROP, PRIMARY
+		NAME, EPOCH, RC_STATE, ACTIVES, NEW_ACTIVES, ACKED_START, ACKED_DROP, MERGED
 	};
 
 	public static enum RCStates {
@@ -30,8 +30,9 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	private int epoch = 0;
 	private Set<NodeIDType> actives = null; // current epoch
 	private RCStates state = RCStates.READY;
-
 	private Set<NodeIDType> newActives = null; // next epoch during epoch change
+	
+	private Set<String> merged = null;
 
 	public ReconfigurationRecord(String name, int epoch,
 			Set<NodeIDType> newActives) {
@@ -54,7 +55,7 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		if(this.actives!=null) json.put(Keys.ACTIVES.toString(), this.actives);
 		json.put(Keys.RC_STATE.toString(), this.state.toString());
 		json.put(Keys.NEW_ACTIVES.toString(), this.newActives);
-		//if (this.primary != null) json.put(Keys.PRIMARY.toString(), this.primary);
+		json.putOpt(Keys.MERGED.toString(), this.merged);
 		return json;
 	}
 
@@ -65,7 +66,7 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		this.state = RCStates.valueOf(json.getString(Keys.RC_STATE.toString()));
 		this.actives = json.has(Keys.ACTIVES.toString()) ? toSet(json.getJSONArray(Keys.ACTIVES.toString())) : null;
 		this.newActives = toSet(json.getJSONArray(Keys.NEW_ACTIVES.toString()));
-		//this.primary = (json.has(Keys.PRIMARY.toString()) ? unstringer.valueOf(json.getString(Keys.PRIMARY.toString())) : null);
+		this.merged = json.has(Keys.MERGED.toString()) ? toStringSet(json.getJSONArray(Keys.MERGED.toString())) : null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -73,6 +74,13 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		Set<NodeIDType> set = new HashSet<NodeIDType>();
 		for (int i = 0; i < jsonArray.length(); i++) {
 			set.add((NodeIDType) jsonArray.get(i));
+		}
+		return set;
+	}
+	private Set<String> toStringSet(JSONArray jsonArray) throws JSONException {
+		Set<String> set = new HashSet<String>();
+		for (int i = 0; i < jsonArray.length(); i++) {
+			set.add((String)jsonArray.get(i));
 		}
 		return set;
 	}
@@ -143,6 +151,25 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 
 	public Set<NodeIDType> getNewActives() {
 		return this.newActives;
+	}
+	
+	public boolean insertMerged(String s) {
+		if(this.merged==null) this.merged = new HashSet<String>();
+		return this.merged.add(s);
+	}
+	public void clearMerged() {
+		if(this.merged!=null) this.merged.clear();
+	}
+	public boolean clearMerged(String mergee) {
+		if(this.merged!=null) return this.merged.remove(mergee);
+		return false;
+	}
+
+	public boolean mergedContains(String s) {
+		return this.merged!=null && this.merged.contains(s);
+	}
+	public boolean isMergeAllClear() {
+		return this.merged==null || this.merged.isEmpty();
 	}
 
 	public boolean updateStats(DemandReport<NodeIDType> report) {

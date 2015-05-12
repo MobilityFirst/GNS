@@ -41,7 +41,6 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		this.activeReplicas = this.nodeConfig.getActiveReplicas();
 		this.reconfigurators = this.nodeConfig.getReconfigurators();
 		this.CH_RC = new ConsistentHashing<NodeIDType>(this.reconfigurators);
-                // Change this so that the default is false which means not to replicate all.
 		this.CH_AR = new ConsistentHashing<NodeIDType>(this.activeReplicas, true);
 	}
 

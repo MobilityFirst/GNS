@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.Stringifiable;
@@ -26,6 +27,8 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 	// used only in case of new RC node addition
 	public final Map<NodeIDType, InetSocketAddress> newlyAddedNodes;
 	public final Set<NodeIDType> deletedNodes;
+	
+	public final InetSocketAddress requester;
 
 	public ReconfigureRCNodeConfig(NodeIDType initiator, NodeIDType nodeID,
 			InetSocketAddress sockAddr) {
@@ -35,6 +38,15 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		(this.newlyAddedNodes = new HashMap<NodeIDType, InetSocketAddress>())
 				.put(nodeID, sockAddr);
 		this.deletedNodes = null;
+		this.requester = null;
+	}
+	public ReconfigureRCNodeConfig(NodeIDType initiator, Map<NodeIDType, InetSocketAddress> newlyAddedNodes, Set<NodeIDType> deletedNodes) {
+		super(initiator,
+				ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG,
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString(), 0);
+		this.newlyAddedNodes = newlyAddedNodes;
+		this.deletedNodes = deletedNodes;
+		this.requester = null;
 	}
 
 	public ReconfigureRCNodeConfig(JSONObject json,
@@ -46,6 +58,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		this.deletedNodes = (json.has(Keys.DELETED_NODES.toString()) ? this
 				.arrayToSet(json.getJSONArray(Keys.DELETED_NODES.toString()),
 						unstringer) : null);
+		this.requester = JSONNIOTransport.getSenderAddress(json);
 	}
 
 	public JSONObject toJSONObjectImpl() throws JSONException {
@@ -56,6 +69,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		if (this.deletedNodes != null)
 			json.put(Keys.DELETED_NODES.toString(),
 					this.setToArray(this.deletedNodes));
+		// no need to enter requester information
 
 		return json;
 	}
@@ -73,6 +87,13 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 	public Set<NodeIDType> getAddedRCNodeIDs() {
 		return (this.newlyAddedNodes != null ? new HashSet<NodeIDType>(
 				this.newlyAddedNodes.keySet()) : null);
+	}
+	public Set<NodeIDType> getDeletedRCNodeIDs() {
+		return this.deletedNodes==null ? new HashSet<NodeIDType>() : this.deletedNodes;
+	}
+	
+	public InetSocketAddress getRequester() {
+		return this.requester;
 	}
 
 	// Utility method for newly added nodes

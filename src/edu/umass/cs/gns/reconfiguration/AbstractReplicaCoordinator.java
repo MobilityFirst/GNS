@@ -57,7 +57,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	public abstract boolean createReplicaGroup(String serviceName, int epoch, String state, Set<NodeIDType> nodes);
 
 	/* This method should result in all state corresponding to serviceName being deleted */
-	public abstract void deleteReplicaGroup(String serviceName);
+	public abstract void deleteReplicaGroup(String serviceName, int epoch);
 
 	/* This method must return the replica group that was most recently successfully created
 	 * for the serviceName using createReplicaGroup.

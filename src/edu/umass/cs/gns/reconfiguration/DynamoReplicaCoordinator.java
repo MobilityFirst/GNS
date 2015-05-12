@@ -66,13 +66,8 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 				"This method should not be invoked as groups are implicitly defined with consistent hashing.");
 	}
 
-	//@Override
-	public void deleteReplicaGroup(String serviceName, int epoch) {
-		throw new RuntimeException("Method not yet implemented");
-	}
-
 	@Override
-	public void deleteReplicaGroup(String serviceName) {
+	public void deleteReplicaGroup(String serviceName, int epoch) {
 		throw new RuntimeException("Method not yet implemented");
 	}
 }

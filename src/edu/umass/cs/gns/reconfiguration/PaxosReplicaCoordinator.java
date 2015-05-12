@@ -35,23 +35,7 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	@Override
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
-		// this.sendAllLazy(request);
 		return this.coordinateRequest(request.getServiceName(), request);
-	}
-
-	// in case paxosGroupID is not the same as the name in the request
-	public boolean coordinateRequest(String paxosGroupID,
-			InterfaceRequest request) throws RequestParseException {
-		String proposee = this.propose(paxosGroupID, request);
-		log.log(Level.INFO,
-				MyLogger.FORMAT[6],
-				new Object[] {
-						this,
-						(proposee != null ? "paxos-coordinated"
-								: "failed to paxos-coordinate"),
-						request.getRequestType(), " to ", paxosGroupID, ":",
-						request });
-		return proposee != null;
 	}
 
 	private String propose(String paxosID, InterfaceRequest request) {
@@ -66,14 +50,31 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 		return proposee;
 	}
 
+	// in case paxosGroupID is not the same as the name in the request
+	protected boolean coordinateRequest(String paxosGroupID,
+			InterfaceRequest request) throws RequestParseException {
+		String proposee = this.propose(paxosGroupID, request);
+		log.log(Level.INFO,
+				MyLogger.FORMAT[6],
+				new Object[] {
+						this,
+						(proposee != null ? "paxos-coordinated"
+								: "failed to paxos-coordinate"),
+						request.getRequestType(), " to ", paxosGroupID, ":",
+						request });
+		return proposee != null;
+	}
+
+	@Override
 	public boolean createReplicaGroup(String groupName, int epoch,
 			String state, Set<NodeIDType> nodes) {
 		log.info(this + " creating paxos instance " + groupName + ":" + epoch
 				+ (state != null ? " with initial state " + state : ""));
-		if (!this.paxosManager.existsOrHigher(groupName, (short) epoch))
-			this.paxosManager.createPaxosInstance(groupName, (short) epoch,
+		// will block if a lower unstopped epoch exits
+		this.paxosManager.waitCanCreateOrExistsOrHigher(groupName, (short)epoch);
+		boolean created = this.paxosManager.createPaxosInstance(groupName, (short) epoch,
 					nodes, this, state);
-		return true;
+		return created;
 	}
 
 	public String toString() {
@@ -88,18 +89,21 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	}
 
 	/*
-	 * FIXME: Needed only for reconfiguring reconfigurators, which is not yet
-	 * implemented. We also need PaxosManager support for deleting a paxos
-	 * group.
+	 * FIXME: The method definition in AbstractReplicaCorodinator must accept an
+	 * epoch number so that this method indeed overrides that method.
 	 */
 	// @Override
 	public void deleteReplicaGroup(String serviceName, int epoch) {
 		this.paxosManager.deletePaxosInstance(serviceName, (short) epoch);
 	}
 
+	protected void forceCheckpoint(String paxosID) {
+		this.paxosManager.forceCheckpoint(paxosID);
+	}
+
 	@Override
-	public void deleteReplicaGroup(String serviceName) {
-		throw new RuntimeException("Method not implemented");
+	public Integer getEpoch(String name) {
+		return this.paxosManager.getVersion(name);
 	}
 
 	@Override
@@ -119,9 +123,10 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 						: ""));
 		return state;
 	}
-	
-	protected void forceCheckpoint(String paxosID) {
-		this.paxosManager.forceCheckpoint(paxosID);
+
+	@Override
+	public void putInitialState(String name, int epoch, String state) {
+		throw new RuntimeException("This method should never have been called");
 	}
 
 	@Override

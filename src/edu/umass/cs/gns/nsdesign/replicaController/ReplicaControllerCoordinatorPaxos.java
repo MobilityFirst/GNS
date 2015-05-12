@@ -234,17 +234,17 @@ public class ReplicaControllerCoordinatorPaxos<NodeIDType> extends AbstractRepli
   }
 
   @Override
-  public void deleteReplicaGroup(String serviceName) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-  }
-
-  @Override
   public Set getReplicaGroup(String serviceName) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   @Override
   public Set<IntegerPacketType> getRequestTypes() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public void deleteReplicaGroup(String serviceName, int epoch) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

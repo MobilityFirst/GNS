@@ -47,39 +47,67 @@ public class WaitCommitStartEpoch<NodeIDType>
 		this.rcRecReq = rcRecReq;
 		this.DB = DB;
 		this.key = this.refreshKey();
+		if(this.DB.isRCGroupName(rcRecReq.getServiceName()))
+			this.DB.addRCTask(getKey());
 	}
 
 	// will keep restarting until explicitly removed by reconfigurator
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		if (this.amObviated())
-			ProtocolExecutor.cancel(this);
-		System.out.println(this.refreshKey() + " re-proposing "
-				+ rcRecReq.getSummary());
-		return start();
+		if (!this.amObviated())
+			return start();
+		this.DB.removeRCTask(getKey());
+		ProtocolExecutor.cancel(this);
+		return null;
 	}
 
+	/*
+	 * FIXME: Create an interface for amObviated() and pass it to this class'
+	 * constructor.
+	 */
 	private boolean amObviated() {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(rcRecReq.getServiceName());
-		return (record != null
-				&& record.getEpoch() == rcRecReq.getEpochNumber() && record
-				.getState().equals(RCStates.READY));
+		// check if start epoch has been committed
+		boolean obviated = rcRecReq.isReconfigurationComplete()
+				&& (record == null || (record.getEpoch() == rcRecReq
+						.getEpochNumber() && record.getState().equals(
+						RCStates.READY)));
+
+		// check if start epoch is not needed
+		boolean isNotLocalRCGroup = rcRecReq.isReconfigurationComplete()
+				&& this.DB.isRCGroupName(rcRecReq.getServiceName())
+				&& !rcRecReq.startEpoch.curEpochGroup.contains(this.DB
+						.getMyID());
+
+		// check if reconfiguration intent is complete
+		boolean intentCommitted = rcRecReq.isReconfigurationIntent()
+				&& this.DB.isRCGroupName(rcRecReq.getServiceName())
+				&& (record == null
+						|| (record.getEpoch() == rcRecReq.getEpochNumber() - 1 && record
+								.getState().equals(RCStates.WAIT_ACK_STOP)) || (record
+						.getEpoch() - rcRecReq.getEpochNumber() >= 0));
+
+		return obviated || isNotLocalRCGroup || intentCommitted;
 	}
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
-		// coordinate RC record request
-		rcRecReq.setNeedsCoordination(true); // need to set this explicitly
+		if (amObviated())
+			return null;
+		// else coordinate RC record request
+		rcRecReq.setNeedsCoordination(true); // need to set explicitly each time
+		System.out.println(this.refreshKey() + " re-proposing "
+				+ rcRecReq.getSummary());
 		this.DB.handleIncoming(rcRecReq);
 		return null;
 	}
 
 	@Override
 	public String refreshKey() {
-		return (this.getClass().getSimpleName() + this.DB.getMyID() + ":"
-				+ this.rcRecReq.getServiceName() + ":" + this.rcRecReq
-					.getEpochNumber());
+		return (this.getClass().getSimpleName() + rcRecReq.getRCRequestType()
+				+ this.DB.getMyID() + ":" + this.rcRecReq.getServiceName()
+				+ ":" + this.rcRecReq.getEpochNumber());
 	}
 
 	// empty as task does not expect any events and will be explicitly removed
@@ -104,7 +132,7 @@ public class WaitCommitStartEpoch<NodeIDType>
 	}
 
 	public String toString() {
-		return this.getClass().getSimpleName() + this.DB.getMyID();
+		return this.refreshKey();
 	}
 
 	@Override

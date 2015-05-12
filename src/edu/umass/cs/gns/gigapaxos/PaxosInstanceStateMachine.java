@@ -28,6 +28,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
+import edu.umass.cs.gns.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
@@ -192,10 +193,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 							this.paxosState.toString(),
 							this.coordinator,
 							(initialState == null ? "{recoveredState=["
-									+ Util.prefix(this.clientRequestHandler
-											.getState(this.getPaxosID()), 64)
+									+ Util.prefix(this.getCheckpointState(), 64)
 									: "{initialState=[" + initialState), "]}" });
 	}
+	
 	public String getKey() {return this.getPaxosID();}
 	public Short getVersion() {return this.version;}
 	public String getPaxosIDVersion() {return this.getPaxosID()+":"+this.getVersion();}
@@ -232,6 +233,12 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	}
 	protected boolean isActive() {
 		return this.paxosState.isActive();
+	}
+
+	private String getCheckpointState() {
+		SlotBallotState sbs = this.paxosManager.getPaxosLogger()
+				.getSlotBallotState(getPaxosID(), getVersion());
+		return sbs != null ? sbs.state : null;
 	}
 
 	protected void handlePaxosMessage(JSONObject msg) throws JSONException {
@@ -313,7 +320,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			assert(false) : "Paxos instance received an unrecognizable packet: " + msg;
 		}
 		mtasks[1] = mtask;
-		
+				
 		DelayProfiler.update("handlePaxosMessage", methodEntryTime);
 
 		this.checkIfTrapped(msg, mtasks[1]); // just to print a warning if needed
@@ -340,7 +347,9 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 
 		// update app state
 		if (slotBallot != null && slotBallot.state != null)
-			this.clientRequestHandler.updateState(pid, slotBallot.state);
+			if (!this.clientRequestHandler.updateState(pid, slotBallot.state))
+				throw new PaxosInstanceCreationException(
+						"Unable to update app state with " + slotBallot.state);
 
 		this.coordinator = new PaxosCoordinator(); // just a shell class
 		// initial coordinator is assumed, not prepared
@@ -400,8 +409,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	protected void sendMessagingTask(MessagingTask mtask) {
 		if(mtask==null || mtask.isEmpty()) return; 
 		if(this.paxosState!=null && this.paxosState.isStopped() && 
-				mtask.msgs[0].getType()!=PaxosPacketType.DECISION &&
-				mtask.msgs[0].getType()!=PaxosPacketType.CHECKPOINT_STATE) return;
+				!mtask.msgs[0].getType().equals(PaxosPacketType.DECISION) &&
+				!mtask.msgs[0].getType().equals(PaxosPacketType.CHECKPOINT_STATE)) return;
 		if(TESTPaxosConfig.isCrashed(this.getMyID())) return; 
 
 		log.log(Level.FINE, "{0}{1}{2}", new Object[]{this, " sending: ", mtask});
@@ -665,17 +674,17 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		// Log, extract from or add to acceptor, and execute the request at the app
 		if(!committed.isRecovery()) 
 			AbstractPaxosLogger.logDecision(this.paxosManager.getPaxosLogger(), committed, this);
-		this.extractExecuteAndCheckpoint(committed);
+		MessagingTask mtask = this.extractExecuteAndCheckpoint(committed);
 
 		TESTPaxosConfig.commit(committed.requestID); 
 		
 		if (this.paxosState.getSlot() - committed.slot < 0)
-			log.log(Level.FINE, "{0}{1}{2}{3}",
+			log.log(Level.INFO, "{0}{1}{2}{3}{4}",
 					new Object[] { this.getNodeState(), " expecting ",
 							this.paxosState.getSlot(),
 							" recieved out-of-order commit: ", committed });
 
-		return null; 
+		return mtask; 
 	}
 
 	private ActivePaxosState createActiveState() {		
@@ -767,10 +776,10 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	// Like extractExecuteAndCheckpoint but invoked upon checkpoint transfer
 	private synchronized MessagingTask handleCheckpoint(StatePacket statePacket) {
 		if(statePacket.slotNumber >= this.paxosState.getSlot()) {
+			// put checkpoint in app (like execute)
+			if(!this.clientRequestHandler.updateState(getPaxosID(), statePacket.state)) return null;
 			// update acceptor (like extract)
 			this.paxosState.jumpSlot(statePacket.slotNumber+1);
-			// put checkpoint in app (like execute)
-			this.clientRequestHandler.updateState(getPaxosID(), statePacket.state);
 			// put checkpoint in logger (like checkpoint)
 			this.paxosManager.getPaxosLogger().putCheckpointState(this.getPaxosID(), this.version, groupMembers, 
 					statePacket.slotNumber, statePacket.ballot, this.clientRequestHandler.getState(getPaxosID())/*statePacket.state*/, this.paxosState.getGCSlot());
@@ -1043,23 +1052,51 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * the effort. Furthermore, if the sync gap is too much, do a checkpoint transfer.
 	 */
 	private MessagingTask handleSyncDecisionsPacket(SyncDecisionsPacket syncReply) throws JSONException {
+		log.info(this + " received syncReply: " + syncReply);
 		int minMissingSlot = syncReply.missingSlotNumbers.get(0); 
-		if(this.paxosState.getSlot() - minMissingSlot <= 0) return null; // I am worse than you
-		else if (minMissingSlot - lastCheckpointSlot(this.paxosState.getSlot()) < 0) 
-			return handleCheckpointRequest(syncReply); //sync reply = checkpoint request.
-
-		// Else get decisions from database (as we are unlikely to have most of them in memory)
-		ArrayList<PValuePacket> missingDecisions = 
-				this.paxosManager.getPaxosLogger().getLoggedDecisions(this.getPaxosID(), minMissingSlot, syncReply.maxDecisionSlot);
-		for(Iterator<PValuePacket> pvalueIterator = missingDecisions.iterator(); pvalueIterator.hasNext();) {
-			PValuePacket pvalue = pvalueIterator.next();
-			if(!syncReply.missingSlotNumbers.contains(pvalue.slot)) pvalueIterator.remove(); // filter non-missing
-			assert(!pvalue.isRecovery()); // pvalues received over the network automatically have RECOVERY flag reset
+		
+		// try to get checkpoint
+		MessagingTask checkpoint = null;
+		if (this.paxosState.getSlot() - minMissingSlot <= 0)
+			return null; // I am worse than you
+		else if (minMissingSlot - lastCheckpointSlot(this.paxosState.getSlot()) <= 0) {
+			checkpoint = handleCheckpointRequest(syncReply);
+			if (checkpoint != null)
+				minMissingSlot = ((StatePacket) (checkpoint.msgs[0])).slotNumber + 1;
 		}
-		MessagingTask unicasts = missingDecisions.isEmpty() ? null : new MessagingTask(syncReply.nodeID, 
-				MessagingTask.toPaxosPacketArray(missingDecisions.toArray()));
-		log.info(this.getNodeState() + " sending missing decisions to node " + syncReply.nodeID +": " + unicasts);
-		return unicasts;
+
+		// get decisions from database (unlikely to have most of them in memory)
+		ArrayList<PValuePacket> missingDecisions = this.paxosManager
+				.getPaxosLogger().getLoggedDecisions(this.getPaxosID(),
+						minMissingSlot, syncReply.maxDecisionSlot);
+		for (Iterator<PValuePacket> pvalueIterator = missingDecisions
+				.iterator(); pvalueIterator.hasNext();) {
+			PValuePacket pvalue = pvalueIterator.next();
+			if (!syncReply.missingSlotNumbers.contains(pvalue.slot))
+				pvalueIterator.remove(); // filter non-missing
+			assert (!pvalue.isRecovery()); // isRecovery() only in rollForward
+		}
+		MessagingTask unicasts = missingDecisions.isEmpty() ? null
+				: new MessagingTask(syncReply.nodeID,
+						MessagingTask.toPaxosPacketArray(missingDecisions
+								.toArray()));
+		if (unicasts != null)
+			log.info(this.getNodeState()
+					+ " sending missing decisions to node " + syncReply.nodeID
+					+ ": " + unicasts);
+
+		// combine checkpoint and missing decisions in unicasts
+		MessagingTask mtask = null;
+		if (checkpoint != null && unicasts != null && !checkpoint.isEmpty()
+				&& !unicasts.isEmpty())
+			mtask = new MessagingTask(syncReply.nodeID,
+					MessagingTask.toPaxosPacketArray(checkpoint.msgs,
+							unicasts.msgs));
+		else if (checkpoint != null)
+			mtask = checkpoint;
+		else if (unicasts != null)
+			mtask = unicasts;
+		return mtask;
 	}
 
 	private static int lastCheckpointSlot(int slot) {
@@ -1082,7 +1119,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		 * If the state is tiny, this will double the state fetching overhead as we 
 		 * are doing two database reads.
 		 */
-		assert(syncReply.missingSlotNumbers.get(0) - lastCheckpointSlot(this.paxosState.getSlot()) < 0);
+		assert(syncReply.missingSlotNumbers.get(0) - lastCheckpointSlot(this.paxosState.getSlot()) <= 0);
 		int checkpointSlot = this.paxosManager.getPaxosLogger().getCheckpointSlot(getPaxosID());
 		StatePacket statePacket = (checkpointSlot>=syncReply.missingSlotNumbers.get(0) ? 
 				StatePacket.getStatePacket(this.paxosManager.getPaxosLogger().getSlotBallotState(this.getPaxosID())) : null);

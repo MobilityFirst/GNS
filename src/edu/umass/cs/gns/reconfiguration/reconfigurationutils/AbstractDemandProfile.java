@@ -44,7 +44,7 @@ public abstract class AbstractDemandProfile {
 
 	// Incorporate this new request information
 	public abstract void register(InterfaceRequest request, 
-                InetAddress sender,ConsistentReconfigurableNodeConfig nodeConfig
+                InetAddress sender,ConsistentReconfigurableNodeConfig<?> nodeConfig
         );
 
 	/*
@@ -68,7 +68,7 @@ public abstract class AbstractDemandProfile {
 
 	// The main reconfiguration policy
 	public abstract ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives,
-                ConsistentReconfigurableNodeConfig nodeConfig);
+                ConsistentReconfigurableNodeConfig<?> nodeConfig);
 
 	/*
 	 * Tells us that the current demand profile was just used to perform reconfiguration. Useful for

@@ -1,11 +1,11 @@
 package edu.umass.cs.gns.reconfiguration.json;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -35,9 +35,12 @@ public class WaitEpochFinalState<NodeIDType>
 	private final StartEpoch<NodeIDType> startEpoch;
 	private final AbstractReplicaCoordinator<NodeIDType> appCoordinator;
 	private final RequestEpochFinalState<NodeIDType> reqState;
+	private final Map<NodeIDType, String> notifiees = new ConcurrentHashMap<NodeIDType, String>();
+
 	private Iterator<NodeIDType> prevGroupIterator;
 	private boolean first = true;
-	private final Map<NodeIDType, String> notifiees = new HashMap<NodeIDType, String>();
+	private boolean stateReceived = false;
+	// RCRecordRequest<NodeIDType> rcRecReq = null;
 
 	private final String key;
 
@@ -60,8 +63,11 @@ public class WaitEpochFinalState<NodeIDType>
 				this.startEpoch.getKey());
 	}
 
+	// simply calls start() but only if state not yet received
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
+		if (this.isStateReceived())
+			return null;
 		if (!this.prevGroupIterator.hasNext())
 			this.prevGroupIterator = this.startEpoch.getPrevEpochGroup()
 					.iterator();
@@ -72,6 +78,7 @@ public class WaitEpochFinalState<NodeIDType>
 		return mtasks;
 	}
 
+	// Will try once from each prev node and then give up
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
 		if (!this.prevGroupIterator.hasNext())
@@ -125,21 +132,37 @@ public class WaitEpochFinalState<NodeIDType>
 		if (type == null)
 			return false;
 		boolean handled = false;
+		/*
+		 * handleEvent returns true only if replica group creation succeeds.
+		 * Note that replica group creation can fail because either
+		 */
 		switch (type) {
 		case EPOCH_FINAL_STATE:
 			@SuppressWarnings("unchecked")
 			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>) event;
-			handled = checkEpochFinalState(event);
+			if (!checkEpochFinalState(event))
+				break;
+			this.setStateReceived();
+			;
 			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
 					"received", state });
-			this.appCoordinator.createReplicaGroup(
-					this.startEpoch.getServiceName(),
-					this.startEpoch.getEpochNumber(), state.getState(),
-					this.startEpoch.getCurEpochGroup());
+			if (this.startEpoch.isCreate())
+				handled = this.appCoordinator.createReplicaGroup(
+						this.startEpoch.getServiceName(),
+						this.startEpoch.getEpochNumber(), state.getState(),
+						this.startEpoch.getCurEpochGroup());
 		default:
 			break;
 		}
 		return handled;
+	}
+
+	private boolean isStateReceived() {
+		return this.stateReceived;
+	}
+
+	private void setStateReceived() {
+		this.stateReceived = true;
 	}
 
 	public String toString() {
@@ -151,7 +174,7 @@ public class WaitEpochFinalState<NodeIDType>
 		return true;
 	}
 
-	public String addNotifiee(NodeIDType node, String key) {
+	public synchronized String addNotifiee(NodeIDType node, String key) {
 		return this.notifiees.put(node, key);
 	}
 
@@ -164,7 +187,7 @@ public class WaitEpochFinalState<NodeIDType>
 
 	public GenericMessagingTask<NodeIDType, ?>[] getAckStarts() {
 		Set<GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>> mtasks = new HashSet<GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>>();
-		for (NodeIDType node : this.notifiees.keySet()) {
+		for (NodeIDType node : new HashSet<NodeIDType>(this.notifiees.keySet())) {
 
 			AckStartEpoch<NodeIDType> ackStartEpoch = new AckStartEpoch<NodeIDType>(
 					node, startEpoch.getServiceName(),

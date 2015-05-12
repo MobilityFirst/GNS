@@ -60,7 +60,7 @@ public class DemandProfile extends AbstractDemandProfile {
 	 * profile.
 	 */
 	@Override
-	public void register(InterfaceRequest request, InetAddress sender, ConsistentReconfigurableNodeConfig nodeConfig) {
+	public void register(InterfaceRequest request, InetAddress sender, ConsistentReconfigurableNodeConfig<?> nodeConfig) {
 		if (!request.getServiceName().equals(this.name))
 			return;
 		this.numRequests++;
@@ -133,7 +133,7 @@ public class DemandProfile extends AbstractDemandProfile {
 
 	@Override
 	public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
-                ConsistentReconfigurableNodeConfig nodeConfig) {
+                ConsistentReconfigurableNodeConfig<?> nodeConfig) {
 		if (this.lastReconfiguredProfile != null) {
 			if (System.currentTimeMillis()
 					- this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL)

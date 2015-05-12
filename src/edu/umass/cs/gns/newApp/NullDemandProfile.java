@@ -80,7 +80,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
   
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, 
-          ConsistentReconfigurableNodeConfig nodeConfig) {
+          ConsistentReconfigurableNodeConfig<?> nodeConfig) {
     return null;
   }
 

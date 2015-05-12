@@ -43,13 +43,6 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 		this.paxosManager.deletePaxosInstance(serviceName, (short)epoch);
 	}
 	
-	// FIXME: deprecated and soon to be removed
-	@Deprecated
-	@Override
-	public void deleteReplicaGroup(String serviceName) {
-		throw new RuntimeException("Method not yet implemented");
-	}
-
 	@Override
 	public Set<NodeIDType> getReplicaGroup(String serviceName) {
 		return this.paxosManager.getPaxosNodeIDs(serviceName);
