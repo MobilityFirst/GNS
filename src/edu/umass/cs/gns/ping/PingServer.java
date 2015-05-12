@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.pingNew;
+package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 
