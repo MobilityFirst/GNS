@@ -62,6 +62,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   private VotesMap votesMap = new VotesMap();
   private int lookupCount = 0;
   private int updateCount = 0;
+  
+  private boolean debuggingEnabled = false;
 
   public LocationBasedDemandProfile(String name) {
     super(name);
@@ -87,12 +89,16 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.votesMap = new VotesMap(json.getJSONObject(Keys.VOTES_MAP.toString()));
     this.lookupCount = json.getInt(Keys.LOOKUP_COUNT.toString());
     this.updateCount = json.getInt(Keys.UPDATE_COUNT.toString());
-    //LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP AFTER READ: " + this.votesMap);
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP AFTER READ: " + this.votesMap);
+    }
   }
 
   @Override
   public JSONObject getStats() {
-    //LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP BEFORE GET STATS: " + this.votesMap);
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP BEFORE GET STATS: " + this.votesMap);
+    }
     JSONObject json = new JSONObject();
     try {
       json.put(Keys.SERVICE_NAME.toString(), this.name);
@@ -105,7 +111,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     } catch (JSONException je) {
       je.printStackTrace();
     }
-    //LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " GET STATS: " + json);
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " GET STATS: " + json);
+    }
     return json;
   }
 
@@ -138,7 +146,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     } else {
       lookupCount++;
     }
-    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER REGISTER:" + this.toString());
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER REGISTER:" + this.toString());
+    }
   }
 
   private InetAddress findActiveReplicaClosestToSender(InetAddress sender, List<InetAddress> allActives) {
@@ -163,7 +173,10 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     } catch (Exception e) {
       result = Integer.MAX_VALUE;
     }
+    //if (debuggingEnabled) {
     //LOG.finest("distance " + one + " - " + two + " = " + result);
+    //}
+
     return result;
   }
 
@@ -194,7 +207,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.updateCount += update.updateCount;
     this.lookupCount += update.lookupCount;
     this.votesMap.combine(update.getVotesMap());
-    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER COMBINE:" + this.toString());
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER COMBINE:" + this.toString());
+    }
   }
 
   @Override
@@ -208,34 +223,40 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   @Override
   public void justReconfigured() {
     this.lastReconfiguredProfile = this.clone();
-    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER CLONE:" + this.lastReconfiguredProfile.toString());
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> AFTER CLONE:" + this.lastReconfiguredProfile.toString());
+    }
   }
 
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, InterfaceGetActiveIPs nodeConfig) {
     if (this.lastReconfiguredProfile != null) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: " + this.lastReconfiguredProfile.toString());
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> CURRENT: " + this.toString());
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> interval: "
-              + (System.currentTimeMillis() - this.lastReconfiguredProfile.lastRequestTime)); 
+      if (debuggingEnabled) {
+        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: " + this.lastReconfiguredProfile.toString());
+        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> CURRENT: " + this.toString());
+        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> interval: "
+                + (System.currentTimeMillis() - this.lastReconfiguredProfile.lastRequestTime));
+      }
       if (System.currentTimeMillis()
               - this.lastReconfiguredProfile.lastRequestTime < MIN_RECONFIGURATION_INTERVAL) {
         return null;
       }
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> request diff: "
-              + (this.numTotalRequests - this.lastReconfiguredProfile.numTotalRequests));
+      if (debuggingEnabled) {
+        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> request diff: "
+                + (this.numTotalRequests - this.lastReconfiguredProfile.numTotalRequests));
+      }
       if (this.numTotalRequests
               - this.lastReconfiguredProfile.numTotalRequests < NUMBER_OF_REQUESTS_BETWEEN_RECONFIGURATIONS) {
         return null;
       }
     }
     int numberOfReplicas = computeNumberOfReplicas(lookupCount, updateCount, nodeConfig.getActiveIPs().size());
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP: " + this.votesMap
+              + " TOP: " + this.votesMap.getTopN(numberOfReplicas) + " Lookup: " + lookupCount
+              + " Update: " + updateCount + " ReplicaCount: " + numberOfReplicas);
+    }
 
-    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> " + this.name + " VOTES MAP: " + this.votesMap
-            + " TOP: " + this.votesMap.getTopN(numberOfReplicas) + " Lookup: " + lookupCount
-            + " Update: " + updateCount + " ReplicaCount: " + numberOfReplicas);
-
-  
     return pickNewActiveReplicas(numberOfReplicas, curActives,
             this.votesMap.getTopN(numberOfReplicas),
             nodeConfig.getActiveIPs());
@@ -260,13 +281,17 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
     // If we need more replicas than we have just return them all
     if (numReplica >= allActives.size()) {
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> RETURNING ALL");
+      if (debuggingEnabled) {
+        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> RETURNING ALL");
+      }
       return allActives;
     }
 
     // Otherwise get the topN from the votes list
     ArrayList<InetAddress> newActives = new ArrayList(topN);
-    LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> TOP N: " + newActives);
+    if (debuggingEnabled) {
+      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> TOP N: " + newActives);
+    }
 
     // If we have too many in top N then remove some from the end and return this list.
     // BTW: This is the only case that could maybe use some work because it 
@@ -286,7 +311,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
           newActives.add(current);
         }
       }
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH CURRENT ADDED: " + newActives);
+      if (debuggingEnabled) {
+        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH CURRENT ADDED: " + newActives);
+      }
     }
 
     // If we still need more add some random ones from the active replicas list
@@ -303,7 +330,9 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
           newActives.add(ip);
         }
       }
-      LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH RANDOM ADDED: " + newActives);
+      if (debuggingEnabled) {
+        LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> WITH RANDOM ADDED: " + newActives);
+      }
     }
 
     return newActives;
@@ -359,10 +388,11 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   public String toString() {
     return "LocationBasedDemandProfile{" + "interArrivalTime=" + interArrivalTime + ", lastRequestTime=" + lastRequestTime + ", numRequests=" + numRequests + ", numTotalRequests=" + numTotalRequests + ", lastReconfiguredProfile=" + lastReconfiguredProfile + ", votesMap=" + votesMap + ", lookupCount=" + lookupCount + ", updateCount=" + updateCount + '}';
   }
-  
+
   /**
    * JUST FOR TESTING!
-   * @param dp 
+   *
+   * @param dp
    */
   public LocationBasedDemandProfile() {
     super("FRANK");
@@ -381,8 +411,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.info(dp.clone().toString());
     //testThings(dp);
   }
-    
-  private static void testThings(LocationBasedDemandProfile dp)  throws UnknownHostException {
+
+  private static void testThings(LocationBasedDemandProfile dp) throws UnknownHostException {
     LOG.info("0,0,3 = " + dp.computeNumberOfReplicas(0, 0, 3));
     LOG.info("20,0,3 = " + dp.computeNumberOfReplicas(20, 0, 3));
     LOG.info("0,20,3 = " + dp.computeNumberOfReplicas(0, 20, 3));

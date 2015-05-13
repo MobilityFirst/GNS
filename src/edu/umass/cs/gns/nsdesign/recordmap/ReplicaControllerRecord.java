@@ -110,6 +110,7 @@ import java.util.concurrent.ConcurrentMap;
  *
  * @author abhigyan
  */
+@Deprecated
 public class ReplicaControllerRecord<NodeIDType> {
 
   public final static ColumnField NAME = new ColumnField("rcr_name", ColumnFieldType.STRING);

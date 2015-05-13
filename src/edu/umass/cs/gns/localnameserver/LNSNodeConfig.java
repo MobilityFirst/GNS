@@ -14,7 +14,6 @@ import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.gns.util.Stringifiable;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

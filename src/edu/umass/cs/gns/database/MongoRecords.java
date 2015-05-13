@@ -13,7 +13,9 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.DuplicateKeyException;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
 import com.mongodb.MongoException;
+import com.mongodb.ServerAddress;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
 import edu.umass.cs.gns.clientsupport.Defs;
@@ -98,7 +100,9 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
       dbName = DBROOTNAME + "-" + nodeID.toString().replace('.', '-');
 //      MongoClient mongoClient;
+      //MongoCredential credential = MongoCredential.createMongoCRCredential("admin", dbName, "changeit".toCharArray());
       if (mongoPort > 0) {
+        //mongoClient = new MongoClient(new ServerAddress("localhost", mongoPort), Arrays.asList(credential));
         mongoClient = new MongoClient("localhost", mongoPort);
       } else {
         mongoClient = new MongoClient("localhost");

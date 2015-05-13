@@ -9,7 +9,11 @@ package edu.umass.cs.gns.localnameserver;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import static edu.umass.cs.gns.clientsupport.Defs.HELP;
 import static edu.umass.cs.gns.localnameserver.LNSNodeConfig.INVALID_PING_LATENCY;
+import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.DEBUG;
+import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.NS_FILE;
+import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.PORT;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
@@ -22,8 +26,10 @@ import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.NetworkUtils;
+import edu.umass.cs.gns.util.ParametersAndOptions;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -51,7 +57,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
 
   private final Cache<String, CacheEntry> cache;
-  
+
   private InterfaceJSONNIOTransport tcpTransport;
   private JSONMessenger messenger;
   private ProtocolExecutor protocolExecutor;
@@ -59,18 +65,19 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress nodeAddress;
   private final AbstractPacketDemultiplexer demultiplexer;
-  private boolean debuggingEnabled = true;
+  private boolean debuggingEnabled = false;
 
-  public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
+  public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig, Map<String, String> options) {
     this.nodeAddress = nodeAddress;
     this.nodeConfig = nodeConfig;
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
     this.demultiplexer = new LNSPacketDemultiplexer(this);
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
+    this.debuggingEnabled = options.containsKey(DEBUG);
     try {
       this.tcpTransport = initTransport(demultiplexer);
-       messenger = new JSONMessenger<String>(tcpTransport);
-       this.protocolExecutor = new ProtocolExecutor<>(messenger);
+      messenger = new JSONMessenger<String>(tcpTransport);
+      this.protocolExecutor = new ProtocolExecutor<>(messenger);
     } catch (IOException e) {
       LOG.info("Unabled to start LNS listener: " + e);
       System.exit(0);
@@ -80,7 +87,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private InterfaceJSONNIOTransport initTransport(AbstractPacketDemultiplexer demultiplexer) throws IOException {
     LOG.info("Starting LNS listener on " + nodeAddress);
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, new JSONMessageExtractor(demultiplexer));
-   
+
     new Thread(gnsNiot).start();
     // id is null here because we're the LNS
     return new JSONMessenger<>(gnsNiot);
@@ -94,17 +101,19 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     protocolExecutor.stop();
   }
 
-  public static void main(String[] args) {
+  public static void main(String[] args) throws IOException {
+    Map<String, String> options
+            = ParametersAndOptions.getParametersAsHashMap(LocalNameServer.class.getCanonicalName(),
+                    LocalNameServerOptions.getAllOptions(), args);
+    if (options.containsKey(HELP)) {
+      ParametersAndOptions.printUsage(LocalNameServer.class.getCanonicalName(),
+              LocalNameServerOptions.getAllOptions());
+      System.exit(0);
+    }
     try {
-      String nodeFilename;
-      if (args.length == 1) {
-        nodeFilename = args[0];
-      } else { // special case for testing
-        nodeFilename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-      }
       InetSocketAddress address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-              DEFAULT_LNS_TCP_PORT);
-      new LocalNameServer(address, new LNSNodeConfig(nodeFilename));
+              options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : DEFAULT_LNS_TCP_PORT);
+      new LocalNameServer(address, new LNSNodeConfig(options.get(NS_FILE)), options);
     } catch (IOException e) {
       System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gns.localnameserver <nodeConfigFile>");
     }
@@ -205,7 +214,6 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   // Caching
-
   @Override
   public void updateCacheEntry(String name, String value) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
@@ -226,7 +234,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       return null;
     }
   }
-  
+
   @Override
   public void updateCacheEntry(String name, Set<InetSocketAddress> actives) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
@@ -257,7 +265,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public boolean containsCacheEntry(String name) {
     return cache.getIfPresent(name) != null;
   }
-  
+
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
     BasicReconfigurationPacket rcEvent

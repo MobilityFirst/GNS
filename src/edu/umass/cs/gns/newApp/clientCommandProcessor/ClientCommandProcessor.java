@@ -113,7 +113,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
           GNS.getLogger().severe("FAILED TO START DNS SERVER: GNS Server IP must be specified");
           return;
         }
-        GNS.getLogger().warning("GNS Server IP" + options.get(GNS_SERVER_IP));
+        GNS.getLogger().info("GNS Server IP" + options.get(GNS_SERVER_IP));
         //GNS.getLogger().warning("gns server IP" + StartLocalNameServer.gnsServerIP);
         udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8",
                 options.get(GNS_SERVER_IP), requestHandler);

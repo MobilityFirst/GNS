@@ -279,9 +279,10 @@ public class GNSInstaller {
               //+ hostname + " "
               //+ LocalNameServer.DEFAULT_LNS_TCP_PORT + " "
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
+              + "-nsfile "
               + NS_HOSTS_FILENAME + " "
-              //+ "-configFile "
-              //+ LNS_CONF_FILENAME + " "
+              + "-configFile "
+              + LNS_CONF_FILENAME + " "
               + " > LNSlogfile 2>&1 &");
     }
     if (nsId != null) {

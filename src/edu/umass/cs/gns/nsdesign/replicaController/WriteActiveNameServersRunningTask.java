@@ -25,6 +25,7 @@ import java.util.TimerTask;
  * Date: 11/14/13
  * Time: 9:24 AM
  */
+@Deprecated
 public class WriteActiveNameServersRunningTask<NodeIDType> extends TimerTask {
 
   /** Name for which group change completed */
