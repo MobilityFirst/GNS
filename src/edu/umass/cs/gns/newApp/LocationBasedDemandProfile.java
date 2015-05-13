@@ -126,6 +126,10 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     if (!request.getServiceName().equals(this.name)) {
       return;
     }
+    // This happens when called from a reconfigurator
+    if (nodeConfig == null) {
+      return;
+    }
     this.numRequests++;
     this.numTotalRequests++;
     long iaTime = 0;
@@ -230,6 +234,10 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   @Override
   public ArrayList<InetAddress> shouldReconfigure(ArrayList<InetAddress> curActives, InterfaceGetActiveIPs nodeConfig) {
+    // This happens when called from a reconfigurator
+    if (nodeConfig == null) {
+      return null;
+    }
     if (this.lastReconfiguredProfile != null) {
       if (debuggingEnabled) {
         LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> LAST: " + this.lastReconfiguredProfile.toString());
