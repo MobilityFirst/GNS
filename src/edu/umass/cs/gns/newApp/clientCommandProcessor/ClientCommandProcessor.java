@@ -36,7 +36,7 @@ import java.util.Map;
  * @param <NodeIDType>
  */
 public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
-
+  
   private final InetSocketAddress nodeAddress;
   private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
   private final JSONMessenger<NodeIDType> messenger;
@@ -57,7 +57,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
    * We also keep a pointer to the lnsListenerAdmin so we can shut it down.
    */
   private final CCPListenerAdmin<NodeIDType> lnsListenerAdmin;
-
+  
   EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler;
 
   /**
@@ -69,9 +69,9 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
    * We keep a pointer to the dnsTranslator so we can shut it down.
    */
   private DnsTranslator dnsTranslator;
-
+  
   private final Logger log = Logger.getLogger(getClass().getName());
-
+  
   ClientCommandProcessor(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
           JSONMessenger<NodeIDType> messenger, Map<String, String> options) throws IOException {
     AbstractPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer();
@@ -100,7 +100,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
 
     // The Admintercessor needs to use the CCPListenerAdmin;
     this.admintercessor.setListenerAdmin(lnsListenerAdmin);
-
+    
     try {
       if (options.containsKey(DNS_GNS_ONLY)) {
         //if (StartLocalNameServer.dnsGnsOnly) {
@@ -127,23 +127,34 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
               + "If you want DNS run the CPP using sudo.");
     }
   }
-
+  
   public InetSocketAddress getAddress() {
     return nodeAddress;
   }
-
-  private static void startClientCommandProcessor(String host, int port,
-          String nodeConfigFilename, Map<String, String> options) throws IOException {
+  
+  private static void startClientCommandProcessor(Map<String, String> options) throws IOException {
+    String nsFile = options.containsKey(NS_FILE) ? options.get(NS_FILE)
+            // stupid option for testing
+            : Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+    String host = options.containsKey(HOST) ? options.get(HOST) : NetworkUtils.getLocalHostLANAddress().getHostAddress();
+    int port = options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : GNS.DEFAULT_CCP_TCP_PORT;
+    
     InetSocketAddress address = new InetSocketAddress(host, port);
-    String filename = nodeConfigFilename;
-    GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
-    JSONMessenger messenger = new JSONMessenger<String>(
-            (new JSONNIOTransport(address, nodeConfig, new PacketDemultiplexerDefault(),
-                    true)).enableStampSenderPort());
+    GNSNodeConfig nodeConfig = new GNSNodeConfig(nsFile, true);
+    JSONMessenger messenger;
+    try {
+      messenger = new JSONMessenger<String>(
+              (new JSONNIOTransport(address, nodeConfig, new PacketDemultiplexerDefault(),
+                      true)).enableStampSenderPort());
+    } catch (BindException e) {
+      GNS.getLogger().severe("Failed to create nio server at " + address + ": " + e + " ;exiting.");
+      System.exit(-1);
+      return;
+    }
     ClientCommandProcessor localNameServer = new ClientCommandProcessor(address, nodeConfig,
             messenger, options);
   }
-
+  
   public static void main(String[] args) throws IOException {
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(ClientCommandProcessor.class.getCanonicalName(),
@@ -153,17 +164,9 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
               ClientCommandProcessorOptions.getAllOptions());
       System.exit(0);
     }
-    if (args.length == 0) { // special case for testing
-      startClientCommandProcessor(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-              GNS.DEFAULT_CCP_TCP_PORT, Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info", options);
-    } else {
-      startClientCommandProcessor(options.get(HOST),
-              Integer.parseInt(options.get(PORT)),
-              options.get(NS_FILE),
-              options);
-    }
+    startClientCommandProcessor(options);
   }
-
+  
   @Override
   public void shutdown() {
     if (udpDnsServer != null) {
@@ -182,5 +185,5 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       lnsListenerAdmin.shutdown();
     }
   }
-
+  
 }
