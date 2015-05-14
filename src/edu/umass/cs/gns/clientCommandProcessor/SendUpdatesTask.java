@@ -62,7 +62,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   public void run() {
     try {
       timeoutCount++;
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("ENTER name = " + name + " timeout = " + timeoutCount);
       }
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
@@ -94,7 +94,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private boolean isResponseReceived() {
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info == null) {
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("UpdateInfo not found. Update complete. Cancel task. " + lnsReqID + "\t" + updatePacket);
       }
       return true;
@@ -102,7 +102,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       requestActivesCount = info.getNumLookupActives();
     } else if (requestActivesCount != info.getNumLookupActives()) {  // set timer task ID to LNS
       // invalid active response received in this case
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + updatePacket);
       }
       return true;
@@ -118,7 +118,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
         // remove from request info as LNS must clear all state for this request
         info = (UpdateInfo) handler.removeRequestInfo(lnsReqID);
         if (info != null) {
-          if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+          if (handler.getParameters().isDebugMode()) {
             GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + lnsReqID + " name = " + name);
           }
           // create a failure packet and send it back to client support
@@ -148,7 +148,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     if (info != null) {   // probably NS sent response
       SendUpdatesTask<NodeIDType> newTask = new SendUpdatesTask<NodeIDType>(lnsReqID, handler, updatePacket);
       PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
       }
 
@@ -174,7 +174,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private void sendToNS(NodeIDType nameServerID) {
 
     if (nameServerID == null) {
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("ERROR: No more actives left to query. Actives Queried " + Util.setOfNodeIdToString(activesQueried));
       }
       return;
@@ -202,7 +202,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
             updatePacket.getSignature(),
             updatePacket.getMessage());
 
-    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Sending Update to Node: " + nameServerID.toString());
     }
 
@@ -215,7 +215,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       if (updateInfo != null) {
         updateInfo.setNameserverID(nameServerID);
       }
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + lnsReqID
                 + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
       }

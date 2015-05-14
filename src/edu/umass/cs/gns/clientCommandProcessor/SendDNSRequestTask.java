@@ -63,7 +63,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   public void run() {
     try {
       timeoutCount++;
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("ENTER name = " + incomingPacket.getGuid() + "/" + incomingPacket.getKey() + " timeout = " + timeoutCount);
       }
 
@@ -106,7 +106,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   private boolean isResponseReceived(ClientRequestHandlerInterface<NodeIDType> handler) {
     DNSRequestInfo<NodeIDType> info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (info == null) {
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Query ID. Response recvd "
                 + ". Query ID\t" + lnsReqID + "\t" + timeoutCount + "\t" + Util.setOfNodeIdToString(nameserversQueried) + "\t");
       }
@@ -115,7 +115,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       requestActivesCount = info.getNumLookupActives();
     } else if (requestActivesCount != info.getNumLookupActives()) { //
       // invalid active response received in this case
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + incomingPacket
                 + " Request actives count: " + requestActivesCount + " Request actives count: " + info.getNumLookupActives());
       }
@@ -132,7 +132,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
         requestInfo = (DNSRequestInfo) handler.removeRequestInfo(lnsReqID);
         if (requestInfo != null) {
           // send error response to user and log error
-          if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+          if (handler.getParameters().isDebugMode()) {
             GNS.getLogger().info("Query max wait time exceeded. " + incomingPacket.getGuid() + "/" + incomingPacket.getKey()
                     + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
                     + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
@@ -172,7 +172,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   private void loggingForAddressInCache(DNSRequestInfo info) {
     String nameRecordKey = incomingPacket.getKey();
     String name = incomingPacket.getGuid();
-    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Valid Address in cache... "
               + "Time:" + handler.timeSinceAddressCached(name, nameRecordKey) + "ms");
     }
@@ -182,10 +182,10 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     //info.addEventCode(LNSEventCode.CACHE_HIT);
     //GNS.getStatLogger().info(info.getLogString());
     if (GNS.getLogger().isLoggable(Level.FINER)) {
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().finer(handler.getCacheLogString("LNS CACHE: "));
       }
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().finer(handler.getNameRecordStatsMapLogString());
       }
     }
@@ -195,7 +195,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
    * Send DNS Query reply that we found in the cache back to the User
    */
   private void sendCachedReplyToUser(ResultValue value, int TTL, ClientRequestHandlerInterface<NodeIDType> handler) {
-    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Send response from cache: " + incomingPacket.getGuid());
     }
     DNSPacket<NodeIDType> outgoingPacket = new DNSPacket<NodeIDType>(incomingPacket.getSourceId(), incomingPacket.getHeader().getId(),
@@ -208,7 +208,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   }
 
   private void requestNewActives(ClientRequestHandlerInterface<NodeIDType> handler) {
-    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Invalid name server for " + incomingPacket.getGuid());
     }
     SendDNSRequestTask queryTaskObject = new SendDNSRequestTask<NodeIDType>(lnsReqID, handler, incomingPacket);
@@ -244,11 +244,11 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       JSONObject json;
       try {
         json = incomingPacket.toJSONObjectQuestion();
-        if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+        if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().fine(">>>>>>>>>>>>>Send to node = " + ns.toString() + "  DNS Request = " + json);
         }
       } catch (JSONException e) {
-        if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+        if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().fine("Error Converting Query to JSON Object.");
         }
         return;

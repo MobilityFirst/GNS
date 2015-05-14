@@ -76,7 +76,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
 
   @Override
   public synchronized JSONObject getErrorMessage() {
-    return getErrorMessage(NSResponseCode.ERROR);
+    return getErrorMessage(NSResponseCode.FAIL_ACTIVE_NAMESERVER);
   }
   
   public JSONObject getErrorMessage(NSResponseCode errorCode) {

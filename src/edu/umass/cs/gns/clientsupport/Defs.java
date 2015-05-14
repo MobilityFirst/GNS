@@ -126,6 +126,8 @@ public class Defs {
   public final static String UPDATETIMEOUT = "+UPDATETIMEOUT+";
   public final static String SELECTERROR = "+SELECTERROR+";
   public final static String GENERICERROR = "+GENERICERROR+";
+  public final static String FAIL_ACTIVE_NAMESERVER = "+FAIL_ACTIVE+";
+  public final static String INVALID_ACTIVE_NAMESERVER = "+INVALID_ACTIVE+";
   //
   public final static String ALLFIELDS = "+ALL+";
   public final static String EVERYONE = "+ALL+";

@@ -81,10 +81,7 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
               AppReconfigurableNodeOptions.getAllOptions());
       System.exit(0);
     }
-    //ReconfigurationConfig.setDemandProfile(NullDemandProfile.class);
-    //ReconfigurationConfig.setDemandProfile(DemandProfile.class);
-    ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
-    System.out.println("********* DEMAND PROFILE: " + ReconfigurationConfig.getDemandProfile());
+    AppReconfigurableNodeOptions.initializeFromOptions(options);
     if (options.get(TEST) != null && options.get(NS_FILE) != null) { // for testing
       startTestNodes(options.get(NS_FILE));
     } else if (options.get(ID) != null && options.get(NS_FILE) != null) {

@@ -48,11 +48,11 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   /**
    * Don't reconfigure more often than this time interval. Both of these need to be satisfied.
    */
-  private static final long MIN_RECONFIGURATION_INTERVAL = 20000; // milleseconds
+  private static final long MIN_RECONFIGURATION_INTERVAL = 60000; // milleseconds
   /**
    * Don't reconfigure more often than this many requests. Both of these need to be satisfied.
    */
-  private static final long NUMBER_OF_REQUESTS_BETWEEN_RECONFIGURATIONS = 100;
+  private static final long NUMBER_OF_REQUESTS_BETWEEN_RECONFIGURATIONS = 1000;
 
   private double interArrivalTime = 0.0;
   private long lastRequestTime = 0;

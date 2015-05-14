@@ -10,7 +10,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 /**
- * Contains config parameters common to name servers and local name servers, and logging functionality.
+ * Contains config parameters for the nameservers and logging functionality.
  */
 public class GNS {
 

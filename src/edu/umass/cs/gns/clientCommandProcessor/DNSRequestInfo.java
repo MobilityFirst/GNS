@@ -88,7 +88,7 @@ public class DNSRequestInfo<NodeIDType> extends RequestInfo{
   public synchronized JSONObject getErrorMessage() {
     try {
       DNSPacket<NodeIDType> dnsPacketOut = new DNSPacket<NodeIDType>(incomingPacket.toJSONObjectQuestion(), unstringer);
-      dnsPacketOut.getHeader().setResponseCode(NSResponseCode.ERROR);
+      dnsPacketOut.getHeader().setResponseCode(NSResponseCode.FAIL_ACTIVE_NAMESERVER);
       dnsPacketOut.getHeader().setQRCode(DNSRecordType.RESPONSE);
       return dnsPacketOut.toJSONObject();
     } catch (JSONException e) {
