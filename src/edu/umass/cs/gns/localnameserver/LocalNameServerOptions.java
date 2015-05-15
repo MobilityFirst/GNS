@@ -10,7 +10,11 @@ package edu.umass.cs.gns.localnameserver;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import static edu.umass.cs.gns.clientsupport.Defs.HELP;
+import edu.umass.cs.gns.main.GNS;
+import static edu.umass.cs.gns.util.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
+import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * The command line options for LocalNameServer.
@@ -47,5 +51,41 @@ public class LocalNameServerOptions {
     return commandLineOptions;
   }
 
+  private static boolean initialized = false;
+
+  /**
+   * Initializes global parameter options from command line and config file options
+   * that are not handled elsewhere.
+   *
+   * @param allValues
+   */
+  public static synchronized void initializeFromOptions(Map<String, String> allValues) {
+    if (initialized) {
+      return;
+    }
+
+    initialized = true;
+    if (allValues == null) {
+      return;
+    }
+
+    if (allValues.containsKey(DEBUG)) {
+      LocalNameServer.debuggingEnabled = allValues.containsKey(DEBUG);
+      System.out.println("******** DEBUGGING IS ENABLED IN LOCAL NAME SERVER *********");
+    }
+
+    if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
+      String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
+      try {
+        Level level = Level.parse(levelString);
+        // until a better way comes along
+        LocalNameServer.LOG.setLevel(level);
+      } catch (Exception e) {
+        LocalNameServer.LOG.setLevel(DEFAULTCONSOLELEVEL);
+        System.out.println("Could not parse " + levelString
+                + "; set LocalNameServer log level to default level " + DEFAULTCONSOLELEVEL);
+      }
+    }
+  }
  
 }

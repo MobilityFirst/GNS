@@ -29,7 +29,10 @@ import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.gns.util.ParametersAndOptions;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -48,7 +51,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public static final int MAX_QUERY_WAIT_TIME = 4000; // milleseconds
   public static final int DEFAULT_VALUE_CACHE_TTL = 10000; // milleseconds
 
-  private static final Logger LOG = Logger.getLogger(LocalNameServer.class.getName());
+  public static final Logger LOG = Logger.getLogger(LocalNameServer.class.getName());
 
   public final static int DEFAULT_LNS_TCP_PORT = 24398;
 
@@ -65,15 +68,15 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress nodeAddress;
   private final AbstractPacketDemultiplexer demultiplexer;
-  private boolean debuggingEnabled = false;
+  public static boolean debuggingEnabled = false;
 
-  public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig, Map<String, String> options) {
+  public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
     this.nodeAddress = nodeAddress;
     this.nodeConfig = nodeConfig;
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
     this.demultiplexer = new LNSPacketDemultiplexer(this);
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
-    this.debuggingEnabled = options.containsKey(DEBUG);
+    
     try {
       this.tcpTransport = initTransport(demultiplexer);
       messenger = new JSONMessenger<String>(tcpTransport);
@@ -110,10 +113,12 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
               LocalNameServerOptions.getAllOptions());
       System.exit(0);
     }
+    LocalNameServerOptions.initializeFromOptions(options);
     try {
       InetSocketAddress address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
               options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : DEFAULT_LNS_TCP_PORT);
-      new LocalNameServer(address, new LNSNodeConfig(options.get(NS_FILE)), options);
+      LocalNameServer lns = new LocalNameServer(address, new LNSNodeConfig(options.get(NS_FILE)));
+      lns.testCache();
     } catch (IOException e) {
       System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gns.localnameserver <nodeConfigFile>");
     }
@@ -249,7 +254,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   @Override
   public Set<InetSocketAddress> getActivesIfValid(String name) {
     CacheEntry cacheEntry = cache.getIfPresent(name);
-    if (cacheEntry != null && cacheEntry.isValidValue()) {
+    if (cacheEntry != null && cacheEntry.isValidActives()) {
       return cacheEntry.getActiveNameServers();
     } else {
       return null;
@@ -280,5 +285,25 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     packet.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
     packet.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
     getTcpTransport().sendToAddress(address, packet);
+  }
+
+  public void testCache() {
+    String serviceName = "fred";
+    Set<InetSocketAddress> actives;
+    if ((actives = getActivesIfValid(serviceName)) != null) {
+      LOG.severe("Cache should be empty!");
+    }
+    updateCacheEntry(serviceName, new HashSet<>(Arrays.asList(new InetSocketAddress(35000))));
+    if ((actives = getActivesIfValid(serviceName)) == null) {
+      LOG.severe("Cache should not be empty!");
+    }
+    StringBuilder cacheString = new  StringBuilder();
+    for (Entry<String, CacheEntry> entry : cache.asMap().entrySet()) {
+      cacheString.append(entry.getKey());
+      cacheString.append(" => ");
+      cacheString.append(entry.getValue());
+      cacheString.append("\n");
+    }
+    LOG.info("Cache Test: \n" + cacheString.toString());
   }
 }

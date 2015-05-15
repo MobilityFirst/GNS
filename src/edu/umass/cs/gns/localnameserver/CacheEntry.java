@@ -30,9 +30,9 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * The value.
    */
   private String value = null;
-  
+
   private Set<InetSocketAddress> activeNameServers;
-  
+
   private long activeNameServersTimestamp;
 
   /**
@@ -48,7 +48,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     this.activeNameServers = null;
     this.activeNameServersTimestamp = 0;
   }
-  
+
   public CacheEntry(String name, Set<InetSocketAddress> activeNameServers) {
     this.name = name;
     this.activeNameServers = activeNameServers;
@@ -61,7 +61,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
     this.value = value;
     this.valueTimestamp = System.currentTimeMillis();
   }
-  
+
   public synchronized void updateCacheEntry(Set<InetSocketAddress> activeNameServers) {
     this.activeNameServers = activeNameServers;
     this.activeNameServersTimestamp = System.currentTimeMillis();
@@ -69,7 +69,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
    * Returns true if the contains the key and the ttl associated with key has not expired in the cache.
-   * 
+   *
    * @return true or false value regarding cache being valid
    */
   public synchronized boolean isValidValue() {
@@ -78,10 +78,10 @@ public class CacheEntry implements Comparable<CacheEntry> {
     }
     return (System.currentTimeMillis() - valueTimestamp) < timeToLive;
   }
-  
+
   /**
    * Returns true if the contains the key and the ttl associated with key has not expired in the cache.
-   * 
+   *
    * @return true or false value regarding cache being valid
    */
   public synchronized boolean isValidActives() {
@@ -94,7 +94,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   public synchronized long timeSinceValueCached(String key) {
     return (int) (System.currentTimeMillis() - valueTimestamp);
   }
-  
+
   public synchronized long timeSinceActivesCached(String key) {
     return (int) (System.currentTimeMillis() - activeNameServersTimestamp);
   }
@@ -108,18 +108,24 @@ public class CacheEntry implements Comparable<CacheEntry> {
   public synchronized String toString() {
     StringBuilder result = new StringBuilder();
     result.append("Name:" + name);
-    result.append("Value:" + value);
-    if (!isValidValue()) {
-      result.append("\n    ***Expired***");
+    result.append("\nValue:" + value);
+    if (value != null) {
+      result.append(" (age: " + (System.currentTimeMillis() - valueTimestamp) + "ms)");
+      if (!isValidValue()) {
+        result.append("\n    ***Expired***");
+      }
     }
-    result.append("Actives: " + activeNameServers);
-    if (!isValidActives()) {
-      result.append("\n    ***Expired***");
+    result.append("\nActives: " + activeNameServers);
+    if (activeNameServers != null) {
+      result.append("  (age: " + (System.currentTimeMillis() - activeNameServersTimestamp) + "ms)");
+      if (!isValidActives()) {
+        result.append("\n    ***Expired***");
+      }
     }
     result.append("\n    TTL:" + timeToLive + "ms");
     result.append("\n    Value Timestamp: " + valueTimestamp);
     result.append("\n    Actives Timestamp: " + activeNameServersTimestamp);
-    
+
     return result.toString();
   }
 
@@ -157,7 +163,5 @@ public class CacheEntry implements Comparable<CacheEntry> {
   public long getActiveNameServersTimestamp() {
     return activeNameServersTimestamp;
   }
-  
-  
 
 }

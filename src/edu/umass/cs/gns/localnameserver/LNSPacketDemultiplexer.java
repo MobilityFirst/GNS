@@ -93,15 +93,14 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
 
     // Send it to the client command handler
     Set<InetSocketAddress> actives;
-    if ((actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName())) != null) {
-    //if ((actives = handler.getActivesIfValid(packet.getServiceName())) != null) {
+    //if ((actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName())) != null) {
+    if ((actives = handler.getActivesIfValid(packet.getServiceName())) != null) {
       if (handler.isDebugMode()) {
         GNS.getLogger().info("Found actives in cache: " + actives);
       }
       handler.sendToClosestServer(actives, packet.toJSONObject());
     } else {
-      RequestActives requestActives = new RequestActives(requestInfo, handler);
-      handler.getProtocolExecutor().schedule(requestActives);
+      handler.getProtocolExecutor().schedule(new RequestActives(requestInfo, handler));
     }
   }
 
@@ -142,7 +141,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
       GNS.getLogger().info(")))))))))))))))))))))))))))) REQUEST ACTIVES: " + json.toString());
     }
     try {
-      handler.updateCacheEntry(null, new RequestActiveReplicas(json).getActives());
+      RequestActiveReplicas requestActives = new RequestActiveReplicas(json);
+      handler.updateCacheEntry(requestActives.getServiceName(), requestActives.getActives());
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing RequestActiveReplicas packet info not found from " + json + ": " + e);
     }
