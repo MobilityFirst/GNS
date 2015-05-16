@@ -126,9 +126,9 @@ public class GnsCoordinatorEventual<NodeIDType> extends ActiveReplicaCoordinator
 
           Set<NodeIDType> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
-            RequestActivesPacket<NodeIDType> requestActives = new RequestActivesPacket<NodeIDType>(name, dnsPacket.getLnsAddress(), 0, nodeID);
+            RequestActivesPacket<NodeIDType> requestActives = new RequestActivesPacket<NodeIDType>(name, dnsPacket.getCPPAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);
-            nioTransport.sendToAddress(dnsPacket.getLnsAddress(), requestActives.toJSONObject());
+            nioTransport.sendToAddress(dnsPacket.getCPPAddress(), requestActives.toJSONObject());
           }
           if (readCoordination) {
 

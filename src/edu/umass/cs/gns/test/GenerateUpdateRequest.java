@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
-import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexer;
+import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexerV1;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ResultValue;
@@ -17,10 +17,10 @@ class GenerateUpdateRequest<NodeIDType> extends TimerTask {
 
   private final int updateCount;
   private final String name;
-  private final CCPPacketDemultiplexer packetDemultiplexer;
+  private final CCPPacketDemultiplexerV1 packetDemultiplexer;
   private final int objectSizeBytes;
 
-  public GenerateUpdateRequest(String name, int updateCount, int objectSizeBytes, CCPPacketDemultiplexer packetDemultiplexer) {
+  public GenerateUpdateRequest(String name, int updateCount, int objectSizeBytes, CCPPacketDemultiplexerV1 packetDemultiplexer) {
 
     this.updateCount = updateCount;
     this.name = name;

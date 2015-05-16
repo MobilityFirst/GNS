@@ -133,7 +133,7 @@ public class AppAdmin extends Thread implements Shutdownable{
             }
             dumpRequestPacket.setJsonArray(jsonArray);
             Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), 
-                    dumpRequestPacket.getLnsAddress());
+                    dumpRequestPacket.getCPPAddress());
             
             GNS.getLogger().info("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             break;
@@ -176,7 +176,7 @@ public class AppAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", app.getPingManager().tableToString(app.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCPPAddress());
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
@@ -188,7 +188,7 @@ public class AppAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", app.getPingManager().nodeAverage(node2));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getLnsAddress());
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCPPAddress());
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
                 }

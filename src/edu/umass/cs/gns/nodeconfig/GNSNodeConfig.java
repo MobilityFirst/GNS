@@ -174,17 +174,27 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * @return the host id
    */
   public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host) {
+    return getActiveReplicaWhoseHostIs(host, false);
+  }
+  
+  public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host, boolean ignorePorts) {
     if (host != null) { // should not happen but just in case
       GNS.getLogger().info("********** HOST ADDRESS IS " + host.getAddress().getHostAddress());
       for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+        GNS.getLogger().info("********** CHECK " + hostInfo.toString());
         if (// Either the hosts address are the same
                 (hostInfo.getIpAddress().equals(host.getAddress())
                 // Or the the IP address are the same (handles the case where the above is
                 // is a LAN address)
-                || (hostInfo.getExternalIP() != null
-                    && hostInfo.getExternalIP().equals(host.getAddress().getHostAddress())))
+                || 
+                (hostInfo.getExternalIP() != null
+                && 
+                hostInfo.getExternalIP().equals(host.getAddress().getHostAddress())))
                 // and the ports are the same
-                && hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort()) {
+                && 
+                (ignorePorts ||
+                hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort())) {
+          GNS.getLogger().info("********** ID IS " + hostInfo.getActiveReplicaID());
           return hostInfo.getActiveReplicaID();
         }
       }

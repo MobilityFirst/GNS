@@ -14,6 +14,7 @@ import static edu.umass.cs.gns.localnameserver.LNSNodeConfig.INVALID_PING_LATENC
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.DEBUG;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.NS_FILE;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.PORT;
+import static edu.umass.cs.gns.localnameserver.RequestActives.log;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
@@ -76,7 +77,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     this.crNodeConfig = new LNSConsistentReconfigurableNodeConfig(nodeConfig);
     this.demultiplexer = new LNSPacketDemultiplexer(this);
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
-    
+
     try {
       this.tcpTransport = initTransport(demultiplexer);
       messenger = new JSONMessenger<String>(tcpTransport);
@@ -279,11 +280,14 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   @Override
-  public void sendToClosestServer(Set<InetSocketAddress> actives, JSONObject packet) throws IOException {
-    InetSocketAddress address = getClosestServer(actives);
+  public void sendToClosestServer(Set<InetSocketAddress> servers, JSONObject packet) throws IOException {
+    InetSocketAddress address = getClosestServer(servers);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
     packet.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
     packet.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+    if (debuggingEnabled) {
+      LOG.info("Sending to " + address + ": " + packet);
+    }
     getTcpTransport().sendToAddress(address, packet);
   }
 
@@ -297,7 +301,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     if ((actives = getActivesIfValid(serviceName)) == null) {
       LOG.severe("Cache should not be empty!");
     }
-    StringBuilder cacheString = new  StringBuilder();
+    StringBuilder cacheString = new StringBuilder();
     for (Entry<String, CacheEntry> entry : cache.asMap().entrySet()) {
       cacheString.append(entry.getKey());
       cacheString.append(" => ");

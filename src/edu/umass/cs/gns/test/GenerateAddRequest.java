@@ -6,7 +6,7 @@
  */
 package edu.umass.cs.gns.test;
 
-import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexer;
+import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexerV1;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
@@ -23,13 +23,13 @@ class GenerateAddRequest<NodeIDType> extends TimerTask {
 
   private int requestCount;
   private String name;
-  private CCPPacketDemultiplexer packetDemux;
+  private CCPPacketDemultiplexerV1 packetDemux;
   private int objectSizeKB;
   private int ttl;
 
   private Set<NodeIDType> activeNameServers;
 
-  public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, CCPPacketDemultiplexer packetDemux,
+  public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, CCPPacketDemultiplexerV1 packetDemux,
           Set<NodeIDType> activeNameServers) {
     this.requestCount = count;
     this.name = name;
@@ -39,7 +39,7 @@ class GenerateAddRequest<NodeIDType> extends TimerTask {
     this.activeNameServers = activeNameServers;
   }
 
-  public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, CCPPacketDemultiplexer packetDemux) {
+  public GenerateAddRequest(String name, int count, int objectSizeBytes, int ttl, CCPPacketDemultiplexerV1 packetDemux) {
     this(name, count, objectSizeBytes, ttl, packetDemux, null);
   }
 

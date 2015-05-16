@@ -60,5 +60,7 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
    * @return the request if or null if if can't be found
    */
   public Integer removeRequestNameToIDMapping(String name);
+  
+  public Object getActiveReplicaID();
 
 }

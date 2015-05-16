@@ -60,7 +60,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
   public boolean handleJSONObject(JSONObject json) {
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* LNS received: ", json});
+      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* CPP received: ", json});
     }
     try {
       if (ReconfigurationPacket.isReconfigurationPacket(json)) {
@@ -144,11 +144,11 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
             CommandHandler.handlePacketCommandRequest(json, handler);
             return true;
           default:
-            GNS.getLogger().warning("************************* LNS IGNORING: " + json);
+            GNS.getLogger().warning("************************* CPP IGNORING: " + json);
             return false;
         }
       }
-      GNS.getLogger().warning("************************* LNS CAN'T GET PACKET TYPE... IGNORING: " + json);
+      GNS.getLogger().warning("************************* CPP CAN'T GET PACKET TYPE... IGNORING: " + json);
     } catch (IOException | JSONException e) {
       e.printStackTrace();
     }

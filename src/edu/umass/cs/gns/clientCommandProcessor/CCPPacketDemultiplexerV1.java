@@ -12,7 +12,6 @@ import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.UnsupportedEncodingException;
 import java.net.UnknownHostException;
 import java.security.NoSuchAlgorithmException;
@@ -22,7 +21,8 @@ import java.security.NoSuchAlgorithmException;
  *
  * Created by abhigyan on 2/24/14.
  */
-public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
+@Deprecated
+public class CCPPacketDemultiplexerV1<NodeIDType> extends AbstractPacketDemultiplexer {
 
   private ClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -30,7 +30,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
     this.handler = handler;
   }
  
-  public CCPPacketDemultiplexer() {
+  public CCPPacketDemultiplexerV1() {
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.ADD_RECORD);

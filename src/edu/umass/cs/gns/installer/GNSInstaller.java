@@ -82,7 +82,7 @@ public class GNSInstaller {
   private static String nsConfFileName;
   private static String ccpConfFileName;
   private static String lnsConfFileName;
- 
+
   private static final String StartLNSClass = "edu.umass.cs.gns.localnameserver.LocalNameServer";
   private static final String StartCCPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor";
   private static final String StartNSClass = "edu.umass.cs.gns.newApp.AppReconfigurableNode";
@@ -283,6 +283,7 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               + "-configFile "
               + LNS_CONF_FILENAME + " "
+              + "-debug "
               + " > LNSlogfile 2>&1 &");
     }
     if (nsId != null) {
@@ -301,6 +302,7 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               + "-configFile "
               + NS_CONF_FILENAME + " "
+              + "-debug "
               + " > NSlogfile 2>&1 &");
       ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName,
               //runAsRoot,
@@ -321,6 +323,9 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               + "-configFile "
               + CCP_CONF_FILENAME + " "
+              + "-activeReplicaID "
+              + nsId.toString() + " "
+              + "-debug "
               + " > CCPlogfile 2>&1 &");
     }
     System.out.println("All servers started");

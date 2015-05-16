@@ -7,7 +7,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexer;
+import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexerV1;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;
@@ -24,12 +24,12 @@ public class GenerateGroupChangeRequest<NodeIDType> extends TimerTask {
 
   private final int requestCount;
   private final String name;
-  private final CCPPacketDemultiplexer packetDemultiplexer;
+  private final CCPPacketDemultiplexerV1 packetDemultiplexer;
   private final TestGroupChangeRequest groupChangeRequest;
   private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   public GenerateGroupChangeRequest(String name, int count, TestGroupChangeRequest grpChange,
-                                    CCPPacketDemultiplexer packetDemultiplexer, ClientRequestHandlerInterface<NodeIDType> handler) {
+                                    CCPPacketDemultiplexerV1 packetDemultiplexer, ClientRequestHandlerInterface<NodeIDType> handler) {
     this.requestCount = count;
     this.name = name;
     this.packetDemultiplexer = packetDemultiplexer;

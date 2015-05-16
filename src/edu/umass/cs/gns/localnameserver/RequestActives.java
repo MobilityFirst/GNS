@@ -40,7 +40,7 @@ public class RequestActives implements SchedulableProtocolTask {
     reconfigurators = new ArrayList(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
     this.key = this.refreshKey();
     if (handler.isDebugMode()) {
-      GNS.getLogger().info("Request actives starting: " + key);
+      GNS.getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
     }
   }
 
@@ -48,7 +48,6 @@ public class RequestActives implements SchedulableProtocolTask {
   public GenericMessagingTask[] restart() {
     if (this.amObviated()) {
       try {
-        log.info(this.refreshKey() + " Sending original request: " + lnsRequestInfo.getCommandPacket().toJSONObject());
         handler.sendToClosestServer(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
                 lnsRequestInfo.getCommandPacket().toJSONObject());
       } catch (IOException | JSONException e) {
@@ -57,8 +56,7 @@ public class RequestActives implements SchedulableProtocolTask {
       ProtocolExecutor.cancel(this);
     }
     if (handler.isDebugMode()) {
-      log.info(this.refreshKey() + " re-sending "
-              + lnsRequestInfo.getServiceName() + " " + lnsRequestInfo.getLNSReqID());
+      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " / " + lnsRequestInfo.getServiceName() + " re-sending ");
     }
     return start();
   }
@@ -67,9 +65,12 @@ public class RequestActives implements SchedulableProtocolTask {
     if (handler.getActivesIfValid(lnsRequestInfo.getServiceName()) != null) {
       return true;
     } else if (requestCount >= reconfigurators.size()) {
-      log.info(this.refreshKey() + " No answer, using defaults");
+      if (handler.isDebugMode()) {
+        log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " / " + lnsRequestInfo.getServiceName() + " No answer, using defaults");
+      }
       // no answer so we stuff in the default choices and return
-      handler.updateCacheEntry(lnsRequestInfo.getServiceName(), handler.getNodeConfig().getReplicatedActives(lnsRequestInfo.getServiceName()));
+      handler.updateCacheEntry(lnsRequestInfo.getServiceName(),
+              handler.getNodeConfig().getReplicatedActives(lnsRequestInfo.getServiceName()));
       return true;
     } else {
       return false;
@@ -80,8 +81,13 @@ public class RequestActives implements SchedulableProtocolTask {
   public GenericMessagingTask[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
             lnsRequestInfo.getServiceName(), 0);
-    log.info(this.refreshKey() + " Ssending " + packet);
+    
     int reconfigIndex = requestCount % reconfigurators.size();
+    if (handler.isDebugMode()) {
+      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " / " + lnsRequestInfo.getServiceName() 
+              + " Sending to " + reconfigurators.get(reconfigIndex) 
+              + " " + packet);
+    }
     GenericMessagingTask mtasks[] = new GenericMessagingTask(reconfigurators.get(reconfigIndex), packet).toArray();
     requestCount++;
     return mtasks;

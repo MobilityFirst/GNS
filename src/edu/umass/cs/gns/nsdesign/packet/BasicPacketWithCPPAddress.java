@@ -14,26 +14,26 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class BasicPacketWithLnsAddress extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithCPPAddress extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
-  public final static String LNS_ADDRESS = "lnsAddress";
-  public final static String LNS_PORT = "lnsPort";
+  public final static String CPP_ADDRESS = "cppAddress";
+  public final static String CPP_PORT = "cppPort";
 
   public final static int INVALID_PORT = -1;
   //
   /**
-   * This is used by the Nameservers so they know which LNS to send the packet back to.
+   * This is used by the Nameservers so they know which CPP to send the packet back to.
    * Replaces lnsId.
    */
-  private InetSocketAddress lnsAddress = null;
+  private InetSocketAddress cppAddress = null;
 
   /**
    * Creates a BasicPacketWithLnsAddress.
    *
    * @param address
    */
-  public BasicPacketWithLnsAddress(InetSocketAddress address) {
-    this.lnsAddress = address;
+  public BasicPacketWithCPPAddress(InetSocketAddress address) {
+    this.cppAddress = address;
   }
 
   /**
@@ -42,15 +42,15 @@ public abstract class BasicPacketWithLnsAddress extends BasicPacket implements P
    * @param address
    * @param port
    */
-  public BasicPacketWithLnsAddress(String address, Integer port) {
+  public BasicPacketWithCPPAddress(String address, Integer port) {
     this(address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null);
   }
 
   @Override
   public void addToJSONObject(JSONObject json) throws JSONException {
-    if (lnsAddress != null) {
-      json.put(LNS_ADDRESS, lnsAddress.getHostString());
-      json.put(LNS_PORT, lnsAddress.getPort());
+    if (cppAddress != null) {
+      json.put(CPP_ADDRESS, cppAddress.getHostString());
+      json.put(CPP_PORT, cppAddress.getPort());
     }
   }
 
@@ -59,8 +59,8 @@ public abstract class BasicPacketWithLnsAddress extends BasicPacket implements P
    *
    * @return
    */
-  public InetSocketAddress getLnsAddress() {
-    return lnsAddress;
+  public InetSocketAddress getCPPAddress() {
+    return cppAddress;
   }
 
   /**
@@ -68,8 +68,8 @@ public abstract class BasicPacketWithLnsAddress extends BasicPacket implements P
    *
    * @param lnsAddress
    */
-  public void setLnsAddress(InetSocketAddress lnsAddress) {
-    this.lnsAddress = lnsAddress;
+  public void setCPPAddress(InetSocketAddress lnsAddress) {
+    this.cppAddress = lnsAddress;
   }
 
 }

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
-import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithLnsAddress;
+import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithCPPAddress;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import org.json.JSONException;
@@ -12,7 +12,7 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class AdminRequestPacket extends BasicPacketWithLnsAddress {
+public class AdminRequestPacket extends BasicPacketWithCPPAddress {
 
   public enum AdminOperation {
 
@@ -111,7 +111,7 @@ public class AdminRequestPacket extends BasicPacketWithLnsAddress {
    * @throws org.json.JSONException
    */
   public AdminRequestPacket(JSONObject json) throws JSONException {
-    super(json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+    super(json.optString(CPP_ADDRESS, null), json.optInt(CPP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != PacketType.ADMIN_REQUEST) {
       Exception e = new Exception("AdminRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();
@@ -120,8 +120,8 @@ public class AdminRequestPacket extends BasicPacketWithLnsAddress {
 
     this.type = Packet.getPacketType(json);
     this.id = json.getInt(ID);
-//    this.lnsAddress = json.has(LNS_ADDRESS) && json.has(LNS_PORT)
-//            ? new InetSocketAddress(json.getString(LNS_ADDRESS), json.getInt(LNS_PORT))
+//    this.lnsAddress = json.has(CPP_ADDRESS) && json.has(CPP_PORT)
+//            ? new InetSocketAddress(json.getString(CPP_ADDRESS), json.getInt(CPP_PORT))
 //            : null;
     //this.localNameServerId = json.getInt(LNSID);
     this.operation = AdminOperation.valueOf(json.getString(OPERATION));
@@ -143,8 +143,8 @@ public class AdminRequestPacket extends BasicPacketWithLnsAddress {
     super.addToJSONObject(json);
     json.put(ID, id);
 //    if (lnsAddress != null) {
-//      json.put(LNS_ADDRESS, lnsAddress.getHostString());
-//      json.put(LNS_PORT, lnsAddress.getPort());
+//      json.put(CPP_ADDRESS, lnsAddress.getHostString());
+//      json.put(CPP_PORT, lnsAddress.getPort());
 //    }
     //json.put(LNSID, localNameServerId);
     json.put(OPERATION, getOperation().name());
@@ -177,11 +177,11 @@ public class AdminRequestPacket extends BasicPacketWithLnsAddress {
 //   * Gets the lns return address. If thi
 //   * @return 
 //   */
-//  public InetSocketAddress getLnsAddress() {
+//  public InetSocketAddress getCPPAddress() {
 //    return lnsAddress;
 //  }
 //
-//  public void setLnsAddress(InetSocketAddress lnsAddress) {
+//  public void setCPPAddress(InetSocketAddress lnsAddress) {
 //    this.lnsAddress = lnsAddress;
 //  }
 

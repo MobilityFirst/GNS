@@ -86,6 +86,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     parameters.setDebugMode(options.containsKey(DEBUG));
     //
     this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
+            options.get(ClientCommandProcessorOptions.AR_ID),
             gnsNodeConfig, messenger, parameters);
     ((CCPPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
     // Start HTTP server
@@ -151,7 +152,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       System.exit(-1);
       return;
     }
-    ClientCommandProcessor localNameServer = new ClientCommandProcessor(address, nodeConfig,
+    ClientCommandProcessor clientCommandProcessor = new ClientCommandProcessor(address, nodeConfig,
             messenger, options);
   }
   

@@ -124,7 +124,7 @@ public class GroupChange {
         GNS.getLogger().warning(" DECISION NOT APPLIED. Because most recently "
                 + "proposed active name servers is not yet running: " + rcRecord.getActiveNameservers());
         if (!recovery && trackGroupChange.size() > 0) {
-          InetSocketAddress lnsAddress = activeProposalPacket.getLnsAddress();
+          InetSocketAddress lnsAddress = activeProposalPacket.getCPPAddress();
           GNS.getLogger().info("Group change canot be done so send confirmation to LNS  " + lnsAddress);
           GroupChangeCompletePacket gccp = new GroupChangeCompletePacket(activeProposalPacket.getVersion(), rcRecord.getName());
           replicaController.getNioServer().sendToAddress(lnsAddress, gccp.toJSONObject());
@@ -143,9 +143,9 @@ public class GroupChange {
 
       GNS.getLogger().fine("Name Record Now: = " + rcRecord.toString());
       if (!recovery) {
-        if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID()) && activeProposalPacket.getLnsAddress() != null) {
+        if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID()) && activeProposalPacket.getCPPAddress() != null) {
           GNS.getLogger().info("Putting packet in hash map: " + activeProposalPacket);
-          trackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), activeProposalPacket.getVersion()), activeProposalPacket.getLnsAddress());
+          trackGroupChange.put(new GroupChangeIdentifier(activeProposalPacket.getName(), activeProposalPacket.getVersion()), activeProposalPacket.getCPPAddress());
         }
         // Next step: stop old actives
         if (activeProposalPacket.getProposingNode().equals(replicaController.getNodeID())) {// if I have proposed this change, I will start actives group change process

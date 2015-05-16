@@ -99,16 +99,20 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * Host address of the local name server.
    */
   private final InetSocketAddress nodeAddress;
-  
+  private final Object activeReplicaID;
+
   private long receivedRequests = 0;
 
   public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
-          InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
+          InetSocketAddress nodeAddress, 
+          Object activeReplicaID,
+          GNSNodeConfig<NodeIDType> gnsNodeConfig,
           JSONMessenger<NodeIDType> messenger, RequestHandlerParameters parameters) {
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
+    this.activeReplicaID = activeReplicaID;
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
@@ -158,7 +162,13 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public InetSocketAddress getNodeAddress() {
     return nodeAddress;
   }
-
+  
+  
+  @Override
+  public Object getActiveReplicaID() {
+    return activeReplicaID;
+  }
+  
   @Override
   public Intercessor getIntercessor() {
     return intercessor;

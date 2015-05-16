@@ -100,7 +100,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
 
   public BasicClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
-          CCPPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) throws IOException {
+          CCPPacketDemultiplexerV1 demultiplexer, RequestHandlerParameters parameters) throws IOException {
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
@@ -117,7 +117,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @SuppressWarnings("unchecked") // calls a static method
-  private InterfaceJSONNIOTransport<NodeIDType> initTransport(CCPPacketDemultiplexer demultiplexer) throws IOException {
+  private InterfaceJSONNIOTransport<NodeIDType> initTransport(CCPPacketDemultiplexerV1 demultiplexer) throws IOException {
     GNS.getLogger().info("Starting LNS listener on " + nodeAddress);
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(demultiplexer));
     if (parameters.isEmulatePingLatencies()) {
@@ -367,6 +367,11 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
       cacheTable.append(entry.toString());
     }
     return preamble + cacheTable.toString();
+  }
+
+  @Override
+  public Object getActiveReplicaID() {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   static class CacheComparator implements Comparator<CacheEntry> {

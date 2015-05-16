@@ -92,7 +92,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     );
 
     GNS.getLogger().info("Parameter values: " + parameters.toString());
-    CCPPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer();
+    CCPPacketDemultiplexerV1 demultiplexer = new CCPPacketDemultiplexerV1();
     this.intercessor = new Intercessor<NodeIDType>(nodeAddress, gnsNodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<NodeIDType>();
     ClientRequestHandlerInterface<NodeIDType> requestHandler 

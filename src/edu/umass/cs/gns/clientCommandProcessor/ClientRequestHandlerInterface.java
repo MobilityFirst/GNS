@@ -31,12 +31,7 @@ import org.json.JSONException;
  */
 public interface ClientRequestHandlerInterface<NodeIDType>  {
 
-  /**
-   * A little hack so we can tell if we're running in the new app.
-   * @return 
-   */
-  public boolean isNewApp();
-  
+ 
   /**
    * The executor that runs tasks.
    * 
@@ -67,6 +62,8 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @return 
    */
    public InetSocketAddress getNodeAddress();
+   
+   public Object getActiveReplicaID();
    
    public Intercessor getIntercessor();
    
@@ -301,6 +298,12 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
   public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs);
   
   public void handleNameServerLoadPacket(JSONObject json) throws JSONException;
+  
+   /**
+   * A little hack so we can tell if we're running in the new app.
+   * @return 
+   */
+  public boolean isNewApp();
   
 }
   

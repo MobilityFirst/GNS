@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
-import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexer;
+import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexerV1;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,9 +15,9 @@ public class GenerateLookupRequest<NodeIDType> extends TimerTask {
 
   private int lookupCount;
   private String name;
-  private CCPPacketDemultiplexer packetDemultiplexer;
+  private CCPPacketDemultiplexerV1 packetDemultiplexer;
 
-  public GenerateLookupRequest(String name, int lookupCount, CCPPacketDemultiplexer packetDemultiplexer) {
+  public GenerateLookupRequest(String name, int lookupCount, CCPPacketDemultiplexerV1 packetDemultiplexer) {
 
     this.lookupCount = lookupCount;
     this.name = name;

@@ -159,8 +159,9 @@ public class NodeInfo<NodeIDType> {
 
   @Override
   public String toString() {
-    return "HostInfo{" + "id=" + id.toString() + ", ipAddress=" + getIpAddress() + ", startingPortNumber="
-            + startingPortNumber + ", pingLatency=" + pingLatency + ", latitude=" + latitude + ", longitude=" + longitude + '}';
+    return "NodeInfo{" + "id=" + id + ", activeReplicaID=" + activeReplicaID + ", reconfiguratorID=" + reconfiguratorID + ", ipAddress=" + ipAddress + ", ipAddressString=" + ipAddressString + ", externalIP=" + externalIP + ", startingPortNumber=" + startingPortNumber + ", pingLatency=" + pingLatency + '}';
   }
+
+  
   
 }

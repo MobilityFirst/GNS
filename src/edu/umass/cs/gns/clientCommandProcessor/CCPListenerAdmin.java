@@ -162,17 +162,17 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                   jsonResponse.put("PINGTABLE", pingManager.tableToString(null));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                  returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
+                  returnResponsePacketToSender(incomingPacket.getCPPAddress(), responsePacket, handler);
                 } else {
                   // forward the packet on to the appropriate host
-                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CPP_ADMIN_PORT));
+                  incomingPacket.setCPPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CPP_ADMIN_PORT));
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
                 jsonResponse = new JSONObject();
                 jsonResponse.put("ERROR", "Bad host number " + node);
                 responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
+                returnResponsePacketToSender(incomingPacket.getCPPAddress(), responsePacket, handler);
               }
               break;
             case PINGVALUE:
@@ -187,10 +187,10 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                   jsonResponse.put("PINGVALUE", pingManager.nodeAverage(node2));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                  returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
+                  returnResponsePacketToSender(incomingPacket.getCPPAddress(), responsePacket, handler);
                 } else {
                   // send it to the server that can handle it
-                  incomingPacket.setLnsAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CPP_ADMIN_PORT));
+                  incomingPacket.setCPPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CPP_ADMIN_PORT));
                   //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
                 }
@@ -198,7 +198,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                 jsonResponse = new JSONObject();
                 jsonResponse.put("ERROR", "Bad host number " + node1);
                 responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
-                returnResponsePacketToSender(incomingPacket.getLnsAddress(), responsePacket, handler);
+                returnResponsePacketToSender(incomingPacket.getCPPAddress(), responsePacket, handler);
                 //returnResponsePacketToSender(incomingPacket.gethandlerId(), responsePacket);
               }
               break;

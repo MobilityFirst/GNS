@@ -29,6 +29,7 @@ public class ClientCommandProcessorOptions {
   public static final String DNS_ONLY = "dnsOnly";
   public static final String DEBUG = "debug";
   public static final String GNS_SERVER_IP = "gnsServerIP";
+  public static final String AR_ID = "activeReplicaID";
 
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
@@ -42,6 +43,7 @@ public class ClientCommandProcessorOptions {
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
+    Option activeReplicaID = new Option(AR_ID, true, "id of the corresponding active replica");
     
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -55,6 +57,7 @@ public class ClientCommandProcessorOptions {
     commandLineOptions.addOption(debug);
     commandLineOptions.addOption(fileLoggingLevel);
     commandLineOptions.addOption(consoleOutputLevel);
+    commandLineOptions.addOption(activeReplicaID);
 
     return commandLineOptions;
   }
