@@ -15,7 +15,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public abstract class BasicPacketWithSignatureInfoAndNSAndLNS<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> 
+public abstract class BasicPacketWithSignatureInfoAndNSAndLNS<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> 
 implements PacketInterface, ExtensiblePacketInterface {
 
   public final static String ACCESSOR = "si_accessor";

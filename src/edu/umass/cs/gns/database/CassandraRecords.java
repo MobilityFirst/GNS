@@ -12,7 +12,7 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;

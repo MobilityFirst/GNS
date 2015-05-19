@@ -2,13 +2,14 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package edu.umass.cs.gns.nsdesign.recordmap;
+package edu.umass.cs.gns.newApp.recordmap;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -147,9 +148,12 @@ public interface RecordMapInterface {
   public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException;
 
   // Replica Controller
+  @Deprecated
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException;
 
+  @Deprecated
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException;
 
+  @Deprecated
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException;
 }

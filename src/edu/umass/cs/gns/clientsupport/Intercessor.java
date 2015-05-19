@@ -76,17 +76,17 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
   
-  private AbstractPacketDemultiplexer lnsPacketDemultiplexer;
+  private AbstractPacketDemultiplexer ccpPacketDemultiplexer;
   //private ClientRequestHandlerInterface<NodeIDType> handler;
   private GNSNodeConfig nodeConfig;
   private InetSocketAddress nodeAddress;
 
   public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig nodeConfig,
-          AbstractPacketDemultiplexer lnsPacketDemultiplexer) {
+          AbstractPacketDemultiplexer ccpPacketDemultiplexer) {
     //this.handler = handler;
     this.nodeConfig = nodeConfig;
     this.nodeAddress = nodeAddress;
-    this.lnsPacketDemultiplexer = lnsPacketDemultiplexer;
+    this.ccpPacketDemultiplexer = ccpPacketDemultiplexer;
     if (debuggingEnabled) {
       GNS.getLogger().warning("******** DEBUGGING IS ENABLED IN edu.umass.cs.gns.clientsupport.Intercessor *********");
     }
@@ -206,7 +206,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     try {
       json = queryrecord.toJSONObjectQuestion();
       queryTimeStamp.put(id, System.currentTimeMillis()); // rtt instrumentation
-      injectPacketIntoLNSQueue(json);
+      injectPacketIntoCCPQueue(json);
 
     } catch (JSONException e) {
       e.printStackTrace();
@@ -275,7 +275,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     }
     try {
       JSONObject json = pkt.toJSONObject();
-      injectPacketIntoLNSQueue(json);
+      injectPacketIntoCCPQueue(json);
 
     } catch (JSONException e) {
       e.printStackTrace();
@@ -304,9 +304,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
             nodeAddress);
     try {
       JSONObject json = pkt.toJSONObject();
-      injectPacketIntoLNSQueue(json);
+      injectPacketIntoCCPQueue(json);
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet before injecting in LNS Queue: " + e);
+      GNS.getLogger().severe("Problem converting packet before injecting in CCP Queue: " + e);
     }
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
@@ -454,7 +454,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
             writer, signature, message);
     try {
       JSONObject json = packet.toJSONObject();
-      injectPacketIntoLNSQueue(json);
+      injectPacketIntoCCPQueue(json);
 
     } catch (JSONException e) {
       e.printStackTrace();
@@ -490,15 +490,15 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   }
 
   /**
-   * Helper function for sending JSON packets to the Local Name Server.
+   * Helper function for sending JSON packets to the Client Command Processor.
    * This does not require a socket based send (just a dispatch)
-   * as the LNS runs in the same process as the HTTP server.
+   * as the CCP runs in the same process.
    *
    * @param jsonObject
    */
-  public void injectPacketIntoLNSQueue(JSONObject jsonObject) {
+  public void injectPacketIntoCCPQueue(JSONObject jsonObject) {
 
-    boolean isPacketTypeFound = lnsPacketDemultiplexer.handleJSONObject(jsonObject);
+    boolean isPacketTypeFound = ccpPacketDemultiplexer.handleJSONObject(jsonObject);
     if (isPacketTypeFound == false) {
       GNS.getLogger().severe("Packet type not found at demultiplexer: " + isPacketTypeFound);
     }

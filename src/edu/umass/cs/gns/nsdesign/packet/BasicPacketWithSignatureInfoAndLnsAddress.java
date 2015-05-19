@@ -14,7 +14,7 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public abstract class BasicPacketWithSignatureInfoAndLnsAddress extends BasicPacketWithCPPAddress implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithSignatureInfoAndLnsAddress extends BasicPacketWithCCPAddress implements PacketInterface, ExtensiblePacketInterface {
 
   public final static String ACCESSOR = "si_accessor";
   public final static String SIGNATURE = "si_signature";

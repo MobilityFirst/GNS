@@ -129,7 +129,7 @@ public class Update {
     // clear out current cache
     handler.invalidateActiveNameServer(updateInfo.getName());
     // create objects that must be passed to PendingTasks
-    SendUpdatesTask task = new SendUpdatesTask(updateInfo.getCPPReqID(), handler, updatePacket);
+    SendUpdatesTask task = new SendUpdatesTask(updateInfo.getCCPReqID(), handler, updatePacket);
 //    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
 
     PendingTasks.addToPendingRequests(updateInfo, task, handler.getParameters().getQueryTimeout(), handler);

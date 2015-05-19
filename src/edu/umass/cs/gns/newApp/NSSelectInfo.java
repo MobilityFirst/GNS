@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
+package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;

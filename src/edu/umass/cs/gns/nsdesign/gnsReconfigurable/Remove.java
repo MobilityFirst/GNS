@@ -13,7 +13,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import org.json.JSONException;
 
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.recordmap;
+package edu.umass.cs.gns.newApp.recordmap;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
@@ -8,6 +8,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -208,6 +209,7 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
+  @Deprecated
   public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException {
     try {
       JSONObject json = mongoRecords.lookupEntireRecord(collectionName, name);
@@ -223,6 +225,7 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
+  @Deprecated
   public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException {
     try {
       mongoRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
@@ -236,6 +239,7 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
+  @Deprecated
   public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException {
     try {
       mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());

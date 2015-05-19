@@ -17,7 +17,7 @@ import java.util.Set;
  * @author abhigyan
  *
  */
-public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithCPPAddress implements InterfaceRequest {
+public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithCCPAddress implements InterfaceRequest {
 
   private final static String NAME = "name";
   private final static String PROPOSING_NODE = "propNode";
@@ -62,7 +62,7 @@ public class NewActiveProposalPacket<NodeIDType> extends BasicPacketWithCPPAddre
   }
 
   public NewActiveProposalPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.optString(CPP_ADDRESS, null), json.optInt(CPP_PORT, INVALID_PORT));
+    super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);
     this.proposingNode = unstringer.valueOf(json.getString(PROPOSING_NODE));

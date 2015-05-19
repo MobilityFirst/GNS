@@ -190,7 +190,7 @@ public class GnsHttpServer {
         String responsePostamble = "</p></body></html>";
         String serverStartDateString = "Server start time: " + Format.formatDualDate(serverStartDate);
         String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationHMS(new Date().getTime() - serverStartDate.getTime());
-        String serverLocalNameServerID = "Local CPP address: " + GnsHttpServer.requestHandler.getNodeAddress();
+        String serverLocalNameServerID = "Local CCP address: " + GnsHttpServer.requestHandler.getNodeAddress();
         String numberOfNameServers = "Server count: " + GnsHttpServer.requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
         String requestsReceivedString = "Client requests received: " + GnsHttpServer.requestHandler.getReceivedRequests();

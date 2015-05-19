@@ -60,7 +60,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
   public boolean handleJSONObject(JSONObject json) {
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* CPP received: ", json});
+      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* CCP received: ", json});
     }
     try {
       if (ReconfigurationPacket.isReconfigurationPacket(json)) {
@@ -101,28 +101,12 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
             return true;
           // Add/remove
           case ADD_RECORD:
-             CreateDelete.handleAddPacket(json, handler);
             // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
-            // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
-            // original AddRecordPacket packet. We could probably replace some of this once everything is working.
-            //AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
-            //handler.addRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
-            //ValuesMap valuesMap = new ValuesMap();
-            //valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
-            //handler.sendRequestToRandomReconfigurator(new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()));
-            // original code
-            //AddRemove.handlePacketAddRecord(json, handler);
+            CreateDelete.handleAddPacket(json, handler);
             return true;
           case REMOVE_RECORD:
             // New code which creates DeleteService packets and sends them to the Reconfigurator.
             CreateDelete.handleRemovePacket(json, handler);
-            // FIXME: Also a little bit of extra bookkeeping going on here so we can get back to the 
-            // original RemoveRecordPacket packet. We could probably replace some of this once everything is working.
-            //RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
-            //handler.addRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
-            //handler.sendRequestToRandomReconfigurator(new DeleteServiceName(null, removeRecordPacket.getName(), 0));
-            // original code
-            //AddRemove.handlePacketRemoveRecord(json, handler);
             return true;
           case ADD_CONFIRM:
             AddRemove.handlePacketConfirmAdd(json, handler);
@@ -144,11 +128,11 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
             CommandHandler.handlePacketCommandRequest(json, handler);
             return true;
           default:
-            GNS.getLogger().warning("************************* CPP IGNORING: " + json);
+            GNS.getLogger().warning("************************* CCP IGNORING: " + json);
             return false;
         }
       }
-      GNS.getLogger().warning("************************* CPP CAN'T GET PACKET TYPE... IGNORING: " + json);
+      GNS.getLogger().warning("************************* CCP CAN'T GET PACKET TYPE... IGNORING: " + json);
     } catch (IOException | JSONException e) {
       e.printStackTrace();
     }

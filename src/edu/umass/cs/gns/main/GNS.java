@@ -19,8 +19,8 @@ public class GNS {
   public static final int STARTINGPORT = 24400;
   // FIXME: clean this up and make config settable
   public static final int DEFAULT_CCP_TCP_PORT = 20309;
-  public static final int DEFAULT_CPP_PING_PORT = 20310;
-  public static final int DEFAULT_CPP_ADMIN_PORT = 20311;
+  public static final int DEFAULT_CCP_PING_PORT = 20310;
+  public static final int DEFAULT_CCP_ADMIN_PORT = 20311;
   
   public static final String GNS_URL_PATH = "GNS";
   

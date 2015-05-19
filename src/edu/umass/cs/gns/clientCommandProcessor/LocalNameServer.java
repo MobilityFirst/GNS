@@ -109,7 +109,7 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
     if (!parameters.isEmulatePingLatencies()) {
       // we emulate latencies based on ping latency given in config file,
       // and do not want ping latency values to be updated by the ping module.
-      GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CPP_PING_PORT);
+      GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CCP_PING_PORT);
       this.pingManager = new PingManager<NodeIDType>(null, new GNSConsistentReconfigurableNodeConfig(gnsNodeConfig));
       pingManager.startPinging();
     }

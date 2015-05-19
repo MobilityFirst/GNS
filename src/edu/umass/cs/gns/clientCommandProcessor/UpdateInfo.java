@@ -32,7 +32,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
   private final ClientRequestHandlerInterface<NodeIDType> handler;
 
   public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface<NodeIDType> handler) {
-    this.cppReqID = lnsRequestID;
+    this.ccpReqID = lnsRequestID;
     this.name = name;
     this.startTime = System.currentTimeMillis();
     this.nameserverID = nameserverId;
@@ -57,7 +57,7 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
       success += "-Update";
     }
     return getFinalString(success, name, getResponseLatency(), 0, nameserverID, handler.getNodeAddress(),
-            getCPPReqID(), numLookupActives, System.currentTimeMillis()
+            getCCPReqID(), numLookupActives, System.currentTimeMillis()
             //, getEventCodesString()
     );
   }

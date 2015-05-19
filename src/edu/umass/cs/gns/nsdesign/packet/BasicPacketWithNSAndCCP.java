@@ -16,11 +16,11 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
   public final static String NAMESERVER_ID = "ns_ID";
-  public final static String LNS_ADDRESS = "lnsAddress";
-  public final static String LNS_PORT = "lnsPort";
+  public final static String CCP_ADDRESS = "lnsAddress";
+  public final static String CCP_PORT = "lnsPort";
 
   public final static int INVALID_PORT = -1;
 
@@ -34,16 +34,16 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
    * This is used by the Nameservers so they know which LNS to send the packet back to.
    * Replaces lnsId.
    */
-  private InetSocketAddress lnsAddress = null;
+  private InetSocketAddress ccpAddress = null;
 
   /**
    * Creates a BasicPacketWithNSAndLnsAddress.
    *
    * @param address
    */
-  public BasicPacketWithNSAndLNS(NodeIDType nameServerID, InetSocketAddress address) {
+  public BasicPacketWithNSAndCCP(NodeIDType nameServerID, InetSocketAddress address) {
     this.nameServerID = nameServerID;
-    this.lnsAddress = address;
+    this.ccpAddress = address;
   }
 
   /**
@@ -52,7 +52,7 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
    * @param address
    * @param port
    */
-  public BasicPacketWithNSAndLNS(NodeIDType nameServerID, String address, Integer port) {
+  public BasicPacketWithNSAndCCP(NodeIDType nameServerID, String address, Integer port) {
     this(nameServerID, address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null);
   }
 
@@ -61,9 +61,9 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
     if (nameServerID != null) {
       json.put(NAMESERVER_ID, nameServerID);
     }
-    if (lnsAddress != null) {
-      json.put(LNS_ADDRESS, lnsAddress.getHostString());
-      json.put(LNS_PORT, lnsAddress.getPort());
+    if (ccpAddress != null) {
+      json.put(CCP_ADDRESS, ccpAddress.getHostString());
+      json.put(CCP_PORT, ccpAddress.getPort());
     }
   }
 
@@ -91,16 +91,16 @@ public abstract class BasicPacketWithNSAndLNS<NodeIDType> extends BasicPacket im
    * @return
    */
   public InetSocketAddress getLnsAddress() {
-    return lnsAddress;
+    return ccpAddress;
   }
 
   /**
    * Set the address to which LNS to send the packet back to.
    *
-   * @param lnsAddress
+   * @param ccpAddress
    */
-  public void setLnsAddress(InetSocketAddress lnsAddress) {
-    this.lnsAddress = lnsAddress;
+  public void setCcpAddress(InetSocketAddress ccpAddress) {
+    this.ccpAddress = ccpAddress;
   }
 
 }

@@ -25,7 +25,7 @@ public class LNSRequestInfo {
   /** Unique request ID assigned to this request by the local name server */
   private final int lnsReqID;
 
-  /** Time that CPP started processing this request. */
+  /** Time that CCP started processing this request. */
   protected final long startTime;
   
   /** Time that LNS completed processing this request */

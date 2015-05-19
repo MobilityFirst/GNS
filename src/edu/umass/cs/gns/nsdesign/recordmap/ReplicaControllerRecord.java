@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign.recordmap;
 
+import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
@@ -146,6 +148,7 @@ public class ReplicaControllerRecord<NodeIDType> {
    * This method creates a new initialized ReplicaControllerRecord. by filling in all the fields.
    * If false, this constructor is the same as <code>public ReplicaControllerRecord(String name)</code>.
    */
+  @Deprecated
   public ReplicaControllerRecord(BasicRecordMap replicaControllerDB, String name,
           Set<Object> replicaControllers,
           boolean initialize) {

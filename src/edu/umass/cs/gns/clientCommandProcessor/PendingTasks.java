@@ -171,7 +171,7 @@ public class PendingTasks {
       GNS.getLogger().fine("Running pending tasks. Sending error messages: Count " + runTasks.size());
       for (PendingTask task : runTasks) {
         // remove request from queue
-        if (handler.removeRequestInfo(task.requestInfo.getCPPReqID()) != null) {
+        if (handler.removeRequestInfo(task.requestInfo.getCCPReqID()) != null) {
           task.requestInfo.setFinishTime(); // set finish time for request
 //          if (eventCode != null) {
 //            task.requestInfo.addEventCode(eventCode);

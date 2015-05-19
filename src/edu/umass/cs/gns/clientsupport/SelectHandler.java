@@ -112,7 +112,7 @@ public class SelectHandler {
 
   private static String sendSelectHelper(int id, SelectRequestPacket sendPacket, ClientRequestHandlerInterface handler) {
     try {
-      handler.getIntercessor().injectPacketIntoLNSQueue(sendPacket.toJSONObject());
+      handler.getIntercessor().injectPacketIntoCCPQueue(sendPacket.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring JSON error while sending Select request: " + e);
       e.printStackTrace();

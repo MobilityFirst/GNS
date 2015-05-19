@@ -48,7 +48,13 @@ public class CommandHandler {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  public static void handlePacketCommandRequest(JSONObject incomingJSON, final ClientRequestHandlerInterface handler)
+  public static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler)
+          throws JSONException, UnknownHostException {
+    handlePacketCommandRequest(incomingJSON, handler, null);
+  }
+
+  private static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler,
+          NewApp app)
           throws JSONException, UnknownHostException {
     final Long receiptTime = System.currentTimeMillis(); // instrumentation
     if (handler.getParameters().isDebugMode()) {
@@ -71,36 +77,28 @@ public class CommandHandler {
               packet.getServiceName(), returnValue,
               handler.getReceivedRequests(), handler.getRequestsPerSecond(),
               System.currentTimeMillis() - receiptTime);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+
+      if (app != null) {
+        // call back the app directly
+        try {
+          if (handler.getParameters().isDebugMode()) {
+            GNS.getLogger().info("HANDLING COMMAND REPLY : " + returnPacket.toString());
+          }
+          handleCommandReturnValuePacketForApp(returnPacket.toJSONObject(), app);
+        } catch (IOException e) {
+          GNS.getLogger().severe("Problem replying to command: " + e);
+        }
+      } else {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+        }
+        handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
       }
-      handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
+
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem  executing command: " + e);
       e.printStackTrace();
     }
-    // This separate thread  makes it actually work.
-    // I thought we were in a separate worker thread from 
-    // the NIO message handling thread. Turns out not.
-//    (new Thread() {
-//      @Override
-//      public void run() {
-//        try {
-//          CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
-//          // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
-//          CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(), returnValue,
-//                  handler.getReceivedRequests(), handler.getRequestsPerSecond(),
-//          System.currentTimeMillis() - receiptTime);
-//          if (handler.getParameters().isDebugMode()) {
-//            GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
-//          }
-//          handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
-//        } catch (JSONException e) {
-//          GNS.getLogger().severe("Problem  executing command: " + e);
-//          e.printStackTrace();
-//        }
-//      }
-//    }).start();
   }
 
   // this little dance is because we need to remove the signature to get the message that was signed
@@ -153,14 +151,19 @@ public class CommandHandler {
   //
   // Code for handling commands at the app
   //
-  static class CommandQuery {
+  static class CommandRequestInfo {
 
-    private String host;
-    private int port;
+    private final String host;
+    private final int port;
+    // For debugging
+    private final String command;
+    private final String guid;
 
-    public CommandQuery(String host, int port) {
+    public CommandRequestInfo(String host, int port, String command, String guid) {
       this.host = host;
       this.port = port;
+      this.command = command;
+      this.guid = guid;
     }
 
     public String getHost() {
@@ -170,41 +173,64 @@ public class CommandHandler {
     public int getPort() {
       return port;
     }
+
+    public String getCommand() {
+      return command;
+    }
+
+    public String getGuid() {
+      return guid;
+    }
+
   }
 
-  private static final ConcurrentMap<Integer, CommandQuery> outStandingQueries = new ConcurrentHashMap<>(10, 0.75f, 3);
+  private static final ConcurrentMap<Integer, CommandRequestInfo> outStandingQueries = new ConcurrentHashMap<>(10, 0.75f, 3);
 
-  private static InetSocketAddress cppAddress;
+  private static InetSocketAddress ccpAddress;
 
   static {
     try {
-      cppAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNS.DEFAULT_CCP_TCP_PORT);
-      GNS.getLogger().info("CPP Address is " + cppAddress);
+      ccpAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNS.DEFAULT_CCP_TCP_PORT);
+      GNS.getLogger().info("CCP Address is " + ccpAddress);
     } catch (UnknownHostException e) {
-      GNS.getLogger().info("Unabled to determine CPP address: " + e);
-      cppAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CCP_TCP_PORT);
+      GNS.getLogger().severe("Unabled to determine CCP address: " + e + "; using loopback address");
+      ccpAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CCP_TCP_PORT);
     }
   }
 
   public static void handleCommandPacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandPacket packet = new CommandPacket(json);
     // Squirrel away the host and port so we know where to send the command return value
-    outStandingQueries.put(packet.getClientRequestId(), new CommandQuery(packet.getSenderAddress(), packet.getSenderPort()));
-    // remove these so the stamper will put new ones in so the packet will find it's way back here
-    json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
-    json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+    // A little unnecessary hair for debugging... also peek inside the command.
+    JSONObject command;
+    String commandString = null;
+    String guid = null;
+    if ((command = packet.getCommand()) != null) {
+      commandString = command.optString(COMMANDNAME, null);
+      guid = command.optString(GUID, command.optString(NAME, null));
+    }
+    outStandingQueries.put(packet.getClientRequestId(),
+            new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
+                    commandString, guid));
     // Send it to the client command handler
-    app.getNioServer().sendToAddress(cppAddress, json);
+    if (app.getLocalCCP() != null) {
+      handlePacketCommandRequest(json, app.getLocalCCP().getRequestHandler(), app);
+    } else {
+      // remove these so the stamper will put new ones in so the packet will find it's way back here
+      json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
+      json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+      app.getNioServer().sendToAddress(ccpAddress, json);
+    }
   }
 
   public static void handleCommandReturnValuePacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     int id = returnPacket.getClientRequestId();
-    CommandQuery sentInfo;
+    CommandRequestInfo sentInfo;
     if ((sentInfo = outStandingQueries.get(id)) != null) {
       outStandingQueries.remove(id);
       if (Config.debuggingEnabled) {
-        GNS.getLogger().info("APP IS SENDING VALUE BACK TO "
+        GNS.getLogger().info("&&&&&&& For " + sentInfo.getCommand() + " | " + sentInfo.getGuid() + " APP IS SENDING VALUE BACK TO "
                 + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
       }
       app.getNioServer().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),

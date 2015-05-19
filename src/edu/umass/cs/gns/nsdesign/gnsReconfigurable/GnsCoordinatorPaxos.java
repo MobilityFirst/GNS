@@ -173,9 +173,9 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
           // current active replica set, it will continue sending requests to the far away name server.
           Set<NodeIDType> nodeIds = paxosManager.getPaxosNodeIDs(name);
           if (nodeIds != null) {
-            RequestActivesPacket<NodeIDType> requestActives = new RequestActivesPacket<NodeIDType>(name, dnsPacket.getCPPAddress(), 0, nodeID);
+            RequestActivesPacket<NodeIDType> requestActives = new RequestActivesPacket<NodeIDType>(name, dnsPacket.getCCPAddress(), 0, nodeID);
             requestActives.setActiveNameServers(nodeIds);
-            nioTransport.sendToAddress(dnsPacket.getCPPAddress(), requestActives.toJSONObject());
+            nioTransport.sendToAddress(dnsPacket.getCCPAddress(), requestActives.toJSONObject());
           }
           if (readCoordination && dnsPacket.isQuery()) {
             // Originally the responder field was used to communicate back to the client about which node responded to a query.

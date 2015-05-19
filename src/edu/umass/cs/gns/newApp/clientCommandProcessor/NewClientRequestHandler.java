@@ -105,14 +105,16 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress, 
-          Object activeReplicaID,
+          NodeIDType activeReplicaID,
           GNSNodeConfig<NodeIDType> gnsNodeConfig,
           JSONMessenger<NodeIDType> messenger, RequestHandlerParameters parameters) {
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
-    this.activeReplicaID = activeReplicaID;
+    // a little hair to convert fred to fred-activeReplica if we just get fred
+    this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID :
+            gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;

@@ -7,7 +7,7 @@ import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
@@ -32,6 +32,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 5/19/14.
  */
+@Deprecated
 public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface {
 
   /*** ID of this node */
@@ -188,7 +189,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
       dnsPacket.setTTL(0);
       dnsPacket.setSingleReturnValue(fakeResultValue);
     }
-    nioServer.sendToAddress(dnsPacket.getCPPAddress(), dnsPacket.toJSONObject());
+    nioServer.sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
   }
 
   private static ResultValue fakeResultValue;

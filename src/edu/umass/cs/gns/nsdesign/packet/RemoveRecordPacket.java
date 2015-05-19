@@ -25,7 +25,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS implements InterfaceRequest {
+public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
@@ -79,7 +79,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS impl
   @SuppressWarnings("unchecked")
   public RemoveRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
        throw new JSONException("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
     }

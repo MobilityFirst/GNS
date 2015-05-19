@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.recordmap;
+package edu.umass.cs.gns.newApp.recordmap;
 
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.CassandraRecords;
@@ -7,6 +7,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;

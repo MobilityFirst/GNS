@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.recordmap;
+package edu.umass.cs.gns.newApp.recordmap;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.AbstractRecordCursor;

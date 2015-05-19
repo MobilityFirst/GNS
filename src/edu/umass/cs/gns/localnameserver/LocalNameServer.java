@@ -119,7 +119,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       InetSocketAddress address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(),
               options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : DEFAULT_LNS_TCP_PORT);
       LocalNameServer lns = new LocalNameServer(address, new LNSNodeConfig(options.get(NS_FILE)));
-      lns.testCache();
+      //lns.testCache();
     } catch (IOException e) {
       System.out.println("Usage: java -cp GNS.jar edu.umass.cs.gns.localnameserver <nodeConfigFile>");
     }

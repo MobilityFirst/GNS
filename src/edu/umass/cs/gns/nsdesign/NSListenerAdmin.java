@@ -16,7 +16,7 @@ import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
@@ -142,7 +142,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
             }
             dumpRequestPacket.setJsonArray(jsonArray);
             Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), 
-                    dumpRequestPacket.getCPPAddress());
+                    dumpRequestPacket.getCCPAddress());
             
             GNS.getLogger().info("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             break;
@@ -184,7 +184,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGTABLE", gnsReconfigurable.getPingManager().tableToString(gnsReconfigurable.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCPPAddress());
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCCPAddress());
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGTABLE!");
                 }
@@ -196,7 +196,7 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", gnsReconfigurable.getPingManager().nodeAverage(node2));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
-                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCPPAddress());
+                  Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCCPAddress());
                 } else {
                   GNS.getLogger().warning("NSListenerAdmin wrong node for PINGVALUE!");
                 }

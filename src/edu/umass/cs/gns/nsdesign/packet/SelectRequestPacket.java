@@ -20,7 +20,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS implements InterfaceRequest {
+public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP implements InterfaceRequest {
 
   public enum SelectOperation {
 
@@ -162,7 +162,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndLNS imp
   @SuppressWarnings("unchecked")
   public SelectRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_REQUEST) {
       throw new JSONException("SelectRequestPacket: wrong packet type " + Packet.getPacketType(json));
     }

@@ -1,5 +1,8 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.newApp.Select;
+import edu.umass.cs.gns.newApp.GnsReconUpdate;
+import edu.umass.cs.gns.newApp.GnsReconLookup;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -15,9 +18,9 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
@@ -46,6 +49,7 @@ import java.util.Set;
  *
  * Created by abhigyan on 2/26/14.
  */
+@Deprecated
 public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface, InterfaceReplicable, InterfaceReconfigurable {
 
   /**

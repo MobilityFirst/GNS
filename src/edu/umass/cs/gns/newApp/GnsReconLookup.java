@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
+package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.clientsupport.Defs;
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
@@ -10,12 +10,12 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
-import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -86,7 +86,7 @@ public class GnsReconLookup {
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       if (!recovery) {
-        gnsApp.getNioServer().sendToAddress(dnsPacket.getCPPAddress(), dnsPacket.toJSONObject());
+        gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       }
     } else {
       // NOW WE DO THE ACTUAL LOOKUP
@@ -103,12 +103,12 @@ public class GnsReconLookup {
       if (reader != null) { // reader will be null for internal system reads
         if (field != null) {// single field check
           errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message,
-                  MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCPPAddress());
+                  MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress());
         } else { //multi field check - return an error if any field doesn't pass
           for (String key : fields) {
             NSResponseCode code;
             if ((code = NSAuthentication.signatureAndACLCheck(guid, key, reader, signature,
-                    message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCPPAddress())).isAnError()) {
+                    message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress())).isAnError()) {
               errorCode = code;
             }
           }
@@ -120,10 +120,10 @@ public class GnsReconLookup {
         dnsPacket.getHeader().setResponseCode(errorCode);
         dnsPacket.setResponder(gnsApp.getNodeID());
         if (Config.debuggingEnabled) {
-          GNS.getLogger().fine("Sending to " + dnsPacket.getCPPAddress() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+          GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
         }
         if (!recovery) {
-          gnsApp.getNioServer().sendToAddress(dnsPacket.getCPPAddress(), dnsPacket.toJSONObjectForErrorResponse());
+          gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
         }
       } else {
         // All signature and ACL checks passed see if we can find the field to return;
@@ -155,7 +155,7 @@ public class GnsReconLookup {
         // Time to send something back to the client
         dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
         if (!recovery) {
-          gnsApp.getNioServer().sendToAddress(dnsPacket.getCPPAddress(), dnsPacket.toJSONObject());
+          gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
         }
       }
     }
@@ -182,14 +182,14 @@ public class GnsReconLookup {
   private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket dnsPacket, String guid, String field, NameRecord nameRecord,
           GnsApplicationInterface gnsApp) throws FailedDBOperationException, IOException, JSONException {
     if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
-      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getCPPAddress());
+      ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getCCPAddress());
       // Set up the response packet
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
       dnsPacket.setResponder(gnsApp.getNodeID());
       dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
       dnsPacket.setRecordValue(valuesMap);
       // .. and send it
-      gnsApp.getNioServer().sendToAddress(dnsPacket.getCPPAddress(), dnsPacket.toJSONObject());
+      gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       return true;
     }
     return false;

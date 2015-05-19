@@ -53,7 +53,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 			MAX_TASKS);
 	private final HashMap<EventType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>> defaultTasks = new HashMap<EventType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>>();
 
-	public Logger log = NIOTransport.LOCAL_LOGGER ? Logger
+	private Logger log = NIOTransport.LOCAL_LOGGER ? Logger
 			.getLogger(getClass().getName()) : GNS.getLogger();
 
 	public ProtocolExecutor(JSONMessenger<NodeIDType> messenger) {

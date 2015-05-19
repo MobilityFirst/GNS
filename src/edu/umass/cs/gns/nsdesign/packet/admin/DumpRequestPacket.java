@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet.admin;
 
-import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithCPPAddress;
+import edu.umass.cs.gns.nsdesign.packet.BasicPacketWithCCPAddress;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;
@@ -16,7 +16,7 @@ import org.json.JSONObject;
  * @author Westy
  * @param <NodeIDType>
  */
-public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCPPAddress {
+public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCCPAddress {
 
   public final static String ID = "id";
   public final static String PRIMARY_NAMESERVER = "primary";
@@ -80,7 +80,7 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCPPAddress {
    * @throws org.json.JSONException
    */
   public DumpRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.optString(CPP_ADDRESS, null), json.optInt(CPP_PORT, INVALID_PORT));
+    super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.DUMP_REQUEST) {
       Exception e = new Exception("DumpRequestPacket: wrong packet type " + Packet.getPacketType(json));
       e.printStackTrace();

@@ -58,7 +58,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   private long version = 0l;
   private NodeIDType nodeID; // if this is null you should check isLocalNameServer; otherwise it might be invalid
-  private boolean isLocalNameServer = false;
+  private boolean isCCP = false;
   private final String hostsFile;
 
   // A hack for the transition. If set to true you'll just get
@@ -84,7 +84,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
     if (nameServerID == null) {
-      this.isLocalNameServer = true;
+      this.isCCP = true;
     }
     this.nodeID = nameServerID;
 
@@ -97,7 +97,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     // Informational purposes
     for (Entry<NodeIDType, NodeInfo<NodeIDType>> hostInfoEntry : hostInfoMapping.entrySet()) {
       GNS.getLogger().info("For "
-              + (nameServerID == null ? "LNS" : nameServerID.toString())
+              + (nameServerID == null ? "CCP" : nameServerID.toString())
               + " Id: " + hostInfoEntry.getValue().getId().toString()
               + " Host:" + hostInfoEntry.getValue().getIpAddress()
               + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
@@ -109,10 +109,10 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Creates a GNSNodeConfig for the LocalNameServer and initializes it from a name server host file.
    *
    * @param hostsFile
-   * @param isLocalNameServer
+   * @param isCCP
    * @throws IOException
    */
-  public GNSNodeConfig(String hostsFile, boolean isLocalNameServer) throws IOException {
+  public GNSNodeConfig(String hostsFile, boolean isCCP) throws IOException {
     this(hostsFile, null);
   }
 
@@ -164,6 +164,10 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
       }
     }
     return null;
+  }
+  
+  public boolean isActiveReplica(NodeIDType id) {
+    return getActiveReplicaInfo(id) != null;
   }
 
   // a hack for the transition
@@ -290,7 +294,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public int getNodePort(NodeIDType id) {
-    // handle special case for CPP node
+    // handle special case for CCP node
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getPort();
     }
@@ -349,7 +353,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public InetAddress getNodeAddress(NodeIDType id) {
-    // handle special case for CPP node
+    // handle special case for CCP node
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getAddress();
     }
@@ -580,7 +584,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
               spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT);
     }
     // some idiot checking of the given Id
-    if (!isLocalNameServer) {
+    if (!isCCP) {
       NodeInfo<NodeIDType> nodeInfo = newHostInfoMapping.get(this.nodeID);
       if (nodeInfo == null) {
         throw new IOException("NodeId not found in hosts file:" + this.nodeID.toString());
@@ -687,7 +691,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   @Override
   public String toString() {
-    return "GNSNodeConfig{" + "nodeID=" + nodeID + ", isLocalNameServer=" + isLocalNameServer + '}';
+    return "GNSNodeConfig{" + "nodeID=" + nodeID + ", isLocalNameServer=" + isCCP + '}';
   }
 
   /**

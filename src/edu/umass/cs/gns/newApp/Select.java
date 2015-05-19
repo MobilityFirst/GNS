@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
+package edu.umass.cs.gns.newApp;
 /*
  * Copyright (C) 2014
  * University of Massachusetts
@@ -11,7 +11,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
 import org.json.JSONArray;

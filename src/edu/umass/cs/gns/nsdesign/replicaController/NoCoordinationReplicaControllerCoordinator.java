@@ -15,6 +15,7 @@ import org.json.JSONObject;
  *
  * Created by abhigyan on 4/8/14.
  */
+@Deprecated
 public class NoCoordinationReplicaControllerCoordinator<NodeIDType> implements ReplicaControllerCoordinator{
   private final NodeIDType nodeID;
   private final InterfaceNodeConfig<NodeIDType> nodeConfig;

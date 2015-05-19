@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
+package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnFieldType;
@@ -12,7 +12,7 @@ import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.util.NSResponseCode;
 import org.json.JSONException;
 

@@ -4,8 +4,8 @@ import edu.umass.cs.gns.nsdesign.packet.Packet;
 import org.json.JSONObject;
 
 /**
- * Class represents the abstract class in which CPP stores info for each ongoing request,
- * from the time it is received by a CPP until a success/failure response is returned.
+ * Class represents the abstract class in which CCP stores info for each ongoing request,
+ * from the time it is received by a CCP until a success/failure response is returned.
  * Only a single instance of this class is defined during the lifetime of a request.
  *
  * Some fields in this class are necessary to implement functionality of a local name server, while
@@ -18,12 +18,12 @@ public abstract class RequestInfo {
   protected String name;
 
   /** Unique request ID assigned to this request by the local name server */
-  protected int cppReqID;
+  protected int ccpReqID;
 
-  /** Time that CPP started processing this request */
+  /** Time that CCP started processing this request */
   protected long startTime;
 
-  /** True if CPP is requesting current set of active replicas for this request. False, otherwise */
+  /** True if CCP is requesting current set of active replicas for this request. False, otherwise */
   private boolean lookupActives = false;
 
   /** Number of times this request has initiated lookup actives operation.
@@ -63,8 +63,8 @@ public abstract class RequestInfo {
     return name;
   }
 
-  public synchronized int getCPPReqID() {
-    return cppReqID;
+  public synchronized int getCCPReqID() {
+    return ccpReqID;
   }
 
   public synchronized long getStartTime() {

@@ -36,7 +36,7 @@ import java.util.Set;
  *
  * @param <NodeIDType>
  */
-public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> implements InterfaceRequest {
+public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
@@ -135,7 +135,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDT
    */
   public AddRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {

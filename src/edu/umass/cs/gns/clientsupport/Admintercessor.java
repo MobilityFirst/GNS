@@ -12,7 +12,7 @@ import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.nsdesign.packet.admin.SentinalPacket;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -464,7 +464,7 @@ public class Admintercessor<NodeIDType> {
     GNS.getLogger().finer("Sending dump request id = " + id);
     try {
       sendAdminPacket(new DumpRequestPacket(id,
-              new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CPP_ADMIN_PORT),
+              new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CCP_ADMIN_PORT),
               tagName).toJSONObject(), handler);
     } catch (JSONException e) {
       GNS.getLogger().warning("Ignoring error sending DUMP request for id " + id + " : " + e);

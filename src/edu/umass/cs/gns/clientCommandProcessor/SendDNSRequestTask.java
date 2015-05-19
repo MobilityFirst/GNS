@@ -239,7 +239,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
 
       // set this information in anticipation of creating the json object below
       //incomingPacket.setLnsId(handler.getNodeID());
-      incomingPacket.setCPPAddress(handler.getNodeAddress());
+      incomingPacket.setCCPAddress(handler.getNodeAddress());
       incomingPacket.getHeader().setId(lnsReqID);
       JSONObject json;
       try {

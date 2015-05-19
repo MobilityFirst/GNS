@@ -8,6 +8,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -17,13 +18,11 @@ import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
 import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconLookup;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconUpdate;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.Select;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
@@ -32,9 +31,9 @@ import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.nsdesign.packet.StopPacket;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
-import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
+import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
@@ -45,6 +44,7 @@ import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -72,6 +72,8 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    */
   private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
   
+  private ClientCommandProcessor<NodeIDType> localCCP = null;
+  
   public NewApp(NodeIDType id, GNSInterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
@@ -81,6 +83,18 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.nioServer = nioServer;
+    try {
+    this.localCCP = new ClientCommandProcessor(
+            new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
+            (GNSNodeConfig)nodeConfig,
+            AppReconfigurableNode.debuggingEnabled,
+            (String) id, 
+            false,
+            false,
+            null);
+    } catch (IOException e) {
+      GNS.getLogger().info("App could not create CCP:" + e);
+    }
   }
 
   private static PacketType[] types = {
@@ -106,11 +120,11 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
       JSONObject json = new JSONObject(request.toString());
       // CHECK THIS!!!!!!
       boolean noCoordinationState = json.has(Config.NO_COORDINATOR_STATE_MARKER);
-      if (Config.debuggingEnabled && noCoordinationState) {
+      if (AppReconfigurableNode.debuggingEnabled && noCoordinationState) {
         GNS.getLogger().info("*********** APP " + nodeID + " packet has NO_COORDINATOR_STATE_MARKER: " + json.toString());
       }
       Packet.PacketType packetType = Packet.getPacketType(json);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNode.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name() + " packet: " + json.toString());
       }
       switch (packetType) {
@@ -203,7 +217,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   @Override
   public InterfaceRequest getRequest(String string)
           throws RequestParseException {
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     }
     // Special case handling of NoopPacket packets
@@ -238,11 +252,11 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   public String getState(String name) {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNode.debuggingEnabled) {
         GNS.getLogger().info(nameRecord.toString());
       }
       TransferableNameRecordState state = new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNode.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Getting state: " + state.toString());
       }
       return state.toString();
@@ -266,22 +280,22 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    */
   @Override
   public boolean updateState(String name, String state) {
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
     }
     boolean stateUpdated = false;
     try {
-      if (true) {
+      //if (true) {
         TransferableNameRecordState state1 = new TransferableNameRecordState(state);
         NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
                 state1.valuesMap, state1.ttl,
                 nodeConfig.getReplicatedReconfigurators(name));
         NameRecord.addNameRecord(nameRecordDB, nameRecord);
-      } else {
-        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
-        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-        nameRecord.updateState(state1.valuesMap, state1.ttl);
-      }
+//      } else {
+//        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
+//        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
+//        nameRecord.updateState(state1.valuesMap, state1.ttl);
+//      }
       stateUpdated = true;
       // todo handle the case if record does not exist. for this update state should return record not found exception.
     } catch (JSONException e) {
@@ -289,9 +303,9 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     } catch (RecordExistsException e) {
       GNS.getLogger().severe("Record already exists: " + e.getMessage());
       e.printStackTrace();
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-      e.printStackTrace();
+//    } catch (FieldNotFoundException e) {
+//      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+//      e.printStackTrace();
     } catch (FailedDBOperationException e) {
       GNS.getLogger().severe("Failed update exception: " + e.getMessage());
       e.printStackTrace();
@@ -340,7 +354,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
       value = nameRecord.getValuesMap();
       int recordVersion = nameRecord.getActiveVersion();
       if (recordVersion != epoch) {
-        if (Config.debuggingEnabled) {
+        if (AppReconfigurableNode.debuggingEnabled) {
           GNS.getLogger().warning("&&&&&&& APP " + nodeID + " for " + name + " ignoring epoch mismatch: epoch "
                   + epoch + " record version " + recordVersion);
         }
@@ -358,12 +372,12 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
       return null;
     }
     if (value == null) {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNode.debuggingEnabled) {
         GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + " not found!");
       }
       return null;
     } else {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNode.debuggingEnabled) {
         GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + ": " + new TransferableNameRecordState(value, ttl).toString());
       }
       return new TransferableNameRecordState(value, ttl).toString();
@@ -372,7 +386,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
 
   @Override
   public void putInitialState(String name, int epoch, String state) {
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
     }
     TransferableNameRecordState weirdState;
@@ -392,7 +406,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
           NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, weirdState.valuesMap, weirdState.ttl,
                   nodeConfig.getReplicatedReconfigurators(name));
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
-          if (Config.debuggingEnabled) {
+          if (AppReconfigurableNode.debuggingEnabled) {
             GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
           }
         } catch (RecordExistsException e) {
@@ -425,7 +439,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
 
   @Override
   public boolean deleteFinalState(String name, int epoch) {
-//    if (Config.debuggingEnabled) {
+//    if (AppReconfigurableNode.debuggingEnabled) {
 //      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
 //    }
     Integer recordEpoch = getEpoch(name);
@@ -433,7 +447,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
 //      if (recordEpoch != null && recordEpoch == epoch) {
 //        NameRecord.removeNameRecord(nameRecordDB, name);
 //      } else {
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + " for " + name + " ignoring delete. Epoch is "
               + epoch + " and record version is " + recordEpoch);
     }
@@ -491,4 +505,9 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   public PingManager getPingManager() {
     return pingManager;
   }
+
+  public ClientCommandProcessor<NodeIDType> getLocalCCP() {
+    return localCCP;
+  }
+ 
 }

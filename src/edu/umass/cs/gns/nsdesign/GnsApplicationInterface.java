@@ -8,7 +8,7 @@
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 

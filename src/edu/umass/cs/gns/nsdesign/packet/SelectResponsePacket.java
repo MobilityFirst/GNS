@@ -18,7 +18,7 @@ import org.json.JSONObject;
  *
  * @author Westy
  */
-public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType> implements InterfaceRequest {
+public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
   public enum ResponseCode {
 
@@ -118,7 +118,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndLNS<No
    */
   public SelectResponsePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     if (Packet.getPacketType(json) != Packet.PacketType.SELECT_RESPONSE) {;
       throw new JSONException("StatusPacket: wrong packet type " + Packet.getPacketType(json));
     }

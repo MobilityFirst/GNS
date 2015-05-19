@@ -25,7 +25,7 @@ import java.util.Set;
  * @author Abhigyan
  * @param <NodeIDType>
  */
-public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS implements InterfaceRequest {
+public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP implements InterfaceRequest {
 
   public static final String NAME = "name";
   public static final String ACTIVES = "actives";
@@ -58,7 +58,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndLNS im
   @SuppressWarnings("unchecked")
   public RequestActivesPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     this.name = json.getString(NAME);
     this.activeNameServers = json.has(ACTIVES) ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVES)) : null;
     //this.activeNameServers = json.has(ACTIVES) ? Util.stringToSetOfNodeId(json.getString(ACTIVES)) : null;

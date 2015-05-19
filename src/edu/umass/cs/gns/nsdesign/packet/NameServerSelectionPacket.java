@@ -34,7 +34,7 @@ import org.json.JSONObject;
  * @param <NodeIDType>
  ***********************************************************
  */
-public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndLNS<NodeIDType>
+public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType>
         implements InterfaceRequest {
 
   private final static String NAME = "name";
@@ -92,7 +92,7 @@ public class NameServerSelectionPacket<NodeIDType> extends BasicPacketWithNSAndL
    */
   public NameServerSelectionPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(LNS_ADDRESS, null), json.optInt(LNS_PORT, INVALID_PORT));
+            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
     this.type = Packet.getPacketType(json);
     this.name = json.getString(NAME);
     this.vote = json.getInt(VOTE);

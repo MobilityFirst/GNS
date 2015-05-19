@@ -18,7 +18,6 @@ import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
@@ -27,7 +26,6 @@ import edu.umass.cs.gns.util.NetworkUtils;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,28 +34,28 @@ import java.util.Map;
  * @param <NodeIDType>
  */
 public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
-  
+
   private final InetSocketAddress nodeAddress;
   private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
-  private final JSONMessenger<NodeIDType> messenger;
+  private JSONMessenger<NodeIDType> messenger;
   /**
    * Handles the client support processing for the local name server.
    */
-  private final Intercessor<NodeIDType> intercessor;
+  private Intercessor<NodeIDType> intercessor;
 
   /**
    * Handles administrative client support for the local name server.
    */
-  private final Admintercessor<NodeIDType> admintercessor;
+  private Admintercessor<NodeIDType> admintercessor;
   /**
    * Ping manager object for pinging other nodes and updating ping latencies.
    */
-  private final PingManager<NodeIDType> pingManager;
+  private PingManager<NodeIDType> pingManager;
   /**
    * We also keep a pointer to the lnsListenerAdmin so we can shut it down.
    */
-  private final CCPListenerAdmin<NodeIDType> lnsListenerAdmin;
-  
+  private CCPListenerAdmin<NodeIDType> lnsListenerAdmin;
+
   EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler;
 
   /**
@@ -69,93 +67,117 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
    * We keep a pointer to the dnsTranslator so we can shut it down.
    */
   private DnsTranslator dnsTranslator;
-  
+
   private final Logger log = Logger.getLogger(getClass().getName());
-  
-  ClientCommandProcessor(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
-          JSONMessenger<NodeIDType> messenger, Map<String, String> options) throws IOException {
+
+  ClientCommandProcessor(String nsFile, String host, int port,
+          boolean debug,
+          NodeIDType replicaID,
+          boolean dnsGnsOnly,
+          boolean dnsOnly,
+          String gnsServerIP
+  ) throws IOException {
+    this(new InetSocketAddress(host, port), new GNSNodeConfig(nsFile, true),
+            debug, replicaID, dnsGnsOnly, dnsOnly, gnsServerIP);
+  }
+
+  public ClientCommandProcessor(InetSocketAddress nodeAddress, 
+          GNSNodeConfig gnsNodeConfig,
+          boolean debug,
+          NodeIDType replicaID,
+          boolean dnsGnsOnly,
+          boolean dnsOnly,
+          String gnsServerIP) throws IOException {
+
     AbstractPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer();
     this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<>();
     this.nodeAddress = nodeAddress;
     this.nodeConfig = gnsNodeConfig;
-    this.messenger = messenger;
-    messenger.addPacketDemultiplexer(demultiplexer);
-    RequestHandlerParameters parameters = new RequestHandlerParameters();
-    //
-    parameters.setDebugMode(options.containsKey(DEBUG));
-    //
-    this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
-            options.get(ClientCommandProcessorOptions.AR_ID),
-            gnsNodeConfig, messenger, parameters);
-    ((CCPPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
-    // Start HTTP server
-    GnsHttpServer.runHttp(requestHandler);
-    // Start Ping servers
-    GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CPP_PING_PORT);
-    this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig(gnsNodeConfig));
-    pingManager.startPinging();
-    //
-    // After starting PingManager because it accesses PingManager.
-    (this.lnsListenerAdmin = new CCPListenerAdmin<>(requestHandler, pingManager)).start();
 
-    // The Admintercessor needs to use the CCPListenerAdmin;
-    this.admintercessor.setListenerAdmin(lnsListenerAdmin);
-    
+    RequestHandlerParameters parameters = new RequestHandlerParameters();
     try {
-      if (options.containsKey(DNS_GNS_ONLY)) {
-        //if (StartLocalNameServer.dnsGnsOnly) {
-        dnsTranslator = new DnsTranslator(Inet4Address.getByName("0.0.0.0"), 53, requestHandler);
-        dnsTranslator.start();
-      } else if (options.containsKey(DNS_ONLY)) {
-        //} else if (StartLocalNameServer.dnsOnly) {
-        if (options.get(GNS_SERVER_IP) == null) {
-          //if (StartLocalNameServer.gnsServerIP == null) {
-          GNS.getLogger().severe("FAILED TO START DNS SERVER: GNS Server IP must be specified");
-          return;
+      this.messenger = new JSONMessenger<NodeIDType>(
+              (new JSONNIOTransport(nodeAddress, gnsNodeConfig, new PacketDemultiplexerDefault(),
+                      true)).enableStampSenderPort());
+      //
+      messenger.addPacketDemultiplexer(demultiplexer);
+      //
+      parameters.setDebugMode(debug);
+    //parameters.setDebugMode(options.containsKey(DEBUG));
+      //
+      this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
+              replicaID,
+              //options.get(ClientCommandProcessorOptions.AR_ID),
+              gnsNodeConfig, messenger, parameters);
+      ((CCPPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
+      // Start HTTP server
+      GnsHttpServer.runHttp(requestHandler);
+      // Start Ping servers
+      GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CCP_PING_PORT);
+      this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig(gnsNodeConfig));
+      pingManager.startPinging();
+    //
+      // After starting PingManager because it accesses PingManager.
+      (this.lnsListenerAdmin = new CCPListenerAdmin<>(requestHandler, pingManager)).start();
+
+      // The Admintercessor needs to use the CCPListenerAdmin;
+      this.admintercessor.setListenerAdmin(lnsListenerAdmin);
+
+      try {
+        if (dnsGnsOnly) {
+          //if (options.containsKey(DNS_GNS_ONLY)) {
+          dnsTranslator = new DnsTranslator(Inet4Address.getByName("0.0.0.0"), 53, requestHandler);
+          dnsTranslator.start();
+        } else if (dnsOnly) {
+          //} else if (options.containsKey(DNS_ONLY)) {
+          if (gnsServerIP == null) {
+            //if (options.get(GNS_SERVER_IP) == null) {
+            GNS.getLogger().severe("FAILED TO START DNS SERVER: GNS Server IP must be specified");
+            return;
+          }
+          GNS.getLogger().info("GNS Server IP" + gnsServerIP);
+          //GNS.getLogger().warning("gns server IP" + StartLocalNameServer.gnsServerIP);
+          udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8",
+                  gnsServerIP, requestHandler);
+          udpDnsServer.start();
+        } else {
+          udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null, requestHandler);
+          udpDnsServer.start();
         }
-        GNS.getLogger().info("GNS Server IP" + options.get(GNS_SERVER_IP));
-        //GNS.getLogger().warning("gns server IP" + StartLocalNameServer.gnsServerIP);
-        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8",
-                options.get(GNS_SERVER_IP), requestHandler);
-        udpDnsServer.start();
-      } else {
-        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null, requestHandler);
-        udpDnsServer.start();
+      } catch (BindException e) {
+        GNS.getLogger().warning("Not running DNS Service because it needs root permission! "
+                + "If you want DNS run the CCP using sudo.");
       }
     } catch (BindException e) {
-      GNS.getLogger().warning("Not running DNS Service because it needs root permission! "
-              + "If you want DNS run the CPP using sudo.");
+      GNS.getLogger().severe("Failed to create nio server at " + nodeAddress + ": " + e + " ;exiting.");
+      System.exit(-1);
     }
   }
-  
+
   public InetSocketAddress getAddress() {
     return nodeAddress;
   }
-  
-  private static void startClientCommandProcessor(Map<String, String> options) throws IOException {
-    String nsFile = options.containsKey(NS_FILE) ? options.get(NS_FILE)
-            // stupid option for testing
-            : Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
-    String host = options.containsKey(HOST) ? options.get(HOST) : NetworkUtils.getLocalHostLANAddress().getHostAddress();
-    int port = options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : GNS.DEFAULT_CCP_TCP_PORT;
-    
-    InetSocketAddress address = new InetSocketAddress(host, port);
-    GNSNodeConfig nodeConfig = new GNSNodeConfig(nsFile, true);
-    JSONMessenger messenger;
-    try {
-      messenger = new JSONMessenger<String>(
-              (new JSONNIOTransport(address, nodeConfig, new PacketDemultiplexerDefault(),
-                      true)).enableStampSenderPort());
-    } catch (BindException e) {
-      GNS.getLogger().severe("Failed to create nio server at " + address + ": " + e + " ;exiting.");
-      System.exit(-1);
-      return;
-    }
-    ClientCommandProcessor clientCommandProcessor = new ClientCommandProcessor(address, nodeConfig,
-            messenger, options);
+
+  public EnhancedClientRequestHandlerInterface<NodeIDType> getRequestHandler() {
+    return requestHandler;
   }
-  
+
+  public static void startClientCommandProcessor(Map<String, String> options) throws IOException {
+    ClientCommandProcessor clientCommandProcessor
+            = new ClientCommandProcessor(
+                    //address, nodeConfig, messenger,
+                    options.get(NS_FILE),
+                    options.containsKey(HOST) ? options.get(HOST) : NetworkUtils.getLocalHostLANAddress().getHostAddress(),
+                    options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : GNS.DEFAULT_CCP_TCP_PORT,
+                    options.containsKey(DEBUG),
+                    options.get(ClientCommandProcessorOptions.AR_ID),
+                    options.containsKey(DNS_GNS_ONLY),
+                    options.containsKey(DNS_ONLY),
+                    options.get(GNS_SERVER_IP)
+            );
+  }
+
   public static void main(String[] args) throws IOException {
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(ClientCommandProcessor.class.getCanonicalName(),
@@ -167,7 +189,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     }
     startClientCommandProcessor(options);
   }
-  
+
   @Override
   public void shutdown() {
     if (udpDnsServer != null) {
@@ -186,5 +208,5 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       lnsListenerAdmin.shutdown();
     }
   }
-  
+
 }

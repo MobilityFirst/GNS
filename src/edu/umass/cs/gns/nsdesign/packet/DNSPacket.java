@@ -167,7 +167,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    * @throws org.json.JSONException
    */
   public DNSPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.optString(CPP_ADDRESS, null), json.optInt(CPP_PORT, INVALID_PORT),
+    super(json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT),
             json.optString(ACCESSOR, null), json.optString(SIGNATURE, null), json.optString(MESSAGE, null));
     this.type = Packet.getPacketType(json);
     this.header = new Header(json.getJSONObject(HEADER));
