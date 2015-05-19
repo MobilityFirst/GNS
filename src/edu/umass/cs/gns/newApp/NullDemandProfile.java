@@ -4,12 +4,9 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.InterfaceGetActiveI
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.*;
 import java.net.InetAddress;
 import java.util.ArrayList;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import java.net.InetSocketAddress;
 
 /**
  * @author Westy

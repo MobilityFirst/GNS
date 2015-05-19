@@ -13,11 +13,6 @@ import edu.umass.cs.aws.support.InstanceStateRecord;
 import edu.umass.cs.aws.support.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.statusdisplay.MapFrame;
-import edu.umass.cs.gns.statusdisplay.StatusEntry;
-import edu.umass.cs.gns.statusdisplay.StatusFrame;
-import edu.umass.cs.gns.statusdisplay.StatusListener;
-import edu.umass.cs.gns.statusdisplay.StatusModel;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.ScreenUtils;
 import java.awt.geom.Point2D;
@@ -100,7 +95,7 @@ public class EC2Runner {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     // use threads to do a bunch of installs in parallel
     do {
-      StatusModel.getInstance().queueDeleteAllEntries(); // for gui
+      //StatusModel.getInstance().queueDeleteAllEntries(); // for gui
       int cnt = STARTINGNODENUMBER;
       for (EC2RegionSpec regionSpec : regionsList) {
         int i;
@@ -239,8 +234,8 @@ public class EC2Runner {
     }
 
     String idString = id.toString();
-    StatusModel.getInstance().queueAddEntry(id); // for the gui
-    StatusModel.getInstance().queueUpdate(id, region.name() + ": [Unknown hostname]", null, null);
+//    StatusModel.getInstance().queueAddEntry(id); // for the gui
+//    StatusModel.getInstance().queueUpdate(id, region.name() + ": [Unknown hostname]", null, null);
     try {
       AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
       //Create Amazon Client object
@@ -250,27 +245,27 @@ public class EC2Runner {
       HashMap<String,String> tags = new HashMap<>();
       tags.put("runset", runSetName);
       tags.put("id", idString);
-      StatusModel.getInstance().queueUpdate(id, "Creating instance");
+//      StatusModel.getInstance().queueUpdate(id, "Creating instance");
       // create an instance
       Instance instance = AWSEC2.createAndInitInstance(ec2, region, ami, nodeName, keyName, installScript, tags, elasticIP, timeout);
       if (instance != null) {
-        StatusModel.getInstance().queueUpdate(id, "Instance created");
-        StatusModel.getInstance().queueUpdate(id, StatusEntry.State.INITIALIZING);
+//        StatusModel.getInstance().queueUpdate(id, "Instance created");
+//        StatusModel.getInstance().queueUpdate(id, StatusEntry.State.INITIALIZING);
         // toString our ip
         String hostname = instance.getPublicDnsName();
         InetAddress inetAddress = InetAddress.getByName(hostname);
         String ip = inetAddress.getHostAddress();
         // and take a guess at the location (lat, long) of this host
         Point2D location = GEOLocator.lookupIPLocation(ip);
-        StatusModel.getInstance().queueUpdate(id, hostname, ip, location);
+//        StatusModel.getInstance().queueUpdate(id, hostname, ip, location);
         // update our table of instance information
         hostTable.put(id, new HostInfo(id, hostname, location));
 
         // and we're done
-        StatusModel.getInstance().queueUpdate(id, "Waiting for other servers");
+//        StatusModel.getInstance().queueUpdate(id, "Waiting for other servers");
       } else {
         System.out.println("EC2 Instance " + idString + " in " + region.name() + " did not in start.");
-        StatusModel.getInstance().queueUpdate(id, StatusEntry.State.ERROR, "Did not start");
+//        StatusModel.getInstance().queueUpdate(id, StatusEntry.State.ERROR, "Did not start");
         hostsThatDidNotStart.put(id, id);
       }
     } catch (IOException e) {
@@ -297,11 +292,11 @@ public class EC2Runner {
             String idString = getTagValue(instance, "id");
             if (name.equals(getTagValue(instance, "runset"))) {
               if (idString != null) {
-                StatusModel.getInstance().queueUpdate(new String(idString), "Terminating");
+//                StatusModel.getInstance().queueUpdate(new String(idString), "Terminating");
               }
               AWSEC2.terminateInstance(ec2, instance.getInstanceId());
               if (idString != null) {
-                StatusModel.getInstance().queueUpdate(new String(idString), StatusEntry.State.TERMINATED, "");
+//                StatusModel.getInstance().queueUpdate(new String(idString), StatusEntry.State.TERMINATED, "");
               }
             }
           }
@@ -423,18 +418,18 @@ public class EC2Runner {
     java.awt.EventQueue.invokeLater(new Runnable() {
       @Override
       public void run() {
-        StatusFrame.getInstance().setVisible(true);
-        StatusModel.getInstance().addUpdateListener(StatusFrame.getInstance());
-        MapFrame.getInstance().setVisible(true);
-        ScreenUtils.putOnWidestScreen(MapFrame.getInstance());
-        StatusModel.getInstance().addUpdateListener(MapFrame.getInstance());
+//        StatusFrame.getInstance().setVisible(true);
+//        StatusModel.getInstance().addUpdateListener(StatusFrame.getInstance());
+//        MapFrame.getInstance().setVisible(true);
+//        ScreenUtils.putOnWidestScreen(MapFrame.getInstance());
+//        StatusModel.getInstance().addUpdateListener(MapFrame.getInstance());
       }
     });
-    try {
-      new StatusListener().start();
-    } catch (IOException e) {
-      System.out.println("Unable to start Status Listener: " + e.getMessage());
-    }
+//    try {
+////      new StatusListener().start();
+//    } catch (IOException e) {
+//      System.out.println("Unable to start Status Listener: " + e.getMessage());
+//    }
   }
 
   public static void main(String[] args) {

@@ -46,7 +46,7 @@ public class AppReconfigurableNodeOptions {
     Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
     Option debug = new Option(DEBUG, "Enables debugging output");
     Option test = new Option(TEST, "Runs multiple test nodes on one machine");
-    Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, "The class to use for the demand profile");
+    Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, true, "The class to use for the demand profile");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);

@@ -10,7 +10,6 @@ import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.admin.*;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.IOException;
@@ -224,9 +223,6 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
           handler.getAdmintercessor().handleIncomingAdminResponsePackets(responsePacket.toJSONObject());
           break;
         case STATUS_INIT:
-          StatusClient.handleStatusInit(incomingSocket.getInetAddress());
-          // FIXME: Should send address instead for LNSs (fix other end of this)
-          StatusClient.sendStatus(null, "LNS Ready");
           break;
         default:
           GNS.getLogger().severe("Unknown packet type in packet: " + incomingJSON);

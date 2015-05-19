@@ -20,7 +20,6 @@ import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
-import edu.umass.cs.gns.statusdisplay.StatusClient;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -94,8 +93,6 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
             DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON, gnsNodeConfig);
 
             dumpRequestPacket.setPrimaryNameServer(gnsReconfigurable.getNodeID());
-
-            StatusClient.sendStatus(gnsReconfigurable.getNodeID(), "Dumping records");
             JSONArray jsonArray = new JSONArray();
             // if there is an argument it is a TAGNAME we return all the records that have that tag
             if (dumpRequestPacket.getArgument() != null) {
@@ -217,8 +214,6 @@ public class NSListenerAdmin extends Thread implements Shutdownable{
             }
             break;
           case STATUS_INIT:
-            StatusClient.handleStatusInit(socket.getInetAddress());
-            StatusClient.sendStatus(gnsReconfigurable.getNodeID(), "NS Ready");
             break;
         }
 
