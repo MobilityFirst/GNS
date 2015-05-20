@@ -36,44 +36,77 @@ public class Update {
 
   /**
    * Handles incoming Update packets.
-   * 
+   *
    * @param json
    * @param handler
    * @throws JSONException
-   * @throws UnknownHostException 
+   * @throws UnknownHostException
    */
   public static void handlePacketUpdate(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
 
     UpdatePacket updatePacket = new UpdatePacket(json, handler.getGnsNodeConfig());
-    if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
-    int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, updatePacket.getName(), null, updatePacket, handler);
-    handler.addRequestInfo(lnsReqID, info);
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
+    }
+    int ccpRequestID = handler.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(ccpRequestID, updatePacket.getName(), null, updatePacket, handler);
+    handler.addRequestInfo(ccpRequestID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
-    SendUpdatesTask updateTask = new SendUpdatesTask(lnsReqID, handler, updatePacket);
-    handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
+    // For the new app we just send it to the colocated replica
+    if (handler.isNewApp()) {
+      // Create the packet that we'll send to the primary
+      UpdatePacket outgoingPacket = new UpdatePacket(
+              updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
+              updatePacket.getRequestID(),
+              ccpRequestID, // the id use by the CCP (that would be us here)
+              updatePacket.getName(),
+              updatePacket.getRecordKey(),
+              updatePacket.getUpdateValue(),
+              updatePacket.getOldValue(),
+              updatePacket.getArgument(),
+              updatePacket.getUserJSON(),
+              updatePacket.getOperation(),
+              handler.getNodeAddress(),
+              handler.getActiveReplicaID(),
+              updatePacket.getTTL(),
+              //signature info
+              updatePacket.getAccessor(),
+              updatePacket.getSignature(),
+              updatePacket.getMessage());
+      JSONObject outgoingJSON = outgoingPacket.toJSONObject();
+      handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
+      info.setNameserverID(handler.getActiveReplicaID());
+    } else {
+      // OLD STYLE IS TO POSSIBLY REQUEST ACTIVES WITH RETRANSMISSION
+      SendUpdatesTask updateTask = new SendUpdatesTask(ccpRequestID, handler, updatePacket);
+      handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
+    }
   }
 
   /**
    * Handles incoming Update confirmation packets.
-   * 
+   *
    * @param json
    * @param handler
    * @throws UnknownHostException
-   * @throws JSONException 
+   * @throws JSONException
    */
   public static void handlePacketConfirmUpdate(JSONObject json, ClientRequestHandlerInterface handler) throws UnknownHostException, JSONException {
     ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
 
-    if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
+    }
     if (confirmPkt.isSuccess()) {
       // we are removing request info as processing for this request is complete
       UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getLNSRequestID());
       // if update info isn't available, we cant do anything. probably response is overly delayed and an error response
       // has already been sent to client.
       if (updateInfo == null) {
-        if (handler.getParameters().isDebugMode()) GNS.getLogger().warning("Update info not found. quitting. SUCCESS update.  " + confirmPkt);
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().warning("Update info not found. quitting. SUCCESS update.  " + confirmPkt);
+        }
         return;
       }
       // update the cache BEFORE we send back the confirmation
@@ -91,7 +124,9 @@ public class Update {
       // NOTE: we are NOT removing request info as processing for this request is still ongoing
       UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(confirmPkt.getLNSRequestID());
       if (updateInfo == null) {
-        if (handler.getParameters().isDebugMode()) GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
+        }
         return;
       }
       //updateInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
@@ -101,7 +136,9 @@ public class Update {
       // we are removing request info as processing for this request is complete
       UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getLNSRequestID());
       if (updateInfo == null) {
-        if (handler.getParameters().isDebugMode()) GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
+        }
         return;
       }
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
@@ -121,9 +158,11 @@ public class Update {
    * @throws JSONException
    */
   private static void handleInvalidActiveError(UpdateInfo updateInfo, ClientRequestHandlerInterface handler) throws JSONException {
-    if (handler.getParameters().isDebugMode()) GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t" + 
-            updateInfo.getName() + "\tRequest new actives.\t");
-    
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t"
+              + updateInfo.getName() + "\tRequest new actives.\t");
+    }
+
     UpdatePacket updatePacket = (UpdatePacket) updateInfo.getUpdatePacket();
 
     // clear out current cache
@@ -141,22 +180,26 @@ public class Update {
    * originated at a standard client - the packet is then sent to the Intercessor which will
    * pass the packet back to the client. If the returnTo is some other NodeId the packet will be
    * send back to that NameServer node (which is acting like a client in this case).
-   * 
+   *
    * This method is public because it also gets called from Add/Remove methods.
-   * 
+   *
    * @param packet
    * @param handler
-   * @throws JSONException 
+   * @throws JSONException
    */
   public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getReturnTo() == null) {
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
-      
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());
+      }
+
       handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());
     } else {
-      if (handler.getParameters().isDebugMode()) GNS.getLogger().info("Sending back to Node " + packet.getReturnTo().toString() + 
-              ":" + packet.toJSONObject().toString());
-      
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Sending back to Node " + packet.getReturnTo().toString()
+                + ":" + packet.toJSONObject().toString());
+      }
+
       try {
         handler.sendToNS(packet.toJSONObject(), packet.getReturnTo());
       } catch (JSONException e) {

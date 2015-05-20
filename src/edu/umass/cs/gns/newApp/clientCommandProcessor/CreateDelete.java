@@ -37,7 +37,7 @@ public class CreateDelete {
 
   public static void handleAddPacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
-    handler.addRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
+    handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
     ValuesMap valuesMap = new ValuesMap();
     valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
     sendPacket(addRecordPacket.getName(),
@@ -48,7 +48,7 @@ public class CreateDelete {
 
   public static void handleRemovePacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
-    handler.addRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
+    handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
     sendPacket(removeRecordPacket.getName(),
             new DeleteServiceName(null, removeRecordPacket.getName(), 0),
             handler);

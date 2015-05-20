@@ -111,7 +111,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
     try {
       if (handler.isNewApp()) {
         RequestActiveReplicas packet = new RequestActiveReplicas(null, name, 0);
-        ((EnhancedClientRequestHandlerInterface)handler).addRequestNameToIDMapping(name, requestID);
+        ((EnhancedClientRequestHandlerInterface)handler).addActivesRequestNameToIDMapping(name, requestID);
         sendJson = packet.toJSONObject();
       } else {
         RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);

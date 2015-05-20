@@ -53,7 +53,7 @@ public class GNSInstaller {
   private static final String DEFAULT_INSTALL_PATH = "gns";
   private static final String INSTALLER_CONFIG_FILENAME = "installer_config";
   private static final String LNS_CONF_FILENAME = "lns.conf";
-  private static final String CCP_CONF_FILENAME = "ccp.conf";
+  //private static final String CCP_CONF_FILENAME = "ccp.conf";
   private static final String NS_CONF_FILENAME = "ns.conf";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
@@ -77,14 +77,14 @@ public class GNSInstaller {
   // these are mostly for convienence; could compute them when needed
   private static String gnsJarFileName;
   private static String nsConfFileLocation;
-  private static String ccpConfFileLocation;
+  //private static String ccpConfFileLocation;
   private static String lnsConfFileLocation;
   private static String nsConfFileName;
-  private static String ccpConfFileName;
+  //private static String ccpConfFileName;
   private static String lnsConfFileName;
 
   private static final String StartLNSClass = "edu.umass.cs.gns.localnameserver.LocalNameServer";
-  private static final String StartCCPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor";
+  //private static final String StartCCPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor";
   private static final String StartNSClass = "edu.umass.cs.gns.newApp.AppReconfigurableNode";
 
   private static final String CHANGETOINSTALLDIR
@@ -294,7 +294,7 @@ public class GNSInstaller {
               + "if [ -f NSlogfile ]; then\n"
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
-              //+ ((runAsRoot) ? "sudo " : "")
+              + ((runAsRoot) ? "sudo " : "")
               + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartNSClass + " "
               + "-id "
               + nsId.toString() + " "
@@ -302,31 +302,32 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               + "-configFile "
               + NS_CONF_FILENAME + " "
-              + "-debug "
+              + "-debugAPP "
+              + " -demandProfileClass edu.umass.cs.gns.newApp.NullDemandProfile "
               + " > NSlogfile 2>&1 &");
-      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName,
-              //runAsRoot,
-              buildInstallFilePath("runCCP.sh"),
-              "#!/bin/bash\n"
-              + CHANGETOINSTALLDIR
-              + "if [ -f CCPlogfile ]; then\n"
-              + "mv --backup=numbered CCPlogfile CCPlogfile.save\n"
-              + "fi\n"
-              + ((runAsRoot) ? "sudo " : "")
-              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartCCPClass + " "
-              + "-host "
-              + hostname + " "
-              + "-port "
-              + GNS.DEFAULT_CCP_TCP_PORT + " "
-              // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the CCP needs this
-              + "-nsfile "
-              + NS_HOSTS_FILENAME + " "
-              + "-configFile "
-              + CCP_CONF_FILENAME + " "
-              + "-activeReplicaID "
-              + nsId.toString() + " "
-              + "-debug "
-              + " > CCPlogfile 2>&1 &");
+//      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName,
+//              //runAsRoot,
+//              buildInstallFilePath("runCCP.sh"),
+//              "#!/bin/bash\n"
+//              + CHANGETOINSTALLDIR
+//              + "if [ -f CCPlogfile ]; then\n"
+//              + "mv --backup=numbered CCPlogfile CCPlogfile.save\n"
+//              + "fi\n"
+//              + ((runAsRoot) ? "sudo " : "")
+//              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartCCPClass + " "
+//              + "-host "
+//              + hostname + " "
+//              + "-port "
+//              + GNS.DEFAULT_CCP_TCP_PORT + " "
+//              // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the CCP needs this
+//              + "-nsfile "
+//              + NS_HOSTS_FILENAME + " "
+//              + "-configFile "
+//              + CCP_CONF_FILENAME + " "
+//              + "-activeReplicaID "
+//              + nsId.toString() + " "
+//              + "-debug "
+//              + " > CCPlogfile 2>&1 &");
     }
     System.out.println("All servers started");
   }
@@ -344,7 +345,7 @@ public class GNSInstaller {
     if (createLNS) {
       RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
     }
-    RSync.upload(userName, hostname, keyFileName, ccpConfFileLocation, buildInstallFilePath(ccpConfFileName));
+    //RSync.upload(userName, hostname, keyFileName, ccpConfFileLocation, buildInstallFilePath(ccpConfFileName));
     RSync.upload(userName, hostname, keyFileName, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
   }
 
@@ -493,9 +494,9 @@ public class GNSInstaller {
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_CONF_FILENAME);
     }
-    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + CCP_CONF_FILENAME, confFolderPath)) {
-      System.out.println("Config folder " + configNameOrFolder + " missing file " + CCP_CONF_FILENAME);
-    }
+//    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + CCP_CONF_FILENAME, confFolderPath)) {
+//      System.out.println("Config folder " + configNameOrFolder + " missing file " + CCP_CONF_FILENAME);
+//    }
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_CONF_FILENAME);
     }
@@ -506,10 +507,10 @@ public class GNSInstaller {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_HOSTS_FILENAME);
     }
     lnsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath).toString();
-    ccpConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + CCP_CONF_FILENAME, confFolderPath).toString();
+    //ccpConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + CCP_CONF_FILENAME, confFolderPath).toString();
     nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath).toString();
     lnsConfFileName = new File(lnsConfFileLocation).getName();
-    ccpConfFileName = new File(ccpConfFileLocation).getName();
+    //ccpConfFileName = new File(ccpConfFileLocation).getName();
     nsConfFileName = new File(nsConfFileLocation).getName();
     return true;
   }

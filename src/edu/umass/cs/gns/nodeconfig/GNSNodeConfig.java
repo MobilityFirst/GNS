@@ -165,7 +165,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     }
     return null;
   }
-  
+
   public boolean isActiveReplica(NodeIDType id) {
     return getActiveReplicaInfo(id) != null;
   }
@@ -180,7 +180,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host) {
     return getActiveReplicaWhoseHostIs(host, false);
   }
-  
+
   public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host, boolean ignorePorts) {
     if (host != null) { // should not happen but just in case
       GNS.getLogger().info("********** HOST ADDRESS IS " + host.getAddress().getHostAddress());
@@ -190,14 +190,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
                 (hostInfo.getIpAddress().equals(host.getAddress())
                 // Or the the IP address are the same (handles the case where the above is
                 // is a LAN address)
-                || 
-                (hostInfo.getExternalIP() != null
-                && 
-                hostInfo.getExternalIP().equals(host.getAddress().getHostAddress())))
+                || (hostInfo.getExternalIP() != null
+                && hostInfo.getExternalIP().equals(host.getAddress().getHostAddress())))
                 // and the ports are the same
-                && 
-                (ignorePorts ||
-                hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort())) {
+                && (ignorePorts
+                || hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort())) {
           GNS.getLogger().info("********** ID IS " + hostInfo.getActiveReplicaID());
           return hostInfo.getActiveReplicaID();
         }
@@ -486,8 +483,20 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
         nameServerID = serverId;
       }
     }
+
+    // a little more hair in case all the pings are invalid
+    if (nameServerID == null) {
+      // return the first one that is not in the exclude list
+      for (NodeIDType serverId : serverIds) {
+        if (excludeServers != null && excludeServers.contains(serverId)) {
+          continue;
+        }
+        nameServerID = serverId;
+        break;
+      }
+    }
     if (Config.debuggingEnabled) {
-      GNS.getLogger().info("Closest server is " + nameServerID);
+      GNS.getLogger().info("Closest server is " + nameServerID + " exluded: " + excludeServers);
     }
     return nameServerID;
   }
@@ -516,7 +525,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   }
 
   @Override
-  public Set<NodeIDType> getValuesFromStringSet(Set<String> strNodes) {
+  public Set<NodeIDType> getValuesFromStringSet(Set<String> strNodes
+  ) {
     Set<NodeIDType> nodes = new HashSet<>();
     for (String strNode : strNodes) {
       nodes.add(valueOf(strNode));

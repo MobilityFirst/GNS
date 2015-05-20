@@ -71,9 +71,10 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    * The Nio server
    */
   private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
-  
+
+  private boolean useLocalCCP = true;
   private ClientCommandProcessor<NodeIDType> localCCP = null;
-  
+
   public NewApp(NodeIDType id, GNSInterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
           MongoRecords<NodeIDType> mongoRecords) {
     this.nodeID = id;
@@ -84,14 +85,16 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.nioServer = nioServer;
     try {
-    this.localCCP = new ClientCommandProcessor(
-            new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
-            (GNSNodeConfig)nodeConfig,
-            AppReconfigurableNode.debuggingEnabled,
-            (String) id, 
-            false,
-            false,
-            null);
+      if (useLocalCCP) {
+        this.localCCP = new ClientCommandProcessor(
+                new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
+                (GNSNodeConfig) nodeConfig,
+                AppReconfigurableNode.debuggingEnabled,
+                (String) id,
+                false,
+                false,
+                null);
+      }
     } catch (IOException e) {
       GNS.getLogger().info("App could not create CCP:" + e);
     }
@@ -286,11 +289,11 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     boolean stateUpdated = false;
     try {
       //if (true) {
-        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
-        NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
-                state1.valuesMap, state1.ttl,
-                nodeConfig.getReplicatedReconfigurators(name));
-        NameRecord.addNameRecord(nameRecordDB, nameRecord);
+      TransferableNameRecordState state1 = new TransferableNameRecordState(state);
+      NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
+              state1.valuesMap, state1.ttl,
+              nodeConfig.getReplicatedReconfigurators(name));
+      NameRecord.addNameRecord(nameRecordDB, nameRecord);
 //      } else {
 //        TransferableNameRecordState state1 = new TransferableNameRecordState(state);
 //        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
@@ -509,5 +512,5 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   public ClientCommandProcessor<NodeIDType> getLocalCCP() {
     return localCCP;
   }
- 
+
 }

@@ -71,7 +71,9 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   private final ConcurrentMap<Integer, SelectInfo> selectTransmittedMap;
   // For backward compatibility between old Add and Remove record code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
-  private final ConcurrentMap<String, Integer> serviceNameMap;
+  private final ConcurrentMap<String, Integer> createServiceNameMap;
+  private final ConcurrentMap<String, Integer> deleteServiceNameMap;
+  private final ConcurrentMap<String, Integer> activesServiceNameMap;
 
   /**
    * Cache of Name records Key: Name, Value: CacheEntry (DNS_SUBTYPE_QUERY record)
@@ -127,7 +129,9 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.protocolExecutor = new ProtocolExecutor<>(messenger);
     this.protocolTask = new CCPProtocolTask<>(this);
     this.protocolExecutor.register(this.protocolTask.getEventTypes(), this.protocolTask);
-    this.serviceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    this.deleteServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    this.activesServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
 
   @Override
@@ -207,24 +211,78 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   /**
    * Creates a mapping between a create service name and the Add/RemoveRecord that triggered it.
    */
-  public void addRequestNameToIDMapping(String name, int id) {
-    serviceNameMap.put(name, id);
+  public void addCreateRequestNameToIDMapping(String name, int id) {
+    createServiceNameMap.put(name, id);
   }
 
   @Override
   /**
    * Looks up the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
    */
-  public Integer getRequestNameToIDMapping(String name) {
-    return serviceNameMap.get(name);
+  public Integer getCreateRequestNameToIDMapping(String name) {
+    return createServiceNameMap.get(name);
   }
   
   @Override
   /**
    * Looks up and removes the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
    */
-  public Integer removeRequestNameToIDMapping(String name) {
-    return serviceNameMap.remove(name);
+  public Integer removeCreateRequestNameToIDMapping(String name) {
+    return createServiceNameMap.remove(name);
+  }
+  
+  // These next four are for backward compatibility between old Add and Remove record 
+  // code and new name service code.
+  // Maps between service name and LNS Request ID (which is the key to the above maps).
+  @Override
+  /**
+   * Creates a mapping between a create service name and the Add/RemoveRecord that triggered it.
+   */
+  public void addDeleteRequestNameToIDMapping(String name, int id) {
+    deleteServiceNameMap.put(name, id);
+  }
+
+  @Override
+  /**
+   * Looks up the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   */
+  public Integer getDeleteRequestNameToIDMapping(String name) {
+    return deleteServiceNameMap.get(name);
+  }
+  
+  @Override
+  /**
+   * Looks up and removes the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   */
+  public Integer removeDeleteRequestNameToIDMapping(String name) {
+    return deleteServiceNameMap.remove(name);
+  }
+  
+  // These next four are for backward compatibility between old Add and Remove record 
+  // code and new name service code.
+  // Maps between service name and LNS Request ID (which is the key to the above maps).
+  @Override
+  /**
+   * Creates a mapping between a create service name and the Add/RemoveRecord that triggered it.
+   */
+  public void addActivesRequestNameToIDMapping(String name, int id) {
+    activesServiceNameMap.put(name, id);
+  }
+
+  @Override
+  /**
+   * Looks up the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   */
+  public Integer getActivesRequestNameToIDMapping(String name) {
+    return activesServiceNameMap.get(name);
+  }
+  
+  @Override
+  /**
+   * Looks up and removes the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   */
+  public Integer removeActivesRequestNameToIDMapping(String name) {
+    return activesServiceNameMap.remove(name);
   }
 
   @Override
@@ -488,6 +546,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     sendRequestToReconfigurator(req, id);
   }
   
+  @Override
   public void sendRequestToReconfigurator(BasicReconfigurationPacket req, NodeIDType id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {
       GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);

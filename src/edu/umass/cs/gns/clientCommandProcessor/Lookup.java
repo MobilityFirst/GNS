@@ -62,7 +62,7 @@ public class Lookup {
     DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
     handler.addRequestInfo(lnsReqId, requestInfo);
     handler.incrementLookupRequest(incomingPacket.getGuid()); // important: used to count votes for names.
-    // a little clunky until we finish integrating this
+    // For the new app we just send it to the colocated replica
     if (handler.isNewApp()) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> SENDING DNS Request to " + handler.getActiveReplicaID() + ": " + json);
@@ -73,7 +73,7 @@ public class Lookup {
       JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
       incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
       handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
-    } else { // OLD STYLE IS TO REQUEST ACTIVES WITH RETRANSMISSION
+    } else { // OLD STYLE IS TO POSSIBLY REQUEST ACTIVES WITH RETRANSMISSION
       SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqId, handler, incomingPacket);
       long timeOut = handler.getParameters().getQueryTimeout();
       if (handler.getParameters().isAdaptiveTimeout()) {
