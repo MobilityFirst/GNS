@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.gigapaxos.deprecated.Application;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 
 /**
