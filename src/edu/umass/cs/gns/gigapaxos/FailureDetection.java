@@ -16,7 +16,6 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
 
@@ -75,13 +74,13 @@ public class FailureDetection<NodeIDType> {
 
 	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(FailureDetection.class.getName());
 
-	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot, PaxosConfig pc) {
+	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot, String paxosLogFolder) {
 		nioTransport = niot;
 		myID = id;
 		lastHeardFrom = new HashMap<NodeIDType,Long>();
 		keepAliveTargets = new TreeSet<NodeIDType>();
 		futures = new HashMap<NodeIDType,ScheduledFuture<PingTask>>();
-		initialize(pc);
+		initialize(paxosLogFolder);
 	}
 	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot) {
 		this(id,niot,null);
@@ -101,12 +100,8 @@ public class FailureDetection<NodeIDType> {
 		this.execpool.shutdownNow();
 	}
 	// should really not be taking this from outside
-	private void initialize(PaxosConfig pc) {
-		if(pc==null) return;
-		log.severe("Configuring paxos with external failure detection parameters is a bad idea, doing it anyway.");
-		node_detection_timeout_millis = pc.getFailureDetectionTimeoutMillis();
-		inter_ping_period_millis = pc.getFailureDetectionPingMillis();
-		coordinator_failure_detection_timeout = 2*node_detection_timeout_millis;
+	private void initialize(String paxosLogFolder) {
+		if(paxosLogFolder==null) return;
 	}
 
 	// makes sure that FD params are reasonable

@@ -37,10 +37,12 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * intermittent crashes of the remote destination), so the the restart
 	 * below, if used for reliable transmission, should keep in mind that
 	 * aggressive retransmission is detrimental when NIO can't do it for you.
+	 * 
+	 * Anything more aggressive than DEFAULT_RESTART_PERIOD is a bad idea if the
+	 * motivation is to get around network losses. Other system- or
+	 * protocol-specific reasons are okay for setting lower periods.
 	 */
-	public static final long DEFAULT_RESTART_PERIOD = 60000; // anything more
-																// aggressive is
-																// bad
+	public static final long DEFAULT_RESTART_PERIOD = 60000;
 	public static final long TOO_MANY_TASKS_CHECK_PERIOD = 300; // seconds
 
 	private final NodeIDType myID;
@@ -108,9 +110,21 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 */
 	public void spawn(ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		if (actualTask instanceof SchedulableProtocolTask)
-			schedule((SchedulableProtocolTask<NodeIDType, EventType, KeyType>)actualTask);
+			schedule((SchedulableProtocolTask<NodeIDType, EventType, KeyType>) actualTask);
 		else
 			wrapSpawn(actualTask);
+	}
+
+	public synchronized boolean spawnIfNotRunning(
+			ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
+		if (this.isRunning(actualTask.getKey())) {
+			log.info("Node" + myID
+					+ " unable to re-spawn already running task "
+					+ actualTask.getKey());
+			return false;
+		}
+		this.spawn(actualTask);
+		return true;
 	}
 
 	// wraps protocol task into wrapper before spawning
@@ -130,15 +144,14 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 
 	private synchronized void insert(
 			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
-		while (task.getKey() == null
-				|| this.isRunning(task.getKey())) {
+		while (task.getKey() == null || this.isRunning(task.getKey())) {
 			log.warning("Node" + myID + " trying to insert "
 					+ (task.getKey() == null ? "null" : "duplicate") + " key "
 					+ task.getKey());
 			task.refreshKey();
 		}
 		log.info("Node" + myID + " inserting key " + task.getKey()
-				+ " for task " + task.getClass());
+				+ " for task " + task.task.getClass());
 		this.protocolTasks.put(task.getKey(), task);
 
 	}
@@ -156,10 +169,15 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	private GenericMessagingTask<NodeIDType, ?>[] restart(
 			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		if (task instanceof SchedulableProtocolTask) {
-			return ((SchedulableProtocolTask<NodeIDType, EventType, KeyType>) task)
-					.restart();
+			try {
+				return ((SchedulableProtocolTask<NodeIDType, EventType, KeyType>) task)
+						.restart();
+			} catch (Exception e) {
+				handleException(e, task);
+			}
 		} else
 			return start(task);
+		return null;
 	}
 
 	/*
@@ -168,24 +186,30 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * is removed from the hashmap.
 	 */
 	public synchronized void schedule(
-			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask, long period) {
+			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask,
+			long period) {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = wrapSpawn(actualTask);
 		// schedule restarts
 		Restarter restarter = new Restarter(task);
 		if (period < DEFAULT_RESTART_PERIOD)
-			log.severe("Specifying a period of less than "
+			log.warning("Specifying a period of less than "
 					+ DEFAULT_RESTART_PERIOD + " milliseconds is a bad idea");
+		log.info("Node" + myID
+				+ " scheduling key for periodically restarting task "
+				+ task.getKey());
 		task.setFuture(this.executor.scheduleWithFixedDelay(restarter, period,
 				period, TimeUnit.MILLISECONDS));
 	}
 
-	public void schedule(SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
+	public void schedule(
+			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		this.schedule(actualTask, actualTask.getPeriod());
 	}
-	
+
 	public ProtocolTask<NodeIDType, EventType, KeyType> getTask(KeyType key) {
-		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> wrapper = this.retrieve(key);
-		return (wrapper!=null ?  wrapper.task : null);
+		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> wrapper = this
+				.retrieve(key);
+		return (wrapper != null ? wrapper.task : null);
 	}
 
 	private synchronized ProtocolTaskWrapper<NodeIDType, EventType, KeyType> retrieve(
@@ -206,14 +230,19 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	/*
 	 * remove must also cancel the scheduled future if one exists.
 	 */
-	private synchronized ProtocolTask<?,?,?> remove(
+	private synchronized ProtocolTask<?, ?, ?> remove(
 			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
-		if(task==null) return null;
-		if (task.getFuture() != null)
+		if (task == null)
+			return null;
+		if (task.getFuture() != null) {
+			log.info("Node" + myID + " canceling protocol task "
+					+ task.task.getKey());
 			task.getFuture().cancel(true);
+		}
 		return this.protocolTasks.remove(task.getKey());
 	}
-	public synchronized ProtocolTask<?,?,?> remove(KeyType key) {
+
+	public synchronized ProtocolTask<?, ?, ?> remove(KeyType key) {
 		return remove(this.retrieve(key));
 	}
 
@@ -257,7 +286,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 
 		if (task == null) {
 			return false;
-		} 
+		}
 		@SuppressWarnings("unchecked")
 		// FIXME: Not sure if there is a way to prevent this warning.
 		ProtocolTask<NodeIDType, EventType, KeyType>[] ptasks = new ProtocolTask[1];
@@ -268,26 +297,26 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		}
 		if (ptasks[0] != null)
 			spawn((ptasks[0]));
-		if(removable(task.getKey())) remove(task);
+		if (removable(task.getKey()))
+			remove(task);
 		return true;
 	}
 
 	public boolean isEmpty() {
 		return size() == 0;
 	}
-	
+
 	public synchronized static void enqueueCancel(Object key) {
 		canceledKeys.add(key);
 	}
+
 	private synchronized static boolean removable(Object key) {
 		return canceledKeys.remove(key);
 	}
 
-	public void cancel(KeyType key) {
-		remove(this.protocolTasks.get(key));
-	}
-	/* We only check in protocolTasks, not defaultTasks, as the latter
-	 * is supposed to be always running.
+	/*
+	 * We only check in protocolTasks, not defaultTasks, as the latter is
+	 * supposed to be always running.
 	 */
 	public boolean isRunning(KeyType key) {
 		return this.protocolTasks.containsKey(key);
@@ -295,9 +324,9 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 
 	// FIXME: Throw exception in order to cancel a task
 	public static void cancel(ProtocolTask<?, ?, ?> task) {
-		if(task!=null)
+		if (task != null)
 			throw new CancelProtocolTaskException("Canceling task "
-				+ task.getClass() + " with key " + task.getKey());
+					+ task.getClass() + " with key " + task.getKey());
 	}
 
 	private boolean send(GenericMessagingTask<NodeIDType, ?>[] mtasks,

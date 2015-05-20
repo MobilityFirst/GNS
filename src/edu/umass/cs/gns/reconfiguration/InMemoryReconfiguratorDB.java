@@ -195,13 +195,13 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public boolean deleteReconfigurators(int version) {
+	public boolean garbageCollectOldReconfigurators(int version) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
-	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig() {
+	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig(boolean maxOnly) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -230,6 +230,12 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	public Map<String, Set<NodeIDType>> getRCGroups() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void setRCEpochs(ReconfigurationRecord<NodeIDType> ncRecord) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

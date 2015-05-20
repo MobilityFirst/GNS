@@ -6,28 +6,26 @@ import java.util.Set;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.gns.reconfiguration.PaxosReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * @author V. Arun
  */
-public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
+public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 
 	public static enum CoordType {
 		LAZY, PAXOS
 	};
 
 	private final CoordType coordType;
-	private final PaxosManager<Integer> paxosManager;
 
 	private class CoordData {
 		final String name;
@@ -49,15 +47,10 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 
 	NoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
 			Stringifiable<Integer> unstringer, JSONMessenger<Integer> msgr) {
-		super(app, msgr);
+		super(app, msgr.getMyID(), unstringer, msgr);
 		this.coordType = coordType;
 		this.registerCoordination(NoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
 		if(app instanceof NoopApp) ((NoopApp)app).setMessenger(msgr);
-		if (this.coordType.equals(CoordType.PAXOS)) {
-			this.paxosManager = new PaxosManager<Integer>(this.messenger.getMyID(),
-					unstringer, this.messenger, this);
-		} else
-			this.paxosManager = null;
 	}
 
 	@Override
@@ -71,15 +64,7 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 			if (this.coordType.equals(CoordType.LAZY))
 				this.sendAllLazy((NoopAppRequest) request);
 			else if (this.coordType.equals(CoordType.PAXOS)) {
-				NoopAppRequest noopReq = (NoopAppRequest)request;
-				if (noopReq.isStop()) {
-					this.paxosManager.proposeStop(request.getServiceName(),
-							request.toString(),
-							(short)(int)(this.getEpoch(request.getServiceName())));
-				}
-				else
-					this.paxosManager.propose(request.getServiceName(),
-							request.toString());
+				super.coordinateRequest((NoopAppRequest)request);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -95,17 +80,14 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 			this.groups.put(serviceName, new CoordData(serviceName, epoch,
 					nodes));
 		} else if (this.coordType.equals(CoordType.PAXOS)) {
-			this.paxosManager.waitCanCreateOrExistsOrHigher(serviceName,
-					(short) epoch);
-			created = this.paxosManager.createPaxosInstance(serviceName,
-					(short) epoch, nodes, this, state); 
+			created = super.createReplicaGroup(serviceName, epoch, state, nodes);
 		}
 		/* FIXME: This should not needed as state is already supplied to
 		 * createPaxosInstance, but we need it right now to set the 
 		 * epoch correctly. This will be unnecessary when paxos apps
 		 * are epoch-unaware.
 		 */
-		this.app.putInitialState(serviceName, epoch, state);
+		//this.app.putInitialState(serviceName, epoch, state);
 		return created;
 	}
 
@@ -116,7 +98,7 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 			this.groups.remove(serviceName);
 		}
 		else if (this.coordType.equals(CoordType.PAXOS)) {
-			// FIXME: invoke paxosManager remove here
+			super.deleteReplicaGroup(serviceName, epoch);
 		}
 	}
 
@@ -130,7 +112,7 @@ public class NoopAppCoordinator extends AbstractReplicaCoordinator<Integer> {
 				return null;
 		} else
 			assert (this.coordType.equals(CoordType.PAXOS));
-		return this.paxosManager.getPaxosNodeIDs(serviceName);
+		return super.getReplicaGroup(serviceName);
 	}
 
 	@Override

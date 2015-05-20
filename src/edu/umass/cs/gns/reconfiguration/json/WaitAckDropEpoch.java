@@ -29,7 +29,7 @@ public class WaitAckDropEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private static final long RESTART_PERIOD = 8000;
+	private static final long RESTART_PERIOD = 60000;
 
 	private final NodeIDType myID;
 	private final DropEpochFinalState<NodeIDType> dropEpoch;
@@ -54,7 +54,8 @@ public class WaitAckDropEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		// send StartEpoch to all new actives and await a majority
+		// send DropEpoch to all new actives and await acks from all?
+		System.out.println(this.refreshKey() + " sending " + this.dropEpoch.getSummary());
 		GenericMessagingTask<NodeIDType, ?> mtask1 = new GenericMessagingTask<NodeIDType, DropEpochFinalState<NodeIDType>>(
 				this.startEpoch.getPrevEpochGroup().toArray(), this.dropEpoch);
 		return mtask1.toArray();
@@ -68,9 +69,7 @@ public class WaitAckDropEpoch<NodeIDType>
 
 	@Override
 	public String refreshKey() {
-		return (this.getClass().getSimpleName() + myID + ":"
-				+ this.dropEpoch.getServiceName() + ":" + this.dropEpoch
-					.getEpochNumber());
+		return Reconfigurator.getTaskKey(getClass(), dropEpoch, this.myID.toString());
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE };
@@ -90,6 +89,8 @@ public class WaitAckDropEpoch<NodeIDType>
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType()
 				.equals(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE));
+		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this.refreshKey(),
+				"received", dropEpoch.getSummary() });
 		return true;
 	}
 
@@ -97,8 +98,8 @@ public class WaitAckDropEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
-		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this,
-				"received ACK", dropEpoch.getSummary() });
+		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this.refreshKey(),
+				"received all ACKs", dropEpoch.getSummary() });
 		return null;
 	}
 

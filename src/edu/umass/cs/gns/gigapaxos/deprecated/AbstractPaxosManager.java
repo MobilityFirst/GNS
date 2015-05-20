@@ -1,6 +1,5 @@
-package edu.umass.cs.gns.paxos;
+package edu.umass.cs.gns.gigapaxos.deprecated;
 
-import edu.umass.cs.gns.nsdesign.Replicable;
 import org.json.JSONObject;
 
 import java.util.Set;

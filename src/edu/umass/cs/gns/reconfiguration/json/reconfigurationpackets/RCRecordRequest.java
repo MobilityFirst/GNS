@@ -22,8 +22,7 @@ public class RCRecordRequest<NodeIDType> extends
 	};
 
 	public static enum RequestTypes {
-		REGISTER_RECONFIURATION_INTENT, REGISTER_RECONFIGURATION_COMPLETE, CREATE_RECONFIGURATION_RECORD, DELETE_RECORD_INTENT, DELETE_RECORD_COMPLETE,
-		MERGE_REQUEST
+		RECONFIGURATION_INTENT, RECONFIGURATION_COMPLETE, DELETE_COMPLETE, RECONFIGURATION_MERGE
 	};
 
 	private final RequestTypes reqType;
@@ -51,7 +50,7 @@ public class RCRecordRequest<NodeIDType> extends
 		super(json, unstringer);
 		this.reqType = RequestTypes.valueOf(json.get(
 				Keys.REQUEST_TYPE.toString()).toString());
-		this.coordType = false; 
+		this.coordType = false;
 		this.startEpoch = json.has(Keys.START_EPOCH.toString()) ? new StartEpoch<NodeIDType>(
 				(JSONObject) json.get(Keys.START_EPOCH.toString()), unstringer)
 				: null;
@@ -70,19 +69,19 @@ public class RCRecordRequest<NodeIDType> extends
 	}
 
 	public boolean isReconfigurationIntent() {
-		return this.reqType.equals(RequestTypes.REGISTER_RECONFIURATION_INTENT);
+		return this.reqType.equals(RequestTypes.RECONFIGURATION_INTENT);
 	}
+
 	public boolean isReconfigurationMerge() {
-		return this.reqType.equals(RequestTypes.MERGE_REQUEST);
+		return this.reqType.equals(RequestTypes.RECONFIGURATION_MERGE);
 	}
 
 	public boolean isReconfigurationComplete() {
-		return this.reqType
-				.equals(RequestTypes.REGISTER_RECONFIGURATION_COMPLETE);
+		return this.reqType.equals(RequestTypes.RECONFIGURATION_COMPLETE);
 	}
 
 	public boolean isDeleteConfirmation() {
-		return this.reqType.equals(RequestTypes.DELETE_RECORD_COMPLETE);
+		return this.reqType.equals(RequestTypes.DELETE_COMPLETE);
 	}
 
 	@Override
@@ -104,7 +103,13 @@ public class RCRecordRequest<NodeIDType> extends
 		return this.getServiceName().equals(
 				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString());
 	}
+
 	public RequestTypes getRCRequestType() {
 		return this.reqType;
+	}
+
+	public String getRCRequestTypeCompact() {
+		String[] tokens = this.getRCRequestType().toString().split("_");
+		return tokens[tokens.length - 1];
 	}
 }

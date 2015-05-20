@@ -43,9 +43,9 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	public boolean addReconfigurator(NodeIDType node,
 			InetSocketAddress sockAddr, int version);
 
-	public boolean deleteReconfigurators(int version);
+	public boolean garbageCollectOldReconfigurators(int version);
 
-	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig();
+	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig(boolean maxOnly);
 
 	// merge state, i.e., append instead of replacing state, exactly once
 	public boolean mergeState(String name, int epoch, String mergee,
@@ -54,6 +54,7 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	// clear all merged state in RC record
 	public void clearMerged(String name, int epoch);
 
+	public void setRCEpochs(ReconfigurationRecord<NodeIDType> ncRecord);
 	// close DB
 	public void close();
 }

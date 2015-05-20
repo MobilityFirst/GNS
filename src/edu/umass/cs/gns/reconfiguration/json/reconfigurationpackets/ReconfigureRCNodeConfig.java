@@ -86,7 +86,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 
 	public Set<NodeIDType> getAddedRCNodeIDs() {
 		return (this.newlyAddedNodes != null ? new HashSet<NodeIDType>(
-				this.newlyAddedNodes.keySet()) : null);
+				this.newlyAddedNodes.keySet()) : new HashSet<NodeIDType>());
 	}
 	public Set<NodeIDType> getDeletedRCNodeIDs() {
 		return this.deletedNodes==null ? new HashSet<NodeIDType>() : this.deletedNodes;

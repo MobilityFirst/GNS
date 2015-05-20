@@ -35,7 +35,8 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig,
 			InterfaceJSONNIOTransport<NodeIDType> niot) {
-		super(app, myID, consistentNodeConfig, niot);
+		// setting paxosManager out-of-order limit to 1
+		super(app, myID, consistentNodeConfig, niot, 1);
 		assert (niot != null);
 		this.app = app;
 		this.consistentNodeConfig = consistentNodeConfig;
@@ -56,14 +57,27 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	/*
 	 * FIXME: implement durability
 	 */
+        @Override
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
 		String rcGroupName = this.getRCGroupName(request.getServiceName());
 		// assert (this.getReplicaGroup(rcGroupName) != null);
+                
 //		assert (request.getServiceName().equals(rcGroupName) || request
 //				.getServiceName().equals("name0")) : rcGroupName + " "
 //				+ request;
 		return super.coordinateRequest(rcGroupName, request);
+	}
+
+	public boolean coordinateRequestSuppressExceptions(InterfaceRequest request) {
+		try {
+			return this.coordinateRequest(request);
+		} catch (IOException | RequestParseException e) {
+			log.warning(this + " incurred " + e.getClass().getSimpleName()
+					+ " while coordinating " + request);
+			e.printStackTrace();
+		}
+		return false;
 	}
 
 	/*
@@ -167,11 +181,11 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	/*
 	 * Checks if I am affected because of the addition or deletion of the node
-	 * argument. The check is performed based on the RC groups actually present
-	 * in the DB, not NodeConfig.
+	 * argument.
 	 * 
-	 * I am affected if either "node" defines an existing RC group or consistent
-	 * hashes to one. This check is the same for both add and remove operations.
+	 * I am affected if either "node" consistent-hashes to an existing RC group
+	 * or the consistent hash node is a member of one of my RC groups. This
+	 * check is the same for both add and remove operations.
 	 */
 	protected boolean amAffected(NodeIDType node) {
 		if (node == null)
@@ -180,18 +194,23 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		NodeIDType hashNode = this.getOldConsistentHashRing()
 				.getReplicatedServersArray(this.app.getRCGroupName(node))
 				.get(0);
-		Set<String> myRCGroupNames = this.getOldRCGroups().keySet();
-		/*
-		 * We need to fetch all current RC groups. These groups in general may
-		 * or may not be consistent with those dictated by NodeConfig.
-		 */
-		for (String rcGroup : myRCGroupNames) {
-			if (this.app.getRCGroupName(node).equals(rcGroup)
-					|| this.app.getRCGroupName(hashNode).equals(rcGroup))
+		String hashGroup = this.app.getRCGroupName(hashNode);
+
+		Map<String, Set<NodeIDType>> myRCGroups = this.getOldRCGroups();
+
+		for (String rcGroup : myRCGroups.keySet()) {
+			if (hashGroup.equals(rcGroup)
+					|| myRCGroups.get(rcGroup).contains(hashNode))
 				affected = true;
 		}
 		return affected;
 	}
+
+	protected Set<NodeIDType> setRCEpochs(Set<NodeIDType> addNodes,
+			Set<NodeIDType> deleteNodes) {
+		return this.app.setRCEpochs(addNodes, deleteNodes);
+	}
+
 
 	/*
 	 * This method gets RC group names based on NodeConfig. This may in general
@@ -225,10 +244,10 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		return this.app.getNewRCGroups();
 	}
 
-	/* Checks if RC group name is name itself by consulting
-	 * the soft copy of node config. We could also have checked
-	 * if the name is node.toString() for some node in the 
-	 * current set of reconfigurators.
+	/*
+	 * Checks if RC group name is name itself by consulting the soft copy of
+	 * node config. We could also have checked if the name is node.toString()
+	 * for some node in the current set of reconfigurators.
 	 */
 	public boolean isRCGroupName(String name) {
 		return this.app.isRCGroupName(name);
@@ -243,11 +262,11 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	 * The methods below generate the old and new consistent hash rings on
 	 * demand. We may want to cache them as a minor (unimplemented)
 	 * optimization. We need both rings in order to correctly conduct
-	 * reconfigurator add/delete operations. It is unwise to use the 
-	 * soft copy of consistentNodeConfig. The only reliable information
-	 * is in the paxos-managed NODE_CONFIG record that has the current
-	 * and new (possibly identical) set of reconfigurators, so we generate
-	 * the consistent hash rings on demand using that information.
+	 * reconfigurator add/delete operations. It is unwise to use the soft copy
+	 * of consistentNodeConfig. The only reliable information is in the
+	 * paxos-managed NODE_CONFIG record that has the current and new (possibly
+	 * identical) set of reconfigurators, so we generate the consistent hash
+	 * rings on demand using that information.
 	 */
 	protected String getOldGroupName(String name) {
 		return this.app.getRCGroupName(this.getOldConsistentHashRing()
@@ -255,15 +274,12 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	}
 
 	protected ConsistentHashing<NodeIDType> getOldConsistentHashRing() {
-		return new ConsistentHashing<NodeIDType>(this.getReconfigurationRecord(
-				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
-				.getActiveReplicas());
+		return this.app.getOldConsistentHashRing();
 	}
 
+
 	protected ConsistentHashing<NodeIDType> getNewConsistentHashRing() {
-		return new ConsistentHashing<NodeIDType>(this.getReconfigurationRecord(
-				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
-				.getNewActives());
+		return this.app.getNewConsistentHashRing();
 	}
 
 	// needed because we have no copy of the old consistent hash ring
@@ -275,17 +291,6 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		group.put(oldGroupName, new HashSet<NodeIDType>(oldGroup));
 
 		return group;
-	}
-
-	// needed because we have no copy of the old consistent hash ring
-	protected ArrayList<NodeIDType> getOldGroupAsArray(String newRCGroup) {
-		return this.getOldConsistentHashRing().getReplicatedServersArray(
-				this.app.getRCGroupName(newRCGroup));
-	}
-
-	protected ArrayList<NodeIDType> getNewGroupAsArray(String oldRCGroup) {
-		return this.getOldConsistentHashRing().getReplicatedServersArray(
-				this.app.getRCGroupName(oldRCGroup));
 	}
 
 	/*
@@ -309,7 +314,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	 * the set of reconfigurators available in the NODE_CONFIG RC record.
 	 */
 	protected boolean changeDBNodeConfig(int version) {
-		return this.app.updateNodeConfig(version);
+		return this.app.updateDBNodeConfig(version);
 	}
 
 	@Override
@@ -336,4 +341,17 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	public boolean removeRCTask(String taskKey) {
 		return this.app.removeRCTask(taskKey);
 	}
+
+	protected boolean isBeingDeleted(String curRCGroup) {
+		Set<NodeIDType> newRCs = this.getReconfigurationRecord(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
+				.getNewActives();
+		boolean presentInNew = false;
+		for (NodeIDType node : newRCs) {
+			if (this.getRCGroupName(node).equals(curRCGroup))
+				presentInNew = true;
+		}
+		return !presentInNew;
+	}
+
 }

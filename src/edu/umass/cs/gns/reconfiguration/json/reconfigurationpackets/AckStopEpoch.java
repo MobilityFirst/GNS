@@ -37,9 +37,10 @@ public class AckStopEpoch<NodeIDType> extends
 	public AckStopEpoch(JSONObject json, Stringifiable<NodeIDType> unstringer)
 			throws JSONException {
 		super(json, unstringer);
-		this.finalState = json.optString(Keys.FINAL_STATE.toString());
+		this.finalState = json.has(Keys.FINAL_STATE.toString()) ? json.getString(Keys.FINAL_STATE.toString()) : null;
 	}
 
+	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
 		json.put(Keys.FINAL_STATE.toString(), this.finalState);

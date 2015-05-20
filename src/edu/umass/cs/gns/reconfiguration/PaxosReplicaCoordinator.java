@@ -27,6 +27,13 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 				niot, this);
 	}
 
+	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
+			Stringifiable<NodeIDType> unstringer,
+			InterfaceJSONNIOTransport<NodeIDType> niot, int outOfOrderLimit) {
+		this(app, myID, unstringer, niot);
+		this.paxosManager.setOutOfOrderLimit(outOfOrderLimit);
+	}
+
 	@Override
 	public Set<IntegerPacketType> getRequestTypes() {
 		return this.app.getRequestTypes();
@@ -40,7 +47,8 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 
 	private String propose(String paxosID, InterfaceRequest request) {
 		String proposee = null;
-		if (request instanceof InterfaceReconfigurableRequest)
+		if (request instanceof InterfaceReconfigurableRequest
+				&& ((InterfaceReconfigurableRequest) request).isStop())
 			proposee = this.paxosManager.proposeStop(paxosID, request
 					.toString(),
 					(short) ((InterfaceReconfigurableRequest) request)
@@ -60,21 +68,35 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 						this,
 						(proposee != null ? "paxos-coordinated"
 								: "failed to paxos-coordinate"),
-						request.getRequestType(), " to ", paxosGroupID, ":",
+						request.getRequestType(), " to ", proposee, ":",
 						request });
 		return proposee != null;
 	}
 
+	/*
+	 * This method always returns true as it will always succeed in either
+	 * creating the group with the requested epoch number or higher. In either
+	 * case, the caller should consider the operation a success.
+	 */
 	@Override
 	public boolean createReplicaGroup(String groupName, int epoch,
 			String state, Set<NodeIDType> nodes) {
-		log.info(this + " creating paxos instance " + groupName + ":" + epoch
-				+ (state != null ? " with initial state " + state : ""));
-		// will block if a lower unstopped epoch exits
-		this.paxosManager.waitCanCreateOrExistsOrHigher(groupName, (short)epoch);
-		boolean created = this.paxosManager.createPaxosInstance(groupName, (short) epoch,
-					nodes, this, state);
-		return created;
+		log.info(this + " about to create paxos instance " + groupName + ":"
+				+ epoch + (state != null ? " with initial state " + state : ""));
+		// will block for a default timeout if a lower unstopped epoch exits
+		boolean created = this.paxosManager.createPaxosInstanceForcibly(
+				groupName, (short) epoch, nodes, this, state,
+				PaxosManager.CAN_CREATE_TIMEOUT);
+		if (!created)
+			log.info(this + " paxos instance " + groupName + ":" + epoch
+					+ " or higher already exists");
+
+		boolean createdOrExistsOrHigher = (created || this.paxosManager
+				.existsOrHigher(groupName, (short) epoch));
+		;
+		assert (createdOrExistsOrHigher) : this + " failed to create "
+				+ groupName + ":" + epoch + " with state " + state;
+		return createdOrExistsOrHigher;
 	}
 
 	public String toString() {

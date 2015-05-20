@@ -1,13 +1,15 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
+import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
-import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplicaApp;
 import edu.umass.cs.gns.nsdesign.packet.*;
-import edu.umass.cs.gns.paxos.AbstractPaxosManager;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
@@ -57,7 +59,7 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
       //this.paxosInterface = new ReplicableTransition(paxosInterface);
       this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
               nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
-              this.paxosInterface, paxosConfig);
+              this.paxosInterface, paxosConfig.getPaxosLogFolder());
 //      this.paxosManager = new PaxosManagerTransition(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
 //              nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
 //              this.paxosInterface, paxosConfig));

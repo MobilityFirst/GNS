@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.Replicable;
+import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PValuePacket;
@@ -131,7 +131,7 @@ import edu.umass.cs.gns.util.Util;
 public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private static final boolean PAXOS_ID_AS_STRING=false; // if false, must invoke getPaxosID() as less often as possible
 	protected static final int INTER_CHECKPOINT_INTERVAL = 100; // must be >= 1, does not depend on anything else
-	private static final int SYNC_THRESHOLD = 4*INTER_CHECKPOINT_INTERVAL; // out-of-order-ness prompting synchronization, must be >=1 
+	protected static final int SYNC_THRESHOLD = 4*INTER_CHECKPOINT_INTERVAL; // out-of-order-ness prompting synchronization, must be >=1 
 	private static final int MAX_SYNC_GAP = INTER_CHECKPOINT_INTERVAL;
 	protected static final int MAX_OUTSTANDING_LOAD = 100*INTER_CHECKPOINT_INTERVAL;
 	protected static final boolean POKE_ENABLED = false;
@@ -216,7 +216,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * NOT make the app execute requests or send out paxos messages 
 	 * to the external world.
 	 */
-	public boolean isStopped() {return this.paxosState.isStopped();}
+	public synchronized boolean isStopped() {return this.paxosState.isStopped();}
 	protected boolean forceStop() { // not synchronized as coordinator can die anytime anyway 
 		this.coordinator.forceStop(); 
 		this.paxosState.forceStop(); // 
@@ -226,6 +226,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		this.forceStop();
 		AbstractPaxosLogger.kill(this.paxosManager.getPaxosLogger(), getPaxosID()); // drop all log state
 		//assert(this.paxosManager.getPaxosLogger().getSlotBallotState(getPaxosID())==null);
+		// kill implies reset app state
+		this.clientRequestHandler.updateState(getPaxosID(), null);
 		return true;
 	}
 	protected void setActive() {
@@ -704,7 +706,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		ActivePaxosState activeState = markActiveState();
 
 		MessagingTask fixGapsRequest = null;
-		if (this.shouldSync(committed.slot, SYNC_THRESHOLD) && activeState.canSync()) {
+		if (this.shouldSync(committed.slot, this.getPaxosManager().getOutOfOrderLimit()) && activeState.canSync()) {
 			fixGapsRequest = this
 					.requestMissingDecisions((committed.ballot.coordinatorID));
 			if (fixGapsRequest != null) {
@@ -744,7 +746,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		int execCount = 0;
 		// extract next in-order decision
 		while((inorderDecision = this.paxosState.putAndRemoveNextExecutable(loggedDecision))!=null) { 
-			log.log(Level.FINE, "{0}{1}{2}", new Object[]{this, " in-order commit: ",inorderDecision}); 
+			log.log(Level.INFO, "{0}{1}{2}", new Object[]{this, " in-order commit: ",inorderDecision}); 
 
 			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
 			boolean executed=false;
@@ -757,8 +759,8 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 			} execCount++;
 
 			// checkpoint if needed, must be atomic with the execution 
-			if(shouldCheckpoint(inorderDecision) && !inorderDecision.isRecovery() /*&& !inorderDecision.isStopRequest()*/) { 
-				AbstractPaxosLogger.checkpoint(this.paxosManager.getPaxosLogger(), pid, this.version, 
+			if(shouldCheckpoint(inorderDecision) && !inorderDecision.isRecovery()) { 
+				this.paxosManager.getPaxosLogger().putCheckpointState(pid, this.version, 
 						this.groupMembers, inorderDecision.slot, this.paxosState.getBallot(), 
 						this.clientRequestHandler.getState(pid), this.paxosState.getGCSlot());
 				log.info(DelayProfiler.getStats());
@@ -1009,8 +1011,9 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	 * transfer threshold MAX_SYNC_GAP, but that is okay.
 	 */
 	private boolean shouldSync(int maxDecisionSlot, int threshold) {
-		return (maxDecisionSlot - this.paxosState.getSlot() >= threshold)
-				|| (this.paxosState.getSlot() == 0 && maxDecisionSlot > 0);
+		int expectedSlot = this.paxosState.getSlot();
+		return (maxDecisionSlot - expectedSlot >= threshold)
+				|| ((expectedSlot == 0 || expectedSlot == 1) && (maxDecisionSlot - expectedSlot > 0));
 	}
 
 	private boolean isMissingTooMuch() {

@@ -33,6 +33,14 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	// need to refresh when nodeConfig changes
 	private final ConsistentHashing<NodeIDType> CH_AR;
 	
+	/* We need to track reconfigurators slated for removal separately because
+	 * we still need ID to socket address mappings for deleted nodes (e.g.,
+	 * in order to do networking for completing deletion operations) but not
+	 * include deleted nodes in the consistent hash ring. Thus, the ring
+	 * transitions immediately to the new ring when reconfigurators are 
+	 * added or slated for removal, but socket addresses for removal-slated
+	 * nodes are maintained until explicitly told to garbage collect them.
+	 */
 	private Set<NodeIDType> reconfiguratorsSlatedForRemoval = new HashSet<NodeIDType>();
 	
 	public ConsistentReconfigurableNodeConfig(
@@ -80,7 +88,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		assert (addresses != null);
 		return addresses;
 	}
-        
+
         @Override
         public ArrayList<InetAddress> getActiveIPs() {
           return getNodeIPs(getActiveReplicas());
@@ -167,6 +175,8 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	private synchronized boolean refreshReconfigurators() {
 		Set<NodeIDType> curReconfigurators = this.nodeConfig
 				.getReconfigurators();
+		// remove those slated for removal for CH ring purposes
+		curReconfigurators.removeAll(this.reconfiguratorsSlatedForRemoval);
 		if (curReconfigurators.equals(this.getLastReconfigurators()))
 			return false;
 		this.setLastReconfigurators(curReconfigurators);
@@ -208,6 +218,13 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		this.reconfiguratorsSlatedForRemoval.add(id);
 		return this.getNodeSocketAddress(id);
 	}
+	public boolean removeSlatedForRemoval() {
+		boolean removed = false;
+		for(NodeIDType slated : this.reconfiguratorsSlatedForRemoval) {
+			removed = removed || (this.removeReconfigurator(slated)!=null);
+		}
+		return removed;
+	}
 
 	@Override
 	public InetSocketAddress addActiveReplica(NodeIDType id,
@@ -224,6 +241,4 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	public long getVersion() {
 		return this.nodeConfig.getVersion();
 	}
-
-  
 }

@@ -39,8 +39,6 @@ public class WaitEpochFinalState<NodeIDType>
 
 	private Iterator<NodeIDType> prevGroupIterator;
 	private boolean first = true;
-	private boolean stateReceived = false;
-	// RCRecordRequest<NodeIDType> rcRecReq = null;
 
 	private final String key;
 
@@ -56,7 +54,7 @@ public class WaitEpochFinalState<NodeIDType>
 		this.prevGroupIterator = this.startEpoch.getPrevEpochGroup().iterator();
 		this.reqState = new RequestEpochFinalState<NodeIDType>(myID,
 				startEpoch.getPrevGroupName(),
-				(startEpoch.getEpochNumber() - 1));
+				(startEpoch.getPrevEpochNumber()));
 		this.key = this.refreshKey();
 		this.setPeriod(RESTART_PERIOD);
 		this.notifiees.put(this.startEpoch.getInitiator(),
@@ -66,8 +64,6 @@ public class WaitEpochFinalState<NodeIDType>
 	// simply calls start() but only if state not yet received
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		if (this.isStateReceived())
-			return null;
 		if (!this.prevGroupIterator.hasNext())
 			this.prevGroupIterator = this.startEpoch.getPrevEpochGroup()
 					.iterator();
@@ -105,12 +101,14 @@ public class WaitEpochFinalState<NodeIDType>
 
 	@Override
 	public String refreshKey() {
-		return (this.getClass().getSimpleName() + this.appCoordinator.getMyID()
-				+ ":" + this.reqState.getServiceName() + ":"
-				+ this.reqState.getEpochNumber() + (!reqState.getServiceName()
-				.equals(this.startEpoch.getServiceName()) ? ":"
-				+ this.startEpoch.getServiceName() + ":"
-				+ this.startEpoch.getEpochNumber() : ""));
+		return (Reconfigurator.getTaskKey(getClass(), reqState,
+				this.appCoordinator.getMyID().toString()) +
+		// need different key for split/merge operations
+		(!reqState.getServiceName().equals(this.startEpoch.getServiceName()) ? ":"
+				+ this.startEpoch.getServiceName()
+				+ ":"
+				+ this.startEpoch.getEpochNumber()
+				: ""));
 	}
 
 	protected static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.EPOCH_FINAL_STATE };
@@ -142,27 +140,25 @@ public class WaitEpochFinalState<NodeIDType>
 			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>) event;
 			if (!checkEpochFinalState(event))
 				break;
-			this.setStateReceived();
-			;
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
-					"received", state });
-			if (this.startEpoch.isCreate())
-				handled = this.appCoordinator.createReplicaGroup(
-						this.startEpoch.getServiceName(),
-						this.startEpoch.getEpochNumber(), state.getState(),
-						this.startEpoch.getCurEpochGroup());
+			log.log(Level.INFO, MyLogger.FORMAT[4],
+					new Object[] { this, "received", state.getSummary(),
+							"state=", state.getState() });
+			handled = this.appCoordinator.createReplicaGroup(
+					this.startEpoch.getServiceName(),
+					this.startEpoch.getEpochNumber(), state.getState(),
+					this.startEpoch.getCurEpochGroup());
+			/*
+			 * createReplicaGroup should always return true to indicate that it
+			 * either succeeded in creating the group with the specified epoch
+			 * number or higher and the supplied state. This should always be
+			 * possible, if necessary as a blocking operation. So we invoke
+			 */
+			assert (handled);
+
 		default:
 			break;
 		}
 		return handled;
-	}
-
-	private boolean isStateReceived() {
-		return this.stateReceived;
-	}
-
-	private void setStateReceived() {
-		this.stateReceived = true;
 	}
 
 	public String toString() {

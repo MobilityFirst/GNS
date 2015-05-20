@@ -6,12 +6,12 @@
  */
 package edu.umass.cs.gns.replicaCoordination.multipaxos;
 
+import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import java.io.IOException;
 
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.util.Util;
 
 /**

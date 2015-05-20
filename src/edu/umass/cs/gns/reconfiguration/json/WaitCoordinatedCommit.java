@@ -28,7 +28,7 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationReco
  * in turn calls paxos propose(.)) does not suffice to ensure that the command
  * will be committed.
  */
-public class WaitCommitStartEpoch<NodeIDType>
+public class WaitCoordinatedCommit<NodeIDType>
 		implements
 		SchedulableProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
@@ -42,25 +42,52 @@ public class WaitCommitStartEpoch<NodeIDType>
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
 
-	public WaitCommitStartEpoch(RCRecordRequest<NodeIDType> rcRecReq,
+	public WaitCoordinatedCommit(RCRecordRequest<NodeIDType> rcRecReq,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		this.rcRecReq = rcRecReq;
 		this.DB = DB;
 		this.key = this.refreshKey();
-		if(this.DB.isRCGroupName(rcRecReq.getServiceName()))
+		if (this.DB.isRCGroupName(rcRecReq.getServiceName()))
 			this.DB.addRCTask(getKey());
 	}
 
 	// will keep restarting until explicitly removed by reconfigurator
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		if (!this.amObviated())
-			return start();
+		if (amObviated())
+			return killMyself();
+		// else coordinate RC record request
+		System.out.println(this.refreshKey()
+				+ " re-proposing "
+				+ rcRecReq.getSummary()
+				+ (rcRecReq.isReconfigurationMerge() ? "; merging state = "
+						+ rcRecReq.startEpoch.initialState : "") + "\n");
+		//rcRecReq.setNeedsCoordination(true); // need to set explicitly each time
+		this.DB.coordinateRequestSuppressExceptions(rcRecReq);
+		return null; 
+	}
+
+	@Override
+	public GenericMessagingTask<NodeIDType, ?>[] start() {
+		// start method must be brief, cannot call handleIncoming here
+		return null;
+	}
+
+	private GenericMessagingTask<NodeIDType, ?>[] killMyself() {
 		this.DB.removeRCTask(getKey());
 		ProtocolExecutor.cancel(this);
 		return null;
 	}
 
+	@Override
+	public String refreshKey() {
+		return Reconfigurator.getCommitTaskKey(this.rcRecReq, this.DB.getMyID()
+				.toString())
+				+ (this.rcRecReq.startEpoch.isMerge() ? ":"
+						+ this.rcRecReq.startEpoch.getPrevGroupName() + ":"
+						+ this.rcRecReq.getEpochNumber() : "");
+	}
+	
 	/*
 	 * FIXME: Create an interface for amObviated() and pass it to this class'
 	 * constructor.
@@ -68,13 +95,14 @@ public class WaitCommitStartEpoch<NodeIDType>
 	private boolean amObviated() {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(rcRecReq.getServiceName());
-		// check if start epoch has been committed
-		boolean obviated = rcRecReq.isReconfigurationComplete()
-				&& (record == null || (record.getEpoch() == rcRecReq
-						.getEpochNumber() && record.getState().equals(
-						RCStates.READY)));
+		// check if reconfiguration complete is committed
+		boolean completeCommit = (rcRecReq.isReconfigurationComplete() || rcRecReq
+				.isDeleteConfirmation())
+				&& (record == null || ((record.getEpoch()
+						- rcRecReq.getEpochNumber() >= 0) && record.getState()
+						.equals(RCStates.READY)));
 
-		// check if start epoch is not needed
+		// check if reconfiguration complete is not needed
 		boolean isNotLocalRCGroup = rcRecReq.isReconfigurationComplete()
 				&& this.DB.isRCGroupName(rcRecReq.getServiceName())
 				&& !rcRecReq.startEpoch.curEpochGroup.contains(this.DB
@@ -88,26 +116,15 @@ public class WaitCommitStartEpoch<NodeIDType>
 								.getState().equals(RCStates.WAIT_ACK_STOP)) || (record
 						.getEpoch() - rcRecReq.getEpochNumber() >= 0));
 
-		return obviated || isNotLocalRCGroup || intentCommitted;
-	}
-
-	@Override
-	public GenericMessagingTask<NodeIDType, ?>[] start() {
-		if (amObviated())
-			return null;
-		// else coordinate RC record request
-		rcRecReq.setNeedsCoordination(true); // need to set explicitly each time
-		System.out.println(this.refreshKey() + " re-proposing "
-				+ rcRecReq.getSummary());
-		this.DB.handleIncoming(rcRecReq);
-		return null;
-	}
-
-	@Override
-	public String refreshKey() {
-		return (this.getClass().getSimpleName() + rcRecReq.getRCRequestType()
-				+ this.DB.getMyID() + ":" + this.rcRecReq.getServiceName()
-				+ ":" + this.rcRecReq.getEpochNumber());
+		boolean isMerged = rcRecReq.isReconfigurationMerge()
+				&& this.DB.isRCGroupName(rcRecReq.getServiceName())
+				&& (record != null && record.mergedContains(rcRecReq.startEpoch
+						.getPrevGroupName()));
+		
+		// defensive documentation via code
+		boolean obviated = completeCommit || isNotLocalRCGroup
+				|| intentCommitted || isMerged;
+		return obviated;
 	}
 
 	// empty as task does not expect any events and will be explicitly removed

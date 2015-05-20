@@ -80,7 +80,7 @@ public class WaitAckStopEpoch<NodeIDType>
 	protected boolean amObviated() {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(this.stopEpoch.getServiceName());
-		if (record.getEpoch() - this.startEpoch.getEpochNumber() > 0)
+		if (record==null || (record.getEpoch() - this.startEpoch.getEpochNumber() > 0))
 			return true;
 		return false;
 	}
@@ -115,9 +115,14 @@ public class WaitAckStopEpoch<NodeIDType>
 	 */
 	@Override
 	public String refreshKey() {
-		return (this.getClass().getSimpleName() + this.DB.getMyID() + ":"
-				+ this.startEpoch.getPrevGroupName() + ":" + (this.startEpoch
-				.getEpochNumber() - 1));
+		return Reconfigurator.getTaskKey(getClass(), stopEpoch, this.DB
+				.getMyID().toString())
+				+ ":" + 
+				// need different key for split/merge operations
+				(this.startEpoch.isSplitOrMerge() ? this.startEpoch
+						.getServiceName()
+						+ ":"
+						+ this.startEpoch.getEpochNumber() : "");
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_STOP_EPOCH };
@@ -133,12 +138,17 @@ public class WaitAckStopEpoch<NodeIDType>
 		return this.key;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType().equals(types[0]));
-		@SuppressWarnings("unchecked")
 		// asserted above
 		AckStopEpoch<NodeIDType> ackStopEpoch = (AckStopEpoch<NodeIDType>) event;
+		log.info(this
+				+ " received "
+				+ ackStopEpoch.getSummary()
+				+ (this.stopEpoch.shouldGetFinalState() ? ":"
+						+ ackStopEpoch.getFinalState() : ""));
 		// finalState can not be null
 		if (this.stopEpoch.shouldGetFinalState())
 			return (this.finalState = ackStopEpoch.getFinalState()) != null;
@@ -158,12 +168,12 @@ public class WaitAckStopEpoch<NodeIDType>
 					this.DB);
 			return this.getDeleteConfirmation();
 		} else if (this.startEpoch.isMerge()) {
-			ptasks[0] = new WaitCommitStartEpoch<NodeIDType>(
+			ptasks[0] = new WaitCoordinatedCommit<NodeIDType>(
 					new RCRecordRequest<NodeIDType>(this.DB.getMyID(),
 					// just to update initialState with the received state
 							new StartEpoch<NodeIDType>(this.startEpoch,
 									this.finalState),
-							RCRecordRequest.RequestTypes.MERGE_REQUEST),
+							RCRecordRequest.RequestTypes.RECONFIGURATION_MERGE),
 					this.DB);
 		} else
 			// else start next epoch group
@@ -176,7 +186,7 @@ public class WaitAckStopEpoch<NodeIDType>
 	private GenericMessagingTask<NodeIDType, ?>[] getDeleteConfirmation() {
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 				this.DB.getMyID(), this.startEpoch,
-				RCRecordRequest.RequestTypes.DELETE_RECORD_COMPLETE);
+				RCRecordRequest.RequestTypes.DELETE_COMPLETE);
 		return (new GenericMessagingTask<NodeIDType, Object>(this.DB.getMyID(),
 				rcRecReq)).toArray();
 	}

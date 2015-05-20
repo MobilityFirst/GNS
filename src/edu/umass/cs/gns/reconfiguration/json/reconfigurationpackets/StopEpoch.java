@@ -37,7 +37,8 @@ public class StopEpoch<NodeIDType> extends
 		this.getFinalState = json.optBoolean(Keys.GET_FINALSTATE.toString());
 	}
 
-	public JSONObject toJSONObjectimpl() throws JSONException {
+	@Override
+	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
 		json.put(Keys.GET_FINALSTATE.toString(), this.getFinalState);
 		return json;

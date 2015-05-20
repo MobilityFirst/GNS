@@ -3,6 +3,7 @@ package edu.umass.cs.gns.reconfiguration.examples;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.HashSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -202,7 +203,14 @@ public class ReconfigurableClient {
 			// add node
 			client.sendRequest(new ReconfigureRCNodeConfig<Integer>(null, 1103, new InetSocketAddress(InetAddress.getByName("localhost"), 3103)));
 			while(client.exists.containsKey(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString()));
+			Thread.sleep(1000);
+			// delete node
+			HashSet<Integer> deleted =  new HashSet<Integer>();
+			deleted.add(1103);
+			client.sendRequest(new ReconfigureRCNodeConfig<Integer>(null, null, deleted));
+			while(client.exists.containsKey(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString()));
 			Thread.sleep(500);
+
 			client.messenger.stop();
 		} catch(IOException ioe) {
 			ioe.printStackTrace();

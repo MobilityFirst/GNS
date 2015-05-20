@@ -6,6 +6,7 @@ import java.util.Set;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
+import edu.umass.cs.gns.reconfiguration.Reconfigurator;
 import edu.umass.cs.gns.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
@@ -77,10 +78,7 @@ public class WaitPrimaryExecution<NodeIDType> extends
 
 	@Override
 	public String refreshKey() {
-		return (this.getClass().getSimpleName() + this.DB.getMyID()
-				+ ":" + this.startEpoch.getServiceName() + ":"
-				+ this.startEpoch.getEpochNumber());
-		//return (this.key = Util.refreshKey(this.DB.getMyID().toString()));
+		return Reconfigurator.getTaskKey(this.getClass(), this.startEpoch, this.DB.getMyID().toString());
 	}
 
 	// combine self types with those of WaitAckStopEpoch

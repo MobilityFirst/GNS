@@ -213,12 +213,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	
 	@Override
 	public String getEpochFinalCheckpointState(String paxosID, short version) {
-		String existing = this.getCheckpointState(getPCTable(), paxosID,
+		String existingVersion = this.getCheckpointState(getPCTable(), paxosID,
 				"version");
-		if (String.valueOf(version).equals(existing))
+		if (String.valueOf(version).equals(existingVersion))
 			return this.getCheckpointState(getPCTable(), paxosID, "state");
+		// else
 		log.info(myID + " asked for " + paxosID + ":" + version
-				+ "; got epoch " + existing);
+				+ "; got epoch " + existingVersion);
 		return null;
 	}
 	

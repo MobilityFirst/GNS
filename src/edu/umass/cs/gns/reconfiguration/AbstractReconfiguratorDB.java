@@ -3,6 +3,7 @@ package edu.umass.cs.gns.reconfiguration;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -177,9 +178,14 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		// wait till node config change is complete
 		if (rcRecReq.isNodeConfigChange()
 				&& rcRecReq.isReconfigurationComplete()) {
+			// should not be here at node config creation time
+			assert(!rcRecReq.startEpoch.getPrevEpochGroup().isEmpty());
+			// wait for all local RC groups to be up to date
 			this.selfWait();
-			this.deleteReconfigurators(rcRecReq.getEpochNumber() - 1);
-			this.updateNodeConfig(rcRecReq.getEpochNumber());
+			// delete lower node config versions from node config table
+			this.garbageCollectOldReconfigurators(rcRecReq.getEpochNumber() - 1);
+			// garbage collect soft socket address mappings for deleted RC nodes
+			this.consistentNodeConfig.removeSlatedForRemoval();
 			System.out.println(this + " NODE_CONFIG change complete");
 		}
 
@@ -243,14 +249,17 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					rcRecReq.startEpoch.initialState);
 		} else
 			throw new RuntimeException("Received unexpected RCRecordRequest");
-		log.info(this + " returning " + handled);
+		log.info(this + " returning " + handled + " for "
+				+ rcRecReq.getSummary());
 		return handled;
 	}
 
+	/*
 	// FIXME: keep close to getRCGroupName in RepliconfigurableReconfiguratorDB
 	protected boolean isRCGroupName(String name) {
 		return this.getRCGroupName(name).equals(name);
 	}
+	*/
 
 	/*
 	 * Checks that oldGroup is current group and newGroup differs from old by
@@ -396,7 +405,9 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			return
 			// waiting on ackStart and reconfiguration complete
 			(record.getState().equals(RCStates.WAIT_ACK_START) && rcRecReq
-					.isReconfigurationComplete());
+					.isReconfigurationComplete())
+					|| (record.getState().equals(RCStates.READY) && rcRecReq
+							.isReconfigurationMerge());
 		}
 		return false;
 	}
@@ -434,22 +445,39 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	private boolean isNodeConfigChangeComplete() {
 		Map<String, Set<NodeIDType>> newRCGroups = this.getNewRCGroups();
 		boolean complete = true;
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
 		for (String newRCGroup : newRCGroups.keySet()) {
 			ReconfigurationRecord<NodeIDType> record = this
 					.getReconfigurationRecord(newRCGroup);
 			complete = complete
 					&& record.getState().equals(RCStates.READY)
 					&& record.getActiveReplicas().equals(
-							newRCGroups.get(newRCGroup));
+							newRCGroups.get(newRCGroup))
+					&& ((record.getEpoch() == ncRecord.getRCEpoch(newRCGroup)));
 			if (!complete)
 				break;
 		}
-		complete = complete
-				&& this.getReconfigurationRecord(
-						AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
-								.toString()).isMergeAllClear();
+		if (!complete)
+			log.info(this + " does not have all RC group records ready yet");
 		complete = complete && this.isPendingRCTasksEmpty();
+		if (!this.isPendingRCTasksEmpty())
+			log.info(this + " has pending RC tasks: "
+					+ this.pendingRCProtocolTasks);
 		return complete;
+	}
+
+	protected boolean isBeingAdded(String newRCGroup) {
+		Set<NodeIDType> newRCs = this.getReconfigurationRecord(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
+				.getActiveReplicas();
+		boolean presentInOld = false;
+		for (NodeIDType node : newRCs) {
+			if (this.getRCGroupName(node).equals(newRCGroup))
+				presentInOld = true;
+		}
+		return !presentInOld;
 	}
 
 	protected Map<String, Set<NodeIDType>> getNewRCGroups() {
@@ -458,6 +486,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 						.toString());
 		return this.getRCGroups(this.getMyID(), ncRecord.getNewActives());
 	}
+
 	protected Map<String, Set<NodeIDType>> getOldRCGroups() {
 		ReconfigurationRecord<NodeIDType> ncRecord = this
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
@@ -513,7 +542,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	}
 
 	private synchronized void selfNotify() {
-		this.notify();
+		this.notifyAll();
 	}
 
 	// FIXME: check if this can this really be a noop.
@@ -531,9 +560,17 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		if (name.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 				.toString()))
 			return name;
+		else if (this.isRCGroupName(name))
+			return name;
 		else
 			return this.getRCGroupName(this.consistentNodeConfig
 					.getFirstReconfigurator(name));
+	}
+	
+	protected boolean isRCGroupName(String name) {
+		for(NodeIDType rc : this.consistentNodeConfig.getReconfigurators())
+			if(this.getRCGroupName(rc).equals(name)) return true;
+		return false;
 	}
 
 	/*
@@ -543,7 +580,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	 * 
 	 * FIXME: This should probably be done atomically, not one record at a time.
 	 */
-	protected boolean updateNodeConfig(int version) {
+	protected boolean updateDBNodeConfig(int version) {
 		ReconfigurationRecord<NodeIDType> ncRecord = this
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString());
@@ -555,7 +592,69 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							version);
 		return added;
 	}
+	protected Set<NodeIDType> setRCEpochs(Set<NodeIDType> addNodes,
+			Set<NodeIDType> deleteNodes) {
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		Set<NodeIDType> affectedNodes = new HashSet<NodeIDType>();
+		// affected by adds
+		for (NodeIDType addNode : addNodes) {
+			affectedNodes.add(addNode);
+			for (NodeIDType oldNode : ncRecord.getActiveReplicas())
+				if (this.isAffected(oldNode, addNode))
+					affectedNodes.add(oldNode);
+		}
+
+		// affected by deletes
+		for (NodeIDType deleteNode : deleteNodes)
+			for (NodeIDType oldNode : ncRecord.getActiveReplicas())
+				if (this.isAffected(oldNode, deleteNode))
+					affectedNodes.add(oldNode);
+
+		ncRecord.setRCEpochs(affectedNodes, addNodes, deleteNodes);
+		this.setRCEpochs(ncRecord);
+		return affectedNodes;
+	}
 	
+	/*
+	 * Determines if rcNode's group needs to be reconfigured because of the
+	 * addition or deletion of addOrDelNode. We need this to correctly
+	 * track the epoch numbers of all RC groups.
+	 */
+	protected boolean isAffected(NodeIDType rcNode, NodeIDType addOrDelNode) {
+		if (addOrDelNode == null)
+			return false;
+		boolean affected = false;
+		ConsistentHashing<NodeIDType> oldRing = this.getOldConsistentHashRing();
+		NodeIDType hashNode = oldRing.getReplicatedServersArray(
+				this.getRCGroupName(addOrDelNode)).get(0);
+
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+
+		for (NodeIDType oldNode : ncRecord.getActiveReplicas()) {
+			if (oldRing.getReplicatedServers(this.getRCGroupName(oldNode))
+					.contains(hashNode)) {
+				affected = true;
+			}
+		}
+		return affected;
+	}
+	protected ConsistentHashing<NodeIDType> getOldConsistentHashRing() {
+		return new ConsistentHashing<NodeIDType>(this.getReconfigurationRecord(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
+				.getActiveReplicas());
+	}
+
+	protected ConsistentHashing<NodeIDType> getNewConsistentHashRing() {
+		return new ConsistentHashing<NodeIDType>(this.getReconfigurationRecord(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
+				.getNewActives());
+	}
+
+
 	public synchronized boolean addRCTask(String taskKey) {
 		return this.pendingRCProtocolTasks.add(taskKey);
 	}
@@ -565,7 +664,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		this.selfNotify();
 		return removed;
 	}
-	
+
 	protected synchronized boolean isPendingRCTasksEmpty() {
 		return this.pendingRCProtocolTasks.isEmpty();
 	}

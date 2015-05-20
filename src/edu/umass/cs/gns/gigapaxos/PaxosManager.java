@@ -4,13 +4,12 @@ import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
-import edu.umass.cs.gns.paxos.AbstractPaxosManager;
-import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.BackwardsCompatibility;
+import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
+import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.FindReplicaGroupPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
@@ -62,6 +61,7 @@ import java.util.logging.Logger;
  * Testability: This class is unit-testable by running
  * the main method.
  */
+@SuppressWarnings("deprecation")
 public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	public static final boolean DEBUG = TESTPaxosConfig.DEBUG; // currently used only to debug pausing
 
@@ -75,6 +75,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private static final boolean ONE_PASS_RECOVERY = true;
 	private static final int MAX_POKE_RATE = 1000; // per sec
 	private static final boolean BATCHING_ENABLED = false;
+	public static final long CAN_CREATE_TIMEOUT = 1; //non-zero
+
 
 	// final
 	private final AbstractPaxosLogger paxosLogger; // logging
@@ -91,6 +93,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			new IntegerMap<NodeIDType>();
 	private final Stringifiable<NodeIDType> unstringer;
 	private final RequestBatcher batched;
+	
+	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD;
 
 	// non-final
 	private boolean hasRecovered = false;
@@ -111,11 +115,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> unstringer,
 			InterfaceJSONNIOTransport<NodeIDType> niot, Replicable pi,
-			PaxosConfig pc /* best to leave pc null */) {
+			String paxosLogFolder) {
 		this.myID = this.integerMap.put(id);// id.hashCode();
 		this.unstringer = unstringer;
 		this.myApp = pi;
-		this.FD = new FailureDetection<NodeIDType>(id, niot, pc);
+		this.FD = new FailureDetection<NodeIDType>(id, niot, paxosLogFolder);
 		this.pinstances =
 				new MultiArrayMap<String, PaxosInstanceStateMachine>(
 						PINSTANCES_CAPACITY);
@@ -124,7 +128,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		this.messenger = new Messenger<NodeIDType>(niot, this.integerMap);
 		this.paxosLogger =
 				new DerbyPaxosLogger(this.myID,
-						(pc != null ? pc.getPaxosLogFolder() : null),
+						paxosLogFolder,
 						this.messenger);
 
 		timer.schedule(new Deactivator(), DEACTIVATION_PERIOD); // periodically remove active state for idle paxii
@@ -277,6 +281,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		PaxosInstanceStateMachine pism  = this.getInstance(paxosID);
 		return (pism==null || (pism.getVersion() - version >= 0));
 	}
+	private boolean instanceExistsOrHigher(String paxosID, short version) {
+		PaxosInstanceStateMachine pism  = this.getInstance(paxosID);
+		return (pism!=null && (pism.getVersion() - version >= 0));
+	}
 
 	// Called by external entities, so we need to fix node IDs
 	public void handleIncomingPacket(JSONObject jsonMsg) {
@@ -414,6 +422,19 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	}
 	
 	public String getFinalState(String paxosID, short version) {
+		/*
+		 * FIXME: The isStopped check below is a hack to force a little wait
+		 * through synchronization. PaxosInstanceStateMachine.isStopped is
+		 * synchronized, so if a stop request is being executed concurrently
+		 * while a getFinalState request arrives, it is better for the stop
+		 * request to finish and the final checkpoint to be created before we
+		 * issue getEpochFinalCheckpoint. Otherwise, we would return a null
+		 * response for getEpochFinalCheckpointState here and the requester of
+		 * the checkpoint is forced to time out and resend the request after a
+		 * coarse-grained timeout. It is unnecessary to check the version in
+		 * the isStopped call as its return value is not used to do anything.
+		 */
+		if(this.isStopped(paxosID)) /* do nothing */; 
 		return this.paxosLogger.getEpochFinalCheckpointState(paxosID, version);
 	}
 	
@@ -450,6 +471,13 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null)
 			pism.forceCheckpoint();
+	}
+	
+	public void setOutOfOrderLimit(int limit) {
+		this.outOfOrderLimit = limit;
+	}
+	protected int getOutOfOrderLimit() {
+		return this.outOfOrderLimit;
 	}
 
 	/* Note: paxosLogger.removeAll() must be only used when a node is
@@ -899,6 +927,21 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		}
 	}
 	
+	private synchronized void timedWaitCanCreateOrExistsOrHigher(String paxosID, short version, long timeout) {
+		try {
+			/* FIXME: spurious timeouts are possible as per the documentation, 
+			 * so if we strictly want a wait of timeout if a lower version
+			 * exists, we won't get it. We also won't get it simply because
+			 * of the corresponding notifyAll() that is essentially also a 
+			 * source of spurious timeouts. Changing it to notify() will 
+			 * not help either.
+			 */
+			if (!this.canCreateOrExistsOrHigher(paxosID, version))
+				wait(timeout);
+		} catch (InterruptedException ie) {
+			ie.printStackTrace();
+		}
+	}
 	public synchronized void waitCanCreateOrExistsOrHigher(String paxosID, short version) {
 		try {
 			while (!this.canCreateOrExistsOrHigher(paxosID, version))
@@ -906,11 +949,52 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		} catch (InterruptedException ie) {
 			ie.printStackTrace();
 		}
+
 	}
 	public synchronized void notifyUponKill() {
-		notify();
+		notifyAll();
 	}
 	
+	/*
+	 * This is a common default create paxos instance behavior, i.e., we wait
+	 * for lower versions to be killed if necessary but, after a timeout, create
+	 * the new instance forcibly anyway. This method won't create the instance
+	 * if the same or higher version already exists. One concern with this
+	 * method is that force killing lower versions in order to start higher
+	 * versions can cause the epoch final state to be unavailable at any node in
+	 * immediately lower version. It is okay to kill even an immediately
+	 * preceding instance only if we already have the necessary state
+	 * (presumably obtained from a stopped immediately preceding instance at
+	 * some other group member).
+	 */
+	public boolean createPaxosInstanceForcibly(String paxosID, short version,
+			Set<NodeIDType> gms, InterfaceReplicable app, String state,
+			long timeout) {
+		// still do a timed wait
+		this.timedWaitCanCreateOrExistsOrHigher(paxosID, version, timeout);
+		if (this.instanceExistsOrHigher(paxosID, version))
+			return true;
+		// else
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+
+		if (pism != null && pism.getVersion() - version < 0) {
+			log.info("Node" + myID + " forcibly killing " + pism
+					+ " in order to create " + paxosID + ":" + version);
+			this.kill(pism); // force kill
+		}
+		boolean created = this.createPaxosInstance(paxosID, version, gms,
+				BackwardsCompatibility.InterfaceReplicableToReplicable(app),
+				state);
+		assert (created || this.instanceExistsOrHigher(paxosID, version));
+		return created;
+	}
+
+	public boolean createPaxosInstanceForcibly(String paxosID, short version,
+			Set<NodeIDType> gms, InterfaceReplicable app, String state) {
+		return this.createPaxosInstanceForcibly(paxosID, version, gms, app,
+				state, CAN_CREATE_TIMEOUT);
+	}
+
 	public boolean exists(String paxosID, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if(pism!=null && pism.getVersion()==version) return true;

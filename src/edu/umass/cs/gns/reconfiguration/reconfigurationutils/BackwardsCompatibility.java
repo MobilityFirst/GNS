@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.reconfiguration.reconfigurationutils;
 
+import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.nsdesign.Replicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.Reconfigurator;

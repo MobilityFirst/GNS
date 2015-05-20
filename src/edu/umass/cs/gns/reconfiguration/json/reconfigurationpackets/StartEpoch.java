@@ -33,21 +33,22 @@ public class StartEpoch<NodeIDType> extends
 
 	public final String prevGroupName; // for merge or split group operations
 	public final int prevEpoch;
-	
-	public final boolean isMerge; 
+
+	public final boolean isMerge;
 
 	// used only in case of new RC node addition
 	public final Map<NodeIDType, InetSocketAddress> newlyAddedNodes;
 
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes, Set<NodeIDType> prevNodes) {
-		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null, false, -1,
-				null, null, null);
+		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
+				false, -1, null, null, null);
 	}
 
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
-			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge, int prevEpoch) {
+			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
+			int prevEpoch) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
 				prevGroupName, isMerge, prevEpoch, null, null, null);
 	}
@@ -57,11 +58,10 @@ public class StartEpoch<NodeIDType> extends
 			Set<NodeIDType> prevNodes, InetSocketAddress creator,
 			String initialState,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
-		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null, false,
-				-1,
-				creator, initialState, newlyAddedNodes);
+		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
+				false, -1, creator, initialState, newlyAddedNodes);
 	}
-	
+
 	public StartEpoch(StartEpoch<NodeIDType> startEpoch, String initialState) {
 		this(startEpoch.getInitiator(), startEpoch.getServiceName(), startEpoch
 				.getEpochNumber(), startEpoch.curEpochGroup,
@@ -73,8 +73,7 @@ public class StartEpoch<NodeIDType> extends
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
 			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
-			int prevEpoch,
-			InetSocketAddress creator, String initialState,
+			int prevEpoch, InetSocketAddress creator, String initialState,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		super(initiator, ReconfigurationPacket.PacketType.START_EPOCH,
 				serviceName, epochNumber);
@@ -130,7 +129,7 @@ public class StartEpoch<NodeIDType> extends
 			json.put(Keys.INITIAL_STATE.toString(), initialState);
 
 		json.put(Keys.CREATOR.toString(), this.creator);
-		
+
 		// both prev name and epoch or neither
 		if (this.prevGroupName != null) {
 			json.put(Keys.PREV_GROUP_NAME.toString(), this.prevGroupName);
@@ -191,6 +190,7 @@ public class StartEpoch<NodeIDType> extends
 		return this.prevGroupName != null ? this.prevGroupName : this
 				.getServiceName();
 	}
+
 	public int getPrevEpochNumber() {
 		return this.prevGroupName != null ? this.prevEpoch : (this
 				.getEpochNumber() - 1);
@@ -200,14 +200,24 @@ public class StartEpoch<NodeIDType> extends
 		return this.getPrevGroupName() != null
 				&& !this.getPrevGroupName().equals(this.getServiceName());
 	}
-	
+
 	public boolean hasNewlyAddedNodes() {
-		return this.newlyAddedNodes!=null && !this.newlyAddedNodes.isEmpty();
+		return this.newlyAddedNodes != null && !this.newlyAddedNodes.isEmpty();
 	}
-	
-	public boolean isMerge() {return this.isMerge;}
-	public boolean isCreate() {return !this.isMerge;}
-	
+
+	public boolean isMerge() {
+		return this.isMerge;
+	}
+
+	public boolean isCreate() {
+		return !this.isMerge;
+	}
+
+	public Set<NodeIDType> getNewlyAddedNodes() {
+		return this.newlyAddedNodes == null ? new HashSet<NodeIDType>()
+				: new HashSet<NodeIDType>(this.newlyAddedNodes.keySet());
+	}
+
 	public static void main(String[] args) {
 		int[] group = { 3, 45, 6, 19 };
 		StartEpoch<Integer> se = new StartEpoch<Integer>(4, "name1", 2,
@@ -248,7 +258,8 @@ public class StartEpoch<NodeIDType> extends
 		for (NodeIDType node : map.keySet()) {
 			JSONObject jElement = new JSONObject();
 			jElement.put(Keys.NODE_ID.toString(), node.toString());
-			jElement.put(Keys.SOCKET_ADDRESS.toString(), map.get(node).toString());
+			jElement.put(Keys.SOCKET_ADDRESS.toString(), map.get(node)
+					.toString());
 			jArray.put(jElement);
 		}
 		return jArray;

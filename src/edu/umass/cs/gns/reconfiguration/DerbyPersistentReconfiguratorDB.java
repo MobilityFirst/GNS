@@ -194,16 +194,14 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			cleanup(insertCP);
 			cleanup(conn);
 		}
-		// FIXME: might as well return void
 		return true;
 	}
 
-	/*
-	 * The one method where all state changes are done. FIXME: We need to also
-	 * check here that the RC group itself is ready. Otherwise, an ongoing NC
-	 * change may miss the result of a concurrent reconfiguration of a regular
-	 * name.
+	/* One of two methods that changes state. Generally, this method will change
+	 * the state to READY, while setStateInitReconfiguration sets the state from
+	 * READY usually to WAIT_ACK_STOP.
 	 */
+
 	@Override
 	public synchronized boolean setState(String name, int epoch,
 			ReconfigurationRecord.RCStates state) {
@@ -217,9 +215,50 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				record.getEpoch(), record.getState(), " ->", epoch, state,
 				record.getNewActives() });
 		record.setState(name, epoch, state);
+		// setStateInitReconfiguration used for intent
+		assert(state.equals(RCStates.READY)); 
 		if (state.equals(RCStates.READY)) {
 			record.setActivesToNewActives();
+			/*
+			 * the list of pending reconfiguraitons is stored persistently so
+			 * that we can resume the most recent incomplete reconfiguration
+			 * upon recovery. The ones before the most recent will be handled by
+			 * paxos roll forward automatically. The reason paxos is not enough
+			 * for the most recent one is because reconfiguration is a two step
+			 * process consisting of an "intent" followed by a "complete"
+			 * operation. Paxos will blindly replay all committed operations but
+			 * has no way of knowing application-specific information like the
+			 * fact that an intent has to be followed by complete. So if the
+			 * node crashes after an intent but before the corresponding
+			 * complete, the app has to redo just that last step.
+			 */
 			this.setPending(name, false);
+			/*
+			 * Trimming RC epochs is needed only for the NODE_CONFIG record. It
+			 * removed entries for deleted RC nodes. The entries maintain the
+			 * current epoch number for the group corresponding to each RC node
+			 * in NODE_CONFIG. This information is needed in order for nodes to
+			 * know what epoch to reconfigure to what when the corresponding RC
+			 * groups may be out of date locally or may not even exist locally.
+			 * A simpler alternative is to force all RC groups to reconfigure
+			 * upon the addition or deletion of any RC nodes so that RC group
+			 * epoch numbers are always identical to the NODE_CONFIG epoch
+			 * number, but this is unsatisfying as it does not preserve the
+			 * "consistent hashing" like property for reconfigurations. Note
+			 * that even a "trivial" reconfiguration, i.e., when there is no
+			 * change in an RC group, must go through the stop, start, drop
+			 * sequence for correctness, and that process involves checkpointing
+			 * and restoring locally from the checkpoint. Even though the
+			 * checkpoints are local, it can take a long time for a large number
+			 * of records and is better avoided when not needed.
+			 * 
+			 * A downside of allowing different epoch numbers for different
+			 * groups is that manual intervention if ever needed will be
+			 * harrowing. It is much simpler to track out of date RC nodes when
+			 * all RC group epoch numbers are known to be identical to the
+			 * NODE_CONFIG epoch number.
+			 */
+			record.trimRCEpochs();
 		}
 		this.putReconfigurationRecord(record);
 		return true;
@@ -321,6 +360,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private synchronized void putReconfigurationRecordIfNotName(
 			ReconfigurationRecord<NodeIDType> record, String rcGroupName) {
 		/*
+		 * FIXME: The documentation and commented code below are outdated.
+		 * 
 		 * First check if record name and group name are same. This check is
 		 * quick. It needs that we maintain the invariant that RC group records
 		 * always have the RC group as the record name. But we also need to be
@@ -332,11 +373,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		 * know about the existence of this node and that it corresponds to an
 		 * RC group name.
 		 */
+		/*
 		if ((!record.getName().equals(rcGroupName) && !this
 				.isRCGroupName(record.getName()))
 				|| (record.getName().equals(rcGroupName) && this
 						.getReconfigurationRecord(rcGroupName) == null))
-			this.putReconfigurationRecord(record);
+						*/
+		this.putReconfigurationRecord(record);
 	}
 
 	@Override
@@ -619,7 +662,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		if (!this.makeCheckpointTransferDir())
 			return false;
 		setClosed(false); // setting open
-		initAdjustNodeConfig();
+		initAdjustSoftNodeConfig();
 		return initCheckpointServer();
 	}
 
@@ -886,7 +929,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		try {
 			conn = this.getDefaultConn();
 			/*
-			 * FIXME: Selects all RC group name records by asking for records
+			 * Selects all RC group name records by asking for records
 			 * where service name equals RC group name. The index on RC group
 			 * names should make this query efficient but this performance needs
 			 * to be tested at scale.
@@ -1379,7 +1422,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public boolean deleteReconfigurators(int version) {
+	public boolean garbageCollectOldReconfigurators(int version) {
 		String cmd = "delete from " + getNodeConfigTable() + " where "
 				+ Columns.NODE_CONFIG_VERSION.toString() + "=?";
 
@@ -1431,14 +1474,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig() {
-		/*
-		 * ReconfigurationRecord<NodeIDType> record = this
-		 * .getReconfigurationRecord
-		 * (AbstractReconfiguratorDB.RecordNames.NODE_CONFIG .toString());
-		 * if(record == null) return null;
-		 */
-		Integer version = this.getMaxNodeConfigVersion();// record.getEpoch();
+	public Map<NodeIDType, InetSocketAddress> getRCNodeConfig(boolean maxOnly) {
+		Integer version = this.getMaxNodeConfigVersion();
 		if (version == null)
 			return null;
 
@@ -1446,7 +1483,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		String cmd = "select " + Columns.RC_NODE_ID.toString() + ", "
 				+ Columns.INET_ADDRESS.toString() + " from "
 				+ this.getNodeConfigTable() + " where "
-				+ Columns.NODE_CONFIG_VERSION.toString() + "=?";
+				+ Columns.NODE_CONFIG_VERSION.toString() + (maxOnly ? "=?" : ">=?");
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1454,7 +1491,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		try {
 			conn = this.getDefaultConn();
 			pstmt = conn.prepareStatement(cmd);
-			pstmt.setInt(1, version);
+			pstmt.setInt(1, (maxOnly ? version : (version-1)));
 			rs = pstmt.executeQuery();
 
 			while (rs.next()) {
@@ -1474,15 +1511,35 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return rcMap;
 	}
 
-	private void initAdjustNodeConfig() {
-		Map<NodeIDType, InetSocketAddress> rcMap = this.getRCNodeConfig();
-		if (rcMap == null || rcMap.isEmpty())
+	/* This method imports consistentNodeConfig from the persistent copy.
+	 * The persistent copy has both the latest (unstable) version and
+	 * the previous version. At the end of this method, 
+	 * consistentNodeConfig has the latest version nodes as well as the
+	 * previous version nodes with nodes present in the latter but not
+	 * in the former slated for removal.
+	 */
+	private void initAdjustSoftNodeConfig() {
+		Map<NodeIDType, InetSocketAddress> rcMapAll = this
+				.getRCNodeConfig(false);
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		if(ncRecord==null) return;
+		// else
+		Set<NodeIDType> latestRCs = ncRecord.getNewActives();
+		if (rcMapAll == null || rcMapAll.isEmpty())
 			return;
-		for (NodeIDType node : rcMap.keySet())
-			this.consistentNodeConfig.addReconfigurator(node, rcMap.get(node));
+		// add all nodes
+		for (NodeIDType node : rcMapAll.keySet())
+			this.consistentNodeConfig.addReconfigurator(node,
+					rcMapAll.get(node));
 		for (NodeIDType node : this.consistentNodeConfig.getReconfigurators())
-			if (!rcMap.containsKey(node))
+			// remove outdated consistentNodeConfig entries
+			if (!rcMapAll.containsKey(node))
 				this.consistentNodeConfig.removeReconfigurator(node);
+			// slate for removal the difference between all and latest
+			else if (!latestRCs.contains(node))
+				this.consistentNodeConfig.slateForRemovalReconfigurator(node);
 	}
 
 	/*
@@ -1497,10 +1554,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			synchronized (this) {
 				ReconfigurationRecord<NodeIDType> record = this
 						.getReconfigurationRecord(rcGroupName);
+
 				if (record.getEpoch() == epoch
-						&& !record.mergedContains(mergee))
-					if (this.updateState(rcGroupName, state))
-						return record.insertMerged(mergee);
+						&& !record.mergedContains(mergee)) 
+					if (this.updateState(rcGroupName, state)) {
+						record.insertMerged(mergee);
+						this.putReconfigurationRecord(record);
+					}
 				return false;
 			}
 		}
@@ -1512,5 +1572,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				.getReconfigurationRecord(rcGroupName);
 		record.clearMerged();
 		this.putReconfigurationRecord(record);
+	}
+
+	@Override
+	public void setRCEpochs(ReconfigurationRecord<NodeIDType> ncRecord) {
+		if (!ncRecord.getName().equals(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString()))
+			return;
+		this.putReconfigurationRecord(ncRecord);
 	}
 }

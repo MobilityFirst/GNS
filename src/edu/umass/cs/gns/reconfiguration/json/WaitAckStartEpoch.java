@@ -12,6 +12,7 @@ import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.gns.reconfiguration.Reconfigurator;
 import edu.umass.cs.gns.reconfiguration.RepliconfigurableReconfiguratorDB;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckStartEpoch;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
@@ -29,6 +30,8 @@ import edu.umass.cs.gns.util.MyLogger;
 public class WaitAckStartEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
+
+	private static final long RESTART_PERIOD = 8000;
 
 	private final StartEpoch<NodeIDType> startEpoch;
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
@@ -58,6 +61,8 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
+		System.out.println(this.refreshKey() + " re-starting "
+				+ this.startEpoch.getSummary());
 		return start();
 	}
 
@@ -70,7 +75,8 @@ public class WaitAckStartEpoch<NodeIDType>
 		 * 
 		 * Should send startEpoch only to self in case of merge operations.
 		 */
-		assert(!this.startEpoch.isMerge() || this.startEpoch.curEpochGroup.contains(this.DB.getMyID()));
+		assert (!this.startEpoch.isMerge() || this.startEpoch.curEpochGroup
+				.contains(this.DB.getMyID()));
 		GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>> mtask = !this.startEpoch
 				.isMerge() ? new GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>>(
 				this.startEpoch.getCurEpochGroup().toArray(), this.startEpoch)
@@ -81,9 +87,7 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public String refreshKey() {
-		return (this.getClass().getSimpleName() + this.DB.getMyID() + ":"
-				+ this.startEpoch.getServiceName() + ":" + this.startEpoch
-					.getEpochNumber());
+		return Reconfigurator.getTaskKey(getClass(), startEpoch, this.DB.getMyID().toString());
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_START_EPOCH, };
@@ -99,15 +103,20 @@ public class WaitAckStartEpoch<NodeIDType>
 		return this.key;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType().equals(types[0]));
-		if (isDone()) {
+		AckStartEpoch<NodeIDType> ackStart = ((AckStartEpoch<NodeIDType>) event);
+		if (isDone())
 			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this,
 					"successfully processed", event.getType(),
 					"after being done" });
-			;
-		}
+		else
+			log.log(Level.INFO, MyLogger.FORMAT[2],
+					new Object[] { this, "received", ackStart.getSummary(),
+							"from", ackStart.getSender() });
+
 		return !isDone();
 	}
 
@@ -134,7 +143,7 @@ public class WaitAckStartEpoch<NodeIDType>
 		// multicast start epoch confirmation message
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 				this.DB.getMyID(), this.startEpoch,
-				RCRecordRequest.RequestTypes.REGISTER_RECONFIGURATION_COMPLETE);
+				RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE);
 		GenericMessagingTask<NodeIDType, ?> epochStartCommit = new GenericMessagingTask(
 				this.DB.getMyID(), rcRecReq);
 		// this.DB.handleIncoming(rcRecReq);
@@ -154,10 +163,7 @@ public class WaitAckStartEpoch<NodeIDType>
 							this.startEpoch.getServiceName(), 0, null)));
 		} else
 			assert (false);
-		
-		// FIXME: cancel pending merge tasks.
-		if(this.startEpoch.isMerge()) {/*cancel here how??*/}
-		
+
 		// default action will do timed cancel
 		return mtasks;
 	}
@@ -171,6 +177,10 @@ public class WaitAckStartEpoch<NodeIDType>
 	}
 
 	public String toString() {
-		return this.getClass().getSimpleName() + this.DB.getMyID();
+		return this.getKey();
+	}
+
+	public long getPeriod() {
+		return RESTART_PERIOD;
 	}
 }

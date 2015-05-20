@@ -1,8 +1,11 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
+import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.*;
+import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.nsdesign.Reconfigurable;
+import edu.umass.cs.gns.nsdesign.Shutdownable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsCoordinatorUnreplicated;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorEventual;
