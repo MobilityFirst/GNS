@@ -11,15 +11,13 @@ import static edu.umass.cs.gns.clientsupport.Defs.HELP;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
-import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.ActiveReplica;
 import edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.gns.reconfiguration.Reconfigurator;
-import static edu.umass.cs.gns.util.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
+import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
 import java.util.Map;
 import java.util.logging.Level;
 import org.apache.commons.cli.Option;
@@ -100,19 +98,23 @@ public class AppReconfigurableNodeOptions {
       return;
     }
 
-    if (allValues.containsKey(DEBUG) || allValues.containsKey(DEBUG_APP)) {
+    if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       // For backwards compatibility until Config goes away
       Config.debuggingEnabled = true;
+      AppReconfigurableNode.debuggingEnabled = true;
+      System.out.println("******** DEBUGGING IS ENABLED IN THE APP *********");
     }
 
-    if (allValues.containsKey(DEBUG_AR)) {
+    if (isOptionTrue(DEBUG_AR, allValues)) {
+      System.out.println("******** DEBUGGING IS ENABLED IN THE ACTIVE REPLICA *********");
       // For backwards compatibility until Config goes away
       ActiveReplica.log.setLevel(Level.INFO);
     } else {
       ActiveReplica.log.setLevel(Level.WARNING);
     }
 
-    if (allValues.containsKey(DEBUG_RECON)) {
+    if (isOptionTrue(DEBUG_RECON, allValues)) {
+      System.out.println("******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********");
       // For backwards compatibility until Config goes away
       Reconfigurator.log.setLevel(Level.INFO);
       AbstractReconfiguratorDB.log.setLevel(Level.INFO);
@@ -123,7 +125,8 @@ public class AppReconfigurableNodeOptions {
       DerbyPersistentReconfiguratorDB.log.setLevel(Level.WARNING);
     }
 
-    if (allValues.containsKey(DEBUG_PAXOS)) {
+    if (isOptionTrue(DEBUG_PAXOS, allValues)) {
+       System.out.println("******** DEBUGGING IS ENABLED IN PAXOS *********");
       // For backwards compatibility until Config goes away
       PaxosManager.getLogger().setLevel(Level.INFO);
     } else {

@@ -57,7 +57,9 @@ public class GNSInstaller {
   private static final String NS_CONF_FILENAME = "ns.conf";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
-  private static final String JAVA_COMMAND = "java -ea -Xms1024M -cp ";
+  //private static final String JAVA_COMMAND = "java -ea -Xms1024M -cp ";
+  // should make this a config parameter
+  private static final String JAVA_COMMAND = "java -ea -cp ";
 
   /**
    * Stores information about the hosts we're using.
@@ -283,7 +285,6 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               + "-configFile "
               + LNS_CONF_FILENAME + " "
-              + "-debug "
               + " > LNSlogfile 2>&1 &");
     }
     if (nsId != null) {
@@ -302,7 +303,6 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               + "-configFile "
               + NS_CONF_FILENAME + " "
-              + "-debugAPP "
               + " -demandProfileClass edu.umass.cs.gns.newApp.NullDemandProfile "
               + " > NSlogfile 2>&1 &");
 //      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName,
@@ -420,8 +420,8 @@ public class GNSInstaller {
             + "rm NSlogfile*\n"
             + ((runAsRoot) ? "sudo " : "")
             + "rm LNSlogfile*\n"
-            + ((runAsRoot) ? "sudo " : "")
-            + "rm CCPlogfile*\n"
+//            + ((runAsRoot) ? "sudo " : "")
+//            + "rm CCPlogfile*\n"
             + ((runAsRoot) ? "sudo " : "")
             + "rm -rf log\n"
             + ((runAsRoot) ? "sudo " : "")

@@ -14,7 +14,6 @@ import static edu.umass.cs.gns.localnameserver.LNSNodeConfig.INVALID_PING_LATENC
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.DEBUG;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.NS_FILE;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.PORT;
-import static edu.umass.cs.gns.localnameserver.RequestActives.log;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
@@ -28,6 +27,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfi
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.gns.util.ParametersAndOptions;
+import static edu.umass.cs.gns.util.ParametersAndOptions.printOptions;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -114,6 +114,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
               LocalNameServerOptions.getAllOptions());
       System.exit(0);
     }
+    printOptions(options);
     LocalNameServerOptions.initializeFromOptions(options);
     try {
       InetSocketAddress address = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(),

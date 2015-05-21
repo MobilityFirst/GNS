@@ -10,9 +10,9 @@ package edu.umass.cs.gns.localnameserver;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import static edu.umass.cs.gns.clientsupport.Defs.HELP;
-import edu.umass.cs.gns.main.GNS;
 import static edu.umass.cs.gns.util.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
+import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -69,8 +69,8 @@ public class LocalNameServerOptions {
       return;
     }
 
-    if (allValues.containsKey(DEBUG)) {
-      LocalNameServer.debuggingEnabled = allValues.containsKey(DEBUG);
+    if (isOptionTrue(DEBUG, allValues)) {
+      LocalNameServer.debuggingEnabled = true;
       System.out.println("******** DEBUGGING IS ENABLED IN LOCAL NAME SERVER *********");
     }
 

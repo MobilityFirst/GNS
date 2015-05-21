@@ -658,7 +658,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   private void checkForUpdates() {
     try {
-      GNS.getLogger().info("Checking for hosts update");
+      GNS.getLogger().fine("Checking for hosts update");
       if (HostFileLoader.isChangedFileVersion(hostsFile)) {
         GNS.getLogger().info("Reading updated hosts file");
         readHostsFile(hostsFile);

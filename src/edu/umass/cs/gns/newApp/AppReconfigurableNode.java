@@ -11,6 +11,7 @@ import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
 import edu.umass.cs.gns.util.ParametersAndOptions;
 import static edu.umass.cs.gns.util.ParametersAndOptions.HELP;
+import static edu.umass.cs.gns.util.ParametersAndOptions.printOptions;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,11 +25,9 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
   
   public static boolean debuggingEnabled = true;
 
-  public AppReconfigurableNode(NodeIDType nodeID, GNSInterfaceNodeConfig<NodeIDType> nc, boolean debug)
+  public AppReconfigurableNode(NodeIDType nodeID, GNSInterfaceNodeConfig<NodeIDType> nc)
           throws IOException {
     super(nodeID, nc);
-    // really need to do this before the above call
-    this.debuggingEnabled = debug;
   }
 
   @Override
@@ -49,26 +48,24 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
     return appCoordinator;
   }
 
-  private static void startNodePair(String nodeID, String nodeConfigFilename, boolean debug) throws IOException {
+  private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
     GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFilename, nodeID);
-    AppReconfigurableNode.debuggingEnabled = debug; // do this here because constructor is to late
-    new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig, debug);
-    new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig, debug);
+    new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
+    new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
   }
 
-  private static void startTestNodes(String filename, boolean debug) throws IOException {
+  private static void startTestNodes(String filename) throws IOException {
     GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
-    AppReconfigurableNode.debuggingEnabled = debug; // do this here because constructor is to late
     try {
       for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {
         System.out.println("#####################################################");
         System.out.println("############# Setting up active replica " + activeID);
-        new AppReconfigurableNode(activeID, nodeConfig, debug);
+        new AppReconfigurableNode(activeID, nodeConfig);
       }
       for (String rcID : (Set<String>) nodeConfig.getReconfigurators()) {
         System.out.println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
         System.out.println("$$$$$$$$$$$$$$$$ Setting up reconfigurator " + rcID);
-        new AppReconfigurableNode(rcID, nodeConfig, debug);
+        new AppReconfigurableNode(rcID, nodeConfig);
       }
 
     } catch (IOException ioe) {
@@ -85,11 +82,12 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
               AppReconfigurableNodeOptions.getAllOptions());
       System.exit(0);
     }
+    printOptions(options);
     AppReconfigurableNodeOptions.initializeFromOptions(options);
     if (options.get(TEST) != null && options.get(NS_FILE) != null) { // for testing
-      startTestNodes(options.get(NS_FILE), options.containsKey(DEBUG_APP));
+      startTestNodes(options.get(NS_FILE));
     } else if (options.get(ID) != null && options.get(NS_FILE) != null) {
-      startNodePair(options.get(ID), options.get(NS_FILE), options.containsKey(DEBUG_APP));
+      startNodePair(options.get(ID), options.get(NS_FILE));
     } else {
       ParametersAndOptions.printUsage(AppReconfigurableNode.class.getCanonicalName(),
               AppReconfigurableNodeOptions.getAllOptions());
