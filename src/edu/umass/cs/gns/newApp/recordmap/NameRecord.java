@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.newApp.recordmap;
 
 import edu.umass.cs.gns.clientsupport.UpdateOperation;
@@ -9,7 +14,6 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-//import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -27,8 +31,9 @@ import java.util.Set;
  *
  * @author abhigyan
  */
+// FIXME: All this needs to be cleaned up. There are unused fields and
+// why is this not just JSON anyway? - Westy
 public class NameRecord implements Comparable<NameRecord> {
-
   /**
    * null value for the ACTIVE_VERSION and OLD_ACTIVE_VERSION field.
    */

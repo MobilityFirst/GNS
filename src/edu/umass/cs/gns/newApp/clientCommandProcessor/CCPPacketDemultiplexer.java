@@ -60,7 +60,8 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
   public boolean handleJSONObject(JSONObject json) {
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], new Object[]{"************************* CCP received: ", json});
+      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], 
+              new Object[]{"*****************************> CCP RECEIVED: ", json});
     }
     try {
       if (ReconfigurationPacket.isReconfigurationPacket(json)) {

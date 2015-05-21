@@ -23,7 +23,9 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   private final String name;
   private final BasicReconfigurationPacket packet;
   private final HashSet<NodeIDType> reconfiguratorsQueried;
-  private int timeoutCount = -1;
+  private int sendCount = -1;
+  private int retries = 0;
+  private static final int MAX_RETRIES = 4;
   private final long startTime;
   private final EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -39,9 +41,9 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   @Override
   public void run() {
     try {
-      timeoutCount = timeoutCount + 1;
+      sendCount++;
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Send Run: Name = " + name + " packet type = " + packet.getType() + " timeout = " + timeoutCount);
+        GNS.getLogger().info("Send Run: Name = " + name + " packet type = " + packet.getType() + " timeout = " + sendCount);
       }
 
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
@@ -66,10 +68,13 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   private boolean isResponseReceived() {
     Integer lnsRequestID = null;
     if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
+      GNS.getLogger().info("PACKET TYPE: " + packet.getType());
       lnsRequestID = handler.getCreateRequestNameToIDMapping(name);
     } else if (packet.getType().equals(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME)) {
+      GNS.getLogger().info("PACKET TYPE: " + packet.getType());
       lnsRequestID = handler.getDeleteRequestNameToIDMapping(name);
     } else if (packet.getType().equals(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS)) {
+      GNS.getLogger().info("PACKET TYPE: " + packet.getType());
       lnsRequestID = handler.getActivesRequestNameToIDMapping(name);
     } else {
       GNS.getLogger().warning("BAD PACKET TYPE: " + packet.getType());
@@ -88,11 +93,14 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
         return true;
       }
     }
+    if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("Name = " + name + " packet type = " + packet.getType() + " no response yet.");
+      }
     return false;
   }
 
   private boolean isMaxWaitTimeExceeded() {
-    if (timeoutCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
+    if (sendCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
       Integer lnsRequestID = null;
       if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
         lnsRequestID = handler.removeCreateRequestNameToIDMapping(name);
@@ -128,7 +136,16 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   }
 
   private NodeIDType selectReconfigurator() {
-    return handler.getClosestReplicaController(name, reconfiguratorsQueried);
+    NodeIDType server = handler.getClosestReplicaController(name, reconfiguratorsQueried);
+    if (server == null) {
+      if (retries < MAX_RETRIES) {
+        reconfiguratorsQueried.clear();
+        server = handler.getClosestReplicaController(name, reconfiguratorsQueried);
+        retries++;
+        GNS.getLogger().info("Send Run: Name = " + name + " packet type = " + packet.getType() + " retry = " + retries);
+      }
+    }
+    return server;
   }
 
   private void sendRequestToReconfigurator(NodeIDType nameServerID) {

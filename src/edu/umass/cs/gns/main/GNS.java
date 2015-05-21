@@ -65,9 +65,9 @@ public class GNS {
   public static int numPrimaryReplicas = DEFAULT_NUM_PRIMARY_REPLICAS;
   public static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
   /**
-   * Default query timeout in ms.
+   * Default query timeout in ms. How long we wait before retransmitting a query.
    */
-  public static int DEFAULT_QUERY_TIMEOUT = 1000; // was 2
+  public static int DEFAULT_QUERY_TIMEOUT = 2000;
   /**
    * Maximum query wait time in milliseconds. After this amount of time
    * a negative response will be sent back to a client indicating that a 

@@ -272,15 +272,15 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
     if (value == null) {
       return null;
     } else {
-      return new TransferableNameRecordState(value, ttl).toString();
+      return new NRState(value, ttl).toString();
     }
   }
 
   @Override
   public void putInitialState(String name, short version, String state) {
-    TransferableNameRecordState state1;
+    NRState state1;
     try {
-      state1 = new TransferableNameRecordState(state);
+      state1 = new NRState(state);
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON Exception in transferred state: " + state + "name " + name + " version " + version);
       e.printStackTrace();
@@ -396,7 +396,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       if (Config.debuggingEnabled) {
         GNS.getLogger().fine(nameRecord.toString());
       }
-      TransferableNameRecordState state = new TransferableNameRecordState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
+      NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
       if (Config.debuggingEnabled) {
         GNS.getLogger().fine("Getting state: " + state.toString());
       }
@@ -421,7 +421,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
     }
     boolean stateUpdated = false;
     try {
-      TransferableNameRecordState state1 = new TransferableNameRecordState(state);
+      NRState state1 = new NRState(state);
       NameRecord nameRecord = new NameRecord(nameRecordDB, name);
       nameRecord.updateState(state1.valuesMap, state1.ttl);
       stateUpdated = true;

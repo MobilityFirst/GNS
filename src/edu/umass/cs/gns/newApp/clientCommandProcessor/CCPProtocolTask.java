@@ -101,16 +101,14 @@ public class CCPProtocolTask<NodeIDType> implements
     }
     // The new RequestActiveReplicas returns InetSocketAddress, but the old LNS code
     // assumes they will be NodeIDs.
-    
+
     // For now we're going to bridge the gap by createing an old-style RequestActivesPacket 
     // with node ids that we look up from the nodeConfig and then invoking the old handler
     // in PendingTasks.
-    
     //From Arun on 2/27/15:
     //The LNS can maintain a NodeConfig but can not assume that it will be always be in sync with the
     // system NodeConfig; you need a versioning mechanism to explicitly refresh to the most recent list 
     // of reconfigurators irrespective of whether they are node IDs or just socket addresses. 
-
     // Going forward, I expect contacting the reconfiguration service simply using a DNS name and 
     // relying upon a simple anycast scheme to get to at least one legit reconfigurator that would 
     // internally resolve client-to-RC requests. This will be a simpler and cleaner design than having
@@ -163,29 +161,35 @@ public class CCPProtocolTask<NodeIDType> implements
   }
 
   private GenericMessagingTask handleDelete(DeleteServiceName packet) {
-    Integer lnsRequestID = handler.removeDeleteRequestNameToIDMapping(packet.getServiceName());
-    if (lnsRequestID != null) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("App removed " + packet.getServiceName());
-      }
-      // Basically we gin up a confirmation packet for the original AddRecord packet and
-      // send it back to the originator of the request.
-      UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
-      if (info != null) {
-        RemoveRecordPacket originalPacket = (RemoveRecordPacket) info.getUpdatePacket();
-        ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
+    if (!packet.isFailed()) { // it appears that these requests can fail now
+      Integer lnsRequestID = handler.removeDeleteRequestNameToIDMapping(packet.getServiceName());
+      if (lnsRequestID != null) {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("App removed " + packet.getServiceName());
+        }
+        // Basically we gin up a confirmation packet for the original AddRecord packet and
+        // send it back to the originator of the request.
+        UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+        if (info != null) {
+          RemoveRecordPacket originalPacket = (RemoveRecordPacket) info.getUpdatePacket();
+          ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
 
-        try {
-          AddRemove.handlePacketConfirmRemove(confirmPacket.toJSONObject(), handler);
-        } catch (JSONException | UnknownHostException e) {
-          GNS.getLogger().severe("Unable to send remove confirmation for " + packet.getServiceName() + ":" + e);
+          try {
+            AddRemove.handlePacketConfirmRemove(confirmPacket.toJSONObject(), handler);
+          } catch (JSONException | UnknownHostException e) {
+            GNS.getLogger().severe("Unable to send remove confirmation for " + packet.getServiceName() + ":" + e);
+          }
+        } else {
+          GNS.getLogger().severe("Unable to find request info for remove confirmation for " + packet.getServiceName());
         }
       } else {
-        GNS.getLogger().severe("Unable to find request info for remove confirmation for " + packet.getServiceName());
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("Ignoring spurious remove confirmation for " + packet.getServiceName());
+        }
       }
     } else {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Ignoring spurious remove confirmation for " + packet.getServiceName());
+        GNS.getLogger().info("Remove request failed for " + packet.getServiceName() + "; will be resent.");
       }
     }
     return null;

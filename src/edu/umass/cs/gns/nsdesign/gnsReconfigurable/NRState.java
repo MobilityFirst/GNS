@@ -1,3 +1,8 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.util.ValuesMap;
@@ -7,24 +12,26 @@ import org.json.JSONObject;
 /**
  * Represents the state for a name record that GNS will transfer to (or received from) coordinator,
  * and other replicas.
- * 
- * Haven't figured out why this is needed. - Westy
+ * This exists because we need the valuesMap from the NameRecord but 
+ * we also want the TTL as well.
+ *
  *
  * Created by abhigyan on 3/29/14.
  */
-public class TransferableNameRecordState {
+// FIXME: This could probably go away if the NameRecord class was rewritten.
+public class NRState {
   
   final static String SEPARATOR = ":::"; // Made this something that probably won't appear in JSON. - Westy
 
   public final ValuesMap valuesMap;
   public final int ttl;
 
-  public TransferableNameRecordState(ValuesMap valuesMap, int ttl) {
+  public NRState(ValuesMap valuesMap, int ttl) {
     this.valuesMap = valuesMap;
     this.ttl = ttl;
   }
 
-  public TransferableNameRecordState(String state) throws JSONException {
+  public NRState(String state) throws JSONException {
     int ttlIndex;
     if (state != null &&  (ttlIndex = state.indexOf(SEPARATOR)) != -1) {
       this.ttl = Integer.parseInt(state.substring(0, ttlIndex));

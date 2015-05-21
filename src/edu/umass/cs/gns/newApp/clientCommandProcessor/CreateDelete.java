@@ -43,8 +43,7 @@ public class CreateDelete {
     sendPacket(addRecordPacket.getName(),
             new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()),
             handler);
-    //handler.sendRequestToRandomReconfigurator(new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()));
-  }
+    }
 
   public static void handleRemovePacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
@@ -52,8 +51,7 @@ public class CreateDelete {
     sendPacket(removeRecordPacket.getName(),
             new DeleteServiceName(null, removeRecordPacket.getName(), 0),
             handler);
-    //handler.sendRequestToRandomReconfigurator(new DeleteServiceName(null, removeRecordPacket.getName(), 0));
-  }
+    }
 
   public static AddRecordPacket registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());

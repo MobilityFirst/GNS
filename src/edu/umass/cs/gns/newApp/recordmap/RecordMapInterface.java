@@ -1,6 +1,7 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
  */
 package edu.umass.cs.gns.newApp.recordmap;
 

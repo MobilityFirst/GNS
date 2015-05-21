@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.TransferableNameRecordState;
+import edu.umass.cs.gns.nsdesign.gnsReconfigurable.NRState;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -51,7 +51,7 @@ public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
     rv.add("pqrst");
     valuesMap.putAsArray("EdgeRecord", rv);
     packet.changePacketTypeToPreviousValueResponse();
-    packet.changePreviousValue(new TransferableNameRecordState(valuesMap, 0).toString());
+    packet.changePreviousValue(new NRState(valuesMap, 0).toString());
   }
 
   public void run_alt() {

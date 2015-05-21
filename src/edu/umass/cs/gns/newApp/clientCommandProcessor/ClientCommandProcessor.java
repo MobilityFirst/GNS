@@ -89,6 +89,9 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
           boolean dnsOnly,
           String gnsServerIP) throws IOException {
 
+    if (debug) {
+      System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
+    }
     AbstractPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer();
     this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<>();

@@ -200,7 +200,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
     fakeResultValue = new ResultValue();
     fakeResultValue.add("pqrst");
     valuesMap.putAsArray("EdgeRecord", fakeResultValue);
-    fakeState = new TransferableNameRecordState(valuesMap, 0).toString();
+    fakeState = new NRState(valuesMap, 0).toString();
   }
 
   @Override
