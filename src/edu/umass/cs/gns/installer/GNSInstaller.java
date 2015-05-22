@@ -57,9 +57,9 @@ public class GNSInstaller {
   private static final String NS_CONF_FILENAME = "ns.conf";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
-  //private static final String JAVA_COMMAND = "java -ea -Xms1024M -cp ";
+  private static final String JAVA_COMMAND = "java -ea -Xms1024M -cp ";
   // should make this a config parameter
-  private static final String JAVA_COMMAND = "java -ea -cp ";
+  //private static final String JAVA_COMMAND = "java -ea -cp ";
 
   /**
    * Stores information about the hosts we're using.
@@ -399,7 +399,12 @@ public class GNSInstaller {
             //runAsRoot,
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
-            + "pkill -f \"" + JAVA_COMMAND + gnsJarFileName + "\"");
+            + "pkill -f \"" + JAVA_COMMAND + gnsJarFileName + "\""
+            // catch this one as well
+            + "\n"       
+            + ((runAsRoot) ? "sudo " : "")
+            + "pkill -f \"" + "java -ea -cp " + gnsJarFileName + "\""
+    );
     //"#!/bin/bash\nkillall java");
   }
 

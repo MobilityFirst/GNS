@@ -114,6 +114,7 @@ public class Defs {
   public final static String BADGROUP = "+BADGROUP+";
   public final static String BADFIELD = "+BADFIELD+";
   public final static String BADACLTYPE = "+BADACLTYPE+";
+  public final static String FIELDNOTFOUND = "+FIELDNOTFOUND+";
   public final static String DUPLICATENAME = "+DUPLICATENAME+";
   public final static String DUPLICATEGUID = "+DUPLICATEGUID+";
   public final static String DUPLICATEGROUP = "+DUPLICATEGROUP+";

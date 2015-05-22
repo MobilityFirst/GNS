@@ -49,7 +49,7 @@ public class GnsReconLookup {
    * @param dnsPacket
    * @param gnsApp
    * @param noCoordinatorState
-   * @param recovery
+   * @param doNotReplyToClient
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws java.security.InvalidKeyException
@@ -59,7 +59,7 @@ public class GnsReconLookup {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void executeLookupLocal(DNSPacket dnsPacket, GnsApplicationInterface gnsApp,
-          boolean noCoordinatorState, boolean recovery)
+          boolean noCoordinatorState, boolean doNotReplyToClient)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
 
@@ -85,7 +85,7 @@ public class GnsReconLookup {
       }
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
-      if (!recovery) {
+      if (!doNotReplyToClient) {
         gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       }
     } else {
@@ -122,7 +122,7 @@ public class GnsReconLookup {
         if (Config.debuggingEnabled) {
           GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
         }
-        if (!recovery) {
+        if (!doNotReplyToClient) {
           gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
         }
       } else {
@@ -136,9 +136,9 @@ public class GnsReconLookup {
           // if the name record doesn't contain the field we are looking for
           // and only for single field lookups.
           if (Config.allowGroupGuidIndirection && field != null && !Defs.ALLFIELDS.equals(field)
-                  && nameRecord != null && !nameRecord.containsKey(field) && !recovery) {
+                  && nameRecord != null && !nameRecord.containsKey(field) && !doNotReplyToClient) {
             if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
-              // We got the values and send them out above so we're done here.
+              // We got the values and sent them out above so we're done here.
               return;
             }
           }
@@ -154,7 +154,7 @@ public class GnsReconLookup {
         // Now we either have a name record with stuff it in or a null one
         // Time to send something back to the client
         dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
-        if (!recovery) {
+        if (!doNotReplyToClient) {
           gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
         }
       }
@@ -288,14 +288,14 @@ public class GnsReconLookup {
             if (Config.debuggingEnabled) {
               GNS.getLogger().info("Record doesn't contain field: " + key + " guid = " + guid + " record = " + nameRecord.toString());
             }
-            dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
+            dnsPacket.getHeader().setResponseCode(NSResponseCode.FIELD_NOT_FOUND_ERROR);
           }
           // For some reason the Guid of the packet is null
         } else { // send error msg.
           if (Config.debuggingEnabled) {
             GNS.getLogger().info("GUID of query is NULL!");
           }
-          dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);
+          dnsPacket.getHeader().setResponseCode(NSResponseCode.BAD_GUID_ERROR);
         }
         // we're not the correct active name server so tell the client that
       } else { // send invalid error msg.
@@ -306,6 +306,8 @@ public class GnsReconLookup {
           }
         }
       }
+      // this handles the myriad of FieldNotFoundException's, which are mostly system
+      // fields not found, not the user field in question
     } catch (FieldNotFoundException e) {
       if (Config.debuggingEnabled) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
