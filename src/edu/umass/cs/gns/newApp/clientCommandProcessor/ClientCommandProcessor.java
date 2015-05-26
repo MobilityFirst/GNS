@@ -19,7 +19,7 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.NetworkUtils;

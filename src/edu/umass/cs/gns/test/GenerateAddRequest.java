@@ -7,7 +7,7 @@
 package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.CCPPacketDemultiplexerV1;
-import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
+import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;

@@ -7,8 +7,8 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
-import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
+import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
+import edu.umass.cs.gns.newApp.packet.SelectResponsePacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.net.UnknownHostException;

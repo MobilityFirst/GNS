@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import org.json.JSONObject;
 
 /**

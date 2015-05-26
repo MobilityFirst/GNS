@@ -2,9 +2,9 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
-import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.newApp.packet.BasicPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
+import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -29,6 +29,7 @@ import java.util.TimerTask;
  * @see edu.umass.cs.gns.nsdesign.replicaController.ReplicaController
  * @author abhigyan
  */
+@Deprecated
 public class StopActiveSetTask<NodeIDType> extends TimerTask {
 
 

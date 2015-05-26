@@ -9,7 +9,7 @@ package edu.umass.cs.gns.nodeconfig;
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.util.Shutdownable;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;

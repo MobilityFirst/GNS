@@ -5,16 +5,16 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gns.commands.CommandModule;
-import edu.umass.cs.gns.commands.GnsCommand;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.NewApp;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
-import edu.umass.cs.gns.nsdesign.packet.CommandValueReturnPacket;
+import edu.umass.cs.gns.newApp.packet.CommandPacket;
+import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.util.CanonicalJSON;
 import edu.umass.cs.gns.util.NetworkUtils;
 import java.io.IOException;

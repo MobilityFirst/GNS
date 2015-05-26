@@ -11,10 +11,10 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.Util;
@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  * <p>
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class Remove {
 
   private static ArrayList<ColumnField> applyMarkedForRemovalFields = new ArrayList<ColumnField>();

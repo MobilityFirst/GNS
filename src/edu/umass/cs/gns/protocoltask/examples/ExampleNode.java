@@ -14,7 +14,7 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.TESTProtocolTaskConfig;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;

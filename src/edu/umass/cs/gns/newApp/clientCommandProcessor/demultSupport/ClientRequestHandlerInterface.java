@@ -9,10 +9,10 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Adminterces
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
+import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
+import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.net.InetSocketAddress;
 import java.util.Set;

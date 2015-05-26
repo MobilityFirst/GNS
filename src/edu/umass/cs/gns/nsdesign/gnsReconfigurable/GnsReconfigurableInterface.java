@@ -2,9 +2,9 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
+import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
-import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.util.Shutdownable;
 
 /**
  * Interface for the GNS app. We have only one working implementation of this interface

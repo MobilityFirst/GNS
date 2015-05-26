@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
+import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;

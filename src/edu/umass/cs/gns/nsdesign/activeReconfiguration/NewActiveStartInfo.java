@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
-import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
 
+import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
 import java.util.HashSet;
 
 /**
@@ -14,6 +14,7 @@ import java.util.HashSet;
  * multipaxos.
  * @param <NodeIDType>
  */
+@Deprecated
 public class NewActiveStartInfo<NodeIDType> {
 
   public NewActiveSetStartupPacket originalPacket;

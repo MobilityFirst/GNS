@@ -4,8 +4,8 @@ import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -16,6 +16,7 @@ import org.json.JSONObject;
  * Created by abhigyan on 4/8/14.
  * @param <NodeIDType>
  */
+@Deprecated
 public class DefaultGnsCoordinator<NodeIDType> extends ActiveReplicaCoordinator {
 
   private final NodeIDType nodeID;

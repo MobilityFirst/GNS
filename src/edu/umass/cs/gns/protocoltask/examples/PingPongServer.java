@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.MessagingTask;
 import edu.umass.cs.gns.nio.NIOTransport;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.TESTProtocolTaskConfig;

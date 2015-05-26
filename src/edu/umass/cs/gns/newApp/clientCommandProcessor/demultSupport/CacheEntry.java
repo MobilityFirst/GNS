@@ -5,10 +5,12 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
+import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
-import edu.umass.cs.gns.nsdesign.packet.*;
 //import edu.umass.cs.gns.util.ConsistentHashing;
 import java.util.Iterator;
 import java.util.Map.Entry;

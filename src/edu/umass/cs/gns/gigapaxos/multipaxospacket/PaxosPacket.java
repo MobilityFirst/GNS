@@ -6,8 +6,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.PacketInterface;
 
 /**
  * @author V. Arun.

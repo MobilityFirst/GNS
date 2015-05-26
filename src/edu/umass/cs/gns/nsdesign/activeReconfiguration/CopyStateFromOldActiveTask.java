@@ -3,8 +3,8 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.NRState;
-import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
+import edu.umass.cs.gns.newApp.NRState;
+import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -22,6 +22,7 @@ import java.util.TimerTask;
  * Arun: 
  * @param <NodeIDType>
  */
+@Deprecated
 public class CopyStateFromOldActiveTask<NodeIDType> extends TimerTask {
 
   private final ActiveReplica<NodeIDType,?> activeReplica;

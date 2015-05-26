@@ -21,7 +21,7 @@ import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.Shutdownable;
+import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;

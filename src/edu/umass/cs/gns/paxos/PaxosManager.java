@@ -9,7 +9,7 @@ import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
 import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;

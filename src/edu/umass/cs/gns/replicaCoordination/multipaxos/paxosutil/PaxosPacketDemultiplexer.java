@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.replicaCoordination.multipaxos.paxosutil;
 
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.PaxosManager;
 
 import org.json.JSONException;

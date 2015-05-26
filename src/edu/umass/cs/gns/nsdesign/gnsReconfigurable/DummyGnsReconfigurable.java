@@ -1,12 +1,18 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gns.newApp.NRState;
+import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
+import edu.umass.cs.gns.newApp.packet.UpdatePacket;
+import edu.umass.cs.gns.newApp.packet.DNSRecordType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;

@@ -9,8 +9,8 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.QueryResult
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.newApp.GnsApplicationInterface;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 

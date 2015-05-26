@@ -5,8 +5,8 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
+import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 
 import java.util.ArrayList;
@@ -25,6 +25,7 @@ import java.util.TimerTask;
  * @param <NodeIDType>
  *
  */
+@Deprecated
 public class StartActiveSetTask<NodeIDType> extends TimerTask {
 
   /** Fields read from database */

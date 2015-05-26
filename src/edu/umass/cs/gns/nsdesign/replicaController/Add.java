@@ -5,9 +5,9 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.RandomReplication;
@@ -33,6 +33,7 @@ import java.util.Set;
  * <p/>
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class Add {
 
   /**

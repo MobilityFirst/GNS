@@ -16,7 +16,7 @@ import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
+import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.net.InetSocketAddress;

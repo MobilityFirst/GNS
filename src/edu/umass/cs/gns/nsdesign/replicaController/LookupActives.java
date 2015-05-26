@@ -4,7 +4,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;
 
@@ -18,6 +18,7 @@ import java.io.IOException;
  * <p>
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class LookupActives {
 
   public static void executeLookupActives(RequestActivesPacket packet, ReplicaController replicaController, boolean recovery)

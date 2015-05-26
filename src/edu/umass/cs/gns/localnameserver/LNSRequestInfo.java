@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.nsdesign.packet.CommandPacket;
+import edu.umass.cs.gns.newApp.packet.CommandPacket;
 
 /**
  * Class represents the abstract class in which LNS stores info for each ongoing request,

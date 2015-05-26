@@ -11,8 +11,8 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
+import edu.umass.cs.gns.newApp.GnsApplicationInterface;
+import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import org.json.JSONException;
 
@@ -42,6 +42,7 @@ import java.util.ArrayList;
  * <p>
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class Remove {
 
   private static ArrayList<ColumnField> activeStopFields = new ArrayList<ColumnField>();

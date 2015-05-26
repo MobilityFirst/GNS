@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @see SendDNSRequestTask
  * @see edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.DNSRequestInfo
- * @see edu.umass.cs.gns.nsdesign.packet.DNSPacket
+ * @see edu.umass.cs.gns.newApp.packet.DNSPacket
  *
  * @author abhigyan
  */

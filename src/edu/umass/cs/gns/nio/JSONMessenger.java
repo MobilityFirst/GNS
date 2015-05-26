@@ -11,7 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.PacketInterface;
+import edu.umass.cs.gns.newApp.packet.PacketInterface;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
 
 /**

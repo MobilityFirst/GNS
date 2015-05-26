@@ -2,8 +2,8 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.NewActiveSetStartupPacket;
-import edu.umass.cs.gns.nsdesign.packet.OldActiveSetStopPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class GroupChange {
 
 

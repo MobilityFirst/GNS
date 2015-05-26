@@ -15,7 +15,7 @@ import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.util.Util;

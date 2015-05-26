@@ -3,7 +3,7 @@ package edu.umass.cs.gns.test;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.CCPPacketDemultiplexerV1;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
+import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;

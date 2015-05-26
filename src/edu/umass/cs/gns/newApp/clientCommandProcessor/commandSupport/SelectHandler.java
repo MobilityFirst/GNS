@@ -7,10 +7,10 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
-import edu.umass.cs.gns.nsdesign.packet.SelectResponsePacket;
+import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
+import edu.umass.cs.gns.newApp.packet.SelectRequestPacket.SelectOperation;
+import edu.umass.cs.gns.newApp.packet.SelectRequestPacket.GroupBehavior;
+import edu.umass.cs.gns.newApp.packet.SelectResponsePacket;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,7 +18,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static edu.umass.cs.gns.nsdesign.packet.Packet.getPacketType;
+import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.Stringifiable;
 
 /**

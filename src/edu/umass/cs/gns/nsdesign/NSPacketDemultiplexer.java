@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
 import org.json.JSONException;

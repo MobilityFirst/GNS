@@ -7,6 +7,7 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 /**
 @author V. Arun
  */
+@Deprecated
 public interface ReconfiguratorInterface<NodeIDType> {
 	public GNSNodeConfig<NodeIDType> getGnsNodeConfig();
 

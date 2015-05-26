@@ -6,9 +6,11 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.packet.*;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;

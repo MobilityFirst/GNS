@@ -1,5 +1,14 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
+import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.GroupChangeCompletePacket;
+import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket;
+import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -10,8 +19,7 @@ import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.nsdesign.packet.*;
+import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;

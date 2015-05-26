@@ -5,10 +5,13 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
+import edu.umass.cs.gns.newApp.packet.admin.DumpRequestPacket;
+import edu.umass.cs.gns.newApp.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gns.newApp.packet.admin.SentinalPacket;
+import edu.umass.cs.gns.newApp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Shutdownable;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.admin.*;
+import edu.umass.cs.gns.util.Shutdownable;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.ping.PingManager;
 import org.json.JSONException;
 import org.json.JSONObject;

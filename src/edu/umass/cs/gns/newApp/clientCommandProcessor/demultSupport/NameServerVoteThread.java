@@ -7,7 +7,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.packet.NameServerSelectionPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket;
 import java.util.Random;
 import java.util.Set;
 

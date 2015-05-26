@@ -4,9 +4,9 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
+import edu.umass.cs.gns.newApp.GnsApplicationInterface;
+import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -18,6 +18,7 @@ import java.io.IOException;
  * Contains code executed by an active replica on adding a new name to GNS.
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class Add {
 
   public static void handleActiveAdd(AddRecordPacket addRecordPacket, GnsApplicationInterface gnsApp)

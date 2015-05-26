@@ -1,10 +1,16 @@
 package edu.umass.cs.gns.test.nioclient;
 
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
+import edu.umass.cs.gns.newApp.packet.UpdatePacket;
+import edu.umass.cs.gns.newApp.packet.DNSRecordType;
+import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
-import edu.umass.cs.gns.nsdesign.packet.*;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONException;

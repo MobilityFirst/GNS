@@ -1,13 +1,13 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.BasicPacket;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import static edu.umass.cs.gns.nsdesign.packet.Packet.PacketType.*;
-import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
+import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
+import edu.umass.cs.gns.newApp.packet.BasicPacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import static edu.umass.cs.gns.newApp.packet.Packet.PacketType.*;
+import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.net.InetSocketAddress;
 import org.json.JSONException;

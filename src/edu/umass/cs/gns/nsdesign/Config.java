@@ -13,6 +13,7 @@ import java.util.HashMap;
  *
  * Created by abhigyan on 3/27/14.
  */
+@Deprecated
 public class Config {
 
   /**

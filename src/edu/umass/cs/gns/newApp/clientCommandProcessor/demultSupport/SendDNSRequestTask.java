@@ -8,7 +8,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.ResultValue;
@@ -33,7 +33,7 @@ import java.util.logging.Level;
  * @param <NodeIDType>
  * @see edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Lookup
  * @see edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.DNSRequestInfo
- * @see edu.umass.cs.gns.nsdesign.packet.DNSPacket
+ * @see edu.umass.cs.gns.newApp.packet.DNSPacket
  *
  * User: abhigyan
  * Date: 8/30/13

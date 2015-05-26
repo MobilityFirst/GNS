@@ -2,7 +2,7 @@ package edu.umass.cs.gns.test;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.CCPPacketDemultiplexerV1;
-import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
+import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 

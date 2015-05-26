@@ -3,7 +3,7 @@ package edu.umass.cs.gns.nsdesign.replicaController;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.NameServerSelectionPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,6 +15,7 @@ import org.json.JSONObject;
  * <p>
  * Created by abhigyan on 2/27/14.
  */
+@Deprecated
 public class NameStats {
 
   /**

@@ -10,8 +10,8 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
+import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.Util;
@@ -31,7 +31,7 @@ import java.util.TimerTask;
  * @param <NodeIDType>
  * @see edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update
  * @see edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo
- * @see edu.umass.cs.gns.nsdesign.packet.UpdatePacket
+ * @see edu.umass.cs.gns.newApp.packet.UpdatePacket
  *
  * @author abhigyan
  */

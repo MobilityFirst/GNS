@@ -2,7 +2,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 

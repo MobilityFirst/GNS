@@ -6,7 +6,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket;
 import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveReplication;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;

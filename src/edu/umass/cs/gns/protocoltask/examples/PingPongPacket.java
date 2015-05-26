@@ -3,8 +3,8 @@ package edu.umass.cs.gns.protocoltask.examples;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.StringifiableDefault;

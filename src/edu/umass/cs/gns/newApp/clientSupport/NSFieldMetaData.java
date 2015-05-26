@@ -12,7 +12,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOpera
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
+import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.net.InetSocketAddress;

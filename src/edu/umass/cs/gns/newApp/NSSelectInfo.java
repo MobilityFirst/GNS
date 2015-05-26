@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.SelectOperation;
-import edu.umass.cs.gns.nsdesign.packet.SelectRequestPacket.GroupBehavior;
+import edu.umass.cs.gns.newApp.packet.SelectRequestPacket.SelectOperation;
+import edu.umass.cs.gns.newApp.packet.SelectRequestPacket.GroupBehavior;
 import org.json.JSONObject;
 
 import java.util.Collections;

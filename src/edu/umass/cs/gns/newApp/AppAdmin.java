@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.newApp;
 
+import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess;
@@ -12,10 +13,10 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.packet.Packet;
-import edu.umass.cs.gns.nsdesign.packet.admin.AdminRequestPacket;
-import edu.umass.cs.gns.nsdesign.packet.admin.AdminResponsePacket;
-import edu.umass.cs.gns.nsdesign.packet.admin.DumpRequestPacket;
+import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.newApp.packet.admin.AdminRequestPacket;
+import edu.umass.cs.gns.newApp.packet.admin.AdminResponsePacket;
+import edu.umass.cs.gns.newApp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import org.json.JSONArray;
 import org.json.JSONException;

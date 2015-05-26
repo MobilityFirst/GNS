@@ -6,6 +6,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 /**
 @author V. Arun
  */
+@Deprecated
 public interface Reconfigurable extends Application, InterfaceReconfigurable {
 
 	public boolean stopVersion(String name, short version); // getFinalState should return non-null value after this call

@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.packet.NameServerLoadPacket;
+import edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 

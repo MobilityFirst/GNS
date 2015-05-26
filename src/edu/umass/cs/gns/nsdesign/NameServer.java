@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.newApp.NSListenerAdmin;
+import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;

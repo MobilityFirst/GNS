@@ -4,7 +4,7 @@ import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
-import edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket;
+import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -22,7 +22,7 @@ import java.util.TimerTask;
  *
  * @param <NodeIDType>
  * @see edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.PendingTasks
- * @see edu.umass.cs.gns.nsdesign.packet.RequestActivesPacket
+ * @see edu.umass.cs.gns.newApp.packet.RequestActivesPacket
  *
  * @author abhigyan
  */
