@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -8,7 +8,7 @@ import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
+import edu.umass.cs.gns.newApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.Packet;
 import edu.umass.cs.gns.nsdesign.packet.UpdatePacket;

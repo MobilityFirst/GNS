@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.clientsupport.FieldAccess;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;

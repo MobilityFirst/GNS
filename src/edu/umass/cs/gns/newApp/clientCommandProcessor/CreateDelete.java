@@ -7,9 +7,9 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.clientCommandProcessor.SendAddRemoveTask;
-import edu.umass.cs.gns.clientCommandProcessor.UpdateInfo;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.SendAddRemoveTask;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.nsdesign.packet.AddRecordPacket;
 import edu.umass.cs.gns.nsdesign.packet.BasicPacket;

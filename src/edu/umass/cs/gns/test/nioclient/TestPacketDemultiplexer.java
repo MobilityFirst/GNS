@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.test.nioclient;
 
-import edu.umass.cs.gns.clientCommandProcessor.IntercessorInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;

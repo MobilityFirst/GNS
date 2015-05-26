@@ -1,11 +1,11 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientsupport.Admintercessor;
-import edu.umass.cs.gns.clientsupport.Intercessor;
-import edu.umass.cs.gns.clientCommandProcessor.CCPListenerAdmin;
-import edu.umass.cs.gns.clientCommandProcessor.gnamed.DnsTranslator;
-import edu.umass.cs.gns.clientCommandProcessor.gnamed.UdpDnsServer;
-import edu.umass.cs.gns.clientCommandProcessor.httpserver.GnsHttpServer;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Admintercessor;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Intercessor;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.CCPListenerAdmin;
+import edu.umass.cs.gns.gnamed.DnsTranslator;
+import edu.umass.cs.gns.gnamed.UdpDnsServer;
+import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ParametersAndOptions;
 import static edu.umass.cs.gns.util.ParametersAndOptions.HELP;

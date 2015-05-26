@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.main;
 
-import edu.umass.cs.gns.clientCommandProcessor.LocalNameServer;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.LocalNameServer;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveDHTRouting;
 import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;

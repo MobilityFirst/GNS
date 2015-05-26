@@ -6,14 +6,14 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientCommandProcessor.RequestInfo;
-import edu.umass.cs.gns.clientCommandProcessor.NameRecordStats;
-import edu.umass.cs.gns.clientCommandProcessor.SelectInfo;
-import edu.umass.cs.gns.clientCommandProcessor.CacheEntry;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.RequestInfo;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.NameRecordStats;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.SelectInfo;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.CacheEntry;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import edu.umass.cs.gns.clientsupport.Admintercessor;
-import edu.umass.cs.gns.clientsupport.Intercessor;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Admintercessor;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.nio.GenericMessagingTask;

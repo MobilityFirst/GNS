@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.clientsupport.CommandHandler;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -25,8 +25,8 @@ import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.clientsupport.LNSQueryHandler;
-import edu.umass.cs.gns.nsdesign.clientsupport.LNSUpdateHandler;
+import edu.umass.cs.gns.newApp.clientSupport.LNSQueryHandler;
+import edu.umass.cs.gns.newApp.clientSupport.LNSUpdateHandler;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.NRState;
 import edu.umass.cs.gns.nsdesign.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;

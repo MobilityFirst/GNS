@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.test.rmiclient;
 
 
-import edu.umass.cs.gns.clientsupport.QueryResult;
-import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.QueryResult;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Util;

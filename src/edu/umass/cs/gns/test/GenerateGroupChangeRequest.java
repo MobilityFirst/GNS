@@ -6,8 +6,8 @@
  */
 package edu.umass.cs.gns.test;
 
-import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexerV1;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.CCPPacketDemultiplexerV1;
 import edu.umass.cs.gns.nsdesign.packet.NewActiveProposalPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
 import org.json.JSONException;

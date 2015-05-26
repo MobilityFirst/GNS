@@ -7,15 +7,15 @@
  */
 package edu.umass.cs.gns.commands.acl;
 
-import edu.umass.cs.gns.clientsupport.AccountAccess;
-import edu.umass.cs.gns.clientsupport.CommandResponse;
-import edu.umass.cs.gns.clientsupport.FieldMetaData;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldMetaData;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.commands.CommandModule;
 import edu.umass.cs.gns.commands.GnsCommand;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
-import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.NSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

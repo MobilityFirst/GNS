@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.commands.account;
 
-import static edu.umass.cs.gns.clientsupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
 import edu.umass.cs.gns.commands.CommandModule;
 
 /**

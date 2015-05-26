@@ -9,7 +9,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import static edu.umass.cs.gns.clientsupport.Defs.HELP;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.HELP;
 import static edu.umass.cs.gns.localnameserver.LNSNodeConfig.INVALID_PING_LATENCY;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.DEBUG;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.NS_FILE;

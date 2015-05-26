@@ -7,12 +7,12 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientsupport.CommandHandler;
-import edu.umass.cs.gns.clientCommandProcessor.AddRemove;
-import edu.umass.cs.gns.clientCommandProcessor.Lookup;
-import edu.umass.cs.gns.clientCommandProcessor.PendingTasks;
-import edu.umass.cs.gns.clientCommandProcessor.Select;
-import edu.umass.cs.gns.clientCommandProcessor.Update;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandHandler;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.AddRemove;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Lookup;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.PendingTasks;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Select;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;

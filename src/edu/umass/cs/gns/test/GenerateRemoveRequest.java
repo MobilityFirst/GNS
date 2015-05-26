@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.test;
 
-import edu.umass.cs.gns.clientCommandProcessor.CCPPacketDemultiplexerV1;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.CCPPacketDemultiplexerV1;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.packet.RemoveRecordPacket;
 import org.json.JSONException;

@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.newApp;
 
-import static edu.umass.cs.gns.clientsupport.Defs.HELP;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.HELP;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;

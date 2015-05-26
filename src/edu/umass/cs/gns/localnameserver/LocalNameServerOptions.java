@@ -9,7 +9,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import static edu.umass.cs.gns.clientsupport.Defs.HELP;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.HELP;
 import static edu.umass.cs.gns.util.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;

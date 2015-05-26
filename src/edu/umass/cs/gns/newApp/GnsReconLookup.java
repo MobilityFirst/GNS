@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.clientsupport.Defs;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -11,8 +11,8 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
-import edu.umass.cs.gns.nsdesign.clientsupport.NSAuthentication;
-import edu.umass.cs.gns.nsdesign.clientsupport.NSGroupAccess;
+import edu.umass.cs.gns.newApp.clientSupport.NSAuthentication;
+import edu.umass.cs.gns.newApp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gns.nsdesign.packet.DNSPacket;
 import edu.umass.cs.gns.nsdesign.packet.DNSRecordType;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;

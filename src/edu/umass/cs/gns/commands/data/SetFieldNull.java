@@ -8,9 +8,9 @@
 package edu.umass.cs.gns.commands.data;
 
 import edu.umass.cs.gns.commands.CommandModule;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.clientsupport.FieldAccess;
-import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldAccess;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;

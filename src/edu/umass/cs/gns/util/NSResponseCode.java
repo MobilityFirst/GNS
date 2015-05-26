@@ -7,8 +7,8 @@
  */
 package edu.umass.cs.gns.util;
 
-import edu.umass.cs.gns.clientsupport.Defs;
 
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
 import java.io.Serializable;
 
 /**

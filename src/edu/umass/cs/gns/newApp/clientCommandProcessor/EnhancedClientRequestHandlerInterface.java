@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import java.io.IOException;
 import org.json.JSONException;

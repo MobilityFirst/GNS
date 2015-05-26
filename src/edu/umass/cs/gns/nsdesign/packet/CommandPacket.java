@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.clientsupport.Defs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.packet.Packet.PacketType;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;

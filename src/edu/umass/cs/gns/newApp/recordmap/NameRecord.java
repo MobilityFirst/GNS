@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.newApp.recordmap;
 
-import edu.umass.cs.gns.clientsupport.UpdateOperation;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;

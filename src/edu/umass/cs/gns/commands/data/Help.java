@@ -7,11 +7,11 @@
  */
 package edu.umass.cs.gns.commands.data;
 
-import edu.umass.cs.gns.clientsupport.CommandResponse;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gns.commands.GnsCommand;
 import edu.umass.cs.gns.commands.CommandModule;
-import static edu.umass.cs.gns.clientsupport.Defs.*;
-import edu.umass.cs.gns.clientCommandProcessor.ClientRequestHandlerInterface;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import org.json.JSONObject;
 
 /**

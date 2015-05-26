@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientCommandProcessor.UpdateInfo;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;

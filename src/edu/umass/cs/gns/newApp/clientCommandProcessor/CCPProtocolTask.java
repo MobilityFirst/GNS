@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.clientCommandProcessor.AddRemove;
-import edu.umass.cs.gns.clientCommandProcessor.PendingTasks;
-import edu.umass.cs.gns.clientCommandProcessor.UpdateInfo;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.AddRemove;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.PendingTasks;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.main.GNS;
 import java.util.Arrays;
 import java.util.HashSet;

@@ -16,7 +16,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
-import edu.umass.cs.gns.clientsupport.Defs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;

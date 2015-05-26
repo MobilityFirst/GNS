@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.nsdesign.packet;
 
-import edu.umass.cs.gns.clientsupport.SHA1HashFunction;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.Stringifiable;
 import java.net.InetSocketAddress;

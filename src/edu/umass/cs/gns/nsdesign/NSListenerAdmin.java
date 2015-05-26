@@ -6,8 +6,8 @@
 package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.clientsupport.AccountAccess;
-import edu.umass.cs.gns.clientsupport.GuidInfo;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.database.AbstractRecordCursor;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.main.GNS;
