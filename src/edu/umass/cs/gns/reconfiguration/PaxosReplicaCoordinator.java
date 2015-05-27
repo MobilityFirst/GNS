@@ -167,4 +167,15 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 		 */
 		return this.paxosManager.deleteFinalState(name, (short) epoch, 1);
 	}
+
+	@Override
+	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+		InterfaceReconfigurableRequest stop = super.getStopRequest(name, epoch);
+		if (!(stop instanceof InterfaceReplicableRequest))
+			throw new RuntimeException(
+					"Stop requests for Paxos apps must implement InterfaceReplicableRequest "
+							+ "and their needsCoordination() method must return true by default "
+							+ "(unless overridden by setNeedsCoordination(false))");
+		return stop;
+	}
 }
