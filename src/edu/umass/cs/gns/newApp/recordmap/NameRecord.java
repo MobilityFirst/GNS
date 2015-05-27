@@ -70,7 +70,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param ttl
    */
   public NameRecord(BasicRecordMap recordMap, String name, int activeVersion, ValuesMap values, int ttl,
-          Set<Object> replicaControllers) {
+          Set<String> replicaControllers) {
     this.recordMap = recordMap;
 
     hashMap = new HashMap<ColumnField, Object>();

@@ -98,7 +98,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
     try {
       switch (Packet.getPacketType(incomingJSON)) {
         case DUMP_REQUEST:
-          DumpRequestPacket dumpRequestPacket = new DumpRequestPacket(incomingJSON, handler.getGnsNodeConfig());
+          DumpRequestPacket dumpRequestPacket = new DumpRequestPacket<NodeIDType>(incomingJSON, handler.getGnsNodeConfig());
           if (dumpRequestPacket.getPrimaryNameServer() == null) {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
@@ -111,7 +111,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
           } else {
             // INCOMING - send it out to original requester
-            DumpRequestPacket incomingPacket = new DumpRequestPacket(incomingJSON, handler.getGnsNodeConfig());
+            DumpRequestPacket incomingPacket = new DumpRequestPacket<NodeIDType>(incomingJSON, handler.getGnsNodeConfig());
             int incomingId = incomingPacket.getId();
             handler.getAdmintercessor().handleIncomingDumpResponsePackets(incomingJSON, handler);
             GNS.getLogger().fine("ListenerAdmin: Relayed response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());

@@ -27,7 +27,7 @@ public interface GnsApplicationInterface<NodeIDType> {
 
   InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
 
-  InterfaceJSONNIOTransport getNioServer();
+  InterfaceJSONNIOTransport<NodeIDType> getNioServer();
   
   PingManager getPingManager();
   

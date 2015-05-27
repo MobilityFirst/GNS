@@ -29,6 +29,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -399,7 +400,8 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {
     try {
-      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), gnsNodeConfig);
+      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), 
+              (Stringifiable<String>)gnsNodeConfig);
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }

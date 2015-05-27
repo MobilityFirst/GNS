@@ -196,21 +196,21 @@ public class Packet {
    * @param unstringer
    * @return
    */
-  public static Object createInstance(JSONObject json, Stringifiable unstringer)
+  public static Object createInstance(JSONObject json, Stringifiable<String> unstringer)
           throws JSONException {
     try {
       switch (getPacketType(json)) {
         case DNS:
-          return new edu.umass.cs.gns.newApp.packet.DNSPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.DNSPacket<String>(json, unstringer);
         // Add
         case ADD_RECORD:
-          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer);
         case ADD_CONFIRM:
-          return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket<String>(json, unstringer);
         case ACTIVE_ADD:
-          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket(json, unstringer); // on an add request replica controller sends to active replica
+          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer); // on an add request replica controller sends to active replica
         case ACTIVE_ADD_CONFIRM:
-          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket(json, unstringer); // after adding name, active replica confirms to replica controller
+          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer); // after adding name, active replica confirms to replica controller
         // new client
         case COMMAND:
           return new edu.umass.cs.gns.newApp.packet.CommandPacket(json);
@@ -218,26 +218,26 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket(json);
         // Remove
         case REMOVE_RECORD:
-          return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket<String>(json, unstringer);
         case REMOVE_CONFIRM:
-          return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket<String>(json, unstringer);
         case ACTIVE_REMOVE:
           return null; // on a remove request, replica controller sends to active replica
         case ACTIVE_REMOVE_CONFIRM:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket(json, unstringer); // after removing name, active replica confirms to replica controller
+          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer); // after removing name, active replica confirms to replica controller
         case RC_REMOVE:
-          return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket<String>(json, unstringer);
         // Update
         case UPDATE:
-          return new edu.umass.cs.gns.newApp.packet.UpdatePacket(json, unstringer); // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
+          return new edu.umass.cs.gns.newApp.packet.UpdatePacket<String>(json, unstringer); // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
         case UPDATE_CONFIRM:
-          return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket<String>(json, unstringer);
         // Lookup actives
         case REQUEST_ACTIVES:
-          return new edu.umass.cs.gns.newApp.packet.RequestActivesPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.RequestActivesPacket<String>(json, unstringer);
         // Admin:
         case DUMP_REQUEST:
-          return new edu.umass.cs.gns.newApp.packet.admin.DumpRequestPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.admin.DumpRequestPacket<String>(json, unstringer);
         case SENTINAL:
           return new edu.umass.cs.gns.newApp.packet.admin.SentinalPacket(json);
         case ADMIN_REQUEST:
@@ -253,12 +253,12 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.admin.StatusInitPacket(json);
         // select
         case SELECT_REQUEST:
-          return new edu.umass.cs.gns.newApp.packet.SelectRequestPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.SelectRequestPacket<String>(json, unstringer);
         case SELECT_RESPONSE:
-          return new edu.umass.cs.gns.newApp.packet.SelectResponsePacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.SelectResponsePacket<String>(json, unstringer);
         // stats collection for names
         case NAMESERVER_SELECTION:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket<String>(json, unstringer);
       //NAME_RECORD_STATS_REQUEST(81),
         //NAME_RECORD_STATS_RESPONSE(82),
 //        case ACTIVE_NAMESERVER_INFO:
@@ -272,26 +272,26 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.NoopPacket(json);
         // group change
         case NEW_ACTIVE_PROPOSE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket<String>(json, unstringer);
         case OLD_ACTIVE_STOP:
           return null;
         case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer);
         case DELETE_OLD_ACTIVE_STATE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer);
         //
         case NEW_ACTIVE_START:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
         case NEW_ACTIVE_START_FORWARD:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
         case NEW_ACTIVE_START_RESPONSE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
         case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
         case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
         case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
         case GROUP_CHANGE_COMPLETE:
           return new edu.umass.cs.gns.newApp.packet.deprecated.GroupChangeCompletePacket(json);
         // coordination
@@ -300,7 +300,7 @@ public class Packet {
         case REPLICA_CONTROLLER_COORDINATION:
           return null; // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
         case NAME_SERVER_LOAD:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket(json, unstringer);
+          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket<String>(json, unstringer);
         // for finite ping pong protocol task example
         case TEST_PING:
           return new edu.umass.cs.gns.protocoltask.examples.PingPongPacket(json);
@@ -445,6 +445,7 @@ public class Packet {
    * @return Returns the Socket over which the packet was sent, or null if the port type is incorrect.
    * @throws java.io.IOException *
    */
+  @SuppressWarnings("unchecked")
   public static Socket sendTCPPacket(GNSNodeConfig gnsNodeConfig, JSONObject json, Object nameserverId, GNS.PortType portType) throws IOException {
     int port = gnsNodeConfig.getPortForTopLevelNode(nameserverId, portType);
     if (port == -1) {
@@ -510,7 +511,7 @@ public class Packet {
       do {
         tries += 1;
         try {
-          Socket socket = Packet.sendTCPPacket(gnsNodeConfig, json, id, portType);
+          Socket socket = Packet.sendTCPPacket(gnsNodeConfig, json, (String) id, portType);
           if (socket != null) {
             socket.close();
           }
@@ -582,19 +583,19 @@ public class Packet {
    * @throws java.io.IOException *
    */
   public static void main(String[] args) throws IOException {
-    Stringifiable unstringer = new Stringifiable() {
+    Stringifiable<String> unstringer = new Stringifiable<String>() {
       @Override
-      public Integer valueOf(String nodeAsString) {
-        return Integer.valueOf(nodeAsString);
+      public String valueOf(String nodeAsString) {
+        return nodeAsString;
       }
 
       @Override
-      public Set getValuesFromStringSet(Set strNodes) {
+      public Set<String> getValuesFromStringSet(Set strNodes) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
       }
 
       @Override
-      public Set getValuesFromJSONArray(JSONArray array) throws JSONException {
+      public Set<String> getValuesFromJSONArray(JSONArray array) throws JSONException {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
       }
     };
@@ -606,7 +607,7 @@ public class Packet {
     // createInstance testing
     ResultValue x = new ResultValue();
     x.add("12345678");
-    UpdatePacket up = new UpdatePacket(null, 32234234, 123, "12322323",
+    UpdatePacket up = new UpdatePacket<String>(null, 32234234, 123, "12322323",
             "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
     System.out.println(up.toString());

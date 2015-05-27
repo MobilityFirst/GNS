@@ -77,12 +77,12 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
           boolean dnsOnly,
           String gnsServerIP
   ) throws IOException {
-    this(new InetSocketAddress(host, port), new GNSNodeConfig(nsFile, true),
+    this(new InetSocketAddress(host, port), new GNSNodeConfig<NodeIDType>(nsFile, true),
             debug, replicaID, dnsGnsOnly, dnsOnly, gnsServerIP);
   }
 
   public ClientCommandProcessor(InetSocketAddress nodeAddress, 
-          GNSNodeConfig gnsNodeConfig,
+          GNSNodeConfig<NodeIDType> gnsNodeConfig,
           boolean debug,
           NodeIDType replicaID,
           boolean dnsGnsOnly,
@@ -92,7 +92,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     if (debug) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
     }
-    AbstractPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer();
+    AbstractPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer<NodeIDType>();
     this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<>();
     this.nodeAddress = nodeAddress;
@@ -118,7 +118,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       GnsHttpServer.runHttp(requestHandler);
       // Start Ping servers
       GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CCP_PING_PORT);
-      this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig(gnsNodeConfig));
+      this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig));
       pingManager.startPinging();
     //
       // After starting PingManager because it accesses PingManager.
@@ -167,8 +167,8 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
   }
 
   public static void startClientCommandProcessor(Map<String, String> options) throws IOException {
-    ClientCommandProcessor clientCommandProcessor
-            = new ClientCommandProcessor(
+    ClientCommandProcessor<String> clientCommandProcessor
+            = new ClientCommandProcessor<String>(
                     //address, nodeConfig, messenger,
                     options.get(NS_FILE),
                     options.containsKey(HOST) ? options.get(HOST) : NetworkUtils.getLocalHostLANAddress().getHostAddress(),

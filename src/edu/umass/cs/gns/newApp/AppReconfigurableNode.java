@@ -17,21 +17,20 @@ import java.util.Set;
 
 /**
  * @author Westy
- * @param <NodeIDType>
  */
-public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeIDType> {
+public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
-  private MongoRecords<NodeIDType> mongoRecords = null;
+  private MongoRecords<String> mongoRecords = null;
   
-  public static boolean debuggingEnabled = true;
+  public static boolean debuggingEnabled = false;
 
-  public AppReconfigurableNode(NodeIDType nodeID, GNSInterfaceNodeConfig<NodeIDType> nc)
+  public AppReconfigurableNode(String nodeID, GNSInterfaceNodeConfig<String> nc)
           throws IOException {
     super(nodeID, nc);
   }
 
   @Override
-  protected AbstractReplicaCoordinator<NodeIDType> createAppCoordinator() {
+  protected AbstractReplicaCoordinator<String> createAppCoordinator() {
     // this is called by super so we need to get this field initialized now
     if (this.mongoRecords == null) {
       this.mongoRecords = new MongoRecords<>(this.myID, Config.mongoPort);
@@ -50,8 +49,8 @@ public class AppReconfigurableNode<NodeIDType> extends ReconfigurableNode<NodeID
 
   private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
     GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFilename, nodeID);
-    new AppReconfigurableNode(nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
-    new AppReconfigurableNode(nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
+    new AppReconfigurableNode((String)nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
+    new AppReconfigurableNode((String)nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
   }
 
   private static void startTestNodes(String filename) throws IOException {

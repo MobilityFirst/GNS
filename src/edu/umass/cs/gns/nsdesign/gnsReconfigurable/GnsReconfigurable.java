@@ -36,6 +36,7 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.RetrievableDigest;
+import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -298,7 +299,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
       try {
         try {
           NameRecord nameRecord = new NameRecord(nameRecordDB, name, version, state1.valuesMap, state1.ttl,
-                  (Set<Object>) nodeConfig.getReplicatedReconfigurators(name));
+                  (Set<String>) nodeConfig.getReplicatedReconfigurators(name));
           NameRecord.addNameRecord(nameRecordDB, nameRecord);
           if (Config.debuggingEnabled) {
             GNS.getLogger().fine(" NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
@@ -483,7 +484,8 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
   @Override
   public InterfaceRequest getRequest(String stringified) throws RequestParseException {
     try {
-      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), nodeConfig);
+      return (InterfaceRequest) Packet.createInstance(new JSONObject(stringified), 
+              (Stringifiable<String>)nodeConfig);
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }
