@@ -277,13 +277,15 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    * @param state
    * @return
    */
-  public boolean updateStateNew(String name, String state) {
+  public boolean updateState(String name, String state) {
+    if (AppReconfigurableNode.debuggingEnabled) {
+      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
+    }
     try {
       if (state == null) {
         // If state is null the only thing it means is that we need to delete 
         // the record. If the record does not exists this is just a noop.
         NameRecord.removeNameRecord(nameRecordDB, name);
-        return true;
       } else { //state does not equal null so we either create a new record or update the existing one
         NameRecord nameRecord = null;
         try {
@@ -312,6 +314,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
           }
         }
       }
+      return true;
     } catch (FailedDBOperationException e) {
       GNS.getLogger().severe("Failed update exception: " + e.getMessage());
       e.printStackTrace();
@@ -319,8 +322,8 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     return false;
   }
 
-  @Override
-  public boolean updateState(String name, String state) {
+  //@Override
+  public boolean updateStateOld(String name, String state) {
     if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
     }
@@ -371,150 +374,169 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     return new StopPacket(name, epoch);
   }
 
-  private final static ArrayList<ColumnField> valueRequestFields = new ArrayList<>();
-
-  static {
-    valueRequestFields.add(NameRecord.ACTIVE_VERSION);
-    valueRequestFields.add(NameRecord.VALUES_MAP);
-    valueRequestFields.add(NameRecord.TIME_TO_LIVE);
-  }
-
   @Override
   public String getFinalState(String name, int epoch) {
-    ValuesMap value = null;
-    int ttl = -1;
-    try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, valueRequestFields);
-      value = nameRecord.getValuesMap();
-      int recordVersion = nameRecord.getActiveVersion();
-      if (recordVersion != epoch) {
-        if (AppReconfigurableNode.debuggingEnabled) {
-          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " for " + name + " ignoring epoch mismatch: epoch "
-                  + epoch + " record version " + recordVersion);
-        }
-      }
-      //NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, prevValueRequestFields);
-      //value = nameRecord.getOldValuesOnVersionMatch(epoch);
-      ttl = nameRecord.getTimeToLive();
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found exception.");
-    } catch (RecordNotFoundException e) {
-      GNS.getLogger().severe("Record not found exception. name = " + name + " version = " + epoch);
-    } catch (FailedDBOperationException e) {
-      GNS.getLogger().severe("Failed DB Operation. Final state not read: name " + name + " version " + epoch);
-      e.printStackTrace();
-      return null;
-    }
-    if (value == null) {
-      if (AppReconfigurableNode.debuggingEnabled) {
-        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + " not found!");
-      }
-      return null;
-    } else {
-      if (AppReconfigurableNode.debuggingEnabled) {
-        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + ": " + new NRState(value, ttl).toString());
-      }
-      return new NRState(value, ttl).toString();
-    }
+    throw new RuntimeException("This method should not have been called");
   }
 
   @Override
   public void putInitialState(String name, int epoch, String state) {
-    if (AppReconfigurableNode.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
-    }
-    NRState weirdState;
-    try {
-      weirdState = new NRState(state);
-    } catch (JSONException e) {
-      GNS.getLogger().severe("JSON Exception in transferred state: " + state + "name " + name + " version " + epoch);
-      e.printStackTrace();
-      return;
-    }
-    // Keep retrying until we can store the initial state for a name in DB. 
-    // Unless this step completes, future operations
-    // e.g., lookupMultipleSystemFields, update, cannot succeed anyway.
-    while (true) {
-      try {
-        try {
-          NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, weirdState.valuesMap, weirdState.ttl,
-                  nodeConfig.getReplicatedReconfigurators(name));
-          NameRecord.addNameRecord(nameRecordDB, nameRecord);
-          if (AppReconfigurableNode.debuggingEnabled) {
-            GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
-          }
-        } catch (RecordExistsException e) {
-          NameRecord nameRecord;
-          try {
-            nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
-            nameRecord.handleNewActiveStart(epoch, weirdState.valuesMap, weirdState.ttl);
-
-          } catch (FieldNotFoundException e1) {
-            GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-            e1.printStackTrace();
-          } catch (RecordNotFoundException e1) {
-            GNS.getLogger().severe("Not possible because record just existed.");
-            e1.printStackTrace();
-          }
-        }
-      } catch (FailedDBOperationException e) {
-        try {
-          Thread.sleep(100);
-        } catch (InterruptedException e1) {
-          e1.printStackTrace();
-        }
-        GNS.getLogger().severe("Failed DB exception. Retry: " + e.getMessage());
-        e.printStackTrace();
-        continue;
-      }
-      break;
-    }
+    throw new RuntimeException("This method should not have been called");
   }
 
   @Override
   public boolean deleteFinalState(String name, int epoch) {
-//    if (AppReconfigurableNode.debuggingEnabled) {
-//      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
-//    }
-    Integer recordEpoch = getEpoch(name);
-    //try {
-//      if (recordEpoch != null && recordEpoch == epoch) {
-//        NameRecord.removeNameRecord(nameRecordDB, name);
-//      } else {
-    if (AppReconfigurableNode.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP " + nodeID + " for " + name + " ignoring delete. Epoch is "
-              + epoch + " and record version is " + recordEpoch);
-    }
-    //}
-//    } catch (FailedDBOperationException e) {
-//      GNS.getLogger().severe("Failed to delete record for " + name + " :" + e.getMessage());
-//      return false;
-//    }
-    return true;
-  }
-
-  private final static ArrayList<ColumnField> readVersion = new ArrayList<>();
-
-  static {
-    readVersion.add(NameRecord.ACTIVE_VERSION);
+    throw new RuntimeException("This method should not have been called");
   }
 
   @Override
   public Integer getEpoch(String name) {
-    try {
-      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, readVersion);
-      return nameRecord.getActiveVersion();
-    } catch (RecordNotFoundException e) {
-      // normal result
-    } catch (FieldNotFoundException e) {
-      // normal result
-    } catch (FailedDBOperationException e) {
-      GNS.getLogger().severe("Database operation failed: " + e.getMessage());
-      e.printStackTrace();
-    }
-    return null;
+    throw new RuntimeException("This method should not have been called");
   }
 
+//  private final static ArrayList<ColumnField> valueRequestFields = new ArrayList<>();
+//
+//  static {
+//    valueRequestFields.add(NameRecord.ACTIVE_VERSION);
+//    valueRequestFields.add(NameRecord.VALUES_MAP);
+//    valueRequestFields.add(NameRecord.TIME_TO_LIVE);
+//  }
+//
+//  @Override
+//  public String getFinalState(String name, int epoch) {
+//    ValuesMap value = null;
+//    int ttl = -1;
+//    try {
+//      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, valueRequestFields);
+//      value = nameRecord.getValuesMap();
+//      int recordVersion = nameRecord.getActiveVersion();
+//      if (recordVersion != epoch) {
+//        if (AppReconfigurableNode.debuggingEnabled) {
+//          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " for " + name + " ignoring epoch mismatch: epoch "
+//                  + epoch + " record version " + recordVersion);
+//        }
+//      }
+//      //NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, prevValueRequestFields);
+//      //value = nameRecord.getOldValuesOnVersionMatch(epoch);
+//      ttl = nameRecord.getTimeToLive();
+//    } catch (FieldNotFoundException e) {
+//      GNS.getLogger().severe("Field not found exception.");
+//    } catch (RecordNotFoundException e) {
+//      GNS.getLogger().severe("Record not found exception. name = " + name + " version = " + epoch);
+//    } catch (FailedDBOperationException e) {
+//      GNS.getLogger().severe("Failed DB Operation. Final state not read: name " + name + " version " + epoch);
+//      e.printStackTrace();
+//      return null;
+//    }
+//    if (value == null) {
+//      if (AppReconfigurableNode.debuggingEnabled) {
+//        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + " not found!");
+//      }
+//      return null;
+//    } else {
+//      if (AppReconfigurableNode.debuggingEnabled) {
+//        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + ": " + new NRState(value, ttl).toString());
+//      }
+//      return new NRState(value, ttl).toString();
+//    }
+//  }
+//
+//  @Override
+//  public void putInitialState(String name, int epoch, String state) {
+//    if (AppReconfigurableNode.debuggingEnabled) {
+//      GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
+//    }
+//    NRState weirdState;
+//    try {
+//      weirdState = new NRState(state);
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("JSON Exception in transferred state: " + state + "name " + name + " version " + epoch);
+//      e.printStackTrace();
+//      return;
+//    }
+//    // Keep retrying until we can store the initial state for a name in DB. 
+//    // Unless this step completes, future operations
+//    // e.g., lookupMultipleSystemFields, update, cannot succeed anyway.
+//    while (true) {
+//      try {
+//        try {
+//          NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, weirdState.valuesMap, weirdState.ttl,
+//                  nodeConfig.getReplicatedReconfigurators(name));
+//          NameRecord.addNameRecord(nameRecordDB, nameRecord);
+//          if (AppReconfigurableNode.debuggingEnabled) {
+//            GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
+//          }
+//        } catch (RecordExistsException e) {
+//          NameRecord nameRecord;
+//          try {
+//            nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
+//            nameRecord.handleNewActiveStart(epoch, weirdState.valuesMap, weirdState.ttl);
+//
+//          } catch (FieldNotFoundException e1) {
+//            GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+//            e1.printStackTrace();
+//          } catch (RecordNotFoundException e1) {
+//            GNS.getLogger().severe("Not possible because record just existed.");
+//            e1.printStackTrace();
+//          }
+//        }
+//      } catch (FailedDBOperationException e) {
+//        try {
+//          Thread.sleep(100);
+//        } catch (InterruptedException e1) {
+//          e1.printStackTrace();
+//        }
+//        GNS.getLogger().severe("Failed DB exception. Retry: " + e.getMessage());
+//        e.printStackTrace();
+//        continue;
+//      }
+//      break;
+//    }
+//  }
+//
+//  @Override
+//  public boolean deleteFinalState(String name, int epoch) {
+////    if (AppReconfigurableNode.debuggingEnabled) {
+////      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
+////    }
+//    Integer recordEpoch = getEpoch(name);
+//    //try {
+////      if (recordEpoch != null && recordEpoch == epoch) {
+////        NameRecord.removeNameRecord(nameRecordDB, name);
+////      } else {
+//    if (AppReconfigurableNode.debuggingEnabled) {
+//      GNS.getLogger().info("&&&&&&& APP " + nodeID + " for " + name + " ignoring delete. Epoch is "
+//              + epoch + " and record version is " + recordEpoch);
+//    }
+//    //}
+////    } catch (FailedDBOperationException e) {
+////      GNS.getLogger().severe("Failed to delete record for " + name + " :" + e.getMessage());
+////      return false;
+////    }
+//    return true;
+//  }
+//
+//  private final static ArrayList<ColumnField> readVersion = new ArrayList<>();
+//
+//  static {
+//    readVersion.add(NameRecord.ACTIVE_VERSION);
+//  }
+//
+//  @Override
+//  public Integer getEpoch(String name) {
+//    try {
+//      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, readVersion);
+//      return nameRecord.getActiveVersion();
+//    } catch (RecordNotFoundException e) {
+//      // normal result
+//    } catch (FieldNotFoundException e) {
+//      // normal result
+//    } catch (FailedDBOperationException e) {
+//      GNS.getLogger().severe("Database operation failed: " + e.getMessage());
+//      e.printStackTrace();
+//    }
+//    return null;
+//  }
   //
   // GnsApplicationInterface implementation
   //
