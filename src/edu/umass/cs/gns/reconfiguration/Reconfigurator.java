@@ -250,7 +250,7 @@ public class Reconfigurator<NodeIDType> implements
 		if (this.isReadyForReconfiguration(rcRecReq))
 			this.DB.handleIncoming(rcRecReq);
 		else {
-			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {
+			log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] {
 					"Discarding ", rcRecReq.getSummary() });
 			this.sendDeletionError(delete);
 		}
@@ -603,10 +603,18 @@ public class Reconfigurator<NodeIDType> implements
 		 * name record is either also ready or null (possible during name
 		 * creation).
 		 */
-		return recordGroupName != null
+		boolean ready = recordGroupName != null
 				&& recordGroupName.getState().equals(RCStates.READY)
 				&& (recordServiceName == null || recordServiceName.getState()
 						.equals(RCStates.READY));
+		if (!ready)
+			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {
+					this,
+					"not ready for reconfiguring",
+					rcPacket.getServiceName(),
+					"\n  recordServiceName = " + recordServiceName
+							+ "\n  recordGroupName = " + recordGroupName });
+		return ready;
 	}
 
 	private NodeIDType getMyID() {
