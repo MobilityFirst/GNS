@@ -67,14 +67,14 @@ public class Admintercessor<NodeIDType> {
   /**
    *
    */
-  CCPListenerAdmin listenerAdmin = null;
+  CCPListenerAdmin<NodeIDType> listenerAdmin = null;
 
   /**
    * Sets the listener admin.
    *
    * @param listenerAdmin
    */
-  public void setListenerAdmin(CCPListenerAdmin listenerAdmin) {
+  public void setListenerAdmin(CCPListenerAdmin<NodeIDType> listenerAdmin) {
     this.listenerAdmin = listenerAdmin;
   }
 

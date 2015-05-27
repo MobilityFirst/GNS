@@ -65,9 +65,9 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    
    public Object getActiveReplicaID();
    
-   public Intercessor getIntercessor();
+   public Intercessor<NodeIDType> getIntercessor();
    
-   public Admintercessor getAdmintercessor();
+   public Admintercessor<NodeIDType> getAdmintercessor();
 
   // REQUEST INFO METHODS
 

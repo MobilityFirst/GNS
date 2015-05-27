@@ -44,7 +44,6 @@ import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
-import edu.umass.cs.gns.util.ValuesMap;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -57,13 +56,12 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * @author Westy
- * @param <NodeIDType>
  */
-public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceReplicable, InterfaceReconfigurable {
+public class NewApp implements GnsApplicationInterface, InterfaceReplicable, InterfaceReconfigurable {
 
   private final static int INITIAL_RECORD_VERSION = 0;
-  private final NodeIDType nodeID;
-  private final GNSConsistentReconfigurableNodeConfig nodeConfig;
+  private final String nodeID;
+  private final GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
   private final PingManager pingManager;
   /**
    * Object provides interface to the database table storing name records
@@ -72,23 +70,23 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   /**
    * The Nio server
    */
-  private final InterfaceJSONNIOTransport<NodeIDType> nioServer;
+  private final InterfaceJSONNIOTransport<String> nioServer;
 
   private boolean useLocalCCP = true;
-  private ClientCommandProcessor<NodeIDType> localCCP = null;
+  private ClientCommandProcessor<String> localCCP = null;
 
-  public NewApp(NodeIDType id, GNSInterfaceNodeConfig nodeConfig, InterfaceJSONNIOTransport<NodeIDType> nioServer,
-          MongoRecords<NodeIDType> mongoRecords) {
+  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceJSONNIOTransport<String> nioServer,
+          MongoRecords<String> mongoRecords) {
     this.nodeID = id;
-    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig(nodeConfig);
-    this.pingManager = new PingManager<NodeIDType>(nodeID, this.nodeConfig);
+    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<String>(nodeConfig);
+    this.pingManager = new PingManager<String>(nodeID, this.nodeConfig);
     this.pingManager.startPinging();
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.nioServer = nioServer;
     try {
       if (useLocalCCP) {
-        this.localCCP = new ClientCommandProcessor(
+        this.localCCP = new ClientCommandProcessor<String>(
                 new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
                 (GNSNodeConfig) nodeConfig,
                 AppReconfigurableNode.debuggingEnabled,
@@ -131,7 +129,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
       switch (packetType) {
         case DNS:
           // the only dns response we should see are coming in response to LNSQueryHandler requests
-          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, nodeConfig);
+          DNSPacket<String> dnsPacket = new DNSPacket<String>(json, nodeConfig);
           if (!dnsPacket.isQuery()) {
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
@@ -140,7 +138,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this,
+          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this,
                   false, doNotReplyToClient);
           break;
         case SELECT_REQUEST:
@@ -153,7 +151,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
         case UPDATE_CONFIRM:
         case ADD_CONFIRM:
         case REMOVE_CONFIRM:
-          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, nodeConfig), this);
+          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<String>(json, nodeConfig), this);
           break;
         case STOP:
           break;
@@ -210,7 +208,6 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     public int getPort() {
       return port;
     }
-
   }
 
   //a map between request ids and host and port that the command request needs to be sent back to
@@ -277,6 +274,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
    * @param state
    * @return
    */
+  @Override
   public boolean updateState(String name, String state) {
     if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
@@ -323,45 +321,45 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   }
 
   //@Override
-  public boolean updateStateOld(String name, String state) {
-    if (AppReconfigurableNode.debuggingEnabled) {
-      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
-    }
-    boolean stateUpdated = false;
-    try {
-      if (state == null) {
-        // If state is null the only thing it means is that we need to delete 
-        // the record. If the record does not exists this is just a noop.
-        NameRecord.removeNameRecord(nameRecordDB, name);
-      } else {
-        //if (true) {
-        NRState state1 = new NRState(state);
-        NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
-                state1.valuesMap, state1.ttl,
-                nodeConfig.getReplicatedReconfigurators(name));
-        NameRecord.addNameRecord(nameRecordDB, nameRecord);
+//  public boolean updateStateOld(String name, String state) {
+//    if (AppReconfigurableNode.debuggingEnabled) {
+//      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
+//    }
+//    boolean stateUpdated = false;
+//    try {
+//      if (state == null) {
+//        // If state is null the only thing it means is that we need to delete 
+//        // the record. If the record does not exists this is just a noop.
+//        NameRecord.removeNameRecord(nameRecordDB, name);
 //      } else {
+//        //if (true) {
 //        NRState state1 = new NRState(state);
-//        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-//        nameRecord.updateState(state1.valuesMap, state1.ttl);
+//        NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
+//                state1.valuesMap, state1.ttl,
+//                nodeConfig.getReplicatedReconfigurators(name));
+//        NameRecord.addNameRecord(nameRecordDB, nameRecord);
+////      } else {
+////        NRState state1 = new NRState(state);
+////        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
+////        nameRecord.updateState(state1.valuesMap, state1.ttl);
+////      }
+//        stateUpdated = true;
 //      }
-        stateUpdated = true;
-      }
-      // todo handle the case if record does not exist. for this update state should return record not found exception.
-    } catch (JSONException e) {
-      e.printStackTrace();
-    } catch (RecordExistsException e) {
-      GNS.getLogger().severe("Record already exists: " + e.getMessage());
-      e.printStackTrace();
-//    } catch (FieldNotFoundException e) {
-//      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+//      // todo handle the case if record does not exist. for this update state should return record not found exception.
+//    } catch (JSONException e) {
 //      e.printStackTrace();
-    } catch (FailedDBOperationException e) {
-      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-      e.printStackTrace();
-    }
-    return stateUpdated;
-  }
+//    } catch (RecordExistsException e) {
+//      GNS.getLogger().severe("Record already exists: " + e.getMessage());
+//      e.printStackTrace();
+////    } catch (FieldNotFoundException e) {
+////      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
+////      e.printStackTrace();
+//    } catch (FailedDBOperationException e) {
+//      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
+//      e.printStackTrace();
+//    }
+//    return stateUpdated;
+//  }
 
   /**
    *
@@ -541,7 +539,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   // GnsApplicationInterface implementation
   //
   @Override
-  public NodeIDType getNodeID() {
+  public String getNodeID() {
     return nodeID;
   }
 
@@ -551,7 +549,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
   }
 
   @Override
-  public InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig() {
+  public InterfaceReconfigurableNodeConfig<String> getGNSNodeConfig() {
     return nodeConfig;
   }
 
@@ -565,7 +563,7 @@ public class NewApp<NodeIDType> implements GnsApplicationInterface, InterfaceRep
     return pingManager;
   }
 
-  public ClientCommandProcessor<NodeIDType> getLocalCCP() {
+  public ClientCommandProcessor<String> getLocalCCP() {
     return localCCP;
   }
 

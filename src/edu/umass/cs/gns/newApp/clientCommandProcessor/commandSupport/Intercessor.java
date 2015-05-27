@@ -78,10 +78,10 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   
   private AbstractPacketDemultiplexer ccpPacketDemultiplexer;
   //private ClientRequestHandlerInterface<NodeIDType> handler;
-  private GNSNodeConfig nodeConfig;
+  private GNSNodeConfig<NodeIDType> nodeConfig;
   private InetSocketAddress nodeAddress;
 
-  public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig nodeConfig,
+  public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> nodeConfig,
           AbstractPacketDemultiplexer ccpPacketDemultiplexer) {
     //this.handler = handler;
     this.nodeConfig = nodeConfig;

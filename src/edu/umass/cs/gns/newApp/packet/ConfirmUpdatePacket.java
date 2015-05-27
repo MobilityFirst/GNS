@@ -67,6 +67,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
    * @param updatePacket
    * @return
    */
+  @SuppressWarnings("unchecked")
   public static ConfirmUpdatePacket createFailPacket(UpdatePacket updatePacket, NSResponseCode code) {
     assert code != NSResponseCode.NO_ERROR; // that would be stupid
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
@@ -80,6 +81,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
    * @param updatePacket  <code>UpdateAddressPacket</code> received by name server.
    * @return <code>ConfirmUpdateLNSPacket</code> indicating request failure.
    */
+  @SuppressWarnings("unchecked")
   public static ConfirmUpdatePacket createSuccessPacket(UpdatePacket updatePacket) {
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
             updatePacket.getRequestID(), updatePacket.getLNSRequestID(),

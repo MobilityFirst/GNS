@@ -25,7 +25,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   private final HashSet<NodeIDType> reconfiguratorsQueried;
   private int sendCount = -1;
   private int retries = 0;
-  private static final int MAX_RETRIES = 4;
+  private static final int MAX_RETRIES = 10;
   private final long startTime;
   private final EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -43,7 +43,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
     try {
       sendCount++;
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Send Run: Name = " + name + " packet type = " + packet.getType() + " timeout = " + sendCount);
+        GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " sent = " + sendCount + " retries = " + retries);
       }
 
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
@@ -81,26 +81,29 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
     }
     if (lnsRequestID == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Name = " + name + " packet type = " + packet.getType() + " info not found. Operation complete. Cancel task.");
+        GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " info not found. Operation complete. Cancel task.");
       }
       return true;
     } else {
       UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
       if (updateInfo == null) {
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("Name = " + name + " packet type = " + packet.getType() + " UpdateInfo not found. Operation complete. Cancel task.");
+          GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " UpdateInfo not found. Operation complete. Cancel task.");
         }
         return true;
       }
     }
     if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Name = " + name + " packet type = " + packet.getType() + " no response yet.");
-      }
+      GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " no response yet.");
+    }
     return false;
   }
 
   private boolean isMaxWaitTimeExceeded() {
-    if (sendCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
+    if (sendCount > 0 && System.currentTimeMillis() - startTime > 
+            10000 // lets try 10 seconds for now
+            //handler.getParameters().getMaxQueryWaitTime()
+            ) {
       Integer lnsRequestID = null;
       if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
         lnsRequestID = handler.removeCreateRequestNameToIDMapping(name);
@@ -115,11 +118,11 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
       if (lnsRequestID != null) {
         UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
         if (updateInfo == null) {
-          GNS.getLogger().warning("Name = " + name + " packet type = " + packet.getType() + " TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
+          GNS.getLogger().warning("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
           return true;
         }
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("Name = " + name + " packet type = " + packet.getType()
+          GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType()
                   + " Request FAILED no response until MAX-wait time: " + lnsRequestID);
         }
         updateInfo.setSuccess(false);
@@ -142,7 +145,9 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
         reconfiguratorsQueried.clear();
         server = handler.getClosestReplicaController(name, reconfiguratorsQueried);
         retries++;
-        GNS.getLogger().info("Send Run: Name = " + name + " packet type = " + packet.getType() + " retry = " + retries);
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " retry = " + retries);
+        }
       }
     }
     return server;
@@ -160,7 +165,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
     try {
       handler.sendRequestToReconfigurator(packet, nameServerID);
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Name = " + name + " packet type = " + packet.getType() + " SENT TO " + nameServerID);
+        GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " SENT TO " + nameServerID);
       }
     } catch (IOException | JSONException e) {
       GNS.getLogger().severe("Problem sending packet to " + nameServerID + ": " + e);
