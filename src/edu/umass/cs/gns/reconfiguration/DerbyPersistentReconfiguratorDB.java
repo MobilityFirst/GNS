@@ -95,7 +95,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	};
 
 	private static enum Keys {
-		INET_SOCKET_ADDRESS, FILENAME
+		INET_SOCKET_ADDRESS, FILENAME, FILESIZE
 	};
 
 	private static final ArrayList<DerbyPersistentReconfiguratorDB<?>> instances = new ArrayList<DerbyPersistentReconfiguratorDB<?>>();
@@ -454,8 +454,6 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 					String msg = recordRS.getString(1);
 					ReconfigurationRecord<NodeIDType> rcRecord = new ReconfigurationRecord<NodeIDType>(
 							new JSONObject(msg), this.consistentNodeConfig);
-					// writer.write(rcRecord.toString() + "\n"); // append to
-					// file
 					fos.write((rcRecord.toString() + "\n").getBytes(CHARSET));
 					debug += rcRecord;
 				}
@@ -764,7 +762,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 									.getString(Keys.INET_SOCKET_ADDRESS
 											.toString()));
 					assert (sockAddr != null);
-					filename = this.getRemoteCheckpoint(rcGroup, sockAddr, url);
+					filename = this.getRemoteCheckpoint(rcGroup, sockAddr, filename, jsonUrl.getLong(Keys.FILESIZE.toString()));
 				}
 			}
 		} catch (JSONException e) {
@@ -775,7 +773,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	// FIXME: crash may result in half written file
 	private synchronized String getRemoteCheckpoint(String rcGroupName,
-			InetSocketAddress sockAddr, String remoteFilename) {
+			InetSocketAddress sockAddr, String remoteFilename, long fileSize) {
 		String request = remoteFilename + "\n";
 		Socket sock = null;
 		FileOutputStream fos = null;
@@ -796,8 +794,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				nTotalRead += nread;
 				fos.write(buf, 0, nread);
 			}
-			// FIXME: check exact expected file size
-			if (nTotalRead <= 0)
+			// check exact expected file size
+			if (nTotalRead != fileSize)
 				localCPFilename = null;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -822,6 +820,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 					new InetSocketAddress(this.serverSock.getInetAddress(),
 							this.serverSock.getLocalPort()));
 			jsonUrl.put(Keys.FILENAME.toString(), localFilename);
+			long fileSize = (new File(localFilename)).length();
+			jsonUrl.put(Keys.FILESIZE.toString(), fileSize);
 			url = jsonUrl.toString();
 		} catch (JSONException je) {
 			log.severe(this

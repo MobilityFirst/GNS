@@ -11,6 +11,7 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
+import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
@@ -64,6 +65,10 @@ public class WaitEpochFinalState<NodeIDType>
 	// simply calls start() but only if state not yet received
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
+		if(this.amObviated()) {
+			ProtocolExecutor.cancel(this);
+			return null;
+		}
 		if (!this.prevGroupIterator.hasNext())
 			this.prevGroupIterator = this.startEpoch.getPrevEpochGroup()
 					.iterator();
@@ -97,6 +102,15 @@ public class WaitEpochFinalState<NodeIDType>
 				&& !this.prevGroupIterator.next().equals(myID))
 			;
 		return myID; // leave iterator at self
+	}
+
+	private boolean amObviated() {
+		Integer curEpoch = this.appCoordinator.getEpoch(this.startEpoch
+				.getServiceName());
+		if (curEpoch != null
+				&& curEpoch - this.startEpoch.getEpochNumber() >= 0)
+			return true;
+		return false;
 	}
 
 	@Override

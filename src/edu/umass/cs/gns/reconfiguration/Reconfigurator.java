@@ -19,6 +19,7 @@ import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.json.ReconfiguratorProtocolTask;
+import edu.umass.cs.gns.reconfiguration.json.WaitAckDropEpoch;
 import edu.umass.cs.gns.reconfiguration.json.WaitAckStartEpoch;
 import edu.umass.cs.gns.reconfiguration.json.WaitAckStopEpoch;
 import edu.umass.cs.gns.reconfiguration.json.WaitCoordinatedCommit;
@@ -420,7 +421,9 @@ public class Reconfigurator<NodeIDType> implements
 				&& rcRecReq.isNodeConfigChange()) {
 			// initiate the process of reconfiguring RC groups here
 			executeNodeConfigChange(rcRecReq);
-		}
+		} else if (handled && rcRecReq.isReconfigurationMerge())
+			this.protocolExecutor.spawnIfNotRunning(new WaitAckDropEpoch<NodeIDType>(
+					rcRecReq.startEpoch, this.DB));
 	}
 
 	/****************************** End of protocol task handler methods *********************/
@@ -674,7 +677,7 @@ public class Reconfigurator<NodeIDType> implements
 		return getTaskKeyPrev(C, rcPacket, getMyID().toString());
 	}
 
-	private String getTaskKeyPrev(Class<?> C,
+	protected static String getTaskKeyPrev(Class<?> C,
 			BasicReconfigurationPacket<?> rcPacket, String myID) {
 		return C.getSimpleName() + myID + ":" + rcPacket.getServiceName() + ":"
 				+ (rcPacket.getEpochNumber() - 1);

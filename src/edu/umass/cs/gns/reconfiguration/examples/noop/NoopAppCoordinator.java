@@ -10,6 +10,7 @@ import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.PaxosReplicaCoordinator;
@@ -58,13 +59,15 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 			throws IOException, RequestParseException {
 		try {
 			// coordinate exactly once, and set self to entry replica
-			((NoopAppRequest) request).setNeedsCoordination(false);
-			((NoopAppRequest) request).setEntryReplica(this.getMyID());
+			if(request instanceof InterfaceReplicableRequest)
+				((InterfaceReplicableRequest) request).setNeedsCoordination(false);
+			if(request instanceof NoopAppRequest)
+				((NoopAppRequest) request).setEntryReplica(this.getMyID());
 			// pick lazy or paxos coordinator, the defaults supported 
 			if (this.coordType.equals(CoordType.LAZY))
-				this.sendAllLazy((NoopAppRequest) request);
+				this.sendAllLazy(request);
 			else if (this.coordType.equals(CoordType.PAXOS)) {
-				super.coordinateRequest((NoopAppRequest)request);
+				super.coordinateRequest(request);
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();

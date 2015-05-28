@@ -446,6 +446,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	}
 
 	public boolean deleteFinalState(String paxosID, short version) {
+		// might as well force-kill the instance at this point 
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if(pism!=null && pism.getVersion() == version) this.kill(pism);
+		
 		return this.paxosLogger.deleteEpochFinalCheckpointState(paxosID,
 				version);
 	}
