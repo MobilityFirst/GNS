@@ -508,14 +508,19 @@ public class Reconfigurator<NodeIDType> implements
 		if (oldActives == null || oldActives.isEmpty())
 			return null;
 		// get new IP addresses (via consistent hashing if no oldActives
-		ArrayList<InetAddress> newActives = this.demandProfiler
+		ArrayList<InetAddress> newActiveIPs = this.demandProfiler
 				.testAndSetReconfigured(name,
 						this.consistentNodeConfig.getNodeIPs(oldActives));
-		assert (newActives != null);
+		assert (newActiveIPs != null);
 		// get new actives based on new IP addresses
-		return (newActives.equals(oldActives)) ? null
-				: (this.consistentNodeConfig.getIPToActiveReplicaIDs(
-						newActives, oldActives));
+		Set<NodeIDType> newActives = this.consistentNodeConfig
+				.getIPToActiveReplicaIDs(newActiveIPs, oldActives);
+		Set<NodeIDType> retval = (newActives.equals(oldActives)) ? null
+				: newActives;
+		assert (retval == null) : this + " shouldReconfigure returning : "
+				+ retval + "; oldActives = " + oldActives + " ; newActives = "
+				+ newActives;
+		return retval;
 	}
 
 	// combine json stats from report into existing demand profile

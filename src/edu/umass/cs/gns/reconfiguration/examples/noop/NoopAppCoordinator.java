@@ -85,16 +85,10 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 		} else if (this.coordType.equals(CoordType.PAXOS)) {
 			created = super.createReplicaGroup(serviceName, epoch, state, nodes);
 		}
-		/* FIXME: This should not needed as state is already supplied to
-		 * createPaxosInstance, but we need it right now to set the 
-		 * epoch correctly. This will be unnecessary when paxos apps
-		 * are epoch-unaware.
-		 */
-		//this.app.putInitialState(serviceName, epoch, state);
 		return created;
 	}
 
-	//@Override
+	@Override
 	public void deleteReplicaGroup(String serviceName, int epoch) {
 		if (this.coordType.equals(CoordType.LAZY)) {
 			// FIXME: check epoch here

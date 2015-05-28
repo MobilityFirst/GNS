@@ -35,10 +35,10 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 	@Override
 	public boolean createReplicaGroup(String serviceName, int epoch,
 			String state, Set<NodeIDType> nodes) {
-		return this.paxosManager.createPaxosInstance(serviceName, (short)epoch, nodes, this.app, state);
+		return this.paxosManager.createPaxosInstanceForcibly(serviceName, (short)epoch, nodes, this.app, state);
 	}
 
-	//@Override
+	@Override
 	public void deleteReplicaGroup(String serviceName, int epoch) {
 		this.paxosManager.deletePaxosInstance(serviceName, (short)epoch);
 	}

@@ -130,6 +130,9 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		return request;
 	}
 
+	/*
+	 * This is a special no-op request unlike any other NoopAppRequest.
+	 */
 	private InterfaceRequest getNoopRequest() {
 		return new NoopAppRequest(null, 0, 0, InterfaceRequest.NO_OP,
 				AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
