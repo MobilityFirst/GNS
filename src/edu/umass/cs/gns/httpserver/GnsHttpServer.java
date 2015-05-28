@@ -196,6 +196,15 @@ public class GnsHttpServer {
         String requestsReceivedString = "Client requests received: " + GnsHttpServer.requestHandler.getReceivedRequests();
         String requestsRateString = "Client requests rate: " + GnsHttpServer.requestHandler.getRequestsPerSecond();
         StringBuilder resultString = new StringBuilder();
+        resultString.append("Nodes:");
+        for (Object topLevelNode : GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeIDs()) {
+          resultString.append("<br>&nbsp;&nbsp;");
+          resultString.append((String) topLevelNode);
+          resultString.append("&nbsp;=&gt;&nbsp;");
+          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeAddress(topLevelNode));
+        }
+        String nodeAddressesString = resultString.toString();
+        resultString = new StringBuilder();
         String prefix = "";
         for (Object recon : GnsHttpServer.requestHandler.getGnsNodeConfig().getReconfigurators()) {
           resultString.append(prefix);
@@ -224,6 +233,8 @@ public class GnsHttpServer {
         responseBody.write(serverLocalNameServerID.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(numberOfNameServers.getBytes());
+        responseBody.write("<br>".getBytes());
+        responseBody.write(nodeAddressesString.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(reconfiguratorsString.getBytes());
         responseBody.write("<br>".getBytes());

@@ -127,6 +127,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 
   /**
    * Returns the complete set of "top-level" IDs for all name servers (not local name servers).
+   * *** ONLY FOR USE IN INSTRUMENTATION ***
    * "top-level" as in not active-replica or reconfigurator node ids.
    *
    * If you want those use <code>getActiveReplicas</code> and <code>getReconfigurators</code>.
@@ -134,7 +135,6 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * @return the set of IDs.
    */
   @Override
-  @Deprecated
   public Set<NodeIDType> getNodeIDs() {
     return ImmutableSet.copyOf(hostInfoMapping.keySet());
   }

@@ -134,11 +134,11 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
-            GnsReconLookup.executeLookupLocal(dnsPacket, this, false, doNotReplyToClient);
+            AppLookup.executeLookupLocal(dnsPacket, this, false, doNotReplyToClient);
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this,
+          AppUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this,
                   false, doNotReplyToClient);
           break;
         case SELECT_REQUEST:

@@ -8,8 +8,8 @@ import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.Select;
-import edu.umass.cs.gns.newApp.GnsReconUpdate;
-import edu.umass.cs.gns.newApp.GnsReconLookup;
+import edu.umass.cs.gns.newApp.AppUpdate;
+import edu.umass.cs.gns.newApp.AppLookup;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -176,11 +176,11 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
-            GnsReconLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, recovery);
+            AppLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, recovery);
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket(json, nodeConfig), this, noCoordinationState, recovery);
+          AppUpdate.executeUpdateLocal(new UpdatePacket(json, nodeConfig), this, noCoordinationState, recovery);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);

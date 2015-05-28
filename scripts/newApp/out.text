@@ -1,0 +1,151 @@
+kill: usage: kill [-s sigspec | -n signum | -sigspec] pid | jobspec ... or kill -l [sigspec]
+Dropped mongo DBs: [GNS-frank_ActiveReplica]
+consoleOutputLevel => INFO
+debugAPP => true
+debugAR => true
+debugMisc => true
+debugPaxos => true
+debugRecon => true
+demandProfileClass => edu.umass.cs.gns.newApp.NullDemandProfile
+nsfile => ../../conf/single-server-info
+test => true
+******** DEBUGGING IS ENABLED IN THE APP *********
+******** DEBUGGING IS ENABLED IN THE ACTIVE REPLICA *********
+consoleOutputLevel => INFO
+nsfile => ../../conf/single-server-info
+******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********
+Setting Logger console level to INFO and file level to INFO
+******** DEBUGGING IS ENABLED IN PAXOS *********
+Set demand profile: class edu.umass.cs.gns.newApp.NullDemandProfile
+Setting Logger console level to INFO and file level to INFO
+Thu May 28 12:40:32 EDT 2015 INFO LNSNodeConfig.<init>: For LNS  Id: frank Host:/10.0.1.50 Start Port:24400
+Thu May 28 12:40:32 EDT 2015 INFO LNSNodeConfig.startCheckingForUpdates: Checking for hosts updates every 60 seconds
+Thu May 28 12:40:32 EDT 2015 INFO GNSNodeConfig.<init>: For CCP Id: frank Host:/10.0.1.50 Start Port:24400
+Thu May 28 12:40:32 EDT 2015 INFO GNSNodeConfig.startCheckingForUpdates: Checking for hosts updates every 60 seconds
+#####################################################
+############# Setting up active replica frank_ActiveReplica
+May 28, 2015 12:40:32 PM edu.umass.cs.gns.localnameserver.LocalNameServer initTransport
+INFO: Starting LNS listener on /10.0.1.50:24398
+Thu May 28 12:40:38 EDT 2015 INFO MongoRecords.initializeIndex: Indexes initialized
+Thu May 28 12:40:38 EDT 2015 INFO MongoRecords.initializeIndex: Indexes initialized
+Thu May 28 12:40:38 EDT 2015 INFO PingManager$1.run: Waiting for a bit before we start pinging.
+Thu May 28 12:40:38 EDT 2015 INFO NewApp.<init>: App frank_ActiveReplica created MongoRecordMap{collectionName=NameRecord, mongoRecords=DB GNS-frank_ActiveReplica}
+******** DEBUGGING IS ENABLED IN THE CCP *********
+Thu May 28 12:40:38 EDT 2015 INFO CommandModule.initCommands: 126 commands added.
+Thu May 28 12:40:38 EDT 2015 INFO GnsHttpServer.tryPort: HTTP server is listening on port 8080
+Thu May 28 12:40:38 EDT 2015 INFO ClientCommandProcessor.<init>: CCP running at /10.0.1.50:20309 started Ping server on port 20310
+Thu May 28 12:40:38 EDT 2015 INFO PingManager$1.run: Waiting for a bit before we start pinging.
+Thu May 28 12:40:38 EDT 2015 INFO CCPListenerAdmin.run: CPP Node /10.0.1.50:20309 starting Admin Server on port 20311
+Thu May 28 12:40:38 EDT 2015 WARNING ClientCommandProcessor.<init>: Not running DNS Service because it needs root permission! If you want DNS run the CCP using sudo.
+log4j:WARN No appenders could be found for logger (com.mchange.v2.log.MLog).
+log4j:WARN Please initialize the log4j system properly.
+log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
+May 28, 2015 12:40:43 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger connectDB
+INFO: Attempting getCursorConn() to db jdbc:derby:./paxos_logs
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger connectDB
+INFO: Connected to and created database paxos_logs
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger createTables
+INFO: Created tables checkpoint2106156347 and messages2106156347 and pause2106156347
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 2,106,156,347 beginning to recover checkpoints
+Node 2106156347 beginning to recover checkpoints: May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger initiateReadCheckpoints
+INFO: Node 2,106,156,347 initiatedReadCheckpoints
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger closeReadAll
+INFO: Node 2,106,156,347 invoking closeReadAll
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 2,106,156,347 has recovered checkpoints for 0 paxos groups
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+WARNING: No checkpoint state found for node 2106156347. This can only happen if
+(1) the node is newly joining the system, or
+(2) the node previously crashed before completing even a single checkpoint, or
+(3) the node's checkpoint was manually deleted.
+
+Node 2106156347 beginning to roll forward logged messages: May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 2,106,156,347 beginning to roll forward logged messages
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger initiateReadMessages
+INFO: Node 2,106,156,347 initiatedReadMessages
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger closeReadAll
+INFO: Node 2,106,156,347 invoking closeReadAll
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 2,106,156,347 has rolled forward 0 messages in a single pass across 0 paxos groups
+
+Node 2106156347 recovery complete
+Thu May 28 12:40:44 EDT 2015 INFO AppReconfigurableNode.createAppCoordinator: frank_ActiveReplica Admin thread initialized
+Thu May 28 12:40:44 EDT 2015 INFO AppAdmin.run: NS Node frank_ActiveReplica starting Admin Request Server on port 24401
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.nio.AbstractPacketDemultiplexer register
+INFO: Registering types [UPDATE, NOOP, SELECT_REQUEST, UPDATE_CONFIRM, REMOVE_CONFIRM, SELECT_RESPONSE, REQUEST_EPOCH_FINAL_STATE, ADD_CONFIRM, STOP_EPOCH, EPOCH_FINAL_STATE, START_EPOCH, DNS, DROP_EPOCH_FINAL_STATE, COMMAND, STOP, COMMAND_RETURN_VALUE] for ARfrank_ActiveReplica
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$ Setting up reconfigurator frank_Reconfigurator
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB connectDB
+INFO: Attempting getDefaultConn() to db jdbc:derby:./reconfiguration_DB
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB connectDB
+INFO: Connected to and created database reconfiguration_DB
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB createTables
+INFO: create table demandfrank_Reconfigurator (SERVICE_NAME varchar(40) not null, DEMAND_PROFILE varchar(4096), primary key(SERVICE_NAME))
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB createTables
+INFO: Created tables checkpointfrank_Reconfigurator and messagesfrank_Reconfigurator
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger connectDB
+INFO: Attempting getCursorConn() to db jdbc:derby:./paxos_logs
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger connectDB
+INFO: Connected to and created database paxos_logs
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger createTables
+INFO: Created tables checkpoint1569140565 and messages1569140565 and pause1569140565
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 1,569,140,565 beginning to recover checkpoints
+Node 1569140565 beginning to recover checkpoints: May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger initiateReadCheckpoints
+INFO: Node 1,569,140,565 initiatedReadCheckpoints
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger closeReadAll
+INFO: Node 1,569,140,565 invoking closeReadAll
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 1,569,140,565 has recovered checkpoints for 0 paxos groups
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+WARNING: No checkpoint state found for node 1569140565. This can only happen if
+(1) the node is newly joining the system, or
+(2) the node previously crashed before completing even a single checkpoint, or
+(3) the node's checkpoint was manually deleted.
+
+Node 1569140565 beginning to roll forward logged messages: May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 1,569,140,565 beginning to roll forward logged messages
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger initiateReadMessages
+INFO: Node 1,569,140,565 initiatedReadMessages
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger closeReadAll
+INFO: Node 1,569,140,565 invoking closeReadAll
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager initiateRecovery
+INFO: Node 1,569,140,565 has rolled forward 0 messages in a single pass across 0 paxos groups
+
+Node 1569140565 recovery complete
+Creating reconfigurator group frank_Reconfigurator with members [frank_Reconfigurator]
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.PaxosReplicaCoordinator createReplicaGroup
+INFO: RepliconfigurableReconfiguratorDBfrank_Reconfigurator about to create paxos instance frank_Reconfigurator:0 with initial state {"NEW_ACTIVES":["frank_Reconfigurator"],"RC_STATE":"READY","NAME":"frank_Reconfigurator","ACTIVES":["frank_Reconfigurator"],"RC_EPOCH_MAP":[],"EPOCH":0}
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB getState
+INFO: frank_Reconfigurator returning state for frank_Reconfigurator:./paxos_large_checkpoints/frank_Reconfigurator/frank_Reconfigurator ; wrote to file:
+{"NEW_ACTIVES":["frank_Reconfigurator"],"RC_STATE":"READY","NAME":"frank_Reconfigurator","ACTIVES":["frank_Reconfigurator"],"RC_EPOCH_MAP":[],"EPOCH":0}
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger putCheckpointState
+INFO: Node 1,569,140,565 DB inserted checkpoint (frank_Reconfigurator:0,["1569140565"],0,0:1569140565,{"FILENAME":"./paxos_large_checkpoints/frank_Reconfigurator/frank_Reconfigurator.1432831244705","INET_SOCKET_ADDRESS":"/10.0.1.50:62239"},-1); took 10ms; garbage collection took 0ms
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosInstanceStateMachine handleCheckpoint
+INFO: Node 1569140565 [C:(0:1569140565), A:(0:1569140565, 1)], frank_Reconfigurator:0 inserted checkpoint through handleCheckpoint, next slot = 1
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosInstanceStateMachine <init>
+INFO: Initialized paxos COORDINATOR frank_Reconfigurator:0 at node 1,569,140,565 with 1 members. {Acceptor: [slot=1, ballot=0:1569140565, isStopped=false, |accepted|=0, |committed|=0, committedFrontier=0 accepted=[]  committed=[] ]}{Coordinator=[ballot=0:1569140565, nextProposalSlotNumber=1, active=true, |adopted|=0, |myProposals|=0]}{initialState=[{"NEW_ACTIVES":["frank_Reconfigurator"],"RC_STATE":"READY","NAME":"frank_Reconfigurator","ACTIVES":["frank_Reconfigurator"],"RC_EPOCH_MAP":[],"EPOCH":0}]}
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager createPaxosInstance
+INFO: 1569140565 successfully created paxos instance frank_Reconfigurator:0
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.PaxosReplicaCoordinator createReplicaGroup
+INFO: RepliconfigurableReconfiguratorDBfrank_Reconfigurator about to create paxos instance NODE_CONFIG:0 with initial state {"NEW_ACTIVES":["frank_Reconfigurator"],"RC_STATE":"READY","NAME":"NODE_CONFIG","ACTIVES":["frank_Reconfigurator"],"RC_EPOCH_MAP":[{"RC_EPOCH":0,"RC_NODE":"frank_Reconfigurator"}],"EPOCH":0}
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB getState
+INFO: frank_Reconfigurator returning state for NODE_CONFIG:./paxos_large_checkpoints/frank_Reconfigurator/NODE_CONFIG ; wrote to file:
+{"NEW_ACTIVES":["frank_Reconfigurator"],"RC_STATE":"READY","NAME":"NODE_CONFIG","ACTIVES":["frank_Reconfigurator"],"RC_EPOCH_MAP":[{"RC_EPOCH":0,"RC_NODE":"frank_Reconfigurator"}],"EPOCH":0}
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.DerbyPaxosLogger putCheckpointState
+INFO: Node 1,569,140,565 DB inserted checkpoint (NODE_CONFIG:0,["1569140565"],0,0:1569140565,{"FILENAME":"./paxos_large_checkpoints/frank_Reconfigurator/NODE_CONFIG.1432831244730","INET_SOCKET_ADDRESS":"/10.0.1.50:62239"},-1); took 1ms; garbage collection took 0ms
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosInstanceStateMachine handleCheckpoint
+INFO: Node 1569140565 [C:(0:1569140565), A:(0:1569140565, 1)], NODE_CONFIG:0 inserted checkpoint through handleCheckpoint, next slot = 1
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosInstanceStateMachine <init>
+INFO: Initialized paxos COORDINATOR NODE_CONFIG:0 at node 1,569,140,565 with 1 members. {Acceptor: [slot=1, ballot=0:1569140565, isStopped=false, |accepted|=0, |committed|=0, committedFrontier=0 accepted=[]  committed=[] ]}{Coordinator=[ballot=0:1569140565, nextProposalSlotNumber=1, active=true, |adopted|=0, |myProposals|=0]}{initialState=[{"NEW_ACTIVES":["frank_Reconfigurator"],"RC_STATE":"READY","NAME":"NODE_CONFIG","ACTIVES":["frank_Reconfigurator"],"RC_EPOCH_MAP":[{"RC_EPOCH":0,"RC_NODE":"frank_Reconfigurator"}],"EPOCH":0}]}
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager createPaxosInstance
+INFO: 1569140565 successfully created paxos instance NODE_CONFIG:0
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.nio.AbstractPacketDemultiplexer register
+INFO: Registering types [ACK_STOP_EPOCH, ACK_DROP_EPOCH_FINAL_STATE, CREATE_SERVICE_NAME, REQUEST_ACTIVE_REPLICAS, DEMAND_REPORT, DELETE_SERVICE_NAME, RECONFIGURE_RC_NODE_CONFIG, RC_RECORD_REQUEST, ACK_START_EPOCH] for RCfrank_Reconfigurator
+May 28, 2015 12:40:44 PM edu.umass.cs.gns.nio.AbstractPacketDemultiplexer register
+INFO: Registering types [REQUEST_EPOCH_FINAL_STATE, STOP_EPOCH, EPOCH_FINAL_STATE, START_EPOCH, DROP_EPOCH_FINAL_STATE] for ARfrank_Reconfigurator
+May 28, 2015 12:41:14 PM edu.umass.cs.gns.gigapaxos.PaxosManager deactivate
+INFO: Node 1,569,140,565 deactivated 0 idle instances; total #actives = 2; average_getInstance_delay = 266.9us; average_pause_delay = 0us
+May 28, 2015 12:41:44 PM edu.umass.cs.gns.gigapaxos.PaxosManager deactivate
+INFO: Node 1,569,140,565 deactivated 2 idle instances; total #actives = 0; average_getInstance_delay = 266.9us; average_pause_delay = 430us

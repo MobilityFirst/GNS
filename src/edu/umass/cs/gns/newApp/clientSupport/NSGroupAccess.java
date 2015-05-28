@@ -192,7 +192,7 @@ public class NSGroupAccess {
     for (Object guidObject : lookupMembers(groupGuid, false, activeReplica, lnsAddress)) {
       String guid = (String) guidObject;
       ValuesMap valuesMap = NSFieldAccess.lookupFieldLocalAndRemote(guid, field, activeReplica, lnsAddress);
-      if (valuesMap.has(field)) {
+      if (valuesMap != null && valuesMap.has(field)) {
         resultArray.put(valuesMap.get(field));
       }
     }
