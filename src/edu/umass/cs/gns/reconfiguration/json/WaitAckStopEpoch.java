@@ -70,7 +70,7 @@ public class WaitAckStopEpoch<NodeIDType>
 			return null;
 		}
 		// else
-		System.out.println(this.refreshKey() + " resending " + this.stopEpoch);
+		System.out.println(this.refreshKey() + " resending " + this.stopEpoch.getSummary());
 		return start();
 	}
 
@@ -80,7 +80,8 @@ public class WaitAckStopEpoch<NodeIDType>
 	protected boolean amObviated() {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(this.stopEpoch.getServiceName());
-		if (record==null || (record.getEpoch() - this.startEpoch.getEpochNumber() > 0))
+		if (record == null
+				|| (record.getEpoch() - this.startEpoch.getEpochNumber() > 0))
 			return true;
 		return false;
 	}
@@ -117,7 +118,7 @@ public class WaitAckStopEpoch<NodeIDType>
 	public String refreshKey() {
 		return Reconfigurator.getTaskKey(getClass(), stopEpoch, this.DB
 				.getMyID().toString())
-				+ ":" + 
+				+ ":" +
 				// need different key for split/merge operations
 				(this.startEpoch.isSplitOrMerge() ? this.startEpoch
 						.getServiceName()
@@ -162,8 +163,7 @@ public class WaitAckStopEpoch<NodeIDType>
 		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
 				"starting epoch", this.startEpoch.getSummary() });
 		// no next epoch group means delete record
-		if (this.startEpoch.getCurEpochGroup() == null
-				|| this.startEpoch.getCurEpochGroup().isEmpty()) {
+		if (this.startEpoch.noCurEpochGroup() && !this.startEpoch.isMerge()) {
 			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
 					this.DB);
 			return this.getDeleteConfirmation();

@@ -76,6 +76,8 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	}
 
 	private boolean processRequest(NoopAppRequest request) {
+		if (request.getServiceName() == null)
+			return true; // no-op
 		if (request.isStop())
 			return processStopRequest(request);
 		AppData data = this.appData.get(request.getServiceName());
@@ -105,10 +107,10 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		}
 	}
 
+	// no-op
 	private boolean processStopRequest(NoopAppRequest request) {
-		AppData data = this.appData.get(request.getServiceName());
-		if (data == null)
-			return false;
+		// AppData data = this.appData.get(request.getServiceName());
+		// if (data == null) return false;
 		return true;
 	}
 
@@ -116,6 +118,8 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	public InterfaceRequest getRequest(String stringified)
 			throws RequestParseException {
 		NoopAppRequest request = null;
+		if (stringified.equals(InterfaceRequest.NO_OP))
+			return this.getNoopRequest();
 		try {
 			request = new NoopAppRequest(new JSONObject(stringified));
 		} catch (JSONException je) {
@@ -124,6 +128,11 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 			throw new RequestParseException(je);
 		}
 		return request;
+	}
+
+	private InterfaceRequest getNoopRequest() {
+		return new NoopAppRequest(null, 0, 0, InterfaceRequest.NO_OP,
+				AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
 	}
 
 	private static AppRequest.PacketType[] types = {
@@ -176,9 +185,11 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 
 	@Override
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-		return new NoopAppRequest(name, epoch,
-				(int) (Math.random() * Integer.MAX_VALUE), "",
-				AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
+		return null;/*
+					 * new NoopAppRequest(name, epoch, (int) (Math.random() *
+					 * Integer.MAX_VALUE), "",
+					 * AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
+					 */
 	}
 
 	/*

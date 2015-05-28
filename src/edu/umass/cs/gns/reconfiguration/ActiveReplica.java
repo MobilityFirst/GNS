@@ -23,6 +23,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckDropEpoch
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckStartEpoch;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckStopEpoch;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DefaultAppRequest;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DemandReport;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DropEpochFinalState;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.EpochFinalState;
@@ -208,30 +209,16 @@ public class ActiveReplica<NodeIDType> implements
 		}
 	}
 
-	private String getTaskKeyPrev(Class<?> C,
-			BasicReconfigurationPacket<?> rcPacket) {
-		return getTaskKey(C, rcPacket.getServiceName(),
-				rcPacket.getEpochNumber() - 1);
-	}
-
-	private String getTaskKey(Class<?> C, String name, int epoch) {
-		return C.getSimpleName() + this.getMyID() + ":" + name + ":" + epoch;
-	}
-
 	public GenericMessagingTask<NodeIDType, ?>[] handleStopEpoch(
 			StopEpoch<NodeIDType> stopEpoch,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		this.logEvent(stopEpoch);
-		if (this.noStateOrAlreadyMovedOn(stopEpoch)) {
-			log.info(this + " has no state or already moved on "
-					+ stopEpoch.getSummary());
+		if (this.noStateOrAlreadyMovedOn(stopEpoch))
 			return this.sendAckStopEpoch(stopEpoch).toArray(); // still send ack
-		}
 		// else coordinate stop with callback
 		this.callbackMap.addStopNotifiee(stopEpoch);
 		log.info(this + " coordinating " + stopEpoch.getSummary());
-		this.appCoordinator.handleIncoming(this.appCoordinator.getStopRequest(
-				stopEpoch.getServiceName(), stopEpoch.getEpochNumber()));
+		this.appCoordinator.handleIncoming(this.getAppStopRequest(stopEpoch.getServiceName(), stopEpoch.getEpochNumber()));
 		return null; // need to wait until callback
 	}
 
@@ -261,8 +248,9 @@ public class ActiveReplica<NodeIDType> implements
 		 * epoch being dropped as we don't have to bother starting the dropped
 		 * epoch after all.
 		 */
-		boolean removed = (this.protocolExecutor.remove(getTaskKeyPrev(
-				WaitEpochFinalState.class, dropEpoch)) != null);
+		boolean removed = (this.protocolExecutor.remove(Reconfigurator
+				.getTaskKeyPrev(WaitEpochFinalState.class, dropEpoch, this
+						.getMyID().toString())) != null);
 		if (removed)
 			System.out.println(this + " removed WaitEpochFinalState"
 					+ dropEpoch.getServiceName() + ":"
@@ -302,16 +290,19 @@ public class ActiveReplica<NodeIDType> implements
 	/*********************** Private methods below ************************************/
 
 	private boolean noStateOrAlreadyMovedOn(BasicReconfigurationPacket<?> packet) {
+		boolean retval = false;
 		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());
 		// no state or higher epoch
 		if (epoch == null || (epoch - packet.getEpochNumber() > 0))
-			return true;
+			retval = true;
 		// FIXME: same epoch but no replica group (or stopped)
 		else if (epoch == packet.getEpochNumber()
-				&& this.appCoordinator.getReplicaGroup(packet.getServiceName()) == null) {
-			return true;
-		}
-		return false;
+				&& this.appCoordinator.getReplicaGroup(packet.getServiceName()) == null)
+			retval = true;
+		if (retval)
+			log.info(this + " has no state or already moved on "
+					+ packet.getSummary());
+		return retval;
 	}
 
 	private boolean alreadyMovedOn(BasicReconfigurationPacket<?> packet) {
@@ -435,6 +426,14 @@ public class ActiveReplica<NodeIDType> implements
 				ackStopEpoch.getEpochNumber(), mtask });
 		this.send(mtask);
 		return mtask;
+	}
+	
+	private InterfaceReconfigurableRequest getAppStopRequest(String name,
+			int epoch) {
+		InterfaceReconfigurableRequest appStop = this.appCoordinator
+				.getStopRequest(name, epoch);
+		return appStop == null ? new DefaultAppRequest(name, epoch, true)
+				: appStop;
 	}
 
 	private void logEvent(BasicReconfigurationPacket<NodeIDType> event) {

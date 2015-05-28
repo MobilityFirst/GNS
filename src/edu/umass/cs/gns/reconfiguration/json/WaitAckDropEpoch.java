@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.protocoltask.ProtocolEvent;
+import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.gns.reconfiguration.Reconfigurator;
@@ -29,11 +30,22 @@ public class WaitAckDropEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private static final long RESTART_PERIOD = 60000;
+	/*
+	 * We use different restart times for service names and RC group names as RC
+	 * group names may have much more variance in checkpoint transfer times.
+	 * Setting these values too low or too high will not impact safety. However,
+	 * too low values may result in inefficient, remote checkpoint transfers
+	 * while too high values may result in a large number of pending tasks
+	 * consuming memory.
+	 */
+	private static final long RESTART_PERIOD_SERVICE_NAMES = 10000;
+	private static final long RESTART_PERIOD_RC_GROUP_NAMES = 60000;
+	private static final int MAX_RESTARTS = 5;
 
 	private final NodeIDType myID;
 	private final DropEpochFinalState<NodeIDType> dropEpoch;
 	private final StartEpoch<NodeIDType> startEpoch;
+	private int numRestarts = 0;
 
 	private final String key;
 
@@ -49,16 +61,22 @@ public class WaitAckDropEpoch<NodeIDType>
 		this.startEpoch = startEpoch;
 		this.myID = DB.getMyID();
 		this.key = this.refreshKey();
-		this.setPeriod(RESTART_PERIOD);
+		this.setPeriod(DB.isRCGroupName(startEpoch.getServiceName()) ? RESTART_PERIOD_RC_GROUP_NAMES
+				: RESTART_PERIOD_SERVICE_NAMES);
 	}
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
 		// send DropEpoch to all new actives and await acks from all?
-		System.out.println(this.refreshKey() + " sending " + this.dropEpoch.getSummary());
-		GenericMessagingTask<NodeIDType, ?> mtask1 = new GenericMessagingTask<NodeIDType, DropEpochFinalState<NodeIDType>>(
-				this.startEpoch.getPrevEpochGroup().toArray(), this.dropEpoch);
-		return mtask1.toArray();
+		System.out.println(this.refreshKey() + " (re-)sending["
+				+ this.numRestarts + " of " + MAX_RESTARTS + "] " + this.dropEpoch.getSummary());
+		if (this.numRestarts++ < MAX_RESTARTS)
+			return (new GenericMessagingTask<NodeIDType, DropEpochFinalState<NodeIDType>>(
+					this.startEpoch.getPrevEpochGroup().toArray(),
+					this.dropEpoch)).toArray();
+		// else
+		ProtocolExecutor.cancel(this);
+		return null;
 	}
 
 	// We skip the first period before sending out drop epochs.
@@ -69,7 +87,8 @@ public class WaitAckDropEpoch<NodeIDType>
 
 	@Override
 	public String refreshKey() {
-		return Reconfigurator.getTaskKey(getClass(), dropEpoch, this.myID.toString());
+		return Reconfigurator.getTaskKey(getClass(), dropEpoch,
+				this.myID.toString());
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE };
@@ -89,8 +108,10 @@ public class WaitAckDropEpoch<NodeIDType>
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType()
 				.equals(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE));
-		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this.refreshKey(),
-				"received", dropEpoch.getSummary() });
+		log.log(Level.INFO,
+				MyLogger.FORMAT[3],
+				new Object[] { this.refreshKey(), "received",
+						dropEpoch.getSummary() });
 		return true;
 	}
 
@@ -98,8 +119,9 @@ public class WaitAckDropEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
-		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this.refreshKey(),
-				"received all ACKs", dropEpoch.getSummary() });
+		log.log(Level.INFO, MyLogger.FORMAT[3],
+				new Object[] { this.refreshKey(), "received all ACKs",
+						dropEpoch.getSummary() });
 		return null;
 	}
 

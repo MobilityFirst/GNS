@@ -171,11 +171,15 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	@Override
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
 		InterfaceReconfigurableRequest stop = super.getStopRequest(name, epoch);
-		if (!(stop instanceof InterfaceReplicableRequest))
+		if (stop!=null && !(stop instanceof InterfaceReplicableRequest))
 			throw new RuntimeException(
 					"Stop requests for Paxos apps must implement InterfaceReplicableRequest "
 							+ "and their needsCoordination() method must return true by default "
 							+ "(unless overridden by setNeedsCoordination(false))");
 		return stop;
+	}
+	
+	public boolean existsOrHigher(String name, int epoch) {
+		return this.paxosManager.existsOrHigher(name, (short)epoch);
 	}
 }

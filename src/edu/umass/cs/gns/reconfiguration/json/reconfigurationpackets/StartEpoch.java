@@ -174,6 +174,10 @@ public class StartEpoch<NodeIDType> extends
 						.equals(this.getServiceName()));
 	}
 
+	public boolean noCurEpochGroup() {
+		return this.curEpochGroup == null || this.curEpochGroup.isEmpty();
+	}
+
 	public boolean noPrevEpochGroup() {
 		return this.prevEpochGroup == null || this.prevEpochGroup.isEmpty();
 	}
