@@ -1,7 +1,0 @@
-consoleOutputLevel => INFO
-nsfile => ../../conf/single-server-info
-Setting Logger console level to INFO and file level to INFO
-Thu May 28 14:46:24 EDT 2015 INFO LNSNodeConfig.<init>: For LNS  Id: frank Host:/128.119.245.38 Start Port:24400
-Thu May 28 14:46:24 EDT 2015 INFO LNSNodeConfig.startCheckingForUpdates: Checking for hosts updates every 60 seconds
-May 28, 2015 2:46:24 PM edu.umass.cs.gns.localnameserver.LocalNameServer initTransport
-INFO: Starting LNS listener on /128.119.245.38:24398
