@@ -71,7 +71,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   public static ConfirmUpdatePacket createFailPacket(UpdatePacket updatePacket, NSResponseCode code) {
     assert code != NSResponseCode.NO_ERROR; // that would be stupid
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
-            updatePacket.getRequestID(), updatePacket.getLNSRequestID(), code);
+            updatePacket.getRequestID(), updatePacket.getCCPRequestID(), code);
   }
 
   /**
@@ -84,7 +84,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   @SuppressWarnings("unchecked")
   public static ConfirmUpdatePacket createSuccessPacket(UpdatePacket updatePacket) {
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
-            updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
+            updatePacket.getRequestID(), updatePacket.getCCPRequestID(),
             NSResponseCode.NO_ERROR);
   }
 

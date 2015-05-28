@@ -117,14 +117,14 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
 
   @Override
   public boolean handleRequest(InterfaceRequest request, boolean doNotReplyToClient) {
-    //
     boolean executed = false;
     try {
+      //IntegerPacketType intPacket = request.getRequestType();
       JSONObject json = new JSONObject(request.toString());
-      // CHECK THIS!!!!!!
       Packet.PacketType packetType = Packet.getPacketType(json);
       if (AppReconfigurableNode.debuggingEnabled) {
-        GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name() + " packet: " + json.toString());
+        GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name()
+                + " packet: " + json.toString());
       }
       switch (packetType) {
         case DNS:
@@ -186,6 +186,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
       // A database operation error would imply that the application hasn't been able to successfully execute
       // the request. therefore, this method returns 'false', hoping that whoever calls handleDecision would retry
       // the request.
+      GNS.getLogger().severe("Error handling request: " + request.toString());
       e.printStackTrace();
     }
     return executed;
@@ -213,6 +214,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   //a map between request ids and host and port that the command request needs to be sent back to
   private final ConcurrentMap<Integer, CommandQuery> outStandingQueries = new ConcurrentHashMap<Integer, CommandQuery>(10, 0.75f, 3);
 
+  // For InterfaceApplication
   @Override
   public InterfaceRequest getRequest(String string)
           throws RequestParseException {
@@ -224,7 +226,9 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
       return new NoopPacket();
     }
     try {
-      return (InterfaceRequest) Packet.createInstance(new JSONObject(string), nodeConfig);
+      JSONObject json = new JSONObject(string);
+      InterfaceRequest request = (InterfaceRequest) Packet.createInstance(json, nodeConfig);
+      return request;
     } catch (JSONException e) {
       throw new RequestParseException(e);
     }
@@ -360,7 +364,6 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
 //    }
 //    return stateUpdated;
 //  }
-
   /**
    *
    * @param name

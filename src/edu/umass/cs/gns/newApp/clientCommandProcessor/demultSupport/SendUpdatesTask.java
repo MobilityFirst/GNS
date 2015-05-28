@@ -47,13 +47,17 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private int requestActivesCount = -1;
   private final ClientRequestHandlerInterface<NodeIDType> handler;
 
-  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler, UpdatePacket<NodeIDType> updatePacket) {
+  private NodeIDType nameServerID; // just send it to this one
+
+  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler,
+          UpdatePacket<NodeIDType> updatePacket, NodeIDType nameServerID) {
     // based on request info.
     this.lnsReqID = lnsReqID;
     this.handler = handler;
     this.name = updatePacket.getName();
     this.updatePacket = updatePacket;
     this.activesQueried = new HashSet<>();
+    this.nameServerID = nameServerID;
   }
 
   @Override
@@ -68,16 +72,18 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
         throw new CancelExecutorTaskException();
       }
-      CacheEntry<NodeIDType> cacheEntry = handler.getCacheEntry(name);
+      if (nameServerID == null) { // new code to not request actives and only send to one server
+        CacheEntry<NodeIDType> cacheEntry = handler.getCacheEntry(name);
       // IF we don't have one or more valid active replicas in the cache entry
-      // we need to request a new set for this name.
-      if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
-        requestNewActives(handler);
+        // we need to request a new set for this name.
+        if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
+          requestNewActives(handler);
         // Cancel the task now. 
-        // When the new actives are received, a new task in place of this task will be rescheduled.
-        throw new CancelExecutorTaskException();
+          // When the new actives are received, a new task in place of this task will be rescheduled.
+          throw new CancelExecutorTaskException();
+        }
+        nameServerID = selectNS(cacheEntry);
       }
-      NodeIDType nameServerID = selectNS(cacheEntry);
 
       sendToNS(nameServerID);
 
@@ -146,7 +152,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     // remove update info from LNS
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) {   // probably NS sent response
-      SendUpdatesTask<NodeIDType> newTask = new SendUpdatesTask<NodeIDType>(lnsReqID, handler, updatePacket);
+      SendUpdatesTask<NodeIDType> newTask = new SendUpdatesTask<NodeIDType>(lnsReqID, handler, updatePacket, null);
       PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
