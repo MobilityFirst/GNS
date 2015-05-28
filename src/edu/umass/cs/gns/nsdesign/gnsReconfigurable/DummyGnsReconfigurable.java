@@ -169,7 +169,7 @@ public class DummyGnsReconfigurable<NodeIDType> implements GnsReconfigurableInte
     } else {
       if (updatePacket.getNameServerID().equals(nodeID)) {
         ConfirmUpdatePacket<NodeIDType> confirmPacket = new ConfirmUpdatePacket<NodeIDType>(Packet.PacketType.UPDATE_CONFIRM,
-                updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getLNSRequestID(),
+                updatePacket.getSourceId(), updatePacket.getRequestID(), updatePacket.getCCPRequestID(),
                 NSResponseCode.NO_ERROR);
         if (Config.debuggingEnabled)
           GNS.getLogger().fine("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());

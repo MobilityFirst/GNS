@@ -73,7 +73,7 @@ public class GNS {
    * a negative response will be sent back to a client indicating that a 
    * record could not be found.
    */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 4000; // was 10
+  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 8000; // was 10
   
   // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
   // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE

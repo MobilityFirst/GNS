@@ -180,7 +180,7 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
           }
           break;
         case UPDATE:
-          GnsReconUpdate.executeUpdateLocal(new UpdatePacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery);
+          GnsReconUpdate.executeUpdateLocal(new UpdatePacket(json, nodeConfig), this, noCoordinationState, recovery);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);

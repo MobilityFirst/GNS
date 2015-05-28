@@ -1,15 +1,18 @@
 package edu.umass.cs.gns.newApp.packet;
 
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * This class implements a packet stops things.
- * 
+ *
  * @author Westy
  */
-public class StopPacket extends BasicPacket implements InterfaceReconfigurableRequest {
+public class StopPacket extends BasicPacket implements InterfaceReconfigurableRequest,
+        InterfaceReplicableRequest {
 
   private final static String NAME = "name";
   private final static String VERSION = "version";
@@ -21,8 +24,15 @@ public class StopPacket extends BasicPacket implements InterfaceReconfigurableRe
    * ID that is requested to be stopped.
    */
   private final int version;
+
+  /**
+   * The stop requests needsCoordination() method must return true by default.
+   */
+  private boolean needsCoordination = true;
+
   /**
    * Constructs a new StopPacket.
+   *
    * @param name
    * @param version
    */
@@ -34,6 +44,7 @@ public class StopPacket extends BasicPacket implements InterfaceReconfigurableRe
 
   /**
    * Constructs new StatusPacket from a JSONObject
+   *
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
@@ -41,12 +52,14 @@ public class StopPacket extends BasicPacket implements InterfaceReconfigurableRe
     if (Packet.getPacketType(json) != Packet.PacketType.STOP) {
       throw new JSONException("STOP: wrong packet type " + Packet.getPacketType(json));
     }
+    this.type = Packet.PacketType.STOP;
     this.name = json.getString(NAME);
     this.version = json.getInt(VERSION);
   }
 
   /**
    * Converts a StatusPacket to a JSONObject.
+   *
    * @return JSONObject representing this packet.
    * @throws org.json.JSONException
    */
@@ -73,4 +86,28 @@ public class StopPacket extends BasicPacket implements InterfaceReconfigurableRe
   public String getServiceName() {
     return name;
   }
+
+  /**
+   * If your app is using PaxosReplicaCoordinator, its stop request
+   * (as returned by getStopRequest) must implement InterfaceReplicableRequest
+   * and the stop requests needsCoordination method must return true by default
+   * (overwriteable by setNeedsCoordination).
+   *
+   * @return
+   */
+  @Override
+  public boolean needsCoordination() {
+    return needsCoordination;
+  }
+
+  /**
+   * Overwrite the needsCoordination flag.
+   *
+   * @param needsCoordination
+   */
+  @Override
+  public void setNeedsCoordination(boolean needsCoordination) {
+    this.needsCoordination = needsCoordination;
+  }
+
 }

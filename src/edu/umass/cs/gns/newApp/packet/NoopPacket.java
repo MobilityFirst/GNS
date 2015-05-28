@@ -5,7 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This class implements a packet that contains status information
+ * This class implements a packet that contains no information.
  * 
  * @author Westy
  */

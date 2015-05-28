@@ -100,10 +100,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   }
 
   private boolean isMaxWaitTimeExceeded() {
-    if (sendCount > 0 && System.currentTimeMillis() - startTime > 
-            10000 // lets try 10 seconds for now
-            //handler.getParameters().getMaxQueryWaitTime()
-            ) {
+    if (sendCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
       Integer lnsRequestID = null;
       if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
         lnsRequestID = handler.removeCreateRequestNameToIDMapping(name);

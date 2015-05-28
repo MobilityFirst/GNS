@@ -46,17 +46,17 @@ public class GnsReconUpdate {
    * @throws IOException
    * @throws FailedDBOperationException
    */
-  public static void executeUpdateLocal(UpdatePacket updatePacket, GnsApplicationInterface replica,
+  public static void executeUpdateLocal(UpdatePacket<String> updatePacket, GnsApplicationInterface replica,
           boolean noCoordinationState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (Config.debuggingEnabled) {
       GNS.getLogger().info("Processing UPDATE with " + " noCoordinationState= " + noCoordinationState + ""
-              + " recovery= " + recovery +  " packet: " + updatePacket);
+              + " recovery= " + recovery + " packet: " + updatePacket);
 
     }
 
     if (noCoordinationState) {
-      ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
+      ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
       if (!recovery) {
         replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
       }
@@ -77,7 +77,7 @@ public class GnsReconUpdate {
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
-      ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
+      ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
       if (!recovery) {
         replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
@@ -99,7 +99,7 @@ public class GnsReconUpdate {
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid + " Packet = " + updatePacket.toString());
         e.printStackTrace();
-        ConfirmUpdatePacket failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
+        ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         if (!recovery) {
           replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
@@ -131,11 +131,12 @@ public class GnsReconUpdate {
         if (Config.debuggingEnabled) {
           GNS.getLogger().info("Update operation failed " + updatePacket);
         }
-        if (updatePacket.getNameServerID().equals(replica.getNodeID())) { 
-          // IF this node proposed this update send error message to client (LNS).
-          ConfirmUpdatePacket failPacket = new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM,
-                  updatePacket.getSourceId(),
-                  updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.ERROR);
+        if (updatePacket.getNameServerID().equals(replica.getNodeID())) {
+          // IF this node proposed this update send error message to client (CCP).
+          ConfirmUpdatePacket<String> failPacket
+                  = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
+                          updatePacket.getSourceId(),
+                          updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.ERROR);
           if (Config.debuggingEnabled) {
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket);
           }
@@ -153,16 +154,16 @@ public class GnsReconUpdate {
         // this should be uncommented once active replica starts to send read/write statistics for name.
 //        nameRecord.incrementUpdateRequest();
         //
-        // If this node proposed this update send the confirmation back to the client (LNS).
+        // If this node proposed this update send the confirmation back to the client (CCP).
         if (updatePacket.getNameServerID().equals(replica.getNodeID())) {
-          ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM,
+          ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
                   updatePacket.getSourceId(),
-                  updatePacket.getRequestID(), updatePacket.getLNSRequestID(), NSResponseCode.NO_ERROR);
+                  updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
 
           if (!recovery) {
             replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
             if (Config.debuggingEnabled) {
-              GNS.getLogger().info("NS Sent confirmation to LNS. Sent packet: " + confirmPacket.toJSONObject());
+              GNS.getLogger().info("NS Sent confirmation to CCP. Sent packet: " + confirmPacket.toJSONObject());
             }
           }
         }

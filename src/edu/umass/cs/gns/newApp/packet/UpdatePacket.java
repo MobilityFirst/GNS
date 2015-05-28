@@ -37,20 +37,20 @@ import org.json.JSONObject;
  * A client must set the <code>requestID</code> field correctly to received a response.
  *
  * Once this packet reaches local name server, local name server sets the
- * <code>localNameServerID</code> and <code>LNSRequestID</code> field correctly before forwarding packet
+ * <code>localNameServerID</code> and <code>CCPRequestID</code> field correctly before forwarding packet
  * to name server.
  *
- * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
+ * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateCCPPacket</code>.
  * But it uses fields in this packet in sending the reply.
  *
  * @author Westy
  * @param <NodeIDType>
  */
-public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndLNS implements 
+public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSAndCCP implements
         InterfaceReplicableRequest {
 
   private final static String REQUESTID = "reqID";
-  private final static String LocalNSREQUESTID = "LNSreqID";
+  private final static String CCPREQUESTID = "CCPreqID";
   private final static String NAME = "name";
   private final static String RECORDKEY = "recordkey";
   private final static String NEWVALUE = "newvalue";
@@ -63,16 +63,16 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
 
   //
   // We have two ids in here. First one (requestID) is used by the entity making the initial request (often the intercessor).
-  // Second (LNSRequestID) is used by the LNS to keep track of it's update records.
+  // Second (CCPRequestID) is used by the CCP to keep track of it's update records.
   //
   /**
    * Unique identifier used by the entity making the initial request to confirm
    */
   private int requestID;
   /**
-   * The ID the LNS uses to for bookkeeping
+   * The ID the CCP uses to for bookkeeping
    */
-  private int LNSRequestID;
+  private int CCPRequestID;
   /**
    * Name (the GUID) *
    */
@@ -122,10 +122,14 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    * Time to live
    */
   private final int ttl;
+  /**
+   * The stop requests needsCoordination() method must return true by default.
+   */
+  private boolean needsCoordination = true;
 
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.
-   * Used by client support to create a packet to send to the LNS to update a single field.
+   * Used by client support to create a packet to send to the CCP to update a single field.
    *
    * @param sourceId
    * @param requestID
@@ -150,7 +154,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
 
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.
-   * Used by client support to create a packet to send to the LNS with a JSONObject as the update value.
+   * Used by client support to create a packet to send to the CCP with a JSONObject as the update value.
    *
    * @param sourceId
    * @param requestID
@@ -171,7 +175,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
 
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.
-   * Used by client support to create a packet to send to the LNS.
+   * Used by client support to create a packet to send to the CCP.
    *
    * @param sourceId
    * @param requestID
@@ -197,11 +201,11 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
 
   /**
    * Constructs a new UpdateAddressPacket with the given parameters.
-   * Used by the LNS to create a packet to send to the NS.
+   * Used by the CCP to create a packet to send to the NS.
    *
    * @param sourceId
    * @param requestID
-   * @param LNSRequestID
+   * @param CCPRequestID
    * @param name
    * @param recordKey
    * @param newValue
@@ -219,7 +223,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   @SuppressWarnings("unchecked")
   public UpdatePacket(
           NodeIDType sourceId,
-          int requestID, int LNSRequestID,
+          int requestID, int CCPRequestID,
           String name, String recordKey,
           ResultValue newValue,
           ResultValue oldValue,
@@ -234,7 +238,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     this.type = Packet.PacketType.UPDATE;
     this.sourceId = sourceId != null ? sourceId : null;
     this.requestID = requestID;
-    this.LNSRequestID = LNSRequestID;
+    this.CCPRequestID = CCPRequestID;
     this.name = name;
     this.recordKey = recordKey;
     this.operation = operation;
@@ -260,7 +264,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
     this.requestID = json.getInt(REQUESTID);
-    this.LNSRequestID = json.getInt(LocalNSREQUESTID);
+    this.CCPRequestID = json.getInt(CCPREQUESTID);
     this.name = json.getString(NAME);
     this.recordKey = json.has(RECORDKEY) ? json.getString(RECORDKEY) : null;
     this.operation = UpdateOperation.valueOf(json.getString(OPERATION));
@@ -297,7 +301,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     super.addToJSONObject(json); // include the signature info and other info
     json.put(REQUESTID, requestID);
     json.put(SOURCE_ID, sourceId);
-    json.put(LocalNSREQUESTID, LNSRequestID);
+    json.put(CCPREQUESTID, CCPRequestID);
     json.put(NAME, name);
     if (recordKey != null) {
       json.put(RECORDKEY, recordKey);
@@ -331,17 +335,17 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   }
 
   /**
-   * @return the id which is used by the LNS for bookkeeping
+   * @return the id which is used by the CCP for bookkeeping
    */
-  public int getLNSRequestID() {
-    return LNSRequestID;
+  public int getCCPRequestID() {
+    return CCPRequestID;
   }
 
   /**
    * @param id the id to set
    */
-  public void setLNSRequestID(int id) {
-    this.LNSRequestID = id;
+  public void setCCPRequestID(int id) {
+    this.CCPRequestID = id;
   }
 
   /**
@@ -406,6 +410,22 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     return this.name;
   }
 
+  public void setRequestID(int requestID) {
+    this.requestID = requestID;
+  }
+  
+  // For InterfaceReplicableRequest
+
+  @Override
+  public boolean needsCoordination() {
+    return needsCoordination;
+  }
+
+  @Override
+  public void setNeedsCoordination(boolean needsCoordination) {
+    this.needsCoordination = needsCoordination;
+  }
+
   //
   // TEST CODE
   //
@@ -434,18 +454,5 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
 
   static void printSize(Object object) {
     System.out.println("Java Size: " + SizeOf.deepSizeOf(object) + " bytes"); //this will print the object size in bytes
-  }
-
-  public void setRequestID(int requestID) {
-    this.requestID = requestID;
-  }
-
-  @Override
-  public boolean needsCoordination() {
-   return true;
-  }
-
-  @Override
-  public void setNeedsCoordination(boolean b) {
   }
 }

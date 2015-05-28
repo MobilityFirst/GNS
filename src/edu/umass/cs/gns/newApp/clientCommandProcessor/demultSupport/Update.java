@@ -53,35 +53,9 @@ public class Update {
     UpdateInfo info = new UpdateInfo(ccpRequestID, updatePacket.getName(), null, updatePacket, handler);
     handler.addRequestInfo(ccpRequestID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
-    // For the new app we just send it to the colocated replica
-    if (handler.isNewApp()) {
-      // Create the packet that we'll send to the primary
-      UpdatePacket outgoingPacket = new UpdatePacket(
-              updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
-              updatePacket.getRequestID(),
-              ccpRequestID, // the id use by the CCP (that would be us here)
-              updatePacket.getName(),
-              updatePacket.getRecordKey(),
-              updatePacket.getUpdateValue(),
-              updatePacket.getOldValue(),
-              updatePacket.getArgument(),
-              updatePacket.getUserJSON(),
-              updatePacket.getOperation(),
-              handler.getNodeAddress(),
-              handler.getActiveReplicaID(),
-              updatePacket.getTTL(),
-              //signature info
-              updatePacket.getAccessor(),
-              updatePacket.getSignature(),
-              updatePacket.getMessage());
-      JSONObject outgoingJSON = outgoingPacket.toJSONObject();
-      handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
-      info.setNameserverID(handler.getActiveReplicaID());
-    } else {
-      // OLD STYLE IS TO POSSIBLY REQUEST ACTIVES WITH RETRANSMISSION
-      SendUpdatesTask updateTask = new SendUpdatesTask(ccpRequestID, handler, updatePacket);
-      handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
-    }
+    // For the new app we just send it to the colocated replica, but still with retransmission
+    SendUpdatesTask updateTask = new SendUpdatesTask(ccpRequestID, handler, updatePacket, handler.getActiveReplicaID());
+    handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
   }
 
   /**
@@ -168,7 +142,7 @@ public class Update {
     // clear out current cache
     handler.invalidateActiveNameServer(updateInfo.getName());
     // create objects that must be passed to PendingTasks
-    SendUpdatesTask task = new SendUpdatesTask(updateInfo.getCCPReqID(), handler, updatePacket);
+    SendUpdatesTask task = new SendUpdatesTask(updateInfo.getCCPReqID(), handler, updatePacket, null);
 //    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
 
     PendingTasks.addToPendingRequests(updateInfo, task, handler.getParameters().getQueryTimeout(), handler);
