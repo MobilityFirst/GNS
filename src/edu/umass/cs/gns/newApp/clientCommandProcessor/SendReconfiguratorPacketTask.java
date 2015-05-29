@@ -68,13 +68,13 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   private boolean isResponseReceived() {
     Integer lnsRequestID = null;
     if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
-      GNS.getLogger().info("PACKET TYPE: " + packet.getType());
+      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
       lnsRequestID = handler.getCreateRequestNameToIDMapping(name);
     } else if (packet.getType().equals(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME)) {
-      GNS.getLogger().info("PACKET TYPE: " + packet.getType());
+      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
       lnsRequestID = handler.getDeleteRequestNameToIDMapping(name);
     } else if (packet.getType().equals(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS)) {
-      GNS.getLogger().info("PACKET TYPE: " + packet.getType());
+      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
       lnsRequestID = handler.getActivesRequestNameToIDMapping(name);
     } else {
       GNS.getLogger().warning("BAD PACKET TYPE: " + packet.getType());
