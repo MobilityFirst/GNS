@@ -28,12 +28,14 @@ public class InstallConfig {
   private static final String HOST_TYPE = "hostType";
   private static final String DATA_STORE_NAME = "dataStoreName";
   private static final String INSTALL_PATH = "installPath";
+  private static final String JAVA_COMMAND = "javaCommand";
 
   private String username;
   private String keyFile;
   private String hostType;
   private DataStoreType dataStoreType;
   private String installPath;
+  private String javaCommand;
 
   public String getUsername() {
     return username;
@@ -53,6 +55,10 @@ public class InstallConfig {
 
   public String getInstallPath() {
     return installPath;
+  }
+
+  public String getJavaCommand() {
+    return javaCommand;
   }
 
   public InstallConfig(String filename) {
@@ -82,15 +88,16 @@ public class InstallConfig {
     this.hostType = properties.getProperty(HOST_TYPE, "linux");
     this.dataStoreType = DataStoreType.valueOf(properties.getProperty(DATA_STORE_NAME, GNSInstaller.DEFAULT_DATA_STORE_TYPE.name()).toUpperCase());
     this.installPath = properties.getProperty(INSTALL_PATH);
+    this.javaCommand = properties.getProperty(JAVA_COMMAND);
   }
 
   @Override
   public String toString() {
-    return "InstallConfigParser{" + "username=" + username + ", keyfile=" + keyFile + ", hostType=" + hostType + ", dataStoreType=" + dataStoreType + ", installPath=" + installPath + '}';
+    return "InstallConfig{" + "username=" + username + ", keyFile=" + keyFile + ", hostType=" + hostType + ", dataStoreType=" + dataStoreType + ", installPath=" + installPath + ", javaCommand=" + javaCommand + '}';
   }
 
   public static void main(String[] args) {
-    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/ec2_release/installer_config";
+    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/ec2_small/installer_config";
     InstallConfig config = new InstallConfig(filename);
     System.out.println(config.toString());
   }

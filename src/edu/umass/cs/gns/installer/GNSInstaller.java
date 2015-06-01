@@ -57,7 +57,7 @@ public class GNSInstaller {
   private static final String NS_CONF_FILENAME = "ns.conf";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
-  private static final String JAVA_COMMAND = "java -ea -Xms1024M -cp ";
+  private static final String DEFAULT_JAVA_COMMAND = "java -ea -Xms1024M -cp";
   // should make this a config parameter
   //private static final String JAVA_COMMAND = "java -ea -cp ";
 
@@ -72,6 +72,7 @@ public class GNSInstaller {
   private static String userName = DEFAULT_USERNAME;
   private static String keyFile = DEFAULT_KEYNAME;
   private static String installPath = DEFAULT_INSTALL_PATH;
+  private static String javaCommand = DEFAULT_JAVA_COMMAND;
   // calculated from the Jar location
   private static String distFolderPath;
   private static String gnsJarFileLocation;
@@ -115,6 +116,11 @@ public class GNSInstaller {
       installPath = DEFAULT_INSTALL_PATH;
     }
     System.out.println("Install Path: " + installPath);
+    javaCommand = installConfig.getJavaCommand();
+    if (javaCommand == null) {
+      javaCommand = DEFAULT_JAVA_COMMAND;
+    }
+    System.out.println("Java Command: " + javaCommand);
   }
 
   private static void loadHostsFiles(String configName) {
@@ -277,7 +283,7 @@ public class GNSInstaller {
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
               //+ ((runAsRoot) ? "sudo " : "")
-              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartLNSClass + " "
+              + "nohup " + javaCommand + " -cp " + gnsJarFileName + " " + StartLNSClass + " "
               //+ hostname + " "
               //+ LocalNameServer.DEFAULT_LNS_TCP_PORT + " "
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
@@ -296,7 +302,7 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + ((runAsRoot) ? "sudo " : "")
-              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartNSClass + " "
+              + "nohup " + javaCommand + " -cp " + gnsJarFileName + " " + StartNSClass + " "
               + "-id "
               + nsId.toString() + " "
               + "-nsfile "
@@ -314,7 +320,7 @@ public class GNSInstaller {
 //              + "mv --backup=numbered CCPlogfile CCPlogfile.save\n"
 //              + "fi\n"
 //              + ((runAsRoot) ? "sudo " : "")
-//              + "nohup " + JAVA_COMMAND + gnsJarFileName + " " + StartCCPClass + " "
+//              + "nohup " + JAVA_COMMAND + " " + gnsJarFileName + " " + StartCCPClass + " "
 //              + "-host "
 //              + hostname + " "
 //              + "-port "
@@ -399,8 +405,8 @@ public class GNSInstaller {
             //runAsRoot,
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
-            + "pkill -f \"" + JAVA_COMMAND + gnsJarFileName + "\""
-            // catch this one as well
+            + "pkill -f \"" + javaCommand + " -cp " + gnsJarFileName + "\""
+            // catch this one as well just in case
             + "\n"       
             + ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + "java -ea -cp " + gnsJarFileName + "\""
