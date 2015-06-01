@@ -34,33 +34,33 @@ public class LNSQueryHandler {
 
   /**
    * Sends a DNS query from this Name Server to a Local Name Server.
-   * 
+   *
    * @param name
    * @param key
    * @param activeReplica
    * @param lnsAddress
-   * @return 
+   * @return
    */
-  public static QueryResult sendQuery(String name, String key, GnsApplicationInterface activeReplica, 
+  public static QueryResult sendQuery(String name, String key, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) {
     return sendQuery(name, key, ColumnFieldType.USER_JSON, activeReplica, lnsAddress);
   }
-  
+
   /**
    * Sends a DNS query from this Name Server to a Local Name Server.
    * The value returned in the QueryResult will be an old-style values list.
-   * 
+   *
    * @param name
    * @param key
    * @param activeReplica
    * @param lnsAddress
-   * @return 
+   * @return
    */
-  public static QueryResult sendListFieldQuery(String name, String key, GnsApplicationInterface activeReplica, 
+  public static QueryResult sendListFieldQuery(String name, String key, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) {
     return sendQuery(name, key, ColumnFieldType.LIST_STRING, activeReplica, lnsAddress);
   }
-  
+
   /**
    * Sends a DNS query from this Name Server to a Local Name Server
    * Returns the entire guid record in a QueryResult.
@@ -70,7 +70,7 @@ public class LNSQueryHandler {
    * @param activeReplica
    * @return the entire guid record in a QueryResult.
    */
-  private static QueryResult sendQuery(String name, String key, ColumnFieldType returnFormat, GnsApplicationInterface activeReplica, 
+  private static QueryResult sendQuery(String name, String key, ColumnFieldType returnFormat, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID() + "; Sending query: " + name + " " + key);
     int id = nextRequestID();
@@ -84,7 +84,7 @@ public class LNSQueryHandler {
     return result;
   }
 
-  private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key, 
+  private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key,
           ColumnFieldType returnFormat, GnsApplicationInterface activeReplica) {
     DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, null,
             returnFormat,
@@ -115,13 +115,15 @@ public class LNSQueryHandler {
       synchronized (monitor) {
         if (outStandingQueries.remove(id) != null) {
           GNS.getLogger().fine("First success response (" + id + "): "
-                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()+ " Successful Received");
+                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString() + " Successful Received");
 
-          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(), activeReplica.getNodeID()));
+          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(),
+                  activeReplica.getNodeID(),
+                  dnsResponsePacket.getLookupTime()));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later success response (" + id + "): "
-                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()+ " Successful Received");
+                  + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString() + " Successful Received");
         }
       }
     } else {
@@ -130,7 +132,9 @@ public class LNSQueryHandler {
           GNS.getLogger().fine("First error response (" + id + "): "
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
-          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(), activeReplica.getNodeID()));
+          queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(),
+                  activeReplica.getNodeID(),
+                  dnsResponsePacket.getLookupTime()));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later error response (" + id + "): "

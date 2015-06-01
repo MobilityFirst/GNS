@@ -50,9 +50,9 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  */
 public class Lookup {
-
+  
   private static Random random = new Random();
-
+  
   public static void handlePacketLookupRequest(JSONObject json, DNSPacket incomingPacket, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     if (handler.getParameters().isDebugMode()) {
@@ -82,7 +82,7 @@ public class Lookup {
       handler.getExecutorService().scheduleAtFixedRate(queryTaskObject, 0, timeOut, TimeUnit.MILLISECONDS);
     }
   }
-
+  
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + json);
@@ -116,12 +116,25 @@ public class Lookup {
         }
       }
       // send response to user right now.
-      sendReplyToUser(requestInfo, dnsPacket.getRecordValue(), dnsPacket.getTTL(), dnsPacket.getResponder(), handler);
+      try {
+        DNSPacket outgoingPacket = new DNSPacket(requestInfo.getIncomingPacket().getSourceId(),
+                requestInfo.getIncomingPacket().getHeader().getId(),
+                requestInfo.getIncomingPacket().getGuid(),
+                requestInfo.getIncomingPacket().getKey(), requestInfo.getIncomingPacket().getKeys(),
+                dnsPacket.getRecordValue(), dnsPacket.getTTL(), new HashSet<Integer>());
+        outgoingPacket.setResponder(dnsPacket.getResponder());
+        outgoingPacket.setLookupTime(dnsPacket.getLookupTime());
+        sendDNSResponseBackToSource(outgoingPacket, handler);
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Problem converting packet to JSON: " + e);
+      }
+      
+      //sendReplyToUser(requestInfo, dnsPacket.getRecordValue(), dnsPacket.getTTL(), dnsPacket.getResponder(), handler);
     }
   }
-
+  
   public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
-
+    
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Recvd Lookup Error Response" + jsonObject);
     }
@@ -134,7 +147,7 @@ public class Lookup {
       }
       handler.invalidateActiveNameServer(dnsPacket.getGuid());
       DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(dnsPacket.getQueryId());
-
+      
       if (requestInfo == null) {
         GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
         return;
@@ -142,13 +155,13 @@ public class Lookup {
       //requestInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
       // create objects to be passed to PendingTasks
       SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(requestInfo.getCCPReqID(), handler, requestInfo.getIncomingPacket());
-
+      
       PendingTasks.addToPendingRequests(requestInfo, queryTaskObject, handler.getParameters().getQueryTimeout(), handler);
-
+      
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info(" Scheduled lookup task.");
       }
-
+      
     } else { // other types of errors, forward error response to client
       DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
       if (requestInfo == null) {
@@ -173,20 +186,20 @@ public class Lookup {
   /**
    * Send reply to user after DNS record is received.
    */
-  private static void sendReplyToUser(DNSRequestInfo query, ValuesMap returnValue, int TTL, Object responder, ClientRequestHandlerInterface handler) {
-
-    try {
-      DNSPacket outgoingPacket = new DNSPacket(query.getIncomingPacket().getSourceId(),
-              query.getIncomingPacket().getHeader().getId(),
-              query.getIncomingPacket().getGuid(),
-              query.getIncomingPacket().getKey(), query.getIncomingPacket().getKeys(),
-              returnValue, TTL, new HashSet<Integer>());
-      outgoingPacket.setResponder(responder);
-      sendDNSResponseBackToSource(outgoingPacket, handler);
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to JSON: " + e);
-    }
-  }
+//  private static void sendReplyToUser(DNSRequestInfo requestInfo, ValuesMap returnValue, int TTL, Object responder, ClientRequestHandlerInterface handler) {
+//    
+//    try {
+//      DNSPacket outgoingPacket = new DNSPacket(requestInfo.getIncomingPacket().getSourceId(),
+//              requestInfo.getIncomingPacket().getHeader().getId(),
+//              requestInfo.getIncomingPacket().getGuid(),
+//              requestInfo.getIncomingPacket().getKey(), requestInfo.getIncomingPacket().getKeys(),
+//              returnValue, TTL, new HashSet<Integer>());
+//      outgoingPacket.setResponder(responder);
+//      sendDNSResponseBackToSource(outgoingPacket, handler);
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("Problem converting packet to JSON: " + e);
+//    }
+//  }
 
   /**
    * Handles the returning of packets back to the appropriate source (local intercessor or another NameServer).
@@ -206,5 +219,5 @@ public class Lookup {
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());
     }
   }
-
+  
 }

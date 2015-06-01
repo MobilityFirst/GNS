@@ -29,6 +29,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   private final static String RESPONDER = "responder";
   private final static String REQUESTCNT = "requestCnt";
   private final static String REQUESTRATE = "requestRate";
+  private final static String LOOKUPTIME = "lookuptime";
 
   /**
    * Identifier of the request.
@@ -70,6 +71,10 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
    * Instrumentation - the current requests per second from the LNS (can be used to tell how busy LNS is)
    */
   private final int requestRate;
+  /**
+   * Database lookup time instrumentation
+   */
+  private final int lookupTime;
 
   /**
    * Creates a CommandValueReturnPacket from a CommandResponse.
@@ -80,7 +85,8 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
    * @param requestRate
    * @param lnsProcTime
    */
-  public CommandValueReturnPacket(int requestId, int LNSRequestId, String serviceName, CommandResponse<String> response, long requestCnt,
+  public CommandValueReturnPacket(int requestId, int LNSRequestId, String serviceName,
+          CommandResponse<String> response, long requestCnt,
           int requestRate, long lnsProcTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.clientRequestId = requestId;
@@ -93,6 +99,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     this.responder = response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
+    this.lookupTime = response.getLookupTime();
   }
 
   /**
@@ -105,9 +112,9 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     this.type = Packet.getPacketType(json);
     this.clientRequestId = json.getInt(CLIENTREQUESTID);
     if (json.has(LNSREQUESTID)) {
-     this.LNSRequestId = json.getInt(LNSREQUESTID);
+      this.LNSRequestId = json.getInt(LNSREQUESTID);
     } else {
-     this.LNSRequestId = -1;
+      this.LNSRequestId = -1;
     }
     this.serviceName = json.getString(SERVICENAME);
     this.returnValue = json.getString(RETURNVALUE);
@@ -123,6 +130,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
     this.LNSProcessingTime = json.optLong(LNSPROCESSINGTIME, -1);
     this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : null;
+    this.lookupTime = json.optInt(LOOKUPTIME, -1);
   }
 
   /**
@@ -156,6 +164,9 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     // instrumentation
     if (responder != null) {
       json.put(RESPONDER, responder);
+    }
+    if (lookupTime != -1) {
+      json.put(LOOKUPTIME, lookupTime);
     }
     return json;
   }
@@ -199,6 +210,10 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
 
   public int getRequestRate() {
     return requestRate;
+  }
+
+  public int getLookupTime() {
+    return lookupTime;
   }
 
 }

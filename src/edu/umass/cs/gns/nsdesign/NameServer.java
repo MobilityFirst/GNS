@@ -15,7 +15,6 @@ import edu.umass.cs.gns.nio.JSONDelayEmulator;
 import edu.umass.cs.gns.nio.JSONMessageExtractor;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
 import edu.umass.cs.gns.nsdesign.replicaController.NoCoordinationReplicaControllerCoordinator;
@@ -111,12 +110,8 @@ public class NameServer<NodeIDType> implements Shutdownable {
     // init DB
     mongoRecords = new MongoRecords<NodeIDType>(nodeID, Config.mongoPort);
 
-    // reInitialize GNS
-    if (Config.dummyGNS) {
-      gnsReconfigurable = new DummyGnsReconfigurable<NodeIDType>(nodeID, gnsNodeConfig, tcpTransport);
-    } else { // real GNS
-      gnsReconfigurable = new GnsReconfigurable<NodeIDType>(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
-    }
+    gnsReconfigurable = new GnsReconfigurable<NodeIDType>(nodeID, gnsNodeConfig, tcpTransport, mongoRecords);
+
     GNS.getLogger().info(nodeID.toString() + " GNS initialized");
     // reInitialize active replica with the app
     activeReplica = new ActiveReplica(nodeID, gnsNodeConfig, tcpTransport, executorService, gnsReconfigurable);

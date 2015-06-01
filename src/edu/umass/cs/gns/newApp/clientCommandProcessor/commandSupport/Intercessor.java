@@ -75,7 +75,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
-  
+
   private AbstractPacketDemultiplexer ccpPacketDemultiplexer;
   //private ClientRequestHandlerInterface<NodeIDType> handler;
   private GNSNodeConfig<NodeIDType> nodeConfig;
@@ -129,7 +129,10 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
                       + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
             }
             synchronized (monitor) {
-              queryResultMap.put(id, new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(), dnsResponsePacket.getResponder()));
+              queryResultMap.put(id,
+                      new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(),
+                              dnsResponsePacket.getResponder(),
+                              dnsResponsePacket.getLookupTime()));
               monitor.notifyAll();
             }
           } else {
@@ -139,7 +142,10 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
                       + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
             }
             synchronized (monitor) {
-              queryResultMap.put(id, new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(), dnsResponsePacket.getResponder()));
+              queryResultMap.put(id,
+                      new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(),
+                              dnsResponsePacket.getResponder(),
+                              dnsResponsePacket.getLookupTime()));
               monitor.notifyAll();
             }
           }

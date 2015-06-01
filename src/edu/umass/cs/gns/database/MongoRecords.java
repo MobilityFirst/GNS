@@ -194,6 +194,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   }
 
   private JSONObject lookupEntireRecord(String collectionName, String guid, boolean explain) throws RecordNotFoundException, FailedDBOperationException {
+    long startTime = System.currentTimeMillis();
     db.requestStart();
     try {
       String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -206,7 +207,15 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       }
       if (cursor.hasNext()) {
         DBObject obj = cursor.next();
-        return new JSONObject(obj.toString());
+        JSONObject json = new JSONObject(obj.toString());
+        // instrumentation
+        int lookupTime = (int) (System.currentTimeMillis() - startTime);
+        if (lookupTime > 20) {
+          GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
+        }
+        // instrumentation
+        json.put(NameRecord.LOOKUP_TIME.getName(), lookupTime);
+        return json;
       } else {
         throw new RecordNotFoundException(guid);
       }
@@ -231,7 +240,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName, String guid, ColumnField nameField,
           ArrayList<ColumnField> systemFields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
-    long t0 = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
     if (guid == null) {
       GNS.getLogger().fine("GUID is null: " + guid);
       throw new RecordNotFoundException(guid);
@@ -307,10 +316,11 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
         hashMap.put(valuesMapField, valuesMap);
       }
-      long t1 = System.currentTimeMillis();
-      if (t1 - t0 > 20) {
-        GNS.getLogger().warning(" mongoLookup Long delay " + (t1 - t0));
+      int lookupTime = (int) (System.currentTimeMillis() - startTime);
+      if (lookupTime > 20) {
+        GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
       }
+      hashMap.put(NameRecord.LOOKUP_TIME, lookupTime);
       return hashMap;
     } catch (MongoException e) {
       throw new FailedDBOperationException(collectionName, guid);

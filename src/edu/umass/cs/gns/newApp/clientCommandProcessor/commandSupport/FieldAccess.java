@@ -99,7 +99,8 @@ public class FieldAccess {
     return new CommandResponse(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
-            result.getResponder());
+            result.getResponder(),
+            result.getLookupTime());
   }
 
   /**
@@ -135,7 +136,8 @@ public class FieldAccess {
     return new CommandResponse(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
-            result.getResponder());
+            result.getResponder(),
+            result.getLookupTime());
   }
 
   /**
@@ -162,7 +164,8 @@ public class FieldAccess {
     return new CommandResponse(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
-            result.getResponder());
+            result.getResponder(),
+            result.getLookupTime());
   }
 
   /**
@@ -203,7 +206,8 @@ public class FieldAccess {
     return new CommandResponse(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
-            result.getResponder());
+            result.getResponder(),
+            result.getLookupTime());
   }
 
   /**
@@ -234,7 +238,8 @@ public class FieldAccess {
     return new CommandResponse(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
-            result.getResponder());
+            result.getResponder(),
+            result.getLookupTime());
   }
 
   /**

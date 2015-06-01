@@ -41,16 +41,20 @@ public class QueryResult<NodeIDType> implements Serializable{
    * Instrumentation - what nameserver responded to this query
    */
   private final NodeIDType responder;
-
+  /**
+   * Database lookup time instrumentation
+   */
+  private final int lookupTime;
   /**
    * Creates a "normal" (non-error) QueryResult.
    * 
    * @param valuesMap 
    * @param responder 
    */
-  public QueryResult(ValuesMap valuesMap, NodeIDType responder) {
+  public QueryResult(ValuesMap valuesMap, NodeIDType responder, int lookupTime) {
     this.valuesMap = valuesMap;
     this.responder = responder;
+    this.lookupTime = lookupTime;
   }
 
   /**
@@ -59,9 +63,10 @@ public class QueryResult<NodeIDType> implements Serializable{
    * @param errorCode 
    * @param responder 
    */
-  public QueryResult(NSResponseCode errorCode, NodeIDType responder) {
+  public QueryResult(NSResponseCode errorCode, NodeIDType responder, int lookupTime) {
     this.errorCode = errorCode;
     this.responder = responder;
+    this.lookupTime = lookupTime;
   }
 
   /**
@@ -160,6 +165,10 @@ public class QueryResult<NodeIDType> implements Serializable{
    */
   public NodeIDType getResponder() {
     return responder;
+  }
+
+  public int getLookupTime() {
+    return lookupTime;
   }
 
   @Override

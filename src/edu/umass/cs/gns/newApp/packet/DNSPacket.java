@@ -39,7 +39,8 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   private final static String SOURCE_ID = "sourceId";
   private final static String RESPONDER = "rspndr";
   private final static String RETURN_FORMAT = "format";
-
+  // instrumentation
+  private final static String LOOKUP_TIME = "lookupTime";
   /*
    * The header, guid, key and lnsId are called the Question section because
    * they are all that is necessary for a query.
@@ -82,10 +83,15 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    * Determines the format of the return value that we toString back in the response packet.
    */
   private final ColumnFieldType returnFormat;
+  // instrumentation
   /**
    * For response packets this is the node that responded
    */
   private NodeIDType responder = null;
+  /**
+   * Database lookup time instrumentation
+   */
+  private int lookupTime = -1;
 
   /**
    * Constructs a packet for querying a name server for name information.
@@ -194,7 +200,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
         this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
       }
     }
-
+    this.lookupTime = json.optInt(LOOKUP_TIME, -1);
   }
 
   /**
@@ -275,6 +281,9 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
       json.put(TIME_TO_LIVE, getTTL());
       if (recordValue != null) {
         json.put(RECORD_VALUE, recordValue);
+      }
+      if (lookupTime != -1) {
+        json.put(LOOKUP_TIME, lookupTime);
       }
     }
   }
@@ -444,6 +453,14 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   @Override
   public String getServiceName() {
     return this.guid;
+  }
+
+  public int getLookupTime() {
+    return lookupTime;
+  }
+
+  public void setLookupTime(int lookupTime) {
+    this.lookupTime = lookupTime;
   }
 
 }

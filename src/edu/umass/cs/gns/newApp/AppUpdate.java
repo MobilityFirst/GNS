@@ -49,7 +49,7 @@ public class AppUpdate {
   public static void executeUpdateLocal(UpdatePacket<String> updatePacket, GnsApplicationInterface replica,
           boolean noCoordinationState, boolean recovery)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().info("Processing UPDATE with " + " noCoordinationState= " + noCoordinationState + ""
               + " recovery= " + recovery + " packet: " + updatePacket);
 
@@ -109,7 +109,7 @@ public class AppUpdate {
     }
 
     // Apply update
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNode.debuggingEnabled) {
       if (field != null) {
         GNS.getLogger().info("****** field=" + field + " operation= " + updatePacket.getOperation().toString()
                 + " value= " + updatePacket.getUpdateValue()
@@ -122,13 +122,13 @@ public class AppUpdate {
               updatePacket.getUpdateValue(), updatePacket.getOldValue(), updatePacket.getArgument(),
               updatePacket.getUserJSON(),
               updatePacket.getOperation());
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNode.debuggingEnabled) {
         GNS.getLogger().fine("Update operation result = " + result + "\t"
                 + updatePacket.getUpdateValue());
       }
 
       if (!result) { // update failed
-        if (Config.debuggingEnabled) {
+        if (AppReconfigurableNode.debuggingEnabled) {
           GNS.getLogger().info("Update operation failed " + updatePacket);
         }
         if (updatePacket.getNameServerID().equals(replica.getNodeID())) {
@@ -137,7 +137,7 @@ public class AppUpdate {
                   = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
                           updatePacket.getSourceId(),
                           updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.ERROR);
-          if (Config.debuggingEnabled) {
+          if (AppReconfigurableNode.debuggingEnabled) {
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket);
           }
           if (!recovery) {
@@ -146,7 +146,7 @@ public class AppUpdate {
         }
 
       } else {
-        if (Config.debuggingEnabled) {
+        if (AppReconfigurableNode.debuggingEnabled) {
           GNS.getLogger().info("Update applied" + updatePacket);
         }
 
@@ -162,7 +162,7 @@ public class AppUpdate {
 
           if (!recovery) {
             replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
-            if (Config.debuggingEnabled) {
+            if (AppReconfigurableNode.debuggingEnabled) {
               GNS.getLogger().info("NS Sent confirmation to CCP. Sent packet: " + confirmPacket.toJSONObject());
             }
           }

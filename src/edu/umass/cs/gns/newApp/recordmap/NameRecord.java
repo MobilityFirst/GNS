@@ -34,6 +34,7 @@ import java.util.Set;
 // FIXME: All this needs to be cleaned up. There are unused fields and
 // why is this not just JSON anyway? - Westy
 public class NameRecord implements Comparable<NameRecord> {
+
   /**
    * null value for the ACTIVE_VERSION and OLD_ACTIVE_VERSION field.
    */
@@ -48,6 +49,8 @@ public class NameRecord implements Comparable<NameRecord> {
   public final static ColumnField OLD_VALUES_MAP = new ColumnField("nr_oldValuesMap", ColumnFieldType.VALUES_MAP);
   public final static ColumnField TOTAL_UPDATE_REQUEST = new ColumnField("nr_totalUpdate", ColumnFieldType.INTEGER);
   public final static ColumnField TOTAL_LOOKUP_REQUEST = new ColumnField("nr_totalLookup", ColumnFieldType.INTEGER);
+  // instrumentation
+  public final static ColumnField LOOKUP_TIME = new ColumnField("lookup_time", ColumnFieldType.INTEGER);
 
   /**
    * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
@@ -83,6 +86,7 @@ public class NameRecord implements Comparable<NameRecord> {
     hashMap.put(OLD_VALUES_MAP, new ValuesMap());
     hashMap.put(TOTAL_LOOKUP_REQUEST, 0);
     hashMap.put(TOTAL_UPDATE_REQUEST, 0);
+    hashMap.put(LOOKUP_TIME, -1);
 
   }
 
@@ -132,6 +136,10 @@ public class NameRecord implements Comparable<NameRecord> {
 
     if (jsonObject.has(TOTAL_UPDATE_REQUEST.getName())) {
       hashMap.put(TOTAL_UPDATE_REQUEST, JSONUtils.getObject(TOTAL_UPDATE_REQUEST, jsonObject));
+    }
+
+    if (jsonObject.has(LOOKUP_TIME.getName())) {
+      hashMap.put(LOOKUP_TIME, JSONUtils.getObject(LOOKUP_TIME, jsonObject));
     }
   }
 
@@ -242,6 +250,18 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(TOTAL_UPDATE_REQUEST);
   }
 
+  public int getLookupTime() {
+    try {
+      if (hashMap.containsKey(LOOKUP_TIME)) {
+        return (Integer) hashMap.get(LOOKUP_TIME);
+      }
+      throw new FieldNotFoundException(LOOKUP_TIME);
+    } catch (FieldNotFoundException e) {
+      GNS.getLogger().warning("Unable to read LOOKUP_TIME field: " + e);
+    }
+    return -1;
+  }
+
   /**
    * ******************************************
    * READ methods
@@ -286,11 +306,12 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   public enum VersionStatus {
+
     ActiveVersionEqualsVersion,
     OldActiveVersionEqualsVersion,
     SomethingElse
   }
-  
+
   /**
    * ACTIVE: checks whether version is current active version/oldactive version/neither. .
    *
@@ -394,7 +415,7 @@ public class NameRecord implements Comparable<NameRecord> {
       valuesMap = getValuesMap(); // this will throw an exception if field is not read.
     }
     // FIXME: might want to handle this without a special case at some point
-    boolean updated = UpdateOperation.USER_JSON_REPLACE.equals(operation) || UpdateOperation.USER_JSON_REPLACE_OR_CREATE.equals(operation) 
+    boolean updated = UpdateOperation.USER_JSON_REPLACE.equals(operation) || UpdateOperation.USER_JSON_REPLACE_OR_CREATE.equals(operation)
             ? true : UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
     if (updated) {
       // commit update to database
@@ -402,7 +423,7 @@ public class NameRecord implements Comparable<NameRecord> {
       ArrayList<Object> updatedValues = new ArrayList<Object>();
       if (userJSON != null) {
         // full userJSON (new style) update
-        Iterator<?> keyIter =  userJSON.keys();
+        Iterator<?> keyIter = userJSON.keys();
         while (keyIter.hasNext()) {
           String key = (String) keyIter.next();
           try {
@@ -629,10 +650,10 @@ public class NameRecord implements Comparable<NameRecord> {
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields, 
+  public static NameRecord getNameRecordMultiField(BasicRecordMap recordMap, String name, ArrayList<ColumnField> systemFields,
           ColumnFieldType returnType, String... userFieldNames)
           throws RecordNotFoundException, FailedDBOperationException {
-    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP, 
+    return new NameRecord(recordMap, recordMap.lookupMultipleSystemAndUserFields(name, NameRecord.NAME, systemFields, NameRecord.VALUES_MAP,
             userFieldList(returnType, userFieldNames)));
   }
 
