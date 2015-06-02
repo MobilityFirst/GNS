@@ -10,6 +10,7 @@ import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.AppReconfigurableNode;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -101,7 +102,7 @@ public class AccountAccess {
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid, boolean allowSubGuids, ClientRequestHandlerInterface handler) {
     QueryResult accountResult = handler.getIntercessor().sendQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-    if (handler.getIntercessor().debuggingEnabled) {
+    if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
     }
     if (accountResult.isError()) {

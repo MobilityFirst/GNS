@@ -73,7 +73,7 @@ public abstract class RequestInfo {
 
 
   /** 
-   * Time duration for which the request was under processing at the local name server.
+   * Time duration for which the request was under processing at the client command processor.
    * @return 
    */
   public synchronized long getResponseLatency() {

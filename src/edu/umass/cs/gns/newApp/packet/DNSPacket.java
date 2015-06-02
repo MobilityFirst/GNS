@@ -15,6 +15,7 @@ import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.util.ArrayList;
+import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -60,7 +61,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
   /**
    * The keys when we are doing a multiple field query lookup. Mutually exclusive with key.
    */
-  private final ArrayList<String> keys;
+  private final List<String> keys;
   /**
    * This is the id of the source of the request, null means the client is the intercessor
    * of the LNS handling the request. Otherwise it will be the ID of a NameServer.
@@ -105,7 +106,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    * @param message
    * @param returnFormat
    */
-  public DNSPacket(NodeIDType sourceId, int id, String guid, String key, ArrayList<String> keys,
+  public DNSPacket(NodeIDType sourceId, int id, String guid, String key, List<String> keys,
           ColumnFieldType returnFormat,
           String accessor, String signature, String message) {
     super(null, accessor, signature, message); // lnsAddress is null
@@ -149,7 +150,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    * @param TTL
    * @param activeNameServers
    */
-  public DNSPacket(NodeIDType sourceId, int id, String name, String key, ArrayList<String> keys, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
+  public DNSPacket(NodeIDType sourceId, int id, String name, String key, List<String> keys, ValuesMap entireRecord, int TTL, Set<Integer> activeNameServers) {
     super(null); // lnsAddress is null and no sigs for this baby
     this.type = Packet.PacketType.DNS;
     this.header = new Header(id, DNSRecordType.RESPONSE, NSResponseCode.NO_ERROR);
@@ -381,7 +382,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAdd
    *
    * @return
    */
-  public ArrayList<String> getKeys() {
+  public List<String> getKeys() {
     return keys;
   }
 

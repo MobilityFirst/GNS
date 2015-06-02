@@ -58,9 +58,9 @@ public class Lookup {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + json);
     }
-    int lnsReqId = handler.getUniqueRequestID();
-    DNSRequestInfo requestInfo = new DNSRequestInfo(lnsReqId, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
-    handler.addRequestInfo(lnsReqId, requestInfo);
+    int ccpReqID = handler.getUniqueRequestID();
+    DNSRequestInfo requestInfo = new DNSRequestInfo(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
+    handler.addRequestInfo(ccpReqID, requestInfo);
     handler.incrementLookupRequest(incomingPacket.getGuid()); // important: used to count votes for names.
     // For the new app we just send it to the colocated replica
     if (handler.isNewApp()) {
@@ -69,12 +69,12 @@ public class Lookup {
       }
       int clientQueryID = incomingPacket.getQueryId(); // BS: save the value because we reuse the field in the packet
       incomingPacket.setCCPAddress(handler.getNodeAddress());
-      incomingPacket.getHeader().setId(lnsReqId);
+      incomingPacket.getHeader().setId(ccpReqID);
       JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
       incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
       handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
     } else { // OLD STYLE IS TO POSSIBLY REQUEST ACTIVES WITH RETRANSMISSION
-      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqId, handler, incomingPacket);
+      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(ccpReqID, handler, incomingPacket);
       long timeOut = handler.getParameters().getQueryTimeout();
       if (handler.getParameters().isAdaptiveTimeout()) {
         timeOut = AdaptiveRetransmission.getTimeoutInterval(0);
@@ -97,10 +97,11 @@ public class Lookup {
       }
       requestInfo.setSuccess(true);
       requestInfo.setFinishTime();
-      //requestInfo.addEventCode(LNSEventCode.SUCCESS);
-//      if (random.nextDouble() < handler.getParameters().getOutputSampleRate()) {
-      //GNS.getStatLogger().info(requestInfo.getLogString());
-//      }
+      
+      if (handler.getParameters().isDebugMode()) {
+        GNS.getLogger().info("8888888888888888888888888888>>>>: dns request #" + requestInfo.getCCPReqID() 
+                + " " + requestInfo.getName() + " took " + requestInfo.getResponseLatency() + "ms");
+      }
 
       if (handler.getParameters().isAdaptiveTimeout()) {
         long responseTimeSample = requestInfo.getResponseLatency();

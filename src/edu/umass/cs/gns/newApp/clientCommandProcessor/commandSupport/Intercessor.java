@@ -8,6 +8,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.AppReconfigurableNode;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
@@ -24,6 +25,7 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
+import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -67,7 +69,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   // Instrumentation
   private final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  public boolean debuggingEnabled = false;
+  public boolean debuggingEnabled = true;
 
   {
     randomID = new Random();
@@ -224,10 +226,15 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       if (debuggingEnabled) {
         GNS.getLogger().fine("Waiting for query id: " + id);
       }
+      final Long waitStart = System.nanoTime(); // instrumentation
       synchronized (monitor) {
         while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
+      }
+      double aclDelayInMS = (System.nanoTime() - waitStart) / 1000000.0;
+      if (AppReconfigurableNode.debuggingEnabled) {
+        GNS.getLogger().info("8888888888888888888888888888>>>>:  NOTIFY DELAY " + Format.formatTime(aclDelayInMS) + "ms");
       }
       if (debuggingEnabled) {
         GNS.getLogger().fine("Query id response received: " + id);

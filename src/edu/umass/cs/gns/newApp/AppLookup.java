@@ -15,6 +15,7 @@ import edu.umass.cs.gns.newApp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.DNSRecordType;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONException;
@@ -61,7 +62,7 @@ public class AppLookup {
           boolean noCoordinatorState, boolean doNotReplyToClient)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
-
+    final Long receiptTime = System.nanoTime(); // instrumentation
     if (AppReconfigurableNode.debuggingEnabled) {
       GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() + "; DNS Query Packet: " + dnsPacket.toString());
     }
@@ -113,13 +114,20 @@ public class AppLookup {
           }
         }
       }
+
+      double authDelayInMS = (System.nanoTime() - receiptTime) / 1000000.0;
+      if (AppReconfigurableNode.debuggingEnabled) {
+        GNS.getLogger().info("8888888888888888888888888888>>>>:  TOTAL AUTH TIME AT THE APP " 
+                + Format.formatTime(authDelayInMS) + "ms");
+      }
       // return an error packet if one of the checks doesn't pass
       if (errorCode.isAnError()) {
         dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
         dnsPacket.getHeader().setResponseCode(errorCode);
         dnsPacket.setResponder(gnsApp.getNodeID());
         if (AppReconfigurableNode.debuggingEnabled) {
-          GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet " + dnsPacket.toJSONObjectForErrorResponse());
+          GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet " 
+                  + dnsPacket.toJSONObjectForErrorResponse());
         }
         if (!doNotReplyToClient) {
           gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
@@ -154,6 +162,11 @@ public class AppLookup {
         dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
         if (!doNotReplyToClient) {
           gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+        }
+        double delayInMS = (System.nanoTime() - receiptTime) / 1000000.0;
+        if (AppReconfigurableNode.debuggingEnabled) {
+          GNS.getLogger().info("8888888888888888888888888888>>>>: TOTAL LOOKUP TIME AT THE APP " 
+                  + Format.formatTime(delayInMS) + "ms");
         }
       }
     }

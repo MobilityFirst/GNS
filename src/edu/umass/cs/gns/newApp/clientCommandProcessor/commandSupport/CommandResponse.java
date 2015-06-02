@@ -89,7 +89,7 @@ public class CommandResponse<NodeIDType> {
    * Gets the LNS round trip time (computed from LNS to NS and back).
    * @return
    */
-  public long getLNSRoundTripTime() {
+  public long getCCPRoundTripTime() {
     return LNSRoundTripTime;
   }
 

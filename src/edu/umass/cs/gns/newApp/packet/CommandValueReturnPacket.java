@@ -20,12 +20,12 @@ import org.json.JSONObject;
 public class CommandValueReturnPacket extends BasicPacket implements InterfaceRequest {
 
   private final static String CLIENTREQUESTID = "reqID";
-  private final static String LNSREQUESTID = "LNSreqID";
+  private final static String CCPREQUESTID = "CCPreqID";
   private final static String SERVICENAME = "srvceName";
   private final static String RETURNVALUE = "returnValue";
   private final static String ERRORCODE = "errorCode";
-  private final static String LNSROUNDTRIPTIME = "lnsRtt";
-  private final static String LNSPROCESSINGTIME = "lnsTime";
+  private final static String CCPROUNDTRIPTIME = "ccpRtt";
+  private final static String CCPPROCESSINGTIME = "ccpTime";
   private final static String RESPONDER = "responder";
   private final static String REQUESTCNT = "requestCnt";
   private final static String REQUESTRATE = "requestRate";
@@ -42,7 +42,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   /**
    * LNS identifier used by the LNS.
    */
-  private final int LNSRequestId;
+  private final int CCPRequestId;
   /**
    * The returned value.
    */
@@ -54,11 +54,11 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   /**
    * The RTT as measured from the LNS out and back.
    */
-  private final long LNSRoundTripTime; // how long this query took from the LNS out and back
+  private final long CCPRoundTripTime; // how long this query took from the CCP out and back
   /**
    * Total command processing time at the LNS.
    */
-  private final long LNSProcessingTime; // how long this query took inside the LNS
+  private final long CCPProcessingTime; // how long this query took inside the CCP
   /**
    * Instrumentation - what nameserver responded to this query
    */
@@ -80,22 +80,24 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
    * Creates a CommandValueReturnPacket from a CommandResponse.
    *
    * @param requestId
+   * @param CCPRequestId
+   * @param serviceName
    * @param response
-   * @param requestCnt - current number of requests handled by the LNS (can be used to tell how busy LNS is)
+   * @param requestCnt - current number of requests handled by the CCP (can be used to tell how busy CCP is)
    * @param requestRate
-   * @param lnsProcTime
+   * @param cppProccessingTime
    */
-  public CommandValueReturnPacket(int requestId, int LNSRequestId, String serviceName,
+  public CommandValueReturnPacket(int requestId, int CCPRequestId, String serviceName,
           CommandResponse<String> response, long requestCnt,
-          int requestRate, long lnsProcTime) {
+          int requestRate, long cppProccessingTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.clientRequestId = requestId;
-    this.LNSRequestId = LNSRequestId;
+    this.CCPRequestId = CCPRequestId;
     this.serviceName = serviceName;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
-    this.LNSRoundTripTime = response.getLNSRoundTripTime();
-    this.LNSProcessingTime = lnsProcTime;
+    this.CCPRoundTripTime = response.getCCPRoundTripTime();
+    this.CCPProcessingTime = cppProccessingTime;
     this.responder = response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
@@ -111,10 +113,10 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   public CommandValueReturnPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.clientRequestId = json.getInt(CLIENTREQUESTID);
-    if (json.has(LNSREQUESTID)) {
-      this.LNSRequestId = json.getInt(LNSREQUESTID);
+    if (json.has(CCPREQUESTID)) {
+      this.CCPRequestId = json.getInt(CCPREQUESTID);
     } else {
-      this.LNSRequestId = -1;
+      this.CCPRequestId = -1;
     }
     this.serviceName = json.getString(SERVICENAME);
     this.returnValue = json.getString(RETURNVALUE);
@@ -127,8 +129,8 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     this.requestRate = json.getInt(REQUESTRATE);
     this.requestCnt = json.getLong(REQUESTCNT);
     //
-    this.LNSRoundTripTime = json.optLong(LNSROUNDTRIPTIME, -1);
-    this.LNSProcessingTime = json.optLong(LNSPROCESSINGTIME, -1);
+    this.CCPRoundTripTime = json.optLong(CCPROUNDTRIPTIME, -1);
+    this.CCPProcessingTime = json.optLong(CCPPROCESSINGTIME, -1);
     this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : null;
     this.lookupTime = json.optInt(LOOKUPTIME, -1);
   }
@@ -144,8 +146,8 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(CLIENTREQUESTID, this.clientRequestId);
-    if (this.LNSRequestId != -1) {
-      json.put(LNSREQUESTID, this.LNSRequestId);
+    if (this.CCPRequestId != -1) {
+      json.put(CCPREQUESTID, this.CCPRequestId);
     }
     json.put(SERVICENAME, this.serviceName);
     json.put(RETURNVALUE, returnValue);
@@ -155,11 +157,11 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     json.put(REQUESTRATE, requestRate); // instrumentation
     json.put(REQUESTCNT, requestCnt); // instrumentation
     // instrumentation
-    if (LNSRoundTripTime != -1) {
-      json.put(LNSROUNDTRIPTIME, LNSRoundTripTime);
+    if (CCPRoundTripTime != -1) {
+      json.put(CCPROUNDTRIPTIME, CCPRoundTripTime);
     }
-    if (LNSProcessingTime != -1) {
-      json.put(LNSPROCESSINGTIME, LNSProcessingTime);
+    if (CCPProcessingTime != -1) {
+      json.put(CCPPROCESSINGTIME, CCPProcessingTime);
     }
     // instrumentation
     if (responder != null) {
@@ -181,7 +183,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   }
 
   public int getLNSRequestId() {
-    return LNSRequestId;
+    return CCPRequestId;
   }
 
   public String getReturnValue() {
@@ -193,11 +195,11 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   }
 
   public long getLNSRoundTripTime() {
-    return LNSRoundTripTime;
+    return CCPRoundTripTime;
   }
 
   public long getLNSProcessingTime() {
-    return LNSProcessingTime;
+    return CCPProcessingTime;
   }
 
   public String getResponder() {
