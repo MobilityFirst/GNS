@@ -9,10 +9,8 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
@@ -166,10 +164,10 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     if (handler.getParameters().isLoadDependentRedirection()) {
       nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
-    } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
-//      nameServerID = BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
-//              cacheEntry.getActiveNameServers(), activesQueried);
-      throw new UnsupportedOperationException("Not supported yet.");
+//    } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
+////      nameServerID = BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
+////              cacheEntry.getActiveNameServers(), activesQueried);
+//      throw new UnsupportedOperationException("Not supported yet.");
     } else {
       nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);

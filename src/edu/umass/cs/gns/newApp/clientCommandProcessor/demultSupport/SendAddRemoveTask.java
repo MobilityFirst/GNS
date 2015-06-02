@@ -9,7 +9,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.BasicPacket;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
@@ -127,7 +127,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
   private void sendToNS(NodeIDType nameServerID) {
 
     if (nameServerID == null) {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried "
                 + Util.setOfNodeIdToString(replicaControllersQueried));
       }
@@ -141,14 +141,14 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
     replicaControllersQueried.add(nameServerID);
 
     if (getTimeoutCount() == 0) {
-      if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+      if (handler.getParameters().isDebugMode() || AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Add/remove/upsert Info Added: Id = " + getLnsRequestID());
       }
       updatePacketWithRequestID(getPacket(), getLnsRequestID());
     }
     // create the packet that we'll send to the primary
 
-    if (handler.getParameters().isDebugMode() || Config.debuggingEnabled) {
+    if (handler.getParameters().isDebugMode() || AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Sending request to node: " + nameServerID.toString());
     }
 

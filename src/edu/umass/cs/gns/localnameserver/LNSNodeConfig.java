@@ -11,7 +11,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
 import java.io.BufferedReader;
@@ -348,7 +347,7 @@ public class LNSNodeConfig implements
    */
   @SuppressWarnings("unchecked")
   public static void main(String[] args) throws Exception {
-    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+    String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
     LNSNodeConfig gnsNodeConfig = new LNSNodeConfig(filename);
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());

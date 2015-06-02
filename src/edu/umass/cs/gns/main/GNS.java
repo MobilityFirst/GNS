@@ -23,6 +23,10 @@ public class GNS {
   public static final int DEFAULT_CCP_ADMIN_PORT = 20311;
   
   public static final String GNS_URL_PATH = "GNS";
+  // Useful for testing with resources in conf/testCodeResources if using 
+  // "import from build file in IDE". Better way to do this?
+  public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/";
+  public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS";
   
   // This is designed so we can run multiple NSs on the same host if needed
   public enum PortType {

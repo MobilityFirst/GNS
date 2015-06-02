@@ -33,10 +33,6 @@ public class Config {
    */
   public static boolean debuggingEnabled = false;
 
-  // Useful for testing with resources in conf/testCodeResources if using "import from build file in IDE". Better way to do this?
-  public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/";  
-  
-  public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS";  
   
   public static int workerThreadCount = 5;
   

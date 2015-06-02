@@ -947,69 +947,69 @@ public class ReplicaControllerRecord<NodeIDType> {
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    * @throws java.lang.Exception
    */
-  // test code
-  public static void main(String[] args) throws FieldNotFoundException, Exception {
-    test();
-    //System.exit(0);
-  }
-
-  // make this query:
-  // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
-  @SuppressWarnings("unchecked")
-  private static void test() throws FieldNotFoundException, Exception {
-    Config.movingAverageWindowSize = 10;
-    Object nodeID = "4";
-    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt", nodeID);
-    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
-    //ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
-    // fixme set parameter to non-null in constructor
-    BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
-    replicaController.reset();
-    ReplicaControllerRecord record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
-    record.addReplicaSelectionVote("1", 5, 4);
-    record.addReplicaSelectionVote("1", 1, 4);
-    record.addReplicaSelectionVote("2", 2, 4);
-    record.addReplicaSelectionVote("3", 3, 4);
-    record.addReplicaSelectionVote("4", 4, 4);
-    record.addNameServerStats(1, 50, 75);
-    record.addNameServerStats(2, 50, 75);
-    System.out.println(record.toJSONObject().toString());
-    try {
-      replicaController.addNameRecordPrimary(record);
-    } catch (FailedDBOperationException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
-    // create the lazy record
-    record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", 
-            nodeConfig.getReplicatedReconfigurators("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"), true);
-    System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
-    System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver("12"));
-    record.addNameServerStats(10, 50, 75);
-    System.out.println("READ STATS: " + record.updateMovingWindowReadsWrites());
-
-    record.addReplicaSelectionVote("11", 5, 0);
-    record.addReplicaSelectionVote("11", 1, 0);
-    record.addReplicaSelectionVote("21", 2, 0);
-    record.addReplicaSelectionVote("13", 3, 0);
-    record.addReplicaSelectionVote("14", 4, 0);
-    record.addNameServerStats(11, 50, 75);
-    record.addNameServerStats(12, 50, 75);
-    System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(null, gnsNodeConfig, 3));
-//    record.updateMovingAvgAggregateLookupFrequency(10);
-//    record.updateMovingAvgAggregateLookupFrequency(30);
-//    record.updateMovingAvgAggregateLookupFrequency(50);
-    System.out.println("MOVING AG READ: " + record.getMovingAvgAggregateLookupFrequency());
-
-    MongoRecords instance = new MongoRecords(nodeID, -1);
-    instance.printAllEntries(MongoRecords.DBREPLICACONTROLLER);
-
-    try {
-      record = replicaController.getNameRecordPrimary("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
-    } catch (RecordNotFoundException e) {
-
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
-    System.out.println(record.toJSONObject().toString());
-
-  }
+//  // test code
+//  public static void main(String[] args) throws FieldNotFoundException, Exception {
+//    test();
+//    //System.exit(0);
+//  }
+//
+//  // make this query:
+//  // http://127.0.0.1:8080/GNS/registerAccount?name=sally&publickey=dummy3
+//  @SuppressWarnings("unchecked")
+//  private static void test() throws FieldNotFoundException, Exception {
+//    Config.movingAverageWindowSize = 10;
+//    Object nodeID = "4";
+//    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(Config.WESTY_GNS_DIR_PATH + "/conf/name-servers.txt", nodeID);
+//    ConsistentReconfigurableNodeConfig nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+//    //ConsistentHashing.reInitialize(GNS.numPrimaryReplicas, gnsNodeConfig.getNodeIDs());
+//    // fixme set parameter to non-null in constructor
+//    BasicRecordMap replicaController = new MongoRecordMap(null, MongoRecords.DBREPLICACONTROLLER);
+//    replicaController.reset();
+//    ReplicaControllerRecord record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
+//    record.addReplicaSelectionVote("1", 5, 4);
+//    record.addReplicaSelectionVote("1", 1, 4);
+//    record.addReplicaSelectionVote("2", 2, 4);
+//    record.addReplicaSelectionVote("3", 3, 4);
+//    record.addReplicaSelectionVote("4", 4, 4);
+//    record.addNameServerStats(1, 50, 75);
+//    record.addNameServerStats(2, 50, 75);
+//    System.out.println(record.toJSONObject().toString());
+//    try {
+//      replicaController.addNameRecordPrimary(record);
+//    } catch (FailedDBOperationException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
+//    // create the lazy record
+//    record = new ReplicaControllerRecord(replicaController, "1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", 
+//            nodeConfig.getReplicatedReconfigurators("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24"), true);
+//    System.out.println("PRIMARY NS: " + record.getPrimaryNameservers());
+//    System.out.println("CONTAINS ACTIVE NS: " + record.containsPrimaryNameserver("12"));
+//    record.addNameServerStats(10, 50, 75);
+//    System.out.println("READ STATS: " + record.updateMovingWindowReadsWrites());
+//
+//    record.addReplicaSelectionVote("11", 5, 0);
+//    record.addReplicaSelectionVote("11", 1, 0);
+//    record.addReplicaSelectionVote("21", 2, 0);
+//    record.addReplicaSelectionVote("13", 3, 0);
+//    record.addReplicaSelectionVote("14", 4, 0);
+//    record.addNameServerStats(11, 50, 75);
+//    record.addNameServerStats(12, 50, 75);
+//    System.out.println("3 HIGHEST VOTES: " + record.getHighestVotedReplicaID(null, gnsNodeConfig, 3));
+////    record.updateMovingAvgAggregateLookupFrequency(10);
+////    record.updateMovingAvgAggregateLookupFrequency(30);
+////    record.updateMovingAvgAggregateLookupFrequency(50);
+//    System.out.println("MOVING AG READ: " + record.getMovingAvgAggregateLookupFrequency());
+//
+//    MongoRecords instance = new MongoRecords(nodeID, -1);
+//    instance.printAllEntries(MongoRecords.DBREPLICACONTROLLER);
+//
+//    try {
+//      record = replicaController.getNameRecordPrimary("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24");
+//    } catch (RecordNotFoundException e) {
+//
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
+//    System.out.println(record.toJSONObject().toString());
+//
+//  }
 }

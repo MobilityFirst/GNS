@@ -8,7 +8,7 @@ package edu.umass.cs.gns.nodeconfig;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.util.Shutdownable;
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -495,7 +495,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
         break;
       }
     }
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Closest server is " + nameServerID + " exluded: " + excludeServers);
     }
     return nameServerID;
@@ -712,7 +712,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @SuppressWarnings("unchecked")
   public static void main(String[] args) throws Exception {
-    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
+    String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/name-server-info";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(filename, "billy");
     System.out.println(gnsNodeConfig.hostInfoMapping.toString());
     System.out.println(gnsNodeConfig.getNumberOfNodes());

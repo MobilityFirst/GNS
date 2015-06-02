@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.util;
 
-import static edu.umass.cs.gns.nsdesign.Config.WESTY_GNS_DIR_PATH;
+import edu.umass.cs.gns.main.GNS;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -145,7 +145,7 @@ public class ParametersAndOptions {
   }
 
   public static void main(String[] args) throws IOException {
-    args = new String[]{"-configFile", WESTY_GNS_DIR_PATH + "/conf/ec2_small/ns.conf"};
+    args = new String[]{"-configFile", GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/ns.conf"};
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(ParametersAndOptions.class.getCanonicalName(),
                     getAllOptions(), args);

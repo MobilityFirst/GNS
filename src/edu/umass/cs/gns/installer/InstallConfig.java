@@ -9,7 +9,6 @@ package edu.umass.cs.gns.installer;
 
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -97,7 +96,7 @@ public class InstallConfig {
   }
 
   public static void main(String[] args) {
-    String filename = Config.WESTY_GNS_DIR_PATH + "/conf/ec2_small/installer_config";
+    String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/installer_config";
     InstallConfig config = new InstallConfig(filename);
     System.out.println(config.toString());
   }

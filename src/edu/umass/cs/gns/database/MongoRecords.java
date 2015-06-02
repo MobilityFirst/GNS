@@ -21,10 +21,9 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ValuesMap;
 import org.json.JSONArray;
@@ -49,7 +48,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   private static final String DBROOTNAME = "GNS";
   public static final String DBNAMERECORD = "NameRecord";
-  public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
+  //public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
 
   private DB db;
   private String dbName;
@@ -80,7 +79,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   private void init(NodeIDType nodeID, int mongoPort) {
     mongoCollectionSpecs = new MongoCollectionSpecs();
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
-    mongoCollectionSpecs.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
+    //mongoCollectionSpecs.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
     // add location as another index
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME, "2d"));
@@ -124,7 +123,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     for (BasicDBObject index : spec.getOtherIndexes()) {
       db.getCollection(spec.getName()).createIndex(index);
     }
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Indexes initialized");
     }
   }

@@ -10,6 +10,7 @@ package edu.umass.cs.gns.newApp;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.HELP;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.main.GNS;
+// keep for backwards compat
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.ActiveReplica;

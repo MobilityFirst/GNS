@@ -26,9 +26,9 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import static edu.umass.cs.gns.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gns.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gns.httpserver.Defs.VALSEP;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.Util;
 import java.util.Date;
@@ -244,13 +244,13 @@ public class GnsHttpServer {
         responseBody.write("<br>".getBytes());
         responseBody.write(requestsRateString.getBytes());
         responseBody.write("<br>".getBytes());
-        if (!Config.useOldPaxos) {
-          responseBody.write("Gigapaxos is enabled<br>".getBytes());
-        }
+        //if (!Config.useOldPaxos) {
+        responseBody.write("Gigapaxos is enabled<br>".getBytes());
+        //}
         if (GnsHttpServer.requestHandler.isNewApp()) {
           responseBody.write("New app is enabled<br>".getBytes());
         }
-        if (Config.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           responseBody.write("Server debug is true<br>".getBytes());
         }
         if (GnsHttpServer.requestHandler.getParameters().isDebugMode()) {

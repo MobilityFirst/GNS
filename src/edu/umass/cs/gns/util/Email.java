@@ -6,10 +6,7 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
-
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gns.nsdesign.Config;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -134,7 +131,7 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       }
       return true;
@@ -197,7 +194,7 @@ public class Email {
       message.setText(text);
 
       Transport.send(message);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       }
       return true;
@@ -262,7 +259,7 @@ public class Email {
 
       // Send message
       Transport.send(message);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
       }
       return true;

@@ -8,7 +8,7 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
@@ -55,7 +55,7 @@ public class RetrievableDigest {
     DigestInfo digestInfo = new DigestInfo(request);
     this.timeQueue.add(digestInfo);
     this.digestMap.put(digestInfo.digestString, digestInfo);
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("********** Created " + request);
     }
     return digestInfo.digest;
@@ -75,12 +75,12 @@ public class RetrievableDigest {
     if (digestInfo != null) {
       digestMap.remove(digestInfo.digestString);
       removeOldInfo();
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("********** Retrieved " + string);
       }
       return digestInfo.request;
     } else {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("********** Original string not found for " + string);
       }
       return null;

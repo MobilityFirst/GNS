@@ -10,9 +10,9 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.NewApp;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.newApp.packet.CommandPacket;
 import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.util.CanonicalJSON;
@@ -229,7 +229,7 @@ public class CommandHandler {
     CommandRequestInfo sentInfo;
     if ((sentInfo = outStandingQueries.get(id)) != null) {
       outStandingQueries.remove(id);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& For " + sentInfo.getCommand() + " | " + sentInfo.getGuid() + " APP IS SENDING VALUE BACK TO "
                 + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
       }

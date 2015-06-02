@@ -108,7 +108,9 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
     this.nioServer = nioServer;
     this.scheduledThreadPoolExecutor = scheduledThreadPoolExecutor;
 
-    this.replicaControllerDB = new MongoRecordMap<NodeIDType>(mongoRecords, MongoRecords.DBREPLICACONTROLLER);
+    this.replicaControllerDB = new MongoRecordMap<NodeIDType>(mongoRecords, "fred"
+            //MongoRecords.DBREPLICACONTROLLER
+                    );
 
     this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
 

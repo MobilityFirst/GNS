@@ -1,11 +1,10 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nsdesign.Config;
 import org.json.JSONObject;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -53,10 +52,12 @@ public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeI
       String stringData = jsonData.toString();
       int dataLength = stringData.length();
       JSONObject dataCopy = new JSONObject(stringData);
-      if (Config.debuggingEnabled) GNS.getLogger().fine("Sending to " + id + "data: " + dataCopy);
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().fine("Sending to " + id + "data: " + dataCopy);
+      }
       int sent = gnsnioTransport.sendToID(id, dataCopy);
       if (sent < dataLength) {
-        if (Config.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().fine("Retransmitting to " + id + " " + dataCopy);
         }
         Retransmitter rtxTask = new Retransmitter(id, dataCopy, RTX_DELAY);
