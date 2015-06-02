@@ -7,7 +7,8 @@ package edu.umass.cs.gns.newApp.clientSupport;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.AppReconfigurableNode;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
@@ -89,7 +90,7 @@ public class LNSUpdateHandler {
             null, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
     try {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("########## Node " + activeReplica.getNodeID().toString() + "; Sending update " + updateId + " to LNS at" + lnsAddress
                 + " for " + name + " / " + key + ": " + packet.toJSONObject());
       }
@@ -105,7 +106,7 @@ public class LNSUpdateHandler {
           InetSocketAddress lnsAddress) {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID().toString() + "; Sending add: " + name + " : " + key + "->" + value + " to LNS " + lnsAddress);
     }
     AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null, GNS.DEFAULT_TTL_SECONDS);
@@ -126,7 +127,7 @@ public class LNSUpdateHandler {
           InetSocketAddress lnsAddress) {
     int id = nextRequestID();
     outStandingUpdates.put(id, id);
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID().toString() + "; Sending remove: " + name + " to LNS " + lnsAddress);
     }
     RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, null);

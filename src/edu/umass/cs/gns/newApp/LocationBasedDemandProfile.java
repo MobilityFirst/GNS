@@ -9,7 +9,6 @@ package edu.umass.cs.gns.newApp;
 
 import com.google.common.net.InetAddresses;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import java.util.ArrayList;
 import org.json.JSONException;
@@ -357,18 +356,19 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * {@link edu.umass.cs.gns.nsdesign.Config#maxReplica}.
    */
   private int computeNumberOfReplicas(int lookupCount, int updateCount, int actualReplicasCount) {
-    if (Config.singleNS) {
-      return 1; // this seems straightforward
-    } else if (updateCount == 0) {
+//    if (Config.singleNS) {
+//      return 1; // this seems straightforward
+//    } else 
+    if (updateCount == 0) {
       // no updates, replicate everywhere.
-      return Math.min(actualReplicasCount, Config.maxReplica);
+      return Math.min(actualReplicasCount, AppReconfigurableNodeOptions.maxReplica);
     } else {
       // Can't be bigger than the number of actual replicas or the max configured amount
-      return Math.min(Math.min(actualReplicasCount, Config.maxReplica),
+      return Math.min(Math.min(actualReplicasCount, AppReconfigurableNodeOptions.maxReplica),
               // Or smaller than the min configured amount
-              Math.max(Config.minReplica,
+              Math.max(AppReconfigurableNodeOptions.minReplica,
                       (int) StrictMath.round(((double) lookupCount
-                              / ((double) updateCount * Config.normalizingConstant)))));
+                              / ((double) updateCount * AppReconfigurableNodeOptions.normalizingConstant)))));
     }
   }
 

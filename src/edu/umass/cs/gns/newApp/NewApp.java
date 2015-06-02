@@ -43,7 +43,6 @@ import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import edu.umass.cs.gns.replicaCoordination.multipaxos.multipaxospacket.RequestPacket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -89,7 +88,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
         this.localCCP = new ClientCommandProcessor<String>(
                 new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
                 (GNSNodeConfig) nodeConfig,
-                AppReconfigurableNode.debuggingEnabled,
+                AppReconfigurableNodeOptions.debuggingEnabled,
                 (String) id,
                 false,
                 false,
@@ -122,7 +121,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
       //IntegerPacketType intPacket = request.getRequestType();
       JSONObject json = new JSONObject(request.toString());
       Packet.PacketType packetType = Packet.getPacketType(json);
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Handling " + packetType.name()
                 + " packet: " + json.toString());
       }
@@ -218,11 +217,11 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   @Override
   public InterfaceRequest getRequest(String string)
           throws RequestParseException {
-    if (AppReconfigurableNode.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     }
     // Special case handling of NoopPacket packets
-    if (RequestPacket.NO_OP.toString().equals(string)) {
+    if (InterfaceRequest.NO_OP.toString().equals(string)) {
       return new NoopPacket();
     }
     try {
@@ -256,7 +255,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, curValueRequestFields);
       NRState state = new NRState(nameRecord.getValuesMap(), nameRecord.getTimeToLive());
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Getting state: " + state.toString());
       }
       return state.toString();
@@ -280,7 +279,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
    */
   @Override
   public boolean updateState(String name, String state) {
-    if (AppReconfigurableNode.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
     }
     try {

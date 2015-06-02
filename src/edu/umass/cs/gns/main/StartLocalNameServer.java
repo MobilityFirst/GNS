@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.main;
 
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.LocalNameServer;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicationframework.BeehiveDHTRouting;
@@ -104,36 +105,6 @@ public class StartLocalNameServer {
   public static boolean isSyntheticWorkload = false;
   public static String name;
   public static double outputSampleRate = 1.0;
-  public static boolean replicateAll = false;
-
-  public static boolean noEmail = false;
-
-  /**
-   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
-   */
-  public static boolean dnsGnsOnly = false;
-
-  /**
-   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
-   */
-  public static boolean dnsOnly = false;
-
-  /**
-   * Name of the GNS server to forward GNS requests for Local Name server
-   */
-  public static String gnsServerIP;
-
-//  Abhigyan: parameters related to retransmissions.
-//  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
-  /**
-   * Maximum time a local name server waits for a response from name server query is logged as failed after this.
-   */
-  public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
-
-  /**
-   * Fixed timeout after which a query retransmitted.
-   */
-  public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
 
   /**
    * Whether use a fixed timeout or an adaptive timeout. By default, fixed timeout is used.
@@ -462,10 +433,10 @@ public class StartLocalNameServer {
       nameServerLoadMonitorIntervalSeconds = (loadDependentRedirection)
               ? Integer.parseInt(allValues.get(LOAD_MONITOR_INTERVAL)) : 60;
 
-      maxQueryWaitTime = (allValues.containsKey(MAX_QUERY_WAIT_TIME))
+      AppReconfigurableNodeOptions.maxQueryWaitTime = (allValues.containsKey(MAX_QUERY_WAIT_TIME))
               ? Integer.parseInt(allValues.get(MAX_QUERY_WAIT_TIME)) : GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
 
-      queryTimeout = (allValues.containsKey(QUERY_TIMEOUT))
+      AppReconfigurableNodeOptions.queryTimeout = (allValues.containsKey(QUERY_TIMEOUT))
               ? Integer.parseInt(allValues.get(QUERY_TIMEOUT)) : GNS.DEFAULT_QUERY_TIMEOUT;
 
       adaptiveTimeout = allValues.containsKey(ADAPTIVE_TIMEOUT) && Boolean.parseBoolean(allValues.get(ADAPTIVE_TIMEOUT));
@@ -504,18 +475,18 @@ public class StartLocalNameServer {
       }
 
       if (allValues.containsKey(DNS_GNS_ONLY)) {
-        dnsGnsOnly = Boolean.parseBoolean(allValues.get(DNS_GNS_ONLY));
+        AppReconfigurableNodeOptions.dnsGnsOnly = Boolean.parseBoolean(allValues.get(DNS_GNS_ONLY));
       }
 
       if (allValues.containsKey(DNS_ONLY)) {
-        dnsOnly = Boolean.parseBoolean(allValues.get(DNS_ONLY));
+        AppReconfigurableNodeOptions.dnsOnly = Boolean.parseBoolean(allValues.get(DNS_ONLY));
         if (allValues.containsKey(GNS_SERVER_IP)) {
-          gnsServerIP = allValues.get(GNS_SERVER_IP);
+          AppReconfigurableNodeOptions.gnsServerIP = allValues.get(GNS_SERVER_IP);
         } else {
-          gnsServerIP = null;
+          AppReconfigurableNodeOptions.gnsServerIP = null;
         }
       } else {
-        gnsServerIP = null;
+        AppReconfigurableNodeOptions.gnsServerIP = null;
       }
 
       if (allValues.containsKey(EXPERIMENT_MODE)) {
@@ -568,10 +539,10 @@ public class StartLocalNameServer {
     GNS.getLogger().info("Vote Interval: " + voteIntervalMillis + "ms");
     GNS.getLogger().info("Cache Size: " + cacheSize);
     GNS.getLogger().info("Experiment Mode: " + experimentMode);
-    GNS.getLogger().info("DNS GNS Only: " + dnsGnsOnly);
+    GNS.getLogger().info("DNS GNS Only: " + AppReconfigurableNodeOptions.dnsGnsOnly);
     GNS.getLogger().info("Debug Mode: " + debuggingEnabled);
-    if (!dnsGnsOnly) {
-      GNS.getLogger().info("GNS Server IP: " + gnsServerIP);
+    if (!AppReconfigurableNodeOptions.dnsGnsOnly) {
+      GNS.getLogger().info("GNS Server IP: " + AppReconfigurableNodeOptions.gnsServerIP);
     }
 
     try {

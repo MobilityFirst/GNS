@@ -10,7 +10,7 @@ import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
@@ -49,7 +49,7 @@ public class AddRemove {
     //
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
             System.currentTimeMillis());
-    handler.getExecutorService().scheduleAtFixedRate(addTask, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    handler.getExecutorService().scheduleAtFixedRate(addTask, 0, AppReconfigurableNodeOptions.queryTimeout, TimeUnit.MILLISECONDS);
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(" Add Task Scheduled. " + "Name: " + addRecordPacket.getName() + " Request: " + addRecordPacket.getRequestID());
     }
@@ -72,7 +72,7 @@ public class AddRemove {
 
     SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, handler, removeRecord, removeRecord.getName(),
             System.currentTimeMillis());
-    handler.getExecutorService().scheduleAtFixedRate(task, 0, StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+    handler.getExecutorService().scheduleAtFixedRate(task, 0, AppReconfigurableNodeOptions.queryTimeout, TimeUnit.MILLISECONDS);
 
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Remove Task Scheduled. " + "Name: " + removeRecord.getName()

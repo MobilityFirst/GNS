@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.replicaCoordination;
+package edu.umass.cs.gns.nsdesign.replicaCoordination;
 
 import edu.umass.cs.gns.util.Shutdownable;
 import org.json.JSONObject;

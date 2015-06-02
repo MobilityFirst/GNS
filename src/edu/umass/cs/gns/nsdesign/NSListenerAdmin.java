@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved
  */
-package edu.umass.cs.gns.newApp;
+package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
@@ -19,8 +19,8 @@ import edu.umass.cs.gns.newApp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.newApp.packet.admin.DumpRequestPacket;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
-import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ReplicaControllerCoordinator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

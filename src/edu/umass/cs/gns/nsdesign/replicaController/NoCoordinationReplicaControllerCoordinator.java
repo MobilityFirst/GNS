@@ -6,7 +6,7 @@ import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ReplicaControllerCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 

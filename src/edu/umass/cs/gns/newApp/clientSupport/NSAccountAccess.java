@@ -18,7 +18,6 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOpera
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 
@@ -84,7 +83,7 @@ public class NSAccountAccess {
    * @return
    */
   public static AccountInfo lookupAccountInfoFromGuidOrParent(String guid, boolean allowQueryToOtherNSs, 
-          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     AccountInfo info = lookupAccountInfoFromGuid(guid, allowQueryToOtherNSs, activeReplica, lnsAddress);
     if (info != null) {
       return info;
@@ -428,7 +427,7 @@ public class NSAccountAccess {
    * @param guid
    * @return
    */
-  public static String removeGuid(GuidInfo guid, GnsReconfigurable activeReplica,
+  public static String removeGuid(GuidInfo guid, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     return removeGuid(guid, null, false, activeReplica, lnsAddress);
   }
@@ -580,7 +579,7 @@ public class NSAccountAccess {
    * @param tag
    * @return status result
    */
-  public static String addTag(GuidInfo guidInfo, String tag, GnsReconfigurable activeReplica,
+  public static String addTag(GuidInfo guidInfo, String tag, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) {
     guidInfo.addTag(tag);
     guidInfo.noteUpdate();
@@ -598,7 +597,7 @@ public class NSAccountAccess {
    * @param tag
    * @return status result
    */
-  public static String removeTag(GuidInfo guidInfo, String tag, GnsReconfigurable activeReplica, 
+  public static String removeTag(GuidInfo guidInfo, String tag, GnsApplicationInterface activeReplica, 
           InetSocketAddress lnsAddress) {
     guidInfo.removeTag(tag);
     guidInfo.noteUpdate();
@@ -622,7 +621,7 @@ public class NSAccountAccess {
     return false;
   }
 
-  private static boolean updateGuidInfo(GuidInfo guidInfo, GnsReconfigurable activeReplica,
+  private static boolean updateGuidInfo(GuidInfo guidInfo, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) {
     try {
       if (!LNSUpdateHandler.sendUpdate(guidInfo.getGuid(), AccountAccess.GUID_INFO,

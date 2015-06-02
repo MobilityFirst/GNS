@@ -18,7 +18,7 @@ import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplicaApp;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 

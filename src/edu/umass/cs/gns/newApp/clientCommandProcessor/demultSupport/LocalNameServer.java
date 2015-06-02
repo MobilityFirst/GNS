@@ -13,6 +13,7 @@ import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.RequestHandlerParameters;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
@@ -84,8 +85,8 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
             StartLocalNameServer.variation,
             StartLocalNameServer.adaptiveTimeout,
             StartLocalNameServer.outputSampleRate,
-            StartLocalNameServer.queryTimeout,
-            StartLocalNameServer.maxQueryWaitTime,
+            AppReconfigurableNodeOptions.queryTimeout,
+            AppReconfigurableNodeOptions.maxQueryWaitTime,
             StartLocalNameServer.cacheSize,
             StartLocalNameServer.loadDependentRedirection,
             StartLocalNameServer.replicationFramework
@@ -131,16 +132,16 @@ public class LocalNameServer<NodeIDType> implements Shutdownable {
 //    }
 
     try {
-      if (StartLocalNameServer.dnsGnsOnly) {
+      if (AppReconfigurableNodeOptions.dnsGnsOnly) {
         dnsTranslator = new DnsTranslator(Inet4Address.getByName("0.0.0.0"), 53, requestHandler);
         dnsTranslator.start();
-      } else if (StartLocalNameServer.dnsOnly) {
-        if (StartLocalNameServer.gnsServerIP == null) {
+      } else if (AppReconfigurableNodeOptions.dnsOnly) {
+        if (AppReconfigurableNodeOptions.gnsServerIP == null) {
           GNS.getLogger().severe("FAILED TO START DNS SERVER: GNS Server IP is missing or invalid");
           return;
         }
-        GNS.getLogger().warning("gns server IP" + StartLocalNameServer.gnsServerIP);
-        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", StartLocalNameServer.gnsServerIP, requestHandler);
+        GNS.getLogger().warning("gns server IP" + AppReconfigurableNodeOptions.gnsServerIP);
+        udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", AppReconfigurableNodeOptions.gnsServerIP, requestHandler);
         udpDnsServer.start();
       } else {
         udpDnsServer = new UdpDnsServer(Inet4Address.getByName("0.0.0.0"), 53, "8.8.8.8", null, requestHandler);

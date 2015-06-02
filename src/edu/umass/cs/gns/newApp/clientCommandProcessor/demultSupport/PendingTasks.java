@@ -2,6 +2,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -67,7 +68,7 @@ public class PendingTasks {
       // if we get invalid active error a second time or later, it means the set of active replicas is being changed
       // and the new active replica has not received this information. Therefore, we will wait for a timeout value
       // before sending requests again.
-      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : StartLocalNameServer.queryTimeout / 10;
+      long initialDelay = (requestInfo.getNumLookupActives() == 1) ? 0 : AppReconfigurableNodeOptions.queryTimeout / 10;
       //requestInfo.addEventCode(LNSEventCode.CONTACT_RC);
       if (requestID > 0) {
         if (handler.getParameters().isDebugMode()) {
@@ -75,7 +76,7 @@ public class PendingTasks {
         }
         RequestActivesTask requestActivesTask = new RequestActivesTask(name, requestID, handler);
         handler.getExecutorService().scheduleAtFixedRate(requestActivesTask, initialDelay,
-                StartLocalNameServer.queryTimeout, TimeUnit.MILLISECONDS);
+                AppReconfigurableNodeOptions.queryTimeout, TimeUnit.MILLISECONDS);
       }
     } else {
       GNS.getLogger().warning("This request already in queue so not added to pending requests again. " + requestInfo);

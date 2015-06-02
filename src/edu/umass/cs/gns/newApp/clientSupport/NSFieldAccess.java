@@ -13,7 +13,8 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.AppReconfigurableNode;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.util.ResultValue;
@@ -42,16 +43,16 @@ public class NSFieldAccess {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       }
       result = nameRecord.getKeyAsArray(field);
     } catch (FieldNotFoundException e) {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Field not found " + guid + " : " + field);
       }
     } catch (RecordNotFoundException e) {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Record not found " + guid + " : " + field);
       }
     }
@@ -76,16 +77,16 @@ public class NSFieldAccess {
           throws FailedDBOperationException {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("LOOKUPFIELDONTHISSERVER: " + guid + " : " + field + "->" + nameRecord);
       }
       return nameRecord.getValuesMap();
     } catch (FieldNotFoundException e) {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Field not found " + guid + " : " + field);
       }
     } catch (RecordNotFoundException e) {
-      if (Config.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Record not found " + guid + " : " + field);
       }
     }

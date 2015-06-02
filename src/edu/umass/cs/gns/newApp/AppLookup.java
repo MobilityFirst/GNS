@@ -8,7 +8,6 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.newApp.clientSupport.NSAuthentication;
 import edu.umass.cs.gns.newApp.clientSupport.NSGroupAccess;
@@ -63,7 +62,7 @@ public class AppLookup {
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     final Long receiptTime = System.nanoTime(); // instrumentation
-    if (AppReconfigurableNode.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() + "; DNS Query Packet: " + dnsPacket.toString());
     }
     // META COMMENT ABOUT THE COMMENT BELOW: 
@@ -80,7 +79,7 @@ public class AppLookup {
     }
 
     if (noCoordinatorState) {
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("noCoordinatorState! returning error... DNS Query Packet: " + dnsPacket.toString());
       }
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
@@ -116,7 +115,7 @@ public class AppLookup {
       }
 
       double authDelayInMS = (System.nanoTime() - receiptTime) / 1000000.0;
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("8888888888888888888888888888>>>>:  TOTAL AUTH TIME AT THE APP " 
                 + Format.formatTime(authDelayInMS) + "ms");
       }
@@ -125,7 +124,7 @@ public class AppLookup {
         dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
         dnsPacket.getHeader().setResponseCode(errorCode);
         dnsPacket.setResponder(gnsApp.getNodeID());
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet " 
                   + dnsPacket.toJSONObjectForErrorResponse());
         }
@@ -141,7 +140,7 @@ public class AppLookup {
           // But before we continue handle the group guid indirection case, but only
           // if the name record doesn't contain the field we are looking for
           // and only for single field lookups.
-          if (Config.allowGroupGuidIndirection && field != null && !Defs.ALLFIELDS.equals(field)
+          if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null && !Defs.ALLFIELDS.equals(field)
                   && nameRecord != null && !nameRecord.containsKey(field) && !doNotReplyToClient) {
             if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
               // We got the values and sent them out above so we're done here.
@@ -149,12 +148,12 @@ public class AppLookup {
             }
           }
         } catch (FieldNotFoundException e) {
-          if (AppReconfigurableNode.debuggingEnabled) {
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
           }
         }
 
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Name record read is: " + nameRecord);
         }
         // Now we either have a name record with stuff it in or a null one
@@ -164,7 +163,7 @@ public class AppLookup {
           gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
         }
         double delayInMS = (System.nanoTime() - receiptTime) / 1000000.0;
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("8888888888888888888888888888>>>>: TOTAL LOOKUP TIME AT THE APP " 
                   + Format.formatTime(delayInMS) + "ms");
         }
@@ -224,21 +223,21 @@ public class AppLookup {
     try {
       // Check for the case where we're returning all the fields the entire record.
       if (Defs.ALLFIELDS.equals(field)) {
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().fine("Field=" + field + " Format=" + dnsPacket.getReturnFormat());
         }
         // need everything so just grab all the fields
         nameRecord = NameRecord.getNameRecord(database, guid);
         // Otherwise if field is specified we're just looking up that single field.
       } else if (field != null) {
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().fine("Field=" + field + " Format=" + dnsPacket.getReturnFormat());
         }
         // otherwise grab a few system fields we need plus the field the user wanted
         nameRecord = NameRecord.getNameRecordMultiField(database, guid, dnsSystemFields, dnsPacket.getReturnFormat(), field);
         // Last case: If "field" is null we're going to look in "fields" for a list of fields to lookup
       } else { // multi-field lookup
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().fine("Fields=" + fields + " Format=" + dnsPacket.getReturnFormat());
         }
         String[] fieldArray = new String[fields.size()];
@@ -286,26 +285,26 @@ public class AppLookup {
             } else {
               // we return the single value of the key (old array-based return format)
               dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));
-              if (AppReconfigurableNode.debuggingEnabled) {
+              if (AppReconfigurableNodeOptions.debuggingEnabled) {
                 GNS.getLogger().info("NS sending DNS lookup response: Name = " + guid + " Key = " + key + " Data = " + dnsPacket.getRecordValue());
               }
             }
             // or we're supposed to return all the keys so return the entire record
           } else if (dnsPacket.getKeys() != null || Defs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
-            if (AppReconfigurableNode.debuggingEnabled) {
+            if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
             }
             // or we don't actually have the field
           } else { // send error msg.
-            if (AppReconfigurableNode.debuggingEnabled) {
+            if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("Record doesn't contain field: " + key + " guid = " + guid + " record = " + nameRecord.toString());
             }
             dnsPacket.getHeader().setResponseCode(NSResponseCode.FIELD_NOT_FOUND_ERROR);
           }
           // For some reason the Guid of the packet is null
         } else { // send error msg.
-          if (AppReconfigurableNode.debuggingEnabled) {
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("GUID of query is NULL!");
           }
           dnsPacket.getHeader().setResponseCode(NSResponseCode.BAD_GUID_ERROR);
@@ -314,7 +313,7 @@ public class AppLookup {
       } else { // send invalid error msg.
         dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
         if (nameRecord == null) {
-          if (AppReconfigurableNode.debuggingEnabled) {
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("Invalid actives. Name = " + guid);
           }
         }
@@ -322,7 +321,7 @@ public class AppLookup {
       // this handles the myriad of FieldNotFoundException's, which are mostly system
       // fields not found, not the user field in question
     } catch (FieldNotFoundException e) {
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().severe("Field not found exception: " + e.getMessage());
       }
       dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR);

@@ -9,6 +9,7 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNode;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
@@ -233,7 +234,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
         }
       }
       double aclDelayInMS = (System.nanoTime() - waitStart) / 1000000.0;
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("8888888888888888888888888888>>>>:  NOTIFY DELAY " + Format.formatTime(aclDelayInMS) + "ms");
       }
       if (debuggingEnabled) {

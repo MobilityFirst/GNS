@@ -7,7 +7,8 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOpera
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+import edu.umass.cs.gns.newApp.AppReconfigurableNode;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
@@ -149,7 +150,7 @@ public class NSGroupAccess {
   public static Date getLastUpdate(String guid, GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_LAST_UPDATE, true, activeReplica, lnsAddress);
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++ResultValue = " + resultValue);
     }
     if (!resultValue.isEmpty()) {
@@ -162,7 +163,7 @@ public class NSGroupAccess {
   public static int getMinRefresh(String guid, GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_MIN_REFRESH_INTERVAL, true, activeReplica, lnsAddress);
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++ResultValue = " + resultValue);
     }
     if (!resultValue.isEmpty()) {
@@ -176,7 +177,7 @@ public class NSGroupAccess {
   public static String getQueryString(String guid, GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
     ResultValue resultValue = NSFieldAccess.lookupListFieldAnywhere(guid, GROUP_QUERY_STRING, true, activeReplica, lnsAddress);
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++ResultValue = " + resultValue);
     }
     if (!resultValue.isEmpty()) {
@@ -196,7 +197,7 @@ public class NSGroupAccess {
         resultArray.put(valuesMap.get(field));
       }
     }
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Group result for " + groupGuid + "/" + field + " = " + resultArray.toString());
     }
     ValuesMap result = new ValuesMap();

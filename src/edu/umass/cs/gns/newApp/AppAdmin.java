@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gns.util.Shutdownable;
-import edu.umass.cs.gns.nsdesign.*;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;

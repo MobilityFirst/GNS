@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.newApp.NSListenerAdmin;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.database.MongoRecords;
@@ -21,8 +20,8 @@ import edu.umass.cs.gns.nsdesign.replicaController.NoCoordinationReplicaControll
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaControllerCoordinatorPaxos;
 import edu.umass.cs.gns.paxos.PaxosConfig;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
-import edu.umass.cs.gns.replicaCoordination.ReplicaControllerCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ReplicaControllerCoordinator;
 import edu.umass.cs.gns.util.GnsMessenger;
 import java.io.IOException;
 import java.util.HashMap;

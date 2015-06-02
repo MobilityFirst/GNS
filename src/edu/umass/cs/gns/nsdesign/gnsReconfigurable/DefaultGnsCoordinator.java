@@ -6,7 +6,7 @@ import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 

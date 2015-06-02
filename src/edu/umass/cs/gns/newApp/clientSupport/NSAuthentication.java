@@ -14,6 +14,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTyp
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNode;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -38,7 +39,7 @@ public class NSAuthentication {
     final long aclStartTime = System.nanoTime();
     GuidInfo guidInfo;
     if ((guidInfo = NSAccountAccess.lookupGuidInfo(guid, gnsApp, lnsAddress)) == null) {
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("Name " + guid + " key = " + field + ": BAD_GUID_ERROR");
       }
       return NSResponseCode.BAD_GUID_ERROR;
@@ -63,7 +64,7 @@ public class NSAuthentication {
       } else {
         GuidInfo accessorGuidInfo;
         if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp, lnsAddress)) != null) {
-          if (AppReconfigurableNode.debuggingEnabled) {
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("================> Catchall lookup returned: " + accessorGuidInfo);
           }
           publicKey = accessorGuidInfo.getPublicKey();
@@ -81,34 +82,34 @@ public class NSAuthentication {
       aclCheckPassed = NSAccessSupport.verifyAccess(access, guidInfo, field, accessorGuid, gnsApp, lnsAddress);
     }
     double aclDelayInMS = (System.nanoTime() - aclStartTime) / 1000000.0;
-    if (AppReconfigurableNode.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("8888888888888888888888888888>>>>:  ACL CHECK TIME AT THE APP " + Format.formatTime(aclDelayInMS) + "ms");
     }
     long authStartTime = System.nanoTime();
     // now check signatures
     if (signature == null) {
       if (!NSAccessSupport.fieldAccessibleByEveryone(access, guidInfo.getGuid(), field, gnsApp)) {
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         }
         return NSResponseCode.ACCESS_ERROR;
       }
     } else if (signature != null) {
       if (!NSAccessSupport.verifySignature(publicKey, signature, message)) {
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": SIGNATURE_ERROR");
         }
         return NSResponseCode.SIGNATURE_ERROR;
         //} else if (!NSAccessSupport.verifyAccess(access, guidInfo, field, accessorGuid, gnsApp, lnsAddress)) {
       } else if (!aclCheckPassed) {
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Name " + guid + " key = " + field + ": ACCESS_ERROR");
         }
         return NSResponseCode.ACCESS_ERROR;
       }
     }
     double authDelayInMS = (System.nanoTime() - authStartTime) / 1000000.0;
-    if (AppReconfigurableNode.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("8888888888888888888888888888>>>>:  SIG CHECK TIME " + Format.formatTime(authDelayInMS) + "ms");
     }
 
@@ -136,14 +137,14 @@ public class NSAuthentication {
     String publicKey;
     Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp);
     publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
-    if (AppReconfigurableNode.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("================> " + access.toString() + " Lookup for " + field + " returned: " + publicKey + " public keys=" + publicKeys);
     }
     if (publicKey == null) {
       // also catch all the keys that are stored in the +ALL+ record
       publicKeys.addAll(NSAccessSupport.lookupPublicKeysFromAcl(access, guid, ALLFIELDS, gnsApp));
       publicKey = ClientUtils.findPublicKeyForGuid(accessorGuid, publicKeys);
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("================> " + access.toString() + " Lookup with +ALL+ returned: " + publicKey + " public keys=" + publicKeys);
       }
     }
@@ -152,14 +153,14 @@ public class NSAuthentication {
     if (publicKey == null && publicKeys.contains(EVERYONE)) {
       GuidInfo accessorGuidInfo;
       if ((accessorGuidInfo = NSAccountAccess.lookupGuidInfo(accessorGuid, true, gnsApp, lnsAddress)) != null) {
-        if (AppReconfigurableNode.debuggingEnabled) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("================> " + access.toString() + " Lookup for EVERYONE returned: " + accessorGuidInfo);
         }
         publicKey = accessorGuidInfo.getPublicKey();
       }
     }
     if (publicKey == null) {
-      if (AppReconfigurableNode.debuggingEnabled) {
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("================> Public key not found: accessor=" + accessorGuid + " guid= " + guid
                 + " field= " + field + " public keys=" + publicKeys);
       }

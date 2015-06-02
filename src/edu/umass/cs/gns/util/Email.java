@@ -8,6 +8,7 @@ package edu.umass.cs.gns.util;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
 
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.nsdesign.Config;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
@@ -105,7 +106,7 @@ public class Email {
    * @return
    */
   public static boolean emailSSL(String subject, String recipient, String text, boolean suppressWarning) {
-    if (StartLocalNameServer.noEmail) {
+    if (AppReconfigurableNodeOptions.noEmail) {
       return true;
     }
     try {

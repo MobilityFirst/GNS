@@ -3,6 +3,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.main.StartLocalNameServer;
+import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
@@ -63,7 +64,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
 
       if (numAttempts > GNS.numPrimaryReplicas) {
         GNS.getLogger().warning("Error: No actives received for name: " + name + " after " + numAttempts + " attempts.");
-        if (System.currentTimeMillis() - startTime > StartLocalNameServer.maxQueryWaitTime) {
+        if (System.currentTimeMillis() - startTime > AppReconfigurableNodeOptions.maxQueryWaitTime) {
           // max number of attempts have been made,
           GNS.getLogger().severe("Error: No actives received for name  " + name + " after " + numAttempts
                   + " attempts.");

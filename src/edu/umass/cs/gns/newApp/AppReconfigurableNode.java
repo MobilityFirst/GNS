@@ -3,7 +3,6 @@ package edu.umass.cs.gns.newApp;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import static edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions.*;
 import java.io.IOException;
@@ -22,8 +21,6 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
   private MongoRecords<String> mongoRecords = null;
   
-  public static boolean debuggingEnabled = false;
-
   public AppReconfigurableNode(String nodeID, GNSInterfaceNodeConfig<String> nc)
           throws IOException {
     super(nodeID, nc);
@@ -33,7 +30,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {
     // this is called by super so we need to get this field initialized now
     if (this.mongoRecords == null) {
-      this.mongoRecords = new MongoRecords<>(this.myID, Config.mongoPort);
+      this.mongoRecords = new MongoRecords<>(this.myID, AppReconfigurableNodeOptions.mongoPort);
     }
     NewApp app = new NewApp(this.myID, (GNSInterfaceNodeConfig) this.nodeConfig, this.messenger, mongoRecords);
 

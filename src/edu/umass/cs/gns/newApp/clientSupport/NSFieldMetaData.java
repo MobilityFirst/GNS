@@ -14,7 +14,6 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -74,7 +73,7 @@ public class NSFieldMetaData {
   }
 
   public static void remove(MetaDataTypeName type, String guid, String key, String value, 
-          GnsReconfigurable activeReplica, InetSocketAddress lnsAddress) {
+          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
 
     LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
             UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);

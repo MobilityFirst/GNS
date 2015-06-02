@@ -10,7 +10,7 @@ import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
 import org.json.JSONException;
 import org.json.JSONObject;
 

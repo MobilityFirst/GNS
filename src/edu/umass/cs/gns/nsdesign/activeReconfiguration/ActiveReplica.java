@@ -14,7 +14,7 @@ import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.paxos.PaxosConfig;
-import edu.umass.cs.gns.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import org.json.JSONException;
 import org.json.JSONObject;

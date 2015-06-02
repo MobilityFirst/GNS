@@ -29,6 +29,51 @@ import org.apache.commons.cli.Options;
  * @author westy
  */
 public class AppReconfigurableNodeOptions {
+  
+  // "Global" parameters
+  
+  /**
+   * The port used by Mongo.
+   */
+  public static int mongoPort = 27017;
+   /**
+   * Controls whether DNS reads can read fields from group guids.
+   */
+  public static boolean allowGroupGuidIndirection = true;
+  
+   // parameter related to replication of records
+  public static double normalizingConstant = 0.5;
+  public static int minReplica = 3;
+  public static int maxReplica = 100;
+  
+  /**
+   * Fixed timeout after which a query retransmitted.
+   */
+  public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
+  /**
+   * Name of the GNS server to forward GNS requests for Local Name server
+   */
+  public static String gnsServerIP;
+  /**
+   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
+   */
+  public static boolean dnsOnly = false;
+  public static boolean replicateAll = false;
+  //  Abhigyan: parameters related to retransmissions.
+  //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
+  /**
+   * Maximum time a local name server waits for a response from name server query is logged as failed after this.
+   */
+  public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
+  public static boolean noEmail = false;
+  /**
+   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
+   */
+  public static boolean dnsGnsOnly = false;
+  
+   public static boolean debuggingEnabled = false;
+   
+   // Command line and config file options
 
   // If you change this list, change it below in getAllOptions as well.
   public static final String ID = "id";
@@ -43,6 +88,8 @@ public class AppReconfigurableNodeOptions {
   public static final String DEBUG_MISC = "debugMisc";
   public static final String TEST = "test";
   public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
+ 
+  
 
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
@@ -101,7 +148,7 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       // For backwards compatibility until Config goes away
       Config.debuggingEnabled = true;
-      AppReconfigurableNode.debuggingEnabled = true;
+      debuggingEnabled = true;
       System.out.println("******** DEBUGGING IS ENABLED IN THE APP *********");
     }
 
