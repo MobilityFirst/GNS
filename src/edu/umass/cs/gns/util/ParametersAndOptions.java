@@ -38,14 +38,15 @@ public class ParametersAndOptions {
   /**
    * Returns a hash map with all options including options in config file and the command line arguments
    *
+   * @param className
+   * @param commandLineOptions
    * @param args command line arguments given to JVM
    * @return hash map with KEY = parameter names, VALUE = values of parameters in String form
    * @throws IOException
    */
-  public static HashMap<String, String> getParametersAsHashMap(String className, Options commandLineOptions, String... args) throws IOException {
-
+  public static HashMap<String, String> getParametersAsHashMap(String className, Options commandLineOptions, 
+          String... args) throws IOException {
     CommandLine parser = null;
-
     try {
       parser = new GnuParser().parse(commandLineOptions, args);
     } catch (ParseException e) {
@@ -56,7 +57,7 @@ public class ParametersAndOptions {
 
     if (parser.hasOption(HELP)) {
       printUsage(className, commandLineOptions);
-      System.exit(1);
+      System.exit(0);
     }
 
     // load options given in config file in a java properties object
@@ -94,12 +95,9 @@ public class ParametersAndOptions {
         value = "true";
       }
       allValues.put(argName, value);
-//        System.out.println("adding: " + argName + "\t" + value);
     }
-//      System.out.println("All values: " + allValues);
 
     return allValues;
-
   }
 
   public static boolean isOptionTrue(String key, Map<String, String> options) {
@@ -109,7 +107,6 @@ public class ParametersAndOptions {
             && ("true".equals(value)
             || "True".equals(value)
             || "TRUE".equals(value));
-
   }
 
   public static void printUsage(String className, Options commandLineOptions) {
@@ -121,7 +118,7 @@ public class ParametersAndOptions {
   
   public static void printOptions(Map<String, String> options) {
     StringBuilder result = new StringBuilder();
-    TreeMap<String, String> tree = new TreeMap(options);
+    TreeMap<String, String> tree = new TreeMap<String, String>(options);
     for (Entry<String,String> entry : tree.entrySet()) {
       result.append(entry.getKey());
       result.append(" => ");
@@ -129,7 +126,6 @@ public class ParametersAndOptions {
       result.append("\n");
     }
     System.out.print(result.toString());
-    
   }
 
   public static Options getAllOptions() {
@@ -149,10 +145,6 @@ public class ParametersAndOptions {
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(ParametersAndOptions.class.getCanonicalName(),
                     getAllOptions(), args);
-    if (options.containsKey(HELP)) {
-      ParametersAndOptions.printUsage(ParametersAndOptions.class.getCanonicalName(),
-              getAllOptions());
-    }
     printOptions(options);
     System.out.println("debug is " + isOptionTrue("debug", options));
     System.out.println("debugAPP is " + isOptionTrue("debugAPP", options));

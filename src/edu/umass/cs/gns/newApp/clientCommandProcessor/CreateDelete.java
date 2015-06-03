@@ -37,22 +37,29 @@ import org.json.JSONObject;
 public class CreateDelete {
 
   public static void handleAddPacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
-    AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
-    handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
-    ValuesMap valuesMap = new ValuesMap();
-    valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
-    sendPacket(addRecordPacket.getName(),
-            new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()),
-            handler);
+    if (AppReconfigurableNodeOptions.standAloneApp) {
+    } else {
+      // do normal add which actually involves converting this into a CreateServiceName packet
+      AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
+      handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
+      ValuesMap valuesMap = new ValuesMap();
+      valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
+      sendPacketWithRetransmission(addRecordPacket.getName(),
+              new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()),
+              handler);
     }
+  }
 
   public static void handleRemovePacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
-    RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
-    handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
-    sendPacket(removeRecordPacket.getName(),
-            new DeleteServiceName(null, removeRecordPacket.getName(), 0),
-            handler);
+    if (AppReconfigurableNodeOptions.standAloneApp) {
+    } else {
+      RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
+      handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
+      sendPacketWithRetransmission(removeRecordPacket.getName(),
+              new DeleteServiceName(null, removeRecordPacket.getName(), 0),
+              handler);
     }
+  }
 
   public static AddRecordPacket registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
@@ -74,7 +81,7 @@ public class CreateDelete {
     return removeRecordPacket;
   }
 
-  public static void sendPacket(String name, BasicReconfigurationPacket packet, EnhancedClientRequestHandlerInterface handler) {
+  public static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, EnhancedClientRequestHandlerInterface handler) {
     SendReconfiguratorPacketTask task = new SendReconfiguratorPacketTask(name, packet, handler);
     handler.getExecutorService().scheduleAtFixedRate(task, 0, AppReconfigurableNodeOptions.queryTimeout, TimeUnit.MILLISECONDS);
   }

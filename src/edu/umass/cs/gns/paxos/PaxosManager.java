@@ -484,39 +484,39 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
     createPaxosInstance(testPaxosID, 0, x, clientRequestHandler.getState(testPaxosID));
   }
 
-  /**
-   * initialize transport object during Paxos debugging/testing
-   *
-   */
-  private  NioServer initTransport(int numNodes, int startingPort) {
-
-    // demux object for paxos
-    PaxosPacketDemultiplexer paxosDemux = new PaxosPacketDemultiplexer(this);
-
-    // node config object for test
-    PaxosNodeConfig config = new PaxosNodeConfig(numNodes, startingPort);
-
-
-    NioServer tcpTransportLocal = null;
-    try {
-      GNS.getLogger().fine(" Node ID is " + nodeID.toString());
-
-      ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
-      tcpTransportLocal = new NioServer<NodeIDType>(nodeID, jsonMessageWorker, config);
-//      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
-//      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
-
-
-      if (debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID.toString());
-
-      // start TCP transport thread
-      new Thread(tcpTransportLocal).start();
-    } catch (IOException e) {
-      GNS.getLogger().severe(" Could not initialize TCP socket at client");
-      e.printStackTrace();  
-    }
-    return tcpTransportLocal;
-  }
+//  /**
+//   * initialize transport object during Paxos debugging/testing
+//   *
+//   */
+//  private  NioServer initTransport(int numNodes, int startingPort) {
+//
+//    // demux object for paxos
+//    PaxosPacketDemultiplexer paxosDemux = new PaxosPacketDemultiplexer(this);
+//
+//    // node config object for test
+//    PaxosNodeConfig config = new PaxosNodeConfig(numNodes, startingPort);
+//
+//
+//    NioServer tcpTransportLocal = null;
+//    try {
+//      GNS.getLogger().fine(" Node ID is " + nodeID.toString());
+//
+//      ByteStreamToJSONObjects jsonMessageWorker = new ByteStreamToJSONObjects(paxosDemux);
+//      tcpTransportLocal = new NioServer<NodeIDType>(nodeID, jsonMessageWorker, config);
+////      JSONMessageWorker jsonMessageWorker = new JSONMessageWorker(paxosDemux);
+////      tcpTransportLocal = new GNSNIOTransport(nodeID, config, jsonMessageWorker);
+//
+//
+//      if (debugMode) GNS.getLogger().fine(" TRANSPORT OBJECT CREATED for node  " + nodeID.toString());
+//
+//      // start TCP transport thread
+//      new Thread(tcpTransportLocal).start();
+//    } catch (IOException e) {
+//      GNS.getLogger().severe(" Could not initialize TCP socket at client");
+//      e.printStackTrace();  
+//    }
+//    return tcpTransportLocal;
+//  }
 
   private  void processMessage(Runnable runnable) {
 
