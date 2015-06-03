@@ -30,23 +30,22 @@ import org.apache.commons.cli.Options;
  * @author westy
  */
 public class AppReconfigurableNodeOptions {
-  
+
   // "Global" parameters
-  
   /**
    * The port used by Mongo.
    */
   public static int mongoPort = 27017;
-   /**
+  /**
    * Controls whether DNS reads can read fields from group guids.
    */
   public static boolean allowGroupGuidIndirection = true;
-  
-   // parameter related to replication of records
+
+  // parameter related to replication of records
   public static double normalizingConstant = 0.5;
   public static int minReplica = 3;
   public static int maxReplica = 100;
-  
+
   /**
    * Fixed timeout after which a query retransmitted.
    */
@@ -71,11 +70,12 @@ public class AppReconfigurableNodeOptions {
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
   public static boolean dnsGnsOnly = false;
-  
-   public static boolean debuggingEnabled = false;
-   
-   // Command line and config file options
 
+  public static boolean debuggingEnabled = false;
+
+  public static boolean standAloneApp = false;
+
+  // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
   public static final String ID = "id";
   public static final String NS_FILE = "nsfile";
@@ -88,9 +88,8 @@ public class AppReconfigurableNodeOptions {
   public static final String DEBUG_PAXOS = "debugPaxos";
   public static final String DEBUG_MISC = "debugMisc";
   public static final String TEST = "test";
+  public static final String STANDALONE = "standAlone";
   public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
- 
-  
 
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
@@ -106,6 +105,7 @@ public class AppReconfigurableNodeOptions {
     Option debugPaxos = new Option(DEBUG_PAXOS, "Enables debugging output for Paxos");
     Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for all miscellaneous utilities");
     Option test = new Option(TEST, "Runs multiple test nodes on one machine");
+    Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
     Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, true, "The class to use for the demand profile");
 
     Options commandLineOptions = new Options();
@@ -122,6 +122,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(debugPaxos);
     commandLineOptions.addOption(debugMisc);
     commandLineOptions.addOption(test);
+    commandLineOptions.addOption(standAlone);
     commandLineOptions.addOption(demandProfileClass);
 
     return commandLineOptions;
@@ -131,8 +132,8 @@ public class AppReconfigurableNodeOptions {
   private static boolean initialized = false;
 
   /**
-   * Initializes global parameter options from command line and config file options
-   * that are not handled elsewhere.
+   * Initializes parameter options from command line and config file options
+   * for AppReconfigurableNode.
    *
    * @param allValues
    */
@@ -174,7 +175,7 @@ public class AppReconfigurableNodeOptions {
     }
 
     if (isOptionTrue(DEBUG_PAXOS, allValues)) {
-       System.out.println("******** DEBUGGING IS ENABLED IN PAXOS *********");
+      System.out.println("******** DEBUGGING IS ENABLED IN PAXOS *********");
       // For backwards compatibility until Config goes away
       PaxosManager.getLogger().setLevel(Level.INFO);
     } else {
@@ -188,18 +189,9 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
       String levelString = allValues.get(CONSOLE_OUTPUT_LEVEL);
       GNS.consoleOutputLevel = levelString;
-//      try {
-//        Level level = Level.parse(levelString);
-//        // until a better way comes along
-//
-//        //PaxosInstanceStateMachine
-//        //DerbyPaxosLogger
-//        System.out.println("Set Reconfiguration log level to " + levelString);
-//      } catch (Exception e) {
-//        Reconfigurator.log.setLevel(DEFAULTCONSOLELEVEL);
-//        System.out.println("Could not parse " + levelString
-//                + "; set Reconfigurator log level to default level " + DEFAULTCONSOLELEVEL);
-//      }
+    }
+    if (allValues.containsKey(STANDALONE)) {
+      standAloneApp = true;
     }
 
     boolean demandProfileSet = false;

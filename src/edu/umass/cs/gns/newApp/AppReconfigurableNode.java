@@ -20,7 +20,7 @@ import java.util.Set;
 public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
   private MongoRecords<String> mongoRecords = null;
-  
+
   public AppReconfigurableNode(String nodeID, GNSInterfaceNodeConfig<String> nc)
           throws IOException {
     super(nodeID, nc);
@@ -32,9 +32,9 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     if (this.mongoRecords == null) {
       this.mongoRecords = new MongoRecords<>(this.myID, AppReconfigurableNodeOptions.mongoPort);
     }
-    NewApp app = new NewApp(this.myID, (GNSInterfaceNodeConfig) this.nodeConfig, this.messenger, mongoRecords);
+    NewApp app = new NewApp(this.myID, (GNSInterfaceNodeConfig<String>) this.nodeConfig, this.messenger, mongoRecords);
 
-    NewAppCoordinator appCoordinator = new NewAppCoordinator(app, this.nodeConfig, this.messenger);
+    NewAppCoordinator<String> appCoordinator = new NewAppCoordinator<String>(app, this.nodeConfig, this.messenger);
 
     // start the NSListenerAdmin thread
     new AppAdmin(app, (GNSNodeConfig) nodeConfig).start();
@@ -45,13 +45,20 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
   }
 
   private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
-    GNSNodeConfig nodeConfig = new GNSNodeConfig(nodeConfigFilename, nodeID);
-    new AppReconfigurableNode((String)nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
-    new AppReconfigurableNode((String)nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
+    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, nodeID);
+    new AppReconfigurableNode((String) nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
+    new AppReconfigurableNode((String) nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
   }
 
-  private static void startTestNodes(String filename) throws IOException {
-    GNSNodeConfig nodeConfig = new GNSNodeConfig(filename, true);
+  private static void startStandalone(String nodeConfigFilename) throws IOException {
+    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, true);
+    String nodeID = (String) nodeConfig.getActiveReplicas().iterator().next();
+    GNS.getLogger().info("Starting standalone node " + nodeID);
+    new AppReconfigurableNode(nodeID, nodeConfig);
+  }
+
+  private static void startTestNodes(String nodeConfigFilename) throws IOException {
+    GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, true);
     try {
       for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {
         System.out.println("#####################################################");
@@ -73,14 +80,11 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(AppReconfigurableNode.class.getCanonicalName(),
                     AppReconfigurableNodeOptions.getAllOptions(), args);
-    if (options.containsKey(HELP)) {
-      ParametersAndOptions.printUsage(AppReconfigurableNode.class.getCanonicalName(),
-              AppReconfigurableNodeOptions.getAllOptions());
-      System.exit(0);
-    }
     printOptions(options);
     AppReconfigurableNodeOptions.initializeFromOptions(options);
-    if (options.get(TEST) != null && options.get(NS_FILE) != null) { // for testing
+    if (options.get(STANDALONE) != null) {
+      startStandalone(options.get(NS_FILE));
+    } else if (options.get(TEST) != null && options.get(NS_FILE) != null) { // for testing
       startTestNodes(options.get(NS_FILE));
     } else if (options.get(ID) != null && options.get(NS_FILE) != null) {
       startNodePair(options.get(ID), options.get(NS_FILE));

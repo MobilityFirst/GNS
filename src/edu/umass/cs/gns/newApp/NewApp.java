@@ -104,8 +104,6 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     PacketType.UPDATE,
     PacketType.SELECT_REQUEST,
     PacketType.SELECT_RESPONSE,
-    //PacketType.ACTIVE_ADD,
-    //PacketType.ACTIVE_REMOVE,
     PacketType.UPDATE_CONFIRM,
     PacketType.ADD_CONFIRM,
     PacketType.REMOVE_CONFIRM,
@@ -323,46 +321,6 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     return false;
   }
 
-  //@Override
-//  public boolean updateStateOld(String name, String state) {
-//    if (AppReconfigurableNode.debuggingEnabled) {
-//      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Updating " + name + " state: " + state);
-//    }
-//    boolean stateUpdated = false;
-//    try {
-//      if (state == null) {
-//        // If state is null the only thing it means is that we need to delete 
-//        // the record. If the record does not exists this is just a noop.
-//        NameRecord.removeNameRecord(nameRecordDB, name);
-//      } else {
-//        //if (true) {
-//        NRState state1 = new NRState(state);
-//        NameRecord nameRecord = new NameRecord(nameRecordDB, name, INITIAL_RECORD_VERSION,
-//                state1.valuesMap, state1.ttl,
-//                nodeConfig.getReplicatedReconfigurators(name));
-//        NameRecord.addNameRecord(nameRecordDB, nameRecord);
-////      } else {
-////        NRState state1 = new NRState(state);
-////        NameRecord nameRecord = new NameRecord(nameRecordDB, name);
-////        nameRecord.updateState(state1.valuesMap, state1.ttl);
-////      }
-//        stateUpdated = true;
-//      }
-//      // todo handle the case if record does not exist. for this update state should return record not found exception.
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//    } catch (RecordExistsException e) {
-//      GNS.getLogger().severe("Record already exists: " + e.getMessage());
-//      e.printStackTrace();
-////    } catch (FieldNotFoundException e) {
-////      GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-////      e.printStackTrace();
-//    } catch (FailedDBOperationException e) {
-//      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-//      e.printStackTrace();
-//    }
-//    return stateUpdated;
-//  }
   /**
    *
    * @param name

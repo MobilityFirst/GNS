@@ -23,54 +23,52 @@ import org.json.JSONException;
 /**
  **
  * An interface for handling of client requests, comms and cacheing.
- * Abstracts out the methods for storing of request info, caching and 
+ * Abstracts out the methods for storing of request info, caching and
  * communication needs of a node. A lot of this code used to be static methods in the LocalNameServer.
  * This class makes the code that uses it not depend statically on the LocalNameServer.
  *
  * @param <NodeIDType>
  */
-public interface ClientRequestHandlerInterface<NodeIDType>  {
+public interface ClientRequestHandlerInterface<NodeIDType> {
 
- 
   /**
    * The executor that runs tasks.
-   * 
+   *
    * @return the executorService
    */
   public ScheduledThreadPoolExecutor getExecutorService();
 
   /**
    * Maintains information about other nodes.
-   * 
-   * @return 
+   *
+   * @return
    */
   public GNSNodeConfig<NodeIDType> getGnsNodeConfig();
-  
+
   // FIXME: During transition we have both this and the above.
-  public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig(); 
-  
+  public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig();
+
   /**
    * Returns that set of parameters used to control the handlers behavior.
-   * 
-   * @return 
+   *
+   * @return
    */
   public RequestHandlerParameters getParameters();
-  
+
   /**
    * Returns the address of this node.
-   * 
-   * @return 
+   *
+   * @return
    */
-   public InetSocketAddress getNodeAddress();
-   
-   public Object getActiveReplicaID();
-   
-   public Intercessor<NodeIDType> getIntercessor();
-   
-   public Admintercessor<NodeIDType> getAdmintercessor();
+  public InetSocketAddress getNodeAddress();
+
+  public Object getActiveReplicaID();
+
+  public Intercessor<NodeIDType> getIntercessor();
+
+  public Admintercessor<NodeIDType> getAdmintercessor();
 
   // REQUEST INFO METHODS
-
   public int getUniqueRequestID();
 
   public void addRequestInfo(int id, RequestInfo requestInfo);
@@ -80,12 +78,13 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * Removes and returns QueryInfo entry from the map for a query Id..
    *
    * @param id Query Id
-   * @return 
+   * @return
    */
   public RequestInfo removeRequestInfo(int id);
 
   /**
    * Returns the update info for id.
+   *
    * @param id
    * @return
    */
@@ -93,6 +92,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
 
   /**
    * Adds information of a transmitted select to a query transmitted map.
+   *
    * @param recordKey
    * @param incomingPacket
    * @return
@@ -101,21 +101,19 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
 
   /**
    * @param id
-   * @return 
+   * @return
    */
   public SelectInfo removeSelectInfo(int id);
 
   /**
    * Returns the select info for id.
-   * 
+   *
    * @param id
-   * @return 
+   * @return
    */
   public SelectInfo getSelectInfo(int id);
 
-
   // CACHE METHODS
-  
   /**
    * Clears the cache
    */
@@ -126,7 +124,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * Returns true if the local name server cache contains DNS record for the specified name, false otherwise
    *
    * @param name Host/Domain name
-   * @return 
+   * @return
    */
   public boolean containsCacheEntry(String name);
 
@@ -136,14 +134,14 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * record exist in the cache.
    *
    * @param packet DNS packet containing record
-   * @return 
+   * @return
    */
   public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet);
 
   /**
-   * 
+   *
    * @param packet
-   * @return 
+   * @return
    */
   public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet);
 
@@ -151,21 +149,21 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * Updates an existing cache entry with new information from a DNS packet.
    *
    * @param packet DNS packet containing record
-   * @return 
+   * @return
    */
   public CacheEntry<NodeIDType> updateCacheEntry(DNSPacket<NodeIDType> packet);
 
   /**
-   * 
-   * @param packet 
+   *
+   * @param packet
    */
   public void updateCacheEntry(RequestActivesPacket<NodeIDType> packet);
 
   /**
-   * 
+   *
    * @param packet
    * @param name
-   * @param key 
+   * @param key
    */
   public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key);
 
@@ -173,9 +171,9 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * Returns a cache entry for the specified name. Returns null if the cache does not have the key mapped to an entry
    *
    * @param name Host/Domain name
-   * @return 
+   * @return
    */
-  public CacheEntry<NodeIDType> getCacheEntry(String name); 
+  public CacheEntry<NodeIDType> getCacheEntry(String name);
 
   /**
    * Checks the validity of active nameserver set in cache.
@@ -186,10 +184,10 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
   public boolean isValidNameserverInCache(String name);
 
   /**
-   * 
+   *
    * @param name
    * @param recordKey
-   * @return 
+   * @return
    */
   public int timeSinceAddressCached(String name, String recordKey);
 
@@ -200,17 +198,15 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    */
   public void invalidateActiveNameServer(String name);
 
-  
   /**
    * Prints cache to a string (and sorts it for convenience)
-   * 
+   *
    * @param preamble
-   * @return 
+   * @return
    */
   public String getCacheLogString(String preamble);
-    
+
   // NETWORK METHODS
-  
   /**
    **
    * Return a Set containing ids of primary replica for <i>name</i>
@@ -219,7 +215,7 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @return
    */
   public Set<NodeIDType> getReplicaControllers(String name);
-  
+
   /**
    **
    * Returns the closest primary name server for <i>name</i>.
@@ -237,29 +233,28 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    * @param json
    * @param ns
    */
-  public void sendToNS(JSONObject json, NodeIDType ns); 
+  public void sendToNS(JSONObject json, NodeIDType ns);
 
   /**
    * Send a JSON packet to an IP address / port.
+   *
    * @param json
    * @param address
-   * @param port 
+   * @param port
    */
   public void sendToAddress(JSONObject json, String address, int port);
-  
-  
+
   // STATS MAP
-  
   /**
    * Returns the NameRecordStats object for a given guid.
-   * 
+   *
    * @param name
-   * @return 
+   * @return
    */
   public NameRecordStats getStats(String name);
 
   public Set<String> getNameRecordStatsKeySet();
-  
+
   public void incrementLookupRequest(String name);
 
   public void incrementUpdateRequest(String name);
@@ -272,38 +267,38 @@ public interface ClientRequestHandlerInterface<NodeIDType>  {
    **
    * Prints name record statistic
    *
-   * @return 
+   * @return
    */
   public String getNameRecordStatsMapLogString();
-  
+
   /**
    * Instrumentation - Updates various instrumentation including the request counter and requests per second
    */
   public void updateRequestStatistics();
-  
+
   /**
    * Instrumentation - Return the request counter.
-   * 
-   * @return 
+   *
+   * @return
    */
   public long getReceivedRequests();
-  
+
   /**
    * Instrumentation - Return the requests per second measure.
-   * 
-   * @return 
+   *
+   * @return
    */
   public int getRequestsPerSecond();
-  
+
   public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs);
-  
+
   public void handleNameServerLoadPacket(JSONObject json) throws JSONException;
-  
-   /**
+
+  /**
    * A little hack so we can tell if we're running in the new app.
-   * @return 
+   *
+   * @return
    */
   public boolean isNewApp();
-  
+
 }
-  
