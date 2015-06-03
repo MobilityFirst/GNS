@@ -24,7 +24,7 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Messenger;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
-import edu.umass.cs.gns.util.DelayProfiler;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author V. Arun
@@ -338,11 +338,12 @@ public abstract class AbstractPaxosLogger {
 
 			// first log
 			long t1 = System.currentTimeMillis();
-			this.logger.logBatch(packets); 
+			boolean logged = this.logger.logBatch(packets); 
 			this.setProcessing(false);
+			if(!logged) return;
 			DelayProfiler.update("log", t1, packets.length);
 
-			// then message
+			// then message if successfully logged
 			for (LogMessagingTask lmTask : lmTasks) {
 				try {
 					this.messenger.send(lmTask); 

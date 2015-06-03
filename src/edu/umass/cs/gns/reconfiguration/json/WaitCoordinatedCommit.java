@@ -2,6 +2,7 @@ package edu.umass.cs.gns.reconfiguration.json;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
@@ -16,6 +17,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.Reconfigurat
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -57,14 +59,18 @@ public class WaitCoordinatedCommit<NodeIDType>
 		if (amObviated())
 			return killMyself();
 		// else coordinate RC record request
-		System.out.println(this.refreshKey()
-				+ " re-proposing "
-				+ rcRecReq.getSummary()
-				+ (rcRecReq.isReconfigurationMerge() ? "; merging state = "
-						+ rcRecReq.startEpoch.initialState : "") + "\n");
-		//rcRecReq.setNeedsCoordination(true); // need to set explicitly each time
+		log.log(Level.INFO,
+				MyLogger.FORMAT[3],
+				new Object[] { this.refreshKey()
+						, " re-proposing "
+						, rcRecReq.getSummary()
+						, (rcRecReq.isReconfigurationMerge() ? "; merging state = "
+								+ rcRecReq.startEpoch.initialState
+								: "") + "\n" });
+		// rcRecReq.setNeedsCoordination(true); // need to set explicitly each
+		// time
 		this.DB.coordinateRequestSuppressExceptions(rcRecReq);
-		return null; 
+		return null;
 	}
 
 	@Override
@@ -87,7 +93,7 @@ public class WaitCoordinatedCommit<NodeIDType>
 						+ this.rcRecReq.startEpoch.getPrevGroupName() + ":"
 						+ this.rcRecReq.getEpochNumber() : "");
 	}
-	
+
 	/*
 	 * FIXME: Create an interface for amObviated() and pass it to this class'
 	 * constructor.
@@ -120,7 +126,7 @@ public class WaitCoordinatedCommit<NodeIDType>
 				&& this.DB.isRCGroupName(rcRecReq.getServiceName())
 				&& (record != null && record.mergedContains(rcRecReq.startEpoch
 						.getPrevGroupName()));
-		
+
 		// defensive documentation via code
 		boolean obviated = completeCommit || isNotLocalRCGroup
 				|| intentCommitted || isMerged;

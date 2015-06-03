@@ -6,14 +6,17 @@
 package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.ValuesMap;
+
 import java.net.InetSocketAddress;
+
 import net.sourceforge.sizeof.SizeOf;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

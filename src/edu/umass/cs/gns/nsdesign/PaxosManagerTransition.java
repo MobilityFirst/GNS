@@ -1,9 +1,11 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
+
 import org.json.JSONObject;
 
 import java.util.Set;
@@ -30,7 +32,7 @@ public class PaxosManagerTransition<NodeIDType> extends AbstractPaxosManager<Nod
   }
 
   @Override
-  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIDType> nodeIDs, Replicable paxosInterface) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIDType> nodeIDs, InterfaceReplicable paxosInterface) {
     return paxosManager.createPaxosInstance(paxosIDNoVersion, version, nodeIDs, paxosInterface);
   }
   

@@ -1,9 +1,9 @@
 package edu.umass.cs.gns.reconfiguration.reconfigurationutils;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.Reconfigurator;
 import edu.umass.cs.gns.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;

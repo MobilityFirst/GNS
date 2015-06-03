@@ -1,9 +1,9 @@
 package edu.umass.cs.gns.nodeconfig;
 
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import java.util.Set;
 
-import edu.umass.cs.gns.util.Stringifiable;
+import java.util.Set;
 
 /**
  * @param <NodeIDType>

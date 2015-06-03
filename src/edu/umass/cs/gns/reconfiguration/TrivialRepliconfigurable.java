@@ -2,6 +2,9 @@ package edu.umass.cs.gns.reconfiguration;
 
 import java.util.Set;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceApplication;
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 
 /**

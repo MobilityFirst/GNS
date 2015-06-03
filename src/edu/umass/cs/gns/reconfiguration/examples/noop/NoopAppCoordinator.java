@@ -6,16 +6,16 @@ import java.util.Set;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONMessenger;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.PaxosReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * @author V. Arun

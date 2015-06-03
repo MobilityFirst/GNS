@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun

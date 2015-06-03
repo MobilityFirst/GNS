@@ -1,5 +1,8 @@
 package edu.umass.cs.gns.reconfiguration;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceApplication;
+
+
 /**
  * @author V. Arun
  */

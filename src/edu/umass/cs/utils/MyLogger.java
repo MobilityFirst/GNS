@@ -1,13 +1,8 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.utils;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/* Arun: I just like to invoke the default java logger in this way
- * and yet have the benefit of not creating strings unless the
- * log message is going to be printed. Not sure why the java
- * logger doesn't support this interface already.
- */
 public class MyLogger extends Logger {
 	
 	public static final String[] FORMAT = {

@@ -1,13 +1,14 @@
 package edu.umass.cs.gns.paxos;
 
+import edu.umass.cs.gns.deprecated.nio.ByteStreamToJSONObjects;
+import edu.umass.cs.gns.deprecated.nio.NioServer;
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.InterfaceNodeConfig;
-import edu.umass.cs.gns.nio.deprecated.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.nio.deprecated.NioServer;
 import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
@@ -16,8 +17,10 @@ import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import static edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.*;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -155,7 +158,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
   }
 
   @Override
-  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIDType> nodeIDs, Replicable pi) {
+  public boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIDType> nodeIDs, InterfaceReplicable pi) {
     String initialState = pi.getState(paxosIDNoVersion);
     return createPaxosInstance(paxosIDNoVersion, version, nodeIDs, initialState);
   }

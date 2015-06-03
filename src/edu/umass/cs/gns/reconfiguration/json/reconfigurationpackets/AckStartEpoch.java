@@ -4,9 +4,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import edu.umass.cs.gns.util.Stringifiable;
 
 /**
 @author V. Arun

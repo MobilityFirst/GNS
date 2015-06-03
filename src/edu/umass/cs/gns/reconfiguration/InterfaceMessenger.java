@@ -2,6 +2,7 @@ package edu.umass.cs.gns.reconfiguration;
 
 import java.io.IOException;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 
 /**

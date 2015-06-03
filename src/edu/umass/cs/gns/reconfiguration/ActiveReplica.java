@@ -10,11 +10,13 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfacePacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONPacket;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.json.ActiveReplicaProtocolTask;
@@ -35,9 +37,8 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AbstractDemandProfi
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AggregateDemandProfiler;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.CallbackMap;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -252,9 +253,9 @@ public class ActiveReplica<NodeIDType> implements
 				.getTaskKeyPrev(WaitEpochFinalState.class, dropEpoch, this
 						.getMyID().toString())) != null);
 		if (removed)
-			System.out.println(this + " removed WaitEpochFinalState"
-					+ dropEpoch.getServiceName() + ":"
-					+ (dropEpoch.getEpochNumber() - 1));
+			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] {this , " removed WaitEpochFinalState"
+					, dropEpoch.getServiceName() , ":"
+					, (dropEpoch.getEpochNumber() - 1)});
 	}
 
 	public GenericMessagingTask<NodeIDType, ?>[] handleRequestEpochFinalState(

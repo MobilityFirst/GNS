@@ -11,9 +11,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.StringifiableDefault;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.nio.Stringifiable;
+import edu.umass.cs.gns.nio.StringifiableDefault;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun

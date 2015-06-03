@@ -3,8 +3,6 @@ package edu.umass.cs.gns.nio;
 import java.net.InetAddress;
 import java.util.Set;
 
-import edu.umass.cs.gns.util.Stringifiable;
-
 /**
  * @author V. Arun
  */

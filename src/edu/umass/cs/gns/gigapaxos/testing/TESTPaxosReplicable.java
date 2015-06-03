@@ -16,9 +16,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.JSONNIOTransport;
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
@@ -49,8 +49,8 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 		this();
 		try {
 			/*
-			 * app uses nio only to send, not receive, so it doesn't care to set a
-			 * PacketDemultiplexer
+			 * app uses nio only to send, not receive, so it doesn't care to set
+			 * a PacketDemultiplexer
 			 */
 			setNIOTransport(nio);
 			AllApps.addApp(this);
@@ -59,7 +59,7 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 		}
 	}
 
-	// private because nio is necessary for testing 
+	// private because nio is necessary for testing
 	private TESTPaxosReplicable() {
 		// app uses nio only to send, not receive, so no PacketDemultiplexer
 		try {
@@ -72,18 +72,35 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 	@Override
 	public synchronized boolean handleDecision(String paxosID, String req,
 			boolean doNotReplyToClient) {
-		boolean executed = false;
 		try {
 			JSONObject reqJson = new JSONObject(req);
 			ProposalPacket requestPacket = new ProposalPacket(reqJson);
+			return this.handleDecision(requestPacket, doNotReplyToClient);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return false;
+	}
+
+	/*
+	 * This is the main execution method. The app is supposed to be agnostic to
+	 * slot numbers, but this method takes as input a ProposalPacket as opposed
+	 * to a RequestPacket only for tetsing purposes.
+	 */
+	public synchronized boolean handleDecision(ProposalPacket requestPacket,
+			boolean doNotReplyToClient) {
+		boolean executed = false;
+		try {
+			String paxosID = requestPacket.getPaxosID();
 			PaxosState state = this.allState.get(paxosID);
 			if (state == null)
 				state = new PaxosState();
 
 			/*
-			 * Initialize seqnum upon first decision. We know it is the first decision if seqnum==-1
-			 * or if putState is true, i.e., checkpoint recovery has just happened and no other
-			 * request has been executed.
+			 * Initialize seqnum upon first decision. We know it is the first
+			 * decision if seqnum==-1 or if putState is true, i.e., checkpoint
+			 * recovery has just happened and no other request has been
+			 * executed.
 			 */
 			if (state.seqnum == -1)
 				state.seqnum = requestPacket.slot;
@@ -97,61 +114,73 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 						+ state.seqnum + ": prev_state_value=" + state.value);
 
 			/*
-			 * Set state to current request value concatenated with the hash of the previous state.
-			 * This allows us to easily compare using just the current state value that two RSMs
-			 * executed the exact same set of state transitions to arrive at that state.
+			 * Set state to current request value concatenated with the hash of
+			 * the previous state. This allows us to easily compare using just
+			 * the current state value that two RSMs executed the exact same set
+			 * of state transitions to arrive at that state.
 			 */
 			state.value = requestPacket.requestValue + (digest(state.value));
 
 			/*
-			 * Assert that the next slot is always the next expected seqnum. This ensures that paxos
-			 * is making the app execute requests in the correct slot number order. Note that
-			 * state.seqnum is set exactly once at initialization to the arriving request's slot
-			 * above and is then just incremented by one below for every executed decision.
+			 * Assert that the next slot is always the next expected seqnum.
+			 * This ensures that paxos is making the app execute requests in the
+			 * correct slot number order. Note that state.seqnum is set exactly
+			 * once at initialization to the arriving request's slot above and
+			 * is then just incremented by one below for every executed
+			 * decision.
 			 */
-			assert (state.seqnum == requestPacket.slot);
+			assert (state.seqnum == requestPacket.slot) : "state.seqnum = "
+					+ state.seqnum + " , requestPacket.slot = "
+					+ requestPacket.slot;
 			/*
-			 * increment seqnum (to the next expected seqnum and requestPacket.slot)
+			 * increment seqnum (to the next expected seqnum and
+			 * requestPacket.slot)
 			 */
 			state.committed.put(state.seqnum++, state.value);
-			allState.put(paxosID, state); // needed if we initialized state above
+			allState.put(paxosID, state); // needed if we initialized state
+											// above
 			executed = true;
 			state.numExecuted++;
 
 			if (TESTPaxosConfig.shouldAssertRSMInvariant())
 				assert (RSMInvariant(requestPacket.getPaxosID(),
-						state.seqnum - 1)) : reqJson;
+						state.seqnum - 1)) : requestPacket;
 			state.committed.remove(state.seqnum - MAX_STORED_REQUESTS); // GC
 
 			// testing and logging below
 			this.notify(); // needed for paxos manager's unit-test
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
-			// FIXME: reply back only if not recovery and I am entry replica (untested change)
-			if (!doNotReplyToClient && niot != null && requestPacket.getEntryReplica()==this.getMyID()) {
+			// FIXME: reply back only if not recovery and I am entry replica
+			// (untested change)
+			if (!doNotReplyToClient && niot != null
+					&& requestPacket.getEntryReplica() == this.getMyID()) {
 				if (DEBUG)
 					log.info("App sending response to client "
-							+ requestPacket.clientID + ": " + reqJson);
+							+ requestPacket.clientID + ": " + requestPacket);
 				if (TESTPaxosConfig.getSendReplyToClient()) {
 					niot.sendToAddress(
 							new InetSocketAddress(requestPacket
 									.getClientAddress(), requestPacket
-									.getClientPort()), reqJson);
+									.getClientPort()), requestPacket
+									.toJSONObject());
 					// send responses for batched requests as well
-					if(requestPacket.getBatched()!=null) {
-						for (RequestPacket batchedReq : requestPacket.getBatched()) {
-							ProposalPacket batchedProposal = new ProposalPacket(requestPacket.slot, batchedReq);
+					if (requestPacket.getBatched() != null) {
+						for (RequestPacket batchedReq : requestPacket
+								.getBatched()) {
+							ProposalPacket batchedProposal = new ProposalPacket(
+									requestPacket.slot, batchedReq);
 							niot.sendToAddress(new InetSocketAddress(
 									batchedProposal.getClientAddress(),
 									batchedProposal.getClientPort()),
 									batchedProposal.toJSONObject());
 						}
 					}
-				// niot.sendToID(requestPacket.clientID, reqJson);
+					// niot.sendToID(requestPacket.clientID, reqJson);
 				}
 				RequestInstrumenter.remove(requestPacket.requestID);
 			} else if (DEBUG)
 				log.info("Node" + getMyID() + " not sending reply to client: "
-						+ reqJson);
+						+ requestPacket);
 		} catch (JSONException je) {
 			je.printStackTrace();
 		} catch (IOException ioe) {
@@ -174,6 +203,7 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 		if (state == null)
 			state = new PaxosState();
 		state.value = value;
+		state.seqnum = -1; // reset seqnum upon state transfer
 		allState.put(paxosID, state);
 		return true;
 	}
@@ -261,9 +291,22 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 			state1 = app1.allState.get(paxosID).committed.get(seqnum);
 		if (app2.allState.containsKey(paxosID))
 			state2 = app2.allState.get(paxosID).committed.get(seqnum);
-		assert (state1 == null || state2 == null || state1.equals(state2)) : 
-			app1.getMyID() + ":" + paxosID + ":" + seqnum + ": " + state1 + " != " 
-			+ app2.getMyID() + ":" + paxosID + ":" + seqnum + ": " + state2;
+		assert (state1 == null || state2 == null || state1.equals(state2)) : app1
+				.getMyID()
+				+ ":"
+				+ paxosID
+				+ ":"
+				+ seqnum
+				+ ": "
+				+ state1
+				+ " != "
+				+ app2.getMyID()
+				+ ":"
+				+ paxosID
+				+ ":"
+				+ seqnum
+				+ ": "
+				+ state2;
 		return (state1 == null || state2 == null || state1.equals(state2));
 	}
 
@@ -299,11 +342,12 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 
 	// AllApps below is for testing
 	public static class AllApps {
-		//private static Set<TESTPaxosReplicable> appMap = new HashSet<TESTPaxosReplicable>();
+		// private static Set<TESTPaxosReplicable> appMap = new
+		// HashSet<TESTPaxosReplicable>();
 		private static HashMap<Integer, TESTPaxosReplicable> appMap = new HashMap<Integer, TESTPaxosReplicable>();
 
 		private synchronized static void addApp(TESTPaxosReplicable app) {
-			//appMap.add(app);
+			// appMap.add(app);
 			appMap.put(app.getMyID(), app);
 		}
 
@@ -334,7 +378,12 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 	@Override
 	public InterfaceRequest getRequest(String stringified)
 			throws RequestParseException {
-		throw new RuntimeException("Method not yet implemented");
+		try {
+			return new ProposalPacket(new JSONObject(stringified));
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	@Override
@@ -345,6 +394,12 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
 			boolean doNotReplyToClient) {
-		throw new RuntimeException("Method not yet implemented");
+		// no need to again stringify and unstringify
+		if (request instanceof ProposalPacket)
+			return this.handleDecision((ProposalPacket) request,
+					doNotReplyToClient);
+		else
+			return this.handleDecision(request.getServiceName(),
+					request.toString(), doNotReplyToClient);
 	}
 }

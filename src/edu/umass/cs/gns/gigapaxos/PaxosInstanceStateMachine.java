@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PValuePacket;
@@ -32,9 +31,10 @@ import edu.umass.cs.gns.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.gns.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gns.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gns.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.gns.util.DelayProfiler;
-import edu.umass.cs.gns.util.MatchKeyable;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.utils.Keyable;
+import edu.umass.cs.utils.Util;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
 @author V. Arun
@@ -128,7 +128,7 @@ import edu.umass.cs.gns.util.Util;
  * depend on other classes. Both PaxosManager as well as TESTPaxosMain 
  * test this class.
  */
-public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
+public class PaxosInstanceStateMachine implements Keyable<String> {
 	private static final boolean PAXOS_ID_AS_STRING=false; // if false, must invoke getPaxosID() as less often as possible
 	protected static final int INTER_CHECKPOINT_INTERVAL = 100; // must be >= 1, does not depend on anything else
 	protected static final int SYNC_THRESHOLD = 4*INTER_CHECKPOINT_INTERVAL; // out-of-order-ness prompting synchronization, must be >=1 
@@ -141,7 +141,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private final Object paxosID; // App ID or "GUID". Object to allow easy testing across byte[] and String
 	private final short version;
 	private final PaxosManager<?> paxosManager;
-	private final Replicable clientRequestHandler;
+	private final InterfaceReplicable clientRequestHandler;
 
 	/************ Non-final paxos state that is changeable after creation *******************/
 	private PaxosAcceptor paxosState=null;	// uses ~125B of empty space when not actively processing requests
@@ -152,7 +152,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosInstanceStateMachine.class.getName()); 
 
 	PaxosInstanceStateMachine(String groupId, short version, int id, Set<Integer> gms, 
-			Replicable app, String initialState, PaxosManager<?> pm, HotRestoreInfo hri) {
+			InterfaceReplicable app, String initialState, PaxosManager<?> pm, HotRestoreInfo hri) {
 
 		/**************** final assignments ***********************
 		 * A paxos instance is born with a paxosID, version
@@ -204,7 +204,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	protected String getPaxosID() {return (paxosID instanceof String ? (String)paxosID : new String((byte[])paxosID)); }
 	protected int[] getMembers() {return this.groupMembers;}
 	protected int getNodeID() {return this.getMyID();}
-	protected Replicable getApp() {return this.clientRequestHandler;}
+	protected InterfaceReplicable getApp() {return this.clientRequestHandler;}
 	protected PaxosManager<?> getPaxosManager() {return this.paxosManager;}
 	protected int getMyID() {return (this.paxosManager!=null ? this.paxosManager.getMyID() : -1);}
 	public String toString() {return this.getNodeState() /*+ " " + (this.paxosState!=null ? this.paxosState.toString():"null") +
@@ -681,7 +681,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		TESTPaxosConfig.commit(committed.requestID); 
 		
 		if (this.paxosState.getSlot() - committed.slot < 0)
-			log.log(Level.INFO, "{0}{1}{2}{3}{4}",
+			log.log(Level.FINE, "{0}{1}{2}{3}{4}",
 					new Object[] { this.getNodeState(), " expecting ",
 							this.paxosState.getSlot(),
 							" recieved out-of-order commit: ", committed });
@@ -746,17 +746,15 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 		int execCount = 0;
 		// extract next in-order decision
 		while((inorderDecision = this.paxosState.putAndRemoveNextExecutable(loggedDecision))!=null) { 
-			log.log(Level.INFO, "{0}{1}{2}", new Object[]{this, " in-order commit: ",inorderDecision}); 
+			log.log(Level.FINE, "{0}{1}{2}", new Object[]{this, " in-order commit: ",inorderDecision}); 
+			String pid = this.getPaxosID();
 
 			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
-			boolean executed=false;
-			String pid = this.getPaxosID();
-			while(!executed) {
-				executed = this.clientRequestHandler.handleDecision(pid, 
-						inorderDecision.getRequestValue(), (inorderDecision.isRecovery() /*||  
-								(inorderDecision.getEntryReplica()!=this.getMyID())*/)); 
-				if(!executed) log.severe("App failed to execute request, retrying: "+inorderDecision);
-			} execCount++;
+			for(String requestValue : inorderDecision.getRequestValue())
+				while(!this.clientRequestHandler.handleRequest(this.getInterfaceRequest(pid, 
+						requestValue), (inorderDecision.isRecovery()))) 
+					log.severe("App failed to execute request, retrying: "+requestValue);
+			execCount++; // +1 for each batch, not for each constituent requestValue
 
 			// checkpoint if needed, must be atomic with the execution 
 			if(shouldCheckpoint(inorderDecision) && !inorderDecision.isRecovery()) { 
@@ -765,6 +763,7 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 						this.clientRequestHandler.getState(pid), this.paxosState.getGCSlot());
 				log.info(DelayProfiler.getStats());
 			}
+			// copy epoch final state and kill self if stop request
 			if (inorderDecision.isStopRequest()) {
 				this.paxosManager.getPaxosLogger().copyEpochFinalCheckpointState(getPaxosID(),getVersion());
 				this.paxosManager.kill(this);
@@ -849,6 +848,15 @@ public class PaxosInstanceStateMachine implements MatchKeyable<String,Short> {
 	private boolean shouldCheckpoint(PValuePacket decision) {
 		return (decision.slot%INTER_CHECKPOINT_INTERVAL==0 || decision.isStopRequest());
 	}
+	private InterfaceRequest getInterfaceRequest(String name, String value) {
+		try {
+			return this.clientRequestHandler.getRequest(value);
+		} catch (RequestParseException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	/*************************** End of phase 3 methods ********************************/
 
 

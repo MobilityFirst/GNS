@@ -6,16 +6,18 @@
 package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldAccess;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.database.ColumnFieldType;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.util.ValuesMap;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

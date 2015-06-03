@@ -4,12 +4,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.utils.Util;
 
 import java.util.Random;
 
-public class RequestPacket extends PaxosPacket {
+public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	private static final boolean DEBUG = true;
 
 	/*
@@ -60,7 +63,7 @@ public class RequestPacket extends PaxosPacket {
 		this.stop = stop;
 	}
 
-	protected RequestPacket(RequestPacket req) {
+	public RequestPacket(RequestPacket req) {
 		super(req);
 		this.clientID = req.clientID;
 		this.requestID = req.requestID;
@@ -310,8 +313,32 @@ public class RequestPacket extends PaxosPacket {
 		return this.batched;
 	}
 
-	public String getRequestValue() {
-		return this.returnRequestValue ? this.requestValue : toString();
+	public String[] getRequestValue() {
+		String[] reqValues = null;
+		if(this.returnRequestValue)  {
+			reqValues = new String[this.batchSize() + 1];
+			reqValues[0] = this.requestValue;
+			if(this.batched!=null) 
+				for(int i=0; i<this.batched.length; i++)
+					reqValues[i+1] = this.batched[i].requestValue;
+		} else {
+			reqValues = new String[1];
+			reqValues[0] = toString();
+		}
+		return reqValues;
+	}
+	private int batchSize() {
+		return this.batched!=null ? this.batched.length : 0;
+	}
+
+	@Override
+	public IntegerPacketType getRequestType() throws RequestParseException {
+		return this.getType();
+	}
+
+	@Override
+	public String getServiceName() {
+		return this.paxosID;
 	}
 
 	public static void main(String[] args) {
@@ -335,4 +362,5 @@ public class RequestPacket extends PaxosPacket {
 			e.printStackTrace();
 		}
 	}
+
 }

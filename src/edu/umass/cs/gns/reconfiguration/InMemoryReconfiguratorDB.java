@@ -14,7 +14,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DemandReport
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
-import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun

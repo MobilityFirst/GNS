@@ -19,8 +19,8 @@ import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gns.gigapaxos.paxosutil.WaitforUtility;
-import edu.umass.cs.gns.util.NullIfEmptyMap;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
+import edu.umass.cs.utils.NullIfEmptyMap;
 
 /* This class manages paxos coordinator state.
  * It has no public methods, only protected methods,

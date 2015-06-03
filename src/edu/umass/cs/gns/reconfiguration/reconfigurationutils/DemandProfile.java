@@ -6,8 +6,8 @@ import java.util.ArrayList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun

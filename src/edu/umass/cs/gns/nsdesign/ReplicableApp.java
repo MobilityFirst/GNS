@@ -1,10 +1,11 @@
 package edu.umass.cs.gns.nsdesign;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gigapaxos.deprecated.Application;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+
 import java.util.Set;
 
 /**

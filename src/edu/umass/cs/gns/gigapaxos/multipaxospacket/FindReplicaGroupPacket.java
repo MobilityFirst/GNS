@@ -5,7 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.gigapaxos.paxosutil.Ballot;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
 @author V. Arun

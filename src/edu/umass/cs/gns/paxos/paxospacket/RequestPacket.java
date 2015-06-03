@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.gns.nio.Stringifiable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

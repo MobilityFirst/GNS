@@ -15,7 +15,7 @@ import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.NIOTransport;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
-import edu.umass.cs.gns.util.MultiArrayMap;
+import edu.umass.cs.utils.MultiArrayMap;
 
 /**
  * @author V. Arun

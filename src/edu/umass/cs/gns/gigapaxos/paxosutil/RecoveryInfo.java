@@ -2,7 +2,7 @@ package edu.umass.cs.gns.gigapaxos.paxosutil;
 
 import java.util.Set;
 
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
 @author V. Arun

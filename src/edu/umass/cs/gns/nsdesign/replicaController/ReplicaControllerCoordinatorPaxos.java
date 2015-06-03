@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
@@ -16,12 +17,13 @@ import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 //import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ReplicaControllerCoordinator;
+
 import java.io.IOException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

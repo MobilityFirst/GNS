@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.utils;
 
 import java.util.HashMap;
 

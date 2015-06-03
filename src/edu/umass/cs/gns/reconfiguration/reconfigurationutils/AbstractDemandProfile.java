@@ -6,8 +6,7 @@ import java.util.ArrayList;
 
 import org.json.JSONObject;
 
-
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
 
 /**

@@ -93,6 +93,8 @@ public class NIOTransport<NodeIDType> implements Runnable {
   
   // true means duplex, so it will work with one end behind a NAT
   private static final boolean DUPLEX_CONNECTIONS = true;
+  
+  private static final int HINT_SOCK_BUFFER_SIZE = 512000;
 
   // The channel on which we'll accept connections
   private ServerSocketChannel serverChannel;
@@ -297,8 +299,10 @@ public class NIOTransport<NodeIDType> implements Runnable {
       log.info("Node " + this.myID + " accepted connection from "
               + socketChannel.getRemoteAddress());
     NIOInstrumenter.incrAccepted();
-    socketChannel.configureBlocking(false);
     socketChannel.socket().setKeepAlive(true);
+    socketChannel.configureBlocking(false);
+    socketChannel.socket().setReceiveBufferSize(HINT_SOCK_BUFFER_SIZE);
+    socketChannel.socket().setSendBufferSize(HINT_SOCK_BUFFER_SIZE);
 
     // Register the new SocketChannel with our Selector, indicating
     // we'd like to be notified when there's data waiting to be read
@@ -789,7 +793,9 @@ public class NIOTransport<NodeIDType> implements Runnable {
     // Create a non-blocking socket channel
     SocketChannel socketChannel = SocketChannel.open();
     socketChannel.configureBlocking(false);
-
+    socketChannel.socket().setSendBufferSize(HINT_SOCK_BUFFER_SIZE);
+    socketChannel.socket().setReceiveBufferSize(HINT_SOCK_BUFFER_SIZE);
+    
     // Kick off connection establishment
     if (DEBUG) 
       log.info("Node " + myID + " connecting to socket address " + isa);

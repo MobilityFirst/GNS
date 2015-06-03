@@ -1,11 +1,12 @@
 package edu.umass.cs.gns.newApp.packet.deprecated;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.packet.BasicPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.util.Stringifiable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

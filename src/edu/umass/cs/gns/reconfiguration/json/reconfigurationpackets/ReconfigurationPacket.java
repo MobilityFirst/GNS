@@ -7,13 +7,13 @@ import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONPacket;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
-import edu.umass.cs.gns.util.IntegerPacketTypeMap;
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.utils.IntegerPacketTypeMap;
 
 /**
  * @author V. Arun
@@ -106,6 +106,8 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		public static final IntegerPacketTypeMap<PacketType> intToType = 
 				new IntegerPacketTypeMap<PacketType>(PacketType.values());
 	}
+	
+	
 	/********************************* End of ReconfigurationpacketType ***********************/
 
 	/**************************** Start of ReconfigurationpacketType class map **************/

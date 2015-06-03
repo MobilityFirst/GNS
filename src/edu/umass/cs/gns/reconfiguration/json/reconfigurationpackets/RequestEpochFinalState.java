@@ -3,7 +3,7 @@ package edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.gns.nio.Stringifiable;
 
 /**
 @author V. Arun

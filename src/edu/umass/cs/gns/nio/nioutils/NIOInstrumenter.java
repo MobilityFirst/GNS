@@ -4,7 +4,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
 @author V. Arun

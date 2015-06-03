@@ -8,13 +8,15 @@ package edu.umass.cs.gns.newApp.packet;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.Stringifiable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -25,6 +27,7 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+
 import org.json.JSONArray;
 
 /**

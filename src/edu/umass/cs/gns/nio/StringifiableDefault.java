@@ -1,12 +1,12 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.nio;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Set;
-
 import java.util.logging.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -18,6 +18,7 @@ public class StringifiableDefault<ObjectType> implements Stringifiable<ObjectTyp
 	public StringifiableDefault(Object obj) {
 		this.seedObj = obj;
 	}
+	@SuppressWarnings("unchecked") // all types checked
 	@Override
 	public ObjectType valueOf(String strValue) {
 		if(seedObj instanceof Integer) return (ObjectType) Integer.valueOf(strValue);

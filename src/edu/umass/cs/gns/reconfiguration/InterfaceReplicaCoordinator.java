@@ -3,6 +3,8 @@ package edu.umass.cs.gns.reconfiguration;
 import java.io.IOException;
 import java.util.Set;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+
 
 public interface InterfaceReplicaCoordinator<NodeIDType> {
 	/* This method performs whatever replica coordination action is necessary to handle the request.
