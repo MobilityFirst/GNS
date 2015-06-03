@@ -19,8 +19,8 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.reconfiguration.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import java.io.IOException;
 

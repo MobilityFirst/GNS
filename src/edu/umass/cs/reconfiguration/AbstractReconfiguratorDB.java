@@ -27,6 +27,7 @@ import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StopEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.utils.MyLogger;
 

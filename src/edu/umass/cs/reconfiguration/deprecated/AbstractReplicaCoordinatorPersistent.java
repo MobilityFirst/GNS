@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration;
+package edu.umass.cs.reconfiguration.deprecated;
 
 import java.util.Set;
 
@@ -6,6 +6,7 @@ import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 
 public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {
@@ -17,6 +18,8 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 	 * when the consensus part of it is not really needed. When the concrete
 	 * replica coordinator does need paxos, it can conveniently just use this
 	 * paxos manager.
+	 * 
+	 * This class is incomplete and may get deprecated.
 	 */
 	private final PaxosManager<NodeIDType> paxosManager;
 

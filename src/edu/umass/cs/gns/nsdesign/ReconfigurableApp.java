@@ -4,7 +4,7 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.deprecated.Application;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import java.util.Set;
 

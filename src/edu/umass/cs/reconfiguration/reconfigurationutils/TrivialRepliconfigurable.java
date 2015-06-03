@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration;
+package edu.umass.cs.reconfiguration.reconfigurationutils;
 
 import java.util.Set;
 
@@ -6,6 +6,9 @@ import edu.umass.cs.gigapaxos.InterfaceApplication;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.InterfaceRepliconfigurable;
 
 /**
 @author V. Arun

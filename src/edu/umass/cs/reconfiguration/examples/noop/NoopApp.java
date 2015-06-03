@@ -17,8 +17,8 @@ import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.Reconfigurator;
-import edu.umass.cs.reconfiguration.RequestParseException;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun

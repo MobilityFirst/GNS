@@ -31,7 +31,7 @@ import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Keyable;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;

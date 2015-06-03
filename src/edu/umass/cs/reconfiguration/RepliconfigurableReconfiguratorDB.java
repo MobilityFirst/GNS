@@ -14,6 +14,7 @@ import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationP
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /*
  * We need this class to extend both PaxosReplicationCoordinator and

@@ -13,7 +13,7 @@ import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun

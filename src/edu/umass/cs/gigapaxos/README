@@ -9,7 +9,7 @@ repository and compile it using "ant" in the top-level directory so as to create
 
 Run the following command: 
 
-$ java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosMain -c 2>/tmp/run1
+$ java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosMain -c 2>/tmp/run1
 
 The above command will try to create a sub-directory called 'paxos_logs' from wherever it
 is run, so you need to have write permissions in that directory. Running it again without 
@@ -47,15 +47,15 @@ in conf/gigapaxos/ subdirectory in the top-level GNS directory.
  
 The servers must be started first in any order as follows:
 
-[date$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosNode 100 2>/tmp/run1
-[plum$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosNode 101 2>/tmp/run1
-[pear$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.testing.TESTPaxosNode 102 2>/tmp/run1
+[date$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosNode 100 2>/tmp/run1
+[plum$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosNode 101 2>/tmp/run1
+[pear$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosNode 102 2>/tmp/run1
 
 The client must be started after at least two of the above servers are up. A server is
 up after it has stopped printing console output for more than a few seconds. The clients
 are started as follows:
 
-[fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gns.gigapaxos.TESTPaxosClient 2>/tmp/run1
+[fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.TESTPaxosClient 2>/tmp/run1
 
 If the test is successful, the console output should print a sequence of "SUCCESS" just as 
 in the single machine test.

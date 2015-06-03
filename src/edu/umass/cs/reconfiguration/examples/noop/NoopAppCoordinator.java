@@ -15,7 +15,7 @@ import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.PaxosReplicaCoordinator;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun

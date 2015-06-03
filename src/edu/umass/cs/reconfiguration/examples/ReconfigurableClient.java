@@ -20,13 +20,13 @@ import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.reconfiguration.RequestParseException;
 import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigureRCNodeConfig;
 import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.MyLogger;
 
 /**

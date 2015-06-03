@@ -51,6 +51,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.StringLocker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.utils.Util;

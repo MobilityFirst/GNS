@@ -36,8 +36,8 @@ import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import org.json.JSONException;
 import org.json.JSONObject;

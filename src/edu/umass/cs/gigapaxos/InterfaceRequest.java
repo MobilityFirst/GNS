@@ -1,7 +1,7 @@
 package edu.umass.cs.gigapaxos;
 
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun

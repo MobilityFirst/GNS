@@ -3,20 +3,23 @@ a noop app (in the sub-package examples.noop) on a single machine.
 
 Start the noop nodes as follows:
 
-$ java -ea -Xms4096M -cp .:./build:./lib/derby.jar:./lib/c3p0-0.9.5-pre8.jar:./lib/guava-14.0.1.jar edu.umass.cs.gns.reconfiguration.examples.noop.NoopReconfigurableNode
+$ java -ea -Xms4096M -cp path/to/GNS.jar edu.umass.cs.reconfiguration.examples.noop.NoopReconfigurableNode
 
 You can also use dist/GNS.jar from a GNS build to not have to specify
 the jar paths as above.
 
 Start the reconfigurable app client as follows:
 
-$ java -ea -Xms4096M -cp .:./build:./lib/derby.jar:./lib/c3p0-0.9.5-pre8.jar edu.umass.cs.gns.reconfiguration.examples.ReconfigurableClient
+$ java -ea -Xms4096M -cp path/to/GNS.jar edu.umass.cs.reconfiguration.examples.ReconfigurableClient
 
 To test with a clean slate (i.e., without recovery), you need to
 remove paxos logs and reconfigurator DB logs as follows:
 
  $ rm -r paxos_logs/ (or whatever log directory was specified in
-PaxosConfig or DerbyPaxosLogger.DATABASE)
+DerbyPaxosLogger.DATABASE)
+
+$ rm -r paxos_large_checkpoints/ (or whatever log directory was specified in
+DerbyPersistentReconfigurationDB.CHECKPOINT_TRANSFER_DIR)
 
  $ rm -r reconfiguratorDB (or whatever was specified in
 DerbyPersistentReconfiguratorDB.DATABASE)
@@ -27,4 +30,4 @@ reconfiguration.reconfigurationutils.DemandProfile. Do NOT change this
 class to change the policy. To change the policy, 
 - create your own implementation of
   reconfiguration.reconfigurationutils.AbstractDemandProfile
-- Set ReconfigurationConfig.DEFAULT_DEMAND_PROFILE_TYPE to that class.
+- Call ReconfigurationConfig.setDemandProfile(.) with that class.

@@ -12,7 +12,7 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun

@@ -14,7 +14,7 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
 public class ReconfigureRCNodeConfig<NodeIDType> extends

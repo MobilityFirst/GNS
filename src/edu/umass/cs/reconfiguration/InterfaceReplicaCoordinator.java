@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Set;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 
 public interface InterfaceReplicaCoordinator<NodeIDType> {

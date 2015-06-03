@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.newApp;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.reconfiguration.reconfigurationutils.*;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 

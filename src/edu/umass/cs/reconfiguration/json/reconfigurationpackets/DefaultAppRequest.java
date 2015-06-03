@@ -7,7 +7,7 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun

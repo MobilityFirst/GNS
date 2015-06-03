@@ -11,7 +11,7 @@ import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import java.util.Set;
 

@@ -6,7 +6,7 @@ import org.json.JSONObject;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun

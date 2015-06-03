@@ -6,7 +6,6 @@ import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
-import edu.umass.cs.reconfiguration.RequestParseException;
 import edu.umass.cs.reconfiguration.examples.noop.NoopAppCoordinator;
 
 import java.util.Set;

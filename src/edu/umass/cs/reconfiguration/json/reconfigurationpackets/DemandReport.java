@@ -8,8 +8,8 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
 

@@ -7,7 +7,7 @@ package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import org.json.JSONException;
 

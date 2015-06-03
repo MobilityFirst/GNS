@@ -22,7 +22,7 @@ import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.JSONNIOTransport;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun

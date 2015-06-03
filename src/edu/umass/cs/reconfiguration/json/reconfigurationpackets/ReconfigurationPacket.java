@@ -213,7 +213,7 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 					ReconfigurationPacket.PacketType.intToType.get(JSONPacket.getPacketType(json)); 
 			if(rcType!=null && getPacketTypeClassName(rcType)!=null) {
 				rcPacket = (BasicReconfigurationPacket<?>)(Class.forName(
-					"edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets." + 
+					"edu.umass.cs.reconfiguration.json.reconfigurationpackets." + 
 							getPacketTypeClassName(rcType)).getConstructor(JSONObject.class, Stringifiable.class).newInstance(json, unstringer));
 			}
 		}
@@ -223,7 +223,7 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		catch(ClassNotFoundException cnfe) {cnfe.printStackTrace();}
 		catch(InstantiationException ie) {ie.printStackTrace();}
 		finally{if(ReconfigurationPacket.PacketType.intToType.get(JSONPacket.getPacketType(json))==null)
-			System.out.println("!!!!!!!!!!!!!!!!"+json);}
+			System.err.println("!!!!!!!!!!!!!!!!"+json);}
 
 		return rcPacket;
 	}

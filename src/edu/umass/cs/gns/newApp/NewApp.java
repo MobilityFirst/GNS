@@ -45,7 +45,7 @@ import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

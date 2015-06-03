@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration;
+package edu.umass.cs.reconfiguration.deprecated;
 
 import java.net.InetSocketAddress;
 import java.util.HashMap;
@@ -10,6 +10,9 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
+import edu.umass.cs.reconfiguration.InterfaceReconfiguratorDB;
+import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;

@@ -12,6 +12,8 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.TrivialRepliconfigurable;
 
 /**
  * @author V. Arun

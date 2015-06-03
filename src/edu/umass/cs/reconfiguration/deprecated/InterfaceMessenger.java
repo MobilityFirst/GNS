@@ -1,9 +1,10 @@
-package edu.umass.cs.reconfiguration;
+package edu.umass.cs.reconfiguration.deprecated;
 
 import java.io.IOException;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.GenericMessagingTask;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun

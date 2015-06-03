@@ -37,6 +37,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AggregateDemandProfiler;
 import edu.umass.cs.reconfiguration.reconfigurationutils.CallbackMap;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.MyLogger;
 

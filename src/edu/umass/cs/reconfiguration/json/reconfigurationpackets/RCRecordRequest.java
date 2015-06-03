@@ -7,7 +7,7 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /*
  * This packet is for any state change to a reconfiguration record. It is

@@ -5,7 +5,7 @@ import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import org.json.JSONException;
 

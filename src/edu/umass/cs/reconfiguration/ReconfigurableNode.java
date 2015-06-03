@@ -5,6 +5,7 @@ import java.io.IOException;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 
 /**
  * @author V. Arun

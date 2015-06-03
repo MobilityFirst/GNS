@@ -29,8 +29,8 @@ import edu.umass.cs.gns.util.UniqueIDHashMap;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
