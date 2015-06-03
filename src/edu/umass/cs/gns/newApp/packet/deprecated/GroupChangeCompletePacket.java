@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.newApp.packet.deprecated;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.packet.BasicPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;

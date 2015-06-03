@@ -5,10 +5,10 @@
  */
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.nio.Stringifiable;
-import edu.umass.cs.gns.reconfiguration.PaxosReplicaCoordinator;
+import edu.umass.cs.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.reconfiguration.PaxosReplicaCoordinator;
 
 /**
  * @author Westy

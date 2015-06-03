@@ -9,16 +9,18 @@ package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.newApp.packet.CommandPacket;
 import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

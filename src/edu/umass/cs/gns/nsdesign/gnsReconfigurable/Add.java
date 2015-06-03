@@ -8,8 +8,9 @@ import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+
 import org.json.JSONException;
 
 import java.io.IOException;

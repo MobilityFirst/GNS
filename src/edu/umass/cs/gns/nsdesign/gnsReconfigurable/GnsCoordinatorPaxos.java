@@ -1,5 +1,8 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gigapaxos.deprecated.AbstractPaxosManager;
+import edu.umass.cs.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
 import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
@@ -7,18 +10,16 @@ import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
-import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
-import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplicaApp;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
+import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceNodeConfig;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,7 +64,7 @@ public class GnsCoordinatorPaxos<NodeIDType> extends ActiveReplicaCoordinator {
       this.paxosInterface = paxosInterface;
       // this doesn't do any good because somebody is calling createPaxosInstance with their own app
       //this.paxosInterface = new ReplicableTransition(paxosInterface);
-      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,
+      this.paxosManager = new edu.umass.cs.gigapaxos.PaxosManager<NodeIDType>(nodeID,
               nodeConfig, new PacketTypeStampAndSend(nioServer, Packet.PacketType.ACTIVE_COORDINATION),
               this.paxosInterface, paxosConfig.getPaxosLogFolder());
 //      this.paxosManager = new PaxosManagerTransition(new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID,

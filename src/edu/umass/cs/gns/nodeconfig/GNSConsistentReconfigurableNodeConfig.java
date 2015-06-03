@@ -1,13 +1,17 @@
 package edu.umass.cs.gns.nodeconfig;
 
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.*;
+import edu.umass.cs.reconfiguration.reconfigurationutils.*;
+
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
+
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 /*
  * This class is a wrapper around NodeConfig to ensure that it is consistent,

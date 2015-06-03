@@ -9,8 +9,8 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.DNSRecordType;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.nio.Stringifiable;
 
 import org.json.JSONException;
 import org.json.JSONObject;

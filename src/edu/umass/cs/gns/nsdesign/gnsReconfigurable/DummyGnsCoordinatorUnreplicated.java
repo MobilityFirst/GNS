@@ -1,16 +1,17 @@
 package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 
+import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

@@ -1,11 +1,11 @@
 package edu.umass.cs.gns.paxos;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
-import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
-import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.reconfiguration.RequestParseException;
 
 import org.json.JSONException;
 

@@ -14,10 +14,10 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.PendingTasks
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Select;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.utils.MyLogger;
 
 import java.io.IOException;

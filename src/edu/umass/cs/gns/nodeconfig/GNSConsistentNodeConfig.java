@@ -1,6 +1,8 @@
 package edu.umass.cs.gns.nodeconfig;
 
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.*;
+import edu.umass.cs.reconfiguration.reconfigurationutils.*;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
+
 import java.net.InetAddress;
 import java.util.Set;
 

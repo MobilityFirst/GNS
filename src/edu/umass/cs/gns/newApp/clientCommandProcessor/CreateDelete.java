@@ -13,12 +13,14 @@ import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
+
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

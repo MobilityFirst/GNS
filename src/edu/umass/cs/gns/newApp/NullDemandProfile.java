@@ -1,7 +1,9 @@
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.*;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.reconfiguration.reconfigurationutils.*;
+import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
+import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 
 import java.net.InetAddress;
 import java.util.ArrayList;

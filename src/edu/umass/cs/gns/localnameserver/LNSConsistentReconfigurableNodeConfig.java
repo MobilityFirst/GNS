@@ -1,6 +1,7 @@
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.*;
+import edu.umass.cs.reconfiguration.reconfigurationutils.*;
+
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -10,9 +11,11 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.gns.reconfiguration.InterfaceModifiableActiveConfig;
-import edu.umass.cs.gns.reconfiguration.InterfaceModifiableRCConfig;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.InterfaceModifiableActiveConfig;
+import edu.umass.cs.reconfiguration.InterfaceModifiableRCConfig;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
+import edu.umass.cs.reconfiguration.reconfigurationutils.SimpleReconfiguratorNodeConfig;
 
 /*
  * This class is a wrapper around NodeConfig to ensure that it is consistent,

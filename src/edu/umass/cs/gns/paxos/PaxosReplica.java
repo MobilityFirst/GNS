@@ -2,7 +2,6 @@ package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.paxos.paxospacket.AcceptPacket;
 import edu.umass.cs.gns.paxos.paxospacket.AcceptReplyPacket;
 import edu.umass.cs.gns.paxos.paxospacket.FailureDetectionPacket;
@@ -17,6 +16,8 @@ import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
 import edu.umass.cs.gns.paxos.paxospacket.SynchronizePacket;
 import edu.umass.cs.gns.paxos.paxospacket.SynchronizeReplyPacket;
 import edu.umass.cs.gns.util.ConsistentHashing;
+import edu.umass.cs.nio.InterfaceNodeConfig;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,8 +28,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TimerTask;
 import java.util.TreeMap;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;

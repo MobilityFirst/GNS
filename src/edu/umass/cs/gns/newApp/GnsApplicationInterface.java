@@ -7,10 +7,10 @@
  */
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 
 /**
  * This pulls out some methods from GnsReconfigurableInterface that were needed for

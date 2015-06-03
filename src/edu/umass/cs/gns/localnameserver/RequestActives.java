@@ -1,23 +1,26 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gns.nio.GenericMessagingTask;
-import edu.umass.cs.gns.protocoltask.ProtocolEvent;
-import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
-import edu.umass.cs.gns.protocoltask.ProtocolTask;
-import edu.umass.cs.gns.protocoltask.SchedulableProtocolTask;
-import edu.umass.cs.gns.reconfiguration.Reconfigurator;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.nio.GenericMessagingTask;
+import edu.umass.cs.protocoltask.ProtocolEvent;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
+import edu.umass.cs.protocoltask.ProtocolTask;
+import edu.umass.cs.protocoltask.SchedulableProtocolTask;
+import edu.umass.cs.reconfiguration.Reconfigurator;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+
 import org.json.JSONException;
 
 public class RequestActives implements SchedulableProtocolTask {

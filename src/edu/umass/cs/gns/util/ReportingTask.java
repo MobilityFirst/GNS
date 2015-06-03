@@ -3,7 +3,8 @@ package edu.umass.cs.gns.util;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.MessagingTask;
+import edu.umass.cs.nio.MessagingTask;
+
 import java.io.IOException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;

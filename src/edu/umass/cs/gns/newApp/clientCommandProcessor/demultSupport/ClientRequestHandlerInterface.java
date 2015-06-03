@@ -13,11 +13,15 @@ import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+
 import java.net.InetSocketAddress;
 import java.util.Set;
+
 import org.json.JSONObject;
+
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.json.JSONException;
 
 /**

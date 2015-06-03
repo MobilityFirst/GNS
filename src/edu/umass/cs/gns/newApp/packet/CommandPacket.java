@@ -1,9 +1,9 @@
 package edu.umass.cs.gns.newApp.packet;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
-import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
+import edu.umass.cs.nio.JSONNIOTransport;
 
 import org.json.JSONException;
 import org.json.JSONObject;

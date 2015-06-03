@@ -7,13 +7,15 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
+import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

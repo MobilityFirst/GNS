@@ -4,10 +4,12 @@ package edu.umass.cs.gns.localnameserver;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentHashing;
+
+import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 /* This class isn't really used for anything other than as 
  * a parent for ConsistentReconfigurableNodeConfig, so it

@@ -1,10 +1,10 @@
 package edu.umass.cs.gns.nsdesign;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gns.gigapaxos.PaxosManager;
-import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
-import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
+import edu.umass.cs.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.deprecated.AbstractPaxosManager;
+import edu.umass.cs.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 
 import org.json.JSONObject;
 

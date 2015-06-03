@@ -6,12 +6,12 @@
 package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
-import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 
 import java.net.InetSocketAddress;
 

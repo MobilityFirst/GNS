@@ -8,11 +8,12 @@
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.util.Shutdownable;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,6 +27,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 

@@ -12,16 +12,19 @@ import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.NewApp;
-import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.newApp.packet.CommandPacket;
 import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.util.CanonicalJSON;
 import edu.umass.cs.gns.util.NetworkUtils;
+import edu.umass.cs.nio.JSONNIOTransport;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

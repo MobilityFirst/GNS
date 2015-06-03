@@ -1,11 +1,9 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gns.gigapaxos.deprecated.AbstractPaxosManager;
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.deprecated.AbstractPaxosManager;
+import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
@@ -15,12 +13,14 @@ import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.paxos.PaxosManager;
-import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 //import edu.umass.cs.gns.util.ConsistentHashing;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ReplicaControllerCoordinator;
+import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
 import java.io.IOException;
 
@@ -55,7 +55,7 @@ public class ReplicaControllerCoordinatorPaxos<NodeIDType> extends AbstractRepli
     if (!Config.useOldPaxos) {
       GNS.getLogger().info("Using gigapaxos");
       this.paxosInterface = paxosInterface;
-      this.paxosManager = new edu.umass.cs.gns.gigapaxos.PaxosManager<NodeIDType>(nodeID, nodeConfig,
+      this.paxosManager = new edu.umass.cs.gigapaxos.PaxosManager<NodeIDType>(nodeID, nodeConfig,
               new PacketTypeStampAndSend<NodeIDType>(nioServer, Packet.PacketType.REPLICA_CONTROLLER_COORDINATION),
               this.paxosInterface, paxosConfig.getPaxosLogFolder());
     } else {
@@ -101,10 +101,10 @@ public class ReplicaControllerCoordinatorPaxos<NodeIDType> extends AbstractRepli
           GNS.getLogger().info("###### " + nodeID + " Request: " + type
                   + " PaxosType: " + edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.getPacketType(packetTypeInt));
         }
-        packetTypeInt = request.optInt(edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PAXOS_PACKET_TYPE);
+        packetTypeInt = request.optInt(edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PAXOS_PACKET_TYPE);
         if (packetTypeInt != -1) {
           GNS.getLogger().info("###### " + nodeID + " Request: " + type
-                  + " GigaPaxosType: " + edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket.PaxosPacketType.getPaxosPacketType(packetTypeInt));
+                  + " GigaPaxosType: " + edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType.getPaxosPacketType(packetTypeInt));
         }
       }
       switch (type) {

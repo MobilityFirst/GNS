@@ -5,12 +5,15 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import static edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions.*;
+
 import java.io.IOException;
-import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
-import edu.umass.cs.gns.reconfiguration.ReconfigurableNode;
+
 import edu.umass.cs.gns.util.ParametersAndOptions;
+import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
+import edu.umass.cs.reconfiguration.ReconfigurableNode;
 import static edu.umass.cs.gns.util.ParametersAndOptions.HELP;
 import static edu.umass.cs.gns.util.ParametersAndOptions.printOptions;
+
 import java.util.Map;
 import java.util.Set;
 

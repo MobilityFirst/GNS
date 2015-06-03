@@ -1,8 +1,7 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.util.Shutdownable;
@@ -16,6 +15,8 @@ import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.paxos.PaxosConfig;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
+import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

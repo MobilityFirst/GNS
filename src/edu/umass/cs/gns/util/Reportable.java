@@ -4,7 +4,7 @@ import java.util.Set;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.JSONMessenger;
+import edu.umass.cs.nio.JSONMessenger;
 
 /**
 @author V. Arun

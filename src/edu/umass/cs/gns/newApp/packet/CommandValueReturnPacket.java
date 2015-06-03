@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.newApp.packet;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
 import edu.umass.cs.gns.util.NSResponseCode;

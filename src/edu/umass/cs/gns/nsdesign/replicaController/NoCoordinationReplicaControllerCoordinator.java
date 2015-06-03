@@ -1,12 +1,13 @@
 package edu.umass.cs.gns.nsdesign.replicaController;
 
-import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ReplicaControllerCoordinator;
+import edu.umass.cs.nio.InterfaceNodeConfig;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

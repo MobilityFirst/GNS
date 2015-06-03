@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.paxos.paxospacket;
 
-import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.nio.Stringifiable;
 
 import org.json.JSONArray;
 import org.json.JSONException;

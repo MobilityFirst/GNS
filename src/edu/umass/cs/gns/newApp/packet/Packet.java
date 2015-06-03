@@ -7,12 +7,12 @@ package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.Stringifiable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -306,9 +306,9 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket<String>(json, unstringer);
         // for finite ping pong protocol task example
         case TEST_PING:
-          return new edu.umass.cs.gns.protocoltask.examples.PingPongPacket(json);
+          return new edu.umass.cs.protocoltask.examples.PingPongPacket(json);
         case TEST_PONG:
-          return new edu.umass.cs.gns.protocoltask.examples.PingPongPacket(json);
+          return new edu.umass.cs.protocoltask.examples.PingPongPacket(json);
         case TEST_NOOP:
           return null;
       // SPECIAL CASES FOR DNS_SUBTYPE_QUERY PACKETS WHICH USE ONE PACKET FOR ALL THESE

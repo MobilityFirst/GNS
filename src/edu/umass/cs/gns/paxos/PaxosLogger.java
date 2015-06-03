@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.paxos.paxospacket.AcceptPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
@@ -10,6 +9,8 @@ import static edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.*;
 import edu.umass.cs.gns.paxos.paxospacket.PreparePacket;
 import edu.umass.cs.gns.paxos.paxospacket.ProposalPacket;
 import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
+import edu.umass.cs.nio.InterfaceNodeConfig;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -24,8 +25,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 

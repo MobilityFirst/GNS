@@ -9,17 +9,17 @@ package edu.umass.cs.gns.newApp;
 
 import com.google.common.net.InetAddresses;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
 
 import java.util.ArrayList;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
+import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

@@ -8,19 +8,21 @@
 package edu.umass.cs.gns.newApp;
 
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.HELP;
-import edu.umass.cs.gns.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.main.GNS;
 // keep for backwards compat
 import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
-import edu.umass.cs.gns.reconfiguration.ActiveReplica;
-import edu.umass.cs.gns.reconfiguration.DerbyPersistentReconfiguratorDB;
-import edu.umass.cs.gns.reconfiguration.ReconfigurationConfig;
-import edu.umass.cs.gns.reconfiguration.Reconfigurator;
+import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
+import edu.umass.cs.reconfiguration.ActiveReplica;
+import edu.umass.cs.reconfiguration.DerbyPersistentReconfiguratorDB;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
+
 import java.util.Map;
 import java.util.logging.Level;
+
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 

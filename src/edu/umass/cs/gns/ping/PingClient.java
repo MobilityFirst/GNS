@@ -10,7 +10,8 @@ package edu.umass.cs.gns.ping;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

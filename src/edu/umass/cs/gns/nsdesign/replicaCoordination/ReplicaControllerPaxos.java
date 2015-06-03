@@ -1,10 +1,11 @@
 package edu.umass.cs.gns.nsdesign.replicaCoordination;
 
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
-import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nsdesign.replicaController.ReplicaController;
 import edu.umass.cs.gns.newApp.packet.BasicPacket;
 import edu.umass.cs.gns.paxos.PaxosManager;
+import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.JSONNIOTransport;
+
 import org.json.JSONObject;
 
 /**

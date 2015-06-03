@@ -1,8 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-
-import edu.umass.cs.gns.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.InterfaceNodeConfig;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -12,6 +11,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Set;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 

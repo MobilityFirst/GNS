@@ -4,23 +4,27 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.AddRemove;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.PendingTasks;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.main.GNS;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import edu.umass.cs.gns.nio.GenericMessagingTask;
+
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
-import edu.umass.cs.gns.protocoltask.ProtocolEvent;
-import edu.umass.cs.gns.protocoltask.ProtocolTask;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.nio.GenericMessagingTask;
+import edu.umass.cs.protocoltask.ProtocolEvent;
+import edu.umass.cs.protocoltask.ProtocolTask;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
+
 import org.json.JSONException;
 
 /**

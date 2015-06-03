@@ -5,6 +5,8 @@
  */
 package edu.umass.cs.gns.newApp;
 
+import edu.umass.cs.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
@@ -12,8 +14,6 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
 
@@ -24,8 +24,6 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.nio.IntegerPacketType;
-import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
@@ -42,10 +40,12 @@ import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.gns.reconfiguration.RequestParseException;
+import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.RequestParseException;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

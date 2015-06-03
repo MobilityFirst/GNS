@@ -5,10 +5,10 @@
  */
 package edu.umass.cs.gns.newApp.packet.deprecated;
 
-import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.packet.BasicPacketWithNSAndCCP;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.nio.Stringifiable;
+import edu.umass.cs.nio.Stringifiable;
 
 import java.net.InetSocketAddress;
 
