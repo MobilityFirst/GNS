@@ -12,10 +12,10 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 public class ReconfigureRCNodeConfig<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> {

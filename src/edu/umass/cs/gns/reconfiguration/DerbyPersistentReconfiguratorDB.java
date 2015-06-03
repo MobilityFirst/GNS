@@ -41,6 +41,7 @@ import org.json.JSONObject;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.reconfiguration.examples.AppRequest;
 import edu.umass.cs.gns.reconfiguration.examples.ReconfigurableSampleNodeConfig;
@@ -52,8 +53,8 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.DemandProfile;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.StringLocker;
-import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun

@@ -12,7 +12,9 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckDropEpochFinalState;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckStartEpoch;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.AckStopEpoch;
@@ -26,8 +28,7 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
-import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun

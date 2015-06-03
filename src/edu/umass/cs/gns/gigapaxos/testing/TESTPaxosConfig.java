@@ -20,7 +20,7 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import edu.umass.cs.gns.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun

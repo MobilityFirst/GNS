@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.gigapaxos.deprecated;
 
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
 
 /**
  * @author V. Arun

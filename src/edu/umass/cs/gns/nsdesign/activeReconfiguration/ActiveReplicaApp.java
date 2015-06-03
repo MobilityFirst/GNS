@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nsdesign.activeReconfiguration;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gigapaxos.deprecated.Application;
 import edu.umass.cs.gns.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gns.main.GNS;
@@ -10,9 +11,10 @@ import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 

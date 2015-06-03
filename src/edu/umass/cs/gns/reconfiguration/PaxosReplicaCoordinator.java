@@ -5,12 +5,14 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.gns.nio.Stringifiable;
+import edu.umass.cs.utils.MyLogger;
 
 public class PaxosReplicaCoordinator<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {

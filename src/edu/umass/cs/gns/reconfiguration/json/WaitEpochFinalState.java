@@ -22,7 +22,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.Reconfigurat
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestEpochFinalState;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -65,7 +65,7 @@ public class WaitEpochFinalState<NodeIDType>
 	// simply calls start() but only if state not yet received
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		if(this.amObviated()) {
+		if (this.amObviated()) {
 			ProtocolExecutor.cancel(this);
 			return null;
 		}
@@ -74,8 +74,8 @@ public class WaitEpochFinalState<NodeIDType>
 					.iterator();
 		GenericMessagingTask<NodeIDType, ?>[] mtasks = start();
 		if (mtasks != null)
-			System.out.println(getKey() + " resending request to "
-					+ mtasks[0].recipients[0]);
+			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { getKey()
+					, " resending request to " , mtasks[0].recipients[0] });
 		return mtasks;
 	}
 

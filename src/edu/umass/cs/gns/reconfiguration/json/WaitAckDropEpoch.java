@@ -17,7 +17,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DropEpochFin
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -68,8 +68,13 @@ public class WaitAckDropEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
 		// send DropEpoch to all new actives and await acks from all?
-		System.out.println(this.refreshKey() + " (re-)sending["
-				+ this.numRestarts + " of " + MAX_RESTARTS + "] " + this.dropEpoch.getSummary());
+		log.log(Level.INFO,
+				MyLogger.FORMAT[2],
+				new Object[] {
+						this.refreshKey(),
+						" (re-)sending[" + this.numRestarts + " of "
+								+ MAX_RESTARTS + "] ",
+						this.dropEpoch.getSummary() });
 		if (this.numRestarts++ < MAX_RESTARTS)
 			return (new GenericMessagingTask<NodeIDType, DropEpochFinalState<NodeIDType>>(
 					this.startEpoch.getPrevEpochGroup().toArray(),

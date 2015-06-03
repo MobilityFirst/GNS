@@ -11,15 +11,17 @@ import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.newApp.packet.SelectRequestPacket.SelectOperation;
 import edu.umass.cs.gns.newApp.packet.SelectRequestPacket.GroupBehavior;
 import edu.umass.cs.gns.newApp.packet.SelectResponsePacket;
+import edu.umass.cs.gns.nio.Stringifiable;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
-import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * Handles the set of select commands all of which return a set of guids based on a query.

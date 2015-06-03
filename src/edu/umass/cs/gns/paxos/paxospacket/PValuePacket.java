@@ -3,9 +3,9 @@ package edu.umass.cs.gns.paxos.paxospacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.paxos.Ballot;
 
-import edu.umass.cs.gns.util.Stringifiable;
 import java.io.Serializable;
 
 @Deprecated

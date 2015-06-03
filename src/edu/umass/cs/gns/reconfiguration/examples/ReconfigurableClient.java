@@ -16,6 +16,7 @@ import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.nio.JSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONPacket;
+import edu.umass.cs.gns.nio.StringifiableDefault;
 import edu.umass.cs.gns.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
@@ -26,8 +27,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.DeleteServic
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigureRCNodeConfig;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
-import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.StringifiableDefault;
+import edu.umass.cs.utils.MyLogger;
 
 /**
 @author V. Arun

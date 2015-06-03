@@ -19,7 +19,7 @@ import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.gns.protocoltask.examples.PingPongPacket;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
 @author V. Arun

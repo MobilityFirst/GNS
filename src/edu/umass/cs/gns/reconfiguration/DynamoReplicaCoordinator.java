@@ -7,11 +7,13 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nio.JSONMessenger;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentNodeConfig;
-import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.utils.MyLogger;
 
 public class DynamoReplicaCoordinator<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {

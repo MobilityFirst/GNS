@@ -13,9 +13,11 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.nio.InterfacePacketDemultiplexer;
 import edu.umass.cs.gns.nio.JSONMessenger;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.protocoltask.ProtocolExecutor;
 import edu.umass.cs.gns.protocoltask.ProtocolTask;
 import edu.umass.cs.gns.reconfiguration.json.ReconfiguratorProtocolTask;
@@ -39,8 +41,7 @@ import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AggregateDemandProf
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
-import edu.umass.cs.gns.util.MyLogger;
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -515,12 +516,7 @@ public class Reconfigurator<NodeIDType> implements
 		// get new actives based on new IP addresses
 		Set<NodeIDType> newActives = this.consistentNodeConfig
 				.getIPToActiveReplicaIDs(newActiveIPs, oldActives);
-		Set<NodeIDType> retval = (newActives.equals(oldActives)) ? null
-				: newActives;
-		assert (retval == null) : this + " shouldReconfigure returning : "
-				+ retval + "; oldActives = " + oldActives + " ; newActives = "
-				+ newActives;
-		return retval;
+		return (newActives.equals(oldActives)) ? null : newActives;
 	}
 
 	// combine json stats from report into existing demand profile
@@ -980,7 +976,6 @@ public class Reconfigurator<NodeIDType> implements
 				ncRecord);
 
 		log.info(changed + split + merged);
-		System.out.println("\n" + changed + split + merged);
 		return !(changed + split + merged).isEmpty();
 	}
 

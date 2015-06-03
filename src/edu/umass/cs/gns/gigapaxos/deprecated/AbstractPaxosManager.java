@@ -2,13 +2,13 @@ package edu.umass.cs.gns.gigapaxos.deprecated;
 
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+
 import java.util.Set;
 
-/**
- * Abstract class describing an interface for a PaxosManager.
- *
- * Created by abhigyan on 3/5/14.
- * @param <NodeIdType>
+/* This abstract class is deprecated and was used mainly to transition from the 
+ * old paxos implementation to the new one. It currently exists only for
+ * backwards compatibility reasons.
  */
 @Deprecated
 public abstract class AbstractPaxosManager<NodeIdType> {
@@ -22,7 +22,7 @@ public abstract class AbstractPaxosManager<NodeIdType> {
    * @return true if paxos instance is created. false if another instance with same ID and version already exists, or
    * size of nodeIDs is less than 3.
    */
-  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIdType> nodeIDs, Replicable paxosInterface);
+  public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIdType> nodeIDs, InterfaceReplicable paxosInterface);
 
   public abstract Set<NodeIdType> getPaxosNodeIDs(String paxosIDNoVersion);
   /**

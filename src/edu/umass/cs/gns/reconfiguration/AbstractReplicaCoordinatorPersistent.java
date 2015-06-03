@@ -2,9 +2,10 @@ package edu.umass.cs.gns.reconfiguration;
 
 import java.util.Set;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.nio.JSONMessenger;
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.gns.nio.Stringifiable;
 
 public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {

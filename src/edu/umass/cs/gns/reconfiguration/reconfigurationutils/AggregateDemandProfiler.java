@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 
 /**
  * @author V. Arun

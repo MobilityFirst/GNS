@@ -7,21 +7,24 @@ package edu.umass.cs.gns.newApp;
 
 import java.io.IOException;
 import java.util.Set;
+
 import org.json.JSONException;
+
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.JSONMessenger;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
-import edu.umass.cs.gns.util.Stringifiable;
+
 import org.json.JSONObject;
 
 /**

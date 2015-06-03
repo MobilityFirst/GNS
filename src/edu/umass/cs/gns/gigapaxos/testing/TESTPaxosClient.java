@@ -20,7 +20,7 @@ import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.ProposalPacket;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun

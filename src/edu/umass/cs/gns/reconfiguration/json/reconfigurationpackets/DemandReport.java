@@ -5,12 +5,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.nio.Stringifiable;
+import edu.umass.cs.gns.nio.StringifiableDefault;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.AbstractDemandProfile;
-import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.StringifiableDefault;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 
 /**

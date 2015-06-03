@@ -21,7 +21,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.Reconfigurat
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StopEpoch;
 import edu.umass.cs.gns.reconfiguration.reconfigurationutils.ReconfigurationRecord;
-import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -70,7 +70,9 @@ public class WaitAckStopEpoch<NodeIDType>
 			return null;
 		}
 		// else
-		System.out.println(this.refreshKey() + " resending " + this.stopEpoch.getSummary());
+		log.log(Level.INFO, MyLogger.FORMAT[2],
+				new Object[] { this.refreshKey() , " resending "
+						, this.stopEpoch.getSummary() });
 		return start();
 	}
 

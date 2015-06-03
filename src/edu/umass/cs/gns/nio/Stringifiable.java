@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.nio;
 
 import java.util.Set;
 import org.json.JSONArray;

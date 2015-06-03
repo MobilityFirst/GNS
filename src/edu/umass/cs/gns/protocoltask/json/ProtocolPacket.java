@@ -3,8 +3,8 @@ package edu.umass.cs.gns.protocoltask.json;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.protocoltask.ThresholdProtocolEvent;
-import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * @author V. Arun

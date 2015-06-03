@@ -18,7 +18,7 @@ import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.RCRecordRequ
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.gns.util.MyLogger;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -61,8 +61,9 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		System.out.println(this.refreshKey() + " re-starting "
-				+ this.startEpoch.getSummary());
+		log.log(Level.INFO, MyLogger.FORMAT[2],
+				new Object[] { this.refreshKey() , " re-starting "
+						, this.startEpoch.getSummary() });
 		return start();
 	}
 
@@ -87,7 +88,8 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public String refreshKey() {
-		return Reconfigurator.getTaskKey(getClass(), startEpoch, this.DB.getMyID().toString());
+		return Reconfigurator.getTaskKey(getClass(), startEpoch, this.DB
+				.getMyID().toString());
 	}
 
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_START_EPOCH, };

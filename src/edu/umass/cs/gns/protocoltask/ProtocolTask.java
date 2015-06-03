@@ -3,7 +3,7 @@ package edu.umass.cs.gns.protocoltask;
 import java.util.Set;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
-import edu.umass.cs.gns.util.Keyable;
+import edu.umass.cs.utils.Keyable;
 
 /**
  * @author V. Arun

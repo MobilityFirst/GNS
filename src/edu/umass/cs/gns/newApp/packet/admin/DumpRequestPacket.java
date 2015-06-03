@@ -2,8 +2,10 @@ package edu.umass.cs.gns.newApp.packet.admin;
 
 import edu.umass.cs.gns.newApp.packet.BasicPacketWithCCPAddress;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.util.Stringifiable;
+import edu.umass.cs.gns.nio.Stringifiable;
+
 import java.net.InetSocketAddress;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

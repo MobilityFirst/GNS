@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.gigapaxos.multipaxospacket;
 
-import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.utils.Util;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,7 +33,7 @@ public final class SyncDecisionsPacket extends PaxosPacket{
 		this.nodeID = json.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
 		this.maxDecisionSlot = json.getInt(PaxosPacket.Keys.MAX_SLOT.toString());
 		if (json.has(PaxosPacket.Keys.MISSING.toString()))
-			missingSlotNumbers = JSONUtils.JSONArrayToArrayListInteger(json.getJSONArray(PaxosPacket.Keys.MISSING.toString()));
+			missingSlotNumbers = Util.JSONArrayToArrayListInteger(json.getJSONArray(PaxosPacket.Keys.MISSING.toString()));
 		else missingSlotNumbers = null;
 		this.missingTooMuch = json.getBoolean(PaxosPacket.Keys.IS_MISSING_TOO_MUCH.toString());
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.SYNC_DECISIONS || PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_REQUEST); // coz class is final

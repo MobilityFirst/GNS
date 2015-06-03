@@ -11,8 +11,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nio.JSONNIOTransport;
-import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.StringifiableDefault;
+import edu.umass.cs.gns.nio.Stringifiable;
+import edu.umass.cs.gns.nio.StringifiableDefault;
 
 /**
  * @author V. Arun

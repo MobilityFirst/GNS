@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.reconfiguration.AbstractReconfiguratorDB.RecordNames;
 import edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
@@ -107,7 +108,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 					.getReplicatedReconfigurators(this.app.getRCGroupName(node));
 			// if I am present, create group
 			if (group.contains(this.getMyID())) {
-				System.out.println("Creating reconfigurator group "
+				log.info("Creating reconfigurator group "
 						+ this.app.getRCGroupName(node) + " with members "
 						+ group);
 				this.createReplicaGroup(

@@ -12,13 +12,18 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.gns.nio.IntegerPacketType;
 import edu.umass.cs.gns.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
@@ -39,10 +44,9 @@ import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.gns.reconfiguration.InterfaceReplicable;
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.RequestParseException;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;

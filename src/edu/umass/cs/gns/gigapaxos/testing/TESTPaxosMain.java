@@ -7,7 +7,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import edu.umass.cs.gns.nio.nioutils.NIOInstrumenter;
-import edu.umass.cs.gns.util.DelayProfiler;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author V. Arun

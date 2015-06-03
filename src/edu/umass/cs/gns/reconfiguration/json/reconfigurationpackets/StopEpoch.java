@@ -3,9 +3,9 @@ package edu.umass.cs.gns.reconfiguration.json.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.gns.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.gns.util.Stringifiable;
 
 /**
  * @author V. Arun

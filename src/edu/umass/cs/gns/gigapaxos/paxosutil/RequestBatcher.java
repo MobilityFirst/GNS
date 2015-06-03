@@ -3,6 +3,7 @@ package edu.umass.cs.gns.gigapaxos.paxosutil;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map.Entry;
 
 import org.json.JSONException;
 
@@ -10,11 +11,17 @@ import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.RequestPacket;
 
 public class RequestBatcher extends ConsumerTask<RequestPacket> {
+	/*
+	 * Warning: setting this to a high value seems to cause problems with long
+	 * log messages in derby DB. Increase with care.
+	 */
+	private static final int MAX_BATCH_SIZE = 50;
 
 	private final HashMap<String, ArrayList<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
 
-	public RequestBatcher(HashMap<String, ArrayList<RequestPacket>> lock, PaxosManager<?> paxosManager) {
+	public RequestBatcher(HashMap<String, ArrayList<RequestPacket>> lock,
+			PaxosManager<?> paxosManager) {
 		super(lock);
 		this.batched = lock;
 		this.paxosManager = paxosManager;
@@ -29,22 +36,39 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		this.batched.put(task.getPaxosID(), taskList); // unnecessary
 	}
 
+
+	/* This method extracts a batched request from enqueued requests of batch
+	 * size at most MAX_BATCH_SIZE.
+	 */
 	@Override
 	public RequestPacket dequeueImpl() {
 		if (this.batched.isEmpty())
 			return null;
-		// extract first batch (grouped by paxosID)
-		Iterator<ArrayList<RequestPacket>> iter = this.batched.values()
-				.iterator();
-		ArrayList<RequestPacket> taskList = iter.next();
-		iter.remove();
-		// make batched request out of the extracted list
-		RequestPacket first = taskList.get(0);
-		RequestPacket[] rest = new RequestPacket[taskList.size() - 1];
-		for (int i = 1; i < taskList.size(); i++) {
-			rest[i - 1] = taskList.get(i);
+		// pluck first list (each grouped by paxosID)
+		Iterator<Entry<String, ArrayList<RequestPacket>>> mapEntryIter = this.batched
+				.entrySet().iterator();
+		Entry<String, ArrayList<RequestPacket>> firstEntry = mapEntryIter.next();
+
+		// make a batched request out of this extracted (nonempty) list
+		Iterator<RequestPacket> reqPktIter = firstEntry.getValue().iterator();
+		assert (reqPktIter.hasNext());
+		// first pluck the first request from the list
+		RequestPacket first = new RequestPacket(reqPktIter.next());
+		reqPktIter.remove();
+		// then pluck the rest into a batch within the first request
+		RequestPacket[] rest = new RequestPacket[Math.min(firstEntry.getValue()
+				.size(), MAX_BATCH_SIZE - 1)];
+		for (int i = 0; i < rest.length; i++) {
+			assert (reqPktIter.hasNext());
+			rest[i] = reqPktIter.next();
+			reqPktIter.remove();
 		}
-		first.latchToBatch(rest);
+		if (rest.length > 0)
+			first.latchToBatch(rest);
+
+		// remove first list if all plucked
+		if (!reqPktIter.hasNext())
+			mapEntryIter.remove();
 		return first;
 	}
 

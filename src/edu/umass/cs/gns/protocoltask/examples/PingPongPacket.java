@@ -5,9 +5,9 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
+import edu.umass.cs.gns.nio.Stringifiable;
+import edu.umass.cs.gns.nio.StringifiableDefault;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
-import edu.umass.cs.gns.util.Stringifiable;
-import edu.umass.cs.gns.util.StringifiableDefault;
 
 /**
  * @author V. Arun

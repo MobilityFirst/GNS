@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.utils;
 /**
 @author V. Arun
  */

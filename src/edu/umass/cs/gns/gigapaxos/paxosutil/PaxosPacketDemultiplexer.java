@@ -1,8 +1,8 @@
 package edu.umass.cs.gns.gigapaxos.paxosutil;
 
 import edu.umass.cs.gns.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.util.Stringifiable;
 import edu.umass.cs.gns.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.gigapaxos.multipaxospacket.PaxosPacket;
 

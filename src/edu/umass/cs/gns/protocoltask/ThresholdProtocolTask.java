@@ -5,7 +5,7 @@ import java.util.TreeSet;
 
 import edu.umass.cs.gns.nio.GenericMessagingTask;
 import edu.umass.cs.gns.protocoltask.json.ProtocolPacket;
-import edu.umass.cs.gns.util.Waitfor;
+import edu.umass.cs.utils.Waitfor;
 
 
 /**

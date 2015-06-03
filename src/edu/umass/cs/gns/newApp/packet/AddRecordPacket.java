@@ -5,11 +5,13 @@
  */
 package edu.umass.cs.gns.newApp.packet;
 
-import edu.umass.cs.gns.reconfiguration.InterfaceRequest;
+import edu.umass.cs.gns.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gns.nio.Stringifiable;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.Stringifiable;
+
 import java.net.InetSocketAddress;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

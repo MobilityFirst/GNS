@@ -1,8 +1,9 @@
-package edu.umass.cs.gns.reconfiguration;
+package edu.umass.cs.gns.gigapaxos;
 
 import java.util.Set;
 
 import edu.umass.cs.gns.nio.IntegerPacketType;
+import edu.umass.cs.gns.reconfiguration.RequestParseException;
 
 /**
 @author V. Arun
