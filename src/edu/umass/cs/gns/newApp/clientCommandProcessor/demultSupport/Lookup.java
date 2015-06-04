@@ -8,7 +8,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.net.UnknownHostException;
@@ -98,10 +98,11 @@ public class Lookup {
       requestInfo.setSuccess(true);
       requestInfo.setFinishTime();
       
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("8888888888888888888888888888>>>>: dns request #" + requestInfo.getCCPReqID() 
-                + " " + requestInfo.getName() + " took " + requestInfo.getResponseLatency() + "ms");
-      }
+      DelayProfiler.update("dnsRequest", requestInfo.getStartTime());
+//      if (handler.getParameters().isDebugMode()) {
+//        GNS.getLogger().info("8888888888888888888888888888>>>>: dns request #" + requestInfo.getCCPReqID() 
+//                + " " + requestInfo.getName() + " took " + requestInfo.getResponseLatency() + "ms");
+//      }
 
       if (handler.getParameters().isAdaptiveTimeout()) {
         long responseTimeSample = requestInfo.getResponseLatency();

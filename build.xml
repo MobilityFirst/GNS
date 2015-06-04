@@ -42,7 +42,7 @@
                 <attribute name="Class-Path" value="."/>
                 <attribute name="Build-Version" value="${version.code}" />
             </manifest>
-            <fileset dir="${build}" includes="**/*.class" excludes="**/*Test.class"/>
+            <fileset dir="${build}" includes="**/*.class"/>
             <fileset dir="${conf}" includes="**/*.xml, **/*.conf" />
             <zipgroupfileset dir="${lib}" includes="**/*.jar" excludes="${junit}"/>
         </jar>

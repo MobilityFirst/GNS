@@ -217,12 +217,12 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
 
   private NodeIDType selectNS(Set<NodeIDType> replicas) {
     NodeIDType ns;
-    if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
-      ns = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(), (Set) replicas,
-              nameserversQueried);
-    } else {
+//    if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
+//      ns = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(), (Set) replicas,
+//              nameserversQueried);
+//    } else {
       ns = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(replicas, nameserversQueried);
-    }
+    //}
     return ns;
   }
 
