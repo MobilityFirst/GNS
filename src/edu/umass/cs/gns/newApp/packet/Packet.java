@@ -106,8 +106,8 @@ public class Packet {
 
     NAME_SERVER_LOAD(201, "edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket"),
     // for finite ping pong protocol task example
-    TEST_PING(222, "edu.umass.cs.gns.protocoltask.examples.PingPongPacket"),
-    TEST_PONG(223, "edu.umass.cs.gns.protocoltask.examples.PingPongPacket"),
+    TEST_PING(222, "edu.umass.cs.protocoltask.examples.PingPongPacket"),
+    TEST_PONG(223, "edu.umass.cs.protocoltask.examples.PingPongPacket"),
     TEST_NOOP(224, null),
     // SPECIAL CASES FOR DNS_SUBTYPE_QUERY PACKETS WHICH USE ONE PACKET FOR ALL THESE
     // these 3 are here for completeness and instrumentation

@@ -113,11 +113,7 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 		return this.paxosManager.getPaxosNodeIDs(serviceName);
 	}
 
-	/*
-	 * FIXME: The method definition in AbstractReplicaCorodinator must accept an
-	 * epoch number so that this method indeed overrides that method.
-	 */
-	// @Override
+	@Override
 	public void deleteReplicaGroup(String serviceName, int epoch) {
 		this.paxosManager.deletePaxosInstance(serviceName, (short) epoch);
 	}
@@ -149,6 +145,14 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 		return state;
 	}
 
+	/* It is a bad idea to use this method with paxos replica coordination. 
+	 * It is never a good idea to set paxos-maintained state through anything
+	 * but paxos agreement, otherwise we may be violating safety. In the 
+	 * case of initial state, we (must) have agreement already on the value
+	 * of the initial state, but we still need to have paxos initialize this 
+	 * state atomically with the creation of the paxos instance before any
+	 * paxos-coordinated requests are executed. 
+	 */
 	@Override
 	public void putInitialState(String name, int epoch, String state) {
 		throw new RuntimeException("This method should never have been called");

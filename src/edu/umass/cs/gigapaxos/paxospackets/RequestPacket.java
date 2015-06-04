@@ -186,7 +186,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	public RequestPacket(JSONObject json) throws JSONException {
 		super(json);
 		this.packetType = PaxosPacketType.REQUEST;
-		this.stop = json.getBoolean(Keys.IS_STOP.toString());
+		this.stop = json.optBoolean(Keys.IS_STOP.toString());
 		this.requestID = json.getInt(Keys.REQUEST_ID.toString());
 		this.clientID = (json.has(Keys.CLIENT_ID.toString()) ? json
 				.getInt(Keys.CLIENT_ID.toString()) : -1);

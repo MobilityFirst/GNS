@@ -16,6 +16,7 @@ import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
@@ -156,26 +157,8 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 				if (DEBUG)
 					log.info("App sending response to client "
 							+ requestPacket.clientID + ": " + requestPacket);
-				if (TESTPaxosConfig.getSendReplyToClient()) {
-					niot.sendToAddress(
-							new InetSocketAddress(requestPacket
-									.getClientAddress(), requestPacket
-									.getClientPort()), requestPacket
-									.toJSONObject());
-					// send responses for batched requests as well
-					if (requestPacket.getBatched() != null) {
-						for (RequestPacket batchedReq : requestPacket
-								.getBatched()) {
-							ProposalPacket batchedProposal = new ProposalPacket(
-									requestPacket.slot, batchedReq);
-							niot.sendToAddress(new InetSocketAddress(
-									batchedProposal.getClientAddress(),
-									batchedProposal.getClientPort()),
-									batchedProposal.toJSONObject());
-						}
-					}
-					// niot.sendToID(requestPacket.clientID, reqJson);
-				}
+				if (TESTPaxosConfig.getSendReplyToClient()) 
+					this.sendResponseToClient(requestPacket);
 				RequestInstrumenter.remove(requestPacket.requestID);
 			} else if (DEBUG)
 				log.info("Node" + getMyID() + " not sending reply to client: "
@@ -186,6 +169,26 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 			ioe.printStackTrace();
 		}
 		return executed;
+	}
+	
+	private void sendResponseToClient(ProposalPacket requestPacket) throws JSONException, IOException {
+		niot.sendToAddress(
+				new InetSocketAddress(requestPacket
+						.getClientAddress(), requestPacket
+						.getClientPort()), requestPacket
+						.toJSONObject());
+		// send responses for batched requests as well
+		if (requestPacket.getBatched() != null) {
+			for (RequestPacket batchedReq : requestPacket
+					.getBatched()) {
+				ProposalPacket batchedProposal = new ProposalPacket(
+						requestPacket.slot, batchedReq);
+				niot.sendToAddress(new InetSocketAddress(
+						batchedProposal.getClientAddress(),
+						batchedProposal.getClientPort()),
+						batchedProposal.toJSONObject());
+			}
+		}
 	}
 
 	@Override
@@ -378,11 +381,15 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 	public InterfaceRequest getRequest(String stringified)
 			throws RequestParseException {
 		try {
-			return new ProposalPacket(new JSONObject(stringified));
+			JSONObject json = new JSONObject(stringified);
+			if(PaxosPacket.getPaxosPacketType(json).equals(PaxosPacket.PaxosPacketType.REQUEST))
+				return new RequestPacket(json);
+			else return new ProposalPacket(json);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-		return null;
+		throw new RequestParseException(new RuntimeException(
+				"Can not parse request: " + stringified));
 	}
 
 	@Override
@@ -397,8 +404,22 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 		if (request instanceof ProposalPacket)
 			return this.handleDecision((ProposalPacket) request,
 					doNotReplyToClient);
-		else
-			return this.handleDecision(request.getServiceName(),
-					request.toString(), doNotReplyToClient);
+		else if(request instanceof RequestPacket)
+			return this.sendEchoResponse((RequestPacket)request);
+		else throw new RuntimeException("TESTPaxosReplicable received non-RequestPacket type request : " + request);
+	}
+	
+	public boolean sendEchoResponse(RequestPacket request) {
+		try {
+			// arbitrary slot number of 0
+			ProposalPacket proposal = new ProposalPacket(0, request);
+			this.sendResponseToClient(proposal);
+		} catch (JSONException | IOException e) {
+			log.severe("Node" + getMyID()
+					+ "encountered JSONException while decoding REQUEST: "
+					+ request);
+			e.printStackTrace();
+		}
+		return true;
 	}
 }

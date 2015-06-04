@@ -512,11 +512,12 @@ public class Reconfigurator<NodeIDType> implements
 		ArrayList<InetAddress> newActiveIPs = this.demandProfiler
 				.testAndSetReconfigured(name,
 						this.consistentNodeConfig.getNodeIPs(oldActives));
-		assert (newActiveIPs != null);
+		if (newActiveIPs == null) return null;
 		// get new actives based on new IP addresses
 		Set<NodeIDType> newActives = this.consistentNodeConfig
 				.getIPToActiveReplicaIDs(newActiveIPs, oldActives);
-		return (newActives.equals(oldActives)) ? null : newActives;
+		return (!newActives.equals(oldActives) || ReconfigurationConfig
+				.shouldReconfigureInPlace()) ? newActives : null;
 	}
 
 	// combine json stats from report into existing demand profile

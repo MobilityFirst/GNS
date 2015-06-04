@@ -36,7 +36,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -84,6 +89,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private static final int MAX_POKE_RATE = 1000; // per sec
 	public static final boolean BATCHING_ENABLED = true;
 	public static final long CAN_CREATE_TIMEOUT = 1; //non-zero
+	private static final boolean EMULATE_UNREPLICATED = false;
 
 
 	// final
@@ -102,7 +108,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private final Stringifiable<NodeIDType> unstringer;
 	private final RequestBatcher batched;
 	
-	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD;
+	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD; // default
+	private int interCheckpointInterval = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
+	private int maxSyncDecisionsGap = PaxosInstanceStateMachine.MAX_SYNC_DECISIONS_GAP;
 
 	// non-final
 	private boolean hasRecovered = false;
@@ -313,19 +321,21 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		}
 	}
 
+
+
 	// Called by internal entities like rollForward and works with integer node IDs
 	public void handleIncomingPacketInternal(JSONObject jsonMsg) {
 		if (this.isClosed())
 			return;
-		else {
+		else if (emulateUnreplicated(jsonMsg)) // testing
+			return;
+		else 
 			setProcessing(true);
-		}
-
+		
 		PaxosPacketType paxosPacketType;
 		try {
-			//jsonMsg = fixNodeStringToInt(jsonMsg);
 			RequestPacket.addDebugInfo(jsonMsg, ("i" + myID));
-			assert (JSONPacket.getPacketType(jsonMsg) == PaxosPacketType.PAXOS_PACKET.getInt());
+			//assert (JSONPacket.getPacketType(jsonMsg) == PaxosPacketType.PAXOS_PACKET.getInt());
 			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg); // will throw exception if no PAXOS_PACKET_TYPE
 			
 			switch (paxosPacketType) {
@@ -481,6 +491,22 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return this.outOfOrderLimit;
 	}
 
+	public void setInterCheckpointInterval(int interval) {
+		this.interCheckpointInterval = interval;
+	}
+
+	public int getInterCheckpointInterval() {
+		return this.interCheckpointInterval;
+	}
+
+	public void setMaxSyncDecisionsGap(int maxGap) {
+		this.maxSyncDecisionsGap = maxGap;
+	}
+
+	public int getMaxSyncDecisionsGap() {
+		return this.maxSyncDecisionsGap;
+	}
+
 	/* Note: paxosLogger.removeAll() must be only used when a node is
 	 * recovering. Otherwise, it may cause problems with ongoing DB 
 	 * transactions. If there are multiple virtual nodes recovering
@@ -547,6 +573,22 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	}
 
 	/********************* End of public methods ***********************/
+
+	private final boolean emulateUnreplicated(JSONObject jsonMsg) {
+		if (!EMULATE_UNREPLICATED)
+			return false;
+		try {
+			if (!PaxosPacket.getPaxosPacketType(jsonMsg).equals(
+					PaxosPacket.PaxosPacketType.REQUEST))
+				return false;
+			PaxosInstanceStateMachine.execute(myApp,
+					(new RequestPacket(jsonMsg)).getRequestValue(), false);
+		} catch (JSONException e) {
+			log.severe("Node" + myID + " unable to parse " + jsonMsg);
+			e.printStackTrace();
+		}
+		return true;
+	}
 
 	protected Set<NodeIDType> getNodesFromStringSet(Set<String> strNodes) {
 		Set<NodeIDType> nodes = new HashSet<NodeIDType>();

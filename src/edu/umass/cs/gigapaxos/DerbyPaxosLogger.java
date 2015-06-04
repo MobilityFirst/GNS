@@ -160,7 +160,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 	
 	public void copyEpochFinalCheckpointState(String paxosID, short version) {
-		if (isClosed() || DISABLE_LOGGING)
+		if (isClosed() || !isLoggingEnabled())
 			return;
 
 		// Stupid derby doesn't have an insert if not exist command
@@ -229,7 +229,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	
 	@Override
 	public synchronized boolean logBatch(PaxosPacket[] packets) {
-		if (isClosed() || DISABLE_LOGGING) return false;
+		if (isClosed()) return false;
+		if(!isLoggingEnabled()) return true;
 		boolean logged = true;
 		PreparedStatement pstmt = null;
 		Connection conn = null;
@@ -310,7 +311,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private void putCheckpointState(String paxosID, short version,
 			Set<String> group, int slot, Ballot ballot, String state,
 			int acceptedGCSlot) {
-		if (isClosed() || DISABLE_LOGGING) return;
+		if (isClosed() || !isLoggingEnabled()) return;
 
 		long t1 = System.currentTimeMillis(), t2 = 0;
 		// Stupid derby doesn't have an insert if not exist command
@@ -449,7 +450,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 */
 	private boolean log(String paxosID, short version, int slot, int ballotnum,
 			int coordinator, PaxosPacketType type, String message) {
-		if (isClosed() || DISABLE_LOGGING) return false;
+		if (isClosed()) return false;
+		if(!isLoggingEnabled()) return true;
 
 		boolean logged = false;
 
@@ -501,7 +503,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 */
 	@Override
 	public synchronized boolean pause(String paxosID, String serializedState) {
-		if (isClosed() || DISABLE_LOGGING)
+		if (isClosed() || !isLoggingEnabled())
 			return false;
 
 		boolean paused = false;
@@ -532,7 +534,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	@Override
 	public synchronized HotRestoreInfo unpause(String paxosID) {
-		if (isClosed() || DISABLE_LOGGING)
+		if (isClosed() || !isLoggingEnabled())
 			return null;
 
 		HotRestoreInfo hri = null;
@@ -563,7 +565,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	private void deletePaused(String paxosID) {
-		if (isClosed() || DISABLE_LOGGING) return;
+		if (isClosed() || !isLoggingEnabled()) return;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;
 		Connection conn = null;
@@ -1569,7 +1571,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	// This method is not used and will be deprecated
 	@Override
 	public synchronized boolean deleteBatch(GCTask[] gcTasks) {
-		if (isClosed() || DISABLE_LOGGING) return false;
+		if (isClosed() || !isLoggingEnabled()) return false;
 		boolean logged = true;
 		PreparedStatement pstmt = null;
 		Connection conn = null;
@@ -1632,7 +1634,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	@Override
 	public boolean deleteEpochFinalCheckpointState(String paxosID, short version) {
-		if (isClosed() || DISABLE_LOGGING)
+		if (isClosed() || !isLoggingEnabled())
 			return false;
 		PreparedStatement pstmt = null;
 		ResultSet rset = null;

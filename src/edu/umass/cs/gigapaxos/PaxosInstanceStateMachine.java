@@ -129,16 +129,29 @@ import edu.umass.cs.utils.DelayProfiler;
  * test this class.
  */
 public class PaxosInstanceStateMachine implements Keyable<String> {
-	private static final boolean PAXOS_ID_AS_STRING=false; // if false, must invoke getPaxosID() as less often as possible
-	protected static final int INTER_CHECKPOINT_INTERVAL = 100; // must be >= 1, does not depend on anything else
-	protected static final int SYNC_THRESHOLD = 4*INTER_CHECKPOINT_INTERVAL; // out-of-order-ness prompting synchronization, must be >=1 
-	private static final int MAX_SYNC_GAP = INTER_CHECKPOINT_INTERVAL;
+	/* If false, the paxosID is represented as a byte[], so we must invoke 
+	 * getPaxosID() as infrequently as possible.
+	 */
+	private static final boolean PAXOS_ID_AS_STRING=false;
+	
+	// must be >= 1, does not depend on anything else
+	protected static final int INTER_CHECKPOINT_INTERVAL = 100; 
+	
+	// out-of-order-ness prompting synchronization, must be >=1
+	protected static final int SYNC_THRESHOLD = 4*INTER_CHECKPOINT_INTERVAL;
+	
+	// max decisions gap when reached will prompt checkpoint transfer
+	protected static final int MAX_SYNC_DECISIONS_GAP = INTER_CHECKPOINT_INTERVAL;
+	
+	// used by PaxosCoordinatorState to determine if overloaded
 	protected static final int MAX_OUTSTANDING_LOAD = 100*INTER_CHECKPOINT_INTERVAL;
+	
+	// poke instance in the beginning to prompt coordinator election
 	protected static final boolean POKE_ENABLED = false;
 
 	/************ final Paxos state that is unchangeable after creation ***************/
-	private final int[] groupMembers; // final coz group changes => new paxos instance
-	private final Object paxosID; // App ID or "GUID". Object to allow easy testing across byte[] and String
+	private final int[] groupMembers; 
+	private final Object paxosID; // Object to allow easy testing across byte[] and String
 	private final short version;
 	private final PaxosManager<?> paxosManager;
 	private final InterfaceReplicable clientRequestHandler;
@@ -225,7 +238,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	protected boolean kill() {  // removes all database state and can not be recovered anymore
 		this.forceStop();
 		AbstractPaxosLogger.kill(this.paxosManager.getPaxosLogger(), getPaxosID()); // drop all log state
-		//assert(this.paxosManager.getPaxosLogger().getSlotBallotState(getPaxosID())==null);
 		// kill implies reset app state
 		this.clientRequestHandler.updateState(getPaxosID(), null);
 		return true;
@@ -586,6 +598,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * Action: Send back current or updated ballot to the ballot's coordinator. 
 	 */
 	private MessagingTask handleAccept(AcceptPacket accept) throws JSONException {
+		this.paxosManager.heardFrom(accept.sender); // FD optimization
 		RequestInstrumenter.received(accept, accept.sender, this.getMyID());
 		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept, this.getMyID()); 
 		if(ballot==null) {return null;}// can happen only if acceptor is stopped. 
@@ -624,6 +637,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * unicast to the preempting coordinator. Null if neither.
 	 */
 	private MessagingTask handleAcceptReply(AcceptReplyPacket acceptReply) {
+		this.paxosManager.heardFrom(acceptReply.acceptor); // FD optimization
 		RequestInstrumenter.received(acceptReply, acceptReply.acceptor, this.getMyID());
 		PValuePacket committedPValue = this.coordinator.handleAcceptReply(this.groupMembers, acceptReply);
 		if(committedPValue==null) return null;
@@ -749,11 +763,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			log.log(Level.FINE, "{0}{1}{2}", new Object[]{this, " in-order commit: ",inorderDecision}); 
 			String pid = this.getPaxosID();
 
-			// execute it until executed, we are *by design* stuck o/w; must be atomic with extraction
-			for(String requestValue : inorderDecision.getRequestValue())
-				while(!this.clientRequestHandler.handleRequest(this.getInterfaceRequest(pid, 
-						requestValue), (inorderDecision.isRecovery()))) 
-					log.severe("App failed to execute request, retrying: "+requestValue);
+			// execute it until successful, we are *by design* stuck o/w; must be atomic with extraction
+			execute(this.clientRequestHandler, inorderDecision.getRequestValue(), inorderDecision.isRecovery());
 			execCount++; // +1 for each batch, not for each constituent requestValue
 
 			// checkpoint if needed, must be atomic with the execution 
@@ -773,6 +784,20 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		assert(loggedDecision==null || this.paxosState.getSlot()!=loggedDecision.slot); // otherwise it would've been executed
 		if(loggedDecision!=null && !loggedDecision.isRecovery()) DelayProfiler.update("EEC", methodEntryTime, execCount);
 		return this.fixLongDecisionGaps(loggedDecision);
+	}
+
+	/*
+	 * Helper method used above in extractExecuteAndCheckpoint as well as by
+	 * PaxosManager for emulating unreplicated execution for testing purposes.
+	 */
+	protected static boolean execute(InterfaceReplicable app, String[] requestValues, boolean doNotReplyToClient) {
+		for(String requestValue : requestValues)
+			while (!app.handleRequest(
+					getInterfaceRequest(app, requestValue),
+					doNotReplyToClient))
+				log.severe("App failed to execute request, retrying: "
+						+ requestValue);
+		return true;
 	}
 	// Like extractExecuteAndCheckpoint but invoked upon checkpoint transfer
 	private synchronized MessagingTask handleCheckpoint(StatePacket statePacket) {
@@ -846,11 +871,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 
 	private boolean shouldCheckpoint(PValuePacket decision) {
-		return (decision.slot%INTER_CHECKPOINT_INTERVAL==0 || decision.isStopRequest());
+		return (decision.slot%this.paxosManager.getInterCheckpointInterval()==0 || decision.isStopRequest());
 	}
-	private InterfaceRequest getInterfaceRequest(String name, String value) {
+	private static InterfaceRequest getInterfaceRequest(InterfaceReplicable app, String value) {
 		try {
-			return this.clientRequestHandler.getRequest(value);
+			return app.getRequest(value);
 		} catch (RequestParseException e) {
 			e.printStackTrace();
 		}
@@ -1001,7 +1026,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * If the requester is myself, multicast to all.
 	 */
 	private MessagingTask requestMissingDecisions(int coordinatorID) {
-		ArrayList<Integer> missingSlotNumbers = this.paxosState.getMissingCommittedSlots(MAX_SYNC_GAP);
+		ArrayList<Integer> missingSlotNumbers = this.paxosState.getMissingCommittedSlots(this.paxosManager.getMaxSyncDecisionsGap());
 		if(missingSlotNumbers==null || missingSlotNumbers.isEmpty()) return null;
 
 		int maxDecision = this.paxosState.getMaxCommittedSlot();
@@ -1014,10 +1039,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		return mtask;
 	}
 	
-	/*
-	 * The shouldSync threshold SYNC_THRESHOLD is higher than the checkpoint
-	 * transfer threshold MAX_SYNC_GAP, but that is okay.
-	 */
 	private boolean shouldSync(int maxDecisionSlot, int threshold) {
 		int expectedSlot = this.paxosState.getSlot();
 		return (maxDecisionSlot - expectedSlot >= threshold)
@@ -1026,7 +1047,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 	private boolean isMissingTooMuch() {
 		return this.shouldSync(this.paxosState.getMaxCommittedSlot(),
-				MAX_SYNC_GAP);
+				this.paxosManager.getMaxSyncDecisionsGap());
 	}
 
 	// point here is really to request initial state
@@ -1110,10 +1131,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		return mtask;
 	}
 
-	private static int lastCheckpointSlot(int slot) {
-		int lcp = slot - slot%INTER_CHECKPOINT_INTERVAL;
-		if(lcp < 0 && ((lcp -= INTER_CHECKPOINT_INTERVAL) > 0)) // wraparound-arithmetic
-				lcp = lastCheckpointSlot(Integer.MAX_VALUE);
+	private int lastCheckpointSlot(int slot) {
+		return lastCheckpointSlot(slot, this.paxosManager.getInterCheckpointInterval());
+	}
+	private static int lastCheckpointSlot(int slot, int checkpointInterval) {
+		int lcp = slot - slot%checkpointInterval;
+		if(lcp < 0 && ((lcp -= checkpointInterval) > 0)) // wraparound-arithmetic
+				lcp = lastCheckpointSlot(Integer.MAX_VALUE, checkpointInterval);
 		return lcp;
 	}
 

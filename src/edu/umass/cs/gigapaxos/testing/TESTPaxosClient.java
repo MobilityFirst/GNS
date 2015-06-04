@@ -279,12 +279,23 @@ public class TESTPaxosClient {
 			this.timer
 					.schedule(new Retransmitter(id, req), (long) getTimeout());
 	}
+	
+	// to control request size, min request size is still > 350B
+	static String GIBBERISH = "01234567890123456789012345678901";
+	static int REQ_SIZE = 0;
+	static {
+		if (GIBBERISH.length() < REQ_SIZE)
+			GIBBERISH = GIBBERISH.substring(0, REQ_SIZE);
+		else
+			while (GIBBERISH.length() < REQ_SIZE)
+				GIBBERISH += GIBBERISH;
+	}
 
 	protected RequestPacket makeRequest() {
 		int reqID = ((int) (Math.random() * Integer.MAX_VALUE));
 		RequestPacket req = new RequestPacket(this.myID, reqID, // only place where req count is
 																// incremented
-				"[Sample request numbered " + incrReqCount() + "]", false);
+				"[Sample request numbered " + incrReqCount() + "]" + GIBBERISH, false);
 		req.putPaxosID(TESTPaxosConfig.TEST_GUID, (short) 0);
 		return req;
 	}
@@ -367,7 +378,7 @@ public class TESTPaxosClient {
 						e.printStackTrace();
 					}
 				}
-				System.out.println("Current aggregate throughput = "
+				System.out.println("Cumulative response rate = "
 						+ Util.df(getTotalThroughput(clients)) + " reqs/sec");
 				try {
 					Thread.sleep(1000);
