@@ -26,6 +26,7 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -208,6 +209,8 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         DBObject obj = cursor.next();
         JSONObject json = new JSONObject(obj.toString());
         // instrumentation
+        DelayProfiler.update("lookupEntireRecord", startTime);
+        // older style
         int lookupTime = (int) (System.currentTimeMillis() - startTime);
         if (lookupTime > 20) {
           GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
@@ -265,7 +268,11 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
       }
 
+      DelayProfiler.update("lookupMSAUFPreFind", startTime);
+      long findStartTime = System.currentTimeMillis();
       DBObject dbObject = collection.findOne(query, projection);
+      DelayProfiler.update("lookupMSAUFJustFind", findStartTime);
+      long postFindStartTime = System.currentTimeMillis();
       if (dbObject == null) {
         throw new RecordNotFoundException(guid);
       }
@@ -315,6 +322,10 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
         hashMap.put(valuesMapField, valuesMap);
       }
+      DelayProfiler.update("lookupMSAUFPostFind", postFindStartTime);
+      // instrumentation
+      DelayProfiler.update("lookupMSAUF", startTime);
+      // older style
       int lookupTime = (int) (System.currentTimeMillis() - startTime);
       if (lookupTime > 20) {
         GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
@@ -480,6 +491,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       } catch (MongoException e) {
         throw new FailedDBOperationException(collectionName, updates.toString());
       }
+      DelayProfiler.update("updateJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
       if (finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
@@ -544,6 +556,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         throw new FailedDBOperationException(collectionName, updates.toString());
       }
       actuallyUpdatedTheRecord = writeResult.isUpdateOfExisting();
+      DelayProfiler.update("updateConditionalJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
       if (finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
@@ -827,6 +840,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
     } else if (args.length == 3) {
+      //testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);
       queryTest(args[0], args[1], args[2], null);
     } else if (args.length == 4) {
       queryTest(args[0], args[1], args[2], args[3]);
@@ -855,6 +869,44 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
   //  //test code
+  
+//  private static final ArrayList<ColumnField> dnsSystemFields = new ArrayList<ColumnField>();
+//
+//  static {
+//    dnsSystemFields.add(NameRecord.ACTIVE_VERSION);
+//    dnsSystemFields.add(NameRecord.TIME_TO_LIVE);
+//  }
+//
+//  private static void testlookupMultipleSystemAndUserFields(String node, String guid, String field) {
+//    try {
+//      MongoRecords instance = new MongoRecords(node);
+//      ArrayList<ColumnField> userFields
+//              = new ArrayList<ColumnField>(Arrays.asList(new ColumnField(field,
+//                                      ColumnFieldType.USER_JSON)));
+//      int cnt = 0;
+//      long startTime = System.currentTimeMillis();
+//      do {
+//        Map<ColumnField, Object> map  
+//                = instance.lookupMultipleSystemAndUserFields(
+//                        DBNAMERECORD,
+//                        guid,
+//                        NameRecord.NAME,
+//                        dnsSystemFields,
+//                        NameRecord.VALUES_MAP,
+//                        userFields);
+//        if (cnt++ % 10000 == 0) {
+//          System.out.println(map);
+//          System.out.println(DelayProfiler.getStats());
+//          System.out.println("op/s = " + Format.formatTime(10000000.0 / (System.currentTimeMillis() - startTime)));
+//          startTime = System.currentTimeMillis();
+//        }
+//      } while (true);
+//    } catch (FailedDBOperationException | RecordNotFoundException e) {
+//      System.out.println("Lookup failed: " + e);
+//    }
+//  }
+
+  
   @SuppressWarnings("unchecked") /// because it's static
   private static void queryTest(Object nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);

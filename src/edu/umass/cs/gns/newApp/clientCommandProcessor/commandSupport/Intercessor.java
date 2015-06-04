@@ -32,6 +32,7 @@ import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 
+import edu.umass.cs.utils.DelayProfiler;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
@@ -231,16 +232,13 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       if (debuggingEnabled) {
         GNS.getLogger().fine("Waiting for query id: " + id);
       }
-      final Long waitStart = System.nanoTime(); // instrumentation
+      final Long waitStart = System.currentTimeMillis(); // instrumentation
       synchronized (monitor) {
         while (!queryResultMap.containsKey(id)) {
           monitor.wait();
         }
       }
-      double aclDelayInMS = (System.nanoTime() - waitStart) / 1000000.0;
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("8888888888888888888888888888>>>>:  NOTIFY DELAY " + Format.formatTime(aclDelayInMS) + "ms");
-      }
+      DelayProfiler.update("IntercessorWait", waitStart);
       if (debuggingEnabled) {
         GNS.getLogger().fine("Query id response received: " + id);
       }

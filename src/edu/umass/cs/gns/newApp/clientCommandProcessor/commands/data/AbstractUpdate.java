@@ -14,7 +14,6 @@ import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.LocalNameServer;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;

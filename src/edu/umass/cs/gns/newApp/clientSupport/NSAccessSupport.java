@@ -10,7 +10,6 @@ package edu.umass.cs.gns.newApp.clientSupport;
 import com.google.common.collect.Sets;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GroupAccess;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
@@ -88,24 +87,24 @@ public class NSAccessSupport {
    * @param lnsAddress
    * @return
    */
-  public static boolean verifyAccess(MetaDataTypeName access, GuidInfo guidInfo, String field,
+  public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
           String accessorGuid, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     //String accessorGuid = ClientUtils.createGuidStringFromPublicKey(accessorPublicKey);
     if (debuggingEnabled) {
-      GNS.getLogger().info("User: " + guidInfo.getName() + " Reader: " + accessorGuid + " Field: " + field);
+      GNS.getLogger().info("User: " + guid + " Reader: " + accessorGuid + " Field: " + field);
     }
-    if (guidInfo.getGuid().equals(accessorGuid)) {
+    if (guid.equals(accessorGuid)) {
       return true; // can always read your own stuff
-    } else if (hierarchicalAccessCheck(access, guidInfo, field, accessorGuid, activeReplica, lnsAddress)) {
+    } else if (hierarchicalAccessCheck(access, guid, field, accessorGuid, activeReplica, lnsAddress)) {
       return true; // accessor can see this field
 //    } else if (checkForAccess(access, guidInfo, field, accessorInfo, activeReplica)) {
 //      return true; // accessor can see this field
-    } else if (checkForAccess(access, guidInfo, ALLFIELDS, accessorGuid, activeReplica, lnsAddress)) {
+    } else if (checkForAccess(access, guid, ALLFIELDS, accessorGuid, activeReplica, lnsAddress)) {
       return true; // accessor can see all fields
     } else {
       if (debuggingEnabled) {
-        GNS.getLogger().info("User " + accessorGuid + " NOT allowed to access user " + guidInfo.getName() + "'s " + field + " field");
+        GNS.getLogger().info("User " + accessorGuid + " NOT allowed to access user " + guid + "'s " + field + " field");
       }
       return false;
     }
@@ -123,24 +122,24 @@ public class NSAccessSupport {
    * @return
    * @throws FailedDBOperationException
    */
-  private static boolean hierarchicalAccessCheck(MetaDataTypeName access, GuidInfo guidInfo, String field, String accessorGuid,
+  private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid, String field, String accessorGuid,
           GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
-    if (checkForAccess(access, guidInfo, field, accessorGuid, activeReplica, lnsAddress)) {
+    if (checkForAccess(access, guid, field, accessorGuid, activeReplica, lnsAddress)) {
       return true;
     }
     // otherwise go up the hierarchy and check
     if (field.contains(".")) {
-      return hierarchicalAccessCheck(access, guidInfo, field.substring(0, field.lastIndexOf(".")),
+      return hierarchicalAccessCheck(access, guid, field.substring(0, field.lastIndexOf(".")),
               accessorGuid, activeReplica, lnsAddress);
     } else {
       return false;
     }
   }
 
-  private static boolean checkForAccess(MetaDataTypeName access, GuidInfo guidInfo, String field, String accessorGuid,
+  private static boolean checkForAccess(MetaDataTypeName access, String guid, String field, String accessorGuid,
           GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
@@ -148,14 +147,14 @@ public class NSAccessSupport {
     }
     try {
       Set<String> allowedusers = (Set<String>)(Set<?>)NSFieldMetaData.lookupOnThisNameServer(access, 
-              guidInfo, field, activeReplica);
+              guid, field, activeReplica);
       if (debuggingEnabled) {
-        GNS.getLogger().info(guidInfo.getName() + " allowed users of " + field + " : " + allowedusers);
+        GNS.getLogger().info(guid + " allowed users of " + field + " : " + allowedusers);
       }
       if (checkAllowedUsers(accessorGuid, allowedusers, activeReplica, lnsAddress)) {
         if (debuggingEnabled) {
           GNS.getLogger().info("User " + accessorGuid + " allowed to access "
-                  + (field != ALLFIELDS ? ("user " + guidInfo.getName() + "'s " + field + " field") : ("all of user " + guidInfo.getName() + "'s fields")));
+                  + (field != ALLFIELDS ? ("user " + guid + "'s " + field + " field") : ("all of user " + guid + "'s fields")));
         }
         return true;
       }
@@ -164,7 +163,7 @@ public class NSAccessSupport {
       // This is actually a normal result.. so no warning here.
       return false;
     } catch (RecordNotFoundException e) {
-      GNS.getLogger().warning("User " + accessorGuid + " access problem for " + guidInfo.getName() + "'s " + field + " field: " + e);
+      GNS.getLogger().warning("User " + accessorGuid + " access problem for " + guid + "'s " + field + " field: " + e);
       return false;
     }
   }

@@ -10,7 +10,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ParametersAndOptions;
 import static edu.umass.cs.gns.util.ParametersAndOptions.HELP;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessorOptions.*;
-import edu.umass.cs.gns.main.RequestHandlerParameters;
 
 import java.io.IOException;
 import java.util.logging.Logger;

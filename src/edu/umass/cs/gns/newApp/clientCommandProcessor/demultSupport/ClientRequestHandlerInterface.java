@@ -7,7 +7,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Intercessor;
-import edu.umass.cs.gns.main.RequestHandlerParameters;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.RequestHandlerParameters;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;

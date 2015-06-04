@@ -132,9 +132,8 @@ public class NSAccountAccess {
    * @param guid
    * @return an {@link edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface activeReplica,
-          InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, lnsAddress);
+  public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface activeReplica) throws FailedDBOperationException {
+    return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, null);
   }
 
   /**
@@ -359,7 +358,7 @@ public class NSAccountAccess {
       }
       // get rid of all subguids
       for (String guid : accountInfo.getGuids()) {
-        GuidInfo guidInfo = lookupGuidInfo(guid, activeReplica, lnsAddress);
+        GuidInfo guidInfo = lookupGuidInfo(guid, activeReplica);
         if (guidInfo != null) { // should not be null, ignore if it is
           removeGuid(guidInfo, accountInfo, true, activeReplica, lnsAddress);
         }
@@ -390,7 +389,7 @@ public class NSAccountAccess {
           GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     try {
       // insure that the guis doesn't exist already
-      if (lookupGuidInfo(guid, activeReplica, lnsAddress) != null) {
+      if (lookupGuidInfo(guid, activeReplica) != null) {
         return BADRESPONSE + " " + DUPLICATEGUID + " " + guid;
       }
       // do this first so if there is an execption we don't have to back out of anything

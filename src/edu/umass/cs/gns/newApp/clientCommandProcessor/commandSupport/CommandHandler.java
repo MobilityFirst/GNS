@@ -18,6 +18,7 @@ import edu.umass.cs.gns.util.CanonicalJSON;
 import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.nio.JSONNIOTransport;
 
+import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -63,6 +64,8 @@ public class CommandHandler {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
     }
+
+    final Long commandPreProcStart = System.currentTimeMillis(); // instrumentation
     final CommandPacket packet = new CommandPacket(incomingJSON);
     // FIXME: Don't do this every time. 
     // Set the host field. Used by the help command and email module. 
@@ -71,9 +74,12 @@ public class CommandHandler {
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
     final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+    DelayProfiler.update("commandPreProc", commandPreProcStart);
 
     try {
+      final Long execStart = System.currentTimeMillis(); // instrumentation
       CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
+      DelayProfiler.update("executeCommand", execStart);
       // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
       CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
               packet.getLNSRequestId(),
@@ -102,6 +108,7 @@ public class CommandHandler {
       GNS.getLogger().severe("Problem  executing command: " + e);
       e.printStackTrace();
     }
+    DelayProfiler.update("handlePacketCommandRequest", receiptTime);
   }
 
   // this little dance is because we need to remove the signature to get the message that was signed
@@ -238,6 +245,7 @@ public class CommandHandler {
       }
       app.getNioServer().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
               json);
+      System.out.println("8888888888888888888888888888>>>> " + DelayProfiler.getStats());
     } else {
       GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);
     }

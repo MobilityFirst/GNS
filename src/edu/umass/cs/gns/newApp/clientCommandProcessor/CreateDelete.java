@@ -9,7 +9,6 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
-import edu.umass.cs.gns.main.StartLocalNameServer;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;

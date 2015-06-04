@@ -1,6 +1,9 @@
-package edu.umass.cs.gns.main;
+package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+//import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+
+import edu.umass.cs.gns.main.GNS;
+
 
 /**
  * Encapsulate all these "global" parameters that are needed by the request handler.
@@ -50,14 +53,16 @@ public class RequestHandlerParameters {
   /**
    * The replicationFrameworkType we are using.
    */
-  private ReplicationFrameworkType replicationFramework = ReplicationFrameworkType.LOCATION;
+  //private ReplicationFrameworkType replicationFramework = ReplicationFrameworkType.LOCATION;
 
   public RequestHandlerParameters() {
   }
  
   public RequestHandlerParameters(boolean debugMode, boolean experimentMode, boolean emulatePingLatencies, double variation, 
           boolean adaptiveTimeout, double outputSampleRate, int queryTimeout, int maxQueryWaitTime, int cacheSize, 
-          boolean loadDependentRedirection, ReplicationFrameworkType replicationFramework) {
+          boolean loadDependentRedirection
+          //, ReplicationFrameworkType replicationFramework
+  ) {
     this.debugMode = debugMode;
     this.experimentMode = experimentMode;
     this.emulatePingLatencies = emulatePingLatencies;
@@ -68,7 +73,7 @@ public class RequestHandlerParameters {
     this.maxQueryWaitTime = maxQueryWaitTime;
     this.cacheSize = cacheSize;
     this.loadDependentRedirection = loadDependentRedirection;
-    this.replicationFramework = replicationFramework;
+    //this.replicationFramework = replicationFramework;
   }
 
   public boolean isDebugMode() {
@@ -111,9 +116,9 @@ public class RequestHandlerParameters {
     return loadDependentRedirection;
   }
 
-  public ReplicationFrameworkType getReplicationFramework() {
-    return replicationFramework;
-  }
+//  public ReplicationFrameworkType getReplicationFramework() {
+//    return replicationFramework;
+//  }
 
   public void setDebugMode(boolean debugMode) {
     this.debugMode = debugMode;
@@ -121,7 +126,15 @@ public class RequestHandlerParameters {
 
   @Override
   public String toString() {
-    return "RequestHandlerParameters{" + "debugMode=" + debugMode + ", experimentMode=" + experimentMode + ", emulatePingLatencies=" + emulatePingLatencies + ", variation=" + variation + ", adaptiveTimeout=" + adaptiveTimeout + ", outputSampleRate=" + outputSampleRate + ", queryTimeout=" + queryTimeout + ", maxQueryWaitTime=" + maxQueryWaitTime + ", cacheSize=" + cacheSize + ", loadDependentRedirection=" + loadDependentRedirection + ", replicationFramework=" + replicationFramework + '}';
+    return "RequestHandlerParameters{" + "debugMode=" + debugMode 
+            + ", experimentMode=" + experimentMode + ", emulatePingLatencies=" 
+            + emulatePingLatencies + ", variation=" + variation + ", adaptiveTimeout=" 
+            + adaptiveTimeout + ", outputSampleRate=" + outputSampleRate 
+            + ", queryTimeout=" + queryTimeout + ", maxQueryWaitTime=" 
+            + maxQueryWaitTime + ", cacheSize=" + cacheSize 
+            + ", loadDependentRedirection=" + loadDependentRedirection 
+            //+ ", replicationFramework=" + replicationFramework 
+            + '}';
   }
 
 }
