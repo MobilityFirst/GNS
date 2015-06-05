@@ -58,13 +58,13 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 
 	Logger log = GNS.getLogger();
 
-	public JSONMessageExtractor(AbstractPacketDemultiplexer pd) {
+	protected JSONMessageExtractor(AbstractPacketDemultiplexer pd) {
 		packetDemuxes = new ArrayList<AbstractPacketDemultiplexer>();
 		packetDemuxes.add(pd);
 		sockStreams = new HashMap<SocketChannel, String>();
 	}
 
-	public JSONMessageExtractor() { // default packet demux returns false
+	protected JSONMessageExtractor() { // default packet demux returns false
 		this.packetDemuxes = new ArrayList<AbstractPacketDemultiplexer>();
 		this.packetDemuxes.add(new PacketDemultiplexerDefault());
 		sockStreams = new HashMap<SocketChannel, String>();
@@ -78,12 +78,12 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * synchronized because it may be invoked when NIO is using
 	 * packetDemuxes in processJSONMessage(.).
 	 */
-	public synchronized void addPacketDemultiplexer(
+	protected synchronized void addPacketDemultiplexer(
 			AbstractPacketDemultiplexer pd) {
 		packetDemuxes.add(pd);
 	}
 
-	public synchronized void removePacketDemultiplexer(
+	protected synchronized void removePacketDemultiplexer(
 			AbstractPacketDemultiplexer pd) {
 		packetDemuxes.remove(pd);
 	}
@@ -96,7 +96,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * if the bad "size" happens to be a huge value. A big bad size
 	 * also means a huge of amount of buffering in SockStreams.
 	 */
-	public static String prependHeader(String str) {
+	protected static String prependHeader(String str) {
 		return (JSONMessageExtractor.HEADER_PATTERN + str.length() +
 				JSONMessageExtractor.HEADER_PATTERN + str);
 	}
@@ -107,6 +107,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * This means that, if the the socket channel changes in the middle of the
 	 * transmission, that message will **definitely** be lost.
 	 */
+	@Override
 	public void processData(SocketChannel socket, byte[] data, int count) {
 		String str = new String(data, 0, count);
 		processData(socket, str);
@@ -117,7 +118,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * convenient to test this method if it returns an int.
 	 */
 
-	public int processData(SocketChannel socket, String msg) {
+	protected int processData(SocketChannel socket, String msg) {
 		ArrayList<JSONObject> jsonArray =
 				this.parseAndSetSockStreams(socket, msg);
 		processJSONMessages(jsonArray);
@@ -129,7 +130,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * pre-processes a byte stream into JSON messages.
 	 */
 
-	public void processJSONMessages(ArrayList<JSONObject> jsonArray) {
+	protected void processJSONMessages(ArrayList<JSONObject> jsonArray) {
 		if (jsonArray != null && !jsonArray.isEmpty()) {
 			for (JSONObject jsonMsg : jsonArray) {
 				this.processJSONMessage(jsonMsg);
@@ -142,6 +143,10 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 			pd.stop();
 		this.timer.cancel();
 	}
+	
+	/**
+	 * *************** Start of private methods *****************************
+	 */
 
 	private synchronized void processJSONMessage(final JSONObject jsonMsg) {
 		NIOInstrumenter.incrJSONRcvd();
@@ -188,9 +193,6 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		}
 	}
 
-	/**
-	 * *************** Start of private methods *****************************
-	 */
 	// String to JSON conversion
 	private JSONObject parseJSON(String msg) {
 		JSONObject jsonData = null;

@@ -102,9 +102,12 @@ public class NameServer<NodeIDType> implements Shutdownable {
       JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, Config.latencyVariation);
       GNS.getLogger().info(nodeID.toString() + " Emulating delays ... ");
     }
+    /* Arun: changed commented lines below to not use JSONMessageExtractor
     JSONMessageExtractor messageExtractor = new JSONMessageExtractor(nsDemultiplexer);
     JSONNIOTransport<NodeIDType> gnsnioTransport = new JSONNIOTransport<NodeIDType>(nodeID, gnsNodeConfig, messageExtractor);
     new Thread(gnsnioTransport).start();
+    */
+    JSONNIOTransport<NodeIDType> gnsnioTransport = new JSONNIOTransport<NodeIDType>(nodeID, gnsNodeConfig, nsDemultiplexer, true);
     tcpTransport = new GnsMessenger<NodeIDType>(nodeID, gnsnioTransport, executorService);
 
     // init DB

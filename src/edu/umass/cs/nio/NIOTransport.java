@@ -145,7 +145,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
           = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(NIOTransport.class.getName())
                   : GNS.getLogger();
 
-  public NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
+  protected NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
           InterfaceDataProcessingWorker worker) throws IOException {
     this.myID = id;
     this.nodeConfig = (nc != null ? nc : new SampleNodeConfig<NodeIDType>()); // null node config means no IDs

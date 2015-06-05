@@ -92,9 +92,12 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   private InterfaceJSONNIOTransport initTransport(AbstractPacketDemultiplexer demultiplexer) throws IOException {
     LOG.info("Starting LNS listener on " + nodeAddress);
+    /* Arun: changed commented lines below to not use JSONMessageExtractor
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, new JSONMessageExtractor(demultiplexer));
-
     new Thread(gnsNiot).start();
+    */
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, (demultiplexer), true);
+
     // id is null here because we're the LNS
     return new JSONMessenger<>(gnsNiot);
   }

@@ -123,11 +123,16 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @SuppressWarnings("unchecked") // calls a static method
   private InterfaceJSONNIOTransport<NodeIDType> initTransport(AbstractPacketDemultiplexer demultiplexer) throws IOException {
     GNS.getLogger().info("Starting LNS listener on " + nodeAddress);
-    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(demultiplexer));
     if (parameters.isEmulatePingLatencies()) {
-      JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
-    }
+        JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());
+      }
+
+    /* Arun: changed commented line below to not use JSONMessageExtractor
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, new JSONMessageExtractor(demultiplexer));
     new Thread(gnsNiot).start();
+    */
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, gnsNodeConfig, (demultiplexer), true);
+
     // id is null here because we're the LNS
     return new GnsMessenger(null, gnsNiot, executorService);
   }

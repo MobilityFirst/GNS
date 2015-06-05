@@ -250,8 +250,8 @@ public class TESTPaxosClient {
 	protected TESTPaxosClient(int id) throws IOException {
 		this.myID = id;
 		niot = (new JSONNIOTransport<Integer>(id,
-				TESTPaxosConfig.getNodeConfig(), new JSONMessageExtractor(
-						new PacketDemultiplexerDefault())));
+				TESTPaxosConfig.getNodeConfig(), (
+						new PacketDemultiplexerDefault()), false));
 		niot.addPacketDemultiplexer(new ClientPacketDemultiplexer(this));
 		new Thread(niot).start();
 	}
@@ -282,12 +282,12 @@ public class TESTPaxosClient {
 	
 	// to control request size, min request size is still > 350B
 	static String GIBBERISH = "01234567890123456789012345678901";
-	static int REQ_SIZE = 0;
+	static int REQ_BAGGAGE_SIZE = 0;
 	static {
-		if (GIBBERISH.length() < REQ_SIZE)
-			GIBBERISH = GIBBERISH.substring(0, REQ_SIZE);
+		if (GIBBERISH.length() < REQ_BAGGAGE_SIZE)
+			GIBBERISH = GIBBERISH.substring(0, REQ_BAGGAGE_SIZE);
 		else
-			while (GIBBERISH.length() < REQ_SIZE)
+			while (GIBBERISH.length() < REQ_BAGGAGE_SIZE)
 				GIBBERISH += GIBBERISH;
 	}
 
