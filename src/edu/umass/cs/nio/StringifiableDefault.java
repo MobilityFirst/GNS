@@ -18,7 +18,9 @@ public class StringifiableDefault<ObjectType> implements Stringifiable<ObjectTyp
 	public StringifiableDefault(Object obj) {
 		this.seedObj = obj;
 	}
-	@SuppressWarnings("unchecked") // all types checked
+
+	@SuppressWarnings("unchecked")
+	// all types explicitly checked, hence suppressed warnings
 	@Override
 	public ObjectType valueOf(String strValue) {
 		if(seedObj instanceof Integer) return (ObjectType) Integer.valueOf(strValue);

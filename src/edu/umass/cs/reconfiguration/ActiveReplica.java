@@ -38,6 +38,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.AggregateDemandProfiler
 import edu.umass.cs.reconfiguration.reconfigurationutils.CallbackMap;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.MyLogger;
 
@@ -113,7 +114,7 @@ public class ActiveReplica<NodeIDType> implements
 				InterfaceRequest request = this.appCoordinator
 						.getRequest(jsonObject.toString());
 				// send to app via its coordinator
-				this.appCoordinator.handleIncoming(request);
+				this.handRequestToApp(request);
 				// update demand stats (for reconfigurator) if handled by app
 				updateDemandStats(request,
 						JSONPacket.getSenderAddress(jsonObject));
@@ -125,7 +126,7 @@ public class ActiveReplica<NodeIDType> implements
 		}
 		return false; // neither reconfiguration packet nor app request
 	}
-
+	
 	@Override
 	public void executed(InterfaceRequest request, boolean handled) {
 		assert (request instanceof InterfaceReconfigurableRequest);
@@ -291,6 +292,12 @@ public class ActiveReplica<NodeIDType> implements
 
 	/*********************** Private methods below ************************************/
 
+	private void handRequestToApp(InterfaceRequest request) {
+		long t1 = System.currentTimeMillis();
+		this.appCoordinator.handleIncoming(request);
+		DelayProfiler.update("appHandleIncoming@AR", t1);
+	}
+	
 	private boolean noStateOrAlreadyMovedOn(BasicReconfigurationPacket<?> packet) {
 		boolean retval = false;
 		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());

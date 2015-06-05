@@ -1,5 +1,6 @@
-package edu.umass.cs.nio;
+package edu.umass.cs.nio.nioutils;
 
+import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.utils.Util;
 
 /**

@@ -8,8 +8,8 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.MessagingTask;
 import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.nioutils.MessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;

@@ -54,11 +54,6 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
     super(id, nodeConfig, new JSONMessageExtractor()); // Note: Default extractor will not do any useful demultiplexing
   }
 
-  public JSONNIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nodeConfig,
-          JSONMessageExtractor worker) throws IOException {
-    super(id, nodeConfig, worker); // Switched order of the latter two arguments
-  }
-
   // common case usage, hence created a constructor
   public JSONNIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nodeConfig,
           AbstractPacketDemultiplexer pd, boolean start) throws IOException {
@@ -67,6 +62,12 @@ public class JSONNIOTransport<NodeIDType> extends NIOTransport<NodeIDType> imple
     if (start && !isStarted()) {
       (new Thread(this)).start();
     }
+  }
+
+  // This constructor used to be public, but should no longer be.
+  private JSONNIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nodeConfig,
+          JSONMessageExtractor worker) throws IOException {
+    super(id, nodeConfig, worker); // Switched order of the latter two arguments
   }
 
   public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
