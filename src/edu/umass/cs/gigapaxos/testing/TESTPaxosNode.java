@@ -38,7 +38,7 @@ public class TESTPaxosNode {
 					(niot = new JSONNIOTransport<Integer>(id, TESTPaxosConfig
 							.getNodeConfig(), new PacketDemultiplexerDefault(),
 							true)),
-					(this.app = new TESTPaxosReplicable(niot)), null);
+					(this.app = new TESTPaxosReplicable(niot)));
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -47,10 +47,6 @@ public class TESTPaxosNode {
 
 	public void close() {
 		this.pm.close();
-	}
-
-	protected Replicable getApp() {
-		return app;
 	}
 
 	protected PaxosManager<Integer> getPaxosManager() {

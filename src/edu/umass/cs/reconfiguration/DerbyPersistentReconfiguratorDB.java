@@ -46,7 +46,7 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
 import edu.umass.cs.reconfiguration.examples.ReconfigurableSampleNodeConfig;
 import edu.umass.cs.reconfiguration.examples.TestConfig;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DemandReport;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
@@ -59,6 +59,7 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 
 public class DerbyPersistentReconfiguratorDB<NodeIDType> extends

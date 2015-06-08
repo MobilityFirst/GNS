@@ -17,10 +17,10 @@ import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolTask;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;

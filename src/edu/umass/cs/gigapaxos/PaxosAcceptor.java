@@ -367,9 +367,6 @@ public class PaxosAcceptor {
 		return size;
 	}	
 
-	/**
-	 * @param args
-	 */
 	public static void testMemory() {
 		Handler[] handlers = Logger.getLogger( "" ).getHandlers();
 		for ( int index = 0; index < handlers.length; index++ ) {

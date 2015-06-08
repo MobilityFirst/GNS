@@ -12,9 +12,9 @@ import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;

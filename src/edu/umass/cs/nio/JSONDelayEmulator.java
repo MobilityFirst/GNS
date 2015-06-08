@@ -50,7 +50,7 @@ public class JSONDelayEmulator {
 		@Override
 		public void run() {
 			try {
-				((JSONNIOTransport<Object>)nioTransport).sendToIDActual(destID, json);
+				((JSONNIOTransport<Object>)nioTransport).sendToIDInternal(destID, json);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -67,7 +67,7 @@ public class JSONDelayEmulator {
 			DelayerTask dtask = new DelayerTask(niot, id, jsonData);
 			timer.schedule(dtask, getDelay(id));
 			written = jsonData.length(); // FIXME: cheating! should deprecate delay emulation
-		} else written = niot.sendToIDActual(id, jsonData);
+		} else written = niot.sendToIDInternal(id, jsonData);
 		return written;
 	}
 
@@ -119,6 +119,15 @@ public class JSONDelayEmulator {
     return -1;
   }
 
+	public static long getEmulatedDelay(String strData) {
+		JSONObject json = null;
+		try {
+			json = new JSONObject(strData);
+		} catch (JSONException e) {
+			return -1;
+		}
+		return getEmulatedDelay(json);
+	}
 
   private static long getDelay(Object id) {
 		long delay = 0;

@@ -41,6 +41,8 @@ public abstract class JSONPacket {
 		}
 		return null;
 	}
+	
+	/* ********************* static helper methods below *******************/
 
 	public static final Integer getPacketType(JSONObject json)
 			throws JSONException {
@@ -53,6 +55,13 @@ public abstract class JSONPacket {
 	public static final void putPacketType(JSONObject json, int type) {
 		try {
 			json.put(PACKET_TYPE, type);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+	}
+	public static final void putPacketType(JSONObject json, IntegerPacketType type) {
+		try {
+			json.put(PACKET_TYPE, type.getInt());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

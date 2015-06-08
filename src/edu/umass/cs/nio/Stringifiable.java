@@ -22,7 +22,7 @@ public interface Stringifiable<ObjectType> {
    * things that are Stringifiable.
    *
    * @param strValue
-   * @return
+   * @return Returns the <ObjectType> object constructed from strValue.
    */
   public ObjectType valueOf(String strValue);
   
@@ -30,10 +30,15 @@ public interface Stringifiable<ObjectType> {
    * Converts a set of string node ids using valueOf.
    * 
    * @param strNodes
-   * @return 
+   * @return Returns an ObjectType set constructed from a String set.
    */
   public Set<ObjectType> getValuesFromStringSet(Set<String> strNodes);
-  
+  /**
+   * 
+   * @param array
+   * @return Returns an ObjectType set constructed from a JSONObject array.
+   * @throws JSONException
+   */
   public Set<ObjectType> getValuesFromJSONArray(JSONArray array) throws JSONException;
 
 }

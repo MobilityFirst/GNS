@@ -5,7 +5,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 
 import org.json.JSONException;
 import org.json.JSONObject;

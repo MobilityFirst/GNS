@@ -15,15 +15,15 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckDropEpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckStartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckStopEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DemandReport;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RCRecordRequest;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckDropEpochFinalState;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
@@ -33,6 +33,7 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 /*
  * Need to add fault tolerance support via paxos here.

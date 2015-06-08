@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json;
+package edu.umass.cs.reconfiguration.reconfigurationprotocoltasks;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -8,9 +8,9 @@ import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 
 /*
  * This task waits for a single replica in a replicated application to finish

@@ -10,15 +10,16 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.utils.MultiArrayMap;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
+ * @param <EventType> 
+ * @param <KeyType> 
  */
 
 /*
@@ -26,7 +27,7 @@ import edu.umass.cs.utils.MultiArrayMap;
  * corresponding event arrives.
  */
 public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
-	public static final boolean DEBUG = NIOTransport.DEBUG;
+	public static final boolean DEBUG = false;
 	public static final int MAX_TASKS = 10000;
 	public static final int MAX_THREADS = 10;
 
@@ -46,7 +47,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	public static final long TOO_MANY_TASKS_CHECK_PERIOD = 300; // seconds
 
 	private final NodeIDType myID;
-	private final JSONMessenger<NodeIDType> messenger;
+	private final InterfaceMessenger<NodeIDType,?> messenger;
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
 			MAX_THREADS);
 	private static final HashSet<Object> canceledKeys = new HashSet<Object>();
@@ -55,10 +56,14 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 			MAX_TASKS);
 	private final HashMap<EventType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>> defaultTasks = new HashMap<EventType, ProtocolTaskWrapper<NodeIDType, EventType, KeyType>>();
 
-	private Logger log = NIOTransport.LOCAL_LOGGER ? Logger
-			.getLogger(getClass().getName()) : GNS.getLogger();
+	private static final Logger log = Logger.getLogger(ProtocolExecutor.class
+			.getName());
 
-	public ProtocolExecutor(JSONMessenger<NodeIDType> messenger) {
+	public static Logger getLogger() {
+		return log;
+	}
+
+	public ProtocolExecutor(InterfaceMessenger<NodeIDType,?> messenger) {
 		this.messenger = messenger;
 		this.myID = messenger.getMyID();
 		this.executor.scheduleWithFixedDelay(new TooManyTasksWarner(), 0,

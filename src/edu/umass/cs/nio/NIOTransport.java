@@ -1,6 +1,5 @@
 package edu.umass.cs.nio;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
@@ -17,7 +16,11 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.nio.channels.spi.AbstractSelectableChannel;
 import java.nio.channels.spi.SelectorProvider;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -77,15 +80,17 @@ import java.util.logging.Logger;
  */
 public class NIOTransport<NodeIDType> implements Runnable {
 
-  public static final boolean DEBUG = false;
-  public static final boolean LOCAL_LOGGER = true;
+  private static final boolean DEBUG = false;
 
+  // used for sampled logging under high load
   private static final double LOG_SAMPLING_FRACTION = 0.1;
 
-  /*
-   * number of sends that can be queued because the connection
+  /**
+   * Number of sends that can be queued because the connection
    * was established but the remote end crashed before the
-   * send was complete.
+   * send was complete. Note that this is the number of 
+   * packets, not bytes. Currently, there is no way to set a
+   * byte limit for the queue size.
    */
   private static final int MAX_QUEUED_SENDS = 8192;
 
@@ -94,18 +99,36 @@ public class NIOTransport<NodeIDType> implements Runnable {
   // true means duplex, so it will work with one end behind a NAT
   private static final boolean DUPLEX_CONNECTIONS = true;
   
+  /**
+   *  Max size we read per read off of the socket. This will limit 
+   *  NIO throughput if typical messages are much bigger than this
+   *  limit.
+   */
+  public static final int READ_BUFFER_SIZE = 8192;
+  
   private static final int HINT_SOCK_BUFFER_SIZE = 512000;
+
+  /**
+   * Usually an id that corresponds to a socket address as specified in NodeConfig.
+   * Note that myID can also <code>null</code> be which means wildcard address or
+   * it can be a InetSocket address in the case of Local Name Servers
+   */
+  protected final NodeIDType myID;
+
+  // data processing worker to hand off received messages
+  protected final InterfaceDataProcessingWorker worker;
+
+  // Maps id to socket address
+  private final InterfaceNodeConfig<NodeIDType> nodeConfig;
+
+  // selector we'll be monitoring
+  private Selector selector = null;
+
+  // The buffer into which we'll read data when it's available
+  private ByteBuffer readBuffer = null;
 
   // The channel on which we'll accept connections
   private ServerSocketChannel serverChannel;
-
-  // The selector we'll be monitoring
-  private Selector selector;
-
-  // The buffer into which we'll read data when it's available
-  private ByteBuffer readBuffer = ByteBuffer.allocate(8192);
-
-  protected InterfaceDataProcessingWorker worker;
 
   // A list of pending connect calls on which finishConnect needs to be called.
   private LinkedList<ChangeRequest> pendingConnects = null;
@@ -127,38 +150,35 @@ public class NIOTransport<NodeIDType> implements Runnable {
   /* Map to optimize connection attempts by the selector thread. */
   private ConcurrentHashMap<InetSocketAddress, Long> connAttempts = null;
 
-  // Maps id to socket address
-  private InterfaceNodeConfig<NodeIDType> nodeConfig = null;
-
-  /**
-   * Usually an id that corresponds to a socket address as specified in NodeConfig.
-   * Note that myID can also <code>null</code> be which means wildcard address or
-   * it can be a InetSocket address in the case of Local Name Servers
-   */
-  protected NodeIDType myID;
-
   private boolean started = false;
 
   private boolean stopped = false;
 
-  public static Logger log
-          = NIOTransport.LOCAL_LOGGER ? Logger.getLogger(NIOTransport.class.getName())
-                  : GNS.getLogger();
+  private static final Logger log
+          = Logger.getLogger(NIOTransport.class.getName());
+  public static Logger getLogger() {return log;}
 
-  protected NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
-          InterfaceDataProcessingWorker worker) throws IOException {
-    this.myID = id;
-    this.nodeConfig = (nc != null ? nc : new SampleNodeConfig<NodeIDType>()); // null node config means no IDs
-    this.selector = this.initSelector();
-    this.worker = worker;
+	protected NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
+			InterfaceDataProcessingWorker worker) throws IOException {
+		this.myID = id;
+		// null node config means no ID-based communication possible
+		this.nodeConfig = (nc != null ? nc : new SampleNodeConfig<NodeIDType>());
+		this.worker = worker;
 
-    this.pendingConnects = new LinkedList<ChangeRequest>();
-    this.pendingWrites
-            = new HashMap<InetSocketAddress, ArrayList<ByteBuffer>>();
-    this.SockAddrToSockChannel
-            = new HashMap<InetSocketAddress, SocketChannel>();
-    this.connAttempts = new ConcurrentHashMap<InetSocketAddress, Long>();
-  }
+		// non-final fields, but they never change after constructor anyway
+		this.selector = this.initSelector();
+		this.readBuffer = ByteBuffer.allocate(READ_BUFFER_SIZE);
+		this.pendingConnects = new LinkedList<ChangeRequest>();
+		this.pendingWrites = new HashMap<InetSocketAddress, ArrayList<ByteBuffer>>();
+		this.SockAddrToSockChannel = new HashMap<InetSocketAddress, SocketChannel>();
+		this.connAttempts = new ConcurrentHashMap<InetSocketAddress, Long>();
+	}
+  
+	protected NIOTransport(NIOTransport<NodeIDType> niot) {
+		this.myID = niot.myID;
+		this.nodeConfig = niot.nodeConfig;
+		this.worker = niot.worker;
+	}
 
   /*
    * send() methods are called by external application threads. They may
@@ -458,10 +478,8 @@ public class NIOTransport<NodeIDType> implements Runnable {
                   + new String(data));
         }
       } else {
-        if (sampleLog()) {
-          log.warning("Node " + this.myID + "'s queue for " + isa
+          log.info("Node " + this.myID + "'s queue for " + isa
                   + " too full, dropping message");
-        }
         if (!this.isConnected(isa)) {
           queuedBytes = -1; // could also drop queue here
         }
@@ -470,7 +488,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     }
   }
 
-  public static boolean sampleLog() {
+  protected static boolean sampleLog() {
     return Math.random() > 1 - LOG_SAMPLING_FRACTION;
   }
 
@@ -874,14 +892,13 @@ public class NIOTransport<NodeIDType> implements Runnable {
     }
   }
 
-  /**
-   * ************************* Testing methods below *********************************
-   */
+   /* ************************* Testing methods below *********************************/
+  
   /*
    * Used only for testing to print pending messages if any
    * at the end of tests.
    */
-  public int getPendingSize() {
+  protected int getPendingSize() {
     synchronized (this.pendingWrites) {
       int numPending = 0;
       for (ArrayList<ByteBuffer> arr : this.pendingWrites.values()) {
@@ -891,6 +908,7 @@ public class NIOTransport<NodeIDType> implements Runnable {
     }
   }
 
+  static class Main {
   @SuppressWarnings("unchecked")
   public static void main(String[] args) {
     ConsoleHandler handler = new ConsoleHandler();
@@ -1078,5 +1096,6 @@ public class NIOTransport<NodeIDType> implements Runnable {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
   }
 }

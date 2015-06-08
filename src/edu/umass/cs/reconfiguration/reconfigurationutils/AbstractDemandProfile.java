@@ -76,7 +76,7 @@ public abstract class AbstractDemandProfile {
 	 */
 	public abstract void justReconfigured();
 
-	/*********************** End of abstract methods ***************/
+	/* ********************** End of abstract methods ***************/
 
 	public final String getName() {
 		return this.name;

@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 
@@ -32,7 +32,7 @@ public interface RequestHandlerInterface {
 
   public InetSocketAddress getNodeAddress();
   
-  public AbstractPacketDemultiplexer getDemultiplexer();
+  public AbstractJSONPacketDemultiplexer getDemultiplexer();
   
   public ScheduledThreadPoolExecutor getExecutorService();
   

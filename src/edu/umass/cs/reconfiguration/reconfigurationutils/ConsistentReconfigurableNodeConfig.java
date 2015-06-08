@@ -110,6 +110,8 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	// WILL BE REMOVED AFTER NEW APP IS TESTED.
 	/**
 	 * Returns the hash for this name.
+	 * @param name 
+	 * @return Returns the node id to which name consistent-hashes.
 	 */
 	@Deprecated
 	public NodeIDType getReconfiguratorHash(String name) {
@@ -202,14 +204,14 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		return this.reconfigurators = curReconfigurators;
 	}
 
-	@Override
+	//@Override
 	public InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress isa = this.nodeConfig.addReconfigurator(id, sockAddr);
 		return isa;
 	}
 
-	@Override
+	//@Override
 	public InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.nodeConfig.removeReconfigurator(id);
 	}

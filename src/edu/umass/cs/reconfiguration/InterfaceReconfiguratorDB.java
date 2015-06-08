@@ -4,11 +4,11 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Set;
 
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DemandReport;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 
 public interface InterfaceReconfiguratorDB<NodeIDType> {
-	/********* Methods for individual names below *****************/
+	/* ******** Methods for individual names below *****************/
 
 	public ReconfigurationRecord<NodeIDType> getReconfigurationRecord(
 			String name);

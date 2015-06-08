@@ -11,7 +11,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
@@ -20,12 +20,12 @@ import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigureRCNodeConfig;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigureRCNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.MyLogger;
 
@@ -92,7 +92,7 @@ public class ReconfigurableClient {
 		this.messenger.send(new GenericMessagingTask<Integer,Object>(id, json));
 	}
 
-	private class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer {
+	private class ClientPacketDemultiplexer extends AbstractJSONPacketDemultiplexer {
 
 		ClientPacketDemultiplexer() {
 			this.register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
@@ -102,7 +102,7 @@ public class ReconfigurableClient {
 			this.register(ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG);
 		}
 		@Override
-		public boolean handleJSONObject(JSONObject json) {
+		public boolean handleMessage(JSONObject json) {
 			log.log(Level.FINEST, MyLogger.FORMAT[1], new Object[]{"Client received: " , json});
 			try {
 				ReconfigurationPacket.PacketType rcType = ReconfigurationPacket.getReconfigurationPacketType(json);
@@ -178,7 +178,7 @@ public class ReconfigurableClient {
 		try {
 			JSONMessenger<Integer> messenger = new JSONMessenger<Integer>(
 					(new JSONNIOTransport<Integer>(null, nc, new PacketDemultiplexerDefault(), 
-							true)).enableStampSenderPort());
+							true)));
 			client = new ReconfigurableClient(nc, messenger);
 			int numRequests = 2;
 			String namePrefix = "name";

@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.deprecated.nio;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -25,13 +25,13 @@ import java.util.List;
   private List queue = new LinkedList();
   int recvdMessageCount = 0;
 
-  AbstractPacketDemultiplexer packetDemux;
+  AbstractJSONPacketDemultiplexer packetDemux;
 
-  public ByteStreamToJSONObjects(AbstractPacketDemultiplexer packetDemux) {
+  public ByteStreamToJSONObjects(AbstractJSONPacketDemultiplexer packetDemux) {
     this.packetDemux = packetDemux;
   }
 
-  public AbstractPacketDemultiplexer getPacketDemux() {
+  public AbstractJSONPacketDemultiplexer getPacketDemux() {
     return packetDemux;
   }
 
@@ -63,7 +63,7 @@ import java.util.List;
 
     // call the packet demultiplexer object.
     for (Object jsonObject: allJSONs)
-      packetDemux.handleJSONObject((JSONObject) jsonObject);
+      packetDemux.handleMessage((JSONObject) jsonObject);
 
 //        recvdMessageCount++;
 //        if (StartNameServer.debugMode) GNS.getLogger().finer(y + " Received message count = "
@@ -100,7 +100,7 @@ import java.util.List;
 
         // call the packet demultiplexer object.
         for (Object jsonObject: allJSONs)
-          packetDemux.handleJSONObject((JSONObject) jsonObject);
+          packetDemux.handleMessage((JSONObject) jsonObject);
 
 
         recvdMessageCount++;

@@ -21,7 +21,7 @@ import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.RequestBatcher;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosReplicable;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.Stringifiable;
@@ -130,7 +130,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); // GNS.getLogger();;
 
 	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> unstringer,
-			InterfaceJSONNIOTransport<NodeIDType> niot, InterfaceReplicable pi,
+			InterfaceNIOTransport<NodeIDType,JSONObject> niot, InterfaceReplicable pi,
 			String paxosLogFolder) {
 		this.myID = this.integerMap.put(id);// id.hashCode();
 		this.unstringer = unstringer;
@@ -160,8 +160,8 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	}
 	
 	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc,
-			InterfaceJSONNIOTransport<NodeIDType> niot, InterfaceReplicable app) {
-		this(id, nc, niot, (app), null); // FIXME: untested
+			InterfaceNIOTransport<NodeIDType,JSONObject> niot, InterfaceReplicable app) {
+		this(id, nc, niot, (app), null); 
 	}
 	
 
@@ -1253,9 +1253,6 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 	public static Logger getLogger() {
 		return log;
-	}
-	public InterfaceJSONNIOTransport<NodeIDType> getNIOTransport() {
-		return this.FD.getNIOTransport();
 	}
 
 	public static void main(String[] args) throws InterruptedException, IOException, JSONException {

@@ -5,7 +5,7 @@ import edu.umass.cs.gns.nsdesign.activeReconfiguration.ActiveReplica;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ActiveReplicaCoordinator;
 import edu.umass.cs.gns.nsdesign.replicaCoordination.ReplicaControllerCoordinator;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * Created by abhigyan on 2/26/14.
  */
 @Deprecated
-public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
+public class NSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
   private NameServer nameServer;
 
@@ -91,7 +91,7 @@ public class NSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplex
    * @return
    */
   @Override
-  public boolean handleJSONObject(final JSONObject json) {
+  public boolean handleMessage(final JSONObject json) {
     incrementMsgCount();
     try {
       final Packet.PacketType type = Packet.getPacketType(json);

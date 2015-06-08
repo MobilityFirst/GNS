@@ -9,7 +9,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandHand
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -24,7 +24,7 @@ import java.security.NoSuchAlgorithmException;
  * Created by abhigyan on 2/24/14.
  */
 @Deprecated
-public class CCPPacketDemultiplexerV1<NodeIDType> extends AbstractPacketDemultiplexer {
+public class CCPPacketDemultiplexerV1<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
   private ClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -57,7 +57,7 @@ public class CCPPacketDemultiplexerV1<NodeIDType> extends AbstractPacketDemultip
    * @return false if and invalid packet type is received
    */
   @Override
-  public boolean handleJSONObject(JSONObject json) {
+  public boolean handleMessage(JSONObject json) {
     assert handler != null;
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {

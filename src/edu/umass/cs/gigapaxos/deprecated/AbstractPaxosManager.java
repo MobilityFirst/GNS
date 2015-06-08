@@ -6,7 +6,8 @@ import edu.umass.cs.gigapaxos.InterfaceReplicable;
 
 import java.util.Set;
 
-/* This abstract class is deprecated and was used mainly to transition from the 
+/**
+ *  This abstract class is deprecated and was used mainly to transition from the 
  * old paxos implementation to the new one. It currently exists only for
  * backwards compatibility reasons.
  */

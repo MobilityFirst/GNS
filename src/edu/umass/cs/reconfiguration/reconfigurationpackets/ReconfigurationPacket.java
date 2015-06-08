@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json.reconfigurationpackets;
+package edu.umass.cs.reconfiguration.reconfigurationpackets;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -13,10 +13,12 @@ import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.json.ProtocolPacket;
+import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.utils.IntegerPacketTypeMap;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<NodeIDType, ReconfigurationPacket.PacketType> { 
 
@@ -208,22 +210,36 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 	public static BasicReconfigurationPacket<?> getReconfigurationPacket(JSONObject json, 
 		Map<ReconfigurationPacket.PacketType,Class<?>> typeMap, Stringifiable<?> unstringer) throws JSONException {
 		BasicReconfigurationPacket<?> rcPacket = null;
+		ReconfigurationPacket.PacketType rcType = null;
+		String packetClassesPackagePrefix = "edu.umass.cs.reconfiguration.reconfigurationpackets.";
 		try {
-			ReconfigurationPacket.PacketType rcType = 
-					ReconfigurationPacket.PacketType.intToType.get(JSONPacket.getPacketType(json)); 
-			if(rcType!=null && getPacketTypeClassName(rcType)!=null) {
-				rcPacket = (BasicReconfigurationPacket<?>)(Class.forName(
-					"edu.umass.cs.reconfiguration.json.reconfigurationpackets." + 
-							getPacketTypeClassName(rcType)).getConstructor(JSONObject.class, Stringifiable.class).newInstance(json, unstringer));
+			rcType = ReconfigurationPacket.PacketType.intToType.get(JSONPacket
+					.getPacketType(json));
+			if (rcType != null && getPacketTypeClassName(rcType) != null) {
+				rcPacket = (BasicReconfigurationPacket<?>) (Class.forName(
+						packetClassesPackagePrefix
+								+ getPacketTypeClassName(rcType))
+						.getConstructor(JSONObject.class, Stringifiable.class)
+						.newInstance(json, unstringer));
 			}
+		} catch (NoSuchMethodException nsme) {
+			nsme.printStackTrace();
+		} catch (InvocationTargetException ite) {
+			ite.printStackTrace();
+		} catch (IllegalAccessException iae) {
+			iae.printStackTrace();
+		} catch (ClassNotFoundException cnfe) {
+			Reconfigurator.getLogger().info(
+					"Class " + packetClassesPackagePrefix
+							+ getPacketTypeClassName(rcType) + " not found");
+			cnfe.printStackTrace();
+		} catch (InstantiationException ie) {
+			ie.printStackTrace();
+		} finally {
+			if (ReconfigurationPacket.PacketType.intToType.get(JSONPacket
+					.getPacketType(json)) == null)
+				System.err.println("No reconfiguration packet type found in: " + json);
 		}
-		catch(NoSuchMethodException nsme) {nsme.printStackTrace();} 
-		catch(InvocationTargetException ite) {ite.printStackTrace();} 
-		catch(IllegalAccessException iae) {iae.printStackTrace();} 
-		catch(ClassNotFoundException cnfe) {cnfe.printStackTrace();}
-		catch(InstantiationException ie) {ie.printStackTrace();}
-		finally{if(ReconfigurationPacket.PacketType.intToType.get(JSONPacket.getPacketType(json))==null)
-			System.err.println("!!!!!!!!!!!!!!!!"+json);}
 
 		return rcPacket;
 	}
@@ -235,7 +251,7 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		return getReconfigurationPacket(new JSONObject(request.toString()), typeMap, unstringer);
 	}
 
-	/************************* Start of assertion methods **************************************************/ 
+	/* ************************ Start of assertion methods **************************************************/ 
 	/* The assertion methods below are just convenience methods to let protocoltasks 
 	 * assert that they have set up handlers for all packet types for which they
 	 * are responsible.

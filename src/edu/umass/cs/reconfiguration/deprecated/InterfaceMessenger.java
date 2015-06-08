@@ -8,6 +8,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun
+ * @param <NodeIDType> 
  */
 /* This interface is currently not used. It is meant to be a general 
  * interface for a messenger of which JSONMessenger is a special

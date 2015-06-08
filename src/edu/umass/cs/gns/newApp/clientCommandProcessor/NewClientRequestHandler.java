@@ -28,8 +28,8 @@ import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
 import org.json.JSONObject;

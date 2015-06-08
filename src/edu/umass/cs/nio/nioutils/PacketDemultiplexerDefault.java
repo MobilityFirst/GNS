@@ -2,25 +2,19 @@ package edu.umass.cs.nio.nioutils;
 
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
 /**
-@author V. Arun
+ * @author V. Arun
+ * 
+ *         Default packet multiplexer that is a no-op. This class is used 
+ *         either for testing or as a trivial multiplexer starting point
+ *         upon which more packet multiplexing functions could be built.
  */
-
-/* Default packet multiplexer simply prints the received JSON object.
- * Note: we have both a DataProcessingWorker and BasicPacketDemultiplexer
- * as the former is for a byte stream and independent of the GNS. The
- * PacketMultiplexer interface is for processing JSON messages. A 
- * GNS-specific DataProcessingWorker would include a GNS-specific
- * packet demultiplexer. This default class is used just for testing.
- */
-public class PacketDemultiplexerDefault extends AbstractPacketDemultiplexer {
-
+public class PacketDemultiplexerDefault extends AbstractJSONPacketDemultiplexer {
 	@Override
-  public boolean handleJSONObject(JSONObject jsonObject) {
-    incrPktsRcvd();
-    //System.out.println("Received pkt: " + jsonObject);
-    return false; // WARNING: Do not change this to true. It could break the GNS by not trying any other PDs.
-  }
+	public final boolean handleMessage(JSONObject jsonObject) {
+		NIOInstrumenter.incrPktsRcvd();
+		return false; // must remain false;
+	}
 }

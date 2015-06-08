@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json.reconfigurationpackets;
+package edu.umass.cs.reconfiguration.reconfigurationpackets;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -8,6 +8,7 @@ import edu.umass.cs.nio.StringifiableDefault;
 
 /**
 @author V. Arun
+ * @param <NodeIDType> 
  */
 public class EpochFinalState<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> {
 	

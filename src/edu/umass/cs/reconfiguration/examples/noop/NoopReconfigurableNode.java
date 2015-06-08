@@ -9,20 +9,21 @@ import edu.umass.cs.reconfiguration.examples.ReconfigurableSampleNodeConfig;
 import edu.umass.cs.reconfiguration.examples.TestConfig;
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
 public class NoopReconfigurableNode extends ReconfigurableNode<Integer> {
 
-	public NoopReconfigurableNode(Integer id, InterfaceReconfigurableNodeConfig<Integer> nc)
-			throws IOException {
+	public NoopReconfigurableNode(Integer id,
+			InterfaceReconfigurableNodeConfig<Integer> nc) throws IOException {
 		super(id, nc);
 	}
 
 	@Override
 	protected AbstractReplicaCoordinator<Integer> createAppCoordinator() {
-		NoopApp app = new NoopApp(this.myID); 
-		//NoopAppCoordinator appCoordinator = new NoopAppCoordinator(app);
-		NoopAppCoordinator appCoordinator = new NoopAppCoordinator(app, NoopAppCoordinator.CoordType.PAXOS, this.nodeConfig, this.messenger);
+		NoopApp app = new NoopApp(this.myID);
+		NoopAppCoordinator appCoordinator = new NoopAppCoordinator(app,
+				NoopAppCoordinator.CoordType.PAXOS, this.nodeConfig,
+				this.messenger);
 		return appCoordinator;
 	}
 
@@ -31,16 +32,17 @@ public class NoopReconfigurableNode extends ReconfigurableNode<Integer> {
 		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
 		nc.localSetup(TestConfig.getNodes());
 		try {
-			System.out.println("Setting up actives at " + nc.getActiveReplicas());
-			for(int activeID : nc.getActiveReplicas()) {
+			System.out.println("Setting up actives at "
+					+ nc.getActiveReplicas());
+			for (int activeID : nc.getActiveReplicas()) {
 				new NoopReconfigurableNode(activeID, nc);
 			}
 			System.out.println("Setting up RCs at " + nc.getReconfigurators());
-			for(int rcID : nc.getReconfigurators()) {
+			for (int rcID : nc.getReconfigurators()) {
 				new NoopReconfigurableNode(rcID, nc);
 			}
 
-		} catch(IOException ioe) {
+		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
 	}

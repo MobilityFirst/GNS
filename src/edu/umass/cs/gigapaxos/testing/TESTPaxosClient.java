@@ -13,10 +13,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
-import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.utils.Util;
@@ -159,15 +159,15 @@ public class TESTPaxosClient {
 	}
 
 	/******** Start of ClientPacketDemultiplexer ******************/
-	private class ClientPacketDemultiplexer extends AbstractPacketDemultiplexer {
+	private class ClientPacketDemultiplexer extends AbstractJSONPacketDemultiplexer {
 		private final TESTPaxosClient client;
 
 		private ClientPacketDemultiplexer(TESTPaxosClient tpc) {
 			this.client = tpc;
-			this.register(Packet.PacketType.PAXOS_PACKET);
+			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
 		}
 
-		public synchronized boolean handleJSONObject(JSONObject msg) {
+		public synchronized boolean handleMessage(JSONObject msg) {
 			try {
 				ProposalPacket proposal = new ProposalPacket(msg);
 				long latency = System.currentTimeMillis()

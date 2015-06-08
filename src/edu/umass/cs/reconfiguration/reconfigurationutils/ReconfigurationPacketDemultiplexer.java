@@ -1,55 +1,22 @@
-/*
- * Copyright (C) 2015
- * University of Massachusetts
- * All Rights Reserved 
- *
- * Initial developer(s): Westy.
- */
 package edu.umass.cs.reconfiguration.reconfigurationutils;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.nio.InterfacePacketDemultiplexer;
-import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
 public class ReconfigurationPacketDemultiplexer extends
-AbstractPacketDemultiplexer {
-        
-        private final InterfacePacketDemultiplexer packetDemux;
+		AbstractJSONPacketDemultiplexer {
 
-        public ReconfigurationPacketDemultiplexer() {
-                this.packetDemux = null;
-        }
-        public ReconfigurationPacketDemultiplexer(InterfacePacketDemultiplexer pd) {
-                assert(pd!=null);
-                this.packetDemux = pd;
-        }
+	public ReconfigurationPacketDemultiplexer() {
+	}
 
-        @Override
-        public boolean handleJSONObject(JSONObject json) {
-                assert(false);
-
-                ReconfigurationPacket.PacketType type = null;
-                try {
-                        type = ReconfigurationPacket.PacketType.intToType.get(
-                                JSONPacket.getPacketType(json));
-                        if(type==null || this.packetDemux==null) return false;
-                        Util.assertAssertionsEnabled();
-                        assert(false);
-                        return (this.packetDemux!= null ? this.packetDemux.handleJSONObject(json) :
-                                this.handleJSONObjectSuper(json));
-                } catch(JSONException je) {
-                        je.printStackTrace();
-                }
-                return false;
-        }
+	@Override
+	public boolean handleMessage(JSONObject json) {
+		throw new RuntimeException(
+				"This method should never be called unless we have \"forgotten\" to register or handle some packet types.");
+	}
 
 }
-

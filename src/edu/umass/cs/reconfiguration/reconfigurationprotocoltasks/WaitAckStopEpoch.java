@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json;
+package edu.umass.cs.reconfiguration.reconfigurationprotocoltasks;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -14,17 +14,18 @@ import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckStopEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RCRecordRequest;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StopEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 /*
  * This protocol task is initiated at a reconfigurator to await a majority of

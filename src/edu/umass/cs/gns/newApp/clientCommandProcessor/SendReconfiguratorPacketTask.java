@@ -11,8 +11,8 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Util;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
 import java.io.IOException;
 

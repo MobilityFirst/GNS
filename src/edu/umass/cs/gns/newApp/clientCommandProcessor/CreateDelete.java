@@ -13,9 +13,9 @@ import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.util.ValuesMap;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

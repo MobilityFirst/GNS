@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json.reconfigurationpackets;
+package edu.umass.cs.reconfiguration.reconfigurationpackets;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -7,6 +7,7 @@ import edu.umass.cs.nio.Stringifiable;
 
 /**
 @author V. Arun
+ * @param <NodeIDType> 
  */
 public class DropEpochFinalState<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> {
 

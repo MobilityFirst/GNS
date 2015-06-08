@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json.reconfigurationpackets;
+package edu.umass.cs.reconfiguration.reconfigurationpackets;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -12,6 +12,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun
+ * @param <NodeIDType> 
  */
 public abstract class BasicReconfigurationPacket<NodeIDType> extends ReconfigurationPacket<NodeIDType> implements InterfaceRequest  {
 

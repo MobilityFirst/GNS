@@ -13,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * A utility class for gathering stats and reporting to specified
  * recipients from any object that implements Reportable.
+ * @param <Reportee> 
  */
 public class ReportingTask<Reportee extends Reportable> implements Runnable {
 

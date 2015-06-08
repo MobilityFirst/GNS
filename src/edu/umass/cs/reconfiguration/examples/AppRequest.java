@@ -30,7 +30,7 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 
 		/********************************BEGIN static******************************************/
 		private static HashMap<Integer,PacketType> numbers = new HashMap<Integer,PacketType>();
-		/************** BEGIN static code block to ensure correct initialization **************/
+		/* ************* BEGIN static code block to ensure correct initialization **************/
 		static {
 			for(PacketType type : PacketType.values()) {
 				if(!PacketType.numbers.containsKey(type.number)) {
@@ -41,7 +41,7 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 				}
 			}
 		}
-		/**************** END static code block to ensure correct initialization **************/
+		/* *************** END static code block to ensure correct initialization **************/
 		public static PacketType getPacketType(int type) {
 			return PacketType.numbers.get(type);
 		}

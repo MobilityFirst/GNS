@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json;
+package edu.umass.cs.reconfiguration.reconfigurationprotocoltasks;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -9,11 +9,12 @@ import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
 /**
 @author V. Arun
+ * @param <NodeIDType> 
  */
 public class ReconfiguratorProtocolTask<NodeIDType> implements
 ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {

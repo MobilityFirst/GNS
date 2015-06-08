@@ -19,7 +19,7 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.NetworkUtils;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
@@ -94,7 +94,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     if (debug) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
     }
-    AbstractPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer<NodeIDType>();
+    AbstractJSONPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer<NodeIDType>();
     this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<>();
     this.nodeAddress = nodeAddress;
@@ -104,7 +104,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     try {
       this.messenger = new JSONMessenger<NodeIDType>(
               (new JSONNIOTransport(nodeAddress, gnsNodeConfig, new PacketDemultiplexerDefault(),
-                      true)).enableStampSenderPort());
+                      true)));
       //
       messenger.addPacketDemultiplexer(demultiplexer);
       //

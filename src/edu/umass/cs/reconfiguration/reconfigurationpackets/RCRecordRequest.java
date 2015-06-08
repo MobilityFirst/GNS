@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json.reconfigurationpackets;
+package edu.umass.cs.reconfiguration.reconfigurationpackets;
 
 import org.json.JSONException;
 import org.json.JSONObject;

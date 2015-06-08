@@ -2,8 +2,8 @@ package edu.umass.cs.gigapaxos.paxosutil;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
-import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.Stringifiable;
 
 import org.json.JSONArray;
@@ -15,7 +15,7 @@ import org.json.JSONObject;
  */
 /* Needed to get NIO to send paxos packets to PaxosManager */
 public class PaxosPacketDemultiplexer<NodeIDType> extends
-		AbstractPacketDemultiplexer {
+		AbstractJSONPacketDemultiplexer {
 
 	private final PaxosManager<NodeIDType> paxosManager;
 	private final IntegerMap<NodeIDType> nodeMap;
@@ -26,22 +26,16 @@ public class PaxosPacketDemultiplexer<NodeIDType> extends
 		paxosManager = pm;
 		this.nodeMap = nodeMap;
 		this.unstringer = unstringer;
-		this.register(Packet.PacketType.PAXOS_PACKET);
+		this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
 	}
 
-	public boolean handleJSONObject(JSONObject jsonMsg) {
+	public boolean handleMessage(JSONObject jsonMsg) {
 		boolean isPacketTypeFound = true;
 
 		try {
-			Packet.PacketType type = Packet.getPacketType(jsonMsg);
+			PaxosPacket.PaxosPacketType type = PaxosPacket.PaxosPacketType.getPaxosPacketType(JSONPacket.getPacketType(jsonMsg));
 			switch (type) {
 			case PAXOS_PACKET:
-				/*
-				 * FIXME: need to fix by mapping string node IDs in
-				 * incoming packets to integers. The reverse
-				 * operation will be done by Messenger using
-				 * IntegerMap just before sending out packets.
-				 */
 				paxosManager.handleIncomingPacket((jsonMsg));
 				break;
 			default:

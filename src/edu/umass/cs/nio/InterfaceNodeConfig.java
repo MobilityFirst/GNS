@@ -5,6 +5,7 @@ import java.util.Set;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 
 /* An interface to translate from integer IDs to socket addresses.

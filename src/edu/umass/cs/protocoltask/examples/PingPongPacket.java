@@ -3,35 +3,51 @@ package edu.umass.cs.protocoltask.examples;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
+import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.protocoltask.json.ProtocolPacket;
+import edu.umass.cs.utils.IntegerPacketTypeMap;
 
 /**
  * @author V. Arun
  */
-public class PingPongPacket extends ProtocolPacket<Integer, Packet.PacketType> { // BasicPacket implements ProtocolEvent<Packet.PacketType,Long> {
+public class PingPongPacket extends ProtocolPacket<Integer, PingPongPacket.PacketType> { // BasicPacket implements ProtocolEvent<Packet.PacketType,Long> {
+
+	public enum PacketType implements IntegerPacketType {
+		TEST_PING(222), TEST_PONG(223);
+
+		private final int number;
+
+		PacketType(int t) {
+			this.number = t;
+		}
+
+		public int getInt() {
+			return number;
+		}
+
+		public static final IntegerPacketTypeMap<PacketType> intToType = new IntegerPacketTypeMap<PacketType>(
+				PacketType.values());
+	}
+
 	public static final String FIELD1 = "FIELD1";
 	public static final String COUNTER = "COUNTER";
-	public static final String SENDER = "SENDER";
-	public static final String INITIATOR = "INITIATOR";
-	public static final String KEY = "KEY";
 	
 	public static final Stringifiable<Integer> unstringer = new StringifiableDefault<Integer>(0);
 	
 	public final String field1 = "PingPong"; // unnecessary field
 	private int counter = 0;
 
-	public PingPongPacket(int initiator, Packet.PacketType t) {
+	public PingPongPacket(int initiator, PacketType t) {
 		super(initiator);
 		this.setType(t);
 	}
 
 	public PingPongPacket(JSONObject json) throws JSONException {
 		super(json, unstringer);
-		this.setType(Packet.getPacketType(json));
+		this.setType(getPacketType(json));
 		this.counter = (json.has(COUNTER) ? json.getInt(COUNTER) : 0);
 	}
 
@@ -44,10 +60,10 @@ public class PingPongPacket extends ProtocolPacket<Integer, Packet.PacketType> {
 	}
 
 	public Integer flip(int rcvr) { // flip sender/reciever and ping/pong type
-		if (this.getType() == Packet.PacketType.TEST_PING) 
-			this.setType(Packet.PacketType.TEST_PONG);
-		else if (this.getType() == Packet.PacketType.TEST_PONG)
-			this.setType(Packet.PacketType.TEST_PING);
+		if (this.getType() == PacketType.TEST_PING) 
+			this.setType(PacketType.TEST_PONG);
+		else if (this.getType() == PacketType.TEST_PONG)
+			this.setType(PacketType.TEST_PING);
 		return super.flip(rcvr);
 	}
 
@@ -66,11 +82,11 @@ public class PingPongPacket extends ProtocolPacket<Integer, Packet.PacketType> {
 
 	@Override
 	public PacketType getPacketType(JSONObject json) throws JSONException {
-		return Packet.getPacketType(json);
+		return PacketType.intToType.get(JSONPacket.getPacketType(json));
 	}
 
 	@Override
 	public void putPacketType(JSONObject json, PacketType type) throws JSONException {
-		Packet.putPacketType(json, type);
+		JSONPacket.putPacketType(json, type);
 	}
 }

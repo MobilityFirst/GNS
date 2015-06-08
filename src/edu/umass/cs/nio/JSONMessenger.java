@@ -10,48 +10,54 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.packet.PacketInterface;
 import edu.umass.cs.protocoltask.json.ProtocolPacket;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType>
+ * 
+ *            This class has support for retransmissions with exponential
+ *            backoff. But you can't rely on this backoff for anything other
+ *            than ephemeral traffic bursts. If you are overloaded, you are
+ *            overloaded, so you must just reduce the load.
  */
-/*
- * This class is separate in order to separate communication from the
- * paxos protocol. It has support for retransmissions with exponential
- * backoff. But you can't rely on this backoff for anything other than
- * ephemeral traffic bursts. If you are overloaded, you are overloaded.
- */
-public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeIDType> {
+@SuppressWarnings("deprecation")
+public class JSONMessenger<NodeIDType> implements
+		InterfaceJSONNIOTransport<NodeIDType>,
+		InterfaceMessenger<NodeIDType, JSONObject> {
 
-	public static final String SENT_TIME = "SENT_TIME"; 
+	public static final String SENT_TIME = "SENT_TIME";
 	private static final long RTX_DELAY = 1000; // ms
 	private static final int BACKOFF_FACTOR = 2;
 
-	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
-	private final ScheduledExecutorService execpool =
-			Executors.newScheduledThreadPool(5);
+	private final InterfaceNIOTransport<NodeIDType, JSONObject> nioTransport;
+	protected final ScheduledExecutorService execpool;
 
-	private Logger log =
-			(NIOTransport.DEBUG ? Logger.getLogger(getClass().getName())
-					: GNS.getLogger());
+	private Logger log = NIOTransport.getLogger();
 
-	public JSONMessenger(InterfaceJSONNIOTransport<NodeIDType> niot) {
-		assert (niot != null);
-		nioTransport = niot;
+	public JSONMessenger(InterfaceNIOTransport<NodeIDType, JSONObject> niot) {
+		// to not create thread pools unnecessarily
+		if (niot instanceof JSONMessenger)
+			this.execpool = ((JSONMessenger<NodeIDType>) niot).execpool;
+		else
+			this.execpool = Executors.newScheduledThreadPool(5);
+		nioTransport = (InterfaceNIOTransport<NodeIDType, JSONObject>) niot;
 	}
 
-	/*
-	 * send returns void because it is the "ultimate" send. It will retransmit
+	/**
+	 * Send returns void because it is the "ultimate" send. It will retransmit
 	 * if necessary. It is inconvenient for senders to worry about
-	 * retransmission anyway. We may need to retransmit despite using
-	 * TCP-based NIO because NIO is designed to be non-blocking, so it may
-	 * sometimes drop messages when asked to send but the channel is congested.
-	 * We use the return value of NIO send to decide whether to retransmit.
+	 * retransmission anyway. We may need to retransmit despite using TCP-based
+	 * NIO because NIO is designed to be non-blocking, so it may sometimes drop
+	 * messages when asked to send but the channel is congested. We use the
+	 * return value of NIO send to decide whether to retransmit.
 	 */
-	public void send(GenericMessagingTask<NodeIDType,?> mtask) throws JSONException, IOException {
-		if (mtask == null || mtask.recipients == null || mtask.msgs == null) { return; }
+	@Override
+	public void send(GenericMessagingTask<NodeIDType, ?> mtask)
+			throws IOException, JSONException {
+		if (mtask == null || mtask.recipients == null || mtask.msgs == null) {
+			return;
+		}
 		for (Object msg : mtask.msgs) {
 			if (msg == null) {
 				assert (false);
@@ -59,41 +65,45 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 			}
 			for (int r = 0; r < mtask.recipients.length; r++) {
 				JSONObject jsonMsg = null;
-				if (msg instanceof JSONObject) {
-					jsonMsg = (JSONObject) (msg);
+				try {
+					if (msg instanceof JSONObject) {
+						jsonMsg = (JSONObject) (msg);
+					} else if (msg instanceof JSONPacket) {
+						jsonMsg = ((JSONPacket) (msg)).toJSONObject();
+					} else if (msg instanceof ProtocolPacket) {
+						jsonMsg = ((ProtocolPacket<?, ?>) msg).toJSONObject();
+					} else
+						throw new RuntimeException(
+								"JSONMessenger received a message that is not of type JSONObject, nio.JSONPacket, or protocoltask.json.ProtocolPacket");
+					jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
+				} catch (JSONException je) {
+					log.severe("JSONMessenger" + getMyID()
+							+ " incurred JSONException while decoding: " + msg);
+					throw (je);
 				}
-				else if (msg instanceof PacketInterface) {
-					jsonMsg = ((PacketInterface) (msg)).toJSONObject();
-				}
-				else if (msg instanceof ProtocolPacket){
-					log.fine("Messenger received non-JSON object: " + msg);
-					jsonMsg = ((ProtocolPacket<?,?>)msg).toJSONObject();
-				}
-				jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
-				
+
 				int length = jsonMsg.toString().length();
 
 				// special case provision for InetSocketAddress
 				int sent = this.specialCaseSend(mtask.recipients[r], jsonMsg);
-				
+
 				// check success or failure and react accordingly
 				if (sent == length) {
-					log.fine("Node " + this.nioTransport.getMyID() + " sent " + " to node " +
-							mtask.recipients[r] + ": " + jsonMsg);
-				}
-				else if (sent < length) {
-					if (NIOTransport.sampleLog()) {
-						log.warning("Node " + this.nioTransport.getMyID() +
-								" messenger experiencing congestion, this is bad but not disastrous (yet)");
-					}
-					Retransmitter rtxTask =
-							new Retransmitter((mtask.recipients[r]), jsonMsg,
-									RTX_DELAY);
-					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); // can't block, so ignore future
-				}
-				else {
-					log.severe("Node " + this.nioTransport.getMyID() + " sent " + sent +
-							" bytes out of a " + length + " byte message to node " + mtask.recipients[r]);
+					log.fine("Node " + this.nioTransport.getMyID() + " sent "
+							+ " to node " + mtask.recipients[r] + ": "
+							+ jsonMsg);
+				} else if (sent < length) {
+					log.info("Node "
+							+ this.nioTransport.getMyID()
+							+ " messenger experiencing congestion, this is not disastrous (yet)");
+					Retransmitter rtxTask = new Retransmitter(
+							(mtask.recipients[r]), jsonMsg, RTX_DELAY);
+					// can't block here, so have to ignore returned future
+					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); 
+				} else {
+					log.severe("Node " + this.nioTransport.getMyID() + " sent "
+							+ sent + " bytes out of a " + length
+							+ " byte message to node " + mtask.recipients[r]);
 				}
 			}
 		}
@@ -104,22 +114,20 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 		this.execpool.shutdown();
 		this.nioTransport.stop();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private int specialCaseSend(Object id, JSONObject json) throws IOException {
-		if(id instanceof InetSocketAddress)
-			return this.sendToAddress((InetSocketAddress)id, json);
-		else return this.sendToID((NodeIDType)id, json);
+		if (id instanceof InetSocketAddress)
+			return this.sendToAddress((InetSocketAddress) id, json);
+		else
+			return this.sendToID((NodeIDType) id, json);
 	}
 
 	/**
-	 * ************************* Start of retransmitter module ********************
-	 */
-	/*
-	 * We need this because NIO may drop messages when congested. Thankfully,
-	 * it tells us when it does that. The task below exponentially backs
-	 * off with each retransmission. We are probably doomed anyway if this
-	 * class is invoked except rarely.
+	 * We need this because NIO may drop messages when congested. Thankfully, it
+	 * tells us when it does that. The task below exponentially backs off with
+	 * each retransmission. We are probably doomed anyway if this class is
+	 * invoked except rarely.
 	 */
 	private class Retransmitter implements Runnable {
 
@@ -142,37 +150,36 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 				ioe.printStackTrace();
 			} finally {
 				if (sent < msg.toString().length() && sent != -1) {
-					log.severe("Node " + nioTransport.getMyID() + "->" + dest +
-							" messenger backing off under severe congestion, Hail Mary!");
-					Retransmitter rtx =
-							new Retransmitter(dest, msg, delay * BACKOFF_FACTOR);
+					log.warning("Node "
+							+ nioTransport.getMyID()
+							+ "->"
+							+ dest
+							+ " messenger backing off under severe congestion, Hail Mary!");
+					Retransmitter rtx = new Retransmitter(dest, msg, delay
+							* BACKOFF_FACTOR);
 					execpool.schedule(rtx, delay * BACKOFF_FACTOR,
-						TimeUnit.MILLISECONDS);
+							TimeUnit.MILLISECONDS);
 				}
-				else if (sent == -1) { // queue clogged and !isConnected, give up
-					log.severe("Node " +
-							nioTransport.getMyID() +
-							"->" +
-							dest +
-							" messenger dropping message as destination unreachable: " +
-							msg);
+				// queue clogged and !isConnected, best to give up
+				else if (sent == -1) {
+					log.severe("Node "
+							+ nioTransport.getMyID()
+							+ "->"
+							+ dest
+							+ " messenger dropping message as destination unreachable: "
+							+ msg);
 				}
 			}
 		}
 	}
 
 	/**
-	 * ************************* End of retransmitter module ********************
-	 */
-
-	/**
-	 * ******************* Start of GNSNIOTransportInterface methods ********************
-	 */
-
-	/**
+	 * Sends jsonData to node id.
+	 * 
 	 * @param id
 	 * @param jsonData
-	 * @return
+	 * @return Return value indicates the number of bytes sent. A value of -1
+	 *         indicates an error.
 	 * @throws java.io.IOException
 	 */
 	@Override
@@ -181,10 +188,12 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 	}
 
 	/**
+	 * Sends jsonData to address.
 	 * 
 	 * @param address
 	 * @param jsonData
-	 * @return
+	 * @return Refer {@link #sendToID(Object, JSONObject) sendToID(Object,
+	 *         JSONObject)}.
 	 * @throws IOException
 	 */
 	@Override
@@ -193,20 +202,27 @@ public class JSONMessenger<NodeIDType> implements InterfaceJSONNIOTransport<Node
 		return this.nioTransport.sendToAddress(address, jsonData);
 	}
 
-	/**
-	 * 
-	 * @return
-	 */
 	@Override
 	public NodeIDType getMyID() {
 		return this.nioTransport.getMyID();
 	}
-	/**
-	 * ******************* End of GNSNIOTransportInterface methods ********************
-	 */
 
+	/**
+	 * @param pd
+	 *            The supplied packet demultiplexer is appended to end of the
+	 *            existing list. Messages will be processed by the first
+	 *            demultiplexer that has registered for processing the
+	 *            corresponding packet type and only by the first demultiplexer.
+	 *            <p>
+	 *            Note that there is no way to remove demultiplexers. All the
+	 *            necessary packet demultiplexers must be determined at design
+	 *            time. It is strongly recommended that all demultiplexers
+	 *            process exclusive sets of packet types. Relying on the order
+	 *            of chained demultiplexers is a bad idea.
+	 */
 	@Override
-	public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+	public void addPacketDemultiplexer(
+			AbstractPacketDemultiplexer<?> pd) {
 		this.nioTransport.addPacketDemultiplexer(pd);
 	}
 }

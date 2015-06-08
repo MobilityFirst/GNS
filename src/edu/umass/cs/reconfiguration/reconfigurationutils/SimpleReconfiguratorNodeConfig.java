@@ -22,7 +22,7 @@ import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
  * to ConsistentNodeConfig, we allow getNodeIDs() to be called here.
  */
 public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
-		InterfaceModifiableActiveConfig<NodeIDType>,
+		InterfaceModifiableActiveConfig<NodeIDType>, 
 		InterfaceModifiableRCConfig<NodeIDType> {
 
 	private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
@@ -94,14 +94,14 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 		return this.version;
 	}
 
-	@Override
+	//@Override
 	public InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress prevSockAddr = this.rcMap.put(id, sockAddr);
 		return prevSockAddr;
 	}
 
-	@Override
+	//@Override
 	public InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.rcMap.remove(id);
 	}

@@ -19,14 +19,14 @@ import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.gns.util.ParametersAndOptions;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.JSONMessageExtractor;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import static edu.umass.cs.gns.util.ParametersAndOptions.printOptions;
 
 import java.io.IOException;
@@ -70,7 +70,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final LNSNodeConfig nodeConfig;
   private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress nodeAddress;
-  private final AbstractPacketDemultiplexer demultiplexer;
+  private final AbstractJSONPacketDemultiplexer demultiplexer;
   public static boolean debuggingEnabled = false;
 
   public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
@@ -90,7 +90,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     }
   }
 
-  private InterfaceJSONNIOTransport initTransport(AbstractPacketDemultiplexer demultiplexer) throws IOException {
+  private InterfaceJSONNIOTransport initTransport(AbstractJSONPacketDemultiplexer demultiplexer) throws IOException {
     LOG.info("Starting LNS listener on " + nodeAddress);
     /* Arun: changed commented lines below to not use JSONMessageExtractor
     JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, new JSONMessageExtractor(demultiplexer));
@@ -152,7 +152,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   @Override
-  public AbstractPacketDemultiplexer getDemultiplexer() {
+  public AbstractJSONPacketDemultiplexer getDemultiplexer() {
     return demultiplexer;
   }
 

@@ -11,12 +11,13 @@ import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.TrivialRepliconfigurable;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 /* This abstract class should be inherited by replica coordination 
  * protocols. The only abstract method the inheritor needs to 
@@ -47,7 +48,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	private InterfaceReconfiguratorCallback callback = null;
 	private InterfaceReconfiguratorCallback activeCallback = null; // for stops
 	private boolean largeCheckpoints = false;
-	protected JSONMessenger<NodeIDType> messenger;	
+	protected InterfaceMessenger<NodeIDType,?> messenger;	
 
 	/********************* Start of abstract methods **********************************************/
 	/* This method performs whatever replica coordination action is necessary to handle the request.
@@ -74,12 +75,12 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 		this.app = new TrivialRepliconfigurable(app); 
 		this.messenger = null;
 	}
-	public AbstractReplicaCoordinator(InterfaceReplicable app, JSONMessenger<NodeIDType> messenger) {
+	public AbstractReplicaCoordinator(InterfaceReplicable app, InterfaceMessenger<NodeIDType,?> messenger) {
 		this(app);
 		this.messenger = messenger;
 	}
 	
-	protected void setMessenger(JSONMessenger<NodeIDType> messenger) {
+	protected void setMessenger(InterfaceMessenger<NodeIDType,?> messenger) {
 		this.messenger = messenger;
 	}
 

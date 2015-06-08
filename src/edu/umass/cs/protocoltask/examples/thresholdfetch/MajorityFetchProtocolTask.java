@@ -8,13 +8,11 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.nioutils.MessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.protocoltask.examples.PingPongPacket;
@@ -33,16 +31,16 @@ import edu.umass.cs.utils.Util;
  * sender as having responded and does not retry ("restart") the 
  * request to that node anymore.
  */
-public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Packet.PacketType, String> {
+public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, PingPongPacket.PacketType, String> {
 
 	private String key = null;
 
 	private final int[] nodes;
 	private final Integer myID;
 
-	private static Packet.PacketType[] types = {Packet.PacketType.TEST_PONG};
+	private static PingPongPacket.PacketType[] types = {PingPongPacket.PacketType.TEST_PONG};
 
-	private Logger log =  NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName()) : GNS.getLogger();
+	private Logger log =  ProtocolExecutor.getLogger();
 
 	public MajorityFetchProtocolTask(int id, Set<Integer> nodes) {
 		super(nodes, nodes.size()/2+1);
@@ -63,7 +61,7 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 	}
 
 	@Override
-	public boolean handleEvent(ProtocolEvent<Packet.PacketType,String> event) {
+	public boolean handleEvent(ProtocolEvent<PingPongPacket.PacketType,String> event) {
 
 		JSONObject msg = null;
 		try {
@@ -74,12 +72,12 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 		}
 		boolean responded = false;
 		try {
-			switch(Packet.getPacketType(msg)) {
+			switch(PingPongPacket.PacketType.intToType.get(JSONPacket.getPacketType(msg))) {
 			case TEST_PONG:
 				responded = handlePingPong(new PingPongPacket(msg));
 				break;
 			default:
-				throw new RuntimeException("Unrecognizable message type: " + Packet.getPacketType(msg));
+				throw new RuntimeException("Unrecognizable message type: " + JSONPacket.getPacketType(msg));
 			}
 		} catch(JSONException je) {
 			je.printStackTrace();
@@ -89,14 +87,14 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 
 	@Override
 	public MessagingTask[] start() {
-		PingPongPacket ppp = new PingPongPacket(this.myID, Packet.PacketType.TEST_PING);
+		PingPongPacket ppp = new PingPongPacket(this.myID, PingPongPacket.PacketType.TEST_PING);
 		log.info("Node"+myID+" starting protocol task with nodeIDs " + Util.arrayOfIntToString(nodes));
 		return new MessagingTask(nodes, ppp).toArray();
 	}
 	
 	@Override
 	public GenericMessagingTask<Integer,?>[] handleThresholdEvent(
-			ProtocolTask<Integer, PacketType, String>[] ptasks) {
+			ProtocolTask<Integer, PingPongPacket.PacketType, String>[] ptasks) {
 		// do nothing, default is to cancel anyway
 		return null;
 	}
@@ -127,7 +125,7 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pa
 	}
 
 	@Override
-	public Set<Packet.PacketType> getEventTypes() {
-		return new HashSet<Packet.PacketType>(Arrays.asList(types));//types;
+	public Set<PingPongPacket.PacketType> getEventTypes() {
+		return new HashSet<PingPongPacket.PacketType>(Arrays.asList(types));//types;
 	}
 }

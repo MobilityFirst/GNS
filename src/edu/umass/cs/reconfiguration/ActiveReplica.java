@@ -13,26 +13,27 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.InterfacePacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
-import edu.umass.cs.reconfiguration.json.ActiveReplicaProtocolTask;
-import edu.umass.cs.reconfiguration.json.WaitEpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckDropEpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckStartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckStopEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DefaultAppRequest;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DemandReport;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DropEpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.EpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestEpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckDropEpochFinalState;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DefaultAppRequest;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DropEpochFinalState;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.EpochFinalState;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestEpochFinalState;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.ActiveReplicaProtocolTask;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.WaitEpochFinalState;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AggregateDemandProfiler;
 import edu.umass.cs.reconfiguration.reconfigurationutils.CallbackMap;
@@ -44,21 +45,22 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 public class ActiveReplica<NodeIDType> implements
-		InterfaceReconfiguratorCallback, InterfacePacketDemultiplexer {
+		InterfaceReconfiguratorCallback, InterfacePacketDemultiplexer<JSONObject> {
 	private final AbstractReplicaCoordinator<NodeIDType> appCoordinator;
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
 	private final ActiveReplicaProtocolTask<NodeIDType> protocolTask;
-	private final JSONMessenger<NodeIDType> messenger;
+	private final InterfaceMessenger<NodeIDType,?> messenger;
 
 	private final AggregateDemandProfiler demandProfiler;
 	private final boolean noReporting;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
-
+	
 	/*
 	 * Stores only those requests for which a callback is desired after
 	 * (coordinated) execution. StopEpoch is the only example of such a request
@@ -66,9 +68,9 @@ public class ActiveReplica<NodeIDType> implements
 	 */
 	private final CallbackMap<NodeIDType> callbackMap = new CallbackMap<NodeIDType>();
 
-	public ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
+	private ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
 			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
-			JSONMessenger<NodeIDType> messenger, boolean noReporting) {
+			InterfaceMessenger<NodeIDType,JSONObject> messenger, boolean noReporting) {
 		this.appCoordinator = appC
 				.setActiveCallback((InterfaceReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
@@ -85,7 +87,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.noReporting = noReporting;
 	}
 
-	public ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
+	protected ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
 			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
 			JSONMessenger<NodeIDType> messenger) {
 		this(appC, nodeConfig, messenger, false);
@@ -96,7 +98,7 @@ public class ActiveReplica<NodeIDType> implements
 	}
 
 	@Override
-	public boolean handleJSONObject(JSONObject jsonObject) {
+	public boolean handleMessage(JSONObject jsonObject) {
 		BasicReconfigurationPacket<NodeIDType> rcPacket = null;
 		try {
 			// try handling as reconfiguration packet through protocol task
@@ -153,7 +155,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.messenger.stop();
 	}
 
-	/********************* Start of protocol task handler methods ************************/
+	/* ******************** Start of protocol task handler methods ************************/
 
 	/*
 	 * Will spawn FetchEpochFinalState to fetch the final state of the previous

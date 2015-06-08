@@ -8,12 +8,10 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
-import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.TESTProtocolTaskConfig;
@@ -28,11 +26,9 @@ public class ExampleNode {
 	private final int myID;
 	private final Set<Integer> nodeIDs;
 	private final JSONNIOTransport<Integer> niot;
-	private final ProtocolExecutor<Integer, Packet.PacketType, String> protocolExecutor;
+	private final ProtocolExecutor<Integer, PingPongPacket.PacketType, String> protocolExecutor;
 	
-	private Logger log =
-			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())
-					: GNS.getLogger();
+	private Logger log = Logger.getLogger(getClass().getName());
 
 	ExampleNode(int id, InterfaceNodeConfig<Integer> nc) throws IOException {
 		// Setting my ID and NIO with packet demultiplexer
@@ -44,19 +40,19 @@ public class ExampleNode {
 
 		// protocol executor
 		this.protocolExecutor =
-				new ProtocolExecutor<Integer, Packet.PacketType, String>(
+				new ProtocolExecutor<Integer, PingPongPacket.PacketType, String>(
 						new JSONMessenger<Integer>(niot));
 		
 		// Create and register local services (i.e., another level of demultiplexing)
-		this.protocolExecutor.register(Packet.PacketType.TEST_PING,
+		this.protocolExecutor.register(PingPongPacket.PacketType.TEST_PING,
 				new PingPongServer(this.myID));
 		log.info("Node " + myID + " inserted key=" +
-				Packet.PacketType.TEST_PING);
+				PingPongPacket.PacketType.TEST_PING);
 	}
 
 	public boolean handleIncoming(JSONObject msg) {
 		try {
-			switch (Packet.getPacketType(msg)) {
+			switch (PingPongPacket.PacketType.intToType.get(JSONPacket.getPacketType(msg))) {
 			case TEST_PONG:
 			case TEST_PING:
 				this.protocolExecutor.handleEvent(new PingPongPacket(msg));
@@ -114,7 +110,7 @@ public class ExampleNode {
 	 * that the message is retransmitted only to nodes that have not yet acknowledged
 	 * it.
 	 */
-	protected ThresholdProtocolTask<Integer, Packet.PacketType, String> thresholdFetch() {
+	protected ThresholdProtocolTask<Integer, PingPongPacket.PacketType, String> thresholdFetch() {
 		MajorityFetchProtocolTask task =
 				new MajorityFetchProtocolTask(this.myID, this.nodeIDs);
 		log.info("Node" + myID + " spawning threshold protocol task");

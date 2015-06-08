@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 
 /**
  * @author V. Arun
+ * @param <KeyType> 
+ * @param <ValueType> 
  */
 
 public class MultiArrayMap<KeyType, ValueType extends Keyable<KeyType>> {

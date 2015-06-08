@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json.reconfigurationpackets;
+package edu.umass.cs.reconfiguration.reconfigurationpackets;
 
 
 import org.json.JSONException;
@@ -15,6 +15,7 @@ import edu.umass.cs.utils.Util;
 
 /**
 @author V. Arun
+ * @param <NodeIDType> 
  */
 public class DemandReport<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements InterfaceReplicableRequest {
 	public enum Keys {STATS};

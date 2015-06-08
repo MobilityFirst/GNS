@@ -5,34 +5,31 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 
 /**
  * @author V. Arun
  */
-public class ExamplePacketDemultiplexer extends AbstractPacketDemultiplexer {
+public class ExamplePacketDemultiplexer extends AbstractJSONPacketDemultiplexer {
 	private static final boolean DEBUG = ProtocolExecutor.DEBUG;
 	private final ExampleNode node;
 	private Logger log =
-			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(NIOTransport.class.getName())
-					: GNS.getLogger();
+			ProtocolExecutor.getLogger();
 
 	ExamplePacketDemultiplexer(ExampleNode n) {
 		this.node = n;
-		this.register(Packet.PacketType.TEST_PING);
-		this.register(Packet.PacketType.TEST_PONG);
+		this.register(PingPongPacket.PacketType.TEST_PING);
+		this.register(PingPongPacket.PacketType.TEST_PONG);
 	}
 
 	@Override
-	public boolean handleJSONObject(JSONObject json) {
+	public boolean handleMessage(JSONObject json) {
 		try {
 			if (DEBUG)
 				log.finest("PD " + this.node.getMyID() + " received " + json);
-			switch (Packet.getPacketType(json)) {
+			switch (PingPongPacket.PacketType.intToType.get(JSONPacket.getPacketType(json))) {
 			case TEST_PING:
 			case TEST_PONG:
 				this.node.handleIncoming(json);

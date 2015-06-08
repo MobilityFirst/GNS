@@ -8,9 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB.RecordNames;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
@@ -36,7 +36,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			AbstractReconfiguratorDB<NodeIDType> app,
 			NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig,
-			InterfaceJSONNIOTransport<NodeIDType> niot) {
+			JSONMessenger<NodeIDType> niot) {
 		// setting paxosManager out-of-order limit to 1
 		super(app, myID, consistentNodeConfig, niot, 1);
 		assert (niot != null);

@@ -4,10 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 /*
  * FIXME: May need to add a self-destruct property to entries so that they are

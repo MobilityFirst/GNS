@@ -14,7 +14,7 @@ import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import static edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType.*;
 import edu.umass.cs.gns.paxos.paxospacket.RequestPacket;
 import edu.umass.cs.gns.paxos.paxospacket.StatePacket;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 
@@ -582,7 +582,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 /**
  * PaxosPacket demultiplexer object
  */
-class PaxosPacketDemultiplexer extends AbstractPacketDemultiplexer {
+class PaxosPacketDemultiplexer extends AbstractJSONPacketDemultiplexer {
 
   PaxosManager paxosManager;
 
@@ -591,7 +591,7 @@ class PaxosPacketDemultiplexer extends AbstractPacketDemultiplexer {
   }
 
   @Override
-  public boolean handleJSONObject(JSONObject jsonObject) {
+  public boolean handleMessage(JSONObject jsonObject) {
     paxosManager.handleIncomingPacket(jsonObject);
     return true;
   }

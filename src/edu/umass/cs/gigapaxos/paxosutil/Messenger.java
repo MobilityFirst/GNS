@@ -9,17 +9,16 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONMessenger;
 
 /**
  * @author V. Arun
- */
-/*
- * This class is separate in order to separate communication from the
- * paxos protocol. It has support for retransmissions with exponential
- * backoff. But you can't rely on this backoff for anything other than
- * ephemeral traffic bursts. If you are overloaded, you are overloaded.
+ * @param <NodeIDType> 
+ * 
+ * This class is simply JSONMessenger adapted to use MessagingTask
+ * instead of GenericMessagingTask and to fix integer node IDs to
+ * NodeIDType as needed.
  * 
  * It's a utility because there is nothing paxos specific here.
  */
@@ -27,14 +26,14 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 
 	private final IntegerMap<NodeIDType> nodeMap;
 
-	public Messenger(InterfaceJSONNIOTransport<NodeIDType> niot,
+	public Messenger(InterfaceNIOTransport<NodeIDType,JSONObject> niot,
 			IntegerMap<NodeIDType> nodeMap) {
 		super(niot);
 		this.nodeMap = nodeMap;
 	}
 
 	public void send(MessagingTask mtask) throws JSONException, IOException {
-		// FIXME: need to convert integers to NodeIDType.toString here
+		// need to convert integers to NodeIDType.toString here
 		super.send(toGeneric(mtask));
 	}
 

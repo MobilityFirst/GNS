@@ -6,9 +6,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.nioutils.MessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
@@ -35,9 +33,7 @@ public class PingPongProtocolTask extends PingPongServer {
 	private final int[] nodes;
 	private final int numPings;
 
-	private Logger log =
-			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())
-					: GNS.getLogger();
+	private Logger log = ProtocolExecutor.getLogger();
 
 	public PingPongProtocolTask(int id, Set<Integer> nodes, int numPings) {
 		super(id);
@@ -61,8 +57,8 @@ public class PingPongProtocolTask extends PingPongServer {
 
 	@Override
 	public MessagingTask[] handleEvent(
-			ProtocolEvent<Packet.PacketType, String> event,
-			ProtocolTask<Integer, Packet.PacketType, String>[] ptasks) {
+			ProtocolEvent<PingPongPacket.PacketType, String> event,
+			ProtocolTask<Integer, PingPongPacket.PacketType, String>[] ptasks) {
 
 		JSONObject msg = null;
 		try {
@@ -73,13 +69,13 @@ public class PingPongProtocolTask extends PingPongServer {
 		}
 		MessagingTask mtask = null;
 		try {
-			switch (Packet.getPacketType(msg)) {
+			switch (PingPongPacket.PacketType.intToType.get(JSONPacket.getPacketType(msg))) {
 			case TEST_PONG:
 				mtask = handlePingPong(new PingPongPacket(msg));
 				break;
 			default:
 				throw new RuntimeException("Unrecognizable message type: " +
-						Packet.getPacketType(msg));
+						JSONPacket.getPacketType(msg));
 			}
 		} catch (JSONException je) {
 			je.printStackTrace();
@@ -91,7 +87,7 @@ public class PingPongProtocolTask extends PingPongServer {
 	public MessagingTask[] start() {
 		PingPongPacket ppp =
 				new PingPongPacket(this.myID,
-						Packet.PacketType.TEST_PING);
+						PingPongPacket.PacketType.TEST_PING);
 		log.info("Node" + myID + " starting protocol task with nodeIDs " +
 				Util.arrayOfIntToString(nodes));
 		return new MessagingTask(nodes, ppp).toArray();

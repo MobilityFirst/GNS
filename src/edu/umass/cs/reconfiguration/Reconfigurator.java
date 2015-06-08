@@ -20,22 +20,22 @@ import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
-import edu.umass.cs.reconfiguration.json.ReconfiguratorProtocolTask;
-import edu.umass.cs.reconfiguration.json.WaitAckDropEpoch;
-import edu.umass.cs.reconfiguration.json.WaitAckStartEpoch;
-import edu.umass.cs.reconfiguration.json.WaitAckStopEpoch;
-import edu.umass.cs.reconfiguration.json.WaitCoordinatedCommit;
-import edu.umass.cs.reconfiguration.json.WaitPrimaryExecution;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.CreateServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DeleteServiceName;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DemandReport;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RCRecordRequest;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigureRCNodeConfig;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RCRecordRequest.RequestTypes;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigureRCNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest.RequestTypes;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.ReconfiguratorProtocolTask;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.WaitAckDropEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.WaitAckStartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.WaitAckStopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.WaitCoordinatedCommit;
+import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.WaitPrimaryExecution;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AggregateDemandProfiler;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
@@ -45,9 +45,10 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 public class Reconfigurator<NodeIDType> implements
-		InterfacePacketDemultiplexer, InterfaceReconfiguratorCallback {
+		InterfacePacketDemultiplexer<JSONObject>, InterfaceReconfiguratorCallback {
 
 	private final JSONMessenger<NodeIDType> messenger;
 	private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
@@ -56,15 +57,17 @@ public class Reconfigurator<NodeIDType> implements
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
 	private final AggregateDemandProfiler demandProfiler = new AggregateDemandProfiler();
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
+	private static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
+	public static final Logger getLogger() {return log;}
+
 
 	/*
 	 * Any id-based communication requires NodeConfig and Messenger. In general,
 	 * the former may be a subset of the NodeConfig used by the latter, so they
 	 * are separate arguments.
 	 */
-	public Reconfigurator(InterfaceReconfigurableNodeConfig<NodeIDType> nc,
+	protected Reconfigurator(InterfaceReconfigurableNodeConfig<NodeIDType> nc,
 			JSONMessenger<NodeIDType> m) {
 		this.messenger = m;
 		this.consistentNodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
@@ -95,7 +98,7 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	@Override
-	public boolean handleJSONObject(JSONObject jsonObject) {
+	public boolean handleMessage(JSONObject jsonObject) {
 		try {
 			ReconfigurationPacket.PacketType rcType = ReconfigurationPacket
 					.getReconfigurationPacketType(jsonObject);
@@ -131,7 +134,7 @@ public class Reconfigurator<NodeIDType> implements
 		this.DB.close();
 	}
 
-	/****************************** Start of protocol task handler methods *********************/
+	/* ***************************** Start of protocol task handler methods *********************/
 	/*
 	 * Incorporates demand reports (possibly but not necessarily with replica
 	 * coordination), checks for reconfiguration triggers, and initiates

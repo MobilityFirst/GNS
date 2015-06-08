@@ -8,12 +8,15 @@ import edu.umass.cs.protocoltask.ThresholdProtocolEvent;
 
 /**
  * @author V. Arun
- */
-/*
- * This class is concretized to use integer node IDs, long keys, and JSON messages, but the
- * PacketType is left generic. The reason is so that implementors can define and use their own
- * packet types. Note that it is not possible to extend the enum Packet.PacketType and it is not
- * modular to have to put *all* packet types in the Packet class.
+ * @param <NodeIDType>
+ * @param <EventType>
+ * 
+ *            This class is concretized to use integer node IDs, long keys, and
+ *            JSON messages, but the PacketType is left generic. The reason is
+ *            so that implementors can define and use their own packet types.
+ *            Note that it is not possible to extend the enum Packet.PacketType
+ *            and it is not modular to have to put *all* packet types in the
+ *            Packet class.
  */
 public abstract class ProtocolPacket<NodeIDType, EventType> implements
 		ThresholdProtocolEvent<NodeIDType, EventType, String> {
@@ -41,17 +44,19 @@ public abstract class ProtocolPacket<NodeIDType, EventType> implements
 	public ProtocolPacket(JSONObject json, Stringifiable<NodeIDType> unstringer)
 			throws JSONException {
 		this.type = getPacketType(json);
-		this.sender = (json.has(Keys.SENDER.toString()) ? unstringer.valueOf((json
-				.get(Keys.SENDER.toString())).toString()) : null);
-		this.initiator = (json.has(Keys.INITIATOR.toString()) ? unstringer.valueOf((json
-				.get(Keys.INITIATOR.toString())).toString()) : null);
+		this.sender = (json.has(Keys.SENDER.toString()) ? unstringer
+				.valueOf((json.get(Keys.SENDER.toString())).toString()) : null);
+		this.initiator = (json.has(Keys.INITIATOR.toString()) ? unstringer
+				.valueOf((json.get(Keys.INITIATOR.toString())).toString())
+				: null);
 		this.key = (json.has(Keys.KEY.toString()) ? json.getString(Keys.KEY
 				.toString()) : null);
 	}
-	
-	/* FIXME: Maybe disable this option altogether? This option is
-	 * convenient for just primitive types as JSON will handle it.
-	 * Not sure we can do anything but suppress the warnings.
+
+	/*
+	 * FIXME: Maybe disable this option altogether? This option is convenient
+	 * for just primitive types as JSON will handle it. Not sure we can do
+	 * anything but suppress the warnings.
 	 */
 	@SuppressWarnings("unchecked")
 	protected ProtocolPacket(JSONObject json) throws JSONException {

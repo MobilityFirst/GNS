@@ -1,19 +1,16 @@
 package edu.umass.cs.nio;
 
-import org.json.JSONObject;
-
 /**
-@author V. Arun
+ * @author V. Arun
+ * @param <MessageType> 
  */
-public interface InterfacePacketDemultiplexer {
+public interface InterfacePacketDemultiplexer<MessageType> {
 	/**
-	 * The return value should return true if the handler
-	 * handled the message and doesn't want any other BasicPacketDemultiplexer
-	 * to handle the message.
-	 * 
-	 * @param jsonObject
-	 * @return
+	 * @param message
+	 * @return The return value should return true if the handler handled the
+	 *         message and doesn't want any other BasicPacketDemultiplexer to
+	 *         handle the message.
 	 */
 
-	public boolean handleJSONObject(JSONObject jsonObject);
+	public boolean handleMessage(MessageType message);
 }

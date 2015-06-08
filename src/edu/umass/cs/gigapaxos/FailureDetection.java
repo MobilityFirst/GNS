@@ -16,7 +16,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.paxospackets.FailureDetectionPacket;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceNIOTransport;
 
 /**
 @author V. Arun
@@ -64,7 +64,7 @@ public class FailureDetection<NodeIDType> {
 	// final 
 	private final ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
 	private final NodeIDType myID;
-	private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
+	private final InterfaceNIOTransport<NodeIDType,JSONObject> nioTransport;
 
 	// non-final 
 	private Set<NodeIDType> keepAliveTargets; 
@@ -73,7 +73,7 @@ public class FailureDetection<NodeIDType> {
 
 	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(FailureDetection.class.getName());
 
-	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot, String paxosLogFolder) {
+	FailureDetection(NodeIDType id, InterfaceNIOTransport<NodeIDType,JSONObject> niot, String paxosLogFolder) {
 		nioTransport = niot;
 		myID = id;
 		lastHeardFrom = new HashMap<NodeIDType,Long>();
@@ -81,7 +81,7 @@ public class FailureDetection<NodeIDType> {
 		futures = new HashMap<NodeIDType,ScheduledFuture<PingTask>>();
 		initialize(paxosLogFolder);
 	}
-	FailureDetection(NodeIDType id, InterfaceJSONNIOTransport<NodeIDType> niot) {
+	FailureDetection(NodeIDType id, InterfaceNIOTransport<NodeIDType,JSONObject> niot) {
 		this(id,niot,null);
 	}
 	
@@ -205,9 +205,9 @@ public class FailureDetection<NodeIDType> {
 	private class PingTask implements Runnable {
 		private final NodeIDType destID;
 		private final JSONObject pingJson;
-		private final InterfaceJSONNIOTransport<NodeIDType> nioTransport;
+		private final InterfaceNIOTransport<NodeIDType,JSONObject> nioTransport;
 
-		PingTask(NodeIDType id, JSONObject fdpJson, InterfaceJSONNIOTransport<NodeIDType> niot) {
+		PingTask(NodeIDType id, JSONObject fdpJson, InterfaceNIOTransport<NodeIDType,JSONObject> niot) {
 			destID = id;
 			pingJson = fdpJson;
 			nioTransport = niot;
@@ -240,10 +240,6 @@ public class FailureDetection<NodeIDType> {
 		}
 	}
 
-	// Used only for testing
-	protected InterfaceJSONNIOTransport<NodeIDType> getNIOTransport() {
-		return this.nioTransport;
-	}
 	/**
 	 * @param args
 	 */

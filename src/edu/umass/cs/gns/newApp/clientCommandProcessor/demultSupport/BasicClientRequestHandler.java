@@ -22,7 +22,7 @@ import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.GnsMessenger;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.JSONDelayEmulator;
 import edu.umass.cs.nio.JSONMessageExtractor;
@@ -104,7 +104,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
 
   public BasicClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
-          AbstractPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) throws IOException {
+          AbstractJSONPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) throws IOException {
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
@@ -121,7 +121,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @SuppressWarnings("unchecked") // calls a static method
-  private InterfaceJSONNIOTransport<NodeIDType> initTransport(AbstractPacketDemultiplexer demultiplexer) throws IOException {
+  private InterfaceJSONNIOTransport<NodeIDType> initTransport(AbstractJSONPacketDemultiplexer demultiplexer) throws IOException {
     GNS.getLogger().info("Starting LNS listener on " + nodeAddress);
     if (parameters.isEmulatePingLatencies()) {
         JSONDelayEmulator.emulateConfigFileDelays(gnsNodeConfig, parameters.getVariation());

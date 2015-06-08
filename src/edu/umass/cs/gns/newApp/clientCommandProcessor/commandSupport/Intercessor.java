@@ -30,7 +30,7 @@ import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.ValuesMap;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
 import edu.umass.cs.utils.DelayProfiler;
 import java.net.InetSocketAddress;
@@ -84,13 +84,13 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
   }
 
-  private AbstractPacketDemultiplexer ccpPacketDemultiplexer;
+  private AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer;
   //private ClientRequestHandlerInterface<NodeIDType> handler;
   private GNSNodeConfig<NodeIDType> nodeConfig;
   private InetSocketAddress nodeAddress;
 
   public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> nodeConfig,
-          AbstractPacketDemultiplexer ccpPacketDemultiplexer) {
+          AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer) {
     //this.handler = handler;
     this.nodeConfig = nodeConfig;
     this.nodeAddress = nodeAddress;
@@ -514,7 +514,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    */
   public void injectPacketIntoCCPQueue(JSONObject jsonObject) {
 
-    boolean isPacketTypeFound = ccpPacketDemultiplexer.handleJSONObject(jsonObject);
+    boolean isPacketTypeFound = ccpPacketDemultiplexer.handleMessage(jsonObject);
     if (isPacketTypeFound == false) {
       GNS.getLogger().severe("Packet type not found at demultiplexer: " + isPacketTypeFound);
     }

@@ -10,7 +10,6 @@ import org.json.JSONException;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
@@ -25,8 +24,8 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 
 	public DynamoReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			ConsistentNodeConfig<NodeIDType> nodeConfig,
-			InterfaceJSONNIOTransport<NodeIDType> niot) {
-		super(app, (JSONMessenger<NodeIDType>) niot);
+			JSONMessenger<NodeIDType> messenger) {
+		super(app, messenger);
 		this.consistentNodeConfig = nodeConfig;
 	}
 

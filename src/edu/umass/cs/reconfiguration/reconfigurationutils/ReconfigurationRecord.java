@@ -14,11 +14,12 @@ import org.json.JSONObject;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.DemandReport;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 

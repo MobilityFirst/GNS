@@ -2,6 +2,7 @@ package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 
@@ -94,7 +95,7 @@ public class GnsMessenger<NodeIDType> implements InterfaceJSONNIOTransport<NodeI
   }
 
   @Override
-  public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
+  public void addPacketDemultiplexer(AbstractPacketDemultiplexer<?> pd) {
     //To change body of generated methods, choose Tools | Templates.
   }
 

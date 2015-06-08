@@ -1018,7 +1018,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * by anyone creating a DerbyPaxosLogger object, otherwise
 	 * recovery will take longer upon the next bootup.
 	 * 
-	 * @return
+	 * @return Returns true if closed successfully.
 	 */
 	public boolean closeGracefully() {
 

@@ -12,9 +12,9 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.CommandPacket;
 import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestActiveReplicas;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -29,7 +29,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
+public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
   private final RequestHandlerInterface handler;
   private final Random random = new Random();
@@ -49,7 +49,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
    * @return false if an invalid packet type is received
    */
   @Override
-  public boolean handleJSONObject(JSONObject json) {
+  public boolean handleMessage(JSONObject json) {
     if (handler.isDebugMode()) {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>> Incoming packet: " + json);
     }

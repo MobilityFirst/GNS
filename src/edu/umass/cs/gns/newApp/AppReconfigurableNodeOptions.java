@@ -167,11 +167,11 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG_RECON, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********");
       // For backwards compatibility until Config goes away
-      Reconfigurator.log.setLevel(Level.INFO);
+      Reconfigurator.getLogger().setLevel(Level.INFO);
       AbstractReconfiguratorDB.log.setLevel(Level.INFO);
       DerbyPersistentReconfiguratorDB.log.setLevel(Level.INFO);
     } else {
-      Reconfigurator.log.setLevel(Level.WARNING);
+      Reconfigurator.getLogger().setLevel(Level.WARNING);
       AbstractReconfiguratorDB.log.setLevel(Level.WARNING);
       DerbyPersistentReconfiguratorDB.log.setLevel(Level.WARNING);
     }

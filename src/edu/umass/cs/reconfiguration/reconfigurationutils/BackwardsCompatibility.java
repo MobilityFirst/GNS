@@ -5,18 +5,17 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.Reconfigurator;
-import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
-import edu.umass.cs.reconfiguration.examples.noop.NoopAppCoordinator;
 
 import java.util.Set;
 
+@Deprecated
 public class BackwardsCompatibility {
 
-	public static Replicable InterfaceReplicableToReplicable(
+	protected static Replicable InterfaceReplicableToReplicable(
 			final InterfaceReplicable app) {
-		assert (app instanceof RepliconfigurableReconfiguratorDB
-				|| app instanceof NoopAppCoordinator || app instanceof edu.umass.cs.gns.newApp.NewAppCoordinator // -Westy
-		) : app.getClass();
+		assert(false);
+		if("".isEmpty()) throw new RuntimeException("This class should no longer be used");
+		
 		Replicable replicable = new Replicable() {
 
 			@Override
@@ -25,7 +24,7 @@ public class BackwardsCompatibility {
 				try {
 					app.handleRequest(app.getRequest(value), doNotReplyToClient);
 				} catch (RequestParseException e) {
-					Reconfigurator.log.warning(app
+					Reconfigurator.getLogger().warning(app
 							+ " unable to parse request " + value);
 					e.printStackTrace();
 				}

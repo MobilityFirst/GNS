@@ -9,7 +9,7 @@ import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
@@ -22,18 +22,22 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
 
+	@SuppressWarnings("unchecked")
 	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceJSONNIOTransport<NodeIDType> niot) {
-		super(app, (JSONMessenger<NodeIDType>) niot);
+			InterfaceMessenger<NodeIDType,?> niot) {
+		super(app, niot);
+		assert(niot instanceof JSONMessenger);
 		this.paxosManager = new PaxosManager<NodeIDType>(myID, unstringer,
-				niot, this);
+				(JSONMessenger<NodeIDType>)niot, this);
 	}
 
+	@SuppressWarnings("unchecked")
 	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceJSONNIOTransport<NodeIDType> niot, int outOfOrderLimit) {
-		this(app, myID, unstringer, niot);
+			InterfaceMessenger<NodeIDType,?> niot, int outOfOrderLimit) {
+		this(app, myID, unstringer, (JSONMessenger<NodeIDType>)niot);
+		assert(niot instanceof JSONMessenger);
 		this.paxosManager.setOutOfOrderLimit(outOfOrderLimit);
 	}
 

@@ -5,9 +5,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.nio.nioutils.MessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolTask;
@@ -16,16 +13,14 @@ import edu.umass.cs.protocoltask.TESTProtocolTaskConfig;
 /**
  * @author V. Arun
  */
-public class PingPongServer implements ProtocolTask<Integer, Packet.PacketType, String> {
+public class PingPongServer implements ProtocolTask<Integer, PingPongPacket.PacketType, String> {
 
 	private final String key = null;
 
 	protected final Integer myID;
-	private static Packet.PacketType[] types = {Packet.PacketType.TEST_PING};
+	private static PingPongPacket.PacketType[] types = {PingPongPacket.PacketType.TEST_PING};
 
-	private Logger log =
-			NIOTransport.LOCAL_LOGGER ? Logger.getLogger(getClass().getName())
-					: GNS.getLogger();
+	private Logger log = Logger.getLogger(getClass().getName());
 
 	public PingPongServer(int id) {
 		this.myID = id;
@@ -45,8 +40,8 @@ public class PingPongServer implements ProtocolTask<Integer, Packet.PacketType, 
 
 	@Override
 	public MessagingTask[] handleEvent(
-			ProtocolEvent<Packet.PacketType, String> event,
-			ProtocolTask<Integer, Packet.PacketType, String>[] ptasks) {
+			ProtocolEvent<PingPongPacket.PacketType, String> event,
+			ProtocolTask<Integer, PingPongPacket.PacketType, String>[] ptasks) {
 
 		PingPongPacket ppp = ((PingPongPacket) event.getMessage());
 		MessagingTask mtask = null;
@@ -81,14 +76,8 @@ public class PingPongServer implements ProtocolTask<Integer, Packet.PacketType, 
 		return new MessagingTask(Integer.valueOf(sender), ping);
 	}
 
-	/************************************ Testing methods below **********************************/
-
-	public static void main(String[] args) {
-		// Not much to test here as this is an example of how to use protocol task
-	}
-
 	@Override
-	public Set<Packet.PacketType> getEventTypes() {
-		return new HashSet<Packet.PacketType>(Arrays.asList(types)); //types;
+	public Set<PingPongPacket.PacketType> getEventTypes() {
+		return new HashSet<PingPongPacket.PacketType>(Arrays.asList(types)); //types;
 	}
 }

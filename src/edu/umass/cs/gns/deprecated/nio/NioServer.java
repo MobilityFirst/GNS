@@ -10,6 +10,7 @@ package edu.umass.cs.gns.deprecated.nio;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.InterfaceNodeConfig;
@@ -181,7 +182,7 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
   boolean sendToIDActual(NodeIDType destID, JSONObject json) throws IOException {
 
     if (destID.equals(ID)) { // to send to same node, directly call the demultiplexer
-      workerObject.getPacketDemux().handleJSONObject(json);
+      workerObject.getPacketDemux().handleMessage(json);
       return true;
     }
     // append a packet length header to JSON object

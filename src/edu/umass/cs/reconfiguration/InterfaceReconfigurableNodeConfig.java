@@ -6,6 +6,7 @@ import edu.umass.cs.nio.InterfaceNodeConfig;
 
 /**
 @author V. Arun
+ * @param <NodeIDType> 
  */
 public interface InterfaceReconfigurableNodeConfig<NodeIDType> extends InterfaceNodeConfig<NodeIDType> {
 	public Set<NodeIDType> getActiveReplicas();

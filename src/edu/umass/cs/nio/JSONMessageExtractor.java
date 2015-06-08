@@ -1,13 +1,14 @@
 package edu.umass.cs.nio;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
@@ -18,73 +19,77 @@ import java.util.logging.Logger;
 
 /**
  * @author V. Arun
- */
-
-/*
- * We need to read off JSON objects from a byte stream. The problem is
- * that sometimes the stream can miss some bytes. This can happen because
- * say the connection threw an exception and a new one was established.
- * We can reduce the likelihood of missing bytes by writing the remaining
- * bytes as-is on the new connection, but this could result in double-writing
- * bytes sometimes. And there is no way of knowing in this class that the
- * byte stream on the new connection is related to a byte stream on a
- * previous connection. So we have to accept that some messages might get lost
- * because as portions of the byte stream will fail format checks. We can live
- * with this as connection failures are (hopefully) rare.
  * 
- * The more annoying problem that can happen even during graceful execution
- * is that a socket read may return only part of the JSON object, so we don't
- * quite know when we are ready to read a full JSON object. There are a few
- * options to deal with this: (1) Assume each read will include a full JSON
- * object and discard extraneous bytes. (2) If a read only has part of the JSON
- * object, then pass along enough socket or nodeID information to allow the
- * data processor to *synchronously* read more bytes until at least as many
- * bytes as indicated in the header length are obtained. (3) Buffer reads into
- * a local byte stream and process them only when a complete JSON object is
- * available. The first option will likely miss too many objects and possibly
- * even *all* objects if they never align with read boundaries. The second
- * option is complicated and loses the point of the otherwise asynchronous
- * NIO design.
+ *         We need to read off String messages from a byte stream. The problem
+ *         is that sometimes the stream can miss some bytes. This can happen
+ *         because say the connection threw an exception and a new one was
+ *         established. We can reduce the likelihood of missing bytes by writing
+ *         the remaining bytes as-is on the new connection, but this could
+ *         result in double-writing bytes sometimes. And there is no way of
+ *         knowing in this class that the byte stream on the new connection is
+ *         related to a byte stream on a previous connection. So we have to
+ *         accept that some messages might get lost because as portions of the
+ *         byte stream will fail format checks. We can live with this as
+ *         connection failures are (hopefully) rare.
  * 
- * The third option above is therefore the way to go.
+ *         The more annoying problem that can happen even during graceful
+ *         execution is that a socket read may return only part of the message
+ *         object, so we don't quite know when we are ready to read a full
+ *         message. There are a few options to deal with this: (1) Assume each
+ *         read will include a full message object and discard extraneous bytes.
+ *         (2) If a read only has part of the message, then pass along enough
+ *         socket or nodeID information to allow the data processor to
+ *         *synchronously* read more bytes until at least as many bytes as
+ *         indicated in the header length are obtained. (3) Buffer reads into a
+ *         local byte stream and process them only when a complete message is
+ *         available. The first option will likely miss too many objects and
+ *         possibly even *all* objects if they never align with read boundaries.
+ *         The second option is complicated and loses the point of the otherwise
+ *         asynchronous NIO design.
+ * 
+ *         The third option above is therefore the way to go and is the one
+ *         implemented here. The methods use a consistent charset encoding so
+ *         that any set of bytes including binary data can be correctly read.
+ * 
+ *         Note: Previously, this class was designed primarily for JSON
+ *         messages, but it now handles any generic message type by decoding
+ *         String messages.
  */
 public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 
 	// private static final int SIZE_OF_THREAD_POOL = 100;
 	public static final String HEADER_PATTERN = "&"; // Could be an arbitrary string
-	private final HashMap<SocketChannel, String> sockStreams;
-	private final ArrayList<AbstractPacketDemultiplexer> packetDemuxes;
+	private final HashMap<SocketChannel, ByteArrayOutputStream> sockStreams;
+	private final ArrayList<AbstractPacketDemultiplexer<?>> packetDemuxes;
 	private Timer timer = new Timer(); // timer object to schedule packets with delay if we are emulating delays
 
-	Logger log = GNS.getLogger();
+	private static final Logger log = NIOTransport.getLogger();
 
-	protected JSONMessageExtractor(AbstractPacketDemultiplexer pd) {
-		packetDemuxes = new ArrayList<AbstractPacketDemultiplexer>();
+	protected JSONMessageExtractor(AbstractPacketDemultiplexer<?> pd) {
+		packetDemuxes = new ArrayList<AbstractPacketDemultiplexer<?>>();
 		packetDemuxes.add(pd);
-		sockStreams = new HashMap<SocketChannel, String>();
+		sockStreams = new HashMap<SocketChannel, ByteArrayOutputStream>();
 	}
 
 	protected JSONMessageExtractor() { // default packet demux returns false
-		this.packetDemuxes = new ArrayList<AbstractPacketDemultiplexer>();
-		this.packetDemuxes.add(new PacketDemultiplexerDefault());
-		sockStreams = new HashMap<SocketChannel, String>();
+		this(new PacketDemultiplexerDefault());
 	}
 
 	/*
-	 * Note: Use with care. This will change demultiplexing behavior
-	 * midway, which is usually not what you want to do. This is
-	 * useful to set in the beginning.
+	 * Note: Use with care. This will change demultiplexing behavior midway,
+	 * which is usually not what you want to do. This is useful to set in the
+	 * beginning.
 	 * 
-	 * synchronized because it may be invoked when NIO is using
-	 * packetDemuxes in processJSONMessage(.).
+	 * Synchronized because it may be invoked when NIO is using packetDemuxes in
+	 * processJSONMessage(.).
 	 */
 	protected synchronized void addPacketDemultiplexer(
-			AbstractPacketDemultiplexer pd) {
+			AbstractPacketDemultiplexer<?> pd) {
 		packetDemuxes.add(pd);
 	}
 
 	protected synchronized void removePacketDemultiplexer(
-			AbstractPacketDemultiplexer pd) {
+			AbstractJSONPacketDemultiplexer pd) {
 		packetDemuxes.remove(pd);
 	}
 
@@ -96,9 +101,9 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * if the bad "size" happens to be a huge value. A big bad size
 	 * also means a huge of amount of buffering in SockStreams.
 	 */
-	protected static String prependHeader(String str) {
+	protected static String getHeader(String str) {
 		return (JSONMessageExtractor.HEADER_PATTERN + str.length() +
-				JSONMessageExtractor.HEADER_PATTERN + str);
+				JSONMessageExtractor.HEADER_PATTERN);
 	}
 
 	/*
@@ -109,92 +114,33 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 */
 	@Override
 	public void processData(SocketChannel socket, byte[] data, int count) {
-		String str = new String(data, 0, count);
-		processData(socket, str);
+		processData(socket, combineNewWithBuffered(socket, data, count));
 	}
-
+	
 	/*
 	 * The above method returns void for backwards compatibility. It is
 	 * convenient to test this method if it returns an int.
 	 */
 
-	protected int processData(SocketChannel socket, String msg) {
-		ArrayList<JSONObject> jsonArray =
-				this.parseAndSetSockStreams(socket, msg);
-		processJSONMessages(jsonArray);
-		return jsonArray.size();
-	}
-
-	/*
-	 * Actual message processing is done by packetDemux. This class only
-	 * pre-processes a byte stream into JSON messages.
-	 */
-
-	protected void processJSONMessages(ArrayList<JSONObject> jsonArray) {
-		if (jsonArray != null && !jsonArray.isEmpty()) {
-			for (JSONObject jsonMsg : jsonArray) {
-				this.processJSONMessage(jsonMsg);
-			}
-		}
+	protected int processData(SocketChannel sock, String msg) {
+		ArrayList<String> strArray =
+				(this.parseAndSetSockStreams(sock, msg));
+		processMessages(getSenderSocketAddress(sock), strArray);
+		return strArray.size();
 	}
 
 	protected void stop() {
-		for (AbstractPacketDemultiplexer pd : this.packetDemuxes)
+		for (AbstractPacketDemultiplexer<?> pd : this.packetDemuxes)
 			pd.stop();
 		this.timer.cancel();
 	}
+
+	protected synchronized void processMessage(InetSocketAddress sockAddr, final String jsonMsg) {
+		this.processMessageInternal(sockAddr, jsonMsg);
+	}
 	
-	/**
-	 * *************** Start of private methods *****************************
-	 */
-
-	private synchronized void processJSONMessage(final JSONObject jsonMsg) {
-		NIOInstrumenter.incrJSONRcvd();
-
-		JsonMessageWorker worker =
-				new JsonMessageWorker(jsonMsg, packetDemuxes);
-		if (JSONDelayEmulator.isDelayEmulated()) {
-			long delay = JSONDelayEmulator.getEmulatedDelay(jsonMsg);
-			if (delay >= 0) {
-				// this runs in a separate thread after scheduled delay
-				timer.schedule(worker, delay);
-			} else {
-				// THIS ISN'T ACTUALLY RUNNING IT IN ANOTHER THREAD.
-				worker.run();
-			}
-		} else {
-			// THIS ISN'T ACTUALLY RUNNING IT IN ANOTHER THREAD.
-			worker.run();
-		}
-	}
-
-	private class JsonMessageWorker extends TimerTask {
-
-		private JSONObject json;
-		private ArrayList<AbstractPacketDemultiplexer> pedemuxs;
-
-		public JsonMessageWorker(JSONObject json,
-				ArrayList<AbstractPacketDemultiplexer> pedemuxs) {
-			this.json = json;
-			this.pedemuxs = pedemuxs;
-		}
-
-		@Override
-		public void run() {
-			for (final AbstractPacketDemultiplexer pd : pedemuxs) {
-				try {
-					if(pd instanceof PacketDemultiplexerDefault) continue;
-					// the handler turns true if it handled the message
-					if (pd.handleJSONObjectSuper(json))	return;
-				} catch(JSONException je) {
-					je.printStackTrace();
-				}
-			}
-		}
-	}
-
 	// String to JSON conversion
-	private JSONObject parseJSON(String msg) {
+	protected static JSONObject parseJSON(String msg) {
 		JSONObject jsonData = null;
 		try {
 			if (msg.length() > 0) {
@@ -207,6 +153,106 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		}
 		return jsonData;
 	}
+	
+	/* *************** Start of private methods **************************** */
+
+	private String combineNewWithBuffered(SocketChannel socket, byte[] data,
+			int count) {
+		try {
+			if (!this.sockStreams.containsKey(socket))
+				return new String(data, 0, count,
+						JSONNIOTransport.NIO_CHARSET_ENCODING);
+			// else
+			this.sockStreams.get(socket).write(data, 0, count);
+			return this.sockStreams.remove(socket).toString(
+					JSONNIOTransport.NIO_CHARSET_ENCODING);
+
+		} catch (UnsupportedEncodingException e) {
+			fatalExit(e);
+		}
+		return null;
+	}
+	
+	private static void fatalExit(UnsupportedEncodingException e) {
+		e.printStackTrace();
+		System.err.println("NIO failed because the charset encoding "
+				+ JSONNIOTransport.NIO_CHARSET_ENCODING
+				+ " is not supported; exiting");
+		System.exit(1);		
+	}
+
+	/*
+	 * Actual message processing is done by packetDemux. This class only
+	 * pre-processes a byte stream into individual messages.
+	 */
+	private void processMessages(InetSocketAddress sender, ArrayList<String> strArray) {
+		if (strArray != null && !strArray.isEmpty()) {
+			for (String str : strArray) {
+				this.processMessage(sender, str);
+			}
+		}
+	}
+	private synchronized void processMessageInternal(
+			InetSocketAddress sockAddr, String msg) {
+		NIOInstrumenter.incrJSONRcvd();
+
+		MessageWorker worker = new MessageWorker(sockAddr, msg,
+				packetDemuxes);
+		long delay = -1;
+		if (JSONDelayEmulator.isDelayEmulated()
+				&& (delay = JSONDelayEmulator.getEmulatedDelay(msg)) >= 0)
+			// run in a separate thread after scheduled delay
+			timer.schedule(worker, delay);
+		else
+			// run it immediately
+			worker.run();
+	}
+
+	private class MessageWorker extends TimerTask {
+
+		private final InetSocketAddress sockAddr;
+		private final String msg;
+		private final ArrayList<AbstractPacketDemultiplexer<?>> pdemuxes;
+
+		public MessageWorker(InetSocketAddress sockAddr, String msg,
+				ArrayList<AbstractPacketDemultiplexer<?>> pdemuxes) {
+			this.msg = msg;
+			this.sockAddr = sockAddr;
+			this.pdemuxes = pdemuxes;
+		}
+
+		@SuppressWarnings("unchecked")
+		@Override
+		public void run() {
+			for (final AbstractPacketDemultiplexer<?> pd : pdemuxes) {
+				try {
+					if (pd instanceof PacketDemultiplexerDefault)
+						continue;
+					Object message = pd.getMessage(msg);
+					if (message == null)
+						continue;
+					// the handler turns true if it handled the message
+					if (message instanceof JSONObject
+							&& (((AbstractPacketDemultiplexer<JSONObject>) pd)
+									.handleMessageSuper(stampAddressIntoJSONObject(
+											sockAddr, (JSONObject) message))))
+						return;
+					else if (message instanceof String
+							&& (((AbstractPacketDemultiplexer<String>) pd)
+									.handleMessageSuper((String) message)))
+						return;
+					else if (message instanceof byte[]
+							&& (((AbstractPacketDemultiplexer<byte[]>) pd)
+									.handleMessageSuper((byte[]) message)))
+						return;
+
+				} catch (JSONException je) {
+					je.printStackTrace();
+				}
+			}
+		}
+	}
+
 
 	/*
 	 * This method does much of the work to try to extract a single message. Its
@@ -225,8 +271,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * so the header will be removed. As a consequence, all bytes up to the
 	 * next correctly formatted message will be discarded.
 	 */
-	private String extractMessage(String str, ArrayList<JSONObject> jsonArray) {
-		// GNS.getLogger().info("STR: " + str);
+	private String extractMessage(String str, ArrayList<String> msgArray) {
 		String retval = str;
 		if (str.length() > 2 * JSONMessageExtractor.HEADER_PATTERN.length()) {
 			int firstIndex = str.indexOf(JSONMessageExtractor.HEADER_PATTERN);
@@ -235,7 +280,8 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 							JSONMessageExtractor.HEADER_PATTERN,
 							firstIndex +
 									JSONMessageExtractor.HEADER_PATTERN.length());
-			if (firstIndex > -1 && secondIndex > firstIndex) { // found two occurrences of the special pattern
+			if (firstIndex > -1 && secondIndex > firstIndex) { 
+				// found two occurrences of the special pattern
 				int size = 0;
 				try {
 					size =
@@ -261,10 +307,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 				if (str.length() >= endMsg) {
 					String leftover = str.substring(endMsg);
 					String extractedMsg = str.substring(beginMsg, endMsg);
-					JSONObject jsonData = this.parseJSON(extractedMsg);
-					if (jsonData != null) {
-						jsonArray.add(jsonData);
-					}
+					msgArray.add(extractedMsg);
 					retval = leftover;
 				}
 			}
@@ -275,7 +318,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	/* Invokes extractMessage until it can keep extracting more messages */
 
 	private String extractMultipleMessages(String str,
-			ArrayList<JSONObject> jsonArray) {
+			ArrayList<String> jsonArray) {
 		while (str.length() > 0) {
 			String leftover = extractMessage(str, jsonArray);
 			if (leftover.equals(str)) {
@@ -298,50 +341,64 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 	 * to concurrent worker threads. In any case, making it synchronized keeps this class
 	 * thread-safe irrespective of whether it is used in conjunction with NIO or not.
 	 */
-	private synchronized ArrayList<JSONObject> parseAndSetSockStreams(
+	private synchronized ArrayList<String> parseAndSetSockStreams(
 			SocketChannel sock, String data) {
-		String oldStr = sockStreams.get(sock);
-		String newStr = (oldStr != null ? oldStr + data : data);
-		ArrayList<JSONObject> jsonArray = new ArrayList<JSONObject>();
+		ArrayList<String> jsonArray = new ArrayList<String>();
 
-		newStr = this.extractMultipleMessages(newStr, jsonArray);
-		// stamp the senders address and port into the JSON objects
-		try {
-			stampAddressIntoJSONObjects(((InetSocketAddress) sock.getRemoteAddress()), jsonArray);
-		} catch (IOException e) {
-			log.severe("Problem getting client address or port: " + e);
-		}
-		this.sockStreams.put(sock, newStr);
+		String newStr = this.extractMultipleMessages(data, jsonArray);
+
+		this.bufferInSockStream(sock, newStr);
 		log.finest("Parsed : [" + JSONArrayToString(jsonArray) +
 				"], leftover = [" + newStr + "]");
 		return jsonArray;
 	}
-
-	// fix this to be enableable
-	private void stampAddressIntoJSONObjects(InetSocketAddress address, ArrayList<JSONObject> jsonArray) {
-          if (address != null) {
+	
+	private void bufferInSockStream(SocketChannel sock, String str) {
+		byte[] bytes = null;
 		try {
-			for (JSONObject json : jsonArray) {
-				// only put the IP field in if it doesn't exist already 
-				if (!json.has(JSONNIOTransport.DEFAULT_IP_FIELD)) {
-					json.put(JSONNIOTransport.DEFAULT_IP_FIELD, address.getAddress().getHostAddress());
-				}
-				if (!json.has(JSONNIOTransport.DEFAULT_PORT_FIELD)) {
-					json.put(JSONNIOTransport.DEFAULT_PORT_FIELD, address.getPort());
-				}
-			}
-		} catch (JSONException e) {
-			log.severe("Unable to stamp sender address and port at receiver: " + e);
+			bytes = str.getBytes(JSONNIOTransport.NIO_CHARSET_ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			fatalExit(e);
 		}
-          } else {
-          log.severe("Address is null, unable to stamp sender address and port at receiver: ");
-          }
+		assert(!this.sockStreams.containsKey(sock));
+		ByteArrayOutputStream byteArray =  new ByteArrayOutputStream();
+		byteArray.write(bytes, 0, bytes.length);
+		this.sockStreams.put(sock, byteArray);
+	}
+	
+	private static InetSocketAddress getSenderSocketAddress(SocketChannel sock) {
+		InetSocketAddress address = null;
+		try {
+			address = ((InetSocketAddress) sock.getRemoteAddress());
+		} catch (IOException e) {
+			log.severe("Unable to get remote sender client address or port to stamp into received packet: "
+					+ e);
+		}
+		return address;
+	}
+
+	private static JSONObject stampAddressIntoJSONObject(InetSocketAddress address,
+			JSONObject json) {
+		// only put the IP field in if it doesn't exist already
+			try {
+				if (!json.has(JSONNIOTransport.DEFAULT_IP_FIELD)) 
+					json.put(JSONNIOTransport.DEFAULT_IP_FIELD, address
+						.getAddress().getHostAddress());
+				if (!json.has(JSONNIOTransport.DEFAULT_PORT_FIELD)) 
+					json.put(JSONNIOTransport.DEFAULT_PORT_FIELD,
+							address.getPort());
+				
+			} catch (JSONException e) {
+				log.severe("Encountered JSONException while stamping sender address and port at receiver: ");
+				e.printStackTrace();
+			}
+		return json;
 	}
 
 	// Pretty prints the JSON array, used only for debugging.
-	private String JSONArrayToString(ArrayList<JSONObject> jsonArray) {
+	private String JSONArrayToString(ArrayList<String> jsonArray) {
 		String s = "[";
-		for (JSONObject jsonData : jsonArray) {
+		for (String jsonData : jsonArray) {
 			s += " " + jsonData.toString() + " ";
 		}
 		return s + "]";
@@ -354,7 +411,7 @@ public class JSONMessageExtractor implements InterfaceDataProcessingWorker {
 		JSONMessageExtractor jmw =
 				new JSONMessageExtractor(new PacketDemultiplexerDefault());
 		String msg = "{\"msg\" : \"Hello  world\"}"; // JSON formatted
-		String hMsg = JSONMessageExtractor.prependHeader(msg);
+		String hMsg = msg + JSONMessageExtractor.getHeader(msg);
 		try {
 			SocketChannel sock = SocketChannel.open();
 

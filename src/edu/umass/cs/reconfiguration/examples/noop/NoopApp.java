@@ -123,7 +123,7 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		try {
 			request = new NoopAppRequest(new JSONObject(stringified));
 		} catch (JSONException je) {
-			Reconfigurator.log.info(myID + " unable to parse request "
+			Reconfigurator.getLogger().info(myID + " unable to parse request "
 					+ stringified);
 			throw new RequestParseException(je);
 		}

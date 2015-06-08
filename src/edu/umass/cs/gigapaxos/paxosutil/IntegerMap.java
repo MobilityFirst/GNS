@@ -26,7 +26,7 @@ public class IntegerMap<NodeIDType> {
 	/**
          * Maps NodeIDType to int and stores the mapping
          * @param node
-         * @return 
+         * @return Returns {@code int} corresponding to {@code node}.
          */
 	public int put(NodeIDType node) {
 		assert (node != null);

@@ -10,109 +10,177 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
-import org.json.JSONObject;
-
-import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 
 import java.util.logging.Level;
 
 /**
  * @author V. Arun
+ * @param <MessageType> Indicates the generic type of messages processed by this demultiplexer.
  */
-public abstract class AbstractPacketDemultiplexer implements InterfacePacketDemultiplexer {
+public abstract class AbstractPacketDemultiplexer<MessageType> implements
+		InterfacePacketDemultiplexer<MessageType> {
 
-	private static final boolean NON_BLOCKING_PROCESSING = false; // for testing only
-  /**
-   * ******************************** Start of new, untested parts **************************
-   */
-  private final ScheduledExecutorService executor
-          = Executors.newScheduledThreadPool(5);  // FIXME: Not sure on what basis to set pool size
-  private final HashMap<Integer, Boolean> demuxTypes
-          = new HashMap<Integer, Boolean>();
-  private final HashMap<Integer, InterfacePacketDemultiplexer> demuxMap
-          = new HashMap<Integer, InterfacePacketDemultiplexer>();
-  private static final Logger log = Logger.getLogger(AbstractPacketDemultiplexer.class.getName());
+	// FIXME: Unclear what a good default value is.
+	public static final int DEFAULT_THREAD_POOL_SIZE = 5;
+	private static int threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
+	
+	private final int myThreadPoolSize;
 
-  public void register(IntegerPacketType type) {
-    register(type, this);
-  }
+	/**
+	 * @param threadPoolSize
+	 *            The threadPoolSize parameter determines the level of
+	 *            parallelism in NIO packet processing. Setting it to 0 means no
+	 *            parallelism, i.e., each received packet will be fully
+	 *            processed by NIO before it does anything else. So if the
+	 *            {@link #handleMessage(Object)} implementation blocks, NIO may
+	 *            deadlock.
+	 * 
+	 *            Setting the threadPoolSize higher allows
+	 *            {@link #handleMessage(Object)} to include a limited number of
+	 *            blocking operations, but NIO can still deadlock if the number
+	 *            of pending {@link #handleMessage(Object)} invocations at a
+	 *            node exceeds the thread pool size in this class. Thus, it is
+	 *            best for {@link #handleMessage(Object)} methods to only
+	 *            perform operations that return quickly; if longer packet
+	 *            processing is needed, {@link #handleMessage(Object)} must
+	 *            accordingly spawn its own helper threads. It is a bad idea,
+	 *            for example, for {@link #handleMessage(Object)} to itself send
+	 *            a request over the network and wait until it gets back a
+	 *            response.
+	 */
+	public static synchronized void setThreadPoolSize(int threadPoolSize) {AbstractPacketDemultiplexer.threadPoolSize = threadPoolSize;}
+	public static synchronized int getThreadPoolSize() {return threadPoolSize;}
+	
+	private final ScheduledExecutorService executor;
+	private final HashMap<Integer, InterfacePacketDemultiplexer<MessageType>> demuxMap = new HashMap<Integer, InterfacePacketDemultiplexer<MessageType>>();
+	protected static final Logger log = NIOTransport.getLogger();
 
-  public void register(IntegerPacketType type, InterfacePacketDemultiplexer pd) {
-    log.finest("Registering type " + type.getInt() + " with " + pd);
-    this.demuxTypes.put(type.getInt(), true);
-    this.demuxMap.put(type.getInt(), pd);
-  }
+	abstract protected Integer getPacketType(MessageType message);
+	abstract protected MessageType getMessage(String message);
+	
+	/**
+	 * 
+	 * @param threadPoolSize
+	 *            Refer documentation for {@link #setThreadPoolSize(int)
+	 *            setThreadPoolsize(int)}.
+	 */
+	public AbstractPacketDemultiplexer(int threadPoolSize) {
+		this.executor = Executors.newScheduledThreadPool(threadPoolSize);
+		this.myThreadPoolSize = threadPoolSize;
+	}
 
-  public void register(Set<IntegerPacketType> types, InterfacePacketDemultiplexer pd) {
-    log.info("Registering types " + types + " for " + pd);
-    for (IntegerPacketType type : types) {
-      register(type, pd);
-    }
-  }
+	AbstractPacketDemultiplexer() {
+		this(getThreadPoolSize());
+	}
 
-  public void register(Set<IntegerPacketType> types) {
-    this.register(types, this);
-  }
+	// This method will be invoked by NIO
+	protected boolean handleMessageSuper(MessageType message)
+			throws JSONException {
+		Integer type = getPacketType(message);
+		if (type==null || !this.demuxMap.containsKey(type)) {
+			/*
+			 * It is natural for some demultiplexers to not handle some packet
+			 * types, so it is not a "bad" thing that requires a warning log.
+			 */
+			log.log(Level.FINE, "Ignoring unknown packet type: {0}", type);
+			return false;
+		}
+		// else
+		Tasker tasker = new Tasker(message, this.demuxMap.get(type));
+		if (this.myThreadPoolSize==0)
+			tasker.run(); // task better be lightining quick
+		else
+			// task should still be non-blocking
+			executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
+		/*
+		 * Note: executor.submit() consistently yields poorer performance than
+		 * scheduling at 0 as above even though they are equivalent. Probably
+		 * garbage collection or heap optimization issues.
+		 */
+		return true;
+	}
 
-  public void register(Object[] types, InterfacePacketDemultiplexer pd) {
-    log.info("Registering types " + (new HashSet<Object>(Arrays.asList(types))) + " for " + pd);
-    for (Object type : types) {
-      register((IntegerPacketType) type, pd);
-    }
-  }
+	/** 
+	 * Registers {@code type} with {@code this}.
+	 * @param type
+	 */
+	public void register(IntegerPacketType type) {
+		register(type, this);
+	}
 
-  // This method will be invoked by NIO
-  protected boolean handleJSONObjectSuper(JSONObject jsonObject) throws JSONException {
-	NIOInstrumenter.rcvdJSONPacket(jsonObject);
-    InterfacePacketDemultiplexer pd = this.demuxMap.get(JSONPacket.getPacketType(jsonObject));
-    Tasker tasker = new Tasker(jsonObject, pd != null ? pd : this);
-    boolean handled = this.demuxTypes.containsKey(JSONPacket.getPacketType(jsonObject));
-    if (handled) {
-    	if(NON_BLOCKING_PROCESSING) tasker.run(); // tasker better be really quick
-    	else executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);  
-    	/* Note: executor.submit() consistently yields poorer performance
-    	 * than scheduling at 0 as above even though they are equivalent.
-    	 * Probably garbage collection or heap optimization issues.
-    	 */
-    } else {
-    	/* FIXME: The log level here should not be warning if we allow demultiplexer
-    	 * chaining coz it is natural for some demultiplexers to not handle some
-    	 * packet types.
-    	 */
-      log.log(Level.FINE, "Ignoring unknown packet type: {0}", JSONPacket.getPacketType(jsonObject));
-    }
-    return handled;
-  }
+	/**
+	 * Registers {@code type} with {@code pd}.
+	 * @param type
+	 * @param pd
+	 */
+	public void register(IntegerPacketType type,
+			InterfacePacketDemultiplexer<MessageType> pd) {
+		if(pd==null) return;
+		log.finest("Registering type " + type.getInt() + " with " + pd);
+		this.demuxMap.put(type.getInt(), pd);
+	}
 
-  private class Tasker implements Runnable {
+	/**
+	 * Registers {@code types} with {@code pd};
+	 * @param types
+	 * @param pd
+	 */
+	public void register(Set<IntegerPacketType> types,
+			InterfacePacketDemultiplexer<MessageType> pd) {
+		log.info("Registering types " + types + " for " + pd);
+		for (IntegerPacketType type : types) 
+			register(type, pd);
+	}
 
-    private final JSONObject json;
-    private final InterfacePacketDemultiplexer pd;
+	/**
+	 * Registers {@code types} with {@code this}.
+	 * @param types
+	 */
+	public void register(Set<IntegerPacketType> types) {
+		this.register(types, this);
+	}
 
-    Tasker(JSONObject json, InterfacePacketDemultiplexer pd) {
-      this.json = json;
-      this.pd = pd;
-    }
+	/**
+	 * Registers {@code types} with {@code this}.
+	 * @param types
+	 * @param pd
+	 */
+	public void register(Object[] types,
+			InterfacePacketDemultiplexer<MessageType> pd) {
+		log.info("Registering types "
+				+ (new HashSet<Object>(Arrays.asList(types))) + " for " + pd);
+		for (Object type : types) 
+			register((IntegerPacketType) type, pd);
+	}
 
-    public void run() {
-      try {
-        pd.handleJSONObject(this.json);
-      } catch (Exception e) {
-        e.printStackTrace(); // unless printed task will die silently
-      } catch (Error e) {
-        e.printStackTrace();
-      }
-    }
-  }
+	/**
+	 * Any created instance of AbstractPacketDemultiplexer or its inheritors
+	 * must be cleanly closed by invoking this stop method. 
+	 */
+	public void stop() {
+		this.executor.shutdown();
+	}
 
-  public void stop() {
-    this.executor.shutdown();
-  }
+	// Helper task for handleMessageSuper
+	protected class Tasker implements Runnable {
 
-  /**
-   * ******************************** End of new, untested parts **************************
-   */
-  public void incrPktsRcvd() {
-    NIOInstrumenter.incrPktsRcvd();
-  } // Used for testing and debugging
+		private final MessageType json;
+		private final InterfacePacketDemultiplexer<MessageType> pd;
+
+		Tasker(MessageType json, InterfacePacketDemultiplexer<MessageType> pd) {
+			this.json = json;
+			this.pd = pd;
+		}
+
+		public void run() {
+			try {
+				pd.handleMessage(this.json);
+			} catch (Exception e) {
+				e.printStackTrace(); // unless printed task will die silently
+			} catch (Error e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 }

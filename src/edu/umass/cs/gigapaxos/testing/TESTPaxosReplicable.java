@@ -15,24 +15,23 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosManager;
-import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun
  */
-public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
+public class TESTPaxosReplicable implements InterfaceReplicable {
 	private static final boolean DEBUG = PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
-	private InterfaceJSONNIOTransport<Integer> niot = null;
+	private InterfaceNIOTransport<Integer,JSONObject> niot = null;
 
 	private HashMap<String, PaxosState> allState = new HashMap<String, PaxosState>();
 
@@ -43,7 +42,7 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 		private HashMap<Integer, String> committed = new HashMap<Integer, String>();
 	}
 
-	private static Logger log = PaxosManager.getLogger();// Logger.getLogger(TESTPaxosReplicable.class.getName());
+	private static Logger log = PaxosManager.getLogger();
 
 	public TESTPaxosReplicable(JSONNIOTransport<Integer> nio) {
 		this();
@@ -67,19 +66,6 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public synchronized boolean handleDecision(String paxosID, String req,
-			boolean doNotReplyToClient) {
-		try {
-			JSONObject reqJson = new JSONObject(req);
-			ProposalPacket requestPacket = new ProposalPacket(reqJson);
-			return this.handleDecision(requestPacket, doNotReplyToClient);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return false;
 	}
 
 	/*
@@ -224,8 +210,8 @@ public class TESTPaxosReplicable implements Replicable, InterfaceReplicable {
 		this.allState.clear();
 	}
 
-	public InterfaceJSONNIOTransport<Integer> setNIOTransport(
-			InterfaceJSONNIOTransport<Integer> nio) {
+	private InterfaceNIOTransport<Integer,JSONObject> setNIOTransport(
+			InterfaceNIOTransport<Integer,JSONObject> nio) {
 		niot = nio;
 		return nio;
 	}

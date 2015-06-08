@@ -1,4 +1,4 @@
-package edu.umass.cs.reconfiguration.json;
+package edu.umass.cs.reconfiguration.reconfigurationprotocoltasks;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,16 +16,17 @@ import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.Reconfigurator;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.AckStartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.EpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.RequestEpochFinalState;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.StartEpoch;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket.PacketType;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.EpochFinalState;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestEpochFinalState;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType> 
  */
 public class WaitEpochFinalState<NodeIDType>
 		extends

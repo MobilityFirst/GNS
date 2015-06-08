@@ -14,5 +14,5 @@ public interface Reportable {
 	public Set<Integer> getRecipients(); // default, all stats
 	public JSONObject getStats(String statID); // specific stat reporting
 	public Set<Integer> getRecipients(String statID); // specific stat's destinations
-	public JSONMessenger getJSONMessenger(); // need to supply this as we want to reuse NIO
+	public JSONMessenger<Integer> getJSONMessenger(); // need to supply this as we want to reuse NIO
 }

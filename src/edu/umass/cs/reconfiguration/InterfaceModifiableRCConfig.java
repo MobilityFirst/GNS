@@ -5,7 +5,9 @@ import java.net.InetSocketAddress;
 /* This class exists primarily to introduce methods needed but missing
  * in InterfaceReconfigurableNodeConfig in a backwards compatible 
  * manner. 
+ * 
  */
+
 public interface InterfaceModifiableRCConfig<NodeIDType> extends
 		InterfaceReconfigurableNodeConfig<NodeIDType> {
 

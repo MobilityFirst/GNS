@@ -16,8 +16,8 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.AbstractPacketDemultiplexer;
-import edu.umass.cs.reconfiguration.json.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.utils.MyLogger;
 
 import java.io.IOException;
@@ -31,7 +31,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiplexer {
+public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
   private EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
@@ -59,7 +59,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractPacketDemultiple
   }
 
   @Override
-  public boolean handleJSONObject(JSONObject json) {
+  public boolean handleMessage(JSONObject json) {
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], 
