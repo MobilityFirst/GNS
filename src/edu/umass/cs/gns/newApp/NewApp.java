@@ -81,15 +81,15 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceJSONNIOTransport<String> nioServer,
           MongoRecords<String> mongoRecords) {
     this.nodeID = id;
-    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<String>(nodeConfig);
-    this.pingManager = new PingManager<String>(nodeID, this.nodeConfig);
+    this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
+    this.pingManager = new PingManager<>(nodeID, this.nodeConfig);
     this.pingManager.startPinging();
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.nioServer = nioServer;
     try {
       if (useLocalCCP) {
-        this.localCCP = new ClientCommandProcessor<String>(
+        this.localCCP = new ClientCommandProcessor<>(
                 new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
                 (GNSNodeConfig) nodeConfig,
                 AppReconfigurableNodeOptions.debuggingEnabled,
@@ -135,12 +135,11 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
-            AppLookup.executeLookupLocal(dnsPacket, this, false, doNotReplyToClient);
+            AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient);
           }
           break;
         case UPDATE:
-          AppUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this,
-                  false, doNotReplyToClient);
+          AppUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this, doNotReplyToClient);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);

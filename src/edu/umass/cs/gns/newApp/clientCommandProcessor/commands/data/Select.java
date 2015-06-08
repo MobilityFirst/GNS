@@ -11,7 +11,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResp
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldAccess;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import org.json.JSONException;
 import org.json.JSONObject;

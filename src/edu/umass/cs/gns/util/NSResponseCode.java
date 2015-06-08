@@ -8,7 +8,7 @@
 package edu.umass.cs.gns.util;
 
 
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import java.io.Serializable;
 
 /**
@@ -28,20 +28,20 @@ public enum NSResponseCode implements Serializable{
 
   NO_ERROR(0, "", false),
   // This should be used sparingly, if at all because it doesn't convey enough information.
-  ERROR(1, Defs.GENERICERROR, true),
+  ERROR(1, GnsProtocolDefs.GENERICERROR, true),
   // Field in a record was not found.
-  FIELD_NOT_FOUND_ERROR(2, Defs.FIELDNOTFOUND, true),
-  FAIL_ACTIVE_NAMESERVER(3, Defs.FAIL_ACTIVE_NAMESERVER, true),
-  ERROR_INVALID_ACTIVE_NAMESERVER(4, Defs.INVALID_ACTIVE_NAMESERVER, true),
+  FIELD_NOT_FOUND_ERROR(2, GnsProtocolDefs.FIELDNOTFOUND, true),
+  FAIL_ACTIVE_NAMESERVER(3, GnsProtocolDefs.FAIL_ACTIVE_NAMESERVER, true),
+  ERROR_INVALID_ACTIVE_NAMESERVER(4, GnsProtocolDefs.INVALID_ACTIVE_NAMESERVER, true),
   // These next four following are access or signature errors
-  SIGNATURE_ERROR(5, Defs.BADSIGNATURE, true),
-  ACCESS_ERROR(6, Defs.ACCESSDENIED, true),
-  BAD_GUID_ERROR(7, Defs.BADGUID, true),
-  BAD_ACCESSOR_ERROR(8, Defs.BADACCESSORGUID, true),
+  SIGNATURE_ERROR(5, GnsProtocolDefs.BADSIGNATURE, true),
+  ACCESS_ERROR(6, GnsProtocolDefs.ACCESSDENIED, true),
+  BAD_GUID_ERROR(7, GnsProtocolDefs.BADGUID, true),
+  BAD_ACCESSOR_ERROR(8, GnsProtocolDefs.BADACCESSORGUID, true),
   // An error during account guid verification.
-  VERIFICATION_ERROR(9, Defs.VERIFICATIONERROR, true),
-  UPDATE_TIMEOUT(10, Defs.UPDATETIMEOUT, true),
-  DUPLICATE_ERROR(11, Defs.DUPLICATENAME, true)
+  VERIFICATION_ERROR(9, GnsProtocolDefs.VERIFICATIONERROR, true),
+  UPDATE_TIMEOUT(10, GnsProtocolDefs.UPDATETIMEOUT, true),
+  DUPLICATE_ERROR(11, GnsProtocolDefs.DUPLICATENAME, true)
   ;
   
   //

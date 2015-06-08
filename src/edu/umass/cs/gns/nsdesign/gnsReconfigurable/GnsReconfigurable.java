@@ -3,15 +3,7 @@ package edu.umass.cs.gns.nsdesign.gnsReconfigurable;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.NRState;
-import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
-import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.gns.newApp.packet.DNSPacket;
-import edu.umass.cs.gns.newApp.packet.UpdatePacket;
-import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
-import edu.umass.cs.gns.newApp.Select;
-import edu.umass.cs.gns.newApp.AppUpdate;
-import edu.umass.cs.gns.newApp.AppLookup;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
@@ -22,8 +14,6 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.newApp.clientSupport.LNSQueryHandler;
-import edu.umass.cs.gns.newApp.clientSupport.LNSUpdateHandler;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
@@ -42,11 +32,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Set;
 
@@ -170,48 +156,51 @@ public class GnsReconfigurable<NodeIDType> implements GnsReconfigurableInterface
         GNS.getLogger().info("Handling " + packetType.name() + " packet: " + json.toString());
       }
       switch (packetType) {
-        case DNS:
-          // the only dns response we should see are coming in response to LNSQueryHandler requests
-          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, nodeConfig);
-          if (!dnsPacket.isQuery()) {
-            LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
-          } else {
-            // otherwise it's a query
-            AppLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, recovery);
-          }
-          break;
-        case UPDATE:
-          AppUpdate.executeUpdateLocal(new UpdatePacket(json, nodeConfig), this, noCoordinationState, recovery);
-          break;
-        case SELECT_REQUEST:
-          Select.handleSelectRequest(json, this);
-          break;
-        case SELECT_RESPONSE:
-          Select.handleSelectResponse(json, this);
-          break;
-        /**
-         * Packets sent from replica controller *
-         */
-        case ACTIVE_ADD: // sent when new name is added to GNS
-          AddRecordPacket<NodeIDType> addRecordPacket = null;
-          addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
-          Add.handleActiveAdd(addRecordPacket, this);
-          break;
-        case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
-          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery);
-          break;
-        // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
-        case UPDATE_CONFIRM:
-        case ADD_CONFIRM:
-        case REMOVE_CONFIRM:
-          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, nodeConfig), this);
-          break;
+//        case DNS:
+//          // the only dns response we should see are coming in response to LNSQueryHandler requests
+//          DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, nodeConfig);
+//          if (!dnsPacket.isQuery()) {
+//            LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
+//          } else {
+//            // otherwise it's a query
+//            AppLookup.executeLookupLocal(dnsPacket, this, noCoordinationState, recovery);
+//          }
+//          break;
+//        case UPDATE:
+//          AppUpdate.executeUpdateLocal(new UpdatePacket(json, nodeConfig), this, noCoordinationState, recovery);
+//          break;
+//        case SELECT_REQUEST:
+//          Select.handleSelectRequest(json, this);
+//          break;
+//        case SELECT_RESPONSE:
+//          Select.handleSelectResponse(json, this);
+//          break;
+//        /**
+//         * Packets sent from replica controller *
+//         */
+//        case ACTIVE_ADD: // sent when new name is added to GNS
+//          AddRecordPacket<NodeIDType> addRecordPacket = null;
+//          addRecordPacket = new AddRecordPacket<NodeIDType>(json, nodeConfig);
+//          Add.handleActiveAdd(addRecordPacket, this);
+//          break;
+//        case ACTIVE_REMOVE: // sent when a name is to be removed from GNS
+//          Remove.executeActiveRemove(new OldActiveSetStopPacket<NodeIDType>(json, nodeConfig), this, noCoordinationState, recovery);
+//          break;
+//        // NEW CODE TO HANDLE CONFIRMATIONS COMING BACK FROM AN LNS
+//        case UPDATE_CONFIRM:
+//        case ADD_CONFIRM:
+//        case REMOVE_CONFIRM:
+//          LNSUpdateHandler.handleConfirmUpdatePacket(new ConfirmUpdatePacket<NodeIDType>(json, nodeConfig), this);
+//          break;
         default:
           GNS.getLogger().severe(" Packet type not found: " + json);
           return false;
       }
-      executed = true;
-    } catch (JSONException | NoSuchAlgorithmException | SignatureException | InvalidKeySpecException | InvalidKeyException | IOException | FailedDBOperationException e) {
+      //executed = true;
+    } catch (JSONException 
+            //| NoSuchAlgorithmException |
+            //SignatureException | InvalidKeySpecException | InvalidKeyException | IOException | FailedDBOperationException 
+            e) {
       GNS.getLogger().severe("Problem handling packet: " + e);
       e.printStackTrace();
     }

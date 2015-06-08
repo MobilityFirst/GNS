@@ -10,7 +10,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
@@ -80,7 +80,7 @@ public class AddAlias extends GnsCommand {
 //        }
 //        if (!accountInfo.isVerified()) {
 //          return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
-//        } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
+//        } else if (accountInfo.getAliases().size() > GnsProtocolDefs.MAXALIASES) {
 //          return new CommandResponse(BADRESPONSE + " " + TOMANYALIASES);
 //        } else {
 //          return AccountAccess.addAlias(accountInfo, name);

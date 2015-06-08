@@ -10,7 +10,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commands.data;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.ResultValue;

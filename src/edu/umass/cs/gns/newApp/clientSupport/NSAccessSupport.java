@@ -22,7 +22,7 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;

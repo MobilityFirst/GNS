@@ -2,7 +2,6 @@ package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.Packet;
-import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 

@@ -8,7 +8,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+//import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -208,47 +208,47 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
     mongoRecords.reset(collectionName);
   }
 
-  @Override
-  @Deprecated
-  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException {
-    try {
-      JSONObject json = mongoRecords.lookupEntireRecord(collectionName, name);
-      if (json == null) {
-        return null;
-      } else {
-        return new ReplicaControllerRecord(this, json);
-      }
-    } catch (JSONException e) {
-      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
-    }
-    return null;
-  }
-
-  @Override
-  @Deprecated
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException {
-    try {
-      mongoRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
-    } catch (JSONException e) {
-      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
-      return;
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found: " + e.getMessage());
-
-    }
-  }
-
-  @Override
-  @Deprecated
-  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException {
-    try {
-      mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
-    } catch (JSONException e) {
-      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found: " + e.getMessage());
-    }
-  }
+//  @Override
+//  @Deprecated
+//  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException {
+//    try {
+//      JSONObject json = mongoRecords.lookupEntireRecord(collectionName, name);
+//      if (json == null) {
+//        return null;
+//      } else {
+//        return new ReplicaControllerRecord(this, json);
+//      }
+//    } catch (JSONException e) {
+//      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
+//    }
+//    return null;
+//  }
+//
+//  @Override
+//  @Deprecated
+//  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException {
+//    try {
+//      mongoRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+//    } catch (JSONException e) {
+//      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
+//      return;
+//    } catch (FieldNotFoundException e) {
+//      GNS.getLogger().severe("Field not found: " + e.getMessage());
+//
+//    }
+//  }
+//
+//  @Override
+//  @Deprecated
+//  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException {
+//    try {
+//      mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+//    } catch (JSONException e) {
+//      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
+//    } catch (FieldNotFoundException e) {
+//      GNS.getLogger().severe("Field not found: " + e.getMessage());
+//    }
+//  }
   
   @Override
   public String toString() {

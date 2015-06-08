@@ -129,7 +129,7 @@ public class PerformanceTests {
 
   private static int getComparisonPingValue(String node, ClientRequestHandlerInterface handler) {
     String result = handler.getAdmintercessor().sendPingValue(null, node, handler);
-    if (result.startsWith(Defs.BADRESPONSE)) {
+    if (result.startsWith(GnsProtocolDefs.BADRESPONSE)) {
       return 999;
     } else {
       return Integer.parseInt(result);

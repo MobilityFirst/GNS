@@ -7,7 +7,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+//import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -177,45 +177,45 @@ public class CassandraRecordMap extends BasicRecordMap {
     this.cassandraRecords.reset(collectionName);
   }
 
-  @Override
-  public ReplicaControllerRecord getNameRecordPrimary(String name) {
-    try {
-      JSONObject json = this.cassandraRecords.lookupEntireRecord(collectionName, name);
-      if (json == null) {
-        return null;
-      } else {
-        return new ReplicaControllerRecord(this, json);
-      }
-    } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
-    return null;
-  }
-
-  @Override
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
-    try {
-      this.cassandraRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
-    } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-      return;
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found " + e.getMessage());
-      e.printStackTrace();
-    }
-  }
-
-  @Override
-  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
-    try {
-      this.cassandraRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
-    } catch (JSONException e) {
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    } catch (FieldNotFoundException e) {
-      GNS.getLogger().severe("Field not found " + e.getMessage());
-      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-    }
-  }
+//  @Override
+//  public ReplicaControllerRecord getNameRecordPrimary(String name) {
+//    try {
+//      JSONObject json = this.cassandraRecords.lookupEntireRecord(collectionName, name);
+//      if (json == null) {
+//        return null;
+//      } else {
+//        return new ReplicaControllerRecord(this, json);
+//      }
+//    } catch (JSONException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
+//    return null;
+//  }
+//
+//  @Override
+//  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+//    try {
+//      this.cassandraRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+//    } catch (JSONException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//      return;
+//    } catch (FieldNotFoundException e) {
+//      GNS.getLogger().severe("Field not found " + e.getMessage());
+//      e.printStackTrace();
+//    }
+//  }
+//
+//  @Override
+//  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+//    try {
+//      this.cassandraRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
+//    } catch (JSONException e) {
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    } catch (FieldNotFoundException e) {
+//      GNS.getLogger().severe("Field not found " + e.getMessage());
+//      e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+//    }
+//  }
 //  // test code
 //  public static void main(String[] args) throws Exception {
 //    NameServer.nodeID = 4;

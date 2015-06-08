@@ -22,9 +22,9 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface;
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+//import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+//import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkInterface;
+//import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 import edu.umass.cs.gns.util.UniqueIDHashMap;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
@@ -90,7 +90,7 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
   /**
    * Algorithm for replicating name records.
    */
-  private ReplicationFrameworkInterface<NodeIDType> replicationFrameworkInterface;
+  //private ReplicationFrameworkInterface<NodeIDType> replicationFrameworkInterface;
 
   /**
    * Creates a ReplicaController.
@@ -114,14 +114,14 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
             //MongoRecords.DBREPLICACONTROLLER
                     );
 
-    this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
-
-    if (replicationFrameworkInterface != null) {
-      int initialDelay = new Random(1000).nextInt(Config.analysisIntervalSec);
-      GNS.getLogger().info("Starting task to compute new actives ... initial delay: " + initialDelay);
-      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask<NodeIDType>(this), initialDelay,
-              Config.analysisIntervalSec, TimeUnit.SECONDS);
-    }
+//    this.replicationFrameworkInterface = ReplicationFrameworkType.instantiateReplicationFramework(Config.replicationFrameworkType, gnsNodeConfig);
+//
+//    if (replicationFrameworkInterface != null) {
+//      int initialDelay = new Random(1000).nextInt(Config.analysisIntervalSec);
+//      GNS.getLogger().info("Starting task to compute new actives ... initial delay: " + initialDelay);
+////      scheduledThreadPoolExecutor.scheduleAtFixedRate(new ComputeNewActivesTask<NodeIDType>(this), initialDelay,
+////              Config.analysisIntervalSec, TimeUnit.SECONDS);
+//    }
   }
 
   /**
@@ -163,9 +163,9 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
     return scheduledThreadPoolExecutor;
   }
 
-  public ReplicationFrameworkInterface<NodeIDType> getReplicationFrameworkInterface() {
-    return replicationFrameworkInterface;
-  }
+//  public ReplicationFrameworkInterface<NodeIDType> getReplicationFrameworkInterface() {
+//    return replicationFrameworkInterface;
+//  }
 
   /**
    * ****END: getter methods for ReplicaController elements ***
@@ -262,15 +262,15 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
         if (x.length() > 0) {
           recordCount += 1;
           JSONObject json = new JSONObject(x);
-          ReplicaControllerRecord rcr = new ReplicaControllerRecord(replicaControllerDB, json);
-          if (Config.debuggingEnabled) {
-            GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
-          }
-          try {
-            ReplicaControllerRecord.addNameRecordPrimary(replicaControllerDB, rcr);
-          } catch (RecordExistsException e) {
-            ReplicaControllerRecord.updateNameRecordPrimary(replicaControllerDB, rcr);
-          }
+          //ReplicaControllerRecord rcr = new ReplicaControllerRecord(replicaControllerDB, json);
+//          if (Config.debuggingEnabled) {
+//            GNS.getLogger().fine("Inserting rcr into DB ....: " + rcr + "\tjson = " + json);
+//          }
+//          try {
+//            ReplicaControllerRecord.addNameRecordPrimary(replicaControllerDB, rcr);
+//          } catch (RecordExistsException e) {
+//            ReplicaControllerRecord.updateNameRecordPrimary(replicaControllerDB, rcr);
+//          }
           startIndex = endIndex;
         } else {
           startIndex += 1;
@@ -278,9 +278,9 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
       }
     } catch (JSONException e) {
       e.printStackTrace();
-    } catch (FailedDBOperationException e) {
-      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
-      e.printStackTrace();
+//    } catch (FailedDBOperationException e) {
+//      GNS.getLogger().severe("Failed update exception: " + e.getMessage());
+//      e.printStackTrace();
     }
     GNS.getLogger().info("Number of rc records updated in DB: " + recordCount);
     return true;
@@ -300,57 +300,60 @@ public class ReplicaController<NodeIDType> implements Replicable, InterfaceRepli
       switch (packetType) {
 
         // add name to GNS
-        case ADD_RECORD:
-          Add.executeAddRecord(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
-          break;
-        case ACTIVE_ADD_CONFIRM:
-          Add.executeAddActiveConfirm(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
+//        case ADD_RECORD:
+//          Add.executeAddRecord(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
+//          break;
+//        case ACTIVE_ADD_CONFIRM:
+//          Add.executeAddActiveConfirm(new AddRecordPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
 
         // lookupMultipleSystemFields actives for name
-        case REQUEST_ACTIVES:
-          LookupActives.executeLookupActives(new RequestActivesPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
-          break;
+//        case REQUEST_ACTIVES:
+//          LookupActives.executeLookupActives(new RequestActivesPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
+//          break;
 
         // remove
-        case REMOVE_RECORD:
-          Remove.executeMarkRecordForRemoval(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
-          break;
-        case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
-          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
-          break;
-        case RC_REMOVE:
-          Remove.executeRemoveRecord(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
-          break;
+//        case REMOVE_RECORD:
+//          Remove.executeMarkRecordForRemoval(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
+//          break;
+//        case ACTIVE_REMOVE_CONFIRM:  // confirmation received from active replica that name is removed
+//          Remove.handleActiveRemoveRecord(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
+//          break;
+//        case RC_REMOVE:
+//          Remove.executeRemoveRecord(new RemoveRecordPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
+//          break;
 
-        // group change
-        case NEW_ACTIVE_PROPOSE:
-          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
-          break;
-        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
-          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
-          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case GROUP_CHANGE_COMPLETE:
-          GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, doNotReplyToClient);
-          break;
-        case NAMESERVER_SELECTION:
-          NameStats.handleLNSVotesPacket(json, this);
-          break;
-        //case NAME_RECORD_STATS_RESPONSE:
-        // todo this packets related to stats reporting are not implemented yet.
-        //throw new UnsupportedOperationException();
-        case NAME_SERVER_LOAD:
-          updateNSLoad(json);
+//        // group change
+//        case NEW_ACTIVE_PROPOSE:
+//          GroupChange.executeNewActivesProposed(new NewActiveProposalPacket<NodeIDType>(json, gnsNodeConfig), this, doNotReplyToClient);
+//          break;
+//        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY: // confirmation from active replica that old actives have stopped
+//          GroupChange.handleOldActiveStop(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:  // confirmation from active replica that new actives have started
+//          GroupChange.handleNewActiveStartConfirmMessage(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case GROUP_CHANGE_COMPLETE:
+//          GroupChange.executeActiveNameServersRunning(new GroupChangeCompletePacket(json), this, doNotReplyToClient);
+//          break;
+//        case NAMESERVER_SELECTION:
+//          NameStats.handleLNSVotesPacket(json, this);
+//          break;
+//        //case NAME_RECORD_STATS_RESPONSE:
+//        // todo this packets related to stats reporting are not implemented yet.
+//        //throw new UnsupportedOperationException();
+//        case NAME_SERVER_LOAD:
+//          updateNSLoad(json);
         default:
           GNS.getLogger().severe("Unexpected packet received " + packetType);
           return false;
       }
-      executed = true;
+      //executed = true;
       // todo after enabling group change, ensure that messages are not send on GROUP_CHANGE_COMPLETE and NEW_ACTIVE_PROPOSE.
-    } catch (JSONException | IOException | FailedDBOperationException e) {
+    } catch (JSONException 
+            //| IOException | 
+            //FailedDBOperationException 
+            e) {
       GNS.getLogger().severe(" Hello ... exception " + value);
       e.printStackTrace();
       // all database operations throw this exception, therefore we keep throwing this exception upwards and catch this

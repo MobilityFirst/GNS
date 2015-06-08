@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
@@ -58,13 +58,14 @@ public class AppLookup {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void executeLookupLocal(DNSPacket dnsPacket, GnsApplicationInterface gnsApp,
-          boolean noCoordinatorState, boolean doNotReplyToClient)
+          boolean doNotReplyToClient)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Node " + gnsApp.getNodeID().toString() + "; DNS Query Packet: " + dnsPacket.toString());
     }
+    // FIX THIS!
     // META COMMENT ABOUT THE COMMENT BELOW: 
     // Originally the responder field was used to communicate back to the client about which node responded to a query.
     // Now it appears someone is using it for another purpose, undocumented. This seems like a bad idea.
@@ -78,88 +79,77 @@ public class AppLookup {
       return;
     }
 
-    if (noCoordinatorState) {
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("noCoordinatorState! returning error... DNS Query Packet: " + dnsPacket.toString());
+      // NOW WE DO THE ACTUAL LOOKUP
+    // But first we do signature and ACL checks
+    String guid = dnsPacket.getGuid();
+    String field = dnsPacket.getKey();
+    List<String> fields = dnsPacket.getKeys();
+    String reader = dnsPacket.getAccessor();
+    String signature = dnsPacket.getSignature();
+    String message = dnsPacket.getMessage();
+    // Check the signature and access
+    NSResponseCode errorCode = NSResponseCode.NO_ERROR;
+
+    if (reader != null) { // reader will be null for internal system reads
+      if (field != null) {// single field check
+        errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message,
+                MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress());
+      } else { //multi field check - return an error if any field doesn't pass
+        for (String key : fields) {
+          NSResponseCode code;
+          if ((code = NSAuthentication.signatureAndACLCheck(guid, key, reader, signature,
+                  message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress())).isAnError()) {
+            errorCode = code;
+          }
+        }
       }
-      dnsPacket.getHeader().setResponseCode(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
+    }
+
+    DelayProfiler.update("totalLookupAuth", receiptTime);
+    // return an error packet if one of the checks doesn't pass
+    if (errorCode.isAnError()) {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+      dnsPacket.getHeader().setResponseCode(errorCode);
+      dnsPacket.setResponder(gnsApp.getNodeID());
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet "
+                + dnsPacket.toJSONObjectForErrorResponse());
+      }
+      if (!doNotReplyToClient) {
+        gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
+      }
+    } else {
+        // All signature and ACL checks passed see if we can find the field to return;
+
+      //Otherwise we do a standard lookup
+      NameRecord nameRecord = lookupNameRecordLocally(dnsPacket, guid, field, fields, gnsApp.getDB());
+      try {
+          // But before we continue handle the group guid indirection case, but only
+        // if the name record doesn't contain the field we are looking for
+        // and only for single field lookups.
+        if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null && !GnsProtocolDefs.ALLFIELDS.equals(field)
+                && nameRecord != null && !nameRecord.containsKey(field) && !doNotReplyToClient) {
+          if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
+            // We got the values and sent them out above so we're done here.
+            return;
+          }
+        }
+      } catch (FieldNotFoundException e) {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
+        }
+      }
+
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("Name record read is: " + nameRecord);
+      }
+        // Now we either have a name record with stuff it in or a null one
+      // Time to send something back to the client
+      dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
       if (!doNotReplyToClient) {
         gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       }
-    } else {
-      // NOW WE DO THE ACTUAL LOOKUP
-      // But first we do signature and ACL checks
-      String guid = dnsPacket.getGuid();
-      String field = dnsPacket.getKey();
-      List<String> fields = dnsPacket.getKeys();
-      String reader = dnsPacket.getAccessor();
-      String signature = dnsPacket.getSignature();
-      String message = dnsPacket.getMessage();
-      // Check the signature and access
-      NSResponseCode errorCode = NSResponseCode.NO_ERROR;
-
-      if (reader != null) { // reader will be null for internal system reads
-        if (field != null) {// single field check
-          errorCode = NSAuthentication.signatureAndACLCheck(guid, field, reader, signature, message,
-                  MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress());
-        } else { //multi field check - return an error if any field doesn't pass
-          for (String key : fields) {
-            NSResponseCode code;
-            if ((code = NSAuthentication.signatureAndACLCheck(guid, key, reader, signature,
-                    message, MetaDataTypeName.READ_WHITELIST, gnsApp, dnsPacket.getCCPAddress())).isAnError()) {
-              errorCode = code;
-            }
-          }
-        }
-      }
-      
-      DelayProfiler.update("totalLookupAuth", receiptTime);
-      // return an error packet if one of the checks doesn't pass
-      if (errorCode.isAnError()) {
-        dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
-        dnsPacket.getHeader().setResponseCode(errorCode);
-        dnsPacket.setResponder(gnsApp.getNodeID());
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().fine("Sending to " + dnsPacket.getCCPAddress() + " this error packet " 
-                  + dnsPacket.toJSONObjectForErrorResponse());
-        }
-        if (!doNotReplyToClient) {
-          gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
-        }
-      } else {
-        // All signature and ACL checks passed see if we can find the field to return;
-
-        //Otherwise we do a standard lookup
-        NameRecord nameRecord = lookupNameRecordLocally(dnsPacket, guid, field, fields, gnsApp.getDB());
-        try {
-          // But before we continue handle the group guid indirection case, but only
-          // if the name record doesn't contain the field we are looking for
-          // and only for single field lookups.
-          if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null && !Defs.ALLFIELDS.equals(field)
-                  && nameRecord != null && !nameRecord.containsKey(field) && !doNotReplyToClient) {
-            if (handlePossibleGroupGuidIndirectionLookup(dnsPacket, guid, field, nameRecord, gnsApp)) {
-              // We got the values and sent them out above so we're done here.
-              return;
-            }
-          }
-        } catch (FieldNotFoundException e) {
-          if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
-          }
-        }
-
-        if (AppReconfigurableNodeOptions.debuggingEnabled) {
-          GNS.getLogger().info("Name record read is: " + nameRecord);
-        }
-        // Now we either have a name record with stuff it in or a null one
-        // Time to send something back to the client
-        dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
-        if (!doNotReplyToClient) {
-          gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
-        }
-        DelayProfiler.update("totalLookup", receiptTime);
-      }
+      DelayProfiler.update("totalLookup", receiptTime);
     }
   }
 
@@ -214,7 +204,7 @@ public class AppLookup {
     // Try to look up the value in the database
     try {
       // Check for the case where we're returning all the fields the entire record.
-      if (Defs.ALLFIELDS.equals(field)) {
+      if (GnsProtocolDefs.ALLFIELDS.equals(field)) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().fine("Field=" + field + " Format=" + dnsPacket.getReturnFormat());
         }
@@ -282,7 +272,7 @@ public class AppLookup {
               }
             }
             // or we're supposed to return all the keys so return the entire record
-          } else if (dnsPacket.getKeys() != null || Defs.ALLFIELDS.equals(key)) {
+          } else if (dnsPacket.getKeys() != null || GnsProtocolDefs.ALLFIELDS.equals(key)) {
             dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);

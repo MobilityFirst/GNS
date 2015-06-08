@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.main;
 
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+//import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 
 import edu.umass.cs.gns.util.Logging;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class GNS {
    */
   public static final int DEFAULT_NUM_PRIMARY_REPLICAS = 3;
   public static int numPrimaryReplicas = DEFAULT_NUM_PRIMARY_REPLICAS;
-  public static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
+  //public static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
   /**
    * Default query timeout in ms. How long we wait before retransmitting a query.
    */

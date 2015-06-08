@@ -21,7 +21,7 @@ import java.text.ParseException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.BADRESPONSE;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.util.Util;
@@ -289,7 +289,7 @@ public class Admintercessor<NodeIDType> {
   public CommandResponse sendDump(ClientRequestHandlerInterface<NodeIDType> handler) {
     int id;
     if ((id = sendDumpOutputHelper(null, handler)) == -1) {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.QUERYPROCESSINGERROR + " " + "Error sending dump command to LNS");
     }
     waitForDumpResponse(id);
     Map<NodeIDType, TreeSet<NameRecord>> result = dumpResult.get(id);
@@ -297,7 +297,7 @@ public class Admintercessor<NodeIDType> {
     if (result != null) {
       return new CommandResponse(formatDumpRecords(result, handler));
     } else {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + "No response to dump command!");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.QUERYPROCESSINGERROR + " " + "No response to dump command!");
     }
   }
 

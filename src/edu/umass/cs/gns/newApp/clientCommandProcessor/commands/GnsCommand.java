@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commands;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.httpserver.Defs.*;
 import java.security.InvalidKeyException;

@@ -36,7 +36,7 @@ public class AppUpdate {
    * @param updatePacket
    * @param replica
    * @param noCoordinationState
-   * @param recovery
+   * @param doNotReplyToClient
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    * @throws InvalidKeyException
@@ -46,20 +46,11 @@ public class AppUpdate {
    * @throws FailedDBOperationException
    */
   public static void executeUpdateLocal(UpdatePacket<String> updatePacket, GnsApplicationInterface replica,
-          boolean noCoordinationState, boolean recovery)
+          boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("Processing UPDATE with " + " noCoordinationState= " + noCoordinationState + ""
-              + " recovery= " + recovery + " packet: " + updatePacket);
+      GNS.getLogger().info("Processing UPDATE with " + " recovery= " + doNotReplyToClient + " packet: " + updatePacket);
 
-    }
-
-    if (noCoordinationState) {
-      ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER);
-      if (!recovery) {
-        replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
-      }
-      return;
     }
 
     // First we do signature and ACL checks
@@ -77,7 +68,7 @@ public class AppUpdate {
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
-      if (!recovery) {
+      if (!doNotReplyToClient) {
         replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
       }
@@ -99,7 +90,7 @@ public class AppUpdate {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid + " Packet = " + updatePacket.toString());
         e.printStackTrace();
         ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
-        if (!recovery) {
+        if (!doNotReplyToClient) {
           replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
         }
@@ -139,7 +130,7 @@ public class AppUpdate {
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket);
           }
-          if (!recovery) {
+          if (!doNotReplyToClient) {
             replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failPacket.toJSONObject());
           }
         }
@@ -159,7 +150,7 @@ public class AppUpdate {
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
 
-          if (!recovery) {
+          if (!doNotReplyToClient) {
             replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS Sent confirmation to CCP. Sent packet: " + confirmPacket.toJSONObject());

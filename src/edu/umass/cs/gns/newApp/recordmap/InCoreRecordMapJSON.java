@@ -6,7 +6,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+//import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import edu.umass.cs.gns.util.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -175,20 +175,20 @@ public class InCoreRecordMapJSON extends BasicRecordMap {
     addNameRecord(recordEntry);
   }
 
-  @Override
-  public ReplicaControllerRecord getNameRecordPrimary(String name) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
+//  @Override
+//  public ReplicaControllerRecord getNameRecordPrimary(String name) {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//  }
+//
+//  @Override
+//  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//  }
+//
+//  @Override
+//  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) {
+//    throw new UnsupportedOperationException("Not supported yet.");
+//  }
 
 //  @Override
 //  public Set<ReplicaControllerRecord> getAllPrimaryNameRecords() {

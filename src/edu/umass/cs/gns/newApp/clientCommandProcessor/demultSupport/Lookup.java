@@ -61,7 +61,7 @@ public class Lookup {
     int ccpReqID = handler.getUniqueRequestID();
     DNSRequestInfo requestInfo = new DNSRequestInfo(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
     handler.addRequestInfo(ccpReqID, requestInfo);
-    handler.incrementLookupRequest(incomingPacket.getGuid()); // important: used to count votes for names.
+    //handler.incrementLookupRequest(incomingPacket.getGuid()); // important: used to count votes for names.
     // For the new app we just send it to the colocated replica
     if (handler.isNewApp()) {
       if (handler.getParameters().isDebugMode()) {
@@ -104,19 +104,19 @@ public class Lookup {
 //                + " " + requestInfo.getName() + " took " + requestInfo.getResponseLatency() + "ms");
 //      }
 
-      if (handler.getParameters().isAdaptiveTimeout()) {
-        long responseTimeSample = requestInfo.getResponseLatency();
-        if (responseTimeSample != -1) {
-          AdaptiveRetransmission.addResponseTimeSample(responseTimeSample);
-        }
-      }
-      CacheEntry cacheEntry = handler.updateCacheEntry(dnsPacket);
-      if (cacheEntry == null) {
-        handler.addCacheEntry(dnsPacket);
-        if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("CCPListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
-        }
-      }
+//      if (handler.getParameters().isAdaptiveTimeout()) {
+//        long responseTimeSample = requestInfo.getResponseLatency();
+//        if (responseTimeSample != -1) {
+//          AdaptiveRetransmission.addResponseTimeSample(responseTimeSample);
+//        }
+//      }
+//      CacheEntry cacheEntry = handler.updateCacheEntry(dnsPacket);
+//      if (cacheEntry == null) {
+//        handler.addCacheEntry(dnsPacket);
+//        if (handler.getParameters().isDebugMode()) {
+//          GNS.getLogger().info("CCPListenerResponse: Adding to cache QueryID:" + dnsPacket.getQueryId());
+//        }
+//      }
       // send response to user right now.
       try {
         DNSPacket outgoingPacket = new DNSPacket(requestInfo.getIncomingPacket().getSourceId(),

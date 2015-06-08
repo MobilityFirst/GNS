@@ -9,7 +9,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
  *
  * @author westy
  */
-public class Defs {
+public class GnsProtocolDefs {
 
   public final static String REGISTERACCOUNT = "registerAccount";
   public final static String VERIFYACCOUNT = "verifyAccount";

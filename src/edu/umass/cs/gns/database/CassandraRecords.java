@@ -13,8 +13,7 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+//import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -70,8 +69,9 @@ public class CassandraRecords implements NoSQLRecords {
   }
   private static List<CassandraRecords.CollectionSpec> collectionSpecs =
           Arrays.asList(
-          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName()),
-          new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName()));
+          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName())
+          //,new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName())
+          );
 
   public CassandraRecords(int nodeID) {
     dbName = DBROOTNAME + nodeID;

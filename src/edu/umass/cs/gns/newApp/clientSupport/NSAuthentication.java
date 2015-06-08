@@ -10,7 +10,7 @@ package edu.umass.cs.gns.newApp.clientSupport;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.ClientUtils;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;

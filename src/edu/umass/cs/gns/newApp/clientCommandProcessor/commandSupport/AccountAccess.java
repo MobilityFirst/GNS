@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gns.util.Base64;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
@@ -260,7 +260,7 @@ public class AccountAccess {
           // Account info could not be updated.
           // If we're here we're probably hosed anyway, but just in case try to remove the account
           removeAccount(accountInfo, handler);
-          return new CommandResponse(BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
+          return new CommandResponse(BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to update account info");
         }
       }
     }
@@ -289,27 +289,27 @@ public class AccountAccess {
   public static CommandResponse verifyAccount(String guid, String code, ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read account info");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to read account info");
     }
     if (accountInfo.isVerified()) {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account already verified");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Account already verified");
     }
     if (accountInfo.getVerificationCode() == null && code == null) {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Bad verification code");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Bad verification code");
     }
     if ((new Date()).getTime() - accountInfo.getCreated().getTime() > TWO_HOURS_IN_MILLESECONDS) {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Account code no longer valid");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Account code no longer valid");
     }
     if (!accountInfo.getVerificationCode().equals(code)) {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Code not correct");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Code not correct");
     }
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
     if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
-      return new CommandResponse(Defs.OKRESPONSE + " " + "Your account has been verified."); // add a little something for the kids
+      return new CommandResponse(GnsProtocolDefs.OKRESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update account info");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to update account info");
     }
   }
 
@@ -317,23 +317,23 @@ public class AccountAccess {
           ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Not an account guid");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Not an account guid");
     }
     if (verifyPassword(accountInfo, password)) {
       GuidInfo guidInfo;
       if ((guidInfo = lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to read guid info");
+        return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to read guid info");
       } else {
         guidInfo.setPublicKey(publicKey);
         guidInfo.noteUpdate();
         if (updateGuidInfoNoAuthentication(guidInfo, handler)) {
-          return new CommandResponse(Defs.OKRESPONSE + " " + "Public key has been updated.");
+          return new CommandResponse(GnsProtocolDefs.OKRESPONSE + " " + "Public key has been updated.");
         } else {
-          return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Unable to update guid info");
+          return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to update guid info");
         }
       }
     } else {
-      return new CommandResponse(Defs.BADRESPONSE + " " + Defs.VERIFICATIONERROR + " " + "Password mismatch");
+      return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Password mismatch");
     }
   }
 

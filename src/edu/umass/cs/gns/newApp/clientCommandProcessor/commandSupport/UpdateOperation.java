@@ -186,7 +186,7 @@ public enum UpdateOperation {
   }
 
   private static boolean valuesListHasNullFirstElement(ResultValue valuesList) {
-    return !valuesList.isEmpty() && valuesList.get(0).equals(Defs.NULLRESPONSE);
+    return !valuesList.isEmpty() && valuesList.get(0).equals(GnsProtocolDefs.NULLRESPONSE);
   }
 
   private static boolean UpdateSingleField(ResultValue valuesList, ResultValue newValues, ResultValue oldValues,
@@ -281,7 +281,7 @@ public enum UpdateOperation {
           return false;
         }
         valuesList.clear();
-        valuesList.add(Defs.NULLRESPONSE);
+        valuesList.add(GnsProtocolDefs.NULLRESPONSE);
         return true;
       default:
         return false;

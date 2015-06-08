@@ -6,12 +6,12 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.BADACCOUNT;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.BADGUID;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.BADRESPONSE;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.OKRESPONSE;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.TOMANYGUIDS;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.VERIFICATIONERROR;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADACCOUNT;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADGUID;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.OKRESPONSE;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.TOMANYGUIDS;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.VERIFICATIONERROR;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
@@ -20,6 +20,7 @@ import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,7 +57,7 @@ public class FieldAccess {
    * @return
    */
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
-    return Defs.ALLFIELDS.equals(field) || !isKeyDotNotation(field);
+    return GnsProtocolDefs.ALLFIELDS.equals(field) || !isKeyDotNotation(field);
   }
 
   /**
@@ -74,7 +75,7 @@ public class FieldAccess {
    */
   public static CommandResponse lookup(String guid, String field, ArrayList<String> fields, String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
-
+    long startTime = System.currentTimeMillis();
     String resultString;
     QueryResult result;
     if (field != null) {
@@ -83,7 +84,7 @@ public class FieldAccess {
       result = handler.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
     }
     if (result.isError()) {
-      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ValuesMap valuesMap = result.getValuesMapSansInternalFields();
       try {
@@ -93,9 +94,10 @@ public class FieldAccess {
           resultString = valuesMap.toString();
         }
       } catch (JSONException e) {
-        resultString = Defs.BADRESPONSE + " " + Defs.JSONPARSEERROR + " " + e;
+        resultString = GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.JSONPARSEERROR + " " + e;
       }
     }
+    DelayProfiler.update("FieldAccessreadLookup", startTime);
     return new CommandResponse(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
@@ -124,7 +126,7 @@ public class FieldAccess {
     // Note the use of ColumnFieldType.LIST_STRING in the sendQuery call which implies old data format.
     QueryResult result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
-      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ResultValue value = result.getArray(field);
       if (value != null) {
@@ -154,9 +156,9 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = handler.getIntercessor().sendQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
-      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       // pull out all the key pairs ignoring "system" (ie., non-user) fields
       resultString = result.getValuesMapSansInternalFields().toString();
@@ -184,7 +186,7 @@ public class FieldAccess {
     String resultString;
     QueryResult result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
-      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       ResultValue value = result.getArray(field);
       if (value != null && !value.isEmpty()) {
@@ -223,9 +225,9 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendQuery(guid, Defs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = handler.getIntercessor().sendQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
-      resultString = Defs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
+      resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       try {
         // pull out the first value of each key pair ignoring "system" (ie., non-user) fields

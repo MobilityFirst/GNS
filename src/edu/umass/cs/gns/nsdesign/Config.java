@@ -2,7 +2,7 @@ package edu.umass.cs.gns.nsdesign;
 
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
+//import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
 
 import java.util.HashMap;
 
@@ -48,7 +48,7 @@ public class Config {
   public static double normalizingConstant = 0.5;
   public static int minReplica = 3;
   public static int maxReplica = 100;
-  public static ReplicationFrameworkType replicationFrameworkType = ReplicationFrameworkType.LOCATION;
+  //public static ReplicationFrameworkType replicationFrameworkType = ReplicationFrameworkType.LOCATION;
   public static int analysisIntervalSec = 1000000;
   public static int movingAverageWindowSize = 20;
   public static int nameServerVoteSize = 30;
@@ -133,14 +133,14 @@ public class Config {
       failureDetectionTimeoutSec = Integer.parseInt(allValues.get(NSParameterNames.FAILURE_DETECTION_TIMEOUT_INTERVAL));
     }
 
-    // replication parameters
-    if (allValues.containsKey(NSParameterNames.STATIC)) {
-      replicationFrameworkType = ReplicationFrameworkType.STATIC;
-    } else if (allValues.containsKey(NSParameterNames.LOCATION)) {
-      replicationFrameworkType = ReplicationFrameworkType.LOCATION;
-    } else if (allValues.containsKey(NSParameterNames.RANDOM)) {
-      replicationFrameworkType = ReplicationFrameworkType.RANDOM;
-    }
+//    // replication parameters
+//    if (allValues.containsKey(NSParameterNames.STATIC)) {
+//      replicationFrameworkType = ReplicationFrameworkType.STATIC;
+//    } else if (allValues.containsKey(NSParameterNames.LOCATION)) {
+//      replicationFrameworkType = ReplicationFrameworkType.LOCATION;
+//    } else if (allValues.containsKey(NSParameterNames.RANDOM)) {
+//      replicationFrameworkType = ReplicationFrameworkType.RANDOM;
+//    }
     
     if (allValues.containsKey(NSParameterNames.REPLICATION_INTERVAL)) {
       analysisIntervalSec = Integer.parseInt(allValues.get(NSParameterNames.REPLICATION_INTERVAL));

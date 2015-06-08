@@ -7,11 +7,9 @@
  */
 package edu.umass.cs.gns.newApp;
 
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.HELP;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.main.GNS;
-// keep for backwards compat
-import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.DerbyPersistentReconfiguratorDB;
@@ -150,8 +148,6 @@ public class AppReconfigurableNodeOptions {
     }
 
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
-      // For backwards compatibility until Config goes away
-      Config.debuggingEnabled = true;
       debuggingEnabled = true;
       System.out.println("******** DEBUGGING IS ENABLED IN THE APP *********");
     }

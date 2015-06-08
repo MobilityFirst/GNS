@@ -15,8 +15,8 @@ import java.lang.reflect.Constructor;
 import java.util.Set;
 import java.util.TreeSet;
 
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.COMMANDNAME;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.NEWLINE;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.COMMANDNAME;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.NEWLINE;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;

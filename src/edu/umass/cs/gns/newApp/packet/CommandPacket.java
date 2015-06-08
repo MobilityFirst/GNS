@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
 
@@ -119,11 +119,11 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
   public String getServiceName() {
     try {
       if (command != null) {
-        if (command.has(Defs.GUID)) {
-          return command.getString(Defs.GUID);
+        if (command.has(GnsProtocolDefs.GUID)) {
+          return command.getString(GnsProtocolDefs.GUID);
         }
-        if (command.has(Defs.NAME)) {
-          return command.getString(Defs.NAME);
+        if (command.has(GnsProtocolDefs.NAME)) {
+          return command.getString(GnsProtocolDefs.NAME);
         }
       }
     } catch (JSONException e) {
@@ -135,8 +135,8 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
   public String getCommandName() {
     try {
       if (command != null) {
-        if (command.has(Defs.COMMANDNAME)) {
-          return command.getString(Defs.COMMANDNAME);
+        if (command.has(GnsProtocolDefs.COMMANDNAME)) {
+          return command.getString(GnsProtocolDefs.COMMANDNAME);
         }
       }
     } catch (JSONException e) {

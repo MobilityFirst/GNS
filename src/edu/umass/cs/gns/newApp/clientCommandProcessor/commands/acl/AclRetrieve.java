@@ -9,7 +9,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commands.acl;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldMetaData;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;

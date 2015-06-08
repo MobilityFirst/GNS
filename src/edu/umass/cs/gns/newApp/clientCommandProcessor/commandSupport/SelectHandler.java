@@ -130,7 +130,7 @@ public class SelectHandler {
         return null;
       }
     } else {
-      return Defs.BADRESPONSE + " " + Defs.SELECTERROR + " " + packet.getErrorMessage();
+      return GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.SELECTERROR + " " + packet.getErrorMessage();
     }
   }
 

@@ -11,7 +11,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccessSuppo
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountInfo;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;

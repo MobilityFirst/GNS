@@ -5,11 +5,7 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.nsdesign.Reconfigurable;
 import edu.umass.cs.gns.util.Shutdownable;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DefaultGnsCoordinator;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.DummyGnsCoordinatorUnreplicated;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorEventual;
 import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsCoordinatorPaxos;
-import edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket;
 import edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.paxos.PaxosConfig;
@@ -20,7 +16,6 @@ import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
@@ -85,17 +80,17 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
     paxosConfig.setPaxosLogFolder(Config.paxosLogFolder + "/NODE" + nodeID.toString() + "/gnsReconfigurable");
     this.activeReplicaApp = new ActiveReplicaApp(reconfigurableApp, this);
 
-    if (Config.singleNS && Config.dummyGNS) {  // coordinator for testing only
-      this.coordinator = new DummyGnsCoordinatorUnreplicated<NodeIDType>(nodeID, gnsNodeConfig, this.activeReplicaApp);
-    } else if (Config.singleNS) {  // coordinator for testing only
-      this.coordinator = new DefaultGnsCoordinator<NodeIDType>(nodeID, gnsNodeConfig, this.activeReplicaApp);
-    } else if(Config.eventualConsistency) {  // coordinator for testing only
-      this.coordinator = new GnsCoordinatorEventual<NodeIDType>(nodeID, nioServer, gnsNodeConfig,
-              this.activeReplicaApp, paxosConfig, Config.readCoordination);
-    } else { // this is the actual coordinator
+//    if (Config.singleNS && Config.dummyGNS) {  // coordinator for testing only
+//      this.coordinator = new DummyGnsCoordinatorUnreplicated<NodeIDType>(nodeID, gnsNodeConfig, this.activeReplicaApp);
+//    } else if (Config.singleNS) {  // coordinator for testing only
+//      this.coordinator = new DefaultGnsCoordinator<NodeIDType>(nodeID, gnsNodeConfig, this.activeReplicaApp);
+//    } else if(Config.eventualConsistency) {  // coordinator for testing only
+//      this.coordinator = new GnsCoordinatorEventual<NodeIDType>(nodeID, nioServer, gnsNodeConfig,
+//              this.activeReplicaApp, paxosConfig, Config.readCoordination);
+    //} else { // this is the actual coordinator
       this.coordinator = new GnsCoordinatorPaxos<NodeIDType>(nodeID, nioServer, gnsNodeConfig,
               this.activeReplicaApp, paxosConfig, Config.readCoordination);
-    }
+    //}
 //    SendRequestLoadTask requestLoadTask = new SendRequestLoadTask(activeReplicaApp, this);
 //    scheduledThreadPoolExecutor.submit(requestLoadTask);
   }
@@ -105,32 +100,32 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
       Packet.PacketType type = Packet.getPacketType(json);
       switch (type) {
         // replica controller to active replica
-        case NEW_ACTIVE_START:
-          GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case NEW_ACTIVE_START_FORWARD:
-          GroupChange.handleNewActiveStartForward(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case NEW_ACTIVE_START_RESPONSE:
-          GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
-          GroupChange.handlePrevValueRequest(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-          GroupChange.handlePrevValueResponse(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case OLD_ACTIVE_STOP:
-          GroupChange.handleOldActiveStopFromReplicaController(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
-        case DELETE_OLD_ACTIVE_STATE:
-          GroupChange.deleteOldActiveState(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
-          break;
+//        case NEW_ACTIVE_START:
+//          GroupChange.handleNewActiveStart(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case NEW_ACTIVE_START_FORWARD:
+//          GroupChange.handleNewActiveStartForward(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case NEW_ACTIVE_START_RESPONSE:
+//          GroupChange.handleNewActiveStartResponse(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
+//          GroupChange.handlePrevValueRequest(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
+//          GroupChange.handlePrevValueResponse(new NewActiveSetStartupPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case OLD_ACTIVE_STOP:
+//          GroupChange.handleOldActiveStopFromReplicaController(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
+//        case DELETE_OLD_ACTIVE_STATE:
+//          GroupChange.deleteOldActiveState(new OldActiveSetStopPacket<NodeIDType>(json, gnsNodeConfig), this);
+//          break;
       }
     } catch (JSONException e) {
       e.printStackTrace();
-    } catch (IOException e) {
-      e.printStackTrace();
+//    } catch (IOException e) {
+//      e.printStackTrace();
     }
   }
 
@@ -139,7 +134,7 @@ public class ActiveReplica<NodeIDType, AppType extends Reconfigurable & Replicab
    * @param stopPacket
    */
   public void stopProcessed(OldActiveSetStopPacket<NodeIDType> stopPacket) {
-    GroupChange.handleStopProcessed(stopPacket, this);
+    //GroupChange.handleStopProcessed(stopPacket, this);
   }
 
 

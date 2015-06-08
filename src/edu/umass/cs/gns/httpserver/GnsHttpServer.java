@@ -9,7 +9,7 @@ import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,7 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import static edu.umass.cs.gns.httpserver.Defs.KEYSEP;
@@ -114,7 +114,7 @@ public class GnsHttpServer {
             }
             response = processQuery(host, action, query);
           } else {
-            response = Defs.BADRESPONSE + " " + Defs.NOACTIONFOUND;
+            response = GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.NOACTIONFOUND;
           }
           if (debuggingEnabled) {
             GNS.getLogger().finer("Response: " + response);
@@ -126,7 +126,7 @@ public class GnsHttpServer {
         GNS.getLogger().severe("Error: " + e);
         e.printStackTrace();
         try {
-          String response = Defs.BADRESPONSE + " " + Defs.QUERYPROCESSINGERROR + " " + e;
+          String response = GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.QUERYPROCESSINGERROR + " " + e;
           OutputStream responseBody = exchange.getResponseBody();
           responseBody.write(response.getBytes());
           responseBody.close();

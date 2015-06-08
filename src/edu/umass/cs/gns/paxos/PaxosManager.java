@@ -3,8 +3,6 @@ package edu.umass.cs.gns.paxos;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.deprecated.AbstractPaxosManager;
 import edu.umass.cs.gigapaxos.deprecated.Replicable;
-import edu.umass.cs.gns.deprecated.nio.ByteStreamToJSONObjects;
-import edu.umass.cs.gns.deprecated.nio.NioServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nsdesign.PacketTypeStampAndSend;
 import edu.umass.cs.gns.newApp.packet.Packet;

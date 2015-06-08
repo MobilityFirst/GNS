@@ -8,7 +8,7 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commands.data;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Defs.*;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 
 /**
  *
