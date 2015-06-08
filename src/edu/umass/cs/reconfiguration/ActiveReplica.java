@@ -45,22 +45,41 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
+ * 
+ *            This class is the main wrapper around active replicas of
+ *            reconfigurable app instances. It processes requests both from the
+ *            Reconfigurator as well as the underlying app's clients. This class
+ *            is also use to wrap the Reconfigurator itself in order to
+ *            reconfigure Reconfigurators (to correctly perform reconfigurator
+ *            add/remove operations).
+ * 
+ *            <p>
+ * 
+ *            This class handles the following ReconfigurationPackets:
+ *            {@code STOP_EPOCH,
+ *            START_EPOCH, REQUEST_EPOCH_FINAL_STATE, DROP_EPOCH} as also listed
+ *            in {@link ActiveReplicaProtocolTask ActiveReplicaProtocolTask}. It
+ *            relies upon the app's implementation of AbstractDemandProfile in
+ *            order to determine how frequenltly to report demand statistics to
+ *            Reconfigurators and whether and how to reconfigure the current
+ *            active replica placement.
  */
 public class ActiveReplica<NodeIDType> implements
-		InterfaceReconfiguratorCallback, InterfacePacketDemultiplexer<JSONObject> {
+		InterfaceReconfiguratorCallback,
+		InterfacePacketDemultiplexer<JSONObject> {
 	private final AbstractReplicaCoordinator<NodeIDType> appCoordinator;
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
 	private final ActiveReplicaProtocolTask<NodeIDType> protocolTask;
-	private final InterfaceMessenger<NodeIDType,?> messenger;
+	private final InterfaceMessenger<NodeIDType, ?> messenger;
 
 	private final AggregateDemandProfiler demandProfiler;
 	private final boolean noReporting;
 
 	public static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
-	
+
 	/*
 	 * Stores only those requests for which a callback is desired after
 	 * (coordinated) execution. StopEpoch is the only example of such a request
@@ -70,12 +89,13 @@ public class ActiveReplica<NodeIDType> implements
 
 	private ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
 			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
-			InterfaceMessenger<NodeIDType,JSONObject> messenger, boolean noReporting) {
+			InterfaceMessenger<NodeIDType, JSONObject> messenger,
+			boolean noReporting) {
 		this.appCoordinator = appC
 				.setActiveCallback((InterfaceReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nodeConfig);
-                this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
+		this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
 		this.messenger = messenger;
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(
 				messenger);
@@ -128,7 +148,7 @@ public class ActiveReplica<NodeIDType> implements
 		}
 		return false; // neither reconfiguration packet nor app request
 	}
-	
+
 	@Override
 	public void executed(InterfaceRequest request, boolean handled) {
 		assert (request instanceof InterfaceReconfigurableRequest);
@@ -155,7 +175,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.messenger.stop();
 	}
 
-	/* ******************** Start of protocol task handler methods ************************/
+	///////////////// Start of protocol task handler methods//////////////////////
 
 	/*
 	 * Will spawn FetchEpochFinalState to fetch the final state of the previous
@@ -174,7 +194,8 @@ public class ActiveReplica<NodeIDType> implements
 				startEpoch.getSender(), ackStart)).toArray();
 		// send positive ack even if app has moved on
 		if (this.alreadyMovedOn(startEpoch)) {
-			log.info(this + " sending to " + startEpoch.getSender() + ": " + ackStart.getSummary());
+			log.info(this + " sending to " + startEpoch.getSender() + ": "
+					+ ackStart.getSummary());
 			return mtasks;
 		}
 		// else
@@ -185,7 +206,8 @@ public class ActiveReplica<NodeIDType> implements
 			this.appCoordinator.createReplicaGroup(startEpoch.getServiceName(),
 					startEpoch.getEpochNumber(), startEpoch.getInitialState(),
 					startEpoch.getCurEpochGroup());
-			log.info(this + " sending to " + startEpoch.getSender() + ": " + ackStart.getSummary());
+			log.info(this + " sending to " + startEpoch.getSender() + ": "
+					+ ackStart.getSummary());
 			return mtasks; // and also send positive ack
 		}
 		/*
@@ -223,7 +245,8 @@ public class ActiveReplica<NodeIDType> implements
 		// else coordinate stop with callback
 		this.callbackMap.addStopNotifiee(stopEpoch);
 		log.info(this + " coordinating " + stopEpoch.getSummary());
-		this.appCoordinator.handleIncoming(this.getAppStopRequest(stopEpoch.getServiceName(), stopEpoch.getEpochNumber()));
+		this.appCoordinator.handleIncoming(this.getAppStopRequest(
+				stopEpoch.getServiceName(), stopEpoch.getEpochNumber()));
 		return null; // need to wait until callback
 	}
 
@@ -238,7 +261,7 @@ public class ActiveReplica<NodeIDType> implements
 				getMyID(), dropEpoch);
 		GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>>(
 				dropEpoch.getInitiator(), ackDrop);
-		assert(ackDrop.getInitiator().equals(dropEpoch.getInitiator()));
+		assert (ackDrop.getInitiator().equals(dropEpoch.getInitiator()));
 		log.info(this + " sending " + ackDrop.getSummary() + " to "
 				+ ackDrop.getInitiator() + ": " + ackDrop);
 		this.garbageCollectPendingTasks(dropEpoch);
@@ -257,9 +280,9 @@ public class ActiveReplica<NodeIDType> implements
 				.getTaskKeyPrev(WaitEpochFinalState.class, dropEpoch, this
 						.getMyID().toString())) != null);
 		if (removed)
-			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] {this , " removed WaitEpochFinalState"
-					, dropEpoch.getServiceName() , ":"
-					, (dropEpoch.getEpochNumber() - 1)});
+			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this,
+					" removed WaitEpochFinalState", dropEpoch.getServiceName(),
+					":", (dropEpoch.getEpochNumber() - 1) });
 	}
 
 	public GenericMessagingTask<NodeIDType, ?>[] handleRequestEpochFinalState(
@@ -290,16 +313,16 @@ public class ActiveReplica<NodeIDType> implements
 		return "AR" + this.messenger.getMyID();
 	}
 
-	/********************* End of protocol task handler methods ************************/
+	/* ******************** End of protocol task handler methods ************************/
 
-	/*********************** Private methods below ************************************/
+	/* ********************** Private methods below ************************************/
 
 	private void handRequestToApp(InterfaceRequest request) {
 		long t1 = System.currentTimeMillis();
 		this.appCoordinator.handleIncoming(request);
 		DelayProfiler.update("appHandleIncoming@AR", t1);
 	}
-	
+
 	private boolean noStateOrAlreadyMovedOn(BasicReconfigurationPacket<?> packet) {
 		boolean retval = false;
 		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());
@@ -438,7 +461,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.send(mtask);
 		return mtask;
 	}
-	
+
 	private InterfaceReconfigurableRequest getAppStopRequest(String name,
 			int epoch) {
 		InterfaceReconfigurableRequest appStop = this.appCoordinator

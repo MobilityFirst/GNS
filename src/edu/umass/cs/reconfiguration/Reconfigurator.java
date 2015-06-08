@@ -45,7 +45,32 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
+ * 
+ *            This class is the main Reconfigurator module. It issues
+ *            reconfiguration commands to ActiveReplicas and also responds to
+ *            client requests to create or delete names or request the list of
+ *            active replicas for a name.
+ * 
+ *            It relies on the following helper protocol tasks:
+ *            {@code WaitAckStopEpoch,
+ *            WaitAckStartEpoch, WaitAckDropEpoch, WaitCoordinatedCommit, 
+ *            WaitPrimaryExecution}. The last one is to enable exactly one
+ *            primary Reconfigurator in the common case to conduct
+ *            reconfigurations but ensure that others safely complete the
+ *            reconfiguration if the primary fails to do so.
+ *            WaitCoordinatedCommit is a protocol task that is needed to ensure
+ *            that a paxos-coordinated request eventually gets committed; we
+ *            need this property to ensure that a reconfiguration operation
+ *            terminates, but paxos itself provides us no such liveness
+ *            guarantee.
+ * 
+ *            This class now supports add/remove operations for the set of
+ *            Reconfigurator nodes. This is somewhat tricky, but works
+ *            correctly. A detailed, formal description of the protocol is TBD.
+ *            The documentation further below in this class explains the main
+ *            ideas.
+ * 
  */
 public class Reconfigurator<NodeIDType> implements
 		InterfacePacketDemultiplexer<JSONObject>, InterfaceReconfiguratorCallback {
