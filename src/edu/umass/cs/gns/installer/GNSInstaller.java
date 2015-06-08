@@ -283,7 +283,7 @@ public class GNSInstaller {
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
               //+ ((runAsRoot) ? "sudo " : "")
-              + "nohup " + javaCommand + " -cp " + gnsJarFileName + " " + StartLNSClass + " "
+              + "nohup " + javaCommand + " " + gnsJarFileName + " " + StartLNSClass + " "
               //+ hostname + " "
               //+ LocalNameServer.DEFAULT_LNS_TCP_PORT + " "
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
@@ -302,7 +302,7 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + ((runAsRoot) ? "sudo " : "")
-              + "nohup " + javaCommand + " -cp " + gnsJarFileName + " " + StartNSClass + " "
+              + "nohup " + javaCommand + " " + gnsJarFileName + " " + StartNSClass + " "
               + "-id "
               + nsId.toString() + " "
               + "-nsfile "
@@ -405,7 +405,7 @@ public class GNSInstaller {
             //runAsRoot,
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
-            + "pkill -f \"" + javaCommand + " -cp " + gnsJarFileName + "\""
+            + "pkill -f \"" + javaCommand + " " + gnsJarFileName + "\""
             // catch this one as well just in case
             + "\n"       
             + ((runAsRoot) ? "sudo " : "")
