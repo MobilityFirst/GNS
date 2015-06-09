@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.utils.DelayProfiler;
@@ -53,7 +54,8 @@ public class Lookup {
   
   private static Random random = new Random();
   
-  public static void handlePacketLookupRequest(JSONObject json, DNSPacket incomingPacket, ClientRequestHandlerInterface handler)
+  public static void handlePacketLookupRequest(JSONObject json, DNSPacket incomingPacket, 
+          EnhancedClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + json);

@@ -8,6 +8,7 @@ import edu.umass.cs.gns.gnamed.UdpDnsServer;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 
+import edu.umass.cs.gns.newApp.NewApp;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -67,20 +68,10 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
 
   private final Logger log = Logger.getLogger(getClass().getName());
 
-  ClientCommandProcessor(String nsFile, String host, int port,
-          boolean debug,
-          NodeIDType replicaID,
-          boolean dnsGnsOnly,
-          boolean dnsOnly,
-          String gnsServerIP
-  ) throws IOException {
-    this(new InetSocketAddress(host, port), new GNSNodeConfig<NodeIDType>(nsFile, true),
-            debug, replicaID, dnsGnsOnly, dnsOnly, gnsServerIP);
-  }
-
   public ClientCommandProcessor(InetSocketAddress nodeAddress, 
           GNSNodeConfig<NodeIDType> gnsNodeConfig,
           boolean debug,
+          NewApp app,
           NodeIDType replicaID,
           boolean dnsGnsOnly,
           boolean dnsOnly,
@@ -104,11 +95,10 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       messenger.addPacketDemultiplexer(demultiplexer);
       //
       parameters.setDebugMode(debug);
-    //parameters.setDebugMode(options.containsKey(DEBUG));
       //
       this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
               replicaID,
-              //options.get(ClientCommandProcessorOptions.AR_ID),
+              app,
               gnsNodeConfig, messenger, parameters);
       ((CCPPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
       // Start HTTP server

@@ -47,7 +47,6 @@ public class AppLookup {
    *
    * @param dnsPacket
    * @param gnsApp
-   * @param noCoordinatorState
    * @param doNotReplyToClient
    * @throws java.io.IOException
    * @throws org.json.JSONException

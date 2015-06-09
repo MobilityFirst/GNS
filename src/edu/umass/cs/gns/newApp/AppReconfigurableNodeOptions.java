@@ -18,6 +18,7 @@ import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
 
+import edu.umass.cs.nio.NIOTransport;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -191,6 +192,14 @@ public class AppReconfigurableNodeOptions {
       PaxosManager.getLogger().setLevel(Level.INFO);
     } else {
       PaxosManager.getLogger().setLevel(Level.WARNING);
+    }
+    
+    if (isOptionTrue(DEBUG_MISC, allValues)) {
+      System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
+      // For backwards compatibility until Config goes away
+      NIOTransport.getLogger().setLevel(Level.INFO);
+    } else {
+      NIOTransport.getLogger().setLevel(Level.WARNING);
     }
 
     if (allValues.containsKey(FILE_LOGGING_LEVEL)) {

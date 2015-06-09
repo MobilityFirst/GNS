@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
+import edu.umass.cs.gns.newApp.NewApp;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 
@@ -123,7 +124,10 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
    *
    * @param name
    * @param id
+   * @return 
    */
+  @Override
   public Object getActiveReplicaID();
 
+  public NewApp getApp();
 }

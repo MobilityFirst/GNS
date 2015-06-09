@@ -53,9 +53,9 @@ public class PacketTypeStampAndSend<NodeIDType> implements InterfaceJSONNIOTrans
       int written = nio.sendToID(id, jsonCopy);
       // A little hair here because the caller expects us to write
       // the amount they sent, not the altered amount
-      if (Config.debuggingEnabled) {
-        GNS.getLogger().fine("############## " + originalSize + " actualWritten=" + written);
-      }
+//      if (Config.debuggingEnabled) {
+//        GNS.getLogger().fine("############## " + originalSize + " actualWritten=" + written);
+//      }
       if (written == alteredSize) {
         return originalSize;
       } else {

@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.paxos;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
+//import edu.umass.cs.gns.nsdesign.Config;
 import edu.umass.cs.gns.paxos.paxospacket.AcceptPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
@@ -310,17 +310,17 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * the action the paxos logger should take after logging the message.
    */
   public void logMessage(LoggingCommand<NodeIDType> command) {
-    if (Config.noPaxosLog) {
-      GNS.getLogger().fine("NO logging");
-      handleLoggedMessage(command);
-    } else {
-      synchronized (logQueueLock) {
-        logCommands.add(command);
-      }
-      if (debugMode) {
-        GNS.getLogger().fine(" Added msg to queue: " + command.getLogJson());
-      }
-    }
+//    if (Config.noPaxosLog) {
+//      GNS.getLogger().fine("NO logging");
+//      handleLoggedMessage(command);
+//    } else {
+//      synchronized (logQueueLock) {
+//        logCommands.add(command);
+//      }
+//      if (debugMode) {
+//        GNS.getLogger().fine(" Added msg to queue: " + command.getLogJson());
+//      }
+//    }
   }
 
   /**
@@ -334,29 +334,29 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param initialState
    */
   public void logPaxosStart(String paxosID, Set<NodeIDType> nodeIDs, StatePacket initialState) {
-    if (!Config.noPaxosLog) {
-      if (debugMode) {
-        GNS.getLogger().fine(" Paxos ID = " + paxosID);
-      }
-      if (debugMode) {
-        GNS.getLogger().fine(" Node IDs = " + nodeIDs);
-      }
-      if (debugMode) {
-        GNS.getLogger().fine(" Initial state = " + initialState.state);
-      }
-      String paxosIDsFile1 = getPaxosIDsFile();
-      if (paxosIDsFile1 != null) {
-        synchronized (paxosIDsLock) {
-          // first log initial state
-          logPaxosState(paxosID, initialState);
-          // then append to paxos IDs
-          String logString = getLogString(paxosID, PaxosPacketType.START.getInt(),
-                  // See the companion reader code for this format in parsePaxosStart
-                  nodeIdsToString(nodeIDs));
-          appendToFile(paxosIDsFile1, logString);
-        }
-      }
-    }
+//    if (!Config.noPaxosLog) {
+//      if (debugMode) {
+//        GNS.getLogger().fine(" Paxos ID = " + paxosID);
+//      }
+//      if (debugMode) {
+//        GNS.getLogger().fine(" Node IDs = " + nodeIDs);
+//      }
+//      if (debugMode) {
+//        GNS.getLogger().fine(" Initial state = " + initialState.state);
+//      }
+//      String paxosIDsFile1 = getPaxosIDsFile();
+//      if (paxosIDsFile1 != null) {
+//        synchronized (paxosIDsLock) {
+//          // first log initial state
+//          logPaxosState(paxosID, initialState);
+//          // then append to paxos IDs
+//          String logString = getLogString(paxosID, PaxosPacketType.START.getInt(),
+//                  // See the companion reader code for this format in parsePaxosStart
+//                  nodeIdsToString(nodeIDs));
+//          appendToFile(paxosIDsFile1, logString);
+//        }
+//      }
+//    }
   }
 
   private String nodeIdsToString(Set nodeIds) {
@@ -386,16 +386,16 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param paxosID <code>paxosID</code> of the paxos instance.
    */
   public void logPaxosStop(String paxosID) {
-    if (!Config.noPaxosLog) {
-      String paxosIDsFile1 = getPaxosIDsFile();
-
-      synchronized (paxosIDsLock) {
-        String logString = null;
-        logString = getLogString(paxosID, PaxosPacketType.STOP.getInt(), Integer.toString(PaxosPacketType.STOP.getInt()));
-
-        appendToFile(paxosIDsFile1, logString);
-      }
-    }
+//    if (!Config.noPaxosLog) {
+//      String paxosIDsFile1 = getPaxosIDsFile();
+//
+//      synchronized (paxosIDsLock) {
+//        String logString = null;
+//        logString = getLogString(paxosID, PaxosPacketType.STOP.getInt(), Integer.toString(PaxosPacketType.STOP.getInt()));
+//
+//        appendToFile(paxosIDsFile1, logString);
+//      }
+//    }
   }
 
   /**
@@ -406,30 +406,30 @@ public class PaxosLogger<NodeIDType> extends Thread {
    * @param packet <code>StatePacket</code> containing information about paxos state.
    */
   public void logPaxosState(String paxosID, StatePacket packet) {
-    if (!Config.noPaxosLog) {
-      synchronized (paxosIDsLock) {
-        String name = getStateLogFileName(paxosID, packet);
-        try {
-          FileWriter fw = new FileWriter(name);
-          if (packet.state.endsWith("\n")) {
-            fw.write(Integer.toString(packet.state.length()));
-            fw.write("\n");
-            fw.write(packet.state);
-          } else {
-            fw.write(Integer.toString(packet.state.length() + 1));
-            fw.write("\n");
-            fw.write(packet.state);
-            fw.write("\n"); // new line
-          }
-          // log length of state
-
-          // log state (could be multiple lines)
-          fw.close();
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-    }
+//    if (!Config.noPaxosLog) {
+//      synchronized (paxosIDsLock) {
+//        String name = getStateLogFileName(paxosID, packet);
+//        try {
+//          FileWriter fw = new FileWriter(name);
+//          if (packet.state.endsWith("\n")) {
+//            fw.write(Integer.toString(packet.state.length()));
+//            fw.write("\n");
+//            fw.write(packet.state);
+//          } else {
+//            fw.write(Integer.toString(packet.state.length() + 1));
+//            fw.write("\n");
+//            fw.write(packet.state);
+//            fw.write("\n"); // new line
+//          }
+//          // log length of state
+//
+//          // log state (could be multiple lines)
+//          fw.close();
+//        } catch (IOException e) {
+//          e.printStackTrace();
+//        }
+//      }
+//    }
   }
 
   /**
@@ -621,38 +621,38 @@ public class PaxosLogger<NodeIDType> extends Thread {
         continue;
       }
 
-      if (!Config.noPaxosLog) {
-        try {
-          long t0 = System.currentTimeMillis();
-          FileWriter fileWriter = new FileWriter(logFileName, true);
-          for (LoggingCommand cmd : logCmdCopy) {
-            // TODO How is BufferedWriter different from FileWriter? what should we use?
-            fileWriter.write(cmd.getPaxosID());
-            fileWriter.write("\t");
-            fileWriter.write(Integer.toString(cmd.getLogJson().getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME)));
-            fileWriter.write("\t");
-            fileWriter.write(cmd.getLogJson().toString());
-            fileWriter.write("\n");
-          }
-          fileWriter.close();
-          long t1 = System.currentTimeMillis();
-          if (t1 - t0 > 50) {
-            GNS.getLogger().warning("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " MsgCount = "
-                    + logCmdCopy.size());
-          }
-          msgCount += logCmdCopy.size();
-          if (msgCount > MSG_MAX) {
-            msgCount = 0;
-            logFileName = getNextFileName();
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        } catch (JSONException e) {
-          e.printStackTrace();
-        }
-      } else {
-        GNS.getLogger().info("Not doing paxos logging.");
-      }
+//      if (!Config.noPaxosLog) {
+//        try {
+//          long t0 = System.currentTimeMillis();
+//          FileWriter fileWriter = new FileWriter(logFileName, true);
+//          for (LoggingCommand cmd : logCmdCopy) {
+//            // TODO How is BufferedWriter different from FileWriter? what should we use?
+//            fileWriter.write(cmd.getPaxosID());
+//            fileWriter.write("\t");
+//            fileWriter.write(Integer.toString(cmd.getLogJson().getInt(PaxosPacket.PACKET_TYPE_FIELD_NAME)));
+//            fileWriter.write("\t");
+//            fileWriter.write(cmd.getLogJson().toString());
+//            fileWriter.write("\n");
+//          }
+//          fileWriter.close();
+//          long t1 = System.currentTimeMillis();
+//          if (t1 - t0 > 50) {
+//            GNS.getLogger().warning("Long latency Paxos logging = " + (t1 - t0) + " ms. Time = " + (t0) + " MsgCount = "
+//                    + logCmdCopy.size());
+//          }
+//          msgCount += logCmdCopy.size();
+//          if (msgCount > MSG_MAX) {
+//            msgCount = 0;
+//            logFileName = getNextFileName();
+//          }
+//        } catch (IOException e) {
+//          e.printStackTrace();
+//        } catch (JSONException e) {
+//          e.printStackTrace();
+//        }
+//      } else {
+//        GNS.getLogger().info("Not doing paxos logging.");
+//      }
       // process each msg
       for (LoggingCommand<NodeIDType> cmd : logCmdCopy) {
         handleLoggedMessage(cmd);

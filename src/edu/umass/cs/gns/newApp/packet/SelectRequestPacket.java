@@ -7,6 +7,8 @@ package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
+import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.nio.Stringifiable;
 
 import java.net.InetSocketAddress;
@@ -287,7 +289,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
   public String getServiceName() {
     if (query != null) {
       // FIXME: maybe cache this
-      return new String(SHA1HashFunction.getInstance().hash(this.query));
+      return Base64.encodeToString(SHA1HashFunction.getInstance().hash(this.query), false);
     } else {
       // FIXME:
       return "SelectRequest";

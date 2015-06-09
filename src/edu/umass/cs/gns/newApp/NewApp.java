@@ -93,6 +93,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
                 new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
                 (GNSNodeConfig) nodeConfig,
                 AppReconfigurableNodeOptions.debuggingEnabled,
+                this,
                 (String) id,
                 AppReconfigurableNodeOptions.dnsGnsOnly,
                 AppReconfigurableNodeOptions.dnsOnly,
