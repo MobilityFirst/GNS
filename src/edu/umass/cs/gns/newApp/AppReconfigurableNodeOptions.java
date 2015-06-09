@@ -230,6 +230,9 @@ public class AppReconfigurableNodeOptions {
       ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
     }
     System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
+    
+    ReconfigurationConfig.setReconfigureInPlace(false);
+    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
 
     // CCP options
     if (allValues.containsKey(DNS_GNS_ONLY)) {

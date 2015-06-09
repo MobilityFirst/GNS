@@ -8,8 +8,8 @@ package edu.umass.cs.gns.newApp.packet;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
-import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+//import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
+//import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
@@ -538,14 +538,14 @@ public class Packet {
    */
   public static boolean filterOutChattyPackets(JSONObject jsonData) {
     try {
-      if (PaxosPacket.hasPacketTypeField(jsonData)) {
-        // handle Paxos packets
-        PaxosPacketType packetType = PaxosPacket.getPacketType(jsonData);
-        if (packetType != PaxosPacketType.FAILURE_DETECT
-                && packetType != PaxosPacketType.FAILURE_RESPONSE) {
-          return true;
-        }
-      } else {
+//      if (PaxosPacket.hasPacketTypeField(jsonData)) {
+//        // handle Paxos packets
+//        PaxosPacketType packetType = PaxosPacket.getPacketType(jsonData);
+//        if (packetType != PaxosPacketType.FAILURE_DETECT
+//                && packetType != PaxosPacketType.FAILURE_RESPONSE) {
+//          return true;
+//        }
+//      } else {
         // handle Regular packets
         PacketType packetType = getPacketType(jsonData);
         if (packetType != PacketType.NAME_SERVER_LOAD
@@ -553,7 +553,7 @@ public class Packet {
                 && packetType != PacketType.REPLICA_CONTROLLER_COORDINATION) {
           return true;
         }
-      }
+      //}
     } catch (JSONException e) {
 
     }
@@ -568,13 +568,13 @@ public class Packet {
    */
   public static String getPacketTypeStringSafe(JSONObject json) {
     try {
-      if (PaxosPacket.hasPacketTypeField(json)) {
-        // handle Paxos packets
-        return PaxosPacket.getPacketType(json).toString();
-      } else {
+//      if (PaxosPacket.hasPacketTypeField(json)) {
+//        // handle Paxos packets
+//        return PaxosPacket.getPacketType(json).toString();
+//      } else {
         // handle Regular packets
         return getPacketType(json).toString();
-      }
+      //}
     } catch (JSONException e) {
       return "Unknown";
     }
