@@ -94,9 +94,9 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
                 (GNSNodeConfig) nodeConfig,
                 AppReconfigurableNodeOptions.debuggingEnabled,
                 (String) id,
-                false,
-                false,
-                null);
+                AppReconfigurableNodeOptions.dnsGnsOnly,
+                AppReconfigurableNodeOptions.dnsOnly,
+                AppReconfigurableNodeOptions.gnsServerIP);
       }
     } catch (IOException e) {
       GNS.getLogger().info("App could not create CCP:" + e);

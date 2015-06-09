@@ -7,9 +7,6 @@ import edu.umass.cs.gns.gnamed.DnsTranslator;
 import edu.umass.cs.gns.gnamed.UdpDnsServer;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ParametersAndOptions;
-import static edu.umass.cs.gns.util.ParametersAndOptions.HELP;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessorOptions.*;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -18,7 +15,6 @@ import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
@@ -28,7 +24,6 @@ import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
-import java.util.Map;
 
 /**
  *
@@ -168,32 +163,32 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     return requestHandler;
   }
 
-  public static void startClientCommandProcessor(Map<String, String> options) throws IOException {
-    ClientCommandProcessor<String> clientCommandProcessor
-            = new ClientCommandProcessor<String>(
-                    //address, nodeConfig, messenger,
-                    options.get(NS_FILE),
-                    options.containsKey(HOST) ? options.get(HOST) : NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-                    options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : GNS.DEFAULT_CCP_TCP_PORT,
-                    options.containsKey(DEBUG),
-                    options.get(ClientCommandProcessorOptions.AR_ID),
-                    options.containsKey(DNS_GNS_ONLY),
-                    options.containsKey(DNS_ONLY),
-                    options.get(GNS_SERVER_IP)
-            );
-  }
+//  public static void startClientCommandProcessor(Map<String, String> options) throws IOException {
+//    ClientCommandProcessor<String> clientCommandProcessor
+//            = new ClientCommandProcessor<String>(
+//                    //address, nodeConfig, messenger,
+//                    options.get(NS_FILE),
+//                    options.containsKey(HOST) ? options.get(HOST) : NetworkUtils.getLocalHostLANAddress().getHostAddress(),
+//                    options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : GNS.DEFAULT_CCP_TCP_PORT,
+//                    options.containsKey(DEBUG),
+//                    options.get(ClientCommandProcessorOptions.AR_ID),
+//                    options.containsKey(DNS_GNS_ONLY),
+//                    options.containsKey(DNS_ONLY),
+//                    options.get(GNS_SERVER_IP)
+//            );
+//  }
 
-  public static void main(String[] args) throws IOException {
-    Map<String, String> options
-            = ParametersAndOptions.getParametersAsHashMap(ClientCommandProcessor.class.getCanonicalName(),
-                    ClientCommandProcessorOptions.getAllOptions(), args);
-    if (options.containsKey(HELP)) {
-      ParametersAndOptions.printUsage(ClientCommandProcessor.class.getCanonicalName(),
-              ClientCommandProcessorOptions.getAllOptions());
-      System.exit(0);
-    }
-    startClientCommandProcessor(options);
-  }
+//  public static void main(String[] args) throws IOException {
+//    Map<String, String> options
+//            = ParametersAndOptions.getParametersAsHashMap(ClientCommandProcessor.class.getCanonicalName(),
+//                    ClientCommandProcessorOptions.getAllOptions(), args);
+//    if (options.containsKey(HELP)) {
+//      ParametersAndOptions.printUsage(ClientCommandProcessor.class.getCanonicalName(),
+//              ClientCommandProcessorOptions.getAllOptions());
+//      System.exit(0);
+//    }
+//    startClientCommandProcessor(options);
+//  }
 
   @Override
   public void shutdown() {

@@ -50,14 +50,7 @@ public class AppReconfigurableNodeOptions {
    * Fixed timeout after which a query retransmitted.
    */
   public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
-  /**
-   * Name of the GNS server to forward GNS requests for Local Name server
-   */
-  public static String gnsServerIP;
-  /**
-   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
-   */
-  public static boolean dnsOnly = false;
+
   public static boolean replicateAll = false;
   //  Abhigyan: parameters related to retransmissions.
   //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
@@ -70,6 +63,14 @@ public class AppReconfigurableNodeOptions {
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
   public static boolean dnsGnsOnly = false;
+  /**
+   * Name of the GNS server to forward GNS requests for Local Name server.
+   */
+  public static String gnsServerIP = null;
+  /**
+   * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
+   */
+  public static boolean dnsOnly = false;
 
   public static boolean debuggingEnabled = false;
 
@@ -90,6 +91,10 @@ public class AppReconfigurableNodeOptions {
   public static final String TEST = "test";
   public static final String STANDALONE = "standAlone";
   public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
+  // for CCP
+  public static final String DNS_GNS_ONLY = "dnsGnsOnly";
+  public static final String DNS_ONLY = "dnsOnly";
+  public static final String GNS_SERVER_IP = "gnsServerIP";
 
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
@@ -107,6 +112,10 @@ public class AppReconfigurableNodeOptions {
     Option test = new Option(TEST, "Runs multiple test nodes on one machine");
     Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
     Option demandProfileClass = new Option(DEMAND_PROFILE_CLASS, true, "The class to use for the demand profile");
+    // for CCP
+    Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
+    Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
+    Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -124,6 +133,10 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(test);
     commandLineOptions.addOption(standAlone);
     commandLineOptions.addOption(demandProfileClass);
+    // for CCP
+    commandLineOptions.addOption(dnsGnsOnly);
+    commandLineOptions.addOption(dnsOnly);
+    commandLineOptions.addOption(gnsServerIP);
 
     return commandLineOptions;
 
@@ -209,6 +222,16 @@ public class AppReconfigurableNodeOptions {
     }
     System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
 
+    // CCP options
+    if (allValues.containsKey(DNS_GNS_ONLY)) {
+      dnsGnsOnly = true;
+    }
+    if (allValues.containsKey(DNS_ONLY)) {
+      dnsOnly = true;
+    }
+    if (allValues.containsKey(GNS_SERVER_IP)) {
+      gnsServerIP = allValues.get(GNS_SERVER_IP);
+    }
   }
 
 }
