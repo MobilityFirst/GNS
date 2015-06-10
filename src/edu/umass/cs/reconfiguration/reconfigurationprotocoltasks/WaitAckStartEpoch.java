@@ -40,9 +40,12 @@ public class WaitAckStartEpoch<NodeIDType>
 	private boolean done = false;
 	private final String key;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = Reconfigurator.getLogger();
 
+	/**
+	 * @param startEpoch
+	 * @param DB
+	 */
 	public WaitAckStartEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		super(
@@ -93,6 +96,9 @@ public class WaitAckStartEpoch<NodeIDType>
 				.getMyID().toString());
 	}
 
+	/**
+	 * Packet types handled.
+	 */
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_START_EPOCH, };
 
 	@Override

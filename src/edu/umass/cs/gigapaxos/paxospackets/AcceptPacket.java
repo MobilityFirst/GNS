@@ -4,10 +4,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+/**
+ * @author arun
+ *
+ */
+@SuppressWarnings("javadoc")
 public final class AcceptPacket extends PValuePacket {
 	protected static enum Keys {SENDER_NODE, MAJORITY_EXECUTED_SLOT};
 	
-	public final int sender; // sender nodeID
+	/** 
+	 * Sender node ID.
+	 */
+	public final int sender; 
 
 	public AcceptPacket(int nodeID, PValuePacket pValue, int slotNumber) {
 		super(pValue);

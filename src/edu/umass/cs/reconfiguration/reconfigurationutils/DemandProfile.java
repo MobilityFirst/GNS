@@ -11,13 +11,12 @@ import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
- */
-/*
+ * 
  * This class maintains the deman profile for a single name and returns it into a JSONObject via its
  * getStats() method.
  */
 public class DemandProfile extends AbstractDemandProfile {
-	public enum Keys {
+	protected enum Keys {
 		SERVICE_NAME, STATS, RATE, NUM_REQUESTS, NUM_TOTAL_REQUESTS
 	};
 
@@ -31,11 +30,18 @@ public class DemandProfile extends AbstractDemandProfile {
 	private int numTotalRequests = 0;
 	private DemandProfile lastReconfiguredProfile = null;
 
+	/**
+	 * @param name
+	 */
 	public DemandProfile(String name) {
 		super(name);
 	}
 
-	// deep copy constructor
+	/**
+	 * Deep copy constructor.
+	 * 
+	 * @param dp
+	 */
 	public DemandProfile(DemandProfile dp) {
 		super(dp.name);
 		this.interArrivalTime = dp.interArrivalTime;
@@ -44,6 +50,10 @@ public class DemandProfile extends AbstractDemandProfile {
 		this.numTotalRequests = dp.numTotalRequests;
 	}
 
+	/**
+	 * @param json
+	 * @throws JSONException
+	 */
 	public DemandProfile(JSONObject json) throws JSONException {
 		super(json.getString(Keys.SERVICE_NAME.toString()));
 		this.interArrivalTime = 1.0 / json.getDouble(Keys.RATE.toString());
@@ -74,15 +84,24 @@ public class DemandProfile extends AbstractDemandProfile {
 			lastRequestTime = System.currentTimeMillis(); // initialization
 	}
 
+	/**
+	 * @return Request rate.
+	 */
 	public double getRequestRate() {
 		return this.interArrivalTime > 0 ? 1.0 / this.interArrivalTime
 				: 1.0 / (this.interArrivalTime + 1000);
 	}
 
+	/**
+	 * @return Number of requests since the previous report.
+	 */
 	public double getNumRequests() {
 		return this.numRequests;
 	}
 
+	/**
+	 * @return Number of total requests.
+	 */
 	public double getNumTotalRequests() {
 		return this.numTotalRequests;
 	}

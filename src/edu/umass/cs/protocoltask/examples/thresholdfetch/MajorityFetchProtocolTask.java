@@ -19,11 +19,10 @@ import edu.umass.cs.protocoltask.examples.PingPongPacket;
 import edu.umass.cs.protocoltask.json.ProtocolPacket;
 import edu.umass.cs.utils.Util;
 
-/**
-@author V. Arun
- */
-
-/* This protocol task waits for responses from a majority of nodes in 
+/*
+ * @author V. Arun
+ * 
+ * This protocol task waits for responses from a majority of nodes in 
  * the specified set. It instantiates ThresholdProtocolTask that 
  * requires implementing a "boolean handleEvent(event)" method that 
  * determines whether the response is valid or not. If it is valid,
@@ -31,6 +30,7 @@ import edu.umass.cs.utils.Util;
  * sender as having responded and does not retry ("restart") the 
  * request to that node anymore.
  */
+@SuppressWarnings("javadoc")
 public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, PingPongPacket.PacketType, String> {
 
 	private String key = null;

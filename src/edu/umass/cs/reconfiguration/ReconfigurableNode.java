@@ -85,6 +85,9 @@ public abstract class ReconfigurableNode<NodeIDType> {
 		}
 	}
 
+	/**
+	 * Close gracefully.
+	 */
 	public void close() {
 		if (this.activeReplica != null)
 			this.activeReplica.close();

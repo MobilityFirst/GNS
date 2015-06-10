@@ -16,14 +16,28 @@ public class EpochFinalState<NodeIDType> extends BasicReconfigurationPacket<Node
 	
 	private final String state;
 	
+	/**
+	 * @param initiator
+	 * @param name
+	 * @param epochNumber
+	 * @param state
+	 */
 	public EpochFinalState(NodeIDType initiator, String name, int epochNumber, String state) {
 		super(initiator, ReconfigurationPacket.PacketType.EPOCH_FINAL_STATE, name, epochNumber);
 		this.state = state;
 	}
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public EpochFinalState(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json, unstringer);
 		this.state = (json.has(Keys.EPOCH_FINAL_STATE.toString()) ? json.getString(Keys.EPOCH_FINAL_STATE.toString()) : null);
 	}
+	/**
+	 * @return Epoch final state.
+	 */
 	public String getState() {return this.state;}
 	
 	@Override

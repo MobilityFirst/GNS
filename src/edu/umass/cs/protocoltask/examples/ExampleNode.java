@@ -22,6 +22,7 @@ import edu.umass.cs.protocoltask.examples.thresholdfetch.MajorityFetchProtocolTa
 /**
  * @author V. Arun
  */
+@SuppressWarnings("javadoc")
 public class ExampleNode {
 	private final int myID;
 	private final Set<Integer> nodeIDs;
@@ -118,10 +119,7 @@ public class ExampleNode {
 		return task;
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	 static void main(String[] args) {
 		int startID = 100;
 		int numNodes = 2;
 		SampleNodeConfig<Integer> snc = new SampleNodeConfig<Integer>();

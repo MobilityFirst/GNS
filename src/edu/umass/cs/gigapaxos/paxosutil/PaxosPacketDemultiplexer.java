@@ -11,9 +11,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * @author V. Arun
- */
-/* Needed to get NIO to send paxos packets to PaxosManager */
+ * @author V. Arun Needed to get NIO to send paxos packets to PaxosManager
+ * */
+@SuppressWarnings("javadoc")
 public class PaxosPacketDemultiplexer<NodeIDType> extends
 		AbstractJSONPacketDemultiplexer {
 
@@ -33,7 +33,8 @@ public class PaxosPacketDemultiplexer<NodeIDType> extends
 		boolean isPacketTypeFound = true;
 
 		try {
-			PaxosPacket.PaxosPacketType type = PaxosPacket.PaxosPacketType.getPaxosPacketType(JSONPacket.getPacketType(jsonMsg));
+			PaxosPacket.PaxosPacketType type = PaxosPacket.PaxosPacketType
+					.getPaxosPacketType(JSONPacket.getPacketType(jsonMsg));
 			switch (type) {
 			case PAXOS_PACKET:
 				paxosManager.handleIncomingPacket((jsonMsg));
@@ -48,11 +49,13 @@ public class PaxosPacketDemultiplexer<NodeIDType> extends
 		return isPacketTypeFound;
 	}
 
-	/* FIXME: This method will be removed as it is no longer used. The
-	 * corresponding functionality has been moved inside handleIncoming
-	 * in PaxosManager.
+	/*
+	 * FIXME: This method will be removed as it is no longer used. The
+	 * corresponding functionality has been moved inside handleIncoming in
+	 * PaxosManager.
 	 */
-	// convert string -> NodeIDType -> int (can *NOT* convert string directly to int)
+	// convert string -> NodeIDType -> int (can *NOT* convert string directly to
+	// int)
 	@Deprecated
 	protected JSONObject fixNodeStringToInt(JSONObject json)
 			throws JSONException {
@@ -94,11 +97,4 @@ public class PaxosPacketDemultiplexer<NodeIDType> extends
 		return json;
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-
-	}
 }

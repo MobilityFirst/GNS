@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.JSONMessenger;
@@ -15,23 +16,52 @@ import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.MyLogger;
 
+/**
+ * @author arun
+ *
+ * @param <NodeIDType>
+ */
 public class PaxosReplicaCoordinator<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {
 
 	private final PaxosManager<NodeIDType> paxosManager;
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	protected static final Logger log = (Reconfigurator.getLogger());
 
+	/**
+	 * @param app
+	 * @param myID
+	 * @param unstringer
+	 * @param niot
+	 * @param enableNullCheckpoints
+	 */
 	@SuppressWarnings("unchecked")
 	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceMessenger<NodeIDType,?> niot) {
+			InterfaceMessenger<NodeIDType,?> niot, boolean enableNullCheckpoints) {
 		super(app, niot);
 		assert(niot instanceof JSONMessenger);
 		this.paxosManager = new PaxosManager<NodeIDType>(myID, unstringer,
-				(JSONMessenger<NodeIDType>)niot, this);
+				(JSONMessenger<NodeIDType>)niot, this, enableNullCheckpoints);
+	}
+	/**
+	 * @param app
+	 * @param myID
+	 * @param unstringer
+	 * @param niot
+	 */
+	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
+			Stringifiable<NodeIDType> unstringer,
+			InterfaceMessenger<NodeIDType,?> niot) {
+		this(app, myID, unstringer, niot, true);
 	}
 
+	/**
+	 * @param app
+	 * @param myID
+	 * @param unstringer
+	 * @param niot
+	 * @param outOfOrderLimit
+	 */
 	@SuppressWarnings("unchecked")
 	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
@@ -92,8 +122,7 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 				+ epoch + (state != null ? " with initial state " + state : ""));
 		// will block for a default timeout if a lower unstopped epoch exits
 		boolean created = this.paxosManager.createPaxosInstanceForcibly(
-				groupName, (short) epoch, nodes, this, state,
-				PaxosManager.CAN_CREATE_TIMEOUT);
+				groupName, (short) epoch, nodes, this, state);
 		if (!created)
 			log.info(this + " paxos instance " + groupName + ":" + epoch
 					+ " or higher already exists");
@@ -133,7 +162,14 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 
 	@Override
 	public String getFinalState(String name, int epoch) {
-		String state = this.paxosManager.getFinalState(name, (short) epoch);
+		StringContainer stateContainer = this.getFinalStateContainer(name, epoch);
+		return stateContainer!=null ? stateContainer.state : null;
+	}
+
+	protected StringContainer getFinalStateContainer(String name, int epoch) {
+		StringContainer stateContainer = this.paxosManager.getFinalState(name,
+				(short) epoch);
+		String state = stateContainer != null ? stateContainer.state : null;
 		log.info(this.getMyID()
 				+ " received request for epoch final state "
 				+ name
@@ -143,10 +179,8 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 				+ state
 				+ (state == null ? " paxos instance stopped is "
 						+ this.paxosManager.isStopped(name)
-						+ " and epoch final state is "
-						+ this.paxosManager.getFinalState(name, (short) epoch)
-						: ""));
-		return state;
+						+ " and epoch final state is " + state : ""));
+		return stateContainer;
 	}
 
 	/* It is a bad idea to use this method with paxos replica coordination. 
@@ -190,6 +224,11 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 		return stop;
 	}
 	
+	/**
+	 * @param name
+	 * @param epoch
+	 * @return True if the {@code epoch} or higher version exists for {@code name}.
+	 */
 	public boolean existsOrHigher(String name, int epoch) {
 		return this.paxosManager.existsOrHigher(name, (short)epoch);
 	}

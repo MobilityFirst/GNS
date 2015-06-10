@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
@@ -12,29 +13,59 @@ import edu.umass.cs.utils.Util;
 
 import java.util.Random;
 
+/**
+ * @author arun
+ *
+ */
+@SuppressWarnings("javadoc")
 public class RequestPacket extends PaxosPacket implements InterfaceRequest {
-	private static final boolean DEBUG = true;
+	private static final boolean DEBUG = PaxosManager.DEBUG;
+	public static final String NO_OP = InterfaceRequest.NO_OP;
 
-	/*
-	 * These are rather specific to RequestPacket or for debugging, so they are
-	 * here as opposed to PaxosPacket.
+	/**
+	 * These JSON keys are rather specific to RequestPacket or for debugging, so
+	 * they are here as opposed to PaxosPacket. Application developers don't
+	 * have to worry about these.
 	 */
-	public static enum Keys {
-		NO_OP, IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
+	protected static enum Keys {
+		 IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
 	}
 
 	private static final long MAX_AGREEMENT_TIME = 30000;
 	private static final int MAX_FORWARD_COUNT = 3;
 	private static final Random random = new Random();
 
+	/**
+	 * Integer ID of client if one exists. Only integer client IDs are currently
+	 * supported in RequestPacket as this field is primarily used in testing. An
+	 * application client can include other arbitrary information in
+	 * {@code requestValue} if needed.
+	 */
 	public final int clientID;
+	/**
+	 * A unique requestID for each request. Paxos doesn't actually check or care
+	 * whether two requests with the same ID are identical. This field is useful
+	 * for asynchronous clients to associate responses with requests.
+	 */
 	public final int requestID;
+	/**
+	 * The actual request body. The client will get back this string if that is 
+	 * what it sent to paxos. If it issued a RequestPacket, then it will get
+	 * back the whole RequestPacket back.
+	 */
 	public final String requestValue;
+	/** 
+	 * Whether this request is a stop request.
+	 */
 	public final boolean stop;
 
+	// the replica that first received this request
 	private int entryReplica = -1;
+	// the client IP address in string form
 	private String clientAddress = null;
+	// the client port
 	private int clientPort = -1;
+	// whether to return requestValue or this.toString() back to client
 	private boolean returnRequestValue = false;
 
 	// needed to stop ping-ponging under coordinator confusion
@@ -44,11 +75,13 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	// batching
 	private RequestPacket[] batched = null;
 
-	/* these fields are for testing and debugging */
-	// preserved across forwarding by nodes, so not final
+	/*
+	 * These fields are for testing and debugging. They are preserved across
+	 * forwarding by nodes, so they are not final
+	 */
 	private long createTime = System.currentTimeMillis();
 	private long receiptTime = System.currentTimeMillis();
-	private String debugInfo = "";
+	private String debugInfo = null;
 
 	public RequestPacket(int clientID, String value, boolean stop) {
 		this(clientID, random.nextInt(), value, stop);
@@ -94,7 +127,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 
 	private RequestPacket makeNoopUtility() {
 		RequestPacket noop = new RequestPacket(clientID, requestID,
-				Keys.NO_OP.toString(), stop);
+				NO_OP, stop);
 		noop.entryReplica = this.entryReplica;
 		noop.clientAddress = this.clientAddress;
 		noop.clientPort = this.clientPort;
@@ -109,7 +142,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	}
 
 	public boolean isNoop() {
-		return this.requestValue.equals(Keys.NO_OP.toString());
+		return this.requestValue.equals(NO_OP);
 	}
 
 	private void incrForwardCount() {
@@ -145,7 +178,8 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	}
 
 	public void addDebugInfo(String str) {
-		this.debugInfo += makeDebugInfo(str, this.getCreateTime());
+		this.debugInfo = (this.debugInfo == null ? "" : this.debugInfo)
+				+ makeDebugInfo(str, this.getCreateTime());
 	}
 
 	public static boolean addDebugInfo(JSONObject msg, String str)
@@ -193,8 +227,6 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		this.requestValue = json.getString(Keys.REQUEST_VALUE.toString());
 		this.createTime = json.getLong(Keys.CREATE_TIME.toString());
 		this.receiptTime = json.getLong(Keys.RECEIPT_TIME.toString());
-		// this.replyToClient =
-		// json.getBoolean(Keys.REPLY_TO_CLIENT.toString());
 		this.forwardCount = (json.has(Keys.FORWARD_COUNT.toString()) ? json
 				.getInt(Keys.FORWARD_COUNT.toString()) : 0);
 		this.forwarderID = (json
@@ -232,12 +264,11 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		json.put(Keys.REQUEST_VALUE.toString(), this.requestValue);
 		json.put(Keys.CREATE_TIME.toString(), this.createTime);
 		json.put(Keys.RECEIPT_TIME.toString(), this.receiptTime);
-		// json.put(Keys.REPLY_TO_CLIENT.toString(), replyToClient);
 		json.put(Keys.FORWARD_COUNT.toString(), this.forwardCount);
 		json.put(RequestPacket.Keys.FORWARDER_ID.toString(), this.forwarderID);
 		json.put(Keys.IS_STOP.toString(), this.stop);
 		if (DEBUG)
-			json.put(Keys.DEBUG_INFO.toString(), this.debugInfo);
+			json.putOpt(Keys.DEBUG_INFO.toString(), this.debugInfo);
 		json.put(PaxosPacket.NodeIDKeys.ENTRY_REPLICA.toString(),
 				this.entryReplica);
 		if (this.clientAddress != null)

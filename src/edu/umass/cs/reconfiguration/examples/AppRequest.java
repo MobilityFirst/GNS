@@ -16,15 +16,28 @@ import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
 
+@SuppressWarnings("javadoc")
 public class AppRequest extends JSONPacket implements InterfaceReconfigurableRequest, InterfaceReplicableRequest {
 
+	/**
+	 * JSON key for packet type.
+	 */
 	public static final String PACKET_TYPE = JSONPacket.PACKET_TYPE;
 
+	/**
+	 * Packet type class for NoopApp requests.
+	 */
 	public enum PacketType implements IntegerPacketType {
+		/**
+		 * Default app request.
+		 */
 		DEFAULT_APP_REQUEST (401),
+		/**
+		 * App request coordination packet type. Curently not used.
+		 */
 		APP_COORDINATION (402),
 		;
 
@@ -42,6 +55,10 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 			}
 		}
 		/* *************** END static code block to ensure correct initialization **************/
+		/**
+		 * @param type
+		 * @return PacketType from int type.
+		 */
 		public static PacketType getPacketType(int type) {
 			return PacketType.numbers.get(type);
 		}
@@ -58,7 +75,9 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		}
 	}
 
-	// These app keys by design need not be the same as those in BasicReconfigurationPacket
+	/**
+	 *  These app keys by design need not be the same as those in BasicReconfigurationPacket
+	 */
 	public enum Keys {SERVICE_NAME, EPOCH, REQUEST_ID, REQUEST_VALUE, IS_STOP, IS_COORDINATION, CLIENT_IP, CLIENT_PORT};
 
 	private final String name;

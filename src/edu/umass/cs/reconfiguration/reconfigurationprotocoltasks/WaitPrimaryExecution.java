@@ -12,7 +12,12 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 
-/*
+
+/**
+ * @author arun
+ *
+ * @param <NodeIDType>
+ * 
  * This task waits for a single replica in a replicated application to finish
  * executing the request. This is useful when you want only one replica to
  * execute a request in the common case but ensure that the committed request is
@@ -31,8 +36,8 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
  * When used with paxos, each decision now consists of two parts: decision and
  * result. The replicas store the decision until either they timeout and decide
  * to execute the decision themselves or the result arrives.
- */
 
+ */
 public class WaitPrimaryExecution<NodeIDType> extends
 		WaitAckStopEpoch<NodeIDType> {
 
@@ -43,6 +48,12 @@ public class WaitPrimaryExecution<NodeIDType> extends
 
 	private final String key;
 
+	/**
+	 * @param myID
+	 * @param startEpoch
+	 * @param DB
+	 * @param replicas
+	 */
 	public WaitPrimaryExecution(NodeIDType myID,
 			StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB,

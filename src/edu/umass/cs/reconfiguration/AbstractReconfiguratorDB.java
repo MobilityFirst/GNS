@@ -2,6 +2,7 @@ package edu.umass.cs.reconfiguration;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -15,11 +16,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.AckDropEpochFinalState;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStopEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
@@ -33,16 +30,25 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 /*
  * Need to add fault tolerance support via paxos here.
  */
 public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		InterfaceRepliconfigurable, InterfaceReconfiguratorDB<NodeIDType> {
-	public static final ReconfigurationPacket.PacketType[] types = {};// ReconfigurationPacket.PacketType.RC_RECORD_REQUEST
 
+	/**
+	 * Constant RC record name keys. Currently there is only one, for the set of
+	 * all reconfigurators.
+	 */
 	public static enum RecordNames {
+		/**
+		 * The record key for the RC record holding the set of all
+		 * reconfigurators. This is used to reconfigure the set of all
+		 * reconfigurators just like a typical RC record is used to reconfigure
+		 * service names.
+		 */
 		NODE_CONFIG
 	};
 
@@ -50,16 +56,23 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	protected final NodeIDType myID;
 	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = (Reconfigurator.getLogger());
 
+	/**
+	 * @param myID
+	 * @param nc
+	 */
 	public AbstractReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc) {
 		this.myID = myID;
 		this.consistentNodeConfig = nc;
 	}
 
-	// default method definition if epoch is specified
+	/**
+	 * @param name
+	 * @param epoch
+	 * @return ReconfigurationRecord for {@code name:epoch}.
+	 */
 	public ReconfigurationRecord<NodeIDType> getReconfigurationRecord(
 			String name, int epoch) {
 		ReconfigurationRecord<NodeIDType> record = this
@@ -115,47 +128,20 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		return null;
 	}
 
+	/**
+	 * @param report
+	 * @return True if demand report is handled successfully. False means 
+	 * that it may not have been processed. 
+	 */
 	public boolean handleDemandReport(DemandReport<NodeIDType> report) {
 		return this.updateDemandStats(report);
 	}
 
-	public boolean handleAckStopEpoch(AckStopEpoch<NodeIDType> ackStopEpoch) {
-		ReconfigurationRecord<NodeIDType> record = this
-				.getReconfigurationRecord(ackStopEpoch.getServiceName());
-		if (!this.isLegitTransition(record, ackStopEpoch.getEpochNumber() + 1,
-				RCStates.WAIT_ACK_START))
-			return false;
-		return this.setState(ackStopEpoch.getServiceName(),
-				ackStopEpoch.getEpochNumber() + 1, RCStates.WAIT_ACK_START);
-	}
-
-	public boolean handleAckStartEpoch(AckStartEpoch<NodeIDType> ackStartEpoch) {
-		ReconfigurationRecord<NodeIDType> record = this
-				.getReconfigurationRecord(ackStartEpoch.getServiceName());
-		if (!this.isLegitTransition(record, ackStartEpoch.getEpochNumber(),
-				RCStates.READY))
-			return false;
-		return this.setState(ackStartEpoch.getServiceName(),
-				ackStartEpoch.getEpochNumber(), RCStates.READY);
-	}
-
-	/*
-	 * This method exists only in case an ackDrop packet arrives after the
-	 * corresponding task has terminated.
-	 */
-	public boolean handleAckDropEpochFinalState(
-			AckDropEpochFinalState<NodeIDType> ackDropEpoch) {
-		// no state change needed here by design
-		return true;
-	}
-
-	public boolean handleCreateServiceName(CreateServiceName create) {
-		return this.createRecord(create.getServiceName()) != null;
-	}
-
-	/*
+	/**
 	 * If a reconfiguration intent is being registered, a protocol task must be
 	 * started that ensures that the reconfiguration completes successfully.
+	 * @param rcRecReq 
+	 * @return True if the record was handled successfully.
 	 */
 	public boolean handleRCRecordRequest(RCRecordRequest<NodeIDType> rcRecReq) {
 
@@ -182,7 +168,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		if (rcRecReq.isNodeConfigChange()
 				&& rcRecReq.isReconfigurationComplete()) {
 			// should not be here at node config creation time
-			assert(!rcRecReq.startEpoch.getPrevEpochGroup().isEmpty());
+			assert (!rcRecReq.startEpoch.getPrevEpochGroup().isEmpty());
 			// wait for all local RC groups to be up to date
 			this.selfWait();
 			// delete lower node config versions from node config table
@@ -258,13 +244,6 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	}
 
 	/*
-	// FIXME: keep close to getRCGroupName in RepliconfigurableReconfiguratorDB
-	protected boolean isRCGroupName(String name) {
-		return this.getRCGroupName(name).equals(name);
-	}
-	*/
-
-	/*
 	 * Checks that oldGroup is current group and newGroup differs from old by
 	 * exactly one node.
 	 */
@@ -318,7 +297,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	}
 
 	/*
-	 * The methods below that throw a runtime exception saying that they should
+	 * Some methods below that throw a runtime exception saying that they should
 	 * have never been called are so because, with the current design, these
 	 * methods are subsumed by Reconfigurator and never directly called. The
 	 * current call chain is PacketDemultiplexer -> Reconfigurator ->
@@ -333,7 +312,6 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		return null;
 	}
 
-	// FIXME: Replicable and Reconfigurable methods are unimplemented below.
 
 	// Reconfigurable methods below
 	@Override
@@ -548,7 +526,10 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		this.notifyAll();
 	}
 
-	// FIXME: check if this can this really be a noop.
+	/**
+	 * @param stopEpoch
+	 * @return If this {@code stopEpoch} was handled successfully.
+	 */
 	public boolean handleStopEpoch(StopEpoch<NodeIDType> stopEpoch) {
 		log.info(this + " stopped " + stopEpoch.getSummary());
 		this.clearMerged(stopEpoch.getServiceName(), stopEpoch.getEpochNumber());
@@ -569,10 +550,11 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			return this.getRCGroupName(this.consistentNodeConfig
 					.getFirstReconfigurator(name));
 	}
-	
+
 	protected boolean isRCGroupName(String name) {
-		for(NodeIDType rc : this.consistentNodeConfig.getReconfigurators())
-			if(this.getRCGroupName(rc).equals(name)) return true;
+		for (NodeIDType rc : this.consistentNodeConfig.getReconfigurators())
+			if (this.getRCGroupName(rc).equals(name))
+				return true;
 		return false;
 	}
 
@@ -595,6 +577,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							version);
 		return added;
 	}
+
 	protected Set<NodeIDType> setRCEpochs(Set<NodeIDType> addNodes,
 			Set<NodeIDType> deleteNodes) {
 		ReconfigurationRecord<NodeIDType> ncRecord = this
@@ -619,11 +602,11 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		this.setRCEpochs(ncRecord);
 		return affectedNodes;
 	}
-	
+
 	/*
 	 * Determines if rcNode's group needs to be reconfigured because of the
-	 * addition or deletion of addOrDelNode. We need this to correctly
-	 * track the epoch numbers of all RC groups.
+	 * addition or deletion of addOrDelNode. We need this to correctly track the
+	 * epoch numbers of all RC groups.
 	 */
 	protected boolean isAffected(NodeIDType rcNode, NodeIDType addOrDelNode) {
 		if (addOrDelNode == null)
@@ -645,6 +628,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		}
 		return affected;
 	}
+
 	protected ConsistentHashing<NodeIDType> getOldConsistentHashRing() {
 		return new ConsistentHashing<NodeIDType>(this.getReconfigurationRecord(
 				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
@@ -657,7 +641,10 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 				.getNewActives());
 	}
 
-
+	/**
+	 * @param taskKey
+	 * @return True as specified by {@link Collection#add}.
+	 */
 	public synchronized boolean addRCTask(String taskKey) {
 		return this.pendingRCProtocolTasks.add(taskKey);
 	}

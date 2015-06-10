@@ -7,5 +7,8 @@ package edu.umass.cs.protocoltask;
  */
 public interface ThresholdProtocolEvent<NodeIDType, EventType, KeyType> extends
 		ProtocolEvent<EventType, KeyType> {
+	/**
+	 * @return Sender node ID for this protocol event message.
+	 */
 	public NodeIDType getSender();
 }

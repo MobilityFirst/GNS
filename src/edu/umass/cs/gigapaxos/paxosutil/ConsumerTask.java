@@ -3,6 +3,14 @@ package edu.umass.cs.gigapaxos.paxosutil;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * @author arun
+ *
+ * @param <TaskType>
+ * 
+ * A utility for a standard "consumer" task in a producer/consumer setup.
+ */
+@SuppressWarnings("javadoc")
 public abstract class ConsumerTask<TaskType> implements Runnable {
 	protected final Object lock;
 	private boolean processing = false;

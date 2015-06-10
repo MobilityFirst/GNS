@@ -46,9 +46,12 @@ public class WaitAckStopEpoch<NodeIDType>
 
 	private String finalState = null;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = Reconfigurator.getLogger();
 
+	/**
+	 * @param startEpoch
+	 * @param DB
+	 */
 	public WaitAckStopEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		super(startEpoch.getPrevEpochGroup(), 1); // default is all?
@@ -129,6 +132,9 @@ public class WaitAckStopEpoch<NodeIDType>
 						+ this.startEpoch.getEpochNumber() : "");
 	}
 
+	/**
+	 * Packet types handled.
+	 */
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_STOP_EPOCH };
 
 	@Override
@@ -198,6 +204,4 @@ public class WaitAckStopEpoch<NodeIDType>
 		return this.getKey();
 	}
 
-	public static void main(String[] args) {
-	}
 }

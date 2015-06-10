@@ -44,9 +44,13 @@ public class WaitEpochFinalState<NodeIDType>
 
 	private final String key;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = (Reconfigurator.getLogger());
 
+	/**
+	 * @param myID
+	 * @param startEpoch
+	 * @param appCoordinator
+	 */
 	public WaitEpochFinalState(NodeIDType myID,
 			StartEpoch<NodeIDType> startEpoch,
 			AbstractReplicaCoordinator<NodeIDType> appCoordinator) {
@@ -185,6 +189,12 @@ public class WaitEpochFinalState<NodeIDType>
 		return true;
 	}
 
+	/**
+	 * @param node
+	 * @param key
+	 * @return Node to be notified with AckStartEpoch when epoch final
+	 *         state becomes ready.
+	 */
 	public synchronized String addNotifiee(NodeIDType node, String key) {
 		return this.notifiees.put(node, key);
 	}
@@ -196,6 +206,9 @@ public class WaitEpochFinalState<NodeIDType>
 		return this.getAckStarts();
 	}
 
+	/**
+	 * @return Messaging tasks to be performed to send acks to notifiees.
+	 */
 	public GenericMessagingTask<NodeIDType, ?>[] getAckStarts() {
 		Set<GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>> mtasks = new HashSet<GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>>();
 		for (NodeIDType node : new HashSet<NodeIDType>(this.notifiees.keySet())) {
@@ -214,7 +227,4 @@ public class WaitEpochFinalState<NodeIDType>
 		return mtasks.toArray(mtasks.iterator().next().toArray());
 	}
 
-	public static void main(String[] args) {
-
-	}
 }

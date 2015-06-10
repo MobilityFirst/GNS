@@ -22,7 +22,10 @@ import edu.umass.cs.gigapaxos.paxosutil.WaitforUtility;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.NullIfEmptyMap;
 
-/* This class manages paxos coordinator state.
+/**
+ * @author V. Arun
+ * 
+ * This class manages paxos coordinator state.
  * It has no public methods, only protected methods,
  * as it is used *only* by PaxosCoordinator.
  * 
@@ -33,11 +36,8 @@ import edu.umass.cs.utils.NullIfEmptyMap;
  * 
  * Testing: It is unit-testable by running the main method.
  */
-/**
-@author V. Arun
- */
 public class PaxosCoordinatorState  {
-	private static final String NO_OP = RequestPacket.Keys.NO_OP.toString();
+	private static final String NO_OP = RequestPacket.NO_OP;
 	private static final String STOP = "STOP";
 	private static final int PREPARE_TIMEOUT = 60000; // ms, should be int, not long
 	private static final int ACCEPT_TIMEOUT = 60000; // ms
@@ -465,7 +465,7 @@ public class PaxosCoordinatorState  {
 			if(waitfor.heardFromMajority()) {
 				// phase2b success
 				acceptedByMajority=true;
-				decision = (pstate.pValuePacket.makeDecision(getMajorityCommittedSlot(), this.myBallotCoord));
+				decision = (pstate.pValuePacket.makeDecision(getMajorityCommittedSlot()));
 				log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[]{"Node " , 
 						this.myBallotCoord , " decided for slot ", decision.slot, 
 						": ", decision});
@@ -652,7 +652,7 @@ public class PaxosCoordinatorState  {
 		if(pvalue!=null) proposalPacket = new ProposalPacket(curSlot, pvalue.makeNoop());
 		else proposalPacket = new ProposalPacket(curSlot, new RequestPacket(0,0,NO_OP,false));
 		PValuePacket noop = new PValuePacket(new Ballot(this.myBallotNum, this.myBallotCoord), proposalPacket);
-		return noop.makeDecision(this.getMajorityCommittedSlot(), this.myBallotCoord);
+		return noop.makeDecision(this.getMajorityCommittedSlot());
 	}
 	private PValuePacket makeNoopPValue(PValuePacket pvalue) {
 		return this.makeNoopPValue(pvalue.slot, pvalue);
@@ -686,7 +686,7 @@ public class PaxosCoordinatorState  {
 				(this.carryoverProposals!=null ? this.carryoverProposals.size():0) + 
 				", |myProposals|=" + this.myProposals.size()+"]";
 	}
-	public String printState() {
+	private String printState() {
 		String s="[\n  carryoverProposals = ";
 		if(this.carryoverProposals==null || this.carryoverProposals.isEmpty()) s += "[]\n";
 		else {
@@ -701,7 +701,7 @@ public class PaxosCoordinatorState  {
 		s+=" ]\n]";
 		return s;
 	}
-	public String printMyProposals() {
+	private String printMyProposals() {
 		String s="  myProposals = \n";
 		for(ProposalStateAtCoordinator psac : this.myProposals.values()) {
 			s += psac.pValuePacket + "\n";
@@ -733,10 +733,7 @@ public class PaxosCoordinatorState  {
 		return this.myProposals.containsKey(slot) || !this.isActive();
 	}
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		int myID = 21;
 		int ballotnum=2;

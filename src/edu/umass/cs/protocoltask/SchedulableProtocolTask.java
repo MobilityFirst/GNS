@@ -13,7 +13,13 @@ import edu.umass.cs.nio.GenericMessagingTask;
  */
 public interface SchedulableProtocolTask<NodeIDType, EventType, KeyType>
 		extends ProtocolTask<NodeIDType, EventType, KeyType> {
+	/**
+	 * @return The messaging task upon each restart.
+	 */
 	public GenericMessagingTask<NodeIDType, ?>[] restart();
 
+	/**
+	 * @return The restart period.
+	 */
 	public long getPeriod();
 }

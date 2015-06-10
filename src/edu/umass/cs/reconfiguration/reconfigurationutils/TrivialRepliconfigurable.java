@@ -15,8 +15,14 @@ import edu.umass.cs.reconfiguration.InterfaceRepliconfigurable;
  */
 public class TrivialRepliconfigurable implements InterfaceRepliconfigurable {
 	
+	/**
+	 * The underlying app.
+	 */
 	public final InterfaceApplication app;
 	
+	/**
+	 * @param app
+	 */
 	public TrivialRepliconfigurable(InterfaceApplication app) {
 		this.app = app;
 	}

@@ -11,7 +11,11 @@ import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author V. Arun
+ * 
+ *         The main class for testing gigapaxos on a single machine with virtual
+ *         nodes.
  */
+@SuppressWarnings("javadoc")
 public class TESTPaxosMain {
 	private HashMap<Integer, TESTPaxosNode> nodes = new HashMap<Integer, TESTPaxosNode>();
 	ScheduledExecutorService execpool = Executors.newScheduledThreadPool(5);
@@ -50,18 +54,20 @@ public class TESTPaxosMain {
 	}
 
 	/*
-	 * This method tests single-node paxos and exits gracefully at the end by closing all nodes and
-	 * associated paxos managers. Calling this method again with testRecovery=true will test
-	 * recovery mode.
+	 * This method tests single-node paxos and exits gracefully at the end by
+	 * closing all nodes and associated paxos managers. Calling this method
+	 * again with testRecovery=true will test recovery mode.
 	 */
 	public static void testPaxos() {
 		try {
 			/*************** Setting up servers below ***************************/
 
 			TESTPaxosMain tpMain = null;
-			tpMain = new TESTPaxosMain(); // creates all nodes, each with its paxos manager and app
+			tpMain = new TESTPaxosMain(); // creates all nodes, each with its
+											// paxos manager and app
 
-			// no-op if recovery enabled coz we need consistent groups across runs
+			// no-op if recovery enabled coz we need consistent groups across
+			// runs
 			TESTPaxosConfig
 					.setRandomGroups(TESTPaxosConfig.PRE_CONFIGURED_GROUPS);
 
@@ -89,7 +95,7 @@ public class TESTPaxosMain {
 					.println("\n[run1]" + getAggregateOutput(numReqs, t1, t2));
 			// end first run
 
-			assert(TESTPaxosClient.noOutstanding(clients));
+			assert (TESTPaxosClient.noOutstanding(clients));
 			TESTPaxosClient.resetLatencyComputation();
 			Thread.sleep(2000);
 
@@ -140,5 +146,4 @@ public class TESTPaxosMain {
 		TESTPaxosConfig.setCleanDB(false);
 		testPaxos();
 	}
-
 }

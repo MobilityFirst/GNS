@@ -12,7 +12,9 @@ import edu.umass.cs.protocoltask.TESTProtocolTaskConfig;
 
 /**
  * @author V. Arun
+ * 
  */
+@SuppressWarnings("javadoc")
 public class PingPongServer implements ProtocolTask<Integer, PingPongPacket.PacketType, String> {
 
 	private final String key = null;

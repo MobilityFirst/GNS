@@ -13,8 +13,12 @@ import edu.umass.cs.utils.IntegerPacketTypeMap;
 /**
  * @author V. Arun
  */
+@SuppressWarnings("javadoc")
 public class PingPongPacket extends ProtocolPacket<Integer, PingPongPacket.PacketType> { // BasicPacket implements ProtocolEvent<Packet.PacketType,Long> {
 
+	/**
+	 * Packet type used by PingPong example.
+	 */
 	public enum PacketType implements IntegerPacketType {
 		TEST_PING(222), TEST_PONG(223);
 

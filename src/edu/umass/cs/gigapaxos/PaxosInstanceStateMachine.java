@@ -37,10 +37,9 @@ import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
-@author V. Arun
- */
-
-/* This class is the top-level paxos class per instance or paxos group
+ * @author V. Arun
+ * 
+ * This class is the top-level paxos class per instance or paxos group
  * on a machine. This is the only class that exposes public methods. 
  * Actually even this class will soon become "protected" as the only way 
  * to use it will be through the corresponding PaxosManager even if there 
@@ -148,6 +147,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	
 	// poke instance in the beginning to prompt coordinator election
 	protected static final boolean POKE_ENABLED = false;
+	
+	protected static final boolean ENABLE_NULL_CHECKPOINT_STATE = true;
+	private boolean nullCheckpointStateEnabled() {return this.paxosManager.isNullCheckpointStateEnabled();}
 
 	/************ final Paxos state that is unchangeable after creation ***************/
 	private final int[] groupMembers; 
@@ -211,7 +213,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 	
 	public String getKey() {return this.getPaxosID();}
+	/**
+	 * @return Version or epoch number corresponding to this reconfigurable paxos instance.
+	 */
 	public Short getVersion() {return this.version;}
+	/**
+	 * @return Paxos instance name concatenated with the version number.
+	 */
 	public String getPaxosIDVersion() {return this.getPaxosID()+":"+this.getVersion();}
 
 	protected String getPaxosID() {return (paxosID instanceof String ? (String)paxosID : new String((byte[])paxosID)); }
@@ -223,11 +231,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	public String toString() {return this.getNodeState() /*+ " " + (this.paxosState!=null ? this.paxosState.toString():"null") +
 			(this.coordinator.exists()?this.coordinator.toString():"null")*/;}
 
-	/* isStopped()==true means that this paxos instance is
+	/** 
+	 * isStopped()==true means that this paxos instance is
 	 * dead and completely harmless (even if the underlying object has
 	 * not been garbage collected by the JVM. In particular, it can 
 	 * NOT make the app execute requests or send out paxos messages 
 	 * to the external world.
+	 * @return Whether this paxos instance has been stopped.
 	 */
 	public synchronized boolean isStopped() {return this.paxosState.isStopped();}
 	protected boolean forceStop() { // not synchronized as coordinator can die anytime anyway 
@@ -369,7 +379,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		// initial coordinator is assumed, not prepared
 		if (slotBallot == null && roundRobinCoordinator(0) == this.getMyID())
 			this.coordinator.makeCoordinator(0, this.getMyID(), getMembers(),
-					(initialState != null ? 1 : 0), true); // slotBallot==null
+					(initialState != null || nullCheckpointStateEnabled() ? 1
+							: 0), true); // slotBallot==null
 		/*
 		 * Note: We don't have to create coordinator state here. It will get
 		 * created if needed when the first external (non-recovery) packet is
@@ -407,7 +418,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 	
 	private boolean putInitialState(String initialState) {
-		if (this.getPaxosManager() == null || initialState==null)
+		if (this.getPaxosManager() == null
+				|| (initialState == null && !nullCheckpointStateEnabled()))
 			return false;
 		this.handleCheckpoint(new StatePacket(initialBallot(), 0, initialState));
 		this.paxosState.setGCSlotAfterPuttingInitialSlot();
@@ -786,19 +798,30 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		return this.fixLongDecisionGaps(loggedDecision);
 	}
 
-	/*
+	/**
 	 * Helper method used above in extractExecuteAndCheckpoint as well as by
 	 * PaxosManager for emulating unreplicated execution for testing purposes.
 	 */
-	protected static boolean execute(InterfaceReplicable app, String[] requestValues, boolean doNotReplyToClient) {
-		for(String requestValue : requestValues)
-			while (!app.handleRequest(
-					getInterfaceRequest(app, requestValue),
-					doNotReplyToClient))
-				log.severe("App failed to execute request, retrying: "
-						+ requestValue);
+	protected static boolean execute(InterfaceReplicable app,
+			String[] requestValues, boolean doNotReplyToClient) {
+		for (String requestValue : requestValues) {
+			boolean executed = false;
+			do {
+				try {
+					executed = app.handleRequest(
+							getInterfaceRequest(app, requestValue),
+							doNotReplyToClient);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				if (!executed)
+					log.severe("App failed to execute request, retrying: "
+							+ requestValue);
+			} while (!executed);
+		}
 		return true;
 	}
+
 	// Like extractExecuteAndCheckpoint but invoked upon checkpoint transfer
 	private synchronized MessagingTask handleCheckpoint(StatePacket statePacket) {
 		if(statePacket.slotNumber >= this.paxosState.getSlot()) {

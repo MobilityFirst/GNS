@@ -17,10 +17,16 @@ public class ReconfigurableSampleNodeConfig extends SampleNodeConfig<Integer>
 
 	private static final int RC_OFFSET = 1000; 
 	
+	/**
+	 * 
+	 */
 	public ReconfigurableSampleNodeConfig() {
 		super();
 	}
 
+	/**
+	 * @param defaultPort
+	 */
 	public ReconfigurableSampleNodeConfig(int defaultPort) {
 		super(defaultPort);
 	}

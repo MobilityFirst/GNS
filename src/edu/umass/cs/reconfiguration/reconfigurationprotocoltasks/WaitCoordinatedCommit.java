@@ -22,8 +22,7 @@ import edu.umass.cs.utils.MyLogger;
 /**
  * @author V. Arun
  * @param <NodeIDType> 
- */
-/*
+ * 
  * This protocol task is initiated at a reconfigurator in order to commit the
  * completion of the reconfiguration, i.e., to change the state of the
  * reconfiguration record to READY or to execute the actual deletion of the
@@ -42,9 +41,12 @@ public class WaitCoordinatedCommit<NodeIDType>
 
 	private final String key;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = (Reconfigurator.getLogger());
 
+	/**
+	 * @param rcRecReq
+	 * @param DB
+	 */
 	public WaitCoordinatedCommit(RCRecordRequest<NodeIDType> rcRecReq,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		this.rcRecReq = rcRecReq;
@@ -134,9 +136,6 @@ public class WaitCoordinatedCommit<NodeIDType>
 		return obviated;
 	}
 
-	// empty as task does not expect any events and will be explicitly removed
-	public static final ReconfigurationPacket.PacketType[] types = {};
-
 	@Override
 	public Set<PacketType> getEventTypes() {
 		return new HashSet<ReconfigurationPacket.PacketType>();
@@ -151,7 +150,6 @@ public class WaitCoordinatedCommit<NodeIDType>
 	public GenericMessagingTask<NodeIDType, ?>[] handleEvent(
 			ProtocolEvent<PacketType, String> event,
 			ProtocolTask<NodeIDType, PacketType, String>[] ptasks) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

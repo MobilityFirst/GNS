@@ -21,6 +21,12 @@ public class StopEpoch<NodeIDType> extends
 
 	private final boolean getFinalState;
 
+	/**
+	 * @param initiator
+	 * @param name
+	 * @param epochNumber
+	 * @param getFinalState
+	 */
 	public StopEpoch(NodeIDType initiator, String name, int epochNumber,
 			boolean getFinalState) {
 		super(initiator, ReconfigurationPacket.PacketType.STOP_EPOCH, name,
@@ -28,10 +34,20 @@ public class StopEpoch<NodeIDType> extends
 		this.getFinalState = getFinalState;
 	}
 
+	/**
+	 * @param initiator
+	 * @param name
+	 * @param epochNumber
+	 */
 	public StopEpoch(NodeIDType initiator, String name, int epochNumber) {
 		this(initiator, name, epochNumber, false);
 	}
 
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public StopEpoch(JSONObject json, Stringifiable<NodeIDType> unstringer)
 			throws JSONException {
 		super(json, unstringer);
@@ -57,9 +73,13 @@ public class StopEpoch<NodeIDType> extends
 
 	@Override
 	public void setNeedsCoordination(boolean b) {
-		// TODO Auto-generated method stub
+		// do nothing
 	}
 	
+	/**
+	 * @return True if the epoch final state should be sent with the
+	 *         AckStopEpoch packet.
+	 */
 	public boolean shouldGetFinalState() {	
 		return this.getFinalState;
 	}

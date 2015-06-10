@@ -30,11 +30,19 @@ public class RequestActiveReplicas extends
 		ACTIVE_REPLICAS
 	};
 
+	/**
+	 * Unstringer for InetSocketAddress of sender.
+	 */
 	public static final Stringifiable<InetSocketAddress> unstringer = new StringifiableDefault<InetSocketAddress>(
 			new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
 	private Set<InetSocketAddress> actives = null;
 
+	/**
+	 * @param initiator
+	 * @param name
+	 * @param epochNumber
+	 */
 	public RequestActiveReplicas(InetSocketAddress initiator, String name,
 			int epochNumber) {
 		super(initiator,
@@ -43,6 +51,11 @@ public class RequestActiveReplicas extends
 		this.actives = null;
 	}
 
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public RequestActiveReplicas(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
 		super(json, RequestActiveReplicas.unstringer); // ignores arg unstringer
@@ -56,6 +69,10 @@ public class RequestActiveReplicas extends
 			this.actives.add(RequestActiveReplicas.unstringer.valueOf(jsonArray
 					.get(i).toString()));
 	}
+	/**
+	 * @param json
+	 * @throws JSONException
+	 */
 	public RequestActiveReplicas(JSONObject json)
 			throws JSONException {
 		this(json, null);
@@ -69,14 +86,20 @@ public class RequestActiveReplicas extends
 		return json;
 	}
 
+	/**
+	 * @param replicas
+	 */
 	public void setActives(Set<InetSocketAddress> replicas) {
 		this.actives = replicas;
 	}
+	/**
+	 * @return Active replica socket addresses. 
+	 */
 	public Set<InetSocketAddress> getActives() {
 		return this.actives;
 	}
 
-	public static void main(String[] args) {
+	 static void main(String[] args) {
 		String[] addrs = { "128.119.240.21" };
 		int[] ports = { 3245 };
 		assert (addrs.length == ports.length);

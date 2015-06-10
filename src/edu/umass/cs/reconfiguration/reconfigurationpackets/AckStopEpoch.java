@@ -21,6 +21,11 @@ public class AckStopEpoch<NodeIDType> extends
 
 	private final String finalState;
 
+	/**
+	 * @param sender
+	 * @param stopEpoch
+	 * @param finalState
+	 */
 	public AckStopEpoch(NodeIDType sender, StopEpoch<NodeIDType> stopEpoch,
 			String finalState) {
 		super(stopEpoch.getInitiator(),
@@ -31,10 +36,19 @@ public class AckStopEpoch<NodeIDType> extends
 		this.finalState = finalState;
 	}
 
+	/**
+	 * @param sender
+	 * @param stopEpoch
+	 */
 	public AckStopEpoch(NodeIDType sender, StopEpoch<NodeIDType> stopEpoch) {
 		this(sender, stopEpoch, null);
 	}
 
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public AckStopEpoch(JSONObject json, Stringifiable<NodeIDType> unstringer)
 			throws JSONException {
 		super(json, unstringer);
@@ -53,6 +67,9 @@ public class AckStopEpoch<NodeIDType> extends
 		return this.getType();
 	}
 	
+	/**
+	 * @return Final state of the epoch whose stoppage is being acknowledged.
+	 */
 	public String getFinalState() {
 		return this.finalState;
 	}

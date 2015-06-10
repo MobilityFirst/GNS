@@ -3,7 +3,16 @@ package edu.umass.cs.gigapaxos.paxospackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * @author arun
+ *
+ */
+@SuppressWarnings("javadoc")
 public class ProposalPacket extends RequestPacket {	
+	/**
+	 * Slot number assigned to the request. A proposal is a (slot, request)
+	 * two-tuple.
+	 */
 	public final int slot;
 
     public ProposalPacket(int slot, RequestPacket req) {

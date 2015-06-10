@@ -2,6 +2,7 @@ package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,9 +17,12 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurabl
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
-/*
+/**
+ * @author V. Arun
+ * <p>
  * We need this class to extend both PaxosReplicationCoordinator and
  * AbstractReconfiguratorDB, so we use an interface for the latter.
+ * @param <NodeIDType> 
  */
 public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		PaxosReplicaCoordinator<NodeIDType> {
@@ -32,6 +36,12 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	private final AbstractReconfiguratorDB<NodeIDType> app;
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
 
+	/**
+	 * @param app
+	 * @param myID
+	 * @param consistentNodeConfig
+	 * @param niot
+	 */
 	public RepliconfigurableReconfiguratorDB(
 			AbstractReconfiguratorDB<NodeIDType> app,
 			NodeIDType myID,
@@ -71,6 +81,10 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		return super.coordinateRequest(rcGroupName, request);
 	}
 
+	/**
+	 * @param request
+	 * @return Returns the result of {@link #coordinateRequest(InterfaceRequest)}.
+	 */
 	public boolean coordinateRequestSuppressExceptions(InterfaceRequest request) {
 		try {
 			return this.coordinateRequest(request);
@@ -82,10 +96,13 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		return false;
 	}
 
-	/*
-	 * FIXME: allows uncoordinated access to DB state. In-memory "DB" could also
-	 * allow outsiders to modify DB state through returned references, which is
+	/**
+	 * Allows uncoordinated access to DB state. In-memory "DB" could also allow
+	 * outsiders to modify DB state through returned references, which is
 	 * problematic unless the returned values are deep copied.
+	 * 
+	 * @param name
+	 * @return ReconfigurationRecord for {@code name}.
 	 */
 	public ReconfigurationRecord<NodeIDType> getReconfigurationRecord(
 			String name) {
@@ -246,17 +263,25 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		return this.app.getNewRCGroups();
 	}
 
-	/*
+	/**
 	 * Checks if RC group name is name itself by consulting the soft copy of
 	 * node config. We could also have checked if the name is node.toString()
 	 * for some node in the current set of reconfigurators.
+	 * @param name 
+	 * @return True if {@code name} represents a reconfigurator group name.
 	 */
 	public boolean isRCGroupName(String name) {
 		return this.app.isRCGroupName(name);
 	}
 
-	// RC group name of node is just node.toString()
-	public String getRCGroupName(NodeIDType node) {
+	/**
+	 * RC group name of node is just node.toString(). Changing it to anything
+	 * else will break code. 
+	 * 
+	 * @param node
+	 * @return String form of {@code node}.
+	 */
+	public final String getRCGroupName(NodeIDType node) {
 		return this.app.getRCGroupName(node);
 	}
 
@@ -328,18 +353,24 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 				&& this.app.deleteReconfigurationRecord(rcGroupName, epoch);
 	}
 
-	/*
+	/**
 	 * We need to keep track of ongoing RC tasks in order to know when a node
 	 * config change is complete. We can track it with volatile state as
 	 * incomplete operations will be rolled forward correctly in case of
 	 * failures anyway. We need this in-memory state only for RC group
 	 * reconfigurations, not regular serviceName record reconfigurations.
+	 * @param taskKey 
+	 * @return True as specified by {@link Collection#add}.
 	 */
 	public boolean addRCTask(String taskKey) {
 		return this.app.addRCTask(taskKey);
 	}
 
-	// inverts addRCTask
+	/**
+	 * Inverts addRCTask
+	 * @param taskKey
+	 * @return True as specified by {@link Collection#remove(Object)}.
+	 */
 	public boolean removeRCTask(String taskKey) {
 		return this.app.removeRCTask(taskKey);
 	}

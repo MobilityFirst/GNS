@@ -14,15 +14,25 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  */
 public class AckDropEpochFinalState<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements InterfaceRequest{
 
+	/**
+	 * @param sender
+	 * @param dropEpoch
+	 */
 	public AckDropEpochFinalState(NodeIDType sender, DropEpochFinalState<NodeIDType> dropEpoch) {
 		super(dropEpoch.getInitiator(), ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE, 
 			dropEpoch.getServiceName(), dropEpoch.getEpochNumber());
 		this.setKey(dropEpoch.getKey());
 		this.setSender(sender);
 	}
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public AckDropEpochFinalState(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json, unstringer);
 	}
+	
 	@Override
 	public IntegerPacketType getRequestType() throws RequestParseException {
 		return this.getType();

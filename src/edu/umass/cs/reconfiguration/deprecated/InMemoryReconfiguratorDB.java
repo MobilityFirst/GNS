@@ -21,21 +21,22 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
+ * 
+ * 
+ *            FIXME: Currently, this logger simply maintains a memory map
+ *            instead of a persistent DB. Or not even as it is deprecated
+ *            and is not being maintained anymore.
  */
-
-/*
- * FIXME: Currently, this logger simply maintains a memory map instead of a
- * persistent DB.
- */
+@SuppressWarnings("javadoc")
+@Deprecated
 public class InMemoryReconfiguratorDB<NodeIDType> extends
 		AbstractReconfiguratorDB<NodeIDType> implements
 		InterfaceReconfiguratorDB<NodeIDType> {
 
 	private final HashMap<String, ReconfigurationRecord<NodeIDType>> rrMap = new HashMap<String, ReconfigurationRecord<NodeIDType>>();
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	public static final Logger log = Reconfigurator.getLogger();
 
 	public InMemoryReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc) {
@@ -163,8 +164,7 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public boolean deleteReconfigurationRecord(
-			String name, int epoch) {
+	public boolean deleteReconfigurationRecord(String name, int epoch) {
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(name);
 		log.log(Level.INFO,
@@ -172,9 +172,9 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 				new Object[] { "==============================> DerbyRCDB",
 						myID, record.getName(), record.getEpoch(),
 						record.getState(), " -> DELETE" });
-		return this.rrMap.remove(name)!=null;
+		return this.rrMap.remove(name) != null;
 	}
-	
+
 	@Override
 	public String[] getPendingReconfigurations() {
 		return new String[0];
@@ -209,7 +209,6 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
 
 	@Override
 	public boolean mergeState(String name, int epoch, String mergee,
@@ -221,7 +220,7 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	@Override
 	public void clearMerged(String name, int epoch) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -239,7 +238,7 @@ public class InMemoryReconfiguratorDB<NodeIDType> extends
 	@Override
 	public void setRCEpochs(ReconfigurationRecord<NodeIDType> ncRecord) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 }

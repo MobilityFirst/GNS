@@ -168,21 +168,15 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG_AR, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE ACTIVE REPLICA *********");
       // For backwards compatibility until Config goes away
-      ActiveReplica.log.setLevel(Level.INFO);
     } else {
-      ActiveReplica.log.setLevel(Level.WARNING);
     }
 
     if (isOptionTrue(DEBUG_RECON, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********");
       // For backwards compatibility until Config goes away
       Reconfigurator.getLogger().setLevel(Level.INFO);
-      AbstractReconfiguratorDB.log.setLevel(Level.INFO);
-      DerbyPersistentReconfiguratorDB.log.setLevel(Level.INFO);
     } else {
       Reconfigurator.getLogger().setLevel(Level.WARNING);
-      AbstractReconfiguratorDB.log.setLevel(Level.WARNING);
-      DerbyPersistentReconfiguratorDB.log.setLevel(Level.WARNING);
     }
 
     if (isOptionTrue(DEBUG_PAXOS, allValues)) {

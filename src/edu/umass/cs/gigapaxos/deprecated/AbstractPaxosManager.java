@@ -10,6 +10,7 @@ import java.util.Set;
  *  This abstract class is deprecated and was used mainly to transition from the 
  * old paxos implementation to the new one. It currently exists only for
  * backwards compatibility reasons.
+ * @param <NodeIdType> 
  */
 @Deprecated
 public abstract class AbstractPaxosManager<NodeIdType> {
@@ -25,7 +26,11 @@ public abstract class AbstractPaxosManager<NodeIdType> {
    */
   public abstract boolean createPaxosInstance(String paxosIDNoVersion, short version, Set<NodeIdType> nodeIDs, InterfaceReplicable paxosInterface);
 
-  public abstract Set<NodeIdType> getPaxosNodeIDs(String paxosIDNoVersion);
+  /**
+ * @param paxosID
+ * @return The set of nodes corresponding to {@code paxosID}.
+ */
+public abstract Set<NodeIdType> getPaxosNodeIDs(String paxosID);
   /**
    * Propose requestPacket in the paxos instance with the given paxosID.
    *
@@ -36,7 +41,13 @@ public abstract class AbstractPaxosManager<NodeIdType> {
    */
   public abstract String propose(String paxosIDNoVersion, String value);
 
-  public abstract String proposeStop(String paxosIDNoVersion, String value, short version);
+  /**
+ * @param paxosID
+ * @param value
+ * @param version
+ * @return The paxosID and version to which this stop was issued.
+ */
+public abstract String proposeStop(String paxosID, String value, short version);
 
 
   /**

@@ -17,6 +17,11 @@ import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
+/**
+ * @author arun
+ *
+ * @param <NodeIDType>
+ */
 public class ReconfigureRCNodeConfig<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> {
 
@@ -24,12 +29,25 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		NEWLY_ADDED_NODES, NODE_ID, SOCKET_ADDRESS, DELETED_NODES
 	};
 
-	// used only in case of new RC node addition
+	/**
+	 *  Map used for adding new RC nodes.
+	 */
 	public final Map<NodeIDType, InetSocketAddress> newlyAddedNodes;
+	/**
+	 * Set of RC nodes being deleted.
+	 */
 	public final Set<NodeIDType> deletedNodes;
 	
+	/**
+	 * Requester address to send the confirmation.
+	 */
 	public final InetSocketAddress requester;
 
+	/**
+	 * @param initiator
+	 * @param nodeID
+	 * @param sockAddr
+	 */
 	public ReconfigureRCNodeConfig(NodeIDType initiator, NodeIDType nodeID,
 			InetSocketAddress sockAddr) {
 		super(initiator,
@@ -40,6 +58,11 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		this.deletedNodes = null;
 		this.requester = null;
 	}
+	/**
+	 * @param initiator
+	 * @param newlyAddedNodes
+	 * @param deletedNodes
+	 */
 	public ReconfigureRCNodeConfig(NodeIDType initiator, Map<NodeIDType, InetSocketAddress> newlyAddedNodes, Set<NodeIDType> deletedNodes) {
 		super(initiator,
 				ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG,
@@ -49,6 +72,11 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		this.requester = null;
 	}
 
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public ReconfigureRCNodeConfig(JSONObject json,
 			Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json, unstringer);
@@ -84,14 +112,23 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		return AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString();
 	}
 
+	/**
+	 * @return Set of nodes being added.
+	 */
 	public Set<NodeIDType> getAddedRCNodeIDs() {
 		return (this.newlyAddedNodes != null ? new HashSet<NodeIDType>(
 				this.newlyAddedNodes.keySet()) : new HashSet<NodeIDType>());
 	}
+	/**
+	 * @return Set of nodes being deleted.
+	 */
 	public Set<NodeIDType> getDeletedRCNodeIDs() {
 		return this.deletedNodes==null ? new HashSet<NodeIDType>() : this.deletedNodes;
 	}
 	
+	/**
+	 * @return Requester address.
+	 */
 	public InetSocketAddress getRequester() {
 		return this.requester;
 	}

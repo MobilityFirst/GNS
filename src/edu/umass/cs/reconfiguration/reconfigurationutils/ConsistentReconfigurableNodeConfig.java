@@ -13,17 +13,22 @@ import edu.umass.cs.reconfiguration.InterfaceModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.InterfaceModifiableRCConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 
-/*
- * This class is a wrapper around NodeConfig to ensure that it is consistent,
- * i.e., it returns consistent results even if it changes midway. In particular,
- * it does not allow the use of a method like getNodeIDs().
+/**
+ * @author arun
+ *
+ * @param <NodeIDType>
  * 
- * It also has consistent hashing utility methods.
+ *            * This class is a wrapper around NodeConfig to ensure that it is
+ *            consistent, i.e., it returns consistent results even if it changes
+ *            midway. In particular, it does not allow the use of a method like
+ *            getNodeIDs().
+ * 
+ *            It also has consistent hashing utility methods.
  */
 public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		ConsistentNodeConfig<NodeIDType> implements
-		InterfaceModifiableActiveConfig<NodeIDType>, InterfaceModifiableRCConfig<NodeIDType>,
-                InterfaceGetActiveIPs {
+		InterfaceModifiableActiveConfig<NodeIDType>,
+		InterfaceModifiableRCConfig<NodeIDType>, InterfaceGetActiveIPs {
 	private final SimpleReconfiguratorNodeConfig<NodeIDType> nodeConfig;
 	private Set<NodeIDType> activeReplicas; // most recent cached copy
 	private Set<NodeIDType> reconfigurators; // most recent cached copy
@@ -32,17 +37,21 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	private final ConsistentHashing<NodeIDType> CH_RC;
 	// need to refresh when nodeConfig changes
 	private final ConsistentHashing<NodeIDType> CH_AR;
-	
-	/* We need to track reconfigurators slated for removal separately because
-	 * we still need ID to socket address mappings for deleted nodes (e.g.,
-	 * in order to do networking for completing deletion operations) but not
+
+	/*
+	 * We need to track reconfigurators slated for removal separately because we
+	 * still need ID to socket address mappings for deleted nodes (e.g., in
+	 * order to do networking for completing deletion operations) but not
 	 * include deleted nodes in the consistent hash ring. Thus, the ring
-	 * transitions immediately to the new ring when reconfigurators are 
-	 * added or slated for removal, but socket addresses for removal-slated
-	 * nodes are maintained until explicitly told to garbage collect them.
+	 * transitions immediately to the new ring when reconfigurators are added or
+	 * slated for removal, but socket addresses for removal-slated nodes are
+	 * maintained until explicitly told to garbage collect them.
 	 */
 	private Set<NodeIDType> reconfiguratorsSlatedForRemoval = new HashSet<NodeIDType>();
-	
+
+	/**
+	 * @param nc
+	 */
 	public ConsistentReconfigurableNodeConfig(
 			InterfaceReconfigurableNodeConfig<NodeIDType> nc) {
 		super(nc);
@@ -50,7 +59,12 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		this.activeReplicas = this.nodeConfig.getActiveReplicas();
 		this.reconfigurators = this.nodeConfig.getReconfigurators();
 		this.CH_RC = new ConsistentHashing<NodeIDType>(this.reconfigurators);
-		this.CH_AR = new ConsistentHashing<NodeIDType>(this.activeReplicas, true);
+		/*
+		 * The true flag means replicate_all, i.e., number of active replicas
+		 * chosen initially will be the set of all active replicas at that time.
+		 */
+		this.CH_AR = new ConsistentHashing<NodeIDType>(this.activeReplicas,
+				true);
 	}
 
 	@Override
@@ -79,7 +93,12 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		return this.nodeConfig.getReconfigurators();
 	}
 
-	// consistent coz it always consults nodeConfig
+	/**
+	 * Consistent coz it always consults nodeConfig.
+	 * 
+	 * @param nodeIDs
+	 * @return Array of IP addresses corresponding to {@code nodeIDs}.
+	 */
 	public ArrayList<InetAddress> getNodeIPs(Set<NodeIDType> nodeIDs) {
 		ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
 		for (NodeIDType id : nodeIDs) {
@@ -89,28 +108,39 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		return addresses;
 	}
 
-        @Override
-        public ArrayList<InetAddress> getActiveIPs() {
-          return getNodeIPs(getActiveReplicas());
-        }
+	@Override
+	public ArrayList<InetAddress> getActiveIPs() {
+		return getNodeIPs(getActiveReplicas());
+	}
 
 	// refresh before returning
+	/**
+	 * @param name
+	 * @return Set of consecutive reconfigurators to which {@code name} hashes
+	 *         on the consistent hash ring.
+	 */
 	public Set<NodeIDType> getReplicatedReconfigurators(String name) {
 		this.refreshReconfigurators();
 		return this.CH_RC.getReplicatedServers(name);
 	}
 
+	/**
+	 * @param name
+	 * @return First reconfigurator to which {@code name} hashes on the
+	 *         consistent hash ring.
+	 */
 	// refresh before returning
 	public NodeIDType getFirstReconfigurator(String name) {
 		this.refreshReconfigurators();
 		return this.CH_RC.getNode(name);
 	}
-	
+
 	// NOT USED IN NEW APP. FOR BACKWARDS COMPATIBILITY WITH OLD APP.
 	// WILL BE REMOVED AFTER NEW APP IS TESTED.
 	/**
 	 * Returns the hash for this name.
-	 * @param name 
+	 * 
+	 * @param name
 	 * @return Returns the node id to which name consistent-hashes.
 	 */
 	@Deprecated
@@ -119,23 +149,39 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	}
 
 	// refresh before returning
+	/**
+	 * @param name
+	 * @return Set of active replica nodes to which {@code name} hashes on the
+	 *         consistent hash ring of all active replica nodes.
+	 */
 	public Set<NodeIDType> getReplicatedActives(String name) {
 		this.refreshActives();
 		return this.CH_AR.getReplicatedServers(name);
 	}
 
+	/**
+	 * @param name
+	 * @return Set of active replica IPs to which {@code name} hashes on the
+	 *         consistent hash ring of all active replica nodes.
+	 */
 	public ArrayList<InetAddress> getReplicatedActivesIPs(String name) {
 		return this.getNodeIPs(this.getReplicatedActives(name));
 	}
 
-	/*
+	/**
 	 * This method maps a set of addresses, newAddresses, to a set of nodes such
 	 * that there is maximal overlap with the specified set of nodes, oldNodes.
 	 * It is somewhat nontrivial only because there is a many-to-one mapping
 	 * from nodes to addresses, so a simple reverse lookup is not meaningful.
+	 * 
+	 * @param newAddresses
+	 * @param oldNodes
+	 * @return Set of active replica IPs corresponding to {@code newAddresses}
+	 *         that have high overlap with the set of old active replica nodes
+	 *         {@code oldNodes}.
 	 */
-	public Set<NodeIDType> getIPToActiveReplicaIDs(ArrayList<InetAddress> newAddresses,
-			Set<NodeIDType> oldNodes) {
+	public Set<NodeIDType> getIPToActiveReplicaIDs(
+			ArrayList<InetAddress> newAddresses, Set<NodeIDType> oldNodes) {
 		Set<NodeIDType> newNodes = new HashSet<NodeIDType>(); // return value
 		ArrayList<InetAddress> unassigned = new ArrayList<InetAddress>();
 		for (InetAddress address : newAddresses)
@@ -159,10 +205,17 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		return newNodes;
 	}
 
+	/**
+	 * This method should not be used. Reconfigurator uses this at exactly one
+	 * place, namely, to encapsulate itself inside ActiveReplica so as to be
+	 * itself reconfigurable.
+	 * 
+	 * @return Underlying node config object.
+	 */
 	public InterfaceReconfigurableNodeConfig<NodeIDType> getUnderlyingNodeConfig() {
 		return this.nodeConfig;
 	}
-	
+
 	// refresh consistent hash structure if changed
 	private synchronized boolean refreshActives() {
 		Set<NodeIDType> curActives = this.nodeConfig.getActiveReplicas();
@@ -204,26 +257,35 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		return this.reconfigurators = curReconfigurators;
 	}
 
-	//@Override
+	// @Override
 	public InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress isa = this.nodeConfig.addReconfigurator(id, sockAddr);
 		return isa;
 	}
 
-	//@Override
+	// @Override
 	public InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.nodeConfig.removeReconfigurator(id);
 	}
 
+	/**
+	 * @param id
+	 * @return IP address of id being slated for removal.
+	 */
 	public InetSocketAddress slateForRemovalReconfigurator(NodeIDType id) {
 		this.reconfiguratorsSlatedForRemoval.add(id);
 		return this.getNodeSocketAddress(id);
 	}
+
+	/**
+	 * @return True if all nodes slated for removal have been successfully
+	 *         removed.
+	 */
 	public boolean removeSlatedForRemoval() {
 		boolean removed = false;
-		for(NodeIDType slated : this.reconfiguratorsSlatedForRemoval) {
-			removed = removed || (this.removeReconfigurator(slated)!=null);
+		for (NodeIDType slated : this.reconfiguratorsSlatedForRemoval) {
+			removed = removed || (this.removeReconfigurator(slated) != null);
 		}
 		return removed;
 	}

@@ -15,13 +15,25 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.MyLogger;
 
+/**
+ * @author arun
+ *
+ * @param <NodeIDType>
+ * 
+ * FIXME: Incomplete.
+ */
 public class DynamoReplicaCoordinator<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {
 
 	private final ConsistentNodeConfig<NodeIDType> consistentNodeConfig;
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = (Reconfigurator.getLogger());
 
+	/**
+	 * @param app
+	 * @param myID
+	 * @param nodeConfig
+	 * @param messenger
+	 */
 	public DynamoReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			ConsistentNodeConfig<NodeIDType> nodeConfig,
 			JSONMessenger<NodeIDType> messenger) {

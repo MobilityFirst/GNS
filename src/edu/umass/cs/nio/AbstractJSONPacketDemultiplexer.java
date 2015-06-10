@@ -37,7 +37,7 @@ public abstract class AbstractJSONPacketDemultiplexer extends
 	}
 	
 	protected JSONObject getMessage(String msg) {
-		return JSONMessageExtractor.parseJSON((String) msg);
+		return MessageExtractor.parseJSON((String) msg);
 	}
 
 	// This method will be invoked by NIO

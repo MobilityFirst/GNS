@@ -8,15 +8,17 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
- */
-/*
+ * @param <NodeIDType>
+ * 
  * FIXME: May need to add a self-destruct property to entries so that they are
  * automatically removed after some idle time.
  */
 public class CallbackMap<NodeIDType> {
 	private final HashMap<String, List<StopEpoch<NodeIDType>>> listMap = new HashMap<String, List<StopEpoch<NodeIDType>>>();
 
+	/**
+	 * @param stopEpoch
+	 */
 	public void addStopNotifiee(StopEpoch<NodeIDType> stopEpoch) {
 		if (!this.listMap.containsKey(stopEpoch.getServiceName())) {
 			ArrayList<StopEpoch<NodeIDType>> notifiees = new ArrayList<StopEpoch<NodeIDType>>();
@@ -25,6 +27,11 @@ public class CallbackMap<NodeIDType> {
 		this.listMap.get(stopEpoch.getServiceName()).add(stopEpoch);
 	}
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @return StopEpoch requiring acknowledgment.
+	 */
 	public StopEpoch<NodeIDType> notifyStop(String name, int epoch) {
 		if (!this.listMap.containsKey(name))
 			return null;

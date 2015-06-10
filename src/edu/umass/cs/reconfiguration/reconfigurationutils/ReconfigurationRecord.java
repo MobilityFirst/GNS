@@ -19,16 +19,45 @@ import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 
-	public static enum Keys {
+	protected static enum Keys {
 		NAME, EPOCH, RC_STATE, ACTIVES, NEW_ACTIVES, ACKED_START, ACKED_DROP, MERGED, RC_NODE, RC_EPOCH, RC_EPOCH_MAP
 	};
 
+	/**
+	 * RC record states.
+	 */
 	public static enum RCStates {
-		READY, WAIT_ACK_STOP, WAIT_ACK_START, WAIT_ACK_DROP, WAIT_ACK_DELETE
+		/**
+		 * The default state and the only state from which reconfiguration can
+		 * be initiated.
+		 */
+		READY,
+		/**
+		 * Waiting for AckStopEpoch, typically for the epoch that was READY just
+		 * before this state transition.
+		 */
+		WAIT_ACK_STOP,
+		/**
+		 * Waiting for AckStartEpoch, for the incremented, current epoch that is
+		 * at least one higher than the epoch just before the transition.
+		 * Typically, an RC record transitions from WAIT_ACK_STOP(n) to
+		 * WAIT_ACK_START(n+1), where n and n+1 are epoch numbers.
+		 */
+		WAIT_ACK_START,
+		/**
+		 * Waiting for AckDropEpoch for the previous epoch. This state is not
+		 * currently used explicitly because we transition directly from
+		 * WAIT_ACK_START to READY because reconfiguration is technically
+		 * complete when a majority of AckStartEpochs have been received, so we
+		 * simply transition to READY while issuing DropEpoch requests for the
+		 * previous epoch lazily. Dropping state for the previous epoch is
+		 * needed only for garbage collection and does not impact safety.
+		 */
+		WAIT_ACK_DROP
 	};
 
 	private final String name;
@@ -40,11 +69,22 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	private Set<String> merged = null; // for at most once semantics
 	private HashMap<NodeIDType, Integer> rcEpochs = new HashMap<NodeIDType, Integer>();
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param newActives
+	 */
 	public ReconfigurationRecord(String name, int epoch,
 			Set<NodeIDType> newActives) {
 		this(name, epoch, null, newActives);
 	}
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param actives
+	 * @param newActives
+	 */
 	public ReconfigurationRecord(String name, int epoch,
 			Set<NodeIDType> actives, Set<NodeIDType> newActives) {
 		this.name = name;
@@ -57,6 +97,10 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 				this.rcEpochs.put(node, 0);
 	}
 
+	/**
+	 * @return JSON serialization of this object.
+	 * @throws JSONException
+	 */
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject json = new JSONObject();
 		json.put(Keys.NAME.toString(), this.name);
@@ -70,6 +114,11 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		return json;
 	}
 
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public ReconfigurationRecord(JSONObject json,
 			Stringifiable<NodeIDType> unstringer) throws JSONException {
 		this.name = json.getString(Keys.NAME.toString());
@@ -110,16 +159,27 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		return null;
 	}
 
+	/**
+	 * @return Current epoch number.
+	 */
 	public int getEpoch() {
 		return this.epoch;
 	}
 
+	/**
+	 * @param epoch
+	 * @return Whether epoch number changed.
+	 */
 	public boolean setEpoch(int epoch) {
 		boolean changed = this.epoch == epoch;
 		this.epoch = epoch;
 		return changed;
 	}
 
+	/**
+	 * @param epoch
+	 * @return Whether epoch number was incremented.
+	 */
 	public boolean incrEpoch(int epoch) {
 		if (this.epoch == epoch) {
 			this.epoch++;
@@ -128,6 +188,11 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		return false;
 	}
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @return Set of active replicas for {@code name:epoch}
+	 */
 	public Set<NodeIDType> getActiveReplicas(String name, int epoch) {
 		if ((this.name.equals(name) && this.epoch == epoch))
 			return this.actives;
@@ -137,10 +202,19 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		return null;
 	}
 
+	/**
+	 * @return Set of active replicas.
+	 */
 	public Set<NodeIDType> getActiveReplicas() {
 		return this.actives;
 	}
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param arSet
+	 * @return Returns this ReconfigurationRecord after modification.
+	 */
 	public ReconfigurationRecord<NodeIDType> putActiveReplicas(String name,
 			int epoch, Set<NodeIDType> arSet) {
 		if (epoch - this.epoch == 1) {
@@ -149,56 +223,98 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		return this;
 	}
 
+	/**
+	 * @param state
+	 */
 	public void setState(RCStates state) {
 		this.state = state;
 	}
 
+	/**
+	 * @return RCStates.
+	 */
 	public RCStates getState() {
 		return this.state;
 	}
 
+	/**
+	 * @param newActives
+	 */
 	public void setNewActives(Set<NodeIDType> newActives) {
 		this.newActives = newActives;
 	}
 
+	/**
+	 * 
+	 */
 	public void setActivesToNewActives() {
 		this.actives = this.newActives;
 	}
 
+	/**
+	 * @return Set of new active replicas.
+	 */
 	public Set<NodeIDType> getNewActives() {
 		return this.newActives;
 	}
 
+	/**
+	 * @param s
+	 * @return Whether the String being added was already present,.
+	 */
 	public boolean insertMerged(String s) {
 		if (this.merged == null)
 			this.merged = new HashSet<String>();
 		return this.merged.add(s);
 	}
 
+	/**
+	 * 
+	 */
 	public void clearMerged() {
 		if (this.merged != null)
 			this.merged.clear();
 	}
 
+	/**
+	 * @param mergee
+	 * @return If {@code mergee} was removed.
+	 */
 	public boolean clearMerged(String mergee) {
 		if (this.merged != null)
 			return this.merged.remove(mergee);
 		return false;
 	}
 
+	/**
+	 * @param s
+	 * @return True if contains {@code s}.
+	 */
 	public boolean mergedContains(String s) {
 		return this.merged != null && this.merged.contains(s);
 	}
 
+	/**
+	 * @return True if null or empty.
+	 */
 	public boolean isMergeAllClear() {
 		return this.merged == null || this.merged.isEmpty();
 	}
 
+	/**
+	 * @param report
+	 * @return Whether stats were updated successfully,
+	 */
 	public boolean updateStats(DemandReport<NodeIDType> report) {
 		// FIXME: add some actual logic here :)
 		return true;
 	}
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param state
+	 */
 	public void setState(String name, int epoch, RCStates state) {
 		assert (this.name.equals(name));
 		assert (this.epoch == epoch || state.equals(RCStates.WAIT_ACK_START) || state
@@ -207,46 +323,67 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		this.state = state;
 	}
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param state
+	 * @param newActives
+	 */
 	public void setState(String name, int epoch, RCStates state,
 			Set<NodeIDType> newActives) {
 		this.setState(name, epoch, state);
 		this.newActives = newActives;
 	}
 
+	/**
+	 * @return Nale of replica group.
+	 */
 	public String getName() {
 		return this.name;
 	}
 
-	/*
-	 * FIXME: need to actually make these work correctly. We need to set the RC
-	 * epoch upon a node config completion.
+	/**
+	 * To get the RC epoch upon a node config change completion. 
+	 * Used only when reconfiguring reconfigurators.
+	 * 
+	 * @param rcGroupName
+	 * @return The epoch number for the reconfigurator group name. 
 	 */
 	public Integer getRCEpoch(String rcGroupName) {
-		for(NodeIDType node : this.rcEpochs.keySet()) {
-			if(node.toString().equals(rcGroupName)) return this.rcEpochs.get(node);
+		for (NodeIDType node : this.rcEpochs.keySet()) {
+			if (node.toString().equals(rcGroupName))
+				return this.rcEpochs.get(node);
 		}
-		throw new RuntimeException("Unable to obtain RC epoch for " + rcGroupName);
-		// return this.rcEpochs.get(rcGroupName);
+		throw new RuntimeException("Unable to obtain RC epoch for "
+				+ rcGroupName);
 	}
 
+	/**
+	 * @param affectedRCs
+	 * @param addNodes
+	 * @param deleteNodes
+	 */
 	public void setRCEpochs(Set<NodeIDType> affectedRCs,
 			Set<NodeIDType> addNodes, Set<NodeIDType> deleteNodes) {
 		for (NodeIDType node : affectedRCs) {
 			if (this.rcEpochs.containsKey(node)) {
 				if (!deleteNodes.contains(node))
 					this.rcEpochs.put(node, this.rcEpochs.get(node) + 1);
-				//else this.rcEpochs.remove(node);
-			}
-			else if (addNodes.contains(node)) {
+				// else this.rcEpochs.remove(node);
+			} else if (addNodes.contains(node)) {
 				this.rcEpochs.put(node, 0);
-			}
-			else
+			} else
 				assert (false);
 		}
 	}
-	
+
+	/**
+	 * Needed to trim the rcEpochs map when reconfigurator nodes get deleted.
+	 */
 	public void trimRCEpochs() {
-		if(!this.getName().equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())) return;
+		if (!this.getName().equals(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString()))
+			return;
 		for (Iterator<NodeIDType> iterator = this.rcEpochs.keySet().iterator(); iterator
 				.hasNext();) {
 			if (!this.newActives.contains(iterator.next()))
@@ -277,7 +414,7 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		return map;
 	}
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		try {
 			Util.assertAssertionsEnabled();
 			String name = "name1";

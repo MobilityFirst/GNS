@@ -26,6 +26,12 @@ public class JSONMessenger<NodeIDType> implements
 		InterfaceJSONNIOTransport<NodeIDType>,
 		InterfaceMessenger<NodeIDType, JSONObject> {
 
+	/**
+	 * The JSON key for the time when the message was sent. Used only for
+	 * instrumentation purposes by
+	 * {@link AbstractJSONPacketDemultiplexer#handleMessage(JSONObject)
+	 * AbstractPacketDemultiplexer.handleMessage}
+	 */
 	public static final String SENT_TIME = "SENT_TIME";
 	private static final long RTX_DELAY = 1000; // ms
 	private static final int BACKOFF_FACTOR = 2;
@@ -35,6 +41,12 @@ public class JSONMessenger<NodeIDType> implements
 
 	private Logger log = NIOTransport.getLogger();
 
+	/**
+	 * @param niot
+	 */
+	/**
+	 * @param niot
+	 */
 	public JSONMessenger(InterfaceNIOTransport<NodeIDType, JSONObject> niot) {
 		// to not create thread pools unnecessarily
 		if (niot instanceof JSONMessenger)

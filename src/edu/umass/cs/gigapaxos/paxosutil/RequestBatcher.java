@@ -10,6 +10,11 @@ import org.json.JSONException;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 
+/**
+ * @author arun
+ *
+ * A utility class to consume batched requests.
+ */
 public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	/*
 	 * Warning: setting this to a high value seems to cause problems with long
@@ -20,6 +25,13 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	private final HashMap<String, ArrayList<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
 
+	/**
+	 * @param lock
+	 *            Used for synchronization by abstract ConsumerTask<TaskType>.
+	 * @param paxosManager
+	 *            Needed to consume requests by invoking
+	 *            {@code paxosManager.handleIncomingPacketInternal}.
+	 */
 	public RequestBatcher(HashMap<String, ArrayList<RequestPacket>> lock,
 			PaxosManager<?> paxosManager) {
 		super(lock);

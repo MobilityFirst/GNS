@@ -32,11 +32,23 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType>
 	private boolean thresholdHandlerInvoked = false;
 	private long restartPeriod = ProtocolExecutor.DEFAULT_RESTART_PERIOD;
 
+	/**
+	 * Set of nodes from which we expect to hear back.
+	 * 
+	 * @param nodes
+	 */
 	public ThresholdProtocolTask(Set<NodeIDType> nodes) { // default all
 		this.waitfor = new Waitfor<NodeIDType>(nodes);
 		this.threshold = nodes.size();
 	}
 
+	/**
+	 * Set of nodes out of which we expect to hear back from {@code threshold}
+	 * number of nodes.
+	 * 
+	 * @param nodes
+	 * @param threshold
+	 */
 	public ThresholdProtocolTask(Set<NodeIDType> nodes, int threshold) {
 		this.waitfor = new Waitfor<NodeIDType>(nodes);
 		this.threshold = threshold;

@@ -13,22 +13,32 @@ import edu.umass.cs.reconfiguration.InterfaceModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.InterfaceModifiableRCConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 
-/*
- * The point of this class is to retain the supplied nodeConfig only for actives
- * so that the supplier can change them at will. We make a separate copy of the
- * reconfigurators as they have to be changed carefully.
+/**
+ * @author arun
+ *
+ * @param <NodeIDType>
  * 
- * As the purpose of this class is also to serve as the "underlying" node config
- * to ConsistentNodeConfig, we allow getNodeIDs() to be called here.
+ *  
+ *            The point of this class is to retain the supplied nodeConfig only
+ *            for actives so that the supplier can change them at will. We make
+ *            a separate copy of the reconfigurators as they have to be changed
+ *            carefully.
+ * 
+ *            As the purpose of this class is also to serve as the "underlying"
+ *            node config to ConsistentNodeConfig, we allow getNodeIDs() to be
+ *            called here.
  */
 public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
-		InterfaceModifiableActiveConfig<NodeIDType>, 
+		InterfaceModifiableActiveConfig<NodeIDType>,
 		InterfaceModifiableRCConfig<NodeIDType> {
 
 	private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	private int version = 0;
 	private final HashMap<NodeIDType, InetSocketAddress> rcMap = new HashMap<NodeIDType, InetSocketAddress>();
 
+	/**
+	 * @param nc
+	 */
 	public SimpleReconfiguratorNodeConfig(
 			InterfaceReconfigurableNodeConfig<NodeIDType> nc) {
 		this.nodeConfig = nc;
@@ -94,14 +104,14 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 		return this.version;
 	}
 
-	//@Override
+	@Override
 	public InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress prevSockAddr = this.rcMap.put(id, sockAddr);
 		return prevSockAddr;
 	}
 
-	//@Override
+	// @Override
 	public InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.rcMap.remove(id);
 	}

@@ -84,6 +84,9 @@ public class Reconfigurator<NodeIDType> implements
 
 	private static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
+	/**
+	 * @return Logger used by all of the reconfiguration package.
+	 */
 	public static final Logger getLogger() {return log;}
 
 
@@ -112,11 +115,11 @@ public class Reconfigurator<NodeIDType> implements
 		this.finishPendingReconfigurations();
 	}
 
-	/*
+	/**
 	 * This treats the reconfigurator itself as an "active replica" in order to
 	 * be able to reconfigure reconfigurator groups.
 	 */
-	public ActiveReplica<NodeIDType> getReconfigurableReconfiguratorAsActiveReplica() {
+	protected ActiveReplica<NodeIDType> getReconfigurableReconfiguratorAsActiveReplica() {
 		return new ActiveReplica<NodeIDType>(this.DB,
 				this.consistentNodeConfig.getUnderlyingNodeConfig(),
 				this.messenger);
@@ -145,6 +148,9 @@ public class Reconfigurator<NodeIDType> implements
 		return false; // neither reconfiguration packet nor app request
 	}
 
+	/**
+	 * @return Packet types handled by Reconfigurator. Refer {@link ReconfigurationPacket}.
+	 */
 	public Set<ReconfigurationPacket.PacketType> getPacketTypes() {
 		return this.protocolTask.getEventTypes();
 	}
@@ -153,6 +159,9 @@ public class Reconfigurator<NodeIDType> implements
 		return "RC" + getMyID();
 	}
 
+	/**
+	 * Close gracefully.
+	 */
 	public void close() {
 		this.protocolExecutor.stop();
 		this.messenger.stop();
@@ -160,10 +169,13 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	/* ***************************** Start of protocol task handler methods *********************/
-	/*
+	/**
 	 * Incorporates demand reports (possibly but not necessarily with replica
 	 * coordination), checks for reconfiguration triggers, and initiates
 	 * reconfiguration if needed.
+	 * @param report 
+	 * @param ptasks 
+	 * @return MessagingTask, typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleDemandReport(
 			DemandReport<NodeIDType> report,
@@ -181,9 +193,12 @@ public class Reconfigurator<NodeIDType> implements
 		return null; // never any messaging or ptasks
 	}
 
-	/*
+	/**
 	 * Create service name is a special case of reconfiguration where the
 	 * previous group is non-existent.
+	 * @param event 
+	 * @param ptasks 
+	 * @return Messaging task, typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleCreateServiceName(
 			CreateServiceName event,
@@ -222,11 +237,21 @@ public class Reconfigurator<NodeIDType> implements
 		return null;
 	}
 
-	/*
+	/**
 	 * Simply hand over DB request to DB. The only type of RC record that can
 	 * come here is one announcing reconfiguration completion. Reconfiguration
 	 * initiation messages are derived locally and coordinated through paxos,
 	 * not received from outside.
+	 * 
+	 * @param rcRecReq
+	 * @param ptasks
+	 * @return Messaging task, typically null. We may spawn a protocol task but
+	 *         don't return it in {@code ptasks[0]} because we want to spawn it
+	 *         only if not already running. The spwanIfNotRunning check needs to
+	 *         be atomic in {@link ProtocolExecutor} but we currently have no
+	 *         meachanism to tell it to spawn {@code ptasks[0]} only if not
+	 *         already running. FIXME: This issue is straightforward to fix by
+	 *         supporting a spawnIfNotRunning flag in protocol task.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleRCRecordRequest(
 			RCRecordRequest<NodeIDType> rcRecReq,
@@ -261,13 +286,16 @@ public class Reconfigurator<NodeIDType> implements
 		return null;
 	}
 
-	/*
+	/**
 	 * We need to ensure that both the stop/drop at actives happens atomically
 	 * with the removal of the record at reconfigurators. To accomplish this, we
 	 * first mark the record as stopped at reconfigurators, then wait for the
 	 * stop/drop tasks to finish, and finally coordinate the completion
 	 * notification so that reconfigurators can completely remove the record
 	 * from their DB.
+	 * @param delete 
+	 * @param ptasks 
+	 * @return Messaging task, typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleDeleteServiceName(
 			DeleteServiceName delete,
@@ -287,10 +315,15 @@ public class Reconfigurator<NodeIDType> implements
 		return null;
 	}
 
-	/*
+	/**
 	 * This method simply looks up and returns the current set of active
 	 * replicas. Maintaining this state consistently is the primary and only
 	 * existential purpose of reconfigurators.
+	 * 
+	 * @param request
+	 * @param ptasks
+	 * @return Messaging task returning the set of active replicas to the
+	 *         requestor. No protocol tasks spawned.
 	 */
 	@SuppressWarnings("unchecked")
 	public GenericMessagingTask<NodeIDType, ?>[] handleRequestActiveReplicas(
@@ -330,12 +363,15 @@ public class Reconfigurator<NodeIDType> implements
 		return (GenericMessagingTask<NodeIDType, ?>[]) (mtask.toArray());
 	}
 
-	/*
+	/**
 	 * Handles a request to add or delete a reconfigurator from the set of all
 	 * reconfigurators in NodeConfig. The reconfiguration record corresponding
 	 * to NodeConfig is stored in the RC records table and the
 	 * "active replica state" or the NodeConfig info itself is stored in a
 	 * separate NodeConfig table in the DB.
+	 * @param changeRC 
+	 * @param ptasks 
+	 * @return Messaging task typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleReconfigureRCNodeConfig(
 			ReconfigureRCNodeConfig<NodeIDType> changeRC,
@@ -371,7 +407,7 @@ public class Reconfigurator<NodeIDType> implements
 		return null;
 	}
 
-	/*
+	/**
 	 * Reconfiguration is initiated using a callback because the intent to
 	 * conduct a reconfiguration must be persistently committed before
 	 * initiating the reconfiguration. Otherwise, the failure of say the
@@ -685,6 +721,11 @@ public class Reconfigurator<NodeIDType> implements
 		return getCommitTaskKey(rcPacket, getMyID().toString());
 	}
 
+	/**
+	 * @param rcPacket
+	 * @param myID
+	 * @return The commit task key.
+	 */
 	public static String getCommitTaskKey(RCRecordRequest<?> rcPacket,
 			String myID) {
 		return WaitCoordinatedCommit.class.getSimpleName()
@@ -696,6 +737,12 @@ public class Reconfigurator<NodeIDType> implements
 		return getTaskKey(C, rcPacket, getMyID().toString());
 	}
 
+	/**
+	 * @param C
+	 * @param rcPacket
+	 * @param myID
+	 * @return The task key.
+	 */
 	public static String getTaskKey(Class<?> C,
 			BasicReconfigurationPacket<?> rcPacket, String myID) {
 		return C.getSimpleName() + myID + ":" + rcPacket.getServiceName() + ":"
@@ -797,7 +844,7 @@ public class Reconfigurator<NodeIDType> implements
 					create.getSender(),
 					new CreateServiceName(create.getInitiator(), create
 							.getServiceName(), create.getEpochNumber(),
-							CreateServiceName.Keys.NO_OP.toString())
+							InterfaceRequest.NO_OP.toString())
 							.toJSONObject());
 		} catch (IOException | JSONException e) {
 			log.severe(this + " incurred " + e.getClass().getSimpleName()

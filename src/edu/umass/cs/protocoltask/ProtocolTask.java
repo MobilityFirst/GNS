@@ -60,24 +60,31 @@ public interface ProtocolTask<NodeIDType, EventType, KeyType> extends
 			ProtocolEvent<EventType, KeyType> event,
 			ProtocolTask<NodeIDType, EventType, KeyType>[] ptasks);
 
-	public GenericMessagingTask<NodeIDType, ?>[] start(); // actions to be
-															// executed in the
-															// beginning
+	/**
+	 * Actions executed in the beginning.
+	 * @return Initial messaging task.
+	 */
+	public GenericMessagingTask<NodeIDType, ?>[] start(); 
+	
 	// To cancel, invoke ProtocolExecutor.cancel(this)
 
-	/*
+	/**
 	 * We need a unique key in order to match incoming messages against the
 	 * corresponding task, so this key also needs to be present in every message
 	 * exchanged as part of the protocol task. The getKey method is necessitated
 	 * by the Keyable<KeyType> interface above. The refreshKey() method below
-	 * should return a random key that is unique across nodes. It needs to be
+	 * should return a key that is unique across nodes. It needs to be
 	 * implemented by the instantiator because we don't know the concrete type
 	 * of KeyType. Look at PingPongProtocolTask for an example.
+	 * 
+	 * @return The key.
 	 */
 
-	public KeyType refreshKey(); // should return a random key that is unique
-									// across nodes
+	public KeyType refreshKey(); 
 
+	/**
+	 * @return The event types processed by this protocol task.
+	 */
 	public Set<EventType> getEventTypes();
 
 }

@@ -1,6 +1,5 @@
 package edu.umass.cs.reconfiguration.reconfigurationpackets;
 
-
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -15,58 +14,91 @@ import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
-public class CreateServiceName extends BasicReconfigurationPacket<InetSocketAddress> implements InterfaceReplicableRequest {
+public class CreateServiceName extends
+		BasicReconfigurationPacket<InetSocketAddress> implements
+		InterfaceReplicableRequest {
 
-	public static enum Keys {INITIAL_STATE, NO_OP};
+	private static enum Keys {
+		INITIAL_STATE
+	};
 
+	/**
+	 * Unstringer needed to handle client InetSocketAddresses as opposed to
+	 * NodeIDType.
+	 */
 	public static final Stringifiable<InetSocketAddress> unstringer = new StringifiableDefault<InetSocketAddress>(
 			new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
-	//private boolean coordType = false;
-        
-        public final String initialState;
-	
-	public CreateServiceName(
-			InetSocketAddress initiator,
-			String name, int epochNumber, String state) {
-		super(initiator, ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME, name, epochNumber);
-                this.initialState = state;
+	/**
+	 * Initial state.
+	 */
+	public final String initialState;
+
+	/**
+	 * @param initiator
+	 * @param name
+	 * @param epochNumber
+	 * @param state
+	 */
+	public CreateServiceName(InetSocketAddress initiator, String name,
+			int epochNumber, String state) {
+		super(initiator, ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME,
+				name, epochNumber);
+		this.initialState = state;
 	}
-	public CreateServiceName(JSONObject json, Stringifiable<?> unstringer) throws JSONException {
-		super(json, CreateServiceName.unstringer); // ignores argument unstringer
+
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
+	public CreateServiceName(JSONObject json, Stringifiable<?> unstringer)
+			throws JSONException {
+		super(json, CreateServiceName.unstringer); // ignores argument
+													// unstringer
 		this.setSender(JSONNIOTransport.getSenderAddress(json));
-                this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
+		this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
 	}
+
+	/**
+	 * @param json
+	 * @throws JSONException
+	 */
 	public CreateServiceName(JSONObject json) throws JSONException {
 		this(json, unstringer);
 	}
-        
-        @Override
-        public JSONObject toJSONObjectImpl() throws JSONException {
+
+	@Override
+	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-                if (initialState != null) {
-                  json.put(Keys.INITIAL_STATE.toString(), initialState);
-                }
-                return json;
-        }
-        
+		if (initialState != null) {
+			json.put(Keys.INITIAL_STATE.toString(), initialState);
+		}
+		return json;
+	}
+
 	@Override
 	public IntegerPacketType getRequestType() throws RequestParseException {
 		return ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME;
 	}
+
 	@Override
 	public boolean needsCoordination() {
-		return false; //coordType;
-	}
-	@Override
-	public void setNeedsCoordination(boolean b) {
-		//coordType = b;
+		return false; // always false
 	}
 
-        public String getInitialState() {
-          return initialState;
-        }
-               
+	@Override
+	public void setNeedsCoordination(boolean b) {
+		// do nothing
+	}
+
+	/**
+	 * @return Initial state.
+	 */
+	public String getInitialState() {
+		return initialState;
+	}
+
 }

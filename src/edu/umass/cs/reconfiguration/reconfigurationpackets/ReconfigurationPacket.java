@@ -20,15 +20,22 @@ import edu.umass.cs.utils.IntegerPacketTypeMap;
  * @author V. Arun
  * @param <NodeIDType> 
  */
+@SuppressWarnings("javadoc")
 public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<NodeIDType, ReconfigurationPacket.PacketType> { 
 
+	/**
+	 * Reconfiguration packet type JSON key.
+	 */
 	public static final String PACKET_TYPE = JSONPacket.PACKET_TYPE;
+	/**
+	 * Used for reflection for invoking packet handling methods.
+	 */
 	public static final String HANDLER_METHOD_PREFIX = "handle";
 
 	/********************************* End of ReconfigurationpacketType ***********************/
 	public enum PacketType implements IntegerPacketType{
 
-		/*
+		/**
 		 * A typical sequence of events is as follows. Active replicas regularly
 		 * send DEMAND_REPORTs to reconfigurators. Upon the receipt of some (but
 		 * far from all) demand report, a reconfigurator might decide to
@@ -299,7 +306,7 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 	}
 	/************************* End of assertion methods **************************************************/ 
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		System.out.println(ReconfigurationPacket.PacketType.intToType.get(225));
 	}
 }

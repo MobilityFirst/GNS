@@ -6,9 +6,18 @@ package edu.umass.cs.nio;
  * @param <MessageType>
  */
 public class GenericMessagingTask<NodeIDType, MessageType> {
+	/**
+	 * The list of recipients. Every recipient will be sent all messages.
+	 */
 	public final Object[] recipients;
+	/** 
+	 * The list of messages. Every recipient will be sent all messages.
+	 */
 	public final Object[] msgs;
 
+	/**
+	 * Null recipients and messages.
+	 */
 	public GenericMessagingTask() {
 		this.recipients = null;
 		this.msgs = null;

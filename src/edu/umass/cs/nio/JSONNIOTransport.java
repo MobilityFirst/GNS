@@ -28,18 +28,45 @@ import java.io.IOException;
  *            local sends by directly sending it to the packet demultiplexer.
  */
 @SuppressWarnings("deprecation")
-public class JSONNIOTransport<NodeIDType> extends MessageNIOTransport<NodeIDType,JSONObject> implements
-        InterfaceJSONNIOTransport<NodeIDType>{
+public class JSONNIOTransport<NodeIDType> extends
+		MessageNIOTransport<NodeIDType, JSONObject> implements
+		InterfaceJSONNIOTransport<NodeIDType> {
 
-  public JSONNIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nodeConfig)
-          throws IOException {
-	// Note: Default extractor will not do any useful demultiplexing
-    super(id, nodeConfig, new JSONMessageExtractor()); 
-  }
+	/**
+	 * Initiates transporter with id and nodeConfig.
+	 * 
+	 * @param id
+	 *            My node ID.
+	 * @param nodeConfig
+	 *            A map from all nodes' IDs to their respective socket
+	 *            addresses.
+	 * @throws IOException
+	 */
+	public JSONNIOTransport(NodeIDType id,
+			InterfaceNodeConfig<NodeIDType> nodeConfig) throws IOException {
+		// Note: Default extractor will not do any useful demultiplexing
+		super(id, nodeConfig);
+	}
 
-  // common case usage, hence created a constructor
-  public JSONNIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nodeConfig,
-          AbstractPacketDemultiplexer<?> pd, boolean start) throws IOException {
-    super(id, nodeConfig, pd, start); 
-  }
+	/**
+	 * 
+	 * @param id
+	 *            My node ID.
+	 * @param nodeConfig
+	 *            A map from all nodes' IDs to their respective socket
+	 *            addresses.
+	 * @param pd
+	 *            The packet demultiplexer to handle received messages.
+	 * @param start
+	 *            If a server thread must be automatically started upon
+	 *            construction. If false, the caller must explicitly invoke (new
+	 *            Thread(JSONNIOTransport)).start() to start the server.
+	 * @throws IOException
+	 */
+	public JSONNIOTransport(NodeIDType id,
+			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			AbstractPacketDemultiplexer<?> pd, boolean start)
+			throws IOException {
+		super(id, nodeConfig, pd, start);
+	}
 }
