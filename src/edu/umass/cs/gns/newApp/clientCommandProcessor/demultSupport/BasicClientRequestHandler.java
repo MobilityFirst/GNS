@@ -16,7 +16,6 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.RequestHandlerParameters;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
-import edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket;
 import edu.umass.cs.gns.newApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.GnsMessenger;
@@ -44,7 +43,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
-import org.json.JSONException;
 
 /**
  * Implements basic functionality needed by servers to handle client type requests.
@@ -569,38 +567,6 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   @Override
   public int getRequestsPerSecond() {
     return (int) Math.round(averageRequestsPerSecond.getAverage());
-  }
-
-  @Override
-  public void handleNameServerLoadPacket(JSONObject json) throws JSONException {
-    NameServerLoadPacket<NodeIDType> nsLoad = new NameServerLoadPacket<NodeIDType>(json, gnsNodeConfig);
-    nameServerLoads.put(nsLoad.getReportingNodeID(), nsLoad.getLoadValue());
-  }
-
-  private ConcurrentHashMap<NodeIDType, Double> nameServerLoads;
-
-  public ConcurrentHashMap<NodeIDType, Double> getNameServerLoads() {
-    return nameServerLoads;
-  }
-
-  @Override
-  public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs) {
-    if (serverIDs == null || serverIDs.size() == 0) {
-      return null;
-    }
-    NodeIDType selectServer = null;
-    // select server whose latency + load is minimum
-    double selectServerLatency = Double.MAX_VALUE;
-    for (NodeIDType x : serverIDs) {
-      if (getGnsNodeConfig().getPingLatency(x) != GNSNodeConfig.INVALID_PING_LATENCY) {
-        double totallatency = 5 * nameServerLoads.get(x) + (double) getGnsNodeConfig().getPingLatency(x);
-        if (totallatency < selectServerLatency) {
-          selectServer = x;
-          selectServerLatency = totallatency;
-        }
-      }
-    }
-    return selectServer;
   }
 
 }

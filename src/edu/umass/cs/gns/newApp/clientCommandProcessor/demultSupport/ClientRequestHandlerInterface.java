@@ -294,10 +294,6 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    */
   public int getRequestsPerSecond();
 
-  public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs);
-
-  public void handleNameServerLoadPacket(JSONObject json) throws JSONException;
-
   /**
    * A little hack so we can tell if we're running in the new app.
    *

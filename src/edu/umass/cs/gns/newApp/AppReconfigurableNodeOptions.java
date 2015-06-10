@@ -18,6 +18,8 @@ import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
 
+import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -186,6 +188,17 @@ public class AppReconfigurableNodeOptions {
     } else {
       PaxosManager.getLogger().setLevel(Level.WARNING);
     }
+    
+    if (isOptionTrue(DEBUG_MISC, allValues)) {
+      System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
+      System.out.println("******** DEBUGGING IS ENABLED IN THE ProtocolExecutor *********");
+      // For backwards compatibility until Config goes away
+      ProtocolExecutor.getLogger().setLevel(Level.INFO);
+      NIOTransport.getLogger().setLevel(Level.INFO);
+    } else {
+      ProtocolExecutor.getLogger().setLevel(Level.WARNING);
+      NIOTransport.getLogger().setLevel(Level.WARNING);
+    }
 
     if (allValues.containsKey(FILE_LOGGING_LEVEL)) {
       GNS.fileLoggingLevel = allValues.get(FILE_LOGGING_LEVEL);
@@ -215,6 +228,9 @@ public class AppReconfigurableNodeOptions {
       ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
     }
     System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
+    
+    ReconfigurationConfig.setReconfigureInPlace(false);
+    System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
 
     // CCP options
     if (allValues.containsKey(DNS_GNS_ONLY)) {

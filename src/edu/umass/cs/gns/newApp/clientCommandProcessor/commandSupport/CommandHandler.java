@@ -61,7 +61,7 @@ public class CommandHandler {
     handlePacketCommandRequest(incomingJSON, handler, null);
   }
 
-  private static final ExecutorService execPool = Executors.newFixedThreadPool(50);
+  private static final ExecutorService execPool = Executors.newFixedThreadPool(100);
 
   private static class WorkerTask implements Runnable {
 
@@ -284,8 +284,8 @@ public class CommandHandler {
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
                     commandString, guid));
     // Send it to the client command handler
-    if (app.getLocalCCP() != null) { // new version with CPP running as part of app
-      handlePacketCommandRequest(json, app.getLocalCCP().getRequestHandler(), app);
+    if (app.getClientCommandProcessor() != null) { // new version with CPP running as part of app
+      handlePacketCommandRequest(json, app.getClientCommandProcessor().getRequestHandler(), app);
     } else { // old code that will not be executed and will be going away soon
       // remove these so the stamper will put new ones in so the packet will find it's way back here
       json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
@@ -306,7 +306,7 @@ public class CommandHandler {
       }
       app.getNioServer().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
               json);
-      if (commandCount++ % 100 == 0) {
+      if (commandCount++ % 500 == 0) {
         System.out.println("8888888888888888888888888888>>>> " + DelayProfiler.getStats());
       }
     } else {

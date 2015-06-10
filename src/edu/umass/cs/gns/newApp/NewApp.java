@@ -93,6 +93,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
                 new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
                 (GNSNodeConfig) nodeConfig,
                 AppReconfigurableNodeOptions.debuggingEnabled,
+                this,
                 (String) id,
                 AppReconfigurableNodeOptions.dnsGnsOnly,
                 AppReconfigurableNodeOptions.dnsOnly,
@@ -526,7 +527,8 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     return pingManager;
   }
 
-  public ClientCommandProcessor<String> getLocalCCP() {
+  @Override
+  public ClientCommandProcessor<String> getClientCommandProcessor() {
     return localCCP;
   }
 

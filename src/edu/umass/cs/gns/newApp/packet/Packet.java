@@ -8,8 +8,8 @@ package edu.umass.cs.gns.newApp.packet;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
-import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
+//import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
+//import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
@@ -61,7 +61,7 @@ public class Packet {
     REMOVE_RECORD(10, "edu.umass.cs.gns.newApp.packet.RemoveRecordPacket"),
     REMOVE_CONFIRM(11, "edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket"),
     ACTIVE_REMOVE(12, null), // on a remove request, replica controller sends to active replica
-    ACTIVE_REMOVE_CONFIRM(13, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"), // after removing name, active replica confirms to replica controller
+    //ACTIVE_REMOVE_CONFIRM(13, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"), // after removing name, active replica confirms to replica controller
     RC_REMOVE(14, "edu.umass.cs.gns.newApp.packet.RemoveRecordPacket"),
     // Update
     UPDATE(20, "edu.umass.cs.gns.newApp.packet.UpdatePacket"), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
@@ -81,30 +81,30 @@ public class Packet {
     SELECT_REQUEST(70, "edu.umass.cs.gns.newApp.packet.SelectRequestPacket"),
     SELECT_RESPONSE(71, "edu.umass.cs.gns.newApp.packet.SelectResponsePacket"),
     // stats collection for names
-    NAMESERVER_SELECTION(80, "edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket"),
+    //NAMESERVER_SELECTION(80, "edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket"),
     //ACTIVE_NAMESERVER_INFO(83, "edu.umass.cs.gns.newApp.packet.ActiveNameServerInfoPacket"),
     // paxos
     PAXOS_PACKET(90, null),
     STOP(98, null),
     NOOP(99, null),
     // group change
-    NEW_ACTIVE_PROPOSE(100, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket"),
+    //NEW_ACTIVE_PROPOSE(100, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket"),
     OLD_ACTIVE_STOP(101, null),
-    OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(102, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"),
-    DELETE_OLD_ACTIVE_STATE(103, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"),
+    //OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(102, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"),
+    //DELETE_OLD_ACTIVE_STATE(103, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"),
     //
-    NEW_ACTIVE_START(104, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
-    NEW_ACTIVE_START_FORWARD(105, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
-    NEW_ACTIVE_START_RESPONSE(106, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
-    NEW_ACTIVE_START_CONFIRM_TO_PRIMARY(107, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
-    NEW_ACTIVE_START_PREV_VALUE_REQUEST(108, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
-    NEW_ACTIVE_START_PREV_VALUE_RESPONSE(109, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
-    GROUP_CHANGE_COMPLETE(110, "edu.umass.cs.gns.newApp.packet.deprecated.GroupChangeCompletePacket"),
+    //NEW_ACTIVE_START(104, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
+    //NEW_ACTIVE_START_FORWARD(105, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
+    //NEW_ACTIVE_START_RESPONSE(106, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
+    //NEW_ACTIVE_START_CONFIRM_TO_PRIMARY(107, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
+    //NEW_ACTIVE_START_PREV_VALUE_REQUEST(108, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
+    //NEW_ACTIVE_START_PREV_VALUE_RESPONSE(109, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket"),
+    //GROUP_CHANGE_COMPLETE(110, "edu.umass.cs.gns.newApp.packet.deprecated.GroupChangeCompletePacket"),
     // coordination
     ACTIVE_COORDINATION(120, null), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
     REPLICA_CONTROLLER_COORDINATION(121, null), // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
 
-    NAME_SERVER_LOAD(201, "edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket"),
+    //NAME_SERVER_LOAD(201, "edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket"),
     // for finite ping pong protocol task example
     TEST_PING(222, "edu.umass.cs.protocoltask.examples.PingPongPacket"),
     TEST_PONG(223, "edu.umass.cs.protocoltask.examples.PingPongPacket"),
@@ -226,8 +226,8 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket<String>(json, unstringer);
         case ACTIVE_REMOVE:
           return null; // on a remove request, replica controller sends to active replica
-        case ACTIVE_REMOVE_CONFIRM:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer); // after removing name, active replica confirms to replica controller
+//        case ACTIVE_REMOVE_CONFIRM:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer); // after removing name, active replica confirms to replica controller
         case RC_REMOVE:
           return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket<String>(json, unstringer);
         // Update
@@ -260,8 +260,8 @@ public class Packet {
         case SELECT_RESPONSE:
           return new edu.umass.cs.gns.newApp.packet.SelectResponsePacket<String>(json, unstringer);
         // stats collection for names
-        case NAMESERVER_SELECTION:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket<String>(json, unstringer);
+//        case NAMESERVER_SELECTION:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerSelectionPacket<String>(json, unstringer);
       //NAME_RECORD_STATS_REQUEST(81),
         //NAME_RECORD_STATS_RESPONSE(82),
 //        case ACTIVE_NAMESERVER_INFO:
@@ -274,36 +274,36 @@ public class Packet {
         case NOOP:
           return new edu.umass.cs.gns.newApp.packet.NoopPacket(json);
         // group change
-        case NEW_ACTIVE_PROPOSE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket<String>(json, unstringer);
+//        case NEW_ACTIVE_PROPOSE:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket<String>(json, unstringer);
         case OLD_ACTIVE_STOP:
           return null;
-        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer);
-        case DELETE_OLD_ACTIVE_STATE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer);
-        //
-        case NEW_ACTIVE_START:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
-        case NEW_ACTIVE_START_FORWARD:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
-        case NEW_ACTIVE_START_RESPONSE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
-        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
-        case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
-        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
-        case GROUP_CHANGE_COMPLETE:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.GroupChangeCompletePacket(json);
+//        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer);
+//        case DELETE_OLD_ACTIVE_STATE:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer);
+//        //
+//        case NEW_ACTIVE_START:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
+//        case NEW_ACTIVE_START_FORWARD:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
+//        case NEW_ACTIVE_START_RESPONSE:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
+//        case NEW_ACTIVE_START_CONFIRM_TO_PRIMARY:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
+//        case NEW_ACTIVE_START_PREV_VALUE_REQUEST:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
+//        case NEW_ACTIVE_START_PREV_VALUE_RESPONSE:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveSetStartupPacket<String>(json, unstringer);
+//        case GROUP_CHANGE_COMPLETE:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.GroupChangeCompletePacket(json);
         // coordination
         case ACTIVE_COORDINATION:
           return null; // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
         case REPLICA_CONTROLLER_COORDINATION:
           return null; // after transition from old to the new active replicas is complete, the active replica confirms to replica controller
-        case NAME_SERVER_LOAD:
-          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket<String>(json, unstringer);
+//        case NAME_SERVER_LOAD:
+//          return new edu.umass.cs.gns.newApp.packet.deprecated.NameServerLoadPacket<String>(json, unstringer);
         // for finite ping pong protocol task example
         case TEST_PING:
           return new edu.umass.cs.protocoltask.examples.PingPongPacket(json);
@@ -538,22 +538,22 @@ public class Packet {
    */
   public static boolean filterOutChattyPackets(JSONObject jsonData) {
     try {
-      if (PaxosPacket.hasPacketTypeField(jsonData)) {
-        // handle Paxos packets
-        PaxosPacketType packetType = PaxosPacket.getPacketType(jsonData);
-        if (packetType != PaxosPacketType.FAILURE_DETECT
-                && packetType != PaxosPacketType.FAILURE_RESPONSE) {
-          return true;
-        }
-      } else {
+//      if (PaxosPacket.hasPacketTypeField(jsonData)) {
+//        // handle Paxos packets
+//        PaxosPacketType packetType = PaxosPacket.getPacketType(jsonData);
+//        if (packetType != PaxosPacketType.FAILURE_DETECT
+//                && packetType != PaxosPacketType.FAILURE_RESPONSE) {
+//          return true;
+//        }
+//      } else {
         // handle Regular packets
         PacketType packetType = getPacketType(jsonData);
-        if (packetType != PacketType.NAME_SERVER_LOAD
-                && packetType != PacketType.ACTIVE_COORDINATION
-                && packetType != PacketType.REPLICA_CONTROLLER_COORDINATION) {
+        if (//packetType != PacketType.NAME_SERVER_LOAD && 
+                packetType != PacketType.ACTIVE_COORDINATION &&
+                packetType != PacketType.REPLICA_CONTROLLER_COORDINATION) {
           return true;
         }
-      }
+      //}
     } catch (JSONException e) {
 
     }
@@ -568,13 +568,13 @@ public class Packet {
    */
   public static String getPacketTypeStringSafe(JSONObject json) {
     try {
-      if (PaxosPacket.hasPacketTypeField(json)) {
-        // handle Paxos packets
-        return PaxosPacket.getPacketType(json).toString();
-      } else {
+//      if (PaxosPacket.hasPacketTypeField(json)) {
+//        // handle Paxos packets
+//        return PaxosPacket.getPacketType(json).toString();
+//      } else {
         // handle Regular packets
         return getPacketType(json).toString();
-      }
+      //}
     } catch (JSONException e) {
       return "Unknown";
     }

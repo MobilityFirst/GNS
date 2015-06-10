@@ -7,6 +7,7 @@ package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
+import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.nio.Stringifiable;
 
 import java.net.InetSocketAddress;
@@ -44,7 +45,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
   private final static String VALUE = "value";
   private final static String OTHERVALUE = "otherValue";
   private final static String QUERY = "query";
-  private final static String LNSQUERYID = "lnsQueryId";
+  private final static String CCPQUERYID = "ccpQueryId";
   private final static String NSQUERYID = "nsQueryId";
   private final static String SELECT_OPERATION = "operation";
   private final static String GROUP_BEHAVIOR = "group";
@@ -56,7 +57,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
   private Object value;
   private Object otherValue;
   private String query;
-  private int lnsQueryId = -1; // used by the local name server to maintain state
+  private int ccpQueryId = -1; // used by the command processor to maintain state
   private int nsQueryId = -1; // used by the name server to maintain state
   private SelectOperation selectOperation;
   private GroupBehavior groupBehavior;
@@ -68,7 +69,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
    * Constructs a new QueryResponsePacket
    *
    * @param id
-   * @param lnsAddress
+   * @param ccpAddress
    * @param selectOperation
    * @param key
    * @param groupBehavior
@@ -76,8 +77,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
    * @param otherValue
    */
   @SuppressWarnings("unchecked")
-  public SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
-    super(null, lnsAddress);
+  public SelectRequestPacket(int id, InetSocketAddress ccpAddress, SelectOperation selectOperation, GroupBehavior groupBehavior, String key, Object value, Object otherValue) {
+    super(null, ccpAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.key = key;
@@ -101,8 +102,8 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
    * @param minRefreshInterval
    */
   @SuppressWarnings("unchecked")
-  private SelectRequestPacket(int id, InetSocketAddress lnsAddress, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
-    super(null, lnsAddress);
+  private SelectRequestPacket(int id, InetSocketAddress ccpAddress, SelectOperation selectOperation, GroupBehavior groupOperation, String query, String guid, int minRefreshInterval) {
+    super(null, ccpAddress);
     this.type = Packet.PacketType.SELECT_REQUEST;
     this.id = id;
     this.query = query;
@@ -119,12 +120,12 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
-   * @param lnsAddress
+   * @param ccpAddress
    * @param query
    * @return
    */
-  public static SelectRequestPacket MakeQueryRequest(int id, InetSocketAddress lnsAddress, String query) {
-    return new SelectRequestPacket(id, lnsAddress, SelectOperation.QUERY, GroupBehavior.NONE, query, null, -1);
+  public static SelectRequestPacket MakeQueryRequest(int id, InetSocketAddress ccpAddress, String query) {
+    return new SelectRequestPacket(id, ccpAddress, SelectOperation.QUERY, GroupBehavior.NONE, query, null, -1);
   }
 
   /**
@@ -132,14 +133,14 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
-   * @param lnsAddress
+   * @param ccpAddress
    * @param query
    * @param guid
    * @param refreshInterval
    * @return
    */
-  public static SelectRequestPacket MakeGroupSetupRequest(int id, InetSocketAddress lnsAddress, String query, String guid, int refreshInterval) {
-    return new SelectRequestPacket(id, lnsAddress, SelectOperation.QUERY, GroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
+  public static SelectRequestPacket MakeGroupSetupRequest(int id, InetSocketAddress ccpAddress, String query, String guid, int refreshInterval) {
+    return new SelectRequestPacket(id, ccpAddress, SelectOperation.QUERY, GroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
   }
 
   /**
@@ -147,12 +148,12 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
    * Creates a request to search all name servers for GUIDs that match the given query.
    *
    * @param id
-   * @param lnsAddress
+   * @param ccpAddress
    * @param guid
    * @return
    */
-  public static SelectRequestPacket MakeGroupLookupRequest(int id, InetSocketAddress lnsAddress, String guid) {
-    return new SelectRequestPacket(id, lnsAddress, SelectOperation.QUERY, GroupBehavior.GROUP_LOOKUP, null, guid, -1);
+  public static SelectRequestPacket MakeGroupLookupRequest(int id, InetSocketAddress ccpAddress, String guid) {
+    return new SelectRequestPacket(id, ccpAddress, SelectOperation.QUERY, GroupBehavior.GROUP_LOOKUP, null, guid, -1);
   }
 
   /**
@@ -174,7 +175,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
     this.value = json.optString(VALUE, null);
     this.otherValue = json.optString(OTHERVALUE, null);
     this.query = json.optString(QUERY, null);
-    this.lnsQueryId = json.getInt(LNSQUERYID);
+    this.ccpQueryId = json.getInt(CCPQUERYID);
     //this.nsID = new NodeIDType(json.getString(NSID));
     this.nsQueryId = json.getInt(NSQUERYID);
     this.selectOperation = SelectOperation.valueOf(json.getString(SELECT_OPERATION));
@@ -213,7 +214,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
     if (query != null) {
       json.put(QUERY, query);
     }
-    json.put(LNSQUERYID, lnsQueryId);
+    json.put(CCPQUERYID, ccpQueryId);
     //json.put(NSID, nsID.toString());
     json.put(NSQUERYID, nsQueryId);
     json.put(SELECT_OPERATION, selectOperation.name());
@@ -226,17 +227,14 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
     }
   }
 
-  public void setLnsQueryId(int lnsQueryId) {
-    this.lnsQueryId = lnsQueryId;
+  public void setCCPQueryId(int ccpQueryId) {
+    this.ccpQueryId = ccpQueryId;
   }
 
   public void setNsQueryId(int nsQueryId) {
     this.nsQueryId = nsQueryId;
   }
 
-//  public void setNsID(NodeIDType nsID) {
-//    this.nsID = nsID;
-//  }
   public int getId() {
     return id;
   }
@@ -249,16 +247,10 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
     return value;
   }
 
-//  public int getLnsID() {
-//    return lnsID;
-//  }
-  public int getLnsQueryId() {
-    return lnsQueryId;
+  public int getCcpQueryId() {
+    return ccpQueryId;
   }
 
-//  public NodeIDType getNameServerID() {
-//    return nsID;
-//  }
   public int getNsQueryId() {
     return nsQueryId;
   }
@@ -287,7 +279,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP imp
   public String getServiceName() {
     if (query != null) {
       // FIXME: maybe cache this
-      return new String(SHA1HashFunction.getInstance().hash(this.query));
+      return Base64.encodeToString(SHA1HashFunction.getInstance().hash(this.query), false);
     } else {
       // FIXME:
       return "SelectRequest";

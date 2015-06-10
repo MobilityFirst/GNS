@@ -54,8 +54,8 @@ public class MongoRecordsThroughputTest {
   private static void testlookupMultipleSystemAndUserFields(String node, String guid, String field) {
 
     // make a fake record
-    MongoRecords instance = new MongoRecords(node);
-    MongoRecordMap recordMap = new MongoRecordMap(instance, DBNAMERECORD);
+    MongoRecords<String> instance = new MongoRecords<String>(node);
+    MongoRecordMap<String> recordMap = new MongoRecordMap<String>(instance, DBNAMERECORD);
     JSONObject json = new JSONObject();
     try {
       json.put(field, "some value");

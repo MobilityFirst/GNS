@@ -17,6 +17,7 @@ import com.google.common.cache.CacheBuilder;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.NewApp;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
@@ -105,13 +106,16 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * Host address of the local name server.
    */
   private final InetSocketAddress nodeAddress;
+  //
   private final Object activeReplicaID;
+  private final NewApp app;
 
   private long receivedRequests = 0;
 
   public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress, 
           NodeIDType activeReplicaID,
+          NewApp app,
           GNSNodeConfig<NodeIDType> gnsNodeConfig,
           JSONMessenger<NodeIDType> messenger, RequestHandlerParameters parameters) {
     this.intercessor = intercessor;
@@ -121,6 +125,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     // a little hair to convert fred to fred-activeReplica if we just get fred
     this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID :
             gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
+    this.app = app;
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
@@ -192,6 +197,10 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   @Override
   public RequestHandlerParameters getParameters() {
     return parameters;
+  }
+
+  public NewApp getApp() {
+    return app;
   }
 
   // REQUEST INFO METHODS 
@@ -675,15 +684,4 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public int getRequestsPerSecond() {
     return (int) Math.round(averageRequestsPerSecond.getAverage());
   }
-
-  @Override
-  public void handleNameServerLoadPacket(JSONObject json) throws JSONException {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
-  @Override
-  public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs) {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
 }

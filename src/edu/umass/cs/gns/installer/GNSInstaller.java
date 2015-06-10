@@ -116,7 +116,8 @@ public class GNSInstaller {
       installPath = DEFAULT_INSTALL_PATH;
     }
     System.out.println("Install Path: " + installPath);
-    javaCommand = installConfig.getInstallPath();
+    //
+    javaCommand = installConfig.getJavaCommand();
     if (javaCommand == null) {
       javaCommand = DEFAULT_JAVA_COMMAND;
     }

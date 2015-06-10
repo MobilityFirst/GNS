@@ -34,7 +34,7 @@ public class AppUpdate {
    * Executes the local update in response to an UpdatePacket.
    *
    * @param updatePacket
-   * @param replica
+   * @param app
    * @param noCoordinationState
    * @param doNotReplyToClient
    * @throws NoSuchAlgorithmException
@@ -45,7 +45,7 @@ public class AppUpdate {
    * @throws IOException
    * @throws FailedDBOperationException
    */
-  public static void executeUpdateLocal(UpdatePacket<String> updatePacket, GnsApplicationInterface replica,
+  public static void executeUpdateLocal(UpdatePacket<String> updatePacket, GnsApplicationInterface app,
           boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -63,13 +63,14 @@ public class AppUpdate {
     // FIXME : handle ACL checks for full JSON user updates
     if (writer != null && field != null) { // writer will be null for internal system reads
       errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST,
-              replica, updatePacket.getLnsAddress());
+              app, updatePacket.getLnsAddress());
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
       if (!doNotReplyToClient) {
-        replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
+        app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
+        //replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
       }
       return;
@@ -78,20 +79,21 @@ public class AppUpdate {
     NameRecord nameRecord;
 
     if (updatePacket.getOperation().isAbleToSkipRead()) { // some operations don't require a read first
-      nameRecord = new NameRecord(replica.getDB(), guid);
+      nameRecord = new NameRecord(app.getDB(), guid);
     } else {
       try {
         if (field == null) {
-          nameRecord = NameRecord.getNameRecord(replica.getDB(), guid);
+          nameRecord = NameRecord.getNameRecord(app.getDB(), guid);
         } else {
-          nameRecord = NameRecord.getNameRecordMultiField(replica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
+          nameRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
         }
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid + " Packet = " + updatePacket.toString());
         e.printStackTrace();
         ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         if (!doNotReplyToClient) {
-          replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
+          app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
+          //app.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
 
         }
         return;
@@ -121,7 +123,7 @@ public class AppUpdate {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Update operation failed " + updatePacket);
         }
-        if (updatePacket.getNameServerID().equals(replica.getNodeID())) {
+        if (updatePacket.getNameServerID().equals(app.getNodeID())) {
           // IF this node proposed this update send error message to client (CCP).
           ConfirmUpdatePacket<String> failPacket
                   = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
@@ -131,7 +133,8 @@ public class AppUpdate {
             GNS.getLogger().info("Error msg sent to client for failed update " + updatePacket);
           }
           if (!doNotReplyToClient) {
-            replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failPacket.toJSONObject());
+            app.getClientCommandProcessor().injectPacketIntoCCPQueue(failPacket.toJSONObject());
+            //app.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failPacket.toJSONObject());
           }
         }
 
@@ -145,13 +148,14 @@ public class AppUpdate {
 //        nameRecord.incrementUpdateRequest();
         //
         // If this node proposed this update send the confirmation back to the client (CCP).
-        if (updatePacket.getNameServerID().equals(replica.getNodeID())) {
+        if (updatePacket.getNameServerID().equals(app.getNodeID())) {
           ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
                   updatePacket.getSourceId(),
                   updatePacket.getRequestID(), updatePacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
 
           if (!doNotReplyToClient) {
-            replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
+            app.getClientCommandProcessor().injectPacketIntoCCPQueue(confirmPacket.toJSONObject());
+            //app.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS Sent confirmation to CCP. Sent packet: " + confirmPacket.toJSONObject());
             }

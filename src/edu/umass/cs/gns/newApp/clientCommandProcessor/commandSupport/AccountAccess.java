@@ -629,6 +629,7 @@ public class AccountAccess {
   public static CommandResponse removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
+    GNS.getLogger().info("ALIAS: " + alias + " ALIASES:" + accountInfo.getAliases());
     if (!accountInfo.containsAlias(alias)) {
       return new CommandResponse(BADRESPONSE + " " + BADALIAS);
     }
@@ -637,6 +638,7 @@ public class AccountAccess {
     if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
+    // Now updated the account record
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
     if ((responseCode = updateAccountInfo(accountInfo, writer, signature, message, handler)).isAnError()) {
