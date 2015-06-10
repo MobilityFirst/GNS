@@ -20,16 +20,15 @@ import edu.umass.cs.utils.MultiArrayMap;
  * @param <NodeIDType> 
  * @param <EventType> 
  * @param <KeyType> 
- */
-
-/*
+ * 
  * The purpose of this class is to store ProtocolTasks and activate them when a
  * corresponding event arrives.
  */
+@SuppressWarnings("javadoc")
 public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	public static final boolean DEBUG = false;
-	public static final int MAX_TASKS = 10000;
-	public static final int MAX_THREADS = 10;
+	protected static final int MAX_TASKS = 10000;
+	protected static final int MAX_THREADS = 10;
 
 	/*
 	 * The restart period below if used to enable retransmissions for
@@ -43,8 +42,8 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * motivation is to get around network losses. Other system- or
 	 * protocol-specific reasons are okay for setting lower periods.
 	 */
-	public static final long DEFAULT_RESTART_PERIOD = 60000;
-	public static final long TOO_MANY_TASKS_CHECK_PERIOD = 300; // seconds
+	protected static final long DEFAULT_RESTART_PERIOD = 60000;
+	protected static final long TOO_MANY_TASKS_CHECK_PERIOD = 300; // seconds
 
 	private final NodeIDType myID;
 	private final InterfaceMessenger<NodeIDType,?> messenger;

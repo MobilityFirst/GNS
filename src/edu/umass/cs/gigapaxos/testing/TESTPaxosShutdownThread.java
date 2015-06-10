@@ -7,9 +7,12 @@ import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 
 /*
- * This class is for printing testing/debug information when a paxos test run is killed ungracefully
- * (using Ctrl-C).
+ * @author arun
+ * 
+ * This class is for printing testing/debug information when a paxos test run is
+ * killed ungracefully (using Ctrl-C).
  */
+@SuppressWarnings("javadoc")
 public class TESTPaxosShutdownThread extends Thread {
 
 	static {
@@ -45,11 +48,13 @@ public class TESTPaxosShutdownThread extends Thread {
 					.println("Request instrumentation (RequestInstrumenter.DEBUG) not turned on.");
 	}
 
-	public static void main(String[] args) {
-		try {
-			Thread.sleep(100000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	static class Main {
+		public static void main(String[] args) {
+			try {
+				Thread.sleep(100000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 }

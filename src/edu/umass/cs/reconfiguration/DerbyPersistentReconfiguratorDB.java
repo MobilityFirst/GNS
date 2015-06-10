@@ -103,7 +103,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	private static final ArrayList<DerbyPersistentReconfiguratorDB<?>> instances = new ArrayList<DerbyPersistentReconfiguratorDB<?>>();
 
-	public String logDirectory;
+	protected String logDirectory;
 
 	private ComboPooledDataSource dataSource = null;
 
@@ -113,9 +113,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	private boolean closed = true;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = (Reconfigurator.getLogger());
 
+	/**
+	 * @param myID
+	 * @param nc
+	 * @param logDir
+	 */
 	public DerbyPersistentReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc, String logDir) {
 		super(myID, nc);
@@ -124,6 +128,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		initialize();
 	}
 
+	/**
+	 * @param myID
+	 * @param nc
+	 */
 	public DerbyPersistentReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc) {
 		this(myID, nc, null);
@@ -1133,7 +1141,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return connected;
 	}
 
-	public static DataSource setupDataSourceC3P0(String connectURI,
+	private static DataSource setupDataSourceC3P0(String connectURI,
 			Properties props) throws SQLException {
 
 		ComboPooledDataSource cpds = new ComboPooledDataSource();
@@ -1368,6 +1376,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return "DerbyRCDB" + myID;
 	}
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();

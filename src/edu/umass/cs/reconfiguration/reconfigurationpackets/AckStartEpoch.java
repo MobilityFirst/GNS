@@ -15,11 +15,22 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 public class AckStartEpoch<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> implements InterfaceReplicableRequest{
 
 	private boolean coordType = false;
+	/**
+	 * @param initiator
+	 * @param serviceName
+	 * @param epochNumber
+	 * @param sender
+	 */
 	public AckStartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, NodeIDType sender) {
 		super(initiator, ReconfigurationPacket.PacketType.ACK_START_EPOCH, serviceName, epochNumber);
 		this.setSender(sender);
 	}
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public AckStartEpoch(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json, unstringer);
 	}

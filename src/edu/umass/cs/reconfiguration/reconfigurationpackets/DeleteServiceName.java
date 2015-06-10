@@ -24,19 +24,30 @@ public class DeleteServiceName extends
 		FAILED
 	};
 
+	/**
+	 * Needed for unstringing InetSocketAddresses.
+	 */
 	public static final Stringifiable<InetSocketAddress> unstringer = new StringifiableDefault<InetSocketAddress>(
 			new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
-	// private boolean coordType = false;
-
 	private boolean failed = false;
 
+	/**
+	 * @param initiator
+	 * @param name
+	 * @param epochNumber
+	 */
 	public DeleteServiceName(InetSocketAddress initiator, String name,
 			int epochNumber) {
 		super(initiator, ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
 				name, epochNumber);
 	}
 
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public DeleteServiceName(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
 		super(json, DeleteServiceName.unstringer); // ignores argument
@@ -45,6 +56,10 @@ public class DeleteServiceName extends
 		this.failed = json.optBoolean(Keys.FAILED.toString());
 	}
 
+	/**
+	 * @param json
+	 * @throws JSONException
+	 */
 	public DeleteServiceName(JSONObject json) throws JSONException {
 		this(json, unstringer);
 	}
@@ -63,19 +78,25 @@ public class DeleteServiceName extends
 
 	@Override
 	public boolean needsCoordination() {
-		return false; // coordType;
+		return false; 
 	}
 
 	@Override
 	public void setNeedsCoordination(boolean b) {
-		// coordType = b;
+		// do nothing
 	}
 
+	/**
+	 * @return Returns this after setting as failed.
+	 */
 	public DeleteServiceName setFailed() {
 		this.failed = true;
 		return this;
 	}
 
+	/**
+	 * @return Whether this request failed.
+	 */
 	public boolean isFailed() {
 		return this.failed;
 	}

@@ -10,9 +10,6 @@ import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 public class ReconfigurationPacketDemultiplexer extends
 		AbstractJSONPacketDemultiplexer {
 
-	public ReconfigurationPacketDemultiplexer() {
-	}
-
 	@Override
 	public boolean handleMessage(JSONObject json) {
 		throw new RuntimeException(

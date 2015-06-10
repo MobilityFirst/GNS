@@ -18,6 +18,7 @@ import edu.umass.cs.protocoltask.ThresholdProtocolEvent;
  *            and it is not modular to have to put *all* packet types in the
  *            Packet class.
  */
+@SuppressWarnings("javadoc")
 public abstract class ProtocolPacket<NodeIDType, EventType> implements
 		ThresholdProtocolEvent<NodeIDType, EventType, String> {
 
@@ -130,7 +131,7 @@ public abstract class ProtocolPacket<NodeIDType, EventType> implements
 		return this;
 	}
 
-	public static void main(String[] args) {
+	 static void main(String[] args) {
 		JSONObject json = new JSONObject();
 		Integer id = 3;
 		String ID = "ID";

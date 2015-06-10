@@ -22,8 +22,18 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  */
 public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 
+	/**
+	 * Intended to support two types of coordination policies: lazy and paxos.
+	 */
 	public static enum CoordType {
-		LAZY, PAXOS
+		/**
+		 * Lazily propagates coordination-needing requests to all replicas.
+		 */
+		LAZY,
+		/**
+		 * Coordinates coordination-needing requests using gigapaxos.
+		 */
+		PAXOS
 	};
 
 	private final CoordType coordType;
@@ -51,7 +61,8 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 		super(app, msgr.getMyID(), unstringer, msgr);
 		this.coordType = coordType;
 		this.registerCoordination(NoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
-		if(app instanceof NoopApp) ((NoopApp)app).setMessenger(msgr);
+		if (app instanceof NoopApp)
+			((NoopApp) app).setMessenger(msgr);
 	}
 
 	@Override
@@ -59,11 +70,12 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 			throws IOException, RequestParseException {
 		try {
 			// coordinate exactly once, and set self to entry replica
-			if(request instanceof InterfaceReplicableRequest)
-				((InterfaceReplicableRequest) request).setNeedsCoordination(false);
-			if(request instanceof NoopAppRequest)
+			if (request instanceof InterfaceReplicableRequest)
+				((InterfaceReplicableRequest) request)
+						.setNeedsCoordination(false);
+			if (request instanceof NoopAppRequest)
 				((NoopAppRequest) request).setEntryReplica(this.getMyID());
-			// pick lazy or paxos coordinator, the defaults supported 
+			// pick lazy or paxos coordinator, the defaults supported
 			if (this.coordType.equals(CoordType.LAZY))
 				this.sendAllLazy(request);
 			else if (this.coordType.equals(CoordType.PAXOS)) {
@@ -83,7 +95,8 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 			this.groups.put(serviceName, new CoordData(serviceName, epoch,
 					nodes));
 		} else if (this.coordType.equals(CoordType.PAXOS)) {
-			created = super.createReplicaGroup(serviceName, epoch, state, nodes);
+			created = super
+					.createReplicaGroup(serviceName, epoch, state, nodes);
 		}
 		return created;
 	}
@@ -93,8 +106,7 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 		if (this.coordType.equals(CoordType.LAZY)) {
 			// FIXME: check epoch here
 			this.groups.remove(serviceName);
-		}
-		else if (this.coordType.equals(CoordType.PAXOS)) {
+		} else if (this.coordType.equals(CoordType.PAXOS)) {
 			super.deleteReplicaGroup(serviceName, epoch);
 		}
 	}
@@ -127,21 +139,20 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 	}
 
 	// FIXME: unused method that exists only to prevent warnings
-	public boolean existsGroup(String name, int epoch) {
+	protected boolean existsGroup(String name, int epoch) {
 		CoordData data = this.groups.get(name);
 		assert (data == null || data.name.equals(name));
 		return (data != null && data.epoch == epoch);
 	}
 
 	/*
-	protected void sendAllLazy(NoopAppRequest request) throws IOException,
-			RequestParseException, JSONException {
-		if(this.getReplicaGroup(request.getServiceName())==null) return;
-		GenericMessagingTask<Integer, JSONObject> mtask = new GenericMessagingTask<Integer, JSONObject>(
-				this.getReplicaGroup(request.getServiceName()).toArray(),
-				request.toJSONObject());
-		if (this.messenger != null)
-			this.messenger.send(mtask);
-	}
-	*/
+	 * protected void sendAllLazy(NoopAppRequest request) throws IOException,
+	 * RequestParseException, JSONException {
+	 * if(this.getReplicaGroup(request.getServiceName())==null) return;
+	 * GenericMessagingTask<Integer, JSONObject> mtask = new
+	 * GenericMessagingTask<Integer, JSONObject>(
+	 * this.getReplicaGroup(request.getServiceName()).toArray(),
+	 * request.toJSONObject()); if (this.messenger != null)
+	 * this.messenger.send(mtask); }
+	 */
 }

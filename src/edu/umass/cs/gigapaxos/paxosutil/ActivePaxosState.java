@@ -3,19 +3,22 @@ package edu.umass.cs.gigapaxos.paxosutil;
 import edu.umass.cs.gigapaxos.PaxosManager;
 
 /**
-@author V. Arun
- */
-
-/* This class maintains state for active paxos instances that
+ * @author V. Arun
+ * 
+ * This class maintains state for active paxos instances that
  * is not needed by idle ones, e.g., for retransmissions or 
  * sync requests for missing decisions, so we store this 
  * separately in a smaller hashmap in PaxosManager and clean
  * out long-idle objects periodically.
  */
+@SuppressWarnings("javadoc")
 public class ActivePaxosState {
 	private static final long MIN_RESYNC_DELAY = 1000; //ms
 	private static final long MAX_IDLE_PERIOD = PaxosManager.getDeactivationPeriod(); //ms
 
+	/**
+	 * ID of paxos group.
+	 */
 	public final String paxosID;
 
 	/* FIXME: This could be a place to put things we need to check for periodically, 

@@ -2,11 +2,10 @@ package edu.umass.cs.protocoltask;
 
 /**
  * @author V. Arun
- */
-
-/*
+ *
  * Mostly static methods to help with testing or instrumentation.
  */
+@SuppressWarnings("javadoc")
 public class TESTProtocolTaskConfig {
 
 	private static boolean enable_drop = false;

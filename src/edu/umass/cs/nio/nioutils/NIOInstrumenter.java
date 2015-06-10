@@ -13,6 +13,7 @@ import edu.umass.cs.utils.Util;
  *         and instrumentation purposes only. 
  */
 
+@SuppressWarnings("javadoc")
 public class NIOInstrumenter {
 	private static int totalSent = 0; // Sent by NIOTransport or GNSNIOTransport
 	private static int totalRcvd = 0; // Received by NIOTransport or
@@ -48,6 +49,10 @@ public class NIOInstrumenter {
 		totalPktsRcvd++;
 	}
 
+	/**
+	 * @param msg
+	 * @throws JSONException
+	 */
 	public static synchronized void rcvdJSONPacket(JSONObject msg)
 			throws JSONException {
 		if (msg.has(JSONMessenger.SENT_TIME)) {

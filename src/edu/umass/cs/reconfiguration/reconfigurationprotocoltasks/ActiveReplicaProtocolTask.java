@@ -9,6 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.nio.GenericMessagingTask;
+import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.reconfiguration.ActiveReplica;
@@ -37,11 +38,18 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 	
 	private String key = null;
 	private final NodeIDType myID;
+	private final Stringifiable<NodeIDType> unstringer;
 	private final ActiveReplica<NodeIDType> activeReplica;
 
-	public ActiveReplicaProtocolTask(NodeIDType id, ActiveReplica<NodeIDType> ar) {
+	/**
+	 * @param id
+	 * @param unstringer 
+	 * @param ar
+	 */
+	public ActiveReplicaProtocolTask(NodeIDType id, Stringifiable<NodeIDType> unstringer, ActiveReplica<NodeIDType> ar) {
 		this.myID = id;
 		this.activeReplica = ar;
+		this.unstringer = unstringer;
 	}
 
 	@Override
@@ -68,6 +76,11 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 				Arrays.asList(ActiveReplicaProtocolTask.types));
 		return types;
 	}
+
+	/**
+	 * @return Default packet types handled, i.e., not counting temporary
+	 *         protocol tasks.
+	 */
 	public Set<ReconfigurationPacket.PacketType> getDefaultTypes() {
 		return new HashSet<ReconfigurationPacket.PacketType>(Arrays.asList(defaultTypes));
 	}
@@ -104,11 +117,14 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		return (GenericMessagingTask<NodeIDType, ?>[])returnValue;
 	}
 
+	/**
+	 * @param json
+	 * @return BasicReconfigurationPacket generated via reflection from JSON.
+	 * @throws JSONException
+	 */
 	@SuppressWarnings("unchecked")
 	public BasicReconfigurationPacket<NodeIDType> getReconfigurationPacket(JSONObject json) throws JSONException {
-		return (BasicReconfigurationPacket<NodeIDType>)ReconfigurationPacket.getReconfigurationPacket(json, this.activeReplica.getUnstringer());
-	}
-
-	public static void main(String[] args) {
+		return (BasicReconfigurationPacket<NodeIDType>)ReconfigurationPacket.getReconfigurationPacket(json, this.unstringer);
 	}
 }
+

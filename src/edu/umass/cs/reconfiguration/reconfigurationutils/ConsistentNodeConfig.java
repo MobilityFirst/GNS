@@ -9,10 +9,12 @@ import org.json.JSONException;
 
 import edu.umass.cs.nio.InterfaceNodeConfig;
 
-/* This class isn't really used for anything other than as 
+/**
+ *  This class isn't really used for anything other than as 
  * a parent for ConsistentReconfigurableNodeConfig, so it
  * has been declared abstract (even though it has no 
  * abstract methods).
+ * @param <NodeIDType> 
  */
 public abstract class ConsistentNodeConfig<NodeIDType> implements
 		InterfaceNodeConfig<NodeIDType> {
@@ -22,6 +24,9 @@ public abstract class ConsistentNodeConfig<NodeIDType> implements
 
 	private final ConsistentHashing<NodeIDType> CH; // need to refresh when nodeConfig changes
 
+	/**
+	 * @param nc
+	 */
 	public ConsistentNodeConfig(InterfaceNodeConfig<NodeIDType> nc) {
 		this.nodeConfig = nc;
 		this.nodes = this.nodeConfig.getNodeIDs();
@@ -37,6 +42,11 @@ public abstract class ConsistentNodeConfig<NodeIDType> implements
 		return true;
 	}
 
+	/**
+	 * @param name
+	 * @return Consecutive servers on the consistent hash ring to which
+	 * this name hashes returned as an array.
+	 */
 	public Set<NodeIDType> getReplicatedServers(String name) {
 		refresh();
 		return this.CH.getReplicatedServers(name);
@@ -57,6 +67,10 @@ public abstract class ConsistentNodeConfig<NodeIDType> implements
 		return this.nodeConfig.getNodePort(id);
 	}
 	
+	/**
+	 * @param id
+	 * @return Socket address corresponding to node {@code id}.
+	 */
 	public InetSocketAddress getNodeSocketAddress(NodeIDType id) {
 		InetAddress ip = this.getNodeAddress(id);
 		return (ip!=null ? new InetSocketAddress(ip, this.getNodePort(id)) : null);

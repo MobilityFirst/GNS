@@ -11,13 +11,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.InterfacePacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONPacket;
-import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckDropEpochFinalState;
@@ -77,8 +78,7 @@ public class ActiveReplica<NodeIDType> implements
 	private final AggregateDemandProfiler demandProfiler;
 	private final boolean noReporting;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = (Reconfigurator.getLogger());
 
 	/*
 	 * Stores only those requests for which a callback is desired after
@@ -100,7 +100,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.protocolExecutor = new ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String>(
 				messenger);
 		this.protocolTask = new ActiveReplicaProtocolTask<NodeIDType>(
-				getMyID(), this);
+				getMyID(), this.nodeConfig, this);
 		this.protocolExecutor.register(this.protocolTask.getDefaultTypes(),
 				this.protocolTask);
 		this.appCoordinator.setMessenger(this.messenger);
@@ -111,10 +111,6 @@ public class ActiveReplica<NodeIDType> implements
 			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
 			JSONMessenger<NodeIDType> messenger) {
 		this(appC, nodeConfig, messenger, false);
-	}
-
-	public Stringifiable<NodeIDType> getUnstringer() {
-		return this.nodeConfig;
 	}
 
 	@Override
@@ -139,7 +135,7 @@ public class ActiveReplica<NodeIDType> implements
 				this.handRequestToApp(request);
 				// update demand stats (for reconfigurator) if handled by app
 				updateDemandStats(request,
-						JSONPacket.getSenderAddress(jsonObject));
+						MessageNIOTransport.getSenderInetAddress(jsonObject));
 			}
 		} catch (RequestParseException rpe) {
 			rpe.printStackTrace();
@@ -160,6 +156,9 @@ public class ActiveReplica<NodeIDType> implements
 				this.sendAckStopEpoch(stopEpoch);
 	}
 
+	/**
+	 * @return Set of packet types processed by ActiveReplica.
+	 */
 	public Set<IntegerPacketType> getPacketTypes() {
 		Set<IntegerPacketType> types = this.getAppPacketTypes();
 		if (types == null)
@@ -170,17 +169,26 @@ public class ActiveReplica<NodeIDType> implements
 		return types;
 	}
 
+	/**
+	 * For graceful closure.
+	 */
 	public void close() {
 		this.protocolExecutor.stop();
 		this.messenger.stop();
 	}
 
-	///////////////// Start of protocol task handler methods//////////////////////
+	// /////////////// Start of protocol task handler
+	// methods//////////////////////
 
-	/*
+	/**
 	 * Will spawn FetchEpochFinalState to fetch the final state of the previous
 	 * epoch if one existed, else will locally create the current epoch with an
 	 * empty initial state.
+	 * 
+	 * @param event
+	 * @param ptasks
+	 * @return Messaging task, typically null as we spawn a protocol task to
+	 *         fetch the previous epoch's final state.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleStartEpoch(
 			StartEpoch<NodeIDType> event,
@@ -236,6 +244,12 @@ public class ActiveReplica<NodeIDType> implements
 		}
 	}
 
+	/**
+	 * @param stopEpoch
+	 * @param ptasks
+	 * @return Messaging task, typically null as we coordinate the stop request and
+	 * use a callback to notify the reconfigurator that issued the {@link StopEpoch}.
+	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleStopEpoch(
 			StopEpoch<NodeIDType> stopEpoch,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
@@ -250,6 +264,12 @@ public class ActiveReplica<NodeIDType> implements
 		return null; // need to wait until callback
 	}
 
+	/**
+	 * @param event
+	 * @param ptasks
+	 * @return Messaging task to send AckDropEpochFinalState to reconfigurator
+	 * that issued the corresponding DropEpochFinalState. 
+	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleDropEpochFinalState(
 			DropEpochFinalState<NodeIDType> event,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
@@ -285,37 +305,60 @@ public class ActiveReplica<NodeIDType> implements
 					":", (dropEpoch.getEpochNumber() - 1) });
 	}
 
+	/**
+	 * @param event
+	 * @param ptasks
+	 * @return Messaging task returning the requested epoch final state to the
+	 * requesting ActiveReplica.
+	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleRequestEpochFinalState(
 			RequestEpochFinalState<NodeIDType> event,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		RequestEpochFinalState<NodeIDType> request = (RequestEpochFinalState<NodeIDType>) event;
 		this.logEvent(event);
+		StringContainer stateContainer = this.getFinalStateContainer(
+				request.getServiceName(), request.getEpochNumber());
+		if (stateContainer == null) {
+			log.log(Level.INFO, MyLogger.FORMAT[2],
+					new Object[] { this,
+							"****did not find any epochFinalState for*****",
+							request.getSummary() });
+			return null;
+		}
+
 		EpochFinalState<NodeIDType> epochState = new EpochFinalState<NodeIDType>(
 				request.getInitiator(), request.getServiceName(),
-				request.getEpochNumber(), this.appCoordinator.getFinalState(
-						request.getServiceName(), request.getEpochNumber()));
+				request.getEpochNumber(), stateContainer.state);
 		GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>> mtask = null;
 
-		if (epochState.getState() != null) {
-			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this,
-					"returning to ", request.getInitiator(), event.getKey(),
-					epochState });
-			mtask = new GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>>(
-					request.getInitiator(), epochState);
-		} else
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
-					"****not returning*****", epochState });
+		log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this,
+				"returning to ", request.getInitiator(), event.getKey(),
+				epochState });
+		mtask = new GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>>(
+				request.getInitiator(), epochState);
 
 		return (mtask != null ? mtask.toArray() : null);
+	}
+
+	private StringContainer getFinalStateContainer(String name, int epoch) {
+		if (this.appCoordinator instanceof PaxosReplicaCoordinator)
+			return ((PaxosReplicaCoordinator<NodeIDType>) (this.appCoordinator))
+					.getFinalStateContainer(name, epoch);
+		String finalState = this.appCoordinator.getFinalState(name, epoch);
+		return finalState == null ? null : new StringContainer(finalState);
 	}
 
 	public String toString() {
 		return "AR" + this.messenger.getMyID();
 	}
 
-	/* ******************** End of protocol task handler methods ************************/
+	/*
+	 * ************ End of protocol task handler methods *************
+	 */
 
-	/* ********************** Private methods below ************************************/
+	/*
+	 * ****************** Private methods below *******************
+	 */
 
 	private void handRequestToApp(InterfaceRequest request) {
 		long t1 = System.currentTimeMillis();

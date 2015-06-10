@@ -1,22 +1,17 @@
-/*
- * Copyright (C) 2015
- * University of Massachusetts
- * All Rights Reserved 
- *
- * Initial developer(s): Westy.
- */
 package edu.umass.cs.reconfiguration.reconfigurationutils;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
 
 /**
- * Get active IP addresses. Used by the various demand profiles.
- * 
- * @author westy
+ * Get IP addresses of all active replica nodes. Demand profile implementations
+ * may need this information in order to implement some placement policies.
  */
 public interface InterfaceGetActiveIPs {
-  
-  public ArrayList<InetAddress> getActiveIPs();
-  
+
+	/**
+	 * @return Array of IP addresses corresponding to all active replica nodes.
+	 */
+	public ArrayList<InetAddress> getActiveIPs();
+
 }

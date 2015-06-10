@@ -6,43 +6,50 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
+ * @param <NodeIDType>
+ * 
+ *            This class maintains a map of NodeIDType objects to integers, and
+ *            provides some convenience methods to go back and forth between
+ *            collections of the two kinds. It is synchronized because
+ *            PaxosManager and Messenger (used by the BatchLogger thread in
+ *            AbstractPaxosLogger) use this class.
  */
-/*
- * This class maintains a map of NodeIDType objects
- * to integers, and provides some convenience methods
- * to go back and forth between collections of the
- * two kinds. It is synchronized because PaxosManager
- * and Messenger (used by the BatchLogger thread in
- * AbstractPaxosLogger) use this class.
- */
+@SuppressWarnings("javadoc")
 public class IntegerMap<NodeIDType> {
-	private HashMap<Integer, NodeIDType> nodeMap =
-			new HashMap<Integer, NodeIDType>();
+	private HashMap<Integer, NodeIDType> nodeMap = new HashMap<Integer, NodeIDType>();
 
 	/**
-         * Maps NodeIDType to int and stores the mapping
-         * @param node
-         * @return Returns {@code int} corresponding to {@code node}.
-         */
+	 * Maps NodeIDType to int and stores the mapping
+	 * 
+	 * @param node
+	 * @return Returns {@code int} corresponding to {@code node}.
+	 */
 	public int put(NodeIDType node) {
 		assert (node != null);
 		int id = getID(node);
-		assert (!this.nodeMap.containsKey(id) || this.nodeMap.get(id).equals(
-			node));
+		while (this.nodeMap.containsKey(id)
+				&& !this.nodeMap.get(id).equals(node))
+			id++;
 		this.nodeMap.put(id, node);
 		return id;
 	}
+
+	private static String message = ": Unable to translate integer ID "
+			+ " to NodeIDType; this is likely a bug";
 
 	// get(int) maps int to NodeIDType
 	public synchronized NodeIDType get(int id) {
 		NodeIDType node = this.nodeMap.get(id);
 		if (node == null) {
-			System.out.println("!!!!!!!!Unable to get " + id);
-			assert (false); // FIXME: What to do here?
+			PaxosManager.getLogger().severe(id + message);
+			// this should never happen
+			assert (false) : id + message;
+			throw new RuntimeException(id + message);
 		}
 		return node;
 	}
@@ -73,33 +80,29 @@ public class IntegerMap<NodeIDType> {
 	}
 
 	/*
-	 * Might need to change this if hashcode is not unique.
-	 * Generally, object equality => hashcode equality but
-	 * not the other way round.
+	 * Might need to change this if hashcode is not unique. Generally, object
+	 * equality => hashcode equality but not the other way round.
 	 */
 	private Integer getID(NodeIDType node) {
-		if (node == null) return null;
-		/*           
-		 * Relies on the following assumptions
-		 * 1) an Integer's hashcode is the integer value
-		 * itself, not a different integer value. This
-		 * assumption is needed primarily because -1
-		 * is a special "invalid" node ID and encoding
-		 * it to something else will break code.
+		if (node == null)
+			return null;
+		/*
+		 * Relies on the following assumptions 1) an Integer's hashcode is the
+		 * integer value itself, not a different integer value. This assumption
+		 * is needed primarily because -1 is a special "invalid" node ID and
+		 * encoding it to something else will break code.
 		 * 
-		 * 2) a String's hashcode does not change in the
-		 * lifetime of a JVM. We do *not* need the
-		 * assumption that the hashcode not change
-		 * across reboots or be the same on different
-		 * machines (which would be a bad assumption
-		 * anyway).
+		 * 2) a String's hashcode does not change in the lifetime of a JVM. We
+		 * do *not* need the assumption that the hashcode not change across
+		 * reboots or be the same on different machines (which would be a bad
+		 * assumption anyway).
 		 */
-		
+
 		// Changed this to only return postive values - Westy
-		/* We can't just return Math.abs(.) to get positive
-		 * values because the ID -1 is special. It is used 
-		 * to mean an invalid node ID. Changing that to +1
-		 * breaks code.
+		/*
+		 * We can't just return Math.abs(.) to get positive values because the
+		 * ID -1 is special. It is used to mean an invalid node ID. Changing
+		 * that to +1 breaks code.
 		 */
 		int hash = node.hashCode();
 		return (hash != -1 ? Math.abs(node.hashCode()) : -1);

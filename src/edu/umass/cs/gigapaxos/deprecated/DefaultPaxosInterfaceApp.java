@@ -24,7 +24,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  * if the flag is set in RequestPacket (used by the coordinator).
  */
 public class DefaultPaxosInterfaceApp implements Replicable, InterfaceReplicable {
-	public static final int MAX_STORED_REQUESTS = 1000;
+	private static final int MAX_STORED_REQUESTS = 1000;
 	private static MessageDigest md ;
 
 	private HashMap<String,PaxosState> allState = new HashMap<String,PaxosState>();
@@ -64,7 +64,7 @@ public class DefaultPaxosInterfaceApp implements Replicable, InterfaceReplicable
 		} catch(JSONException je) {je.printStackTrace();}
 		return executed;
 	}
-	public int digest(String s) {
+	private int digest(String s) {
 		md.update(s.getBytes());
 		byte[] digest = md.digest();
 		int dig=0;
@@ -91,26 +91,31 @@ public class DefaultPaxosInterfaceApp implements Replicable, InterfaceReplicable
 
 	/* Testing methods below.
 	 */
+	@SuppressWarnings("javadoc")
 	public synchronized int getNumCommitted(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state!=null) return state.seqnum;
 		return 0;
 	}
+	@SuppressWarnings("javadoc")
 	public synchronized int getNumExecuted(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state!=null) return state.numExecuted;
 		return 0;
 	}
+	@SuppressWarnings("javadoc")
 	public synchronized String getRequest(String paxosID, int reqnum) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state!=null) return state.committed.get(reqnum);
 		return null;
 	}
+	@SuppressWarnings("javadoc")
 	public synchronized int getHash(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if(state!=null) return state.value.hashCode();
 		return 0;
 	}
+	@SuppressWarnings("javadoc")
 	public synchronized void waitToFinish() throws InterruptedException {
 		this.wait();
 	}

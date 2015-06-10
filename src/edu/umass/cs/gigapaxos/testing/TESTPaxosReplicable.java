@@ -26,7 +26,12 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun
+ * 
+ *         The default no-op application for gigapaxos testing. It simply echoes
+ *         back the request to the client. But it does a number of other
+ *         instrumentations and asserts for testing.
  */
+@SuppressWarnings("javadoc")
 public class TESTPaxosReplicable implements InterfaceReplicable {
 	private static final boolean DEBUG = PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
@@ -37,7 +42,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 
 	private class PaxosState {
 		private int seqnum = -1;
-		private String value = "Initial state";
+		private String value = null;//"Initial state";
 		private int numExecuted = 0;
 		private HashMap<Integer, String> committed = new HashMap<Integer, String>();
 	}
@@ -197,6 +202,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	}
 
 	public int digest(String s) {
+		// null check needed if null checkpoints are enabled
+		if(s==null) return 0;
 		md.update(s.getBytes());
 		byte[] digest = md.digest();
 		int dig = 0;

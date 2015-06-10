@@ -1,8 +1,5 @@
 package edu.umass.cs.nio;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -14,19 +11,39 @@ import org.json.JSONObject;
  * An abstract class that all json packets should extend.
  */
 public abstract class JSONPacket {
+	/**
+	 * JSON key for the integer packet type.
+	 */
 	public static final String PACKET_TYPE = "type";
 	protected final int type;
 
+	/**
+	 * @param t
+	 */
 	public JSONPacket(IntegerPacketType t) {
 		this.type = t.getInt();
 	}
 
+	/**
+	 * @param json
+	 * @throws JSONException
+	 */
 	public JSONPacket(JSONObject json) throws JSONException {
 		this.type = getPacketType(json);
 	}
 
+	/**
+	 * @return JSONObject corresponding to fields in classes extending this
+	 *         class.
+	 * @throws JSONException
+	 */
 	public abstract JSONObject toJSONObjectImpl() throws JSONException;
 
+	/**
+	 * @return JSONObject corresponding to this class' (including subclasses)
+	 *         fields.
+	 * @throws JSONException
+	 */
 	public JSONObject toJSONObject() throws JSONException {
 		JSONObject json = toJSONObjectImpl();
 		json.put(PACKET_TYPE, type);
@@ -44,6 +61,11 @@ public abstract class JSONPacket {
 	
 	/* ********************* static helper methods below *******************/
 
+	/**
+	 * @param json
+	 * @return Integer packet type.
+	 * @throws JSONException
+	 */
 	public static final Integer getPacketType(JSONObject json)
 			throws JSONException {
 		if (json.has(PACKET_TYPE))
@@ -52,6 +74,12 @@ public abstract class JSONPacket {
 			return null;
 	}
 	
+	/**
+	 * Puts type into json.
+	 * 
+	 * @param json
+	 * @param type
+	 */
 	public static final void putPacketType(JSONObject json, int type) {
 		try {
 			json.put(PACKET_TYPE, type);
@@ -59,25 +87,17 @@ public abstract class JSONPacket {
 			e.printStackTrace();
 		}
 	}
+	/**
+	 * Puts type.getInt() into json.
+	 * 
+	 * @param json
+	 * @param type
+	 */
 	public static final void putPacketType(JSONObject json, IntegerPacketType type) {
 		try {
 			json.put(PACKET_TYPE, type.getInt());
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public static final InetAddress getSenderAddress(JSONObject json)
-			throws JSONException {
-		if (json.has(JSONNIOTransport.DEFAULT_IP_FIELD)) {
-			try {
-				return InetAddress.getByName(json.getString(
-						JSONNIOTransport.DEFAULT_IP_FIELD).replaceAll(
-						"[^0-9.]*", ""));
-			} catch (UnknownHostException uhe) {
-				uhe.printStackTrace();
-			}
-		}
-		return null;
 	}
 }

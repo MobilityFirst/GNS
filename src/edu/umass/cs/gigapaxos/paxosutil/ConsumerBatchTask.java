@@ -4,6 +4,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * @author arun
+ *
+ * @param <TaskType>
+ * 
+ * A utility task to "consume" batched requests.
+ */
+@SuppressWarnings("javadoc")
 public abstract class ConsumerBatchTask<TaskType> extends
 		ConsumerTask<TaskType> {
 

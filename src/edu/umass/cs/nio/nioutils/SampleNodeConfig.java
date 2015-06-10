@@ -28,6 +28,10 @@ import org.json.JSONException;
 public class SampleNodeConfig<NodeIDType> implements
 		InterfaceNodeConfig<NodeIDType> {
 
+	/**
+	 * The default starting port number beyond which nodes automatically get
+	 * port numbers assigned.
+	 */
 	public static final int DEFAULT_START_PORT = 2000;
 	private boolean local = false;
 	private HashMap<NodeIDType, InetAddress> nmap = new HashMap<NodeIDType, InetAddress>();;
@@ -41,6 +45,9 @@ public class SampleNodeConfig<NodeIDType> implements
 		this.defaultPort = defaultPort;
 	}
 
+	/**
+	 * 
+	 */
 	public SampleNodeConfig() {
 		this(DEFAULT_START_PORT);
 	}
@@ -107,19 +114,34 @@ public class SampleNodeConfig<NodeIDType> implements
 		return port;
 	}
 
+	/**
+	 * @return Set of all nodes.
+	 */
 	public Set<NodeIDType> getNodes() {
 		return nmap.keySet();
 	}
 
+	/**
+	 * Add node with id mapped to IP and an auto-selected port number.
+	 * @param id Node id.
+	 * @param IP IP address.
+	 */
 	public void add(NodeIDType id, InetAddress IP) {
 		nmap.put(id, IP);
 	}
 
+	/**
+	 * @param id
+	 */
 	public void addLocal(NodeIDType id) {
 		local = true;
 		nmap.put(id, getLocalAddress());
 	}
 
+
+	/**
+	 * Pretty prints this node config information.
+	 */
 	public String toString() {
 		String s = "";
 		for (NodeIDType i : nmap.keySet()) {

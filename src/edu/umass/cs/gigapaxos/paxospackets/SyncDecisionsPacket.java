@@ -1,23 +1,43 @@
 package edu.umass.cs.gigapaxos.paxospackets;
 
 import edu.umass.cs.utils.Util;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-/* A sync reply packet contains commits missing at the
+/**
+ * @author arun
+ *
+ * A sync reply packet contains commits missing at the
  * sending node (nodeID). The receiver is expected to 
  * send to the sender the commits it is reporting as
  * missing in this sync reply.
  */
+@SuppressWarnings("javadoc")
 public final class SyncDecisionsPacket extends PaxosPacket{
 
-	public final int nodeID; // sending node
-	public final int maxDecisionSlot; 	// max decided slot at nodeID
+	/**
+	 * Node sending the sync decisions request.
+	 */
+	public final int nodeID; 
+	/**
+	 * Maximum slot up to which decisions have been received by the sending node.
+	 */
+	public final int maxDecisionSlot; 	
+	/**
+	 * Missing decision slot numbers beyond {@link #maxDecisionSlot maxDecisionSlot}. 
+	 */
 	public final ArrayList<Integer> missingSlotNumbers;
-	public final boolean missingTooMuch; // can be computed from missingSlotNumbers, but can also be specified explicitly by sender
+	/**
+	 * Whether we are missing too much, thereby prompting a checkpoint transfer instead
+	 * of sending a large number of decisions. This flag is determined by default based on the
+	 * number of missing decisions and the inter-checkpoint interval, but can also be 
+	 * explicitly specified by the sender.
+	 */
+	public final boolean missingTooMuch; 
 
 	public SyncDecisionsPacket(int nodeID, int maxDecisionSlot, ArrayList<Integer> missingSlotNumbers, boolean flag) {
 		super((PaxosPacket)null);

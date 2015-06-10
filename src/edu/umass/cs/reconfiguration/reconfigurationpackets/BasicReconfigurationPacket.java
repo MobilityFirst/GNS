@@ -21,12 +21,23 @@ public abstract class BasicReconfigurationPacket<NodeIDType> extends Reconfigura
 	protected final String serviceName;
 	protected final int epochNumber;
 
+	/**
+	 * @param initiator
+	 * @param t
+	 * @param name
+	 * @param epochNumber
+	 */
 	public BasicReconfigurationPacket(NodeIDType initiator, PacketType t, String name, int epochNumber) {
 		super(initiator);
 		this.setType(t);
 		this.serviceName = name;
 		this.epochNumber = epochNumber;
 	}
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public BasicReconfigurationPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json, unstringer);
 		this.serviceName = json.getString(Keys.SERVICE_NAME.toString());
@@ -42,9 +53,15 @@ public abstract class BasicReconfigurationPacket<NodeIDType> extends Reconfigura
 	public String getServiceName() {
 		return this.serviceName;
 	}
+	/**
+	 * @return Epoch number.
+	 */
 	public int getEpochNumber() {
 		return this.epochNumber;
 	}
+	/**
+	 * @return A pretty-print summary.
+	 */
 	public String getSummary() {
 		return getType() + ":"+getServiceName() +":"+getEpochNumber();
 	}
@@ -54,7 +71,7 @@ public abstract class BasicReconfigurationPacket<NodeIDType> extends Reconfigura
 	}
 	
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		class BRP extends BasicReconfigurationPacket<Integer> {
 			BRP(Integer initiator, PacketType t, String name, int epochNumber) {
 				super(initiator, t, name, epochNumber);

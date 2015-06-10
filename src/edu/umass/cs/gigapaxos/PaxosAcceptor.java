@@ -25,10 +25,10 @@ import edu.umass.cs.utils.MultiArrayMap;
 import edu.umass.cs.utils.NullIfEmptyMap;
 
 /**
-@author V. Arun
- */
-
-/* This class is a paxos acceptor and manages all acceptor state.
+ * 
+ * @author V. Arun
+ * 
+ * This class is a paxos acceptor and manages all acceptor state.
  * It has no public methods, only protected methods, as it is 
  * expected to be used *only* by PaxosInstanceStateMachine.
  * 
@@ -37,7 +37,8 @@ import edu.umass.cs.utils.NullIfEmptyMap;
  * requests. This object contributes to about 90B of space.
  */
 public class PaxosAcceptor {
-	/* It suffices to maintain accept logs only on disk, so that we don't
+	/* 
+	 * It suffices to maintain accept logs only on disk, so that we don't
 	 * have to maintain them in memory. We have to log accepts on disk anyway. 
 	 * We might as well serve them from the disk as well upon a coordinator 
 	 * change, which should be infrequent and result only in bulk reads from 
@@ -53,7 +54,7 @@ public class PaxosAcceptor {
 	 * to keep accepts in memory so that we can easily disable and enable
 	 * persistent logging.
 	 */
-	public static final boolean ACCEPTED_PROPOSALS_ON_DISK=DerbyPaxosLogger.isLoggingEnabled(); 
+	protected static final boolean ACCEPTED_PROPOSALS_ON_DISK=DerbyPaxosLogger.isLoggingEnabled(); 
 	private static enum STATES {RECOVERY, ACTIVE, STOPPED};
 
 	private int _slot=0;
@@ -237,6 +238,7 @@ public class PaxosAcceptor {
 		if(s==this.getSlot()) {
 			this._slot++; 
 			if(stop) {this.stop();}
+			if(this.isStopped()) this.committedRequests.clear();
 		} else assert false : ("YIKES! Asked to execute " + s + " when expecting " + this.getSlot());
 	}
 	private synchronized void garbageCollectAccepted(int gcSlot) {
@@ -367,7 +369,7 @@ public class PaxosAcceptor {
 		return size;
 	}	
 
-	public static void testMemory() {
+	protected static void testMemory() {
 		Handler[] handlers = Logger.getLogger( "" ).getHandlers();
 		for ( int index = 0; index < handlers.length; index++ ) {
 			handlers[index].setLevel( Level.WARNING );
@@ -449,9 +451,9 @@ public class PaxosAcceptor {
 		}
 	}
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		Util.assertAssertionsEnabled();
-		//testMemory();
+		// testMemory();
 		testAcceptor();
 		System.out.println("SUCCESS!");
 	}

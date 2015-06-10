@@ -10,9 +10,15 @@ import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /*
- * This packet is for any state change to a reconfiguration record. It is
- * currently used only to mark the beginning of a reconfiguration.
+ * @author arun
+ *
+ * @param <NodeIDType>
+ * 
+ *            This packet is for any state change to a reconfiguration record.
+ *            It is currently used only to mark the beginning of a
+ *            reconfiguration.
  */
+@SuppressWarnings("javadoc")
 public class RCRecordRequest<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> implements
 		InterfaceReplicableRequest {
@@ -21,14 +27,43 @@ public class RCRecordRequest<NodeIDType> extends
 		REQUEST_TYPE, START_EPOCH
 	};
 
+	/**
+	 * RCRecordRequest sub-types.
+	 */
 	public static enum RequestTypes {
-		RECONFIGURATION_INTENT, RECONFIGURATION_COMPLETE, DELETE_COMPLETE, RECONFIGURATION_MERGE
+		/**
+		 * Step 1 of reconfiguration.
+		 */
+		RECONFIGURATION_INTENT, 
+		/**
+		 * Step 2 of reconfiguration. We have two steps so that just a single
+		 * primary actually does the reconfiguration, and the other secondary
+		 * nodes simply record the corresponding state change.
+		 */
+		RECONFIGURATION_COMPLETE, 
+		/**
+		 * Analogous to RECONFIGURATION_COMPLETE but will delete the state
+		 * at reconfigurators.
+		 */
+		DELETE_COMPLETE, 
+		/**
+		 * Merges one RC group with another upon RC node deletes.
+		 */
+		RECONFIGURATION_MERGE
 	};
 
 	private final RequestTypes reqType;
+	/**
+	 * The start epoch request that started this reconfiguration.
+	 */
 	public final StartEpoch<NodeIDType> startEpoch;
 	private boolean coordType = true;
 
+	/**
+	 * @param initiator
+	 * @param startEpoch
+	 * @param reqType
+	 */
 	public RCRecordRequest(NodeIDType initiator,
 			StartEpoch<NodeIDType> startEpoch, RequestTypes reqType) {
 		super(initiator, ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
@@ -37,6 +72,12 @@ public class RCRecordRequest<NodeIDType> extends
 		this.startEpoch = startEpoch;
 	}
 
+	/**
+	 * @param initiator
+	 * @param serviceName
+	 * @param epochNumber
+	 * @param reqType
+	 */
 	public RCRecordRequest(NodeIDType initiator, String serviceName,
 			int epochNumber, RequestTypes reqType) {
 		super(initiator, ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
@@ -45,6 +86,11 @@ public class RCRecordRequest<NodeIDType> extends
 		this.startEpoch = null;
 	}
 
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public RCRecordRequest(JSONObject json, Stringifiable<NodeIDType> unstringer)
 			throws JSONException {
 		super(json, unstringer);

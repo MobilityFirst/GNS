@@ -13,6 +13,11 @@ import edu.umass.cs.reconfiguration.examples.TestConfig;
  */
 public class NoopReconfigurableNode extends ReconfigurableNode<Integer> {
 
+	/**
+	 * @param id
+	 * @param nc
+	 * @throws IOException
+	 */
 	public NoopReconfigurableNode(Integer id,
 			InterfaceReconfigurableNodeConfig<Integer> nc) throws IOException {
 		super(id, nc);
@@ -28,6 +33,9 @@ public class NoopReconfigurableNode extends ReconfigurableNode<Integer> {
 	}
 
 	// local setup
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
 		nc.localSetup(TestConfig.getNodes());

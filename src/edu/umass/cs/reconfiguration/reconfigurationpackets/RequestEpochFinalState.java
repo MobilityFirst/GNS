@@ -11,9 +11,19 @@ import edu.umass.cs.nio.Stringifiable;
  */
 public class RequestEpochFinalState<NodeIDType> extends BasicReconfigurationPacket<NodeIDType> {
 
+	/**
+	 * @param initiator
+	 * @param name
+	 * @param epochNumber
+	 */
 	public RequestEpochFinalState(NodeIDType initiator, String name, int epochNumber) {
 		super(initiator, ReconfigurationPacket.PacketType.REQUEST_EPOCH_FINAL_STATE, name, epochNumber);
 	}
+	/**
+	 * @param json
+	 * @param unstringer
+	 * @throws JSONException
+	 */
 	public RequestEpochFinalState(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json, unstringer);
 	}

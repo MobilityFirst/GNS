@@ -9,10 +9,25 @@ import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * 
+ * @author arun
+ *
+ */
+@SuppressWarnings("javadoc")
 public class PrepareReplyPacket extends PaxosPacket {
 
+	/**
+	 * Ballot of the PREPARE being replied to.
+	 */
 	public final Ballot ballot;
+	/**
+	 * Node ID of replier.
+	 */
 	public final int acceptor;
+	/** 
+	 * Accepted pvalues from lower ballots.
+	 */
 	public final Map<Integer, PValuePacket> accepted;
 	
 	private int firstSlot; // can be valid even if accepted is null

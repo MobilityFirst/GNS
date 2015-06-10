@@ -1,6 +1,10 @@
 package edu.umass.cs.gigapaxos.paxosutil;
+
 /**
-@author V. Arun
+ * @author V. Arun
+ * 
+ *         A utility class to do some action repeatedly but in a rate limited
+ *         manner.
  */
 public class RateLimiter {
 
@@ -12,9 +16,15 @@ public class RateLimiter {
 	private long lastRecordedTime = 0;
 	private int count = 0;
 
+	/**
+	 * @param r The rate limit.
+	 */
 	public RateLimiter(double r) {
 		this.rate = r;
 	}
+	/**
+	 * To be invoked each time the action is done.
+	 */
 	public void record() {
 		long curTime = System.currentTimeMillis();
 		if(count++==0) this.lastRecordedTime = curTime;
@@ -30,15 +40,20 @@ public class RateLimiter {
 		}
 	}
 
-	public static void main(String[] args) {
-		int million = 1000000;
-		int size = 1*million;
-		RateLimiter rl = new RateLimiter(million/10);
-		long t1 = System.currentTimeMillis();
-		for(int i=0; i<size; i++) {
-			if(Math.random()*Math.random()>0){};
-			rl.record();
+	static class Main {
+		public static void main(String[] args) {
+			int million = 1000000;
+			int size = 1 * million;
+			RateLimiter rl = new RateLimiter(million / 10);
+			long t1 = System.currentTimeMillis();
+			for (int i = 0; i < size; i++) {
+				if (Math.random() * Math.random() > 0) {
+				}
+				;
+				rl.record();
+			}
+			System.out.println("Finished " + size + " ops in "
+					+ (System.currentTimeMillis() - t1) / 1000.0 + " secs.");
 		}
-		System.out.println("Finished " + size + " ops in " + (System.currentTimeMillis()-t1)/1000.0 + " secs.");
 	}
 }

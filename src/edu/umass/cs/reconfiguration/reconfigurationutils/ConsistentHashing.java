@@ -15,9 +15,7 @@ import edu.umass.cs.utils.Util;
 /**
  * @author V. Arun
  * @param <NodeIDType> 
- */
-
-/*
+ * 
  * A utility class with mostly static methods to help with consistent hashing
  * related functions.
  * 
@@ -41,22 +39,40 @@ public class ConsistentHashing<NodeIDType> {
 	private int numReplicas;
 	private SortedMap<Integer, NodeIDType> servers = new TreeMap<Integer, NodeIDType>();
 
+	/**
+	 * @param servers
+	 */
 	public ConsistentHashing(NodeIDType[] servers) {
 		this.refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
 
+	/**
+	 * @param servers
+	 * @param numReplicas
+	 */
 	public ConsistentHashing(NodeIDType[] servers, int numReplicas) {
 		this.refresh(servers, numReplicas);
 	}
 
+	/**
+	 * @param servers
+	 */
 	public ConsistentHashing(Set<NodeIDType> servers) {
 		this.refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
+	/**
+	 * @param servers
+	 * @param replicateAll
+	 */
 	public ConsistentHashing(Set<NodeIDType> servers, boolean replicateAll) {
 		this.replicateAll = replicateAll;
 		this.refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
 
+	/**
+	 * @param servers
+	 * @param numReplicas
+	 */
 	public void refresh(NodeIDType[] servers, int numReplicas) {
 		this.servers = new TreeMap<Integer, NodeIDType>();
 		for (NodeIDType server : servers)
@@ -64,6 +80,10 @@ public class ConsistentHashing<NodeIDType> {
 		this.numReplicas = (replicateAll ? this.servers.size() : numReplicas);
 	}
 
+	/**
+	 * @param servers
+	 * @param numReplicas
+	 */
 	public void refresh(Set<NodeIDType> servers, int numReplicas) {
 		this.servers = new TreeMap<Integer, NodeIDType>();
 		for (NodeIDType server : servers)
@@ -72,22 +92,44 @@ public class ConsistentHashing<NodeIDType> {
 
 	}
 
+	/**
+	 * @param servers
+	 */
 	public void refresh(NodeIDType[] servers) {
 		refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
 
+	/**
+	 * @param servers
+	 */
 	public void refresh(Set<NodeIDType> servers) {
 		refresh(servers, DEFAULT_NUM_REPLICAS);
 	}
 
+	/**
+	 * @param name
+	 * @return Consecutive servers on the consistent hash ring to which
+	 * this name hashes.
+	 */
 	public Set<NodeIDType> getReplicatedServers(String name) {
 		return this.getReplicatedServers(name, this.numReplicas);
 	}
 	
+	/**
+	 * @param name
+	 * @return Consecutive servers on the consistent hash ring to which
+	 * this name hashes returned as an array.
+	 */
 	public ArrayList<NodeIDType> getReplicatedServersArray(String name) {
 		return this.getReplicatedServersArray(name, this.numReplicas);
 	}
 
+	/**
+	 * @param name
+	 * @param k
+	 * @return {@code k} consecutive servers on the consistent hash ring to which
+	 * this name hashes returned as an array.
+	 */
 	public ArrayList<NodeIDType> getReplicatedServersArray(String name, int k) {
 		int hash = hash(name);
 		//if(name.equals("1103")) System.out.println("hash(1103) = " + hash);
@@ -137,7 +179,7 @@ public class ConsistentHashing<NodeIDType> {
 		return this.servers.values();
 	}
 
-	public static void main(String[] args) {
+	 static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		String[] names = { "World", "Hello", "Hello World", "1", "10", "12",
 				"9", "34" };

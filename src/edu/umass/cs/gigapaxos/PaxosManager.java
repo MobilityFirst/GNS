@@ -19,6 +19,7 @@ import edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexer;
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.RequestBatcher;
+import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosReplicable;
 import edu.umass.cs.nio.InterfaceNIOTransport;
@@ -52,9 +53,8 @@ import java.util.logging.Logger;
 /**
  * @author V. Arun
  * @param <NodeIDType>
- */
-
-/*
+ * 
+ * 
  * PaxosManager is the primary interface to create
  * and use paxos by creating a paxos instance.
  * 
@@ -76,7 +76,10 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("deprecation")
 public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
-	public static final boolean DEBUG = TESTPaxosConfig.DEBUG; // currently used only to debug pausing
+	/**
+	 * Flag used to enable more verbose logging.
+	 */
+	public static final boolean DEBUG = false; 
 
 	private static final long MORGUE_DELAY = 30000;
 	private static final boolean MAINTAIN_CORPSES = true;//false;
@@ -87,8 +90,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private static final long DEACTIVATION_PERIOD = 30000; // 30s default
 	private static final boolean ONE_PASS_RECOVERY = true;
 	private static final int MAX_POKE_RATE = 1000; // per sec
+	/**
+	 * Whether request batching is enabled.
+	 */
 	public static final boolean BATCHING_ENABLED = true;
-	public static final long CAN_CREATE_TIMEOUT = 1; //non-zero
+	protected static final long CAN_CREATE_TIMEOUT = 1; //non-zero
 	private static final boolean EMULATE_UNREPLICATED = false;
 
 
@@ -111,6 +117,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD; // default
 	private int interCheckpointInterval = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 	private int maxSyncDecisionsGap = PaxosInstanceStateMachine.MAX_SYNC_DECISIONS_GAP;
+	private boolean nullCheckpointsEnabled = PaxosInstanceStateMachine.ENABLE_NULL_CHECKPOINT_STATE;
 
 	// non-final
 	private boolean hasRecovered = false;
@@ -129,6 +136,13 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName()); // GNS.getLogger();;
 
+	/**
+	 * @param id My node ID.
+	 * @param unstringer An instance of Stringifiable that can convert String to NodeIDType.
+	 * @param niot NIO transport object.
+	 * @param pi InterfaceReplicable application controlled by gigapaxos.
+	 * @param paxosLogFolder Paxos logging folder.
+	 */
 	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> unstringer,
 			InterfaceNIOTransport<NodeIDType,JSONObject> niot, InterfaceReplicable pi,
 			String paxosLogFolder) {
@@ -158,29 +172,61 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				this, this.integerMap, unstringer)); // so paxos packets will come to me.
 		initiateRecovery();
 	}
-	
+
+	/**
+	 * Refer {@link #PaxosManager(Object, Stringifiable, InterfaceNIOTransport, InterfaceReplicable, String)}.
+	 * @param id
+	 * @param nc
+	 * @param niot
+	 * @param app
+	 */
 	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc,
 			InterfaceNIOTransport<NodeIDType,JSONObject> niot, InterfaceReplicable app) {
 		this(id, nc, niot, (app), null); 
 	}
+	/**
+	 * Refer {@link #PaxosManager(Object, Stringifiable, InterfaceNIOTransport, InterfaceReplicable, String)}.
+	 * @param id
+	 * @param nc
+	 * @param niot
+	 * @param app
+	 * @param enableNullCheckpoints Whether null checkpoints are enabled. We need this flag to be enabled
+	 * if we intend to reconfigure paxos groups managed by this PaxosManager. Otherwise, we can not 
+	 * distinguish between a null checkpoint and no checkpoint, so the next epoch members may be 
+	 * waiting forever for the previous epoch's final state (that happens to be null).
+	 */
+	public PaxosManager(NodeIDType id, Stringifiable<NodeIDType> nc,
+			InterfaceNIOTransport<NodeIDType,JSONObject> niot, InterfaceReplicable app, boolean enableNullCheckpoints) {
+		this(id, nc, niot, (app), null);
+		this.setNullCheckpointStateEnabled(enableNullCheckpoints);
+	}
 	
-
 	/*
-	 * We need to be careful with pause/unpause and createPaxosInstance as there are potential
-	 * cyclic dependencies. The call chain is as below, where "info" is the information needed
-	 * to create a paxos instance. The notation"->?" means the call may or may not happen,
-	 * which is why the recursion breaks after at most one step.
+	 * We need to be careful with pause/unpause and createPaxosInstance as there
+	 * are potential cyclic dependencies. The call chain is as below, where
+	 * "info" is the information needed to create a paxos instance. The
+	 * notation"->?" means the call may or may not happen, which is why the
+	 * recursion breaks after at most one step.
 	 * 
-	 * On recovery:
-	 * initiateRecovery() -> recover(info) -> createPaxosInstance(info) -> getInstance(paxosID)
-	 * ->? unpause(paxosID) ->? createPaxosInstance(info)
-	 * Upon createPaxosInstance any time after recovery, the same chain as above is followed.
+	 * On recovery: initiateRecovery() -> recover(info) ->
+	 * createPaxosInstance(info) -> getInstance(paxosID) ->? unpause(paxosID)
+	 * ->? createPaxosInstance(info) Upon createPaxosInstance any time after
+	 * recovery, the same chain as above is followed.
 	 * 
-	 * On deactivate:
-	 * deactivate(paxosID) ->? pause(paxosID) // may or may not be successful
+	 * On deactivate: deactivate(paxosID) ->? pause(paxosID) // may or may not
+	 * be successful
 	 * 
-	 * On incoming packet:
-	 * handleIncomingPacket() -> getInstance(paxosID) ->? unpause(paxosID) ->? createPaxosInstance(info)
+	 * On incoming packet: handleIncomingPacket() -> getInstance(paxosID) ->?
+	 * unpause(paxosID) ->? createPaxosInstance(info)
+	 */
+	
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @param gms
+	 * @param app
+	 * @return Returns true if the paxos instance paxosID:version or one with a
+	 *         higher version number was successfully created.
 	 */
 
 	public boolean createPaxosInstance(String paxosID, short version,
@@ -195,12 +241,26 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				null, null, true);
 	}
 
+	/**
+	 * 
+	 * @param paxosID Paxos group name.
+	 * @param version Paxos group version (or epoch number).
+	 * @param gms Group members.
+	 * @param app Application controlled by paxos.
+	 * @param initialState Initial application state.
+	 * @return Whether this paxos instance or higher got created.
+	 */
 	public boolean createPaxosInstance(String paxosID, short version,
 			Set<NodeIDType> gms, InterfaceReplicable app, String initialState) {
 		return this.createPaxosInstance(paxosID, version, this.myID, gms, app,
 				initialState, null, true);
 	}
 
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @return Group members.
+	 */
 	public synchronized Set<NodeIDType> getPaxosNodeIDs(String paxosID, short version) {
 		return isActive(paxosID, version) ? this.getPaxosNodeIDs(paxosID) : null; 
 	}
@@ -216,12 +276,22 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return null;
 	}
 	
-	// exists and is active
+	/**
+	 *  
+	 * @param paxosID
+	 * @param version
+	 * @return Whether paxos instance exists and is active.
+	 */
 	public boolean isActive(String paxosID, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID); 
 		if(pism!=null && pism.isActive() && pism.getVersion()==version) return true;
 		return false;
 	}
+	/**
+	 * @param paxosID
+	 * @return Whether a paxos instance with the name {@code paxosID} is active 
+	 * irrespective of the version number.
+	 */
 	public boolean isActive(String paxosID) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		log.info(myID + " pism is " + pism);
@@ -229,6 +299,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		log.info(myID + " pism is " + pism + " is not active ");
 		return false;
 	}
+	/**
+	 * @param paxosID
+	 * @return Returns true if this paxos instance exists and is stopped.
+	 */
 	public boolean isStopped(String paxosID) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if(pism!=null && pism.isStopped()) return true;
@@ -323,7 +397,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 
 
 
-	// Called by internal entities like rollForward and works with integer node IDs
+	/**
+	 * Called by internal entities like rollForward and works with integer node IDs.
+	 * 
+	 * @param jsonMsg
+	 */
 	public void handleIncomingPacketInternal(JSONObject jsonMsg) {
 		if (this.isClosed())
 			return;
@@ -428,7 +506,14 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return null;
 	}
 	
-	public String getFinalState(String paxosID, short version) {
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @return The final state wrapped in a StringContainer. We use StringContainer
+	 * to distinguish between null state and no state when null checkpoint state
+	 * is enabled.
+	 */
+	public StringContainer getFinalState(String paxosID, short version) {
 		/*
 		 * FIXME: The isStopped check below is a hack to force a little wait
 		 * through synchronization. PaxosInstanceStateMachine.isStopped is
@@ -445,6 +530,10 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return this.paxosLogger.getEpochFinalCheckpointState(paxosID, version);
 	}
 	
+	/**
+	 * @param paxosID
+	 * @param version
+	 */
 	public void deletePaxosInstance(String paxosID, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version) 
@@ -452,6 +541,12 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		// FIXME: should we delete prev epoch final state?
 	}
 
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @return Returns true if the final state was successfully deleted or
+	 * there was nothing to delete.
+	 */
 	public boolean deleteFinalState(String paxosID, short version) {
 		// might as well force-kill the instance at this point 
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
@@ -461,6 +556,14 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 				version);
 	}
 
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @param prevVersions
+	 * @return Returns true if the final state was successfully deleted or
+	 * there was nothin to delete for {@code version} as well as {@code prevVersions}
+	 * versions below it.
+	 */
 	public boolean deleteFinalState(String paxosID, short version,
 			int prevVersions) {
 		for (short i = 0; i < prevVersions; i++)
@@ -468,8 +571,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return this.deleteFinalState(paxosID, version);
 	}
 	
-	/* The Integer return value as opposed to int is convenient
+	/**
+	 *  The Integer return value as opposed to int is convenient
 	 * to say that there is no epoch.
+	 * @param paxosID 
+	 * @return Integer version of paxos instance named {@code paxosID}.
 	 */
 	public Integer getVersion(String paxosID) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
@@ -477,13 +583,22 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return null;
 	}
 	
-	// forces a checkpoint, but not guaranteed to happen immediately
+	/**
+	 * Forces a checkpoint, but not guaranteed to happen immediately.
+	 * @param paxosID
+	 */
 	public void forceCheckpoint(String paxosID) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null)
 			pism.forceCheckpoint();
 	}
 	
+	/**
+	 * Specifies the level of reordering of decisions that prompts a
+	 * sync-decisions request.
+	 * 
+	 * @param limit
+	 */
 	public void setOutOfOrderLimit(int limit) {
 		this.outOfOrderLimit = limit;
 	}
@@ -491,20 +606,48 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return this.outOfOrderLimit;
 	}
 
+	/**
+	 * @param interval
+	 */
 	public void setInterCheckpointInterval(int interval) {
 		this.interCheckpointInterval = interval;
 	}
 
+	/**
+	 * @return Inter-checkpoint interval.
+	 */
 	public int getInterCheckpointInterval() {
 		return this.interCheckpointInterval;
 	}
 
+	/**
+	 * @param maxGap
+	 */
 	public void setMaxSyncDecisionsGap(int maxGap) {
 		this.maxSyncDecisionsGap = maxGap;
 	}
 
+	/**
+	 * @return Maximum reordering among received decisions that when exceeded
+	 *         prompts a checkpoint transfer as opposed to a sync-decisions
+	 *         operation.
+	 */
 	public int getMaxSyncDecisionsGap() {
 		return this.maxSyncDecisionsGap;
+	}
+	
+	/**
+	 * Allows checkpoint state to be null.
+	 * @param b
+	 */
+	public void setNullCheckpointStateEnabled(boolean b) {
+		this.nullCheckpointsEnabled = b;
+	}
+	/**
+	 * @return Returns true if null checkpoints are enabled.
+	 */
+	public boolean isNullCheckpointStateEnabled() {
+		return this.nullCheckpointsEnabled;
 	}
 
 	/* Note: paxosLogger.removeAll() must be only used when a node is
@@ -541,6 +684,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return allClosed();
 	}
 
+	/**
+	 * Gracefully closes PaxosManager.
+	 */
 	public void close() {
 		/*
 		 * The static method closeAll sets the closed flag so as to
@@ -568,6 +714,9 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		this.timer.cancel();
 	}
 
+	/**
+	 * @return Idle period after which paxos instances are deactivated.
+	 */
 	public static long getDeactivationPeriod() {
 		return DEACTIVATION_PERIOD;
 	}
@@ -984,7 +1133,7 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 			ie.printStackTrace();
 		}
 	}
-	public synchronized void waitCanCreateOrExistsOrHigher(String paxosID, short version) {
+	protected synchronized void waitCanCreateOrExistsOrHigher(String paxosID, short version) {
 		try {
 			while (!this.canCreateOrExistsOrHigher(paxosID, version))
 				wait();
@@ -993,11 +1142,11 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		}
 
 	}
-	public synchronized void notifyUponKill() {
+	protected synchronized void notifyUponKill() {
 		notifyAll();
 	}
 	
-	/*
+	/**
 	 * This is a common default create paxos instance behavior, i.e., we wait
 	 * for lower versions to be killed if necessary but, after a timeout, create
 	 * the new instance forcibly anyway. This method won't create the instance
@@ -1008,6 +1157,15 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	 * preceding instance only if we already have the necessary state
 	 * (presumably obtained from a stopped immediately preceding instance at
 	 * some other group member).
+	 * 
+	 * @param paxosID
+	 * @param version
+	 * @param gms
+	 * @param app
+	 * @param state
+	 * @param timeout
+	 * @return Returns true if this paxos instance or one with a higher version
+	 *         number was successfully created.
 	 */
 	public boolean createPaxosInstanceForcibly(String paxosID, short version,
 			Set<NodeIDType> gms, InterfaceReplicable app, String state,
@@ -1030,17 +1188,38 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 		return created;
 	}
 
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @param gms
+	 * @param app
+	 * @param state
+	 * @return Returns true if this paxos instance or one with a higher version
+	 *         number was successfully created.
+	 */
 	public boolean createPaxosInstanceForcibly(String paxosID, short version,
 			Set<NodeIDType> gms, InterfaceReplicable app, String state) {
 		return this.createPaxosInstanceForcibly(paxosID, version, gms, app,
 				state, CAN_CREATE_TIMEOUT);
 	}
 
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @return Returns true if the paxos instance {@code paxosID:version} exists. 
+	 */
 	public boolean exists(String paxosID, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if(pism!=null && pism.getVersion()==version) return true;
 		return false;
 	}
+	
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @return Returns true if the paxos instance {@code paxosID:version} exists
+	 *         or a higher version exists.
+	 */
 	public boolean existsOrHigher(String paxosID, short version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if(pism!=null && (pism.getVersion() - version >= 0)) return true;
@@ -1249,13 +1428,15 @@ public class PaxosManager<NodeIDType> extends AbstractPaxosManager<NodeIDType> {
 	}
 
 
-	/************************* Testing methods below ***********************************/
-
+	/* ********************** Testing methods below ********************* */
+	/**
+	 * @return Logger used by PaxosManager.
+	 */
 	public static Logger getLogger() {
 		return log;
 	}
 
-	public static void main(String[] args) throws InterruptedException, IOException, JSONException {
+	static void main(String[] args) throws InterruptedException, IOException, JSONException {
 		int[] members = TESTPaxosConfig.getDefaultGroup();
 		int numNodes = members.length;
 

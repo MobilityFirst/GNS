@@ -5,8 +5,9 @@ import java.util.TreeSet;
 
 
 /**
-@author V. Arun
+ * @author V. Arun
  */
+@SuppressWarnings("javadoc")
 public class TestConfig {
 	public static final int numNodes = 3;
 	public static final int startNodeID = 100;

@@ -65,6 +65,9 @@ public class MessagingTask extends GenericMessagingTask<Integer, Object> {
 	 * MessagingTask to be instantiated with no messages. We need this as it is
 	 * convenient to create an empty MessagingTask in a logging-only
 	 * LogMessagingTask object.
+	 * 
+	 * @param destIDs 
+	 * @param pkts 
 	 */
 	public MessagingTask(int[] destIDs, Object[] pkts) {
 		super(Util.intToIntegerArray(destIDs), pkts);

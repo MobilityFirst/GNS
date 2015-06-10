@@ -20,7 +20,11 @@ import java.util.logging.Level;
 public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		InterfacePacketDemultiplexer<MessageType> {
 
-	// FIXME: Unclear what a good default value is.
+	/**
+	 * The default thread pool size. 
+	 * 
+	 * FIXME: Unclear what a good value is.
+	 */
 	public static final int DEFAULT_THREAD_POOL_SIZE = 5;
 	private static int threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
 	
@@ -49,7 +53,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	 *            response.
 	 */
 	public static synchronized void setThreadPoolSize(int threadPoolSize) {AbstractPacketDemultiplexer.threadPoolSize = threadPoolSize;}
-	public static synchronized int getThreadPoolSize() {return threadPoolSize;}
+	protected static synchronized int getThreadPoolSize() {return threadPoolSize;}
 	
 	private final ScheduledExecutorService executor;
 	private final HashMap<Integer, InterfacePacketDemultiplexer<MessageType>> demuxMap = new HashMap<Integer, InterfacePacketDemultiplexer<MessageType>>();

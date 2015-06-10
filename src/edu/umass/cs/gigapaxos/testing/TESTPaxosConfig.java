@@ -19,60 +19,86 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
+ * 
+ *         Configuration parameters for the gigapaxos testing suite.
  */
+@SuppressWarnings("javadoc")
 public class TESTPaxosConfig {
 
-	public static final boolean DEBUG = false;
-	
+	/**
+	 * Will turn on more verbose logging.
+	 */
+	public static final boolean DEBUG = PaxosManager.DEBUG;
+
 	protected static final String SINGLE_NODE_CONFIG_DIR = "/Users/arun/GNS/conf/gigapaxos/";
 	private static final String DISTRIBUTED_CONFIG_DIR = "/home/arun/GNS/conf/gigapaxos/";
 	private static final String DEFAULT_PROPERTIES_FILENAME = "testing.properties";
 	private static final String DEFAULT_SERVERS_FILENAME = "testing_servers.conf";
 
 	protected static final void setSingleNodeTest(String dir) {
-		setConfigDir(dir!=null ? dir : SINGLE_NODE_CONFIG_DIR, false);
+		setConfigDir(dir != null ? dir : SINGLE_NODE_CONFIG_DIR, false);
 	}
 
 	protected static final void setDistribtedTest(String dir) {
-		setConfigDir(dir!=null ? dir : DISTRIBUTED_CONFIG_DIR, true);
+		setConfigDir(dir != null ? dir : DISTRIBUTED_CONFIG_DIR, true);
 	}
-		
-	/*
-	 * We have different config paths for single node and distributed tests as they may be running
-	 * on different platforms, e.g., Mac and Linux.
+
+	/**
+	 * We have different config paths for single node and distributed tests as
+	 * they may be running on different platforms, e.g., Mac and Linux.
 	 */
 
 	private static void setConfigDir(String dir, boolean distributed) {
 		String configDir = (dir.endsWith("/") ? dir : dir + "/");
-		if(distributed) loadServersFromFile(configDir + DEFAULT_SERVERS_FILENAME);
-		loadPropertiesFromFile(configDir + DEFAULT_PROPERTIES_FILENAME, distributed);
+		if (distributed)
+			loadServersFromFile(configDir + DEFAULT_SERVERS_FILENAME);
+		loadPropertiesFromFile(configDir + DEFAULT_PROPERTIES_FILENAME,
+				distributed);
 	}
 
-	/* When memory testing, the number of paxos instances can be
-	 * very large, so this flag is used to disable some logging.
+	/**
+	 * When memory testing, the number of paxos instances can be very large, so
+	 * this flag is used to disable some logging.
 	 */
 	public static final boolean MEMORY_TESTING = false;
 
-	public static final int MAX_TEST_REQS = 1000000;
+	private static final int MAX_TEST_REQS = 1000000;
 	private static final int RANDOM_SEED = 3142;
 	private static final double NODE_INCLUSION_PROB = 0.6;
 
-	public static final boolean DISABLE_LOGGING = false; // default false
+	/**
+	 * Disables persistent logging if true.
+	 */
+	public static final boolean DISABLE_LOGGING = false; 
 
 	private static final boolean TEST_WITH_RECOVERY = true;
 
 	public static final int MAX_NODE_ID = 10000;
-	public static final int TEST_START_NODE_ID = 100; // nodeID's can start from a non-zero value.
-														// FIXME: make them non-consecutive as well
+	/**
+	 *  Node IDs can start from a non-zero value.
+	 */
+	public static final int TEST_START_NODE_ID = 100; 
+
 	public static final int NUM_NODES = 10;
 
+	/**
+	 * Default paxos group name prefix.
+	 */
 	public static final String TEST_GUID_PREFIX = "paxos";
+	/**
+	 * Default paxos group name (for the first group).
+	 */
 	public static final String TEST_GUID = "paxos0";
+	/**
+	 * Number of pre_configured groups for testing. An arbitrarily higher number
+	 * of additional groups can be created.
+	 */
 	public static final int PRE_CONFIGURED_GROUPS = 10;
 
 	/**************** Number of paxos groups *******************/
@@ -113,12 +139,19 @@ public class TESTPaxosConfig {
 	}
 
 	/*
-	 * This will assert the RSM invariant upon execution of every request. It is meaningful only in
-	 * a single node test and consumes some cycles, so it should be disabled in production runs.
+	 * This will assert the RSM invariant upon execution of every request. It is
+	 * meaningful only in a single node test and consumes some cycles, so it
+	 * should be disabled in production runs.
 	 */
 	private static boolean assertRSMInvariant = false;
-	public static final boolean shouldAssertRSMInvariant() {return assertRSMInvariant;}
-	public static final void setAssertRSMInvariant(boolean b) {assertRSMInvariant=b;}
+
+	public static final boolean shouldAssertRSMInvariant() {
+		return assertRSMInvariant;
+	}
+
+	public static final void setAssertRSMInvariant(boolean b) {
+		assertRSMInvariant = b;
+	}
 
 	// to enable retransmission of requests by TESTPaxosClient
 	public static final boolean ENABLE_CLIENT_REQ_RTX = false;
@@ -153,7 +186,7 @@ public class TESTPaxosConfig {
 
 	static {
 		assert (DEFAULT_NUM_CLIENTS <= PRE_CONFIGURED_GROUPS);
-	} // all tests should be with at most MAX_CONFIG_GROUPS
+	}
 
 	private static ArrayList<Object> failedNodes = new ArrayList<Object>();
 
@@ -203,7 +236,7 @@ public class TESTPaxosConfig {
 
 	// Sets consistent, random groups starting with the same random seed
 	public static void setRandomGroups(int numGroups) {
-		//if(!getCleanDB()) return;
+		// if(!getCleanDB()) return;
 		Random r = new Random(RANDOM_SEED);
 		for (int i = 0; i < Math.min(PRE_CONFIGURED_GROUPS, numGroups); i++) {
 			groups.put(TEST_GUID_PREFIX + i, defaultGroup);
@@ -218,15 +251,16 @@ public class TESTPaxosConfig {
 			TESTPaxosConfig.setGroup(TESTPaxosConfig.getGroupName(i), members);
 		}
 	}
-	
+
 	public static final void setCleanDB(String[] args) {
-		for(String arg : args) 
-			if (arg.trim().equals("-c")) 
+		for (String arg : args)
+			if (arg.trim().equals("-c"))
 				TESTPaxosConfig.setCleanDB(true);
 	}
+
 	public static final String getConfDirArg(String[] args) {
-		for(String arg : args) 
-			if (!arg.trim().equals("-c")) 
+		for (String arg : args)
+			if (!arg.trim().equals("-c"))
 				return arg;
 		return null;
 	}
@@ -292,7 +326,8 @@ public class TESTPaxosConfig {
 
 	public synchronized static void setRecovered(int id, String paxosID,
 			boolean b) {
-		//assert (id < MAX_NODE_ID) : " id = " + id + ", MAX_NODE_ID = "+ MAX_NODE_ID;
+		// assert (id < MAX_NODE_ID) : " id = " + id + ", MAX_NODE_ID = "+
+		// MAX_NODE_ID;
 		if (paxosID.equals(TEST_GUID)) {
 			recovered[id] = b;
 		}
@@ -362,12 +397,14 @@ public class TESTPaxosConfig {
 			props.load(inStream);
 		} catch (IOException e) {
 			System.out.println("Could not find the properties file at "
-					+ filename + "; using default properties in TESTPaxosConfig.");
+					+ filename
+					+ "; using default properties in TESTPaxosConfig.");
 		}
 		return props;
 	}
 
-	private static void loadPropertiesFromFile(String filename, boolean distributed) {
+	private static void loadPropertiesFromFile(String filename,
+			boolean distributed) {
 		Properties props = readProperties(filename);
 		if (props == null)
 			return;
@@ -388,7 +425,8 @@ public class TESTPaxosConfig {
 						.getProperty(key));
 				break;
 			case "SERVERS_FILENAME":
-				if(distributed) TESTPaxosConfig.loadServersFromFile(props.getProperty(key));
+				if (distributed)
+					TESTPaxosConfig.loadServersFromFile(props.getProperty(key));
 			}
 		}
 	}

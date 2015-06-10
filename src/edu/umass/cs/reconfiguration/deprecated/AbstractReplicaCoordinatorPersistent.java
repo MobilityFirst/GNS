@@ -8,19 +8,24 @@ import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 
+/**
+ * @author arun
+ *
+ * @param <NodeIDType>
+ * 
+ *            FIXME: a hack(?) to use paxos just for persistent record keeping
+ *            of epoch related info at a replica coordinator. What is really
+ *            needed here is just a DB, but paxos provides similar features, so
+ *            it is handy to use even when the consensus part of it is not
+ *            really needed. When the concrete replica coordinator does need
+ *            paxos, it can conveniently just use this paxos manager.
+ * 
+ *            This class is incomplete and may get deprecated.
+ */
+@SuppressWarnings("javadoc")
 public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {
 
-	/*
-	 * FIXME: a hack(?) to use paxos just for persistent record keeping of epoch
-	 * related info at a replica coordinator. What is really needed here is just
-	 * a DB, but paxos provides similar features, so it is handy to use even
-	 * when the consensus part of it is not really needed. When the concrete
-	 * replica coordinator does need paxos, it can conveniently just use this
-	 * paxos manager.
-	 * 
-	 * This class is incomplete and may get deprecated.
-	 */
 	private final PaxosManager<NodeIDType> paxosManager;
 
 	public AbstractReplicaCoordinatorPersistent(InterfaceReplicable app,
@@ -39,20 +44,21 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 	@Override
 	public boolean createReplicaGroup(String serviceName, int epoch,
 			String state, Set<NodeIDType> nodes) {
-		return this.paxosManager.createPaxosInstanceForcibly(serviceName, (short)epoch, nodes, this.app, state);
+		return this.paxosManager.createPaxosInstanceForcibly(serviceName,
+				(short) epoch, nodes, this.app, state);
 	}
 
 	@Override
 	public void deleteReplicaGroup(String serviceName, int epoch) {
-		this.paxosManager.deletePaxosInstance(serviceName, (short)epoch);
+		this.paxosManager.deletePaxosInstance(serviceName, (short) epoch);
 	}
-	
+
 	@Override
 	public Set<NodeIDType> getReplicaGroup(String serviceName) {
 		return this.paxosManager.getPaxosNodeIDs(serviceName);
 	}
-	
+
 	public boolean isActive(String serviceName, int epoch) {
-		return this.paxosManager.isActive(serviceName, (short)epoch);
+		return this.paxosManager.isActive(serviceName, (short) epoch);
 	}
 }

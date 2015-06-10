@@ -171,6 +171,9 @@ public class ReconfigurableClient {
 		}
 	}
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
 		nc.localSetup(TestConfig.getNodes());

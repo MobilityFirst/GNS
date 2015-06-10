@@ -49,6 +49,9 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	private final HashMap<String, AppData> appData = new HashMap<String, AppData>();
 	private JSONMessenger<Integer> messenger;
 
+	/**
+	 * @param id
+	 */
 	public NoopApp(int id) {
 		this.myID = id;
 	}

@@ -50,9 +50,12 @@ public class WaitAckDropEpoch<NodeIDType>
 
 	private final String key;
 
-	public static final Logger log = Logger.getLogger(Reconfigurator.class
-			.getName());
+	private static final Logger log = Reconfigurator.getLogger();
 
+	/**
+	 * @param startEpoch
+	 * @param DB
+	 */
 	public WaitAckDropEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
 		super(startEpoch.getPrevEpochGroup()); // default is all?
@@ -97,6 +100,9 @@ public class WaitAckDropEpoch<NodeIDType>
 				this.myID.toString());
 	}
 
+	/**
+	 * Packet types handled.
+	 */
 	public static final ReconfigurationPacket.PacketType[] types = { ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE };
 
 	@Override
@@ -131,6 +137,4 @@ public class WaitAckDropEpoch<NodeIDType>
 		return null;
 	}
 
-	public static void main(String[] args) {
-	}
 }

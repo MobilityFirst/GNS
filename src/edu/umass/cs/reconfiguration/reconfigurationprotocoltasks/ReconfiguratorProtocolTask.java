@@ -43,6 +43,10 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 	private final NodeIDType myID;
 	private final Object reconfigurator;
 
+	/**
+	 * @param id
+	 * @param reconfigurator
+	 */
 	public ReconfiguratorProtocolTask(NodeIDType id, Reconfigurator<NodeIDType> reconfigurator) {
 		this.myID = id;
 		this.reconfigurator = reconfigurator;
@@ -69,6 +73,10 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 	public Set<ReconfigurationPacket.PacketType> getEventTypes() {
 		return new HashSet<ReconfigurationPacket.PacketType>(Arrays.asList(types));
 	}
+	/**
+	 * @return Default reconfiguration packet types handled, i.e., not counting temporary
+	 * protocol tasks.
+	 */
 	public Set<ReconfigurationPacket.PacketType> getDefaultTypes() {
 		return new HashSet<ReconfigurationPacket.PacketType>(Arrays.asList(localTypes));
 	}
@@ -82,6 +90,12 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		return (GenericMessagingTask<NodeIDType, ?>[])(autoInvokeMethod(this.reconfigurator, event, ptasks));
 	}
 	
+	/**
+	 * @param target
+	 * @param event
+	 * @param ptasks
+	 * @return Object returned by the packet handler.
+	 */
 	public static Object autoInvokeMethod(Object target, ProtocolEvent<ReconfigurationPacket.PacketType, String> event,
 			ProtocolTask<?, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		ReconfigurationPacket.PacketType type = event.getType();
@@ -100,6 +114,4 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		return null;
 	}
 
-	public static void main(String[] args) {
-	}
 }

@@ -7,11 +7,29 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 
+/**
+ * @author arun
+ *
+ */
+@SuppressWarnings("javadoc")
 public final class StatePacket extends PaxosPacket{
 
+	/**
+	 * Ballot in which the request at the checkpointed slot was committed.
+	 */
 	public final Ballot ballot;
+	/**
+	 * Slot number of the request immediately after executing which the checkpoint was taken.
+	 */
 	public final int slotNumber;
+	/**
+	 * The checkpoint state encoded as a string.
+	 */
 	public final String state;
+	/*
+	 * Whether the checkpoint is large. If so, checkpoint/restore or remote
+	 * checkpoint transfers will use the file system instead of memory.
+	 */
 	public final boolean isLargeCheckpoint;
 
 	public StatePacket(Ballot b, int slotNumber, String state) {
