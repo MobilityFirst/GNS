@@ -527,7 +527,8 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     return pingManager;
   }
 
-  public ClientCommandProcessor<String> getLocalCCP() {
+  @Override
+  public ClientCommandProcessor<String> getClientCommandProcessor() {
     return localCCP;
   }
 

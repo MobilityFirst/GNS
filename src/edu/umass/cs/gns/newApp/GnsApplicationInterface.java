@@ -7,6 +7,7 @@
  */
 package edu.umass.cs.gns.newApp;
 
+import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
@@ -30,5 +31,7 @@ public interface GnsApplicationInterface<NodeIDType> {
   InterfaceJSONNIOTransport<NodeIDType> getNioServer();
   
   PingManager getPingManager();
+  
+  ClientCommandProcessor getClientCommandProcessor();
   
 }

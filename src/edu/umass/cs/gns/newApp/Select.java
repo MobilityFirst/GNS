@@ -105,7 +105,7 @@ public class Select {
             GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica, packet.getLnsAddress());
-          sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsAddress(), result.toStringSet(), replica);
+          sendReponsePacketToLNS(packet.getId(), packet.getCcpQueryId(), packet.getLnsAddress(), result.toStringSet(), replica);
           return;
         }
       } else {
@@ -162,7 +162,7 @@ public class Select {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, replica);
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsAddress(),
-              request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
+              request.getCcpQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " sending back " + jsonRecords.length() + " records");
       }
@@ -171,7 +171,7 @@ public class Select {
     } catch (Exception e) {
       GNS.getLogger().severe("Exception while handling select request: " + e);
       SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsAddress(),
-              request.getLnsQueryId(), request.getNsQueryId(), replica.getNodeID(), e.getMessage());
+              request.getCcpQueryId(), request.getNsQueryId(), replica.getNodeID(), e.getMessage());
       try {
         replica.getNioServer().sendToID(request.getNameServerID(), failResponse.toJSONObject());
       } catch (IOException f) {

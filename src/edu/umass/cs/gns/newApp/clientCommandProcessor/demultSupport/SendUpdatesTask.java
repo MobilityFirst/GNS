@@ -9,6 +9,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -43,11 +44,11 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
-  private final ClientRequestHandlerInterface<NodeIDType> handler;
+  private final EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
   private NodeIDType nameServerID; // just send it to this one
 
-  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler,
+  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface<NodeIDType> handler,
           UpdatePacket<NodeIDType> updatePacket, NodeIDType nameServerID) {
     // based on request info.
     this.lnsReqID = lnsReqID;
@@ -146,7 +147,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   }
 
-  private void requestNewActives(ClientRequestHandlerInterface<NodeIDType> handler) {
+  private void requestNewActives(EnhancedClientRequestHandlerInterface<NodeIDType> handler) {
     // remove update info from LNS
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
     if (info != null) {   // probably NS sent response
@@ -211,9 +212,10 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     }
 
     // and send it off
-    try {
-      JSONObject jsonToSend = pkt.toJSONObject();
-      handler.sendToNS(jsonToSend, nameServerID);
+    //try {
+      //JSONObject jsonToSend = pkt.toJSONObject();
+      handler.getApp().handleRequest(pkt);
+      //handler.sendToNS(jsonToSend, nameServerID);
       // keep track of which NS we sent it to
       UpdateInfo<NodeIDType> updateInfo = (UpdateInfo) handler.getRequestInfo(lnsReqID);
       if (updateInfo != null) {
@@ -221,10 +223,10 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       }
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + lnsReqID
-                + " Time:" + System.currentTimeMillis() + " --> " + jsonToSend.toString());
+                + " Time:" + System.currentTimeMillis() + " --> " + pkt.toString());
       }
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
+//    } catch (JSONException e) {
+//      e.printStackTrace();
+//    }
   }
 }

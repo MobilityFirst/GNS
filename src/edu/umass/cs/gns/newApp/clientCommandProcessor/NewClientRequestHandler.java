@@ -684,15 +684,4 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public int getRequestsPerSecond() {
     return (int) Math.round(averageRequestsPerSecond.getAverage());
   }
-
-  @Override
-  public void handleNameServerLoadPacket(JSONObject json) throws JSONException {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
-  @Override
-  public NodeIDType selectBestUsingLatencyPlusLoad(Set<NodeIDType> serverIDs) {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
 }

@@ -37,6 +37,7 @@ public class CreateDelete {
 
   public static void handleAddPacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (AppReconfigurableNodeOptions.standAloneApp) {
+      throw new UnsupportedOperationException("Not supported.");
     } else {
       // do normal add which actually involves converting this into a CreateServiceName packet
       AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
@@ -51,6 +52,7 @@ public class CreateDelete {
 
   public static void handleRemovePacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (AppReconfigurableNodeOptions.standAloneApp) {
+      throw new UnsupportedOperationException("Not supported.");
     } else {
       RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
       handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());

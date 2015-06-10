@@ -25,6 +25,7 @@ import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
+import org.json.JSONObject;
 
 /**
  *
@@ -66,9 +67,11 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
    */
   private DnsTranslator dnsTranslator;
 
+  AbstractJSONPacketDemultiplexer demultiplexer;
+
   private final Logger log = Logger.getLogger(getClass().getName());
 
-  public ClientCommandProcessor(InetSocketAddress nodeAddress, 
+  public ClientCommandProcessor(InetSocketAddress nodeAddress,
           GNSNodeConfig<NodeIDType> gnsNodeConfig,
           boolean debug,
           NewApp app,
@@ -80,7 +83,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     if (debug) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
     }
-    AbstractJSONPacketDemultiplexer demultiplexer = new CCPPacketDemultiplexer<NodeIDType>();
+    this.demultiplexer = new CCPPacketDemultiplexer<NodeIDType>();
     this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<>();
     this.nodeAddress = nodeAddress;
@@ -107,7 +110,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CCP_PING_PORT);
       this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig));
       pingManager.startPinging();
-    //
+      //
       // After starting PingManager because it accesses PingManager.
       (this.lnsListenerAdmin = new CCPListenerAdmin<>(requestHandler, pingManager)).start();
 
@@ -145,6 +148,14 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     }
   }
 
+  public void injectPacketIntoCCPQueue(JSONObject jsonObject) {
+
+    boolean isPacketTypeFound = demultiplexer.handleMessage(jsonObject);
+    if (isPacketTypeFound == false) {
+      GNS.getLogger().severe("Packet type not found at demultiplexer: " + isPacketTypeFound);
+    }
+  }
+
   public InetSocketAddress getAddress() {
     return nodeAddress;
   }
@@ -167,7 +178,6 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
 //                    options.get(GNS_SERVER_IP)
 //            );
 //  }
-
 //  public static void main(String[] args) throws IOException {
 //    Map<String, String> options
 //            = ParametersAndOptions.getParametersAsHashMap(ClientCommandProcessor.class.getCanonicalName(),
@@ -179,7 +189,6 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
 //    }
 //    startClientCommandProcessor(options);
 //  }
-
   @Override
   public void shutdown() {
     if (udpDnsServer != null) {

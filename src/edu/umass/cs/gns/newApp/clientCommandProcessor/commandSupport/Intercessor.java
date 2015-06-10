@@ -8,7 +8,6 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNode;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
@@ -28,11 +27,9 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
-import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
-import edu.umass.cs.utils.DelayProfiler;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
@@ -75,7 +72,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   // Instrumentation
   private final ConcurrentMap<Integer, Long> queryTimeStamp;
 
-  public boolean debuggingEnabled = true;
+  public boolean debuggingEnabled = AppReconfigurableNodeOptions.debuggingEnabled;
 
   {
     randomID = new Random();
@@ -228,24 +225,24 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     }
 
     // now we wait until the correct packet comes back
-    try {
-      if (debuggingEnabled) {
-        GNS.getLogger().fine("Waiting for query id: " + id);
-      }
-      final Long waitStart = System.currentTimeMillis(); // instrumentation
-      synchronized (monitor) {
-        while (!queryResultMap.containsKey(id)) {
-          monitor.wait();
-        }
-      }
-      DelayProfiler.update("IntercessorWait", waitStart);
-      if (debuggingEnabled) {
-        GNS.getLogger().fine("Query id response received: " + id);
-      }
-    } catch (InterruptedException x) {
-      GNS.getLogger().severe("Wait for return packet was interrupted " + x);
-
-    }
+//    try {
+//      if (debuggingEnabled) {
+//        GNS.getLogger().fine("Waiting for query id: " + id);
+//      }
+//      final Long waitStart = System.currentTimeMillis(); // instrumentation
+//      synchronized (monitor) {
+//        while (!queryResultMap.containsKey(id)) {
+//          monitor.wait();
+//        }
+//      }
+//      DelayProfiler.update("IntercessorWait", waitStart);
+//      if (debuggingEnabled) {
+//        GNS.getLogger().fine("Query id response received: " + id);
+//      }
+//    } catch (InterruptedException x) {
+//      GNS.getLogger().severe("Wait for return packet was interrupted " + x);
+//
+//    }
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     QueryResult result = queryResultMap.remove(id);
     //queryResultMap.remove(id);

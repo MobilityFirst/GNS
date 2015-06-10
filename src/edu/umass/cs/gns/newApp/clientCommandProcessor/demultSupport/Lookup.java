@@ -74,8 +74,8 @@ public class Lookup {
       incomingPacket.getHeader().setId(ccpReqID);
       JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
       incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
-      
-      handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
+      handler.getApp().handleRequest(new DNSPacket(outgoingJSON, handler.getGnsNodeConfig()));
+      //handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
     } else { // OLD STYLE IS TO POSSIBLY REQUEST ACTIVES WITH RETRANSMISSION
       SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(ccpReqID, handler, incomingPacket);
       long timeOut = handler.getParameters().getQueryTimeout();

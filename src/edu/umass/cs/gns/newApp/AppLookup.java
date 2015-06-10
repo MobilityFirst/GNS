@@ -115,7 +115,8 @@ public class AppLookup {
                 + dnsPacket.toJSONObjectForErrorResponse());
       }
       if (!doNotReplyToClient) {
-        gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
+        gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObjectForErrorResponse());
+        //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
       }
     } else {
         // All signature and ACL checks passed see if we can find the field to return;
@@ -146,7 +147,8 @@ public class AppLookup {
       // Time to send something back to the client
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
       if (!doNotReplyToClient) {
-        gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+        gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
+        //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       }
       DelayProfiler.update("totalLookup", receiptTime);
     }
@@ -180,7 +182,8 @@ public class AppLookup {
       dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
       dnsPacket.setRecordValue(valuesMap);
       // .. and send it
-      gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+      gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
+      //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       return true;
     }
     return false;
