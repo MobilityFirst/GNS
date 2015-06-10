@@ -113,7 +113,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   private long receivedRequests = 0;
 
   public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
-          InetSocketAddress nodeAddress, 
+          InetSocketAddress nodeAddress,
           NodeIDType activeReplicaID,
           NewApp app,
           GNSNodeConfig<NodeIDType> gnsNodeConfig,
@@ -123,8 +123,8 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     // a little hair to convert fred to fred-activeReplica if we just get fred
-    this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID :
-            gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
+    this.activeReplicaID = gnsNodeConfig.isActiveReplica(activeReplicaID) ? activeReplicaID
+            : gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
     this.app = app;
     // FOR NOW WE KEEP BOTH
     this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
@@ -147,7 +147,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public boolean isNewApp() {
     return true;
   }
-  
+
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
     BasicReconfigurationPacket<NodeIDType> rcEvent
@@ -177,13 +177,12 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public InetSocketAddress getNodeAddress() {
     return nodeAddress;
   }
-  
-  
+
   @Override
   public Object getActiveReplicaID() {
     return activeReplicaID;
   }
-  
+
   @Override
   public Intercessor getIntercessor() {
     return intercessor;
@@ -230,20 +229,20 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   /**
-   * Looks up the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   * Looks up the mapping between a CreateServiceName and the Add/RemoveRecord that triggered it.
    */
   public Integer getCreateRequestNameToIDMapping(String name) {
     return createServiceNameMap.get(name);
   }
-  
+
   @Override
   /**
-   * Looks up and removes the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   * Looks up and removes the mapping between a CreateServiceName and the Add/RemoveRecord that triggered it.
    */
   public Integer removeCreateRequestNameToIDMapping(String name) {
     return createServiceNameMap.remove(name);
   }
-  
+
   // These next four are for backward compatibility between old Add and Remove record 
   // code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
@@ -257,20 +256,20 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   /**
-   * Looks up the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   * Looks up the mapping between a CreateServiceName and the Add/RemoveRecord that triggered it.
    */
   public Integer getDeleteRequestNameToIDMapping(String name) {
     return deleteServiceNameMap.get(name);
   }
-  
+
   @Override
   /**
-   * Looks up and removes the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   * Looks up and removes the mapping between a CreateServiceName and the Add/RemoveRecord that triggered it.
    */
   public Integer removeDeleteRequestNameToIDMapping(String name) {
     return deleteServiceNameMap.remove(name);
   }
-  
+
   // These next four are for backward compatibility between old Add and Remove record 
   // code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
@@ -284,15 +283,15 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   /**
-   * Looks up the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   * Looks up the mapping between a CreateServiceName and the Add/RemoveRecord that triggered it.
    */
   public Integer getActivesRequestNameToIDMapping(String name) {
     return activesServiceNameMap.get(name);
   }
-  
+
   @Override
   /**
-   * Looks up and removes the mapping between a CreateServiceName and the  Add/RemoveRecord that triggered it.
+   * Looks up and removes the mapping between a CreateServiceName and the Add/RemoveRecord that triggered it.
    */
   public Integer removeActivesRequestNameToIDMapping(String name) {
     return activesServiceNameMap.remove(name);
@@ -405,9 +404,9 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key) {
     switch (packet.getType()) {
       case ADD_CONFIRM:
-        //if (parameters.isDebugMode()) {
+        if (parameters.isDebugMode()) {
           GNS.getLogger().info("%%%%%%%%%%%%%%%%%% After add cacheing actives: " + nodeConfig.getReplicatedActives(name));
-        //}
+        }
         cache.put(name, new CacheEntry<NodeIDType>(name, nodeConfig.getReplicatedReconfigurators(name),
                 nodeConfig.getReplicatedActives(name)));
         break;
@@ -558,7 +557,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     NodeIDType id = getRandomRCReplica();
     sendRequestToReconfigurator(req, id);
   }
-  
+
   @Override
   public void sendRequestToReconfigurator(BasicReconfigurationPacket req, NodeIDType id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {

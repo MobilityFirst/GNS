@@ -90,7 +90,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     try {
       if (useLocalCCP) {
         this.localCCP = new ClientCommandProcessor<>(
-                new InetSocketAddress(nodeConfig.getNodeAddress(id), GNS.DEFAULT_CCP_TCP_PORT),
+                new InetSocketAddress(nodeConfig.getNodeAddress(id), nodeConfig.getCcpPort(id)),
                 (GNSNodeConfig) nodeConfig,
                 AppReconfigurableNodeOptions.debuggingEnabled,
                 this,

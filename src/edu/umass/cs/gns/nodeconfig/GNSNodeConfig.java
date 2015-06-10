@@ -331,10 +331,41 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * @param id
    * @return the port
    */
+  @Override
   public int getPingPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
     if (nodeInfo != null) {
       return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+    } else {
+      return INVALID_PORT;
+    }
+  }
+
+  @Override
+  public int getCcpPort(NodeIDType id) {
+    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
+    if (nodeInfo != null) {
+      return nodeInfo.getStartingPortNumber() + GNS.PortType.CCP_PORT.getOffset();
+    } else {
+      return INVALID_PORT;
+    }
+  }
+  
+  @Override
+  public int getCcpAdminPort(NodeIDType id) {
+    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
+    if (nodeInfo != null) {
+      return nodeInfo.getStartingPortNumber() + GNS.PortType.CCP_ADMIN_PORT.getOffset();
+    } else {
+      return INVALID_PORT;
+    }
+  }
+  
+  @Override
+  public int getCcpPingPort(NodeIDType id) {
+    NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
+    if (nodeInfo != null) {
+      return nodeInfo.getStartingPortNumber() + GNS.PortType.CCP_PING_PORT.getOffset();
     } else {
       return INVALID_PORT;
     }
@@ -429,6 +460,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
         return getAdminPort(nameServerId);
       case NS_PING_PORT:
         return getPingPort(nameServerId);
+      case CCP_PORT:
+        return getCcpPort(nameServerId);
+      case CCP_ADMIN_PORT:
+        return getCcpAdminPort(nameServerId);
+      case CCP_PING_PORT:
+        return getCcpPingPort(nameServerId);
     }
     return -1;
   }
@@ -591,7 +628,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
             = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>(16, 0.75f, 8);
     for (HostSpec<NodeIDType> spec : hosts) {
       addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(), spec.getExternalIP(),
-              spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT);
+              spec.getStartPort() != null ? spec.getStartPort() : GNS.DEFAULT_STARTING_PORT);
     }
     // some idiot checking of the given Id
     if (!isCCP) {
@@ -635,7 +672,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   private void addHostInfo(ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> mapping, NodeIDType id, String ipAddress,
           String externalIP, Integer startingPort) {
-    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort : GNS.STARTINGPORT, 0, 0, 0);
+    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort : GNS.DEFAULT_STARTING_PORT, 0, 0, 0);
   }
 
   private static final long updateCheckPeriod = 60000; // 60 seconds

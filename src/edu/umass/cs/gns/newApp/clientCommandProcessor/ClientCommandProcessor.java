@@ -107,9 +107,11 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       // Start HTTP server
       GnsHttpServer.runHttp(requestHandler);
       // Start Ping servers
-      GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " + GNS.DEFAULT_CCP_PING_PORT);
-      this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig));
-      pingManager.startPinging();
+      // FIXME
+//      GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " 
+//              + gnsNodeConfig.getCcpPingPort(replicaID));
+//      this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig));
+//      pingManager.startPinging();
       //
       // After starting PingManager because it accesses PingManager.
       (this.lnsListenerAdmin = new CCPListenerAdmin<>(requestHandler, pingManager)).start();

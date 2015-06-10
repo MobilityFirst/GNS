@@ -235,7 +235,7 @@ public class LNSNodeConfig implements
             = new ConcurrentHashMap<Object, LNSNodeInfo>(16, 0.75f, 8);
     for (HostSpec<Object> spec : hosts) {
       addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(), spec.getExternalIP(),
-              spec.getStartPort() != null ? spec.getStartPort() : GNS.STARTINGPORT);
+              spec.getStartPort() != null ? spec.getStartPort() : GNS.DEFAULT_STARTING_PORT);
     }
     // ok.. things are cool... actually update
     hostInfoMapping = newHostInfoMapping;
@@ -272,7 +272,7 @@ public class LNSNodeConfig implements
    */
   private void addHostInfo(ConcurrentMap<Object, LNSNodeInfo> mapping, Object id, String ipAddress,
           String externalIP, Integer startingPort) {
-    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort : GNS.STARTINGPORT, 0, 0, 0);
+    addHostInfo(mapping, id, ipAddress, externalIP, startingPort != null ? startingPort : GNS.DEFAULT_STARTING_PORT, 0, 0, 0);
   }
 
   private static final long updateCheckPeriod = 60000; // 60 seconds

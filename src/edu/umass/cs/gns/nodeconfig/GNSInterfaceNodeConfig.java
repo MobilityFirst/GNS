@@ -36,6 +36,30 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
    * @return
    */
   public abstract int getPingPort(NodeIDType id);
+  
+  /**
+   * Returns the Ccp for the given node.
+   *
+   * @param id
+   * @return
+   */
+  public abstract int getCcpPort(NodeIDType id);
+  
+  /**
+   * Returns the Ccp ping port for the given node.
+   *
+   * @param id
+   * @return
+   */
+  public abstract int getCcpPingPort(NodeIDType id);
+  
+  /**
+   * Returns the Ccp admin port for the given node.
+   *
+   * @param id
+   * @return
+   */
+  public abstract int getCcpAdminPort(NodeIDType id);
 
   /**
    * Returns the average ping latency to the given node.

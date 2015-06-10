@@ -21,7 +21,6 @@ import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.gns.util.ParametersAndOptions;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
-import edu.umass.cs.nio.JSONMessageExtractor;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;

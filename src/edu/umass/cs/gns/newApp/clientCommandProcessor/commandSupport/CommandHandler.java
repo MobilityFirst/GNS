@@ -257,17 +257,17 @@ public class CommandHandler {
 
   private static final ConcurrentMap<Integer, CommandRequestInfo> outStandingQueries = new ConcurrentHashMap<>(10, 0.75f, 3);
 
-  private static InetSocketAddress ccpAddress;
-
-  static {
-    try {
-      ccpAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNS.DEFAULT_CCP_TCP_PORT);
-      GNS.getLogger().info("CCP Address is " + ccpAddress);
-    } catch (UnknownHostException e) {
-      GNS.getLogger().severe("Unabled to determine CCP address: " + e + "; using loopback address");
-      ccpAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CCP_TCP_PORT);
-    }
-  }
+//  private static InetSocketAddress ccpAddress;
+//
+//  static {
+//    try {
+//      ccpAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNS.DEFAULT_CCP_TCP_PORT);
+//      GNS.getLogger().info("CCP Address is " + ccpAddress);
+//    } catch (UnknownHostException e) {
+//      GNS.getLogger().severe("Unabled to determine CCP address: " + e + "; using loopback address");
+//      ccpAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CCP_TCP_PORT);
+//    }
+//  }
 
   public static void handleCommandPacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandPacket packet = new CommandPacket(json);
@@ -287,10 +287,11 @@ public class CommandHandler {
     if (app.getClientCommandProcessor() != null) { // new version with CPP running as part of app
       handlePacketCommandRequest(json, app.getClientCommandProcessor().getRequestHandler(), app);
     } else { // old code that will not be executed and will be going away soon
+      throw new RuntimeException("This should not have been called");
       // remove these so the stamper will put new ones in so the packet will find it's way back here
-      json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
-      json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
-      app.getNioServer().sendToAddress(ccpAddress, json);
+//      json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
+//      json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+//      app.getNioServer().sendToAddress(ccpAddress, json);
     }
   }
 

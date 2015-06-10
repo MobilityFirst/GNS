@@ -58,7 +58,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
    */
   public CCPListenerAdmin(ClientRequestHandlerInterface<NodeIDType> handler, PingManager<NodeIDType> pingManager) throws IOException {
     super("ListenerAdmin");
-    this.serverSocket = new ServerSocket(GNS.DEFAULT_CCP_ADMIN_PORT);
+    this.serverSocket = new ServerSocket(handler.getGnsNodeConfig().getCcpAdminPort((NodeIDType)handler.getActiveReplicaID()));
     replicationMap = new HashMap<>();
     this.handler = handler;
     this.pingManager = pingManager;
@@ -167,7 +167,8 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                   returnResponsePacketToSender(incomingPacket.getCCPAddress(), responsePacket, handler);
                 } else {
                   // forward the packet on to the appropriate host
-                  incomingPacket.setCCPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CCP_ADMIN_PORT));
+                  incomingPacket.setCCPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), 
+                          handler.getGnsNodeConfig().getCcpAdminPort((NodeIDType)handler.getActiveReplicaID())));
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
@@ -192,7 +193,8 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                   returnResponsePacketToSender(incomingPacket.getCCPAddress(), responsePacket, handler);
                 } else {
                   // send it to the server that can handle it
-                  incomingPacket.setCCPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), GNS.DEFAULT_CCP_ADMIN_PORT));
+                  incomingPacket.setCCPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), 
+                  handler.getGnsNodeConfig().getCcpAdminPort((NodeIDType)handler.getActiveReplicaID())));
                   //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
                 }

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.nodeconfig;
 
-import edu.umass.cs.reconfiguration.reconfigurationutils.*;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 import java.net.InetAddress;
@@ -71,6 +70,21 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   @Override
   public int getPingPort(NodeIDType id) {
     return this.nodeConfig.getPingPort(id);
+  }
+
+  @Override
+  public int getCcpPort(NodeIDType id) {
+    return this.nodeConfig.getCcpPort(id);
+  }
+  
+  @Override
+  public int getCcpAdminPort(NodeIDType id) {
+    return this.nodeConfig.getCcpAdminPort(id);
+  }
+  
+  @Override
+  public int getCcpPingPort(NodeIDType id) {
+    return this.nodeConfig.getCcpPingPort(id);
   }
 
   @Override
