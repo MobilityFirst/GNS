@@ -67,9 +67,10 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 
 	/*
 	 * This method should result in all state corresponding to serviceName being
-	 * deleted
+	 * deleted. It is meant to be called only after a replica group has been
+	 * stopped by committing a stop request in a coordinated manner.
 	 */
-	public abstract void deleteReplicaGroup(String serviceName, int epoch);
+	public abstract boolean deleteReplicaGroup(String serviceName, int epoch);
 
 	/*
 	 * This method must return the replica group that was most recently
@@ -229,15 +230,17 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	public boolean updateState(String name, String state) {
 		return app.updateState(name, state);
 	}
+	
 
 	/*********************** Start of private helper methods **********************/
 	// Call back active replica for stop requests, else call default callback
 	private void callCallback(InterfaceRequest request, boolean handled) {
 		if (request instanceof InterfaceReconfigurableRequest
 				&& ((InterfaceReconfigurableRequest) request).isStop()
-				&& this.activeCallback != null)
+				&& this.activeCallback != null
+				) {
 			this.activeCallback.executed(request, handled);
-		else if (this.callback != null)
+		} else if (this.callback != null)
 			this.callback.executed(request, handled);
 	}
 

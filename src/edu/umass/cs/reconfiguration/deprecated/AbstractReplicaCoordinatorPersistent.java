@@ -33,7 +33,7 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 			Stringifiable<NodeIDType> unstringer) {
 		super(app, messenger);
 		this.paxosManager = new PaxosManager<NodeIDType>(messenger.getMyID(),
-				unstringer, messenger, this);
+				unstringer, messenger, this, null);
 	}
 
 	// there must be no API to set paxosManager
@@ -49,8 +49,8 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 	}
 
 	@Override
-	public void deleteReplicaGroup(String serviceName, int epoch) {
-		this.paxosManager.deletePaxosInstance(serviceName, (short) epoch);
+	public boolean deleteReplicaGroup(String serviceName, int epoch) {
+		return this.paxosManager.deleteStoppedPaxosInstance(serviceName, (short) epoch);
 	}
 
 	@Override

@@ -5,7 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
@@ -19,7 +19,7 @@ import java.util.Random;
  */
 @SuppressWarnings("javadoc")
 public class RequestPacket extends PaxosPacket implements InterfaceRequest {
-	private static final boolean DEBUG = PaxosManager.DEBUG;
+	private static final boolean DEBUG = TESTPaxosConfig.DEBUG;
 	public static final String NO_OP = InterfaceRequest.NO_OP;
 
 	/**

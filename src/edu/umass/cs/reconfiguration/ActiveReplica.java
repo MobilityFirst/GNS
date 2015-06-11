@@ -148,12 +148,58 @@ public class ActiveReplica<NodeIDType> implements
 	@Override
 	public void executed(InterfaceRequest request, boolean handled) {
 		assert (request instanceof InterfaceReconfigurableRequest);
-		int epoch = ((InterfaceReconfigurableRequest) request).getEpochNumber();
-		StopEpoch<NodeIDType> stopEpoch = null;
 		if (handled)
-			while ((stopEpoch = this.callbackMap.notifyStop(
-					request.getServiceName(), epoch)) != null)
-				this.sendAckStopEpoch(stopEpoch);
+			log.info(this + " executing executed for " + request);
+		/*
+		 * We need to handle the callback in a separate thread, otherwise we
+		 * risk sending the ackStop before the epoch final state has been
+		 * checkpointed that in turn has to happen strictly before the app
+		 * itself has dropped the state. If we send the ackStop early for a
+		 * delete request and the reconfigurator sends a delete confirmation to
+		 * the client, a client read request may find the record undeleted (at
+		 * each and every active replica) despite receiving the delete
+		 * confirmation. This scenario is unlikely but can happen, especially if
+		 * creating the final epoch state checkpoint takes long. The thread
+		 * below waits for the app state to be deleted before sending out the
+		 * ackStop. We need a separate thread because "this" thread is the one
+		 * executing the stop request and is the one responsible for creating
+		 * the epoch final state checkpoint, so it can not itself wait for that
+		 * to complete without getting stuck.
+		 * 
+		 * Note that a client read may still find a record undeleted despite
+		 * receiving a delete confirmation if it sends the read to an active
+		 * replica other than the one that sent the ackStop to the
+		 * reconfigurator as that other active replica may still be catching up.
+		 * But the point above is that this scenario can happen even with a
+		 * single replica, which is "wrong", unless we spawn a separate thread.
+		 */
+		if (handled)
+			// protocol executor also allows us to just submit a Runnable
+			this.protocolExecutor.submit(new AckStopNotifier(request));
+	}
+
+	/*
+	 * This class is a task to notify reconfigurators of a successfully stopped
+	 * replica group. It deletes the replica group and then sends the ackStop.
+	 */
+	class AckStopNotifier implements Runnable {
+		InterfaceRequest request;
+
+		AckStopNotifier(InterfaceRequest request) {
+			this.request = request;
+		}
+
+		public void run() {
+			StopEpoch<NodeIDType> stopEpoch = null;
+			int epoch = ((InterfaceReconfigurableRequest) request)
+					.getEpochNumber();
+			while ((stopEpoch = callbackMap.notifyStop(
+					request.getServiceName(), epoch)) != null) {
+				appCoordinator.deleteReplicaGroup(request.getServiceName(),
+						epoch);
+				sendAckStopEpoch(stopEpoch);
+			}
+		}
 	}
 
 	/**
@@ -247,8 +293,9 @@ public class ActiveReplica<NodeIDType> implements
 	/**
 	 * @param stopEpoch
 	 * @param ptasks
-	 * @return Messaging task, typically null as we coordinate the stop request and
-	 * use a callback to notify the reconfigurator that issued the {@link StopEpoch}.
+	 * @return Messaging task, typically null as we coordinate the stop request
+	 *         and use a callback to notify the reconfigurator that issued the
+	 *         {@link StopEpoch}.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleStopEpoch(
 			StopEpoch<NodeIDType> stopEpoch,
@@ -268,7 +315,7 @@ public class ActiveReplica<NodeIDType> implements
 	 * @param event
 	 * @param ptasks
 	 * @return Messaging task to send AckDropEpochFinalState to reconfigurator
-	 * that issued the corresponding DropEpochFinalState. 
+	 *         that issued the corresponding DropEpochFinalState.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleDropEpochFinalState(
 			DropEpochFinalState<NodeIDType> event,
@@ -309,7 +356,7 @@ public class ActiveReplica<NodeIDType> implements
 	 * @param event
 	 * @param ptasks
 	 * @return Messaging task returning the requested epoch final state to the
-	 * requesting ActiveReplica.
+	 *         requesting ActiveReplica.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleRequestEpochFinalState(
 			RequestEpochFinalState<NodeIDType> event,
@@ -362,6 +409,7 @@ public class ActiveReplica<NodeIDType> implements
 
 	private void handRequestToApp(InterfaceRequest request) {
 		long t1 = System.currentTimeMillis();
+		log.info(this + " ------------------handing request to app: " + request);
 		this.appCoordinator.handleIncoming(request);
 		DelayProfiler.update("appHandleIncoming@AR", t1);
 	}

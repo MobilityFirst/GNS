@@ -87,7 +87,6 @@ public class WaitPrimaryExecution<NodeIDType> extends
 		return this.key;
 	}
 
-	@Override
 	public String refreshKey() {
 		return Reconfigurator.getTaskKey(this.getClass(), this.startEpoch, this.DB.getMyID().toString());
 	}

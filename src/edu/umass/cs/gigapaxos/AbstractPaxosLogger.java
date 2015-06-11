@@ -126,7 +126,7 @@ public abstract class AbstractPaxosLogger {
 	// Designed to offload checkpointing to its own task so that the paxos
 	// instance can move on.
 	protected static final void checkpoint(AbstractPaxosLogger logger,
-			String paxosID, short version, int[] members, int slot,
+			String paxosID, int version, int[] members, int slot,
 			Ballot ballot, String state, int gcSlot) {
 		if (logger.isAboutToClose())
 			return;
@@ -266,7 +266,7 @@ public abstract class AbstractPaxosLogger {
 	 * @return Checks version and returns non-null only if the version matches.
 	 */
 	public abstract SlotBallotState getSlotBallotState(String paxosID,
-			short version); // useful to enforce version check upon recovery
+			int version); // useful to enforce version check upon recovery
 
 	/**
 	 * 
@@ -278,7 +278,7 @@ public abstract class AbstractPaxosLogger {
 	 * @param state
 	 * @param gcSlot
 	 */
-	public abstract void putCheckpointState(String paxosID, short version,
+	public abstract void putCheckpointState(String paxosID, int version,
 			int[] group, int slot, Ballot ballot, String state, int gcSlot);
 
 	/**
@@ -294,9 +294,10 @@ public abstract class AbstractPaxosLogger {
 	 * 
 	 * @param paxosID
 	 * @param version
+	 * @return True if copied successfully.
 	 */
-	public abstract void copyEpochFinalCheckpointState(String paxosID,
-			short version);
+	public abstract boolean copyEpochFinalCheckpointState(String paxosID,
+			int version);
 
 	/**
 	 * 
@@ -305,7 +306,7 @@ public abstract class AbstractPaxosLogger {
 	 * @return Final checkpoint state of the epoch {@code paxosID:version}.
 	 */
 	public abstract StringContainer getEpochFinalCheckpointState(String paxosID,
-			short version);
+			int version);
 
 	/**
 	 * 
@@ -315,7 +316,7 @@ public abstract class AbstractPaxosLogger {
 	 *         deleted.
 	 */
 	public abstract boolean deleteEpochFinalCheckpointState(String paxosID,
-			short version);
+			int version);
 
 	// recovery methods
 	/**
@@ -529,7 +530,7 @@ public abstract class AbstractPaxosLogger {
 	private class CheckpointTask {
 		final AbstractPaxosLogger logger;
 		final String paxosID;
-		final short version;
+		final int version;
 		final int[] members;
 		final int slot;
 		final Ballot ballot;
@@ -537,7 +538,7 @@ public abstract class AbstractPaxosLogger {
 		final int gcSlot;
 
 		CheckpointTask(AbstractPaxosLogger logger, String paxosID,
-				short version, int[] members, int slot, Ballot ballot,
+				int version, int[] members, int slot, Ballot ballot,
 				String state, int gcSlot) {
 			this.logger = logger;
 			this.paxosID = paxosID;

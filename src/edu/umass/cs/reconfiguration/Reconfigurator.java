@@ -1229,7 +1229,8 @@ public class Reconfigurator<NodeIDType> implements
 		 * FIXME: Actually, the exact condition is weaker (something like we can
 		 * delete at most as many consecutive nodes as the size of the
 		 * reconfigurator replica group, but we need to formally prove the
-		 * necessity/sufficiency of this constraint).
+		 * necessity/sufficiency of this constraint). For now, simple and safe
+		 * is good enough.
 		 */
 
 		String debug = "";

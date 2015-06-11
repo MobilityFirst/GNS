@@ -49,9 +49,10 @@ class ProtocolTaskWrapper<NodeIDType, EventType, KeyType> implements
 		return this.task.start();
 	}
 
-	@Override
+	//@Override
 	public KeyType refreshKey() {
-		return this.task.refreshKey();
+		throw new RuntimeException("This method should not have been called");
+		//return this.task.refreshKey();
 	}
 
 	protected void setFuture(final ScheduledFuture<?> future) {

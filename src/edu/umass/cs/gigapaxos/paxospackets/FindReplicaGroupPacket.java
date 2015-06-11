@@ -103,7 +103,7 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 		try {
 			JSONObject msg = new JSONObject();
 			msg.put(PaxosPacket.PAXOS_ID, "paxos0");
-			msg.put(PaxosPacket.PAXOS_VERSION, (short) 3);
+			msg.put(PaxosPacket.PAXOS_VERSION, 3);
 			FindReplicaGroupPacket frg = new FindReplicaGroupPacket(23, msg);
 			System.out.println(frg);
 

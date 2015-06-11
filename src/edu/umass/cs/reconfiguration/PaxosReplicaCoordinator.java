@@ -35,14 +35,17 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	 * @param enableNullCheckpoints
 	 */
 	@SuppressWarnings("unchecked")
-	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
+	private PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceMessenger<NodeIDType,?> niot, boolean enableNullCheckpoints) {
+			InterfaceMessenger<NodeIDType, ?> niot, String paxosLogFolder,
+			boolean enableNullCheckpoints) {
 		super(app, niot);
-		assert(niot instanceof JSONMessenger);
+		assert (niot instanceof JSONMessenger);
 		this.paxosManager = new PaxosManager<NodeIDType>(myID, unstringer,
-				(JSONMessenger<NodeIDType>)niot, this, enableNullCheckpoints);
+				(JSONMessenger<NodeIDType>) niot, this, paxosLogFolder,
+				enableNullCheckpoints);
 	}
+
 	/**
 	 * @param app
 	 * @param myID
@@ -51,8 +54,8 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	 */
 	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceMessenger<NodeIDType,?> niot) {
-		this(app, myID, unstringer, niot, true);
+			InterfaceMessenger<NodeIDType, ?> niot) {
+		this(app, myID, unstringer, niot, null, true);
 	}
 
 	/**
@@ -65,9 +68,9 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	@SuppressWarnings("unchecked")
 	public PaxosReplicaCoordinator(InterfaceReplicable app, NodeIDType myID,
 			Stringifiable<NodeIDType> unstringer,
-			InterfaceMessenger<NodeIDType,?> niot, int outOfOrderLimit) {
-		this(app, myID, unstringer, (JSONMessenger<NodeIDType>)niot);
-		assert(niot instanceof JSONMessenger);
+			InterfaceMessenger<NodeIDType, ?> niot, int outOfOrderLimit) {
+		this(app, myID, unstringer, (JSONMessenger<NodeIDType>) niot);
+		assert (niot instanceof JSONMessenger);
 		this.paxosManager.setOutOfOrderLimit(outOfOrderLimit);
 	}
 
@@ -141,14 +144,16 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 
 	@Override
 	public Set<NodeIDType> getReplicaGroup(String serviceName) {
-		if (this.paxosManager.isStopped(serviceName))
-			return null;
+		/*
+		 * if (this.paxosManager.isStopped(serviceName)) return null;
+		 */
 		return this.paxosManager.getPaxosNodeIDs(serviceName);
 	}
 
 	@Override
-	public void deleteReplicaGroup(String serviceName, int epoch) {
-		this.paxosManager.deletePaxosInstance(serviceName, (short) epoch);
+	public boolean deleteReplicaGroup(String serviceName, int epoch) {
+		return this.paxosManager.deleteStoppedPaxosInstance(serviceName,
+				(short) epoch);
 	}
 
 	protected void forceCheckpoint(String paxosID) {
@@ -162,8 +167,9 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 
 	@Override
 	public String getFinalState(String name, int epoch) {
-		StringContainer stateContainer = this.getFinalStateContainer(name, epoch);
-		return stateContainer!=null ? stateContainer.state : null;
+		StringContainer stateContainer = this.getFinalStateContainer(name,
+				epoch);
+		return stateContainer != null ? stateContainer.state : null;
 	}
 
 	protected StringContainer getFinalStateContainer(String name, int epoch) {
@@ -177,19 +183,21 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 				+ epoch
 				+ "; returning: "
 				+ state
-				+ (state == null ? " paxos instance stopped is "
-						+ this.paxosManager.isStopped(name)
-						+ " and epoch final state is " + state : ""));
+				+ (state == null ? " paxos instance status is "
+						+ this.paxosManager.getInstanceStatus(name,
+								(short) epoch) + " and epoch final state is "
+						+ state : ""));
 		return stateContainer;
 	}
 
-	/* It is a bad idea to use this method with paxos replica coordination. 
-	 * It is never a good idea to set paxos-maintained state through anything
-	 * but paxos agreement, otherwise we may be violating safety. In the 
-	 * case of initial state, we (must) have agreement already on the value
-	 * of the initial state, but we still need to have paxos initialize this 
-	 * state atomically with the creation of the paxos instance before any
-	 * paxos-coordinated requests are executed. 
+	/*
+	 * It is a bad idea to use this method with paxos replica coordination. It
+	 * is never a good idea to set paxos-maintained state through anything but
+	 * paxos agreement, otherwise we may be violating safety. In the case of
+	 * initial state, we (must) have agreement already on the value of the
+	 * initial state, but we still need to have paxos initialize this state
+	 * atomically with the creation of the paxos instance before any
+	 * paxos-coordinated requests are executed.
 	 */
 	@Override
 	public void putInitialState(String name, int epoch, String state) {
@@ -216,20 +224,21 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	@Override
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
 		InterfaceReconfigurableRequest stop = super.getStopRequest(name, epoch);
-		if (stop!=null && !(stop instanceof InterfaceReplicableRequest))
+		if (stop != null && !(stop instanceof InterfaceReplicableRequest))
 			throw new RuntimeException(
 					"Stop requests for Paxos apps must implement InterfaceReplicableRequest "
 							+ "and their needsCoordination() method must return true by default "
 							+ "(unless overridden by setNeedsCoordination(false))");
 		return stop;
 	}
-	
+
 	/**
 	 * @param name
 	 * @param epoch
-	 * @return True if the {@code epoch} or higher version exists for {@code name}.
+	 * @return True if the {@code epoch} or higher version exists for
+	 *         {@code name}.
 	 */
 	public boolean existsOrHigher(String name, int epoch) {
-		return this.paxosManager.existsOrHigher(name, (short)epoch);
+		return this.paxosManager.existsOrHigher(name, (short) epoch);
 	}
 }

@@ -116,11 +116,11 @@ public class WaitAckStopEpoch<NodeIDType>
 		return (this.nodeIterator.next());
 	}
 
-	/*
+	/**
 	 * Note: Trying to start this task when one is already running will cause
 	 * the executor to get stuck.
+	 * @return The refrehshed key.
 	 */
-	@Override
 	public String refreshKey() {
 		return Reconfigurator.getTaskKey(getClass(), stopEpoch, this.DB
 				.getMyID().toString())

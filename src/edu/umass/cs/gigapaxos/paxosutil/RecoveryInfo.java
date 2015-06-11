@@ -14,17 +14,17 @@ import edu.umass.cs.utils.Util;
 @SuppressWarnings("javadoc")
 public class RecoveryInfo {
 	final String paxosID;
-	final short version;
+	final int version;
 	final Set<String> members;
 	private String state = null;
 
-	public RecoveryInfo(String id, short ver, String[] group) {
+	public RecoveryInfo(String id, int ver, String[] group) {
 		this.paxosID = id;
 		this.version = ver;
 		this.members = Util.arrayOfNodeIdsToStringSet(group);
 	}
 
-	public RecoveryInfo(String id, short ver, String[] group, String state) {
+	public RecoveryInfo(String id, int ver, String[] group, String state) {
 		this.paxosID = id;
 		this.version = ver;
 		this.members = Util.arrayOfNodeIdsToStringSet(group);
@@ -35,7 +35,7 @@ public class RecoveryInfo {
 		return paxosID;
 	}
 
-	public short getVersion() {
+	public int getVersion() {
 		return version;
 	}
 

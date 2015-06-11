@@ -33,7 +33,6 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  */
 @SuppressWarnings("javadoc")
 public class TESTPaxosReplicable implements InterfaceReplicable {
-	private static final boolean DEBUG = PaxosManager.DEBUG;
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
 	private InterfaceNIOTransport<Integer,JSONObject> niot = null;
@@ -96,8 +95,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			if (state.seqnum == -1)
 				state.seqnum = requestPacket.slot;
 
-			if (DEBUG)
-				log.info("Node" + (this.niot != null ? getMyID() : null) + " "
+				log.fine("Node" + (this.niot != null ? getMyID() : null) + " "
 						+ paxosID + " executing request with slot "
 						+ requestPacket.slot + ", id = "
 						+ requestPacket.requestID + " with value "
@@ -145,14 +143,13 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			// (untested change)
 			if (!doNotReplyToClient && niot != null
 					&& requestPacket.getEntryReplica() == this.getMyID()) {
-				if (DEBUG)
-					log.info("App sending response to client "
+					log.fine("App sending response to client "
 							+ requestPacket.clientID + ": " + requestPacket);
 				if (TESTPaxosConfig.getSendReplyToClient()) 
 					this.sendResponseToClient(requestPacket);
 				RequestInstrumenter.remove(requestPacket.requestID);
-			} else if (DEBUG)
-				log.info("Node" + getMyID() + " not sending reply to client: "
+			} else 
+				log.fine("Node" + getMyID() + " not sending reply to client: "
 						+ requestPacket);
 		} catch (JSONException je) {
 			je.printStackTrace();

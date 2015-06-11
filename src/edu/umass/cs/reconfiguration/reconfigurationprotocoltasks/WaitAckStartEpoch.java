@@ -90,7 +90,9 @@ public class WaitAckStartEpoch<NodeIDType>
 		return mtask.toArray();
 	}
 
-	@Override
+	/**
+	 * @return The refreshed key.
+	 */
 	public String refreshKey() {
 		return Reconfigurator.getTaskKey(getClass(), startEpoch, this.DB
 				.getMyID().toString());
