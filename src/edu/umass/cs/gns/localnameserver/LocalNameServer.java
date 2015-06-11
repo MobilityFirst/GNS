@@ -28,6 +28,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationP
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import static edu.umass.cs.gns.util.ParametersAndOptions.printOptions;
 
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Arrays;
@@ -63,9 +64,9 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   private final Cache<String, CacheEntry> cache;
 
-  private InterfaceJSONNIOTransport tcpTransport;
-  private JSONMessenger messenger;
-  private ProtocolExecutor protocolExecutor;
+  private InterfaceJSONNIOTransport<String> tcpTransport;
+  private JSONMessenger<String> messenger;
+  private ProtocolExecutor<String, PacketType, String> protocolExecutor;
   private final LNSNodeConfig nodeConfig;
   private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress nodeAddress;
@@ -279,8 +280,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
-    BasicReconfigurationPacket rcEvent
-            = (BasicReconfigurationPacket) ReconfigurationPacket.getReconfigurationPacket(json, nodeConfig);
+    BasicReconfigurationPacket<String> rcEvent
+            = (BasicReconfigurationPacket<String>) ReconfigurationPacket.getReconfigurationPacket(json, nodeConfig);
     return this.protocolExecutor.handleEvent(rcEvent);
   }
 

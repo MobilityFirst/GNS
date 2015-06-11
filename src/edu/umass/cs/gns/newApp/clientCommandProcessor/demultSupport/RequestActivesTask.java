@@ -110,14 +110,14 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
   private void sendActivesRequestPacketToPrimary(String name, NodeIDType primaryID, int requestID) {
     JSONObject sendJson;
     try {
-      if (handler.isNewApp()) {
+      //if (handler.isNewApp()) {
         RequestActiveReplicas packet = new RequestActiveReplicas(null, name, 0);
         ((EnhancedClientRequestHandlerInterface)handler).addActivesRequestNameToIDMapping(name, requestID);
         sendJson = packet.toJSONObject();
-      } else {
-        RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);
-        sendJson = packet.toJSONObject();
-      }
+//      } else {
+//        RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);
+//        sendJson = packet.toJSONObject();
+//      }
       handler.sendToNS(sendJson, primaryID);
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("Send RequestActivesPacket for " + name + " to " + primaryID.toString());

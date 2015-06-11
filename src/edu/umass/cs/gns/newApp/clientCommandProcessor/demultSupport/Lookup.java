@@ -8,14 +8,12 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
-import edu.umass.cs.gns.util.AdaptiveRetransmission;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Class contains a few static methods for handling lookup requests from clients as well responses to lookups from
@@ -51,41 +49,30 @@ import java.util.concurrent.TimeUnit;
  * @author abhigyan
  */
 public class Lookup {
-  
+
   private static Random random = new Random();
-  
-  public static void handlePacketLookupRequest(JSONObject json, DNSPacket incomingPacket, 
+
+  public static void handlePacketLookupRequest(JSONObject json, DNSPacket incomingPacket,
           EnhancedClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
+    long startTime = System.currentTimeMillis();
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + json);
     }
     int ccpReqID = handler.getUniqueRequestID();
     DNSRequestInfo requestInfo = new DNSRequestInfo(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
     handler.addRequestInfo(ccpReqID, requestInfo);
-    //handler.incrementLookupRequest(incomingPacket.getGuid()); // important: used to count votes for names.
-    // For the new app we just send it to the colocated replica
-    if (handler.isNewApp()) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> SENDING DNS Request to " + handler.getActiveReplicaID() + ": " + json);
-      }
-      int clientQueryID = incomingPacket.getQueryId(); // BS: save the value because we reuse the field in the packet
-      incomingPacket.setCCPAddress(handler.getNodeAddress());
-      incomingPacket.getHeader().setId(ccpReqID);
-      JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
-      incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
-      handler.getApp().handleRequest(new DNSPacket(outgoingJSON, handler.getGnsNodeConfig()));
-      //handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
-    } else { // OLD STYLE IS TO POSSIBLY REQUEST ACTIVES WITH RETRANSMISSION
-      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(ccpReqID, handler, incomingPacket);
-      long timeOut = handler.getParameters().getQueryTimeout();
-      if (handler.getParameters().isAdaptiveTimeout()) {
-        timeOut = AdaptiveRetransmission.getTimeoutInterval(0);
-      }
-      handler.getExecutorService().scheduleAtFixedRate(queryTaskObject, 0, timeOut, TimeUnit.MILLISECONDS);
-    }
+    int clientQueryID = incomingPacket.getQueryId(); // BS: save the value because we reuse the field in the packet
+    incomingPacket.setCCPAddress(handler.getNodeAddress());
+    incomingPacket.getHeader().setId(ccpReqID);
+    JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
+    incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
+    DelayProfiler.update("handlePacketLookupRequestSetup", startTime);
+    handler.getApp().handleRequest(new DNSPacket(outgoingJSON, handler.getGnsNodeConfig()));
+    DelayProfiler.update("handlePacketLookupRequest", startTime);
+    //handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
   }
-  
+
   public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + json);
@@ -100,7 +87,7 @@ public class Lookup {
       }
       requestInfo.setSuccess(true);
       requestInfo.setFinishTime();
-      
+
       DelayProfiler.update("dnsRequest", requestInfo.getStartTime());
 //      if (handler.getParameters().isDebugMode()) {
 //        GNS.getLogger().info("8888888888888888888888888888>>>>: dns request #" + requestInfo.getCCPReqID() 
@@ -133,59 +120,59 @@ public class Lookup {
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem converting packet to JSON: " + e);
       }
-      
+
       //sendReplyToUser(requestInfo, dnsPacket.getRecordValue(), dnsPacket.getTTL(), dnsPacket.getResponder(), handler);
     }
   }
-  
+
   public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
-    
+
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Recvd Lookup Error Response" + jsonObject);
     }
 
     // if invalid active name server error, toString correct active name servers
     // DONT DO THIS IN THE NEW APP BECAUSE WE DON'T LOOKUP ARs OR DO RETRANSMISSION
-    if (!handler.isNewApp() && dnsPacket.containsInvalidActiveNSError()) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
-      }
-      handler.invalidateActiveNameServer(dnsPacket.getGuid());
-      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(dnsPacket.getQueryId());
-      
-      if (requestInfo == null) {
-        GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
-        return;
-      }
-      //requestInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
-      // create objects to be passed to PendingTasks
-      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(requestInfo.getCCPReqID(), handler, requestInfo.getIncomingPacket());
-      
-      PendingTasks.addToPendingRequests(requestInfo, queryTaskObject, handler.getParameters().getQueryTimeout(), handler);
-      
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info(" Scheduled lookup task.");
-      }
-      
-    } else { // other types of errors, forward error response to client
-      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
-      if (requestInfo == null) {
-        GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
-        return;
-      }
-      requestInfo.setSuccess(false);
-      requestInfo.setFinishTime();
-      //requestInfo.addEventCode(LNSEventCode.OTHER_ERROR);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("Forwarding incoming error packet for query "
-                + requestInfo.getIncomingPacket().getQueryId() + ": " + dnsPacket.toJSONObject());
-      }
-      // set the correct id for the client
-      dnsPacket.getHeader().setId(requestInfo.getIncomingPacket().getQueryId());
-      sendDNSResponseBackToSource(dnsPacket, handler);
+//    if (!handler.isNewApp() && dnsPacket.containsInvalidActiveNSError()) {
+//      if (handler.getParameters().isDebugMode()) {
+//        GNS.getLogger().info(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
+//      }
+//      handler.invalidateActiveNameServer(dnsPacket.getGuid());
+//      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(dnsPacket.getQueryId());
+//      
+//      if (requestInfo == null) {
+//        GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
+//        return;
+//      }
+//      //requestInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
+//      // create objects to be passed to PendingTasks
+//      SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(requestInfo.getCCPReqID(), handler, requestInfo.getIncomingPacket());
+//      
+//      PendingTasks.addToPendingRequests(requestInfo, queryTaskObject, handler.getParameters().getQueryTimeout(), handler);
+//      
+//      if (handler.getParameters().isDebugMode()) {
+//        GNS.getLogger().info(" Scheduled lookup task.");
+//      }
+//      
+//    } else { // other types of errors, forward error response to client
+    DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
+    if (requestInfo == null) {
+      GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
+      return;
+    }
+    requestInfo.setSuccess(false);
+    requestInfo.setFinishTime();
+    //requestInfo.addEventCode(LNSEventCode.OTHER_ERROR);
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().info("Forwarding incoming error packet for query "
+              + requestInfo.getIncomingPacket().getQueryId() + ": " + dnsPacket.toJSONObject());
+    }
+    // set the correct id for the client
+    dnsPacket.getHeader().setId(requestInfo.getIncomingPacket().getQueryId());
+    sendDNSResponseBackToSource(dnsPacket, handler);
       //GNS.getStatLogger().fine(requestInfo.getLogString());
 
-    }
+    //}
   }
 
   /**
@@ -205,7 +192,6 @@ public class Lookup {
 //      GNS.getLogger().severe("Problem converting packet to JSON: " + e);
 //    }
 //  }
-
   /**
    * Handles the returning of packets back to the appropriate source (local intercessor or another NameServer).
    *
@@ -224,5 +210,5 @@ public class Lookup {
       handler.sendToNS(packet.toJSONObject(), packet.getSourceId());
     }
   }
-  
+
 }

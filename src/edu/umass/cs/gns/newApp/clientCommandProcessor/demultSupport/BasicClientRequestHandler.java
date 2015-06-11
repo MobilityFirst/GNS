@@ -58,8 +58,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  */
 public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandlerInterface<NodeIDType> {
 
-  private final Intercessor intercessor;
-  private final Admintercessor admintercessor;
+  private final Intercessor<NodeIDType> intercessor;
+  private final Admintercessor<NodeIDType> admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
@@ -84,7 +84,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
-  private final ConsistentReconfigurableNodeConfig nodeConfig;
+  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 
   private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
 
@@ -100,7 +100,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
    */
   long receivedRequests = 0;
 
-  public BasicClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
+  public BasicClientRequestHandler(Intercessor<NodeIDType> intercessor, Admintercessor<NodeIDType> admintercessor,
           InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> gnsNodeConfig,
           AbstractJSONPacketDemultiplexer demultiplexer, RequestHandlerParameters parameters) throws IOException {
     this.intercessor = intercessor;
@@ -108,7 +108,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     this.parameters = parameters;
     this.nodeAddress = nodeAddress;
     // FOR NOW WE KEEP BOTH
-    this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -135,10 +135,10 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
     return new GnsMessenger(null, gnsNiot, executorService);
   }
   
-  @Override
-  public boolean isNewApp() {
-    return false;
-  }
+//  @Override
+//  public boolean isNewApp() {
+//    return false;
+//  }
 
   /**
    * @return the executorService
@@ -164,12 +164,12 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @Override
-  public Intercessor getIntercessor() {
+  public Intercessor<NodeIDType> getIntercessor() {
     return intercessor;
   }
 
   @Override
-  public Admintercessor getAdmintercessor() {
+  public Admintercessor<NodeIDType> getAdmintercessor() {
     return admintercessor;
   }
 
@@ -377,7 +377,7 @@ public class BasicClientRequestHandler<NodeIDType> implements ClientRequestHandl
   }
 
   @Override
-  public Object getActiveReplicaID() {
+  public NodeIDType getActiveReplicaID() {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 

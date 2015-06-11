@@ -222,7 +222,7 @@ public class GnsHttpServer {
         String activeReplicasString = "Active replicas: " + resultString.toString();
         String consoleLogLevelString = "Console log level is " + GNS.getLogger().getLevel().getLocalizedName();
         String fileLogLevelString = "File log level is " + GNS.getLogger().getLevel().getLocalizedName();
-        
+
         responseBody.write(responsePreamble.getBytes());
         responseBody.write(buildVersionInfo.getBytes());
         responseBody.write("<br>".getBytes());
@@ -244,12 +244,11 @@ public class GnsHttpServer {
         responseBody.write("<br>".getBytes());
         responseBody.write(requestsRateString.getBytes());
         responseBody.write("<br>".getBytes());
-        //if (!Config.useOldPaxos) {
+
         responseBody.write("Gigapaxos is enabled<br>".getBytes());
-        //}
-        if (GnsHttpServer.requestHandler.isNewApp()) {
-          responseBody.write("New app is enabled<br>".getBytes());
-        }
+     
+        responseBody.write("New app is enabled<br>".getBytes());
+
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           responseBody.write("Server debug is true<br>".getBytes());
         }

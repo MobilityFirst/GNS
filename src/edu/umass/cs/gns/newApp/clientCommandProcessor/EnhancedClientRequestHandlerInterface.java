@@ -127,7 +127,7 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
    * @return 
    */
   @Override
-  public Object getActiveReplicaID();
+  public NodeIDType getActiveReplicaID();
 
   public NewApp getApp();
 }

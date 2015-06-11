@@ -48,6 +48,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, nodeID);
     new AppReconfigurableNode((String) nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
     new AppReconfigurableNode((String) nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
+    System.out.println("********* Nodes have started. Server is ready. *********");
   }
 
   private static void startStandalone(String nodeConfigFilename) throws IOException {
@@ -70,6 +71,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
         System.out.println("$$$$$$$$$$$$$$$$ Setting up reconfigurator " + rcID);
         new AppReconfigurableNode(rcID, nodeConfig);
       }
+      System.out.println("********* Nodes have started. Server is ready. *********");
 
     } catch (IOException ioe) {
       ioe.printStackTrace();
