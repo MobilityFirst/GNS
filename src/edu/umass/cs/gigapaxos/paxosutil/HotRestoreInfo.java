@@ -18,7 +18,7 @@ public class HotRestoreInfo {
 	 * Paxos group epoch number. A paxosID:version two-tuple corresponds to a
 	 * unique replicated state machine.
 	 */
-	public final short version;
+	public final int version;
 	/**
 	 * Paxos group members.
 	 */
@@ -49,7 +49,7 @@ public class HotRestoreInfo {
 	 */
 	public final int[] nodeSlots;
 
-	public HotRestoreInfo(String paxosID, short version, int[] members,
+	public HotRestoreInfo(String paxosID, int version, int[] members,
 			int accSlot, Ballot accBallot, int accGCSlot, Ballot coordBallot,
 			int nextProposalSlot, int[] nodeSlots) {
 		this.paxosID = paxosID;
@@ -67,7 +67,7 @@ public class HotRestoreInfo {
 	public HotRestoreInfo(String serialized) {
 		String[] tokens = serialized.split("\\|");
 		this.paxosID = tokens[0];
-		this.version = Short.parseShort(tokens[1]);
+		this.version = Integer.parseInt(tokens[1]);
 		this.members = Util.stringToIntArray(tokens[2]);
 		this.accSlot = Integer.parseInt(tokens[3]);
 		this.accGCSlot = Integer.parseInt(tokens[5]);
@@ -105,7 +105,7 @@ public class HotRestoreInfo {
 	public static void main(String[] args) {
 		int[] members = { 1, 4, 67 };
 		int[] nodeSlots = { 1, 3, 5 };
-		HotRestoreInfo hri1 = new HotRestoreInfo("paxos0", (short) 2, members,
+		HotRestoreInfo hri1 = new HotRestoreInfo("paxos0", 2, members,
 				5, new Ballot(3, 4), 3, new Ballot(45, 67), 34, nodeSlots);
 		System.out.println(hri1.toString());
 		String str1 = hri1.toString();

@@ -94,7 +94,9 @@ public class WaitAckDropEpoch<NodeIDType>
 		return null;
 	}
 
-	@Override
+	/**
+	 * @return The refreshed key.
+	 */
 	public String refreshKey() {
 		return Reconfigurator.getTaskKey(getClass(), dropEpoch,
 				this.myID.toString());

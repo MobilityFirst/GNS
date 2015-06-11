@@ -299,14 +299,14 @@ public class TESTPaxosClient {
 						// incremented
 				"[Sample request numbered " + incrReqCount() + "]" + GIBBERISH,
 				false);
-		req.putPaxosID(TESTPaxosConfig.TEST_GUID, (short) 0);
+		req.putPaxosID(TESTPaxosConfig.TEST_GUID, 0);
 		return req;
 	}
 
 	protected RequestPacket makeRequest(String paxosID) {
 		RequestPacket req = this.makeRequest();
 		req.putPaxosID(paxosID != null ? paxosID : TESTPaxosConfig.TEST_GUID,
-				(short) 0);
+				 0);
 		return req;
 	}
 

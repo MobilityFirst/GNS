@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
@@ -145,19 +146,24 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		this.messenger.stop();
 		this.executor.shutdown();
 	}
+	
+	// can also ask executor to act like a simple execpool
+	public Future<?> submit (Runnable task) {
+		return this.executor.submit(task);
+	}
 
 	private synchronized void insert(
 			ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
-		while (task.getKey() == null || this.isRunning(task.getKey())) {
-			log.warning("Node" + myID + " trying to insert "
+		if (task.getKey() == null || this.isRunning(task.getKey())) {
+			String errorMsg = "Node" + myID + " trying to insert "
 					+ (task.getKey() == null ? "null" : "duplicate") + " key "
-					+ task.getKey());
-			task.refreshKey();
+					+ task.getKey();
+			log.warning(errorMsg);
+			throw new ProtocolTaskCreationException(errorMsg);
 		}
 		log.info("Node" + myID + " inserting key " + task.getKey()
 				+ " for task " + task.task.getClass());
 		this.protocolTasks.put(task.getKey(), task);
-
 	}
 
 	private GenericMessagingTask<NodeIDType, ?>[] start(
@@ -195,9 +201,6 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = wrapSpawn(actualTask);
 		// schedule restarts
 		Restarter restarter = new Restarter(task);
-		if (period < DEFAULT_RESTART_PERIOD)
-			log.warning("Specifying a period of less than "
-					+ DEFAULT_RESTART_PERIOD + " milliseconds is a bad idea");
 		log.info("Node" + myID
 				+ " scheduling key for periodically restarting task "
 				+ task.getKey());

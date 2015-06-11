@@ -43,11 +43,12 @@ public class CCPProtocolTask<NodeIDType> implements
     ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
     ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS};
 
-  private String key = null;
+  private final String key;
   private final EnhancedClientRequestHandlerInterface handler;
 
   public CCPProtocolTask(EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler) {
     this.handler = requestHandler;
+    this.key = refreshKey();
   }
 
   @Override
@@ -60,9 +61,9 @@ public class CCPProtocolTask<NodeIDType> implements
     return null;
   }
 
-  @Override
+  //@Override
   public String refreshKey() {
-    return (this.key = (handler.getNodeAddress().getHostString() + (int) (Math.random() * Integer.MAX_VALUE)));
+    return ((handler.getNodeAddress().getHostString() + (int) (Math.random() * Integer.MAX_VALUE)));
   }
 
   @Override

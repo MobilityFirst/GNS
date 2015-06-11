@@ -68,42 +68,53 @@ import java.util.logging.Logger;
  */
 @SuppressWarnings("javadoc")
 public class DerbyPaxosLogger extends AbstractPaxosLogger {
+	/* ********************************************************************
+	 * DB related parameters to be changed to use a different database service.
+	 */
 	private static final String FRAMEWORK = "embedded";
 	private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
 	private static final String PROTOCOL = "jdbc:derby:";
+	private static final String USER = "user";
+	private static final String PASSWORD = "user";
+	private static final String DATABASE = "paxos_logs";
+	/* ************ End of DB service related parameters ************** */
+
 	private static final boolean CONN_POOLING = true;
+	private static final int MAX_POOL_SIZE = 100;
+
 	private static final String DUPLICATE_KEY = "23505";
 	private static final String DUPLICATE_TABLE = "X0Y32";
 	private static final List<String> NONEXISTENT_TABLE = new ArrayList<String>(
 			Arrays.asList("42Y07", "42Y55"));
-	private static final String USER = "user";
-	private static final String PASSWORD = "user";
-	private static final String DATABASE = "paxos_logs";
+
 	private static final String CHECKPOINT_TABLE = "checkpoint";
 	private static final String PREV_CHECKPOINT_TABLE = "prev_checkpoint";
 	private static final String PAUSE_TABLE = "pause";
 	private static final String MESSAGES_TABLE = "messages";
-	private static final boolean DISABLE_LOGGING = TESTPaxosConfig.DISABLE_LOGGING; // false;
 	private static final boolean AUTO_COMMIT = true;
-	private static final int MAX_POOL_SIZE = 100;
+
+	// disable persistent logging altogether
+	private static final boolean DISABLE_LOGGING = TESTPaxosConfig.DISABLE_LOGGING; // false;
+
 	// maximum size of a paxos group name
-	private static final int PAXOS_ID_SIZE = 40; 
+	private static final int PAXOS_ID_SIZE = 40;
 	private static final int PAUSE_STATE_SIZE = 256;
 	// maximum size of a paxos replica group
 	private static final int MAX_GROUP_SIZE = 256;
 	// maximum size of a log message
 	private static final int MAX_LOG_MESSAGE_SIZE = 32672;
-	// maximum size of a checkpoint 
-	private static final int MAX_CHECKPOINT_SIZE = 32672; 
+	// maximum size of a checkpoint
+	private static final int MAX_CHECKPOINT_SIZE = 32672;
 	// truncated checkpoint state size for java logging purposes
-	private static final int TRUNCATED_STATE_SIZE = 2048; 
+	private static final int TRUNCATED_STATE_SIZE = 2048;
 	private static final int MAX_OLD_DECISIONS = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 	private static final int MAX_VARCHAR_SIZE = 32672;
 	private static final boolean CHECKPOINT_CLOB_OPTION = (MAX_CHECKPOINT_SIZE > MAX_VARCHAR_SIZE);
 	private static final boolean LOG_MESSAGE_CLOB_OPTION = (MAX_LOG_MESSAGE_SIZE > MAX_VARCHAR_SIZE)
 			|| PaxosManager.BATCHING_ENABLED;
+
 	// needed for testing with recovery in the same JVM
-	private static final boolean DONT_SHUTDOWN_DB = true;
+	private static final boolean DONT_SHUTDOWN_EMBEDDED = true;
 
 	// need to be able to set this for unit-testing
 	private static boolean logMessageClobOption = LOG_MESSAGE_CLOB_OPTION;
@@ -160,17 +171,18 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	@Override
-	public void putCheckpointState(String paxosID, short version, int[] group,
+	public void putCheckpointState(String paxosID, int version, int[] group,
 			int slot, Ballot ballot, String state, int acceptedGCSlot) {
 		this.putCheckpointState(paxosID, version,
 				Util.arrayOfIntToStringSet(group), slot, ballot, state,
 				acceptedGCSlot);
 	}
 
-	public void copyEpochFinalCheckpointState(String paxosID, short version) {
+	public boolean copyEpochFinalCheckpointState(String paxosID, int version) {
 		if (isClosed() || !isLoggingEnabled())
-			return;
+			return true;
 
+		boolean copied = false;
 		// Stupid derby doesn't have an insert if not exist command
 		String insertCmd = "insert into "
 				+ getPCTable()
@@ -194,11 +206,11 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			cpRecord = readCP.executeQuery();
 
 			while (cpRecord.next()) {
-				if (version != cpRecord.getShort("version"))
+				if (version != cpRecord.getInt("version"))
 					break;
 
 				insertCP = conn.prepareStatement(cmd);
-				insertCP.setShort(1, version);
+				insertCP.setInt(1, version);
 				insertCP.setString(2, cpRecord.getString("members"));
 				insertCP.setInt(3, cpRecord.getInt("slot"));
 				insertCP.setInt(4, cpRecord.getInt("ballotnum"));
@@ -214,20 +226,31 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				log.info(myID + " copied epoch final state for " + paxosID
 						+ ":" + version + ": " + cpRecord.getString("state"));
 			}
+			copied = true;
 		} catch (SQLException sqle) {
-			log.severe("SQLException while checkpointing as " + cmd);
+			log.severe("SQLException while copying epoch final state for "
+					+ paxosID
+					+ ":"
+					+ version
+					+ " using ["
+					+ cmd
+					+ "]. This node may be unable to participate in future epochs for "
+					+ paxosID);
 			sqle.printStackTrace();
 		} finally {
 			cleanup(readCP, cpRecord);
 			cleanup(insertCP);
 			cleanup(conn);
 		}
+		return copied;
 	}
 
 	@Override
-	public StringContainer getEpochFinalCheckpointState(String paxosID, short version) {
-		SlotBallotState sbs = this.getSlotBallotState(getPCTable(), paxosID, version, true);
-		return sbs!=null ? new StringContainer(sbs.state) : null;
+	public StringContainer getEpochFinalCheckpointState(String paxosID,
+			int version) {
+		SlotBallotState sbs = this.getSlotBallotState(getPCTable(), paxosID,
+				version, true);
+		return sbs != null ? new StringContainer(sbs.state) : null;
 	}
 
 	@Override
@@ -254,7 +277,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				int[] sb = AbstractPaxosLogger.getSlotBallot(packet);
 
 				pstmt.setString(1, packet.getPaxosID());
-				pstmt.setShort(2, packet.getVersion());
+				pstmt.setInt(2, packet.getVersion());
 				pstmt.setInt(3, sb[0]);
 				pstmt.setInt(4, sb[1]);
 				pstmt.setInt(5, sb[2]);
@@ -313,7 +336,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * could of course be the stringified form of the actual state if the state
 	 * is at most MAX_STATE_SIZE.
 	 */
-	private void putCheckpointState(String paxosID, short version,
+	private void putCheckpointState(String paxosID, int version,
 			Set<String> group, int slot, Ballot ballot, String state,
 			int acceptedGCSlot) {
 		if (isClosed() || !isLoggingEnabled())
@@ -334,7 +357,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		try {
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
-			insertCP.setShort(1, version);
+			insertCP.setInt(1, version);
 			insertCP.setString(2, Util.toJSONString(group));
 			insertCP.setInt(3, slot);
 			insertCP.setInt(4, ballot.ballotNumber);
@@ -469,7 +492,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * Used to be the entry point for message logging. Replaced by batchLog and
 	 * log(PaxosPacket) now.
 	 */
-	private boolean log(String paxosID, short version, int slot, int ballotnum,
+	private boolean log(String paxosID, int version, int slot, int ballotnum,
 			int coordinator, PaxosPacketType type, String message) {
 		if (isClosed())
 			return false;
@@ -487,7 +510,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			localLogMsgStmt = conn.prepareStatement(cmd); // no re-use option
 
 			localLogMsgStmt.setString(1, paxosID);
-			localLogMsgStmt.setShort(2, version);
+			localLogMsgStmt.setInt(2, version);
 			localLogMsgStmt.setInt(3, slot);
 			localLogMsgStmt.setInt(4, ballotnum);
 			localLogMsgStmt.setInt(5, coordinator);
@@ -672,13 +695,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	/**
 	 * Methods to get slot, ballotnum, coordinator, state, and version of
 	 * checkpoint
-	 * @param paxosID 
-	 * @param version 
-	 * @param matchVersion 
-	 * @return Returns SlotBallotState object retrieved for {@code paxosID:version}.
+	 * 
+	 * @param paxosID
+	 * @param version
+	 * @param matchVersion
+	 * @return Returns SlotBallotState object retrieved for
+	 *         {@code paxosID:version}.
 	 */
-	public SlotBallotState getSlotBallotState(String table, String paxosID, short version,
-			boolean matchVersion) {
+	public SlotBallotState getSlotBallotState(String table, String paxosID,
+			int version, boolean matchVersion) {
 		if (isClosed())
 			return null;
 
@@ -690,7 +715,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		try {
 			conn = this.getDefaultConn();
 			assert (conn != null);
-	
+
 			cpStmt = this.getPreparedStatement(conn, table, paxosID,
 					"slot, ballotnum, coordinator, state, version");
 
@@ -699,16 +724,16 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			while (stateRS.next()) {
 				assert (sb == null); // single result
 				versionMismatch = (matchVersion && version != stateRS
-						.getShort(5));
+						.getInt(5));
 				if (versionMismatch)
 					log.info(myID + " asked for " + paxosID + ":" + version
-							+ "; got epoch " + stateRS.getShort(5));
+							+ "; got epoch " + stateRS.getInt(5));
 
-				if(!versionMismatch)
-					sb = new SlotBallotState(stateRS.getInt(1), stateRS.getInt(2),
-						stateRS.getInt(3),
-						(!CHECKPOINT_CLOB_OPTION ? stateRS.getString(4)
-								: clobToString(stateRS.getClob(4))));
+				if (!versionMismatch)
+					sb = new SlotBallotState(stateRS.getInt(1),
+							stateRS.getInt(2), stateRS.getInt(3),
+							(!CHECKPOINT_CLOB_OPTION ? stateRS.getString(4)
+									: clobToString(stateRS.getClob(4))));
 			}
 		} catch (SQLException | IOException e) {
 			log.severe((e instanceof SQLException ? "SQL" : "IO")
@@ -721,18 +746,20 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		}
 		return versionMismatch ? null : sb;
 	}
-	public SlotBallotState getSlotBallotState(String paxosID, short version,
+
+	public SlotBallotState getSlotBallotState(String paxosID, int version,
 			boolean matchVersion) {
 		// default is checkpoint table
-		return this.getSlotBallotState(getCTable(), paxosID, version, matchVersion);
+		return this.getSlotBallotState(getCTable(), paxosID, version,
+				matchVersion);
 	}
 
 	public SlotBallotState getSlotBallotState(String paxosID) {
-		return this.getSlotBallotState(paxosID, (short) 0, false);
+		return this.getSlotBallotState(paxosID, 0, false);
 	}
 
 	@Override
-	public SlotBallotState getSlotBallotState(String paxosID, short version) {
+	public SlotBallotState getSlotBallotState(String paxosID, int version) {
 		return this.getSlotBallotState(paxosID, version, true);
 	}
 
@@ -770,7 +797,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 					"version, members");
 			stateRS = pstmt.executeQuery();
 			while (stateRS != null && stateRS.next()) {
-				short version = stateRS.getShort(1);
+				int version = stateRS.getInt(1);
 				String members = stateRS.getString(2);
 				String[] pieces = Util.jsonToStringArray(members);
 				pri = new RecoveryInfo(paxosID, version, pieces);
@@ -812,7 +839,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		try {
 			if (cursorRset != null && cursorRset.next()) {
 				String paxosID = cursorRset.getString(1);
-				short version = cursorRset.getShort(2);
+				int version = cursorRset.getInt(2);
 				String members = cursorRset.getString(3);
 				String[] pieces = Util.jsonToStringArray(members);
 				String state = (readState ? (!CHECKPOINT_CLOB_OPTION ? cursorRset
@@ -1051,8 +1078,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				" closing DB" });
 		this.setClosed(true);
 		// can not close derby until all instances are done
-		if (allClosed())
+		if (allClosed() || !isEmbeddedDB())
 			this.closeGracefully();
+	}
+
+	private static boolean isEmbeddedDB() {
+		return FRAMEWORK.equals("embedded");
 	}
 
 	/**
@@ -1087,7 +1118,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		if (FRAMEWORK.equals("embedded")) {
 			try {
 				// the shutdown=true attribute shuts down Derby
-				if (!DONT_SHUTDOWN_DB)
+				if (!DONT_SHUTDOWN_EMBEDDED)
 					DriverManager.getConnection(PROTOCOL + ";shutdown=true");
 
 				// To shut down a specific database only, but keep the
@@ -1196,7 +1227,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				+ PAUSE_STATE_SIZE + ") not null, primary key (paxos_id))";
 		if (this.dbDirectoryExists())
 			// using pause table may slow down recovery
-			this.dropTable(getPTable()); 
+			this.dropTable(getPTable());
 		Statement stmt = null;
 		Connection conn = null;
 		try {
@@ -1324,7 +1355,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				log.info("Attempting getCursorConn() to db " + dbCreation);
 				if (getCursorConn() == null)
 					// test opening a connection
-					this.cursorConn = dataSource.getConnection(); 
+					this.cursorConn = dataSource.getConnection();
 				log.info("Connected to and created database " + DATABASE);
 				connected = true;
 				fixURI();
@@ -1480,8 +1511,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 						+ ballot.ballotNumber))
 				&& (getCheckpointState(table, paxosID, "coordinator").equals(""
 						+ ballot.coordinatorID))
-				&& (state==null || getCheckpointState(table, paxosID, "state").equals(""
-						+ state));
+				&& (state == null || getCheckpointState(table, paxosID, "state")
+						.equals("" + state));
 	}
 
 	// used only for testing
@@ -1531,7 +1562,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		int k = 1;
 		DecimalFormat df = new DecimalFormat("#.##");
 		for (int i = 0; i < size; i++) {
-			this.putCheckpointState("paxos" + i, (short) 0, group, 0,
+			this.putCheckpointState("paxos" + i, 0, group, 0,
 					new Ballot(0, i % 34), "hello" + i, 0);
 			t2 = System.currentTimeMillis();
 			if (i % k == 0 && i > 0) {
@@ -1601,7 +1632,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			stateRS = pstmt.executeQuery();
 			while (stateRS != null && stateRS.next()) {
 				String paxosID = stateRS.getString(1);
-				short version = stateRS.getShort(2);
+				int version = stateRS.getInt(2);
 				String members = stateRS.getString(3);
 				String[] pieces = Util.jsonToStringArray(members);
 				allPaxosInstances
@@ -1618,7 +1649,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	@Override
-	public boolean deleteEpochFinalCheckpointState(String paxosID, short version) {
+	public boolean deleteEpochFinalCheckpointState(String paxosID, int version) {
 		if (isClosed() || !isLoggingEnabled())
 			return true;
 		boolean deleted = false;
@@ -1631,7 +1662,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			conn = this.getDefaultConn();
 			pstmt = conn.prepareStatement(cmd);
 			pstmt.setString(1, paxosID);
-			pstmt.setShort(2, version);
+			pstmt.setInt(2, version);
 			pstmt.executeUpdate();
 			conn.commit();
 			deleted = true;
@@ -1661,10 +1692,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		int coordinator = 2;
 		String state = "Hello World";
 		Ballot ballot = new Ballot(ballotnum, coordinator);
-		logger.putCheckpointState(paxosID, (short) 0, group, slot, ballot,
+		logger.putCheckpointState(paxosID, 0, group, slot, ballot,
 				state, 0);
 		assert (logger.isInserted(paxosID, group, slot, ballot, state));
-		logger.copyEpochFinalCheckpointState(paxosID, (short) 0);
+		logger.copyEpochFinalCheckpointState(paxosID,  0);
 		assert (logger.isInserted(logger.getPCTable(), paxosID, group, slot,
 				ballot, state));
 		DecimalFormat df = new DecimalFormat("#.##");
@@ -1710,7 +1741,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				}
 				if (j % 3 == 2)
 					i++;
-				packets[j].putPaxosID(paxosID, (short) 0);
+				packets[j].putPaxosID(paxosID, 0);
 				long t1 = System.currentTimeMillis();
 				long t2 = System.currentTimeMillis();
 				time += t2 - t1;
@@ -1739,7 +1770,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			int newSlot = 200;
 			int gcSlot = 100;
 			Ballot newBallot = new Ballot(0, 2);
-			logger.putCheckpointState(paxosID, (short) 0, group, newSlot,
+			logger.putCheckpointState(paxosID, 0, group, newSlot,
 					newBallot, "Hello World", gcSlot);
 			System.out
 					.println("Invoking initiateReadCheckpoints after checkpointing:");

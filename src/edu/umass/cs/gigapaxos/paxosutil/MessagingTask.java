@@ -80,7 +80,7 @@ public class MessagingTask {
 	 * @param paxosID
 	 * @param version
 	 */
-	public void putPaxosIDVersion(String paxosID, short version) {
+	public void putPaxosIDVersion(String paxosID, int version) {
 		if(msgs==null) return;
 		for(int i=0; i<msgs.length; i++) {
 			assert(msgs[i]!=null) : "Incorrect usage: MessagingTask should not be instantiated with null messages, " +

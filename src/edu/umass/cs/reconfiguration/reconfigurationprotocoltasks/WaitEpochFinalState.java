@@ -26,7 +26,7 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 public class WaitEpochFinalState<NodeIDType>
 		extends
@@ -79,8 +79,8 @@ public class WaitEpochFinalState<NodeIDType>
 					.iterator();
 		GenericMessagingTask<NodeIDType, ?>[] mtasks = start();
 		if (mtasks != null)
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { getKey()
-					, " resending request to " , mtasks[0].recipients[0] });
+			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { getKey(),
+					" resending request to ", mtasks[0].recipients[0] });
 		return mtasks;
 	}
 
@@ -118,7 +118,9 @@ public class WaitEpochFinalState<NodeIDType>
 		return false;
 	}
 
-	@Override
+	/**
+	 * @return The refreshed key.
+	 */
 	public String refreshKey() {
 		return (Reconfigurator.getTaskKey(getClass(), reqState,
 				this.appCoordinator.getMyID().toString()) +
@@ -192,8 +194,8 @@ public class WaitEpochFinalState<NodeIDType>
 	/**
 	 * @param node
 	 * @param key
-	 * @return Node to be notified with AckStartEpoch when epoch final
-	 *         state becomes ready.
+	 * @return Node to be notified with AckStartEpoch when epoch final state
+	 *         becomes ready.
 	 */
 	public synchronized String addNotifiee(NodeIDType node, String key) {
 		return this.notifiees.put(node, key);
@@ -216,7 +218,15 @@ public class WaitEpochFinalState<NodeIDType>
 			AckStartEpoch<NodeIDType> ackStartEpoch = new AckStartEpoch<NodeIDType>(
 					node, startEpoch.getServiceName(),
 					startEpoch.getEpochNumber(), this.appCoordinator.getMyID());
-			// need to explicitly set key as ackStart is going to different task
+			/*
+			 * Need to explicitly set key as ackStart is going to different
+			 * task. This is really an abuse of protocoltask as protocoltask is
+			 * designed to relieve the developer of worrying about matching
+			 * packets to tasks. But we are aggregating different StartEpoch
+			 * requests into a single WaitEpochFinalState task, so we have to
+			 * key the responses going back to their (different) initiators
+			 * manually.
+			 */
 			ackStartEpoch.setKey(this.notifiees.get(node));
 			mtasks.add(new GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>(
 					node, ackStartEpoch));

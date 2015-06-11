@@ -88,7 +88,9 @@ public class WaitCoordinatedCommit<NodeIDType>
 		return null;
 	}
 
-	@Override
+	/**
+	 * @return The refreshed key.
+	 */
 	public String refreshKey() {
 		return Reconfigurator.getCommitTaskKey(this.rcRecReq, this.DB.getMyID()
 				.toString())

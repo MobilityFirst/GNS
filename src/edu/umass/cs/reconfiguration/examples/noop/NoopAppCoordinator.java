@@ -102,13 +102,14 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 	}
 
 	@Override
-	public void deleteReplicaGroup(String serviceName, int epoch) {
+	public boolean deleteReplicaGroup(String serviceName, int epoch) {
 		if (this.coordType.equals(CoordType.LAZY)) {
 			// FIXME: check epoch here
 			this.groups.remove(serviceName);
 		} else if (this.coordType.equals(CoordType.PAXOS)) {
 			super.deleteReplicaGroup(serviceName, epoch);
 		}
+		return true;
 	}
 
 	@Override

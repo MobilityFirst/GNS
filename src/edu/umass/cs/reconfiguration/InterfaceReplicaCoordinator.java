@@ -46,8 +46,9 @@ public interface InterfaceReplicaCoordinator<NodeIDType> {
 	 * 
 	 * @param serviceName
 	 * @param epoch
+	 * @return True if deleted without errors.
 	 */
-	public void deleteReplicaGroup(String serviceName, int epoch);
+	public boolean deleteReplicaGroup(String serviceName, int epoch);
 
 	/**
 	 * This method must return the replica group that was most recently

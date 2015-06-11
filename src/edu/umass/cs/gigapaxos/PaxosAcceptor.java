@@ -55,7 +55,7 @@ public class PaxosAcceptor {
 	 * persistent logging.
 	 */
 	protected static final boolean ACCEPTED_PROPOSALS_ON_DISK=DerbyPaxosLogger.isLoggingEnabled(); 
-	private static enum STATES {RECOVERY, ACTIVE, STOPPED};
+	protected static enum STATES {RECOVERY, ACTIVE, STOPPED};
 
 	private int _slot=0;
 	private int ballotNum=-1; // who'd have thought it takes 24 less bytes to use two ints instead of Ballot!
@@ -336,7 +336,7 @@ public class PaxosAcceptor {
 				if (testMode.equals(InstanceType.FULL)) {
 					if (pismarray == null)
 						pismarray = new PaxosInstanceStateMachine[size];
-					pismarray[i] = new PaxosInstanceStateMachine(ID+i, (short) i,
+					pismarray[i] = new PaxosInstanceStateMachine(ID+i, i,
 							(i % 3 == 0 ? coord : id), group, null, null, null, null);
 					pismMap.put(pismarray[i].getKey(), pismarray[i]);
 					pismarray[i].testingInit(0);

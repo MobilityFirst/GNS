@@ -52,8 +52,24 @@ public interface ProtocolTask<NodeIDType, EventType, KeyType> extends
 	 * developer focus on event/action pairs without worrying about networking
 	 * or scheduling optimizations. The parameter ptasks[0] returns a single
 	 * protocol task if any spawned by this action.
-	 * @param event 
-	 * @param ptasks 
+	 * 
+	 * We need a unique key ***that is unique across all nodes*** in order to
+	 * match incoming messages against the corresponding task. ProtocolExecutor
+	 * automatically inserts this key in every message exchanged as part of the
+	 * protocol task. The getKey method is necessitated by the Keyable<KeyType>
+	 * interface in this class. A simple way to choose a String key that is
+	 * unique across all nodes at a node is to use the current node's ID
+	 * concatenated with a random number and/or the current time. A protocol
+	 * task can also explicitly choose meaningful (i.e., not random or based on
+	 * timestamps) names for tasks, but they still need to be unique across all
+	 * nodes. Refer to the examples provided with the protocoltask package.
+	 * 
+	 * A protocol task can be canceled from within the task, if necessary, by
+	 * invoking ProtocolExecutor.cancel(this). But you probably have a bad
+	 * design if you need to rely on this.
+	 * 
+	 * @param event
+	 * @param ptasks
 	 * @return Returns messaging tasks to be performed.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleEvent(
@@ -62,25 +78,25 @@ public interface ProtocolTask<NodeIDType, EventType, KeyType> extends
 
 	/**
 	 * Actions executed in the beginning.
+	 * 
 	 * @return Initial messaging task.
 	 */
-	public GenericMessagingTask<NodeIDType, ?>[] start(); 
-	
-	// To cancel, invoke ProtocolExecutor.cancel(this)
+	public GenericMessagingTask<NodeIDType, ?>[] start();
 
 	/**
-	 * We need a unique key in order to match incoming messages against the
-	 * corresponding task, so this key also needs to be present in every message
-	 * exchanged as part of the protocol task. The getKey method is necessitated
-	 * by the Keyable<KeyType> interface above. The refreshKey() method below
-	 * should return a key that is unique across nodes. It needs to be
-	 * implemented by the instantiator because we don't know the concrete type
-	 * of KeyType. Look at PingPongProtocolTask for an example.
+	 * The refreshKey() method is outdated has been removed now.
+	 * ProtocolExecutor now just throws an exception if the caller tries to
+	 * insert a task with a duplicate key. It is the caller's responsibility to
+	 * either choose a unique key (across all nodes) or use the
+	 * ProtocolExecutor.spawnIfNotRunning method. The latter option is not
+	 * available for ptasks[0] returned by the ProtocolTask.handleEvent method,
+	 * but the caller can always use ProtocolExecutor.isRunning to check if a
+	 * task with the same key is already running.
 	 * 
 	 * @return The key.
 	 */
 
-	public KeyType refreshKey(); 
+	// public KeyType refreshKey();
 
 	/**
 	 * @return The event types processed by this protocol task.

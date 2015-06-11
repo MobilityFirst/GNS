@@ -17,7 +17,7 @@ import edu.umass.cs.protocoltask.TESTProtocolTaskConfig;
 @SuppressWarnings("javadoc")
 public class PingPongServer implements ProtocolTask<Integer, PingPongPacket.PacketType, String> {
 
-	private final String key = null;
+	private final String key;
 
 	protected final Integer myID;
 	private static PingPongPacket.PacketType[] types = {PingPongPacket.PacketType.TEST_PING};
@@ -26,6 +26,7 @@ public class PingPongServer implements ProtocolTask<Integer, PingPongPacket.Pack
 
 	public PingPongServer(int id) {
 		this.myID = id;
+		this.key = refreshKey();
 	}
 
 	/*************************** Start of overridden methods *****************************************/
@@ -34,7 +35,7 @@ public class PingPongServer implements ProtocolTask<Integer, PingPongPacket.Pack
 		return this.key;
 	}
 
-	@Override
+	//@Override
 	public String refreshKey() {
 		return (this.myID.toString() +
 				(int) (Math.random() * Integer.MAX_VALUE));

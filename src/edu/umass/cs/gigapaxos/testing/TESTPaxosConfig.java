@@ -19,7 +19,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.utils.Util;
 
@@ -34,7 +33,7 @@ public class TESTPaxosConfig {
 	/**
 	 * Will turn on more verbose logging.
 	 */
-	public static final boolean DEBUG = PaxosManager.DEBUG;
+	public static final boolean DEBUG = false;
 
 	protected static final String SINGLE_NODE_CONFIG_DIR = "/Users/arun/GNS/conf/gigapaxos/";
 	private static final String DISTRIBUTED_CONFIG_DIR = "/home/arun/GNS/conf/gigapaxos/";

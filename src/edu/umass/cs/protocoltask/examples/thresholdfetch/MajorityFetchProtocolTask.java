@@ -33,7 +33,7 @@ import edu.umass.cs.utils.Util;
 @SuppressWarnings("javadoc")
 public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, PingPongPacket.PacketType, String> {
 
-	private String key = null;
+	private final String key;
 
 	private final int[] nodes;
 	private final Integer myID;
@@ -46,6 +46,7 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pi
 		super(nodes, nodes.size()/2+1);
 		this.nodes = Util.setToIntArray(nodes);
 		this.myID = id;
+		this.key = refreshKey();
 		log.info("Node" + myID + " constructing protocol task with nodeIDs " +
 				nodes);
 	}
@@ -54,9 +55,9 @@ public class MajorityFetchProtocolTask extends ThresholdProtocolTask<Integer, Pi
 	@Override
 	public String getKey() {return this.key;}
 
-	@Override
+	//@Override
 	public String refreshKey() {
-		return (this.key =
+		return (
 				(this.myID.toString() + (int) (Math.random() * Integer.MAX_VALUE)));
 	}
 

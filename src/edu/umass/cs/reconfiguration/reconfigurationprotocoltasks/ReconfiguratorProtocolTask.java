@@ -39,7 +39,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ReconfigurationPacket.assertPacketTypeChecks(localTypes, Reconfigurator.class, HANDLER_METHOD_PREFIX); 
 	}
 
-	private String key = null;
+	private final String key;
 	private final NodeIDType myID;
 	private final Object reconfigurator;
 
@@ -50,6 +50,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 	public ReconfiguratorProtocolTask(NodeIDType id, Reconfigurator<NodeIDType> reconfigurator) {
 		this.myID = id;
 		this.reconfigurator = reconfigurator;
+		this.key =  refreshKey();
 	}
 
 	@Override
@@ -63,10 +64,11 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		return null;
 	}
 
-	@Override
+	/**
+	 * @return The refreshed key.
+	 */
 	public String refreshKey() {
-		return (this.key =
-				(this.myID.toString() + (int) (Math.random() * Integer.MAX_VALUE)));
+		return ((this.myID.toString() + (int) (Math.random() * Integer.MAX_VALUE)));
 	}
 
 	@Override

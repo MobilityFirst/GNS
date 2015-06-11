@@ -28,7 +28,7 @@ public class LogMessagingTask extends MessagingTask {
 		assert (logMsg != null);
 	}
 
-	public void putPaxosIDVersion(String paxosID, short version) {
+	public void putPaxosIDVersion(String paxosID, int version) {
 		super.putPaxosIDVersion(paxosID, version);
 		if (this.logMsg != null)
 			this.logMsg.putPaxosID(paxosID, version);

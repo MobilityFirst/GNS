@@ -55,7 +55,7 @@ public abstract class PaxosPacket extends JSONPacket {
 	 */
 	protected PaxosPacketType packetType;
 	protected String paxosID = null;
-	protected short version = -1;
+	protected int version = -1;
 
 	/**
 	 * The paxos packet type class.
@@ -156,7 +156,7 @@ public abstract class PaxosPacket extends JSONPacket {
 			if (json.has(PaxosPacket.PAXOS_ID))
 				this.paxosID = json.getString(PaxosPacket.PAXOS_ID);
 			if (json.has(PaxosPacket.PAXOS_VERSION))
-				this.version = (short) json.getInt(PaxosPacket.PAXOS_VERSION);
+				this.version = json.getInt(PaxosPacket.PAXOS_VERSION);
 		}
 	}
 
@@ -182,7 +182,7 @@ public abstract class PaxosPacket extends JSONPacket {
 		return this.packetType;
 	}
 
-	public void putPaxosID(String pid, short v) {
+	public void putPaxosID(String pid, int v) {
 		this.paxosID = pid;
 		this.version = v;
 	}
@@ -191,7 +191,7 @@ public abstract class PaxosPacket extends JSONPacket {
 		return this.paxosID;
 	}
 
-	public short getVersion() {
+	public int getVersion() {
 		return this.version;
 	}
 

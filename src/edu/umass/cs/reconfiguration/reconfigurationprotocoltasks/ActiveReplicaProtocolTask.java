@@ -36,7 +36,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		ReconfigurationPacket.assertPacketTypeChecks(defaultTypes, ActiveReplica.class, HANDLER_METHOD_PREFIX);
 	}
 	
-	private String key = null;
+	private final String key;
 	private final NodeIDType myID;
 	private final Stringifiable<NodeIDType> unstringer;
 	private final ActiveReplica<NodeIDType> activeReplica;
@@ -50,6 +50,7 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		this.myID = id;
 		this.activeReplica = ar;
 		this.unstringer = unstringer;
+		this.key = refreshKey();
 	}
 
 	@Override
@@ -63,9 +64,11 @@ ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 		return null;
 	}
 
-	@Override
+	/**
+	 * @return The refreshed key.
+	 */
 	public String refreshKey() {
-		return (this.key =
+		return (
 				(this.myID.toString() + (int) (Math.random() * Integer.MAX_VALUE)));
 	}
 

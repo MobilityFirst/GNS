@@ -1,4 +1,4 @@
-package edu.umass.cs.gigapaxos.paxosutil;
+package edu.umass.cs.gigapaxos;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -7,8 +7,8 @@ import java.util.Map.Entry;
 
 import org.json.JSONException;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
+import edu.umass.cs.gigapaxos.paxosutil.ConsumerTask;
 
 /**
  * @author arun
