@@ -44,7 +44,8 @@ import org.json.JSONObject;
 public class GnsHttpServer {
 
   private static final String GNSPATH = GNS.GNS_URL_PATH;
-  private static final int port = 8080;
+  private static final int startingPort = 8080;
+  private static int port;
   // handles command processing
   private static final CommandModule commandModule = new CommandModule();
   private static ClientRequestHandlerInterface requestHandler;
@@ -60,7 +61,10 @@ public class GnsHttpServer {
   public static void runServer() {
     int cnt = 0;
     do {
-      if (tryPort(port + cnt)) {
+      // Find the first port after starting port that actually works.
+      // Usually if 8080 is busy we can get 8081.
+      if (tryPort(startingPort + cnt)) {
+        port = startingPort + cnt;
         break;
       }
     } while (cnt++ < 100);
@@ -274,5 +278,8 @@ public class GnsHttpServer {
     }
   }
 
-  public static String Version = "$Revision$";
+  public static int getPort() {
+    return port;
+  }
+  
 }

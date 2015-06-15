@@ -84,7 +84,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
                     AppReconfigurableNodeOptions.getAllOptions(), args);
     printOptions(options);
     AppReconfigurableNodeOptions.initializeFromOptions(options);
-    if (options.get(STANDALONE) != null) {
+    if (options.containsKey(STANDALONE) && options.get(NS_FILE) != null) {
       startStandalone(options.get(NS_FILE));
     } else if (options.get(TEST) != null && options.get(NS_FILE) != null) { // for testing
       startTestNodes(options.get(NS_FILE));

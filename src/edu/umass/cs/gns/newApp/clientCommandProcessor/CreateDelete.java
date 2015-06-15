@@ -11,8 +11,12 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientReques
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.NRState;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.AddRemove;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
+import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
+import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -53,6 +57,9 @@ public class CreateDelete {
       valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
       NRState newState = new NRState(valuesMap, 0);
       handler.getApp().updateState(addRecordPacket.getName(), newState.toString());
+      // and send a confirmation back
+      ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
+      Update.sendConfirmUpdatePacketBackToSource(confirmPacket, handler);
     }
   }
 
@@ -67,6 +74,9 @@ public class CreateDelete {
       // If we're running standalone just delete the record.
       RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
       handler.getApp().updateState(removeRecordPacket.getName(), null);
+      // and send a confirmation back
+      ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
+      Update.sendConfirmUpdatePacketBackToSource(confirmPacket, handler);
     }
   }
 

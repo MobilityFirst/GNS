@@ -90,15 +90,12 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     this.nodeConfig = gnsNodeConfig;
 
     RequestHandlerParameters parameters = new RequestHandlerParameters();
+    parameters.setDebugMode(debug);
     try {
       this.messenger = new JSONMessenger<NodeIDType>(
               (new JSONNIOTransport(nodeAddress, gnsNodeConfig, new PacketDemultiplexerDefault(),
                       true)));
-      //
       messenger.addPacketDemultiplexer(demultiplexer);
-      //
-      parameters.setDebugMode(debug);
-      //
       this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
               replicaID,
               app,

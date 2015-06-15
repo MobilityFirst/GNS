@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -76,7 +77,7 @@ public class CommandHandler {
     final CommandPacket packet = new CommandPacket(incomingJSON);
     // FIXME: Don't do this every time. 
     // Set the host field. Used by the help command and email module. 
-    commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":8080");
+    commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":" + GnsHttpServer.getPort());
     final JSONObject jsonFormattedCommand = packet.getCommand();
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);

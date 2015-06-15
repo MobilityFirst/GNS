@@ -10,7 +10,6 @@ import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsP
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNode;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
