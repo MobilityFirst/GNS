@@ -140,7 +140,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   private void handleRequestActives(JSONObject json) {
     if (handler.isDebugMode()) {
-      GNS.getLogger().info(")))))))))))))))))))))))))))) REQUEST ACTIVES: " + json.toString());
+      GNS.getLogger().info(")))))))))))))))))))))))))))) REQUEST ACTIVES RECEIVED: " + json.toString());
     }
     try {
       RequestActiveReplicas requestActives = new RequestActiveReplicas(json);

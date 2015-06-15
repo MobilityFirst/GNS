@@ -9,6 +9,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResp
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.httpserver.Defs.*;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -89,7 +90,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    * @throws SignatureException 
    */
   public abstract CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException;
+          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException;
 
   /**
    * Get the description of the command

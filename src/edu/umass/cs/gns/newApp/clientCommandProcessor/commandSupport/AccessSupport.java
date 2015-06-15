@@ -52,7 +52,8 @@ public class AccessSupport {
    * @throws InvalidKeyException
    * @throws SignatureException 
    */
-  public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+  public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws InvalidKeySpecException, 
+          InvalidKeyException, SignatureException, UnsupportedEncodingException {
     if (!GNS.enableSignatureVerification) {
       return true;
     }

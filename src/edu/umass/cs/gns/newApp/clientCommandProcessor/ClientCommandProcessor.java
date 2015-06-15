@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
 package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Admintercessor;
@@ -12,7 +19,6 @@ import edu.umass.cs.gns.newApp.NewApp;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
