@@ -64,6 +64,16 @@ public class AccountAccess {
    */
   public static final String GUID_INFO = InternalField.makeInternalFieldString("guid_info");
 
+  private static MessageDigest messageDigest;
+
+  static {
+    try {
+      messageDigest = MessageDigest.getInstance("SHA-256");
+    } catch (NoSuchAlgorithmException e) {
+      GNS.getLogger().severe("Unable to initialize for authentication:" + e);
+    }
+  }
+
   /**
    * Obtains the account info record for the given GUID if that GUID
    * was used to create an account.
@@ -232,7 +242,7 @@ public class AccountAccess {
   public static CommandResponse addAccountWithVerification(String host, String name, String guid, String publicKey,
           String password, ClientRequestHandlerInterface handler) {
     CommandResponse response;
-    if ((response = addAccount(name, guid, publicKey, password, 
+    if ((response = addAccount(name, guid, publicKey, password,
             GNS.enableEmailAccountAuthentication, handler)).getReturnValue().equals(OKRESPONSE)) {
       if (GNS.enableEmailAccountAuthentication) {
         String verifyCode = createVerificationCode(name);
@@ -265,7 +275,7 @@ public class AccountAccess {
     }
     return response;
   }
-  
+
   private static final int VERIFICATION_CODE_LENGTH = 3; // Six hex characters
 
   private static final String SECRET = "AN4pNmLGcGQGKwtaxFFOKG05yLlX0sXRye9a3awdQd2aNZ5P1ZBdpdy98Za3qcE"
@@ -312,7 +322,7 @@ public class AccountAccess {
     }
   }
 
-  public static CommandResponse resetPublicKey(String guid, String password, String publicKey, 
+  public static CommandResponse resetPublicKey(String guid, String password, String publicKey,
           ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
     if ((accountInfo = lookupAccountInfoFromGuid(guid, handler)) == null) {
@@ -336,10 +346,10 @@ public class AccountAccess {
     }
   }
 
-  private static boolean verifyPassword(AccountInfo accountInfo, String password) {
+  // synchronized use of the MessageDigest
+  private static synchronized boolean verifyPassword(AccountInfo accountInfo, String password) {
     try {
-      MessageDigest md = MessageDigest.getInstance("SHA-256");
-      md.update((password + SALT + accountInfo.getPrimaryName()).getBytes("UTF-8"));
+      messageDigest.update((password + SALT + accountInfo.getPrimaryName()).getBytes("UTF-8"));
       return accountInfo.getPassword().equals(encryptPassword(password, accountInfo.getPrimaryName()));
     } catch (NoSuchAlgorithmException e) {
       GNS.getLogger().warning("Problem hashing password:" + e);
@@ -350,17 +360,17 @@ public class AccountAccess {
     }
   }
 
-  //Code is duplicated in the client and in the php code:
+  //Code is duplicated in all of the clients (currently java, php, iphone).
   //function encryptPassword($password, $username) {
   //	return base64_encode(hash('sha256', $password . "42shabiz" . $username, true));
   //}
   private static final String SALT = "42shabiz";
 
-  private static String encryptPassword(String password, String alias) throws NoSuchAlgorithmException, 
+  // synchronized use of the MessageDigest
+  private static synchronized String encryptPassword(String password, String alias) throws NoSuchAlgorithmException,
           UnsupportedEncodingException {
-    MessageDigest md = MessageDigest.getInstance("SHA-256");
-    md.update((password + SALT + alias).getBytes("UTF-8"));
-    return Base64.encodeToString(md.digest(), false);
+    messageDigest.update((password + SALT + alias).getBytes("UTF-8"));
+    return Base64.encodeToString(messageDigest.digest(), false);
   }
 
   /**
@@ -470,7 +480,7 @@ public class AccountAccess {
 
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
-      
+
       NSResponseCode returnCode;
       // First try to create the HRN to insure that that name does not already exist
       if (!(returnCode = handler.getIntercessor().sendAddRecord(name, HRN_GUID, new ResultValue(Arrays.asList(guid)))).isAnError()) {
@@ -656,7 +666,7 @@ public class AccountAccess {
    * @param message
    * @return status result
    */
-  public static CommandResponse setPassword(AccountInfo accountInfo, String password, String writer, String signature, 
+  public static CommandResponse setPassword(AccountInfo accountInfo, String password, String writer, String signature,
           String message, ClientRequestHandlerInterface handler) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();

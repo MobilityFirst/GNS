@@ -13,15 +13,14 @@ import java.security.NoSuchAlgorithmException;
  */
 public class SHA1HashFunction extends BasicHashFunction {
 
-  MessageDigest hashfunction;
+  private MessageDigest messageDigest;
 
   private SHA1HashFunction() {
 
     try {
-      hashfunction = MessageDigest.getInstance("SHA1");
+      messageDigest = MessageDigest.getInstance("SHA1");
     } catch (NoSuchAlgorithmException e) {
-      e.printStackTrace();
-      GNS.getLogger().severe("Error: " + e);
+      GNS.getLogger().severe("Problem initializing digest: " + e);
     }
   }
 
@@ -33,8 +32,8 @@ public class SHA1HashFunction extends BasicHashFunction {
    */
   @Override
   public synchronized byte[] hash(String key) {
-    hashfunction.update(key.getBytes());
-    return hashfunction.digest();
+    messageDigest.update(key.getBytes());
+    return messageDigest.digest();
 
   }
   
@@ -45,8 +44,8 @@ public class SHA1HashFunction extends BasicHashFunction {
    * @return
    */
   public synchronized byte[] hash(byte[] bytes) {
-    hashfunction.update(bytes);
-    return hashfunction.digest();
+    messageDigest.update(bytes);
+    return messageDigest.digest();
   }
 
   /**

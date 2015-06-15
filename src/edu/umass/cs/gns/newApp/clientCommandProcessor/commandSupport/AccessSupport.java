@@ -11,6 +11,7 @@ import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsP
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ByteUtils;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
 import java.security.NoSuchAlgorithmException;
@@ -27,6 +28,18 @@ import java.security.spec.X509EncodedKeySpec;
  */
 public class AccessSupport {
   
+  private static KeyFactory keyFactory;
+  private static Signature sig;
+
+  static {
+    try {
+      keyFactory = KeyFactory.getInstance(RSAALGORITHM);
+      sig = Signature.getInstance(SIGNATUREALGORITHM);
+    } catch (NoSuchAlgorithmException e) {
+      GNS.getLogger().severe("Unable to initialize for authentication:" + e);
+    }
+  }
+  
   /**
    * Compares the signature against the message to verify that the messages was signed by the guid.
    * 
@@ -39,7 +52,7 @@ public class AccessSupport {
    * @throws InvalidKeyException
    * @throws SignatureException 
    */
-  public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException {
+  public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
     if (!GNS.enableSignatureVerification) {
       return true;
     }
@@ -48,16 +61,20 @@ public class AccessSupport {
     if (encodedPublicKey == null) { // bogus signature
       return false;
     }
-    KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
-    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(encodedPublicKey);
+    return verifySignatureInternal(encodedPublicKey, signature, message);
+  }
+  
+  public static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
+          throws InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+
+    //KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
+    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
     PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
 
-    Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
+    //Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
     sig.initVerify(publicKey);
-    sig.update(message.getBytes());
-    boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
-    //GNS.getLogger().info("User " + guidInfo.getName() + (result ? " verified " : " NOT verified ") + "as author of message " + message);
-    return result;
+    sig.update(message.getBytes("UTF-8"));
+    return sig.verify(ByteUtils.hexStringToByteArray(signature));
   }
 
   /**
