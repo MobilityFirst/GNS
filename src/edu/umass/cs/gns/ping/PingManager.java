@@ -10,46 +10,88 @@ package edu.umass.cs.gns.ping;
 import edu.umass.cs.gns.util.SparseMatrix;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
-import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
 import java.io.IOException;
 import java.net.PortUnreachableException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles the updating of ping latencies for Local and Name Servers.
  * Uses PingClient to send out ping requests.
  *
  * @author westy
- * @param <NodeIDType>
  */
 public class PingManager<NodeIDType> implements Shutdownable {
 
-  private final static int TIME_BETWEEN_PINGS = 5000;
+  private final static int TIME_BETWEEN_PINGS = 30000;
   // Wait a random amount before we start pinging.
-  private final static int INITIAL_DELAY =  5 + new Random().nextInt(TIME_BETWEEN_PINGS);
+  private final static int INITIAL_DELAY = 5 + new Random().nextInt(TIME_BETWEEN_PINGS);
   private final NodeIDType nodeId;
   private final PingClient<NodeIDType> pingClient;
   private final PingServer<NodeIDType> pingServer;
   private final static int WINDOWSIZE = 10; // how many old samples of rtts we keep
   private final SparseMatrix<NodeIDType, Integer, Long> pingTable; // the place we store all the sampled rtt values
-  private final GNSConsistentNodeConfig<NodeIDType> nodeConfig;
+  private final GNSInterfaceNodeConfig<NodeIDType> nodeConfig;
   private Thread managerThread;
+
+  // The list of actives we should be pinging.
+  private Set<NodeIDType> activeReplicas = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
+
+  public void addActiveReplicas(Set<NodeIDType> activeReplicas) {
+    this.activeReplicas.addAll(activeReplicas);
+  }
 
   private final boolean debug = false;
 
-  public PingManager(NodeIDType nodeId, GNSConsistentNodeConfig<NodeIDType> gnsNodeConfig) {
+  /**
+   * Starts a ping manager. Start a server and optional client.
+   *
+   * @param nodeId
+   * @param gnsNodeConfig
+   */
+  public PingManager(NodeIDType nodeId, GNSInterfaceNodeConfig<NodeIDType> gnsNodeConfig, boolean noClient) {
     this.nodeId = nodeId;
     this.nodeConfig = gnsNodeConfig;
-    this.pingClient = new PingClient<NodeIDType>(gnsNodeConfig);
+    if (!noClient) {
+      this.pingClient = new PingClient<NodeIDType>(gnsNodeConfig);
+    } else {
+      this.pingClient = null;
+    }
     this.pingServer = new PingServer<NodeIDType>(nodeId, gnsNodeConfig);
     new Thread(pingServer).start();
     this.pingTable = new SparseMatrix<NodeIDType, Integer, Long>(GNSNodeConfig.INVALID_PING_LATENCY);
+  }
 
+  /**
+   * Starts a ping manager with a server and client.
+   *
+   * @param nodeId
+   * @param gnsNodeConfig
+   */
+  public PingManager(NodeIDType nodeId, GNSInterfaceNodeConfig<NodeIDType> gnsNodeConfig) {
+    this(nodeId, gnsNodeConfig, false);
+  }
+
+  /**
+   * Starts a ping manager with just a client.
+   *
+   * @param gnsNodeConfig
+   */
+  public PingManager(GNSInterfaceNodeConfig<NodeIDType> gnsNodeConfig) {
+    this.nodeId = null;
+    this.nodeConfig = gnsNodeConfig;
+    this.pingClient = new PingClient(gnsNodeConfig);
+    this.pingTable = new SparseMatrix<NodeIDType, Integer, Long>(GNSNodeConfig.INVALID_PING_LATENCY);
+    // don't start a ping server 
+    this.pingServer = null;
   }
 
   /**
@@ -80,38 +122,41 @@ public class PingManager<NodeIDType> implements Shutdownable {
       //long t0 = System.currentTimeMillis();
       // refill the nodes queue if it is empty
       if (nodes.isEmpty()) {
-        nodes = new LinkedList<NodeIDType>(nodeConfig.getActiveReplicas());
+        nodes = new LinkedList<NodeIDType>(activeReplicas);
         // update our moving average window
         windowSlot = (windowSlot + 1) % WINDOWSIZE;
       }
-      // do one id
-      NodeIDType id = nodes.remove();
-      try {
-        if (!id.equals(nodeId)) {
-          if (debug) {
-            GNS.getLogger().fine("Send from " + nodeId + " to " + id);
+      if (!nodes.isEmpty()) {
+        // do one id
+        NodeIDType id = nodes.remove();
+        try {
+          if (!id.equals(nodeId)) {
+            if (debug) {
+              GNS.getLogger().fine("Send from " + nodeId + " to " + id);
+            }
+            long rtt = pingClient.sendPing(id);
+            if (debug) {
+              GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
+            }
+            pingTable.put(id, windowSlot, rtt);
+            // update the configuration file info with the current average... the reason we're here
+            nodeConfig.updatePingLatency(id, nodeAverage(id));
           }
-          long rtt = pingClient.sendPing(id);
-          if (debug) {
-            GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
-          }
-          pingTable.put(id, windowSlot, rtt);
-          // update the configuration file info with the current average... the reason we're here
-          nodeConfig.updatePingLatency(id, nodeAverage(id));
+        } catch (PortUnreachableException e) {
+          GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
+        } catch (IOException e) {
+          GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
         }
-      } catch (PortUnreachableException e) {
-        GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
-      } catch (IOException e) {
-        GNS.getLogger().severe("Problem sending ping to node " + id + " : " + e);
       }
 
       //long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
       //GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId + "\t");
       if (debug) {
-        GNS.getLogger().info("PINGER: " + tableToString(nodeId));
+        GNS.getLogger().info("PINGER: \n" + tableToString(nodeId));
       }
       Thread.sleep(TIME_BETWEEN_PINGS);
     }
+
   }
 
   /**
@@ -151,7 +196,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
     StringBuilder result = new StringBuilder();
     result.append("Node  AVG   RTT {last " + WINDOWSIZE + " samples}                    Hostname");
     result.append(NEWLINE);
-    for (NodeIDType otherNode : nodeConfig.getActiveReplicas()) {
+    for (NodeIDType otherNode : activeReplicas) {
       result.append(String.format("%4s", otherNode));
       if (!otherNode.equals(node)) {
         result.append(" = ");
@@ -181,8 +226,12 @@ public class PingManager<NodeIDType> implements Shutdownable {
   public void shutdown() {
     GNS.getLogger().warning("Ping shutting down .. ");
     this.managerThread.interrupt();
-    this.pingServer.shutdown();
-    this.pingClient.shutdown();
+    if (this.pingServer != null) {
+      this.pingServer.shutdown();
+    }
+    if (this.pingClient != null) {
+      this.pingClient.shutdown();
+    }
     GNS.getLogger().warning("Ping shutdown  complete.");
   }
 

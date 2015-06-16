@@ -166,10 +166,10 @@ public class AppAdmin extends Thread implements Shutdownable{
 
                 break;
               case PINGTABLE:
-                Object node = adminRequestPacket.getArgument();
+                String node = adminRequestPacket.getArgument();
                 if (node.equals(app.getNodeID())) {
                   JSONObject jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGTABLE", app.getPingManager().tableToString(app.getNodeID()));
+                  jsonResponse.put("PINGTABLE", app.getPingManager().tableToString((String)app.getNodeID()));
                   AdminResponsePacket responsePacket = new AdminResponsePacket(adminRequestPacket.getId(), jsonResponse);
                   Packet.sendTCPPacket(responsePacket.toJSONObject(), adminRequestPacket.getCCPAddress());
                 } else {
@@ -177,8 +177,8 @@ public class AppAdmin extends Thread implements Shutdownable{
                 }
                 break;
               case PINGVALUE:
-                Object node1 = adminRequestPacket.getArgument();
-                Object node2 = adminRequestPacket.getArgument2();
+                String node1 = adminRequestPacket.getArgument();
+                String node2 = adminRequestPacket.getArgument2();
                 if (node1.equals(app.getNodeID())) {
                   JSONObject jsonResponse = new JSONObject();
                   jsonResponse.put("PINGVALUE", app.getPingManager().nodeAverage(node2));

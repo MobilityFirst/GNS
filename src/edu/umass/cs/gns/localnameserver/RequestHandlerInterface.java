@@ -7,8 +7,11 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 
 import java.io.IOException;
@@ -26,7 +29,7 @@ import org.json.JSONObject;
  */
 public interface RequestHandlerInterface {
   
-  public InterfaceJSONNIOTransport getTcpTransport();
+  public InterfaceNIOTransport<String, JSONObject> getTcpTransport();
 
   public LNSConsistentReconfigurableNodeConfig getNodeConfig();
 
@@ -65,5 +68,7 @@ public interface RequestHandlerInterface {
   public boolean handleEvent(JSONObject json) throws JSONException;
   
   public void sendToClosestServer(Set<InetSocketAddress> actives, JSONObject packet) throws IOException;
+  
+  public PingManager getPingManager();
  
 }

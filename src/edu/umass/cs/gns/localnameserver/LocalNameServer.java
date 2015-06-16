@@ -7,20 +7,22 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
+import edu.umass.cs.gns.localnameserver.nodeconfig.LNSNodeConfig;
+import edu.umass.cs.gns.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
-import static edu.umass.cs.gns.localnameserver.LNSNodeConfig.INVALID_PING_LATENCY;
+import static edu.umass.cs.gns.localnameserver.nodeconfig.LNSNodeConfig.INVALID_PING_LATENCY;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.NS_FILE;
 import static edu.umass.cs.gns.localnameserver.LocalNameServerOptions.PORT;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.util.NetworkUtils;
 import edu.umass.cs.gns.util.ParametersAndOptions;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
@@ -28,6 +30,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationP
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import static edu.umass.cs.gns.util.ParametersAndOptions.printOptions;
 
+import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -64,7 +67,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   private final Cache<String, CacheEntry> cache;
 
-  private InterfaceJSONNIOTransport<String> tcpTransport;
+  private InterfaceNIOTransport<String, JSONObject> tcpTransport;
   private JSONMessenger<String> messenger;
   private ProtocolExecutor<String, PacketType, String> protocolExecutor;
   private final LNSNodeConfig nodeConfig;
@@ -72,6 +75,10 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final InetSocketAddress nodeAddress;
   private final AbstractJSONPacketDemultiplexer demultiplexer;
   public static boolean debuggingEnabled = false;
+  /**
+   * Ping manager object for pinging other nodes and updating ping latencies.
+   */
+  private final PingManager<InetSocketAddress> pingManager;
 
   public LocalNameServer(InetSocketAddress nodeAddress, LNSNodeConfig nodeConfig) {
     this.nodeAddress = nodeAddress;
@@ -88,17 +95,15 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
       LOG.info("Unabled to start LNS listener: " + e);
       System.exit(0);
     }
+    GNS.getLogger().info("LNS running at " + nodeAddress + " started Ping manager.");
+    
+    this.pingManager = new PingManager<InetSocketAddress>(crNodeConfig);
+    pingManager.startPinging();
   }
 
-  private InterfaceJSONNIOTransport initTransport(AbstractJSONPacketDemultiplexer demultiplexer) throws IOException {
+  private InterfaceNIOTransport<String, JSONObject> initTransport(AbstractJSONPacketDemultiplexer demultiplexer) throws IOException {
     LOG.info("Starting LNS listener on " + nodeAddress);
-    /* Arun: changed commented lines below to not use JSONMessageExtractor
-    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, new JSONMessageExtractor(demultiplexer));
-    new Thread(gnsNiot).start();
-    */
-    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, (demultiplexer), true);
-
-    // id is null here because we're the LNS
+    JSONNIOTransport gnsNiot = new JSONNIOTransport(nodeAddress, crNodeConfig, demultiplexer, true);
     return new JSONMessenger<>(gnsNiot);
   }
 
@@ -132,7 +137,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   @Override
-  public InterfaceJSONNIOTransport getTcpTransport() {
+  public InterfaceNIOTransport<String, JSONObject> getTcpTransport() {
     return tcpTransport;
   }
 
@@ -179,6 +184,11 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   @Override
   public LNSRequestInfo getRequestInfo(int id) {
     return outstandingRequests.get(id);
+  }
+  
+  @Override
+  public PingManager getPingManager() {
+    return pingManager;
   }
 
   /**

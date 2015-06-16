@@ -9,8 +9,8 @@ package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -37,11 +37,11 @@ public class PingClient<NodeIDType> {
   // Records the send time of each request
   private final ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
   private final Random randomID = new Random();
-  private final GNSConsistentNodeConfig<NodeIDType> nodeConfig;
+  private final GNSInterfaceNodeConfig<NodeIDType> nodeConfig;
   private Thread receiveThread;
   private boolean shutdown = false;
 
-  public PingClient(GNSConsistentNodeConfig<NodeIDType> nodeConfig) {
+  public PingClient(GNSInterfaceNodeConfig<NodeIDType> nodeConfig) {
     this.nodeConfig = nodeConfig;
     try {
       clientSocket = new DatagramSocket();

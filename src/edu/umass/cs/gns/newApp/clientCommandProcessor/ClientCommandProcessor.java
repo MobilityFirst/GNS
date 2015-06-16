@@ -16,6 +16,7 @@ import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.newApp.NewApp;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -55,11 +56,11 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
   /**
    * Ping manager object for pinging other nodes and updating ping latencies.
    */
-  private PingManager<NodeIDType> pingManager;
+  private PingManager pingManager;
   /**
    * We also keep a pointer to the lnsListenerAdmin so we can shut it down.
    */
-  private CCPListenerAdmin<NodeIDType> lnsListenerAdmin;
+  private CCPListenerAdmin<NodeIDType> ccpListenerAdmin;
 
   EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler;
 
@@ -109,18 +110,18 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       ((CCPPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
       // Start HTTP server
       GnsHttpServer.runHttp(requestHandler);
-      // Start Ping servers
-      // FIXME
-//      GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port " 
+//      // Start server
+//      GNS.getLogger().info("CCP running at " + nodeAddress + " started Ping server on port "
 //              + gnsNodeConfig.getCcpPingPort(replicaID));
-//      this.pingManager = new PingManager<>(null, new GNSConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig));
-//      pingManager.startPinging();
-      //
+//      // Start a ping manager with no client, just a server.
+//      this.pingManager = new PingManager<>(replicaID,
+//              new GNSConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig),
+//              true);
       // After starting PingManager because it accesses PingManager.
-      (this.lnsListenerAdmin = new CCPListenerAdmin<>(requestHandler, pingManager)).start();
+      (this.ccpListenerAdmin = new CCPListenerAdmin<>(requestHandler, pingManager)).start();
 
       // The Admintercessor needs to use the CCPListenerAdmin;
-      this.admintercessor.setListenerAdmin(lnsListenerAdmin);
+      this.admintercessor.setListenerAdmin(ccpListenerAdmin);
 
       try {
         if (dnsGnsOnly) {
@@ -208,8 +209,8 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     if (pingManager != null) {
       pingManager.shutdown();
     }
-    if (lnsListenerAdmin != null) {
-      lnsListenerAdmin.shutdown();
+    if (ccpListenerAdmin != null) {
+      ccpListenerAdmin.shutdown();
     }
   }
 

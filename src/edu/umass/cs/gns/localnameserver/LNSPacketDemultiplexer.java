@@ -145,6 +145,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     try {
       RequestActiveReplicas requestActives = new RequestActiveReplicas(json);
       handler.updateCacheEntry(requestActives.getServiceName(), requestActives.getActives());
+      // also update the set of the nodes the ping manager is using
+      handler.getPingManager().addActiveReplicas(requestActives.getActives());
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing RequestActiveReplicas packet info not found from " + json + ": " + e);
     }

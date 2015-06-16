@@ -82,8 +82,10 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
           MongoRecords<String> mongoRecords) {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-    this.pingManager = new PingManager<>(nodeID, this.nodeConfig);
-    this.pingManager.startPinging();
+    GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
+            + nodeConfig.getCcpPingPort(nodeID));
+    // Start a ping server, but not a client.
+    this.pingManager = new PingManager(nodeID, this.nodeConfig, true);
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.nioServer = nioServer;

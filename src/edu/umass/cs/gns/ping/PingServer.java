@@ -9,8 +9,8 @@ package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -28,11 +28,11 @@ import java.net.InetAddress;
 public class PingServer<NodeIDType> extends Thread{
 
   private final NodeIDType nodeID;
-  private final GNSConsistentNodeConfig<NodeIDType> nodeConfig;
+  private final GNSInterfaceNodeConfig<NodeIDType> nodeConfig;
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
-  public PingServer(final NodeIDType nodeID, final GNSConsistentNodeConfig<NodeIDType> nodeConfig) {
+  public PingServer(final NodeIDType nodeID, final GNSInterfaceNodeConfig<NodeIDType> nodeConfig) {
     this.nodeID = nodeID;
     this.nodeConfig = nodeConfig;
   }
