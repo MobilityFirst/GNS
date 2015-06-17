@@ -5,11 +5,12 @@ import java.util.HashMap;
 import java.util.Set;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
@@ -57,7 +58,7 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 	}
 
 	NoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
-			Stringifiable<Integer> unstringer, JSONMessenger<Integer> msgr) {
+			Stringifiable<Integer> unstringer, InterfaceSSLMessenger<Integer,JSONObject> msgr) {
 		super(app, msgr.getMyID(), unstringer, msgr);
 		this.coordType = coordType;
 		this.registerCoordination(NoopAppRequest.PacketType.DEFAULT_APP_REQUEST);

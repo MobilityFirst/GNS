@@ -60,10 +60,10 @@ public abstract class ReconfigurableNode<NodeIDType> {
 							+ nodeConfig.getActiveReplicas() + "\n  "
 							+ nodeConfig.getReconfigurators());
 
-		this.messenger = new JSONMessenger<NodeIDType>(
+		this.messenger = (new JSONMessenger<NodeIDType>(
 				(new JSONNIOTransport<NodeIDType>(this.myID, nodeConfig,
-						(pd = new ReconfigurationPacketDemultiplexer()), true))
-						);
+						(pd = new ReconfigurationPacketDemultiplexer()), ReconfigurationConfig.getServerSSLMode()))
+						));
 
 		if (nodeConfig.getActiveReplicas().contains(id)) {
 			// create active

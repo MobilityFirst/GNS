@@ -283,6 +283,14 @@ public class StartEpoch<NodeIDType> extends
 	public boolean hasPrevEpochGroup() {
 		return !this.noPrevEpochGroup();
 	}
+	
+	/**
+	 * @return Whether this is a create request, i.e., there is no
+	 * previous epoch group and there is a (non-null) creator.
+	 */
+	public boolean isCreateRequest() {
+		return this.noPrevEpochGroup() && this.creator!=null;
+	}
 
 	/**
 	 * @return Initial state.

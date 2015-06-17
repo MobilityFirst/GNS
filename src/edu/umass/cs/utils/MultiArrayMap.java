@@ -21,12 +21,19 @@ public class MultiArrayMap<KeyType, ValueType extends Keyable<KeyType>> {
 
 	private static Logger log = Logger.getLogger(MultiArrayMap.class.getName()); 
 
+	/**
+	 * @param size
+	 * @param levels
+	 */
 	public MultiArrayMap(int size, int levels) {
 		this.arraySize = size;
 		this.levels = levels;
 		initialize();
 	}
 
+	/**
+	 * @param size
+	 */
 	public MultiArrayMap(int size) {
 		this.arraySize = size;
 		this.levels = LEVELS;
@@ -45,6 +52,10 @@ public class MultiArrayMap<KeyType, ValueType extends Keyable<KeyType>> {
 
 	}
 
+	/**
+	 * @param key
+	 * @param value
+	 */
 	public synchronized void put(KeyType key, ValueType value) {
 		assert (key.equals(value.getKey())) : key + " != " + value.getKey();
 		boolean inserted = false;
@@ -71,6 +82,10 @@ public class MultiArrayMap<KeyType, ValueType extends Keyable<KeyType>> {
 		}
 	}
 
+	/**
+	 * @param key
+	 * @return The value to which the key maps.
+	 */
 	@SuppressWarnings("unchecked")
 	public synchronized ValueType get(KeyType key) {
 		Object[] array = getArray(key);
@@ -87,10 +102,18 @@ public class MultiArrayMap<KeyType, ValueType extends Keyable<KeyType>> {
 		return foundValue;
 	}
 
+	/**
+	 * @param key
+	 * @return True if key is present.
+	 */
 	public synchronized boolean containsKey(KeyType key) {
 		return (key != null && get(key) != null);
 	}
 
+	/**
+	 * @param key
+	 * @return Previous value if any.
+	 */
 	public synchronized ValueType remove(KeyType key) {
 		ValueType value = (ValueType) get(key);
 		if (value == null)
@@ -109,14 +132,23 @@ public class MultiArrayMap<KeyType, ValueType extends Keyable<KeyType>> {
 		return value;
 	}
 
+	/**
+	 * @return The size.
+	 */ 
 	public synchronized int size() {
 		return this.count + this.hMap.size();
 	}
 
+	/**
+	 * @return The hashmap size.
+	 */
 	public synchronized int hashmapSize() {
 		return this.hMap.size();
 	}
 
+	/**
+	 * Resets the map.
+	 */
 	public synchronized void clear() {
 		this.aMap = null;
 		this.hMap = null;

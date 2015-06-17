@@ -20,7 +20,7 @@ public class DeleteServiceName extends
 		BasicReconfigurationPacket<InetSocketAddress> implements
 		InterfaceReplicableRequest {
 
-	private static enum Keys {
+	protected static enum Keys {
 		FAILED
 	};
 
@@ -78,7 +78,7 @@ public class DeleteServiceName extends
 
 	@Override
 	public boolean needsCoordination() {
-		return false; 
+		return false;
 	}
 
 	@Override
@@ -100,4 +100,5 @@ public class DeleteServiceName extends
 	public boolean isFailed() {
 		return this.failed;
 	}
+	
 }

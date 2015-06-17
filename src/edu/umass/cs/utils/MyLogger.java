@@ -3,8 +3,15 @@ package edu.umass.cs.utils;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * @author arun
+ *
+ */
 public class MyLogger extends Logger {
 	
+	/**
+	 * 
+	 */
 	public static final String[] FORMAT = {
 		"{0}", 
 		"{0} {1}",
@@ -26,21 +33,39 @@ public class MyLogger extends Logger {
 		super(logger.getName(), logger.getResourceBundleName());
 		this.setParent(logger); // needed to inherit logger's properties
 	}
+	/**
+	 * @param objects
+	 */
 	public void info(Object... objects) {
 		log(Level.INFO, format(objects), objects);
 	}
+	/**
+	 * @param objects
+	 */
 	public void fine(Object... objects) {
 		log(Level.FINE, format(objects), objects);
 	}
+	/**
+	 * @param objects
+	 */
 	public void finer(Object... objects) {
 		log(Level.FINER, format(objects), objects);
 	}
+	/**
+	 * @param objects
+	 */
 	public void finest(Object... objects) {
 		log(Level.FINEST, format(objects), objects);
 	}
+	/**
+	 * @param objects
+	 */
 	public void warning(Object... objects) {
 		log(Level.WARNING, format(objects), objects);
 	}
+	/**
+	 * @param objects
+	 */
 	public void severe(Object... objects) {
 		log(Level.SEVERE, format(objects), objects);
 	}

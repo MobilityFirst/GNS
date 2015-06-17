@@ -13,7 +13,6 @@ import edu.umass.cs.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
@@ -22,7 +21,7 @@ import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 /*
  * This protocol task is initiated at a reconfigurator to await a majority of
@@ -52,7 +51,7 @@ public class WaitAckStartEpoch<NodeIDType>
 				startEpoch.getCurEpochGroup(),
 				(!startEpoch.isMerge() ? startEpoch.getCurEpochGroup().size() / 2 + 1
 						: 1));
-		// need to recreate start epoch to set initiator to self
+		// need to recreate start epoch just to set initiator to self
 		this.startEpoch = new StartEpoch<NodeIDType>(DB.getMyID(),
 				startEpoch.getServiceName(), startEpoch.getEpochNumber(),
 				startEpoch.curEpochGroup, startEpoch.prevEpochGroup,
@@ -66,8 +65,8 @@ public class WaitAckStartEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
 		log.log(Level.INFO, MyLogger.FORMAT[2],
-				new Object[] { this.refreshKey() , " re-starting "
-						, this.startEpoch.getSummary() });
+				new Object[] { this.refreshKey(), " re-starting ",
+						this.startEpoch.getSummary() });
 		return start();
 	}
 
@@ -157,26 +156,23 @@ public class WaitAckStartEpoch<NodeIDType>
 				RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE);
 		GenericMessagingTask<NodeIDType, ?> epochStartCommit = new GenericMessagingTask(
 				this.DB.getMyID(), rcRecReq);
-		// this.DB.handleIncoming(rcRecReq);
-		GenericMessagingTask<NodeIDType, ?>[] mtasks = null;
+
 		if (this.startEpoch.hasPrevEpochGroup()) { // need to drop prev epoch
 			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
 					this.DB);
-			// propagate start epoch confirmation to all
-			mtasks = epochStartCommit.toArray();
 		} else if (this.startEpoch.creator != null) { // creation epoch
-			mtasks = new GenericMessagingTask[2];
-			// propagate start epoch confirmation to all
-			mtasks[0] = epochStartCommit;
-			// also inform client of name creation
-			mtasks[1] = (new GenericMessagingTask(this.startEpoch.creator,
-					new CreateServiceName(null,
-							this.startEpoch.getServiceName(), 0, null)));
+			/*
+			 * We used to send creation confirmation to client here earlier, but
+			 * it is best to do it using
+			 * Reconfigurator.sendCreateConfirmationToClient as the client
+			 * facing messenger may in general be different.
+			 */
 		} else
 			assert (false);
 
+		// propagate start epoch confirmation to all
+		return epochStartCommit.toArray();
 		// default action will do timed cancel
-		return mtasks;
 	}
 
 	private synchronized boolean isDone() {

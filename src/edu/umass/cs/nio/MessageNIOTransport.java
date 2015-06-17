@@ -45,6 +45,7 @@ import java.util.concurrent.TimeUnit;
  *            This class also supports delay emulation and short-circuiting
  *            local sends by directly sending it to the packet demultiplexer.
  */
+
 public class MessageNIOTransport<NodeIDType, MessageType> extends
 		NIOTransport<NodeIDType> implements
 		InterfaceNIOTransport<NodeIDType, MessageType> {
@@ -78,6 +79,19 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	}
 
 	/**
+	 * @param id
+	 * @param nodeConfig
+	 * @param sslMode
+	 * @throws IOException
+	 */
+	public MessageNIOTransport(NodeIDType id,
+			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+		// Note: Default extractor will not do any useful demultiplexing
+		super(id, nodeConfig, new MessageExtractor(), true, sslMode);
+	}
+
+	/**
 	 * 
 	 * @param id
 	 *            My node ID.
@@ -104,6 +118,35 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	}
 
 	/**
+	 * @param id
+	 * @param nodeConfig
+	 * @param pd
+	 * @param start
+	 * @param sslMode
+	 *            To enable SSL.
+	 * @throws IOException
+	 */
+	public MessageNIOTransport(NodeIDType id,
+			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			AbstractPacketDemultiplexer<?> pd, boolean start,
+			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+		// Switched order of the latter two arguments
+		super(id, nodeConfig, new MessageExtractor(pd), start, sslMode);
+	}
+	
+	/**
+	 * @param address
+	 * @param port
+	 * @param pd
+	 * @param sslMode
+	 * @throws IOException
+	 */
+	public MessageNIOTransport(InetAddress address, int port,
+			AbstractPacketDemultiplexer<?> pd, SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+		super(address, port, new MessageExtractor(pd), sslMode);
+	}
+
+	/**
 	 * Used only for testing. The private nature of this method means that
 	 * external users can no longer explicitly specify the message extractor
 	 * that can now only be {@link edu.umass.cs.nio.MessageExtractor}.
@@ -119,8 +162,8 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * @throws IOException
 	 */
 	private MessageNIOTransport(NodeIDType id,
-			InterfaceNodeConfig<NodeIDType> nodeConfig,
-			MessageExtractor worker) throws IOException {
+			InterfaceNodeConfig<NodeIDType> nodeConfig, MessageExtractor worker)
+			throws IOException {
 		// Switched order of the latter two arguments
 		super(id, nodeConfig, worker);
 	}
@@ -130,7 +173,8 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 *            The demultiplxer to add to the current chain.
 	 */
 	public void addPacketDemultiplexer(AbstractPacketDemultiplexer<?> pd) {
-		((MessageExtractor) this.worker).addPacketDemultiplexer(pd);
+		// will throw exception if worker not MessageExtractor
+		((InterfaceMessageExtractor) this.worker).addPacketDemultiplexer(pd);
 	}
 
 	/**
@@ -143,7 +187,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 
 	public void stop() {
 		super.stop();
-		((MessageExtractor) this.worker).stop();
+		((InterfaceMessageExtractor) this.worker).stop();
 		JSONDelayEmulator.stop();
 	}
 
@@ -282,8 +326,9 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		String msg = message.toString();
 		int length = msg.length();
 		NIOInstrumenter.incrSent();
-		((MessageExtractor) worker).processMessage(new InetSocketAddress(
-				this.getNodeAddress(), this.getNodePort()), msg);
+		((InterfaceMessageExtractor) worker)
+				.processMessage(new InetSocketAddress(this.getNodeAddress(),
+						this.getNodePort()), msg);
 		return length;
 	}
 
@@ -381,8 +426,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		snc.localSetup(nNodes + 2);
 		MessageExtractor[] workers = new MessageExtractor[nNodes + 1];
 		for (int i = 0; i < nNodes + 1; i++) {
-			workers[i] = new MessageExtractor(
-					new PacketDemultiplexerDefault());
+			workers[i] = new MessageExtractor(new PacketDemultiplexerDefault());
 		}
 		MessageNIOTransport<?, ?>[] niots = new MessageNIOTransport[nNodes];
 

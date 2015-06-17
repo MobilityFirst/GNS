@@ -24,7 +24,7 @@ import edu.umass.cs.protocoltask.json.ProtocolPacket;
 @SuppressWarnings("deprecation")
 public class JSONMessenger<NodeIDType> implements
 		InterfaceJSONNIOTransport<NodeIDType>,
-		InterfaceMessenger<NodeIDType, JSONObject> {
+		InterfaceSSLMessenger<NodeIDType, JSONObject> {
 
 	/**
 	 * The JSON key for the time when the message was sent. Used only for
@@ -38,6 +38,7 @@ public class JSONMessenger<NodeIDType> implements
 
 	private final InterfaceNIOTransport<NodeIDType, JSONObject> nioTransport;
 	protected final ScheduledExecutorService execpool;
+	private InterfaceAddressMessenger<JSONObject> clientMessenger;
 
 	private Logger log = NIOTransport.getLogger();
 
@@ -111,7 +112,7 @@ public class JSONMessenger<NodeIDType> implements
 					Retransmitter rtxTask = new Retransmitter(
 							(mtask.recipients[r]), jsonMsg, RTX_DELAY);
 					// can't block here, so have to ignore returned future
-					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS); 
+					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS);
 				} else {
 					log.severe("Node " + this.nioTransport.getMyID() + " sent "
 							+ sent + " bytes out of a " + length
@@ -233,8 +234,22 @@ public class JSONMessenger<NodeIDType> implements
 	 *            of chained demultiplexers is a bad idea.
 	 */
 	@Override
-	public void addPacketDemultiplexer(
-			AbstractPacketDemultiplexer<?> pd) {
+	public void addPacketDemultiplexer(AbstractPacketDemultiplexer<?> pd) {
 		this.nioTransport.addPacketDemultiplexer(pd);
+	}
+
+	@Override
+	public InterfaceAddressMessenger<JSONObject> getClientMessenger() {
+		return this.clientMessenger;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public void setClientMessenger(
+			InterfaceAddressMessenger<?> clientMessenger) {
+		if (this.clientMessenger != null)
+			throw new IllegalStateException(
+					"Can not change client messenger once set");
+		this.clientMessenger = (InterfaceAddressMessenger<JSONObject>) clientMessenger;
 	}
 }

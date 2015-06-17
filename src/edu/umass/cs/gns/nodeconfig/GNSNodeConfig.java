@@ -7,9 +7,12 @@
 package edu.umass.cs.gns.nodeconfig;
 
 import com.google.common.collect.ImmutableSet;
+
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.util.Shutdownable;
+import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -24,6 +27,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 
@@ -51,7 +55,7 @@ import org.json.JSONException;
  *
  * @param <NodeIDType>
  */
-public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDType>, Shutdownable {
+public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDType>, Shutdownable, InterfaceDelayEmulator<NodeIDType> {
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final int INVALID_PORT = -1;
@@ -762,4 +766,9 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     System.out.println(gnsNodeConfig.getNodeAddress("billy_Reconfigurator"));
     System.exit(0);
   }
+
+@Override
+public long getEmulatedDelay(NodeIDType node2) {
+	return this.getPingLatency(node2);
+}
 }

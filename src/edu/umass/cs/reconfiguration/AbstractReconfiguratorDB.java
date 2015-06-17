@@ -309,7 +309,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 	@Override
 	public Set<IntegerPacketType> getRequestTypes() {
-		return null;
+		return new HashSet<IntegerPacketType>(); // empty
 	}
 
 

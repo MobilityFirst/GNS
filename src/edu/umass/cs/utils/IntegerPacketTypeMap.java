@@ -13,6 +13,9 @@ public class IntegerPacketTypeMap<V extends IntegerPacketType> extends
 		HashMap<Integer, V> {
 	private static final long serialVersionUID = 0;
 
+	/**
+	 * @param types
+	 */
 	public IntegerPacketTypeMap(V[] types) {
 		for (int i = 0; i < types.length; i++) {
 			if (!containsKey(types[i]))

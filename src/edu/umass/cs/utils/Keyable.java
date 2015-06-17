@@ -4,5 +4,8 @@ package edu.umass.cs.utils;
  * @param <KeyType> 
  */
 public interface Keyable<KeyType> {
+	/**
+	 * @return The key.
+	 */
 	public KeyType getKey();
 }

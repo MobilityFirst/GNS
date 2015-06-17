@@ -21,7 +21,7 @@ import edu.umass.cs.utils.MyLogger;
  *
  * @param <NodeIDType>
  */
-public class PaxosReplicaCoordinator<NodeIDType> extends
+public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {
 
 	private final PaxosManager<NodeIDType> paxosManager;

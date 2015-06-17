@@ -13,6 +13,7 @@ import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.AckDropEpochFinalState;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DropEpochFinalState;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
@@ -125,7 +126,7 @@ public class WaitAckDropEpoch<NodeIDType>
 		log.log(Level.INFO,
 				MyLogger.FORMAT[3],
 				new Object[] { this.refreshKey(), "received",
-						dropEpoch.getSummary() });
+						((AckDropEpochFinalState<String>)event).getSummary() });
 		return true;
 	}
 

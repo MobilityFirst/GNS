@@ -100,6 +100,11 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 		this.messenger = messenger;
 	}
 
+	protected InterfaceMessenger<NodeIDType, ?> getMessenger(
+			InterfaceMessenger<NodeIDType, ?> messenger) {
+		return this.messenger;
+	}
+
 	// Registers request types that need coordination
 	protected void registerCoordination(IntegerPacketType type) {
 		this.coordinationTypes.put(type, true);
@@ -230,15 +235,13 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	public boolean updateState(String name, String state) {
 		return app.updateState(name, state);
 	}
-	
 
 	/*********************** Start of private helper methods **********************/
 	// Call back active replica for stop requests, else call default callback
 	private void callCallback(InterfaceRequest request, boolean handled) {
 		if (request instanceof InterfaceReconfigurableRequest
 				&& ((InterfaceReconfigurableRequest) request).isStop()
-				&& this.activeCallback != null
-				) {
+				&& this.activeCallback != null) {
 			this.activeCallback.executed(request, handled);
 		} else if (this.callback != null)
 			this.callback.executed(request, handled);

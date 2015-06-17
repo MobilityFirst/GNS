@@ -35,6 +35,7 @@ public class CreateServiceName extends
 	 * Initial state.
 	 */
 	public final String initialState;
+	private boolean failed = false;
 
 	/**
 	 * @param initiator
@@ -60,6 +61,7 @@ public class CreateServiceName extends
 													// unstringer
 		this.setSender(JSONNIOTransport.getSenderAddress(json));
 		this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
+		this.failed = json.optBoolean(DeleteServiceName.Keys.FAILED.toString());
 	}
 
 	/**
@@ -76,6 +78,8 @@ public class CreateServiceName extends
 		if (initialState != null) {
 			json.put(Keys.INITIAL_STATE.toString(), initialState);
 		}
+		if(failed)
+			json.put(DeleteServiceName.Keys.FAILED.toString(), this.failed);
 		return json;
 	}
 
@@ -100,5 +104,21 @@ public class CreateServiceName extends
 	public String getInitialState() {
 		return initialState;
 	}
+
+	/**
+	 * @return Returns this after setting as failed.
+	 */
+	public CreateServiceName setFailed() {
+		this.failed = true;
+		return this;
+	}
+
+	/**
+	 * @return Whether this request failed.
+	 */
+	public boolean isFailed() {
+		return this.failed;
+	}
+	
 
 }

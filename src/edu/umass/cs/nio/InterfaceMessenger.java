@@ -10,7 +10,7 @@ import org.json.JSONException;
  * @param <NodeIDType>
  * @param <MessageType>
  */
-public interface InterfaceMessenger<NodeIDType, MessageType> extends InterfaceNIOTransport<NodeIDType, MessageType>{
+public interface InterfaceMessenger<NodeIDType, MessageType> extends InterfaceNIOTransport<NodeIDType, MessageType>, InterfaceAddressMessenger<MessageType> {
 	  /**
 	 * @param mtask
 	 * @throws IOException

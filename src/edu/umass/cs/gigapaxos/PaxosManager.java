@@ -430,11 +430,13 @@ public class PaxosManager<NodeIDType> {
 		public boolean handleMessage(JSONObject jsonMsg) {
 			boolean isPacketTypeFound = false;
 			try {
+
 				PaxosPacket.PaxosPacketType type = PaxosPacket.PaxosPacketType
 						.getPaxosPacketType(JSONPacket.getPacketType(jsonMsg));
 				if (type == null
 						|| !type.equals(PaxosPacket.PaxosPacketType.PAXOS_PACKET))
 					return false;
+
 				paxosManager.handleIncomingPacket(jsonMsg);
 				return true;
 			} catch (JSONException e) {
@@ -838,6 +840,7 @@ public class PaxosManager<NodeIDType> {
 			if (!PaxosPacket.getPaxosPacketType(jsonMsg).equals(
 					PaxosPacket.PaxosPacketType.REQUEST))
 				return false;
+
 			PaxosInstanceStateMachine.execute(myApp,
 					(new RequestPacket(jsonMsg)).getRequestValue(), false);
 		} catch (JSONException e) {

@@ -13,7 +13,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.Reconfigurator;
@@ -47,7 +47,8 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 
 	private final int myID;
 	private final HashMap<String, AppData> appData = new HashMap<String, AppData>();
-	private JSONMessenger<Integer> messenger;
+	// only address based communication needed in app
+	private InterfaceSSLMessenger<?, JSONObject> messenger;
 
 	/**
 	 * @param id
@@ -57,7 +58,7 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	}
 
 	// Need a messenger mainly to send back responses to the client.
-	protected void setMessenger(JSONMessenger<Integer> msgr) {
+	protected void setMessenger(InterfaceSSLMessenger<?, JSONObject> msgr) {
 		this.messenger = msgr;
 	}
 
@@ -99,12 +100,15 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	}
 
 	private void sendResponse(NoopAppRequest request) {
+		assert (this.messenger != null && this.messenger.getClientMessenger() != null);
 		if (this.messenger == null || request.getEntryReplica() != this.myID)
 			return;
 		InetSocketAddress sockAddr = new InetSocketAddress(
 				request.getSenderAddress(), request.getSenderPort());
 		try {
-			this.messenger.sendToAddress(sockAddr, request.toJSONObject());
+			// SSL: invoke clientMessenger here
+			this.messenger.getClientMessenger().sendToAddress(sockAddr,
+					request.toJSONObject());
 		} catch (JSONException | IOException e) {
 			e.printStackTrace();
 		}
@@ -126,8 +130,8 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		try {
 			request = new NoopAppRequest(new JSONObject(stringified));
 		} catch (JSONException je) {
-			Reconfigurator.getLogger().info(myID + " unable to parse request "
-					+ stringified);
+			Reconfigurator.getLogger().info(
+					myID + " unable to parse request " + stringified);
 			throw new RequestParseException(je);
 		}
 		return request;

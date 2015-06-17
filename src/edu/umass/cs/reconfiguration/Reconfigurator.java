@@ -14,9 +14,14 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.GenericMessagingTask;
+import edu.umass.cs.nio.InterfaceAddressMessenger;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.InterfacePacketDemultiplexer;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
@@ -39,6 +44,7 @@ import edu.umass.cs.reconfiguration.reconfigurationprotocoltasks.WaitPrimaryExec
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AggregateDemandProfiler;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.utils.MyLogger;
@@ -73,9 +79,10 @@ import edu.umass.cs.utils.MyLogger;
  * 
  */
 public class Reconfigurator<NodeIDType> implements
-		InterfacePacketDemultiplexer<JSONObject>, InterfaceReconfiguratorCallback {
+		InterfacePacketDemultiplexer<JSONObject>,
+		InterfaceReconfiguratorCallback {
 
-	private final JSONMessenger<NodeIDType> messenger;
+	private final InterfaceSSLMessenger<NodeIDType, JSONObject> messenger;
 	private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
 	protected final ReconfiguratorProtocolTask<NodeIDType> protocolTask;
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
@@ -84,11 +91,13 @@ public class Reconfigurator<NodeIDType> implements
 
 	private static final Logger log = Logger.getLogger(Reconfigurator.class
 			.getName());
+
 	/**
 	 * @return Logger used by all of the reconfiguration package.
 	 */
-	public static final Logger getLogger() {return log;}
-
+	public static final Logger getLogger() {
+		return log;
+	}
 
 	/*
 	 * Any id-based communication requires NodeConfig and Messenger. In general,
@@ -96,7 +105,7 @@ public class Reconfigurator<NodeIDType> implements
 	 * are separate arguments.
 	 */
 	protected Reconfigurator(InterfaceReconfigurableNodeConfig<NodeIDType> nc,
-			JSONMessenger<NodeIDType> m) {
+			InterfaceSSLMessenger<NodeIDType, JSONObject> m) {
 		this.messenger = m;
 		this.consistentNodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nc);
@@ -113,6 +122,13 @@ public class Reconfigurator<NodeIDType> implements
 				getMyID(), this.consistentNodeConfig, this.messenger);
 		this.DB.setCallback(this);
 		this.finishPendingReconfigurations();
+		this.messenger.setClientMessenger(this.initClientMessenger());
+		assert (this.getClientMessenger() != null || this
+				.clientFacingPortIsMyPort());
+	}
+
+	private InterfaceAddressMessenger<JSONObject> getClientMessenger() {
+		return this.messenger.getClientMessenger();
 	}
 
 	/**
@@ -149,7 +165,8 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	/**
-	 * @return Packet types handled by Reconfigurator. Refer {@link ReconfigurationPacket}.
+	 * @return Packet types handled by Reconfigurator. Refer
+	 *         {@link ReconfigurationPacket}.
 	 */
 	public Set<ReconfigurationPacket.PacketType> getPacketTypes() {
 		return this.protocolTask.getEventTypes();
@@ -168,13 +185,16 @@ public class Reconfigurator<NodeIDType> implements
 		this.DB.close();
 	}
 
-	/* ***************************** Start of protocol task handler methods *********************/
+	/*
+	 * *********** Start of protocol task handler methods *****************
+	 */
 	/**
 	 * Incorporates demand reports (possibly but not necessarily with replica
 	 * coordination), checks for reconfiguration triggers, and initiates
 	 * reconfiguration if needed.
-	 * @param report 
-	 * @param ptasks 
+	 * 
+	 * @param report
+	 * @param ptasks
 	 * @return MessagingTask, typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleDemandReport(
@@ -196,8 +216,9 @@ public class Reconfigurator<NodeIDType> implements
 	/**
 	 * Create service name is a special case of reconfiguration where the
 	 * previous group is non-existent.
-	 * @param event 
-	 * @param ptasks 
+	 * 
+	 * @param event
+	 * @param ptasks
 	 * @return Messaging task, typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleCreateServiceName(
@@ -232,7 +253,7 @@ public class Reconfigurator<NodeIDType> implements
 							.getInitialState(), null);
 		else
 			// return error message
-			this.sendCreationError(create);
+			this.sendCreationErrorToClient(create.setFailed());
 
 		return null;
 	}
@@ -278,10 +299,9 @@ public class Reconfigurator<NodeIDType> implements
 		} else if (rcRecReq.isReconfigurationIntent()
 				&& this.DB.isRCGroupName(rcRecReq.getServiceName())) {
 			this.repeatUntilObviated(rcRecReq);
-		} else if(rcRecReq.isReconfigurationMerge()) {
+		} else if (rcRecReq.isReconfigurationMerge()) {
 			this.repeatUntilObviated(rcRecReq);
-		}
-		else
+		} else
 			assert (false);
 		return null;
 	}
@@ -293,8 +313,9 @@ public class Reconfigurator<NodeIDType> implements
 	 * stop/drop tasks to finish, and finally coordinate the completion
 	 * notification so that reconfigurators can completely remove the record
 	 * from their DB.
-	 * @param delete 
-	 * @param ptasks 
+	 * 
+	 * @param delete
+	 * @param ptasks
 	 * @return Messaging task, typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleDeleteServiceName(
@@ -310,7 +331,7 @@ public class Reconfigurator<NodeIDType> implements
 		else {
 			log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] {
 					"Discarding ", rcRecReq.getSummary() });
-			this.sendDeletionError(delete);
+			this.sendDeletionErrorToClient(delete);
 		}
 		return null;
 	}
@@ -325,16 +346,17 @@ public class Reconfigurator<NodeIDType> implements
 	 * @return Messaging task returning the set of active replicas to the
 	 *         requestor. No protocol tasks spawned.
 	 */
-	@SuppressWarnings("unchecked")
 	public GenericMessagingTask<NodeIDType, ?>[] handleRequestActiveReplicas(
 			RequestActiveReplicas request,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(request.getServiceName());
-		if (record == null)
+		if (record == null || record.getActiveReplicas() == null) {
+			this.sendActiveReplicasToClient(request.setFailed());
 			return null;
+		}
+
 		// else
-		Set<NodeIDType> actives = record.getActiveReplicas();
 		Set<InetSocketAddress> activeIPs = new HashSet<InetSocketAddress>();
 		/*
 		 * It is important to ensure that the mapping between active nodeIDs and
@@ -345,22 +367,44 @@ public class Reconfigurator<NodeIDType> implements
 		 * re-added after a long time if at all by which time all nodes have
 		 * forgotten about the old id-to-address mapping.
 		 */
-		for (NodeIDType node : actives)
+		for (NodeIDType node : record.getActiveReplicas())
 			activeIPs.add(this.consistentNodeConfig.getNodeSocketAddress(node));
-		request.setActives(activeIPs);
-		GenericMessagingTask<InetSocketAddress, ?> mtask = new GenericMessagingTask<InetSocketAddress, Object>(
-				request.getSender(), request);
+		// to support different client facing ports
+		request.setActives(modifyPortsForSSL(activeIPs));
+		this.sendActiveReplicasToClient(request);
 		/*
-		 * Note: casting GenericMessagingTask<InetSocketAddress, ?>[] to
-		 * GenericMessagingTask<NodeIDType, ?>[] below, which is absurd, but
-		 * works only because JSONMessenger is designed to treat
-		 * InetSocketAddress as a special case where it won't try to treat it as
-		 * NodeIDType and needlessly try to convert it to an InetSocketAddress
-		 * that it already is anyway. The compiler only throws a warning
-		 * (suppressed above) and the runtime doesn't seem to mind this
-		 * absurdity.
+		 * We message using sendActiveReplicasToClient above as opposed to
+		 * returning a messaging task below because protocolExecutor's messenger
+		 * may not be usable for client facing requests.
 		 */
-		return (GenericMessagingTask<NodeIDType, ?>[]) (mtask.toArray());
+		return null;
+	}
+
+	private static Set<InetSocketAddress> modifyPortsForSSL(
+			Set<InetSocketAddress> replicas) {
+		if (ActiveReplica.DEFAULT_CLIENT_PORT_OFFSET == 0)
+			return replicas;
+		Set<InetSocketAddress> modified = new HashSet<InetSocketAddress>();
+		for (InetSocketAddress sockAddr : replicas)
+			modified.add(new InetSocketAddress(sockAddr.getAddress(),
+					getClientFacingPort(sockAddr.getPort())));
+		return modified;
+	}
+
+	/**
+	 * Refer {@link ActiveReplica#getClientFacingPort(int)}.
+	 * 
+	 * @param port
+	 * @return The client facing port.
+	 */
+	public static int getClientFacingPort(int port) {
+		return ActiveReplica.getClientFacingPort(port);
+	}
+
+	private boolean clientFacingPortIsMyPort() {
+		return getClientFacingPort(this.consistentNodeConfig
+				.getNodePort(getMyID())) == this.consistentNodeConfig
+				.getNodePort(getMyID());
 	}
 
 	/**
@@ -369,8 +413,9 @@ public class Reconfigurator<NodeIDType> implements
 	 * to NodeConfig is stored in the RC records table and the
 	 * "active replica state" or the NodeConfig info itself is stored in a
 	 * separate NodeConfig table in the DB.
-	 * @param changeRC 
-	 * @param ptasks 
+	 * 
+	 * @param changeRC
+	 * @param ptasks
 	 * @return Messaging task typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleReconfigureRCNodeConfig(
@@ -468,10 +513,12 @@ public class Reconfigurator<NodeIDType> implements
 			if (rcRecReq.isDeleteConfirmation())
 				sendDeleteConfirmationToClient(rcRecReq);
 			// send response back to initiator
-			else if (rcRecReq.isReconfigurationComplete()
-					&& rcRecReq.isNodeConfigChange()) {
-				this.sendRCReconfigurationConfirmationToInitiator(rcRecReq);
-			}
+			else if (rcRecReq.isReconfigurationComplete())
+				if (rcRecReq.isNodeConfigChange())
+					this.sendRCReconfigurationConfirmationToInitiator(rcRecReq);
+				else if (rcRecReq.startEpoch.isCreateRequest()) {
+					this.sendCreateConfirmationToClient(rcRecReq);
+				}
 			/*
 			 * If reconfiguration is complete, remove any previously spawned
 			 * secondary tasks for the same reconfiguration. We do not remove
@@ -487,8 +534,9 @@ public class Reconfigurator<NodeIDType> implements
 			// initiate the process of reconfiguring RC groups here
 			executeNodeConfigChange(rcRecReq);
 		} else if (handled && rcRecReq.isReconfigurationMerge())
-			this.protocolExecutor.spawnIfNotRunning(new WaitAckDropEpoch<NodeIDType>(
-					rcRecReq.startEpoch, this.DB));
+			this.protocolExecutor
+					.spawnIfNotRunning(new WaitAckDropEpoch<NodeIDType>(
+							rcRecReq.startEpoch, this.DB));
 	}
 
 	/****************************** End of protocol task handler methods *********************/
@@ -544,6 +592,38 @@ public class Reconfigurator<NodeIDType> implements
 						.getServiceName())));
 	}
 
+	private ReconfigurationPacket.PacketType[] clientRequestTypes = {
+			ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME,
+			ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
+			ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS,
+			// this packet is in clientRequestTypes only for ease of testing
+			ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG };
+
+	/*
+	 * We may need to use a separate messenger for end clients if we use two-way
+	 * authentication between servers.
+	 */
+	private InterfaceAddressMessenger<JSONObject> initClientMessenger() {
+		AbstractPacketDemultiplexer<JSONObject> pd = null;
+		InterfaceMessenger<InetSocketAddress, JSONObject> cMsgr = null;
+		try {
+			int myPort = (this.consistentNodeConfig.getNodePort(getMyID()));
+			if (getClientFacingPort(myPort) != myPort) {
+				cMsgr = new JSONMessenger<InetSocketAddress>(
+						new MessageNIOTransport<InetSocketAddress, JSONObject>(
+								this.consistentNodeConfig
+										.getNodeAddress(getMyID()),
+								getClientFacingPort(myPort),
+								(pd = new ReconfigurationPacketDemultiplexer()),
+								ReconfigurationConfig.getClientSSLMode()));
+				pd.register(clientRequestTypes, this);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return cMsgr!=null ? cMsgr : (InterfaceAddressMessenger<JSONObject>)this.messenger;
+	}
+
 	private boolean removePendingRCTask(ProtocolTask<?, ?, ?> task) {
 		if (task == null)
 			return false;
@@ -576,7 +656,8 @@ public class Reconfigurator<NodeIDType> implements
 		ArrayList<InetAddress> newActiveIPs = this.demandProfiler
 				.testAndSetReconfigured(name,
 						this.consistentNodeConfig.getNodeIPs(oldActives));
-		if (newActiveIPs == null) return null;
+		if (newActiveIPs == null)
+			return null;
 		// get new actives based on new IP addresses
 		Set<NodeIDType> newActives = this.consistentNodeConfig
 				.getIPToActiveReplicaIDs(newActiveIPs, oldActives);
@@ -838,14 +919,13 @@ public class Reconfigurator<NodeIDType> implements
 		}
 	}
 
-	private void sendCreationError(CreateServiceName create) {
+	private void sendCreationErrorToClient(CreateServiceName create) {
 		try {
-			this.messenger.sendToAddress(
+			this.getClientMessenger().sendToAddress(
 					create.getSender(),
 					new CreateServiceName(create.getInitiator(), create
 							.getServiceName(), create.getEpochNumber(),
-							InterfaceRequest.NO_OP.toString())
-							.toJSONObject());
+							InterfaceRequest.NO_OP.toString()).toJSONObject());
 		} catch (IOException | JSONException e) {
 			log.severe(this + " incurred " + e.getClass().getSimpleName()
 					+ e.getMessage());
@@ -853,10 +933,30 @@ public class Reconfigurator<NodeIDType> implements
 		}
 	}
 
-	private void sendDeletionError(DeleteServiceName delete) {
+	private void sendCreateConfirmationToClient(
+			RCRecordRequest<NodeIDType> rcRecReq) {
 		try {
-			this.messenger.sendToAddress(delete.getSender(), delete.setFailed()
-					.toJSONObject());
+			if (rcRecReq.startEpoch.creator != null
+					&& rcRecReq.getInitiator().equals(getMyID()))
+				this.getClientMessenger()
+						.sendToAddress(
+								rcRecReq.startEpoch.creator,
+								new CreateServiceName(
+										rcRecReq.startEpoch.creator, rcRecReq
+												.getServiceName(), rcRecReq
+												.getEpochNumber(), null)
+										.toJSONObject());
+		} catch (IOException | JSONException e) {
+			log.severe(this + " incurred " + e.getClass().getSimpleName()
+					+ e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	private void sendDeletionErrorToClient(DeleteServiceName delete) {
+		try {
+			this.getClientMessenger().sendToAddress(delete.getSender(),
+					delete.setFailed().toJSONObject());
 		} catch (IOException | JSONException e) {
 			log.severe(this + " incurred " + e.getClass().getSimpleName()
 					+ e.getMessage());
@@ -867,8 +967,9 @@ public class Reconfigurator<NodeIDType> implements
 	private void sendDeleteConfirmationToClient(
 			RCRecordRequest<NodeIDType> rcRecReq) {
 		try {
-			if (rcRecReq.startEpoch.creator != null)
-				this.messenger.sendToAddress(
+			if (rcRecReq.startEpoch.creator != null
+					&& rcRecReq.getInitiator().equals(getMyID()))
+				this.getClientMessenger().sendToAddress(
 						rcRecReq.startEpoch.creator,
 						new DeleteServiceName(rcRecReq.startEpoch.creator,
 								rcRecReq.getServiceName(), rcRecReq
@@ -880,13 +981,28 @@ public class Reconfigurator<NodeIDType> implements
 		}
 	}
 
+	private void sendActiveReplicasToClient(RequestActiveReplicas response) {
+		try {
+			this.getClientMessenger().sendToAddress(response.getSender(),
+					response.toJSONObject());
+		} catch (IOException | JSONException e) {
+			log.severe(this + " incurred " + e.getClass().getSimpleName()
+					+ e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	// true only for easy testing
+	private boolean enableRCReconfigurationFromClient = true;
+
 	private void sendRCReconfigurationConfirmationToInitiator(
 			RCRecordRequest<NodeIDType> rcRecReq) {
 		try {
 			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
 					"sending ReconfigureRCNodeConfig confirmation to",
 					rcRecReq.startEpoch.creator });
-			this.messenger.sendToAddress(
+			(enableRCReconfigurationFromClient ? this.getClientMessenger()
+					: this.messenger).sendToAddress(
 					rcRecReq.startEpoch.creator,
 					new ReconfigureRCNodeConfig<NodeIDType>(this.DB.getMyID(),
 							rcRecReq.startEpoch.newlyAddedNodes, this.diff(
@@ -966,7 +1082,7 @@ public class Reconfigurator<NodeIDType> implements
 		 * successfully completes at this node before the next crash, there is
 		 * no problem. Else, upon recovery, this node will try to re-conduct the
 		 * NC change corresponding to the failed forceCheckpoint and might be
-		 * unable to do so. This is equivalent to this node having missed long 
+		 * unable to do so. This is equivalent to this node having missed long
 		 * past NC changes. At this point, this node must be deleted and
 		 * re-added to NC.
 		 */

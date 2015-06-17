@@ -8,8 +8,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONObject;
+
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB.RecordNames;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
@@ -46,7 +48,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			AbstractReconfiguratorDB<NodeIDType> app,
 			NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig,
-			JSONMessenger<NodeIDType> niot) {
+			InterfaceMessenger<NodeIDType,JSONObject> niot) {
 		// setting paxosManager out-of-order limit to 1
 		super(app, myID, consistentNodeConfig, niot, 1);
 		assert (niot != null);
@@ -386,5 +388,4 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		}
 		return !presentInNew;
 	}
-
 }

@@ -84,4 +84,5 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 	public boolean deleteReplicaGroup(String serviceName, int epoch) {
 		throw new RuntimeException("Method not yet implemented");
 	}
+
 }

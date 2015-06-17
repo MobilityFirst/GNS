@@ -15,12 +15,18 @@ public class Waitfor<NodeIDType> {
 	private long initTime=0; // to calculate how long we have been waiting
 	private int retransmissionCount=0;
 	
+	/**
+	 * @param m
+	 */
 	public Waitfor(NodeIDType[] m) {
 		this.members = new HashSet<NodeIDType>();
 		for(NodeIDType node : m) this.members.add(node);
 		this.responded = new HashSet<NodeIDType>();
 		initialize();
 	}
+	/**
+	 * @param m
+	 */
 	public Waitfor(Set<NodeIDType> m) {
 		this.members = m;
 		this.responded = new HashSet<NodeIDType>();
@@ -30,6 +36,10 @@ public class Waitfor<NodeIDType> {
 		this.initTime = System.currentTimeMillis();
 	}
 	
+	/**
+	 * @param node
+	 * @return True if changed.
+	 */
 	public boolean updateHeardFrom(NodeIDType node) {
 		boolean changed=false;
 		if(!this.responded.contains(node)) {
@@ -40,34 +50,56 @@ public class Waitfor<NodeIDType> {
 		return changed;
 	}
 	
+	/**
+	 * @return True if heard from majority.
+	 */
 	public boolean heardFromMajority() {
 		if(this.responded.size() > this.members.size()/2) return true;
 		return false;
 	}
+	/**
+	 * @param node
+	 * @return True if already heard from {@code node}.
+	 */
 	public boolean alreadyHeardFrom(NodeIDType node) {
 		return this.responded.contains(node);
 	}
+	/**
+	 * @return Number of distinct nodes heard from.
+	 */
 	public int getHeardCount() {return this.heardCount;}
 	
-	public boolean contains(NodeIDType node) {
+	private boolean contains(NodeIDType node) {
 		return this.members.contains(node);
 	}
+	/**
+	 * @return All nodes.
+	 */
 	public Set<NodeIDType> getMembers() {
 		return this.members;
 	}
+	/**
+	 * @return Nodes from which we have heard.
+	 */
 	public Set<NodeIDType> getMembersHeardFrom() {
 		return this.responded;
 	}
+	/**
+	 * @return Total time since creation.
+	 */
 	public long totalWaitTime() {
 		return (int)System.currentTimeMillis() - this.initTime;
 	}
-	public void setInitTime() {
-		this.initTime = (int)System.currentTimeMillis();
-	}
-
+	
+	/**
+	 * 
+	 */
 	public void incrRetransmissonCount() {
 		this.retransmissionCount++;
 	}
+	/**
+	 * @return The total number of retransmissions.
+	 */
 	public int getRetransmissionCount() {
 		return this.retransmissionCount;
 	}

@@ -1,6 +1,6 @@
 package edu.umass.cs.nio;
 
-import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,7 +20,6 @@ import java.util.Timer;
  * FIXME: This class works only for Integer/String/InetSocketAddress node IDs as
  * it is essentially a static class.
  */
-@SuppressWarnings("unchecked")
 public class JSONDelayEmulator {
 	/**
 	 * The JSON key for the delay value.
@@ -47,7 +46,7 @@ public class JSONDelayEmulator {
 	 * @param gnsNodeConfig
 	 * @param variation
 	 */
-	public static void emulateConfigFileDelays(GNSNodeConfig<?> gnsNodeConfig,
+	public static void emulateConfigFileDelays(InterfaceDelayEmulator<?> gnsNodeConfig,
 			double variation) {
 		JSONDelayEmulator.EMULATE_RECEIVER_DELAYS = true;
 		JSONDelayEmulator.VARIATION = variation;
@@ -125,6 +124,7 @@ public class JSONDelayEmulator {
 		return getEmulatedDelay(json);
 	}
 
+	@SuppressWarnings("unchecked") // checked explicitly
 	private static long getDelay(Object id) {
 		long delay = 0;
 		if (JSONDelayEmulator.EMULATE_RECEIVER_DELAYS) {
@@ -135,14 +135,14 @@ public class JSONDelayEmulator {
 				 */
 				if (id instanceof Integer)
 					// divide by 2 for one-way delay
-					delay = ((GNSNodeConfig<Integer>) gnsNodeConfig)
-							.getPingLatency((Integer) id) / 2;
+					delay = ((InterfaceDelayEmulator<Integer>) gnsNodeConfig)
+							.getEmulatedDelay((Integer) id) / 2;
 				else if (id instanceof String)
-					delay = ((GNSNodeConfig<String>) gnsNodeConfig)
-							.getPingLatency((String) id) / 2;
+					delay = ((InterfaceDelayEmulator<String>) gnsNodeConfig)
+							.getEmulatedDelay((String) id) / 2;
 				else if (id instanceof SocketAddress)
-					delay = ((GNSNodeConfig<SocketAddress>) gnsNodeConfig)
-							.getPingLatency((SocketAddress) id) / 2;
+					delay = ((InterfaceDelayEmulator<SocketAddress>) gnsNodeConfig)
+							.getEmulatedDelay((SocketAddress) id) / 2;
 
 			} else {
 				delay = JSONDelayEmulator.DEFAULT_DELAY;

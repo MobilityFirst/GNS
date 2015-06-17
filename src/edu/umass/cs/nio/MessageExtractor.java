@@ -10,6 +10,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +46,7 @@ import java.util.logging.Logger;
  *         messages, but it now handles any generic message type by decoding
  *         String messages.
  */
-public class MessageExtractor implements InterfaceDataProcessingWorker {
+public class MessageExtractor implements InterfaceMessageExtractor {
 
 	/**
 	 * The pattern used in the header. The header is the String:
@@ -70,6 +71,8 @@ public class MessageExtractor implements InterfaceDataProcessingWorker {
 		this(new PacketDemultiplexerDefault());
 	}
 
+
+
 	/**
 	 * Note: Use with care. This will change demultiplexing behavior midway,
 	 * which is usually not what you want to do. This is typically useful to set
@@ -78,15 +81,11 @@ public class MessageExtractor implements InterfaceDataProcessingWorker {
 	 * Synchronized because it may be invoked when NIO is using packetDemuxes in
 	 * processJSONMessage(.).
 	 */
-	protected synchronized void addPacketDemultiplexer(
+	public synchronized void addPacketDemultiplexer(
 			AbstractPacketDemultiplexer<?> pd) {
 		packetDemuxes.add(pd);
 	}
 
-	protected synchronized void removePacketDemultiplexer(
-			AbstractJSONPacketDemultiplexer pd) {
-		packetDemuxes.remove(pd);
-	}
 
 	/**
 	 * Header is of the form pattern<size>pattern. The pattern is changeable
@@ -107,8 +106,8 @@ public class MessageExtractor implements InterfaceDataProcessingWorker {
 	 * transmission, that message will **definitely** be lost.
 	 */
 	@Override
-	public void processData(SocketChannel socket, byte[] data, int count) {
-		processData(socket, combineNewWithBuffered(socket, data, count));
+	public void processData(SocketChannel socket, ByteBuffer incoming) {
+		processData(socket, combineNewWithBuffered(socket, incoming));
 	}
 
 	/**
@@ -116,19 +115,19 @@ public class MessageExtractor implements InterfaceDataProcessingWorker {
 	 * convenient to test this method if it returns an int.
 	 */
 
-	protected int processData(SocketChannel sock, String msg) {
+	private int processData(SocketChannel sock, String msg) {
 		ArrayList<String> strArray = (this.parseAndSetSockStreams(sock, msg));
 		processMessages(getSenderSocketAddress(sock), strArray);
 		return strArray.size();
 	}
 
-	protected void stop() {
+	public void stop() {
 		for (AbstractPacketDemultiplexer<?> pd : this.packetDemuxes)
 			pd.stop();
 		this.timer.cancel();
 	}
 
-	protected synchronized void processMessage(InetSocketAddress sockAddr,
+	public synchronized void processMessage(InetSocketAddress sockAddr,
 			final String jsonMsg) {
 		this.processMessageInternal(sockAddr, jsonMsg);
 	}
@@ -155,14 +154,15 @@ public class MessageExtractor implements InterfaceDataProcessingWorker {
 
 	/* *************** Start of private methods **************************** */
 
-	private String combineNewWithBuffered(SocketChannel socket, byte[] data,
-			int count) {
+	private String combineNewWithBuffered(SocketChannel socket, ByteBuffer incoming) {
+		byte[] data = new byte[incoming.remaining()];
+		incoming.get(data);
 		try {
 			if (!this.sockStreams.containsKey(socket))
-				return new String(data, 0, count,
+				return new String(data, 0, data.length,
 						JSONNIOTransport.NIO_CHARSET_ENCODING);
 			// else
-			this.sockStreams.get(socket).write(data, 0, count);
+			this.sockStreams.get(socket).write(data, 0, data.length);
 			return this.sockStreams.remove(socket).toString(
 					JSONNIOTransport.NIO_CHARSET_ENCODING);
 
@@ -224,10 +224,12 @@ public class MessageExtractor implements InterfaceDataProcessingWorker {
 		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
+
 			for (final AbstractPacketDemultiplexer<?> pd : pdemuxes) {
 				try {
 					if (pd instanceof PacketDemultiplexerDefault)
 						continue;
+
 					Object message = pd.getMessage(msg);
 					if (message == null)
 						continue;

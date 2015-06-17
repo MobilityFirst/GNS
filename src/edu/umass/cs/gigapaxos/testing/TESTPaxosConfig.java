@@ -122,7 +122,7 @@ public class TESTPaxosConfig {
 	}
 
 	public static int getNumClients() {
-		return numClients;
+		return numClients = Math.min(numClients, numRequests);
 	}
 
 	public static int getNumRequests() {
@@ -130,7 +130,7 @@ public class TESTPaxosConfig {
 	}
 
 	public static int getNumRequestsPerClient() {
-		return numRequests / numClients;
+		return getNumRequests() / getNumClients();
 	}
 
 	public static double getTotalLoad() {

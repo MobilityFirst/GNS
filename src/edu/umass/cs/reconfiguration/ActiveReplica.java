@@ -2,6 +2,7 @@ package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
@@ -12,10 +13,13 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
+import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.nio.InterfaceAddressMessenger;
 import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.InterfacePacketDemultiplexer;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
@@ -39,6 +43,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AggregateDemandProfiler;
 import edu.umass.cs.reconfiguration.reconfigurationutils.CallbackMap;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -69,11 +74,19 @@ import edu.umass.cs.utils.MyLogger;
 public class ActiveReplica<NodeIDType> implements
 		InterfaceReconfiguratorCallback,
 		InterfacePacketDemultiplexer<JSONObject> {
+	/**
+	 * Offset for client facing port that may in general be different from
+	 * server-to-server communication as we may need different transport-layer
+	 * security schemes for server-server compared to client-server
+	 * communication.
+	 */
+	public static int DEFAULT_CLIENT_PORT_OFFSET = 00; // default 100
+
 	private final AbstractReplicaCoordinator<NodeIDType> appCoordinator;
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
 	private final ActiveReplicaProtocolTask<NodeIDType> protocolTask;
-	private final InterfaceMessenger<NodeIDType, ?> messenger;
+	private final InterfaceSSLMessenger<NodeIDType, ?> messenger;
 
 	private final AggregateDemandProfiler demandProfiler;
 	private final boolean noReporting;
@@ -89,7 +102,7 @@ public class ActiveReplica<NodeIDType> implements
 
 	private ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
 			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
-			InterfaceMessenger<NodeIDType, JSONObject> messenger,
+			InterfaceSSLMessenger<NodeIDType, ?> messenger,
 			boolean noReporting) {
 		this.appCoordinator = appC
 				.setActiveCallback((InterfaceReconfiguratorCallback) this);
@@ -103,13 +116,16 @@ public class ActiveReplica<NodeIDType> implements
 				getMyID(), this.nodeConfig, this);
 		this.protocolExecutor.register(this.protocolTask.getDefaultTypes(),
 				this.protocolTask);
+		// FIXME: this is not doing much
 		this.appCoordinator.setMessenger(this.messenger);
 		this.noReporting = noReporting;
+		if (this.messenger.getClientMessenger() == null) // exactly once
+			this.messenger.setClientMessenger(initClientMessenger());
 	}
 
 	protected ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
 			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
-			JSONMessenger<NodeIDType> messenger) {
+			InterfaceSSLMessenger<NodeIDType, JSONObject> messenger) {
 		this(appC, nodeConfig, messenger, false);
 	}
 
@@ -559,6 +575,44 @@ public class ActiveReplica<NodeIDType> implements
 				.getStopRequest(name, epoch);
 		return appStop == null ? new DefaultAppRequest(name, epoch, true)
 				: appStop;
+	}
+
+	/*
+	 * We may need to use a separate messenger for end clients if we use two-way
+	 * authentication between servers.
+	 * 
+	 * FIXME: The class casts below are bad and we probably need a cleaner way
+	 * to really support generic message types.
+	 */
+	@SuppressWarnings("unchecked")
+	private InterfaceAddressMessenger<JSONObject> initClientMessenger() {
+		AbstractPacketDemultiplexer<JSONObject> pd = null;
+		InterfaceMessenger<InetSocketAddress, JSONObject> cMsgr = null;
+		if (this.appCoordinator.getAppRequestTypes().isEmpty())
+			return null;
+		try {
+			int myPort = (this.nodeConfig.getNodePort(getMyID()));
+			if (getClientFacingPort(myPort) != myPort) {
+				cMsgr = new JSONMessenger<InetSocketAddress>(
+						new MessageNIOTransport<InetSocketAddress, JSONObject>(
+								this.nodeConfig.getNodeAddress(getMyID()),
+								getClientFacingPort(myPort),
+								(pd = new ReconfigurationPacketDemultiplexer()),
+								ReconfigurationConfig.getClientSSLMode()));
+				pd.register(this.appCoordinator.getAppRequestTypes(), this);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return cMsgr!=null ? cMsgr : (InterfaceAddressMessenger<JSONObject>)this.messenger;
+	}
+
+	/**
+	 * @param port
+	 * @return The client facing port number corresponding to port.
+	 */
+	public static int getClientFacingPort(int port) {
+		return port + DEFAULT_CLIENT_PORT_OFFSET;
 	}
 
 	private void logEvent(BasicReconfigurationPacket<NodeIDType> event) {

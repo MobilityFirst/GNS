@@ -44,8 +44,21 @@ public class JSONNIOTransport<NodeIDType> extends
 	 */
 	public JSONNIOTransport(NodeIDType id,
 			InterfaceNodeConfig<NodeIDType> nodeConfig) throws IOException {
-		// Note: Default extractor will not do any useful demultiplexing
+		// Note: Default demultiplexer will not do any useful demultiplexing
 		super(id, nodeConfig);
+	}
+
+	/**
+	 * @param id
+	 * @param nodeConfig
+	 * @param sslMode
+	 * @throws IOException
+	 */
+	public JSONNIOTransport(NodeIDType id,
+			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+		// Note: Default multiplexer will not do any useful demultiplexing
+		super(id, nodeConfig, sslMode);
 	}
 
 	/**
@@ -69,4 +82,19 @@ public class JSONNIOTransport<NodeIDType> extends
 			throws IOException {
 		super(id, nodeConfig, pd, start);
 	}
+
+	/**
+	 * @param id
+	 * @param nodeConfig
+	 * @param pd
+	 * @param sslMode
+	 * @throws IOException
+	 */
+	public JSONNIOTransport(NodeIDType id,
+			InterfaceNodeConfig<NodeIDType> nodeConfig,
+			AbstractPacketDemultiplexer<?> pd, SSLDataProcessingWorker.SSL_MODES sslMode)
+			throws IOException {
+		super(id, nodeConfig, pd, true, sslMode);
+	}
+
 }

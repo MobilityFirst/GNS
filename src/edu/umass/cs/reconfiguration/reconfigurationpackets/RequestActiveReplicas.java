@@ -27,7 +27,7 @@ public class RequestActiveReplicas extends
 		BasicReconfigurationPacket<InetSocketAddress> {
 
 	private static enum Keys {
-		ACTIVE_REPLICAS
+		ACTIVE_REPLICAS, FAILED
 	};
 
 	/**
@@ -37,6 +37,7 @@ public class RequestActiveReplicas extends
 			new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
 	private Set<InetSocketAddress> actives = null;
+	private boolean failed = false;
 
 	/**
 	 * @param initiator
@@ -60,21 +61,23 @@ public class RequestActiveReplicas extends
 			throws JSONException {
 		super(json, RequestActiveReplicas.unstringer); // ignores arg unstringer
 		this.setSender(JSONNIOTransport.getSenderAddress(json));
+		this.failed = json.optBoolean(DeleteServiceName.Keys.FAILED.toString());
+
 		JSONArray jsonArray = json.has(Keys.ACTIVE_REPLICAS.toString()) ? json
 				.getJSONArray(Keys.ACTIVE_REPLICAS.toString()) : null;
-		if (jsonArray == null)
-			return;
-		this.actives = new HashSet<InetSocketAddress>();
-		for (int i = 0; jsonArray != null && i < jsonArray.length(); i++)
-			this.actives.add(RequestActiveReplicas.unstringer.valueOf(jsonArray
-					.get(i).toString()));
+		if (jsonArray != null) {
+			this.actives = new HashSet<InetSocketAddress>();
+			for (int i = 0; jsonArray != null && i < jsonArray.length(); i++)
+				this.actives.add(RequestActiveReplicas.unstringer
+						.valueOf(jsonArray.get(i).toString()));
+		}
 	}
+
 	/**
 	 * @param json
 	 * @throws JSONException
 	 */
-	public RequestActiveReplicas(JSONObject json)
-			throws JSONException {
+	public RequestActiveReplicas(JSONObject json) throws JSONException {
 		this(json, null);
 	}
 
@@ -83,6 +86,7 @@ public class RequestActiveReplicas extends
 		if (this.actives != null)
 			json.put(Keys.ACTIVE_REPLICAS.toString(), new JSONArray(
 					this.actives));
+		json.put(DeleteServiceName.Keys.FAILED.toString(), failed);
 		return json;
 	}
 
@@ -92,14 +96,30 @@ public class RequestActiveReplicas extends
 	public void setActives(Set<InetSocketAddress> replicas) {
 		this.actives = replicas;
 	}
+
 	/**
-	 * @return Active replica socket addresses. 
+	 * @return Active replica socket addresses.
 	 */
 	public Set<InetSocketAddress> getActives() {
 		return this.actives;
 	}
 
-	 static void main(String[] args) {
+	/**
+	 * @return Returns this after setting as failed.
+	 */
+	public RequestActiveReplicas setFailed() {
+		this.failed = true;
+		return this;
+	}
+
+	/**
+	 * @return Whether this request failed.
+	 */
+	public boolean isFailed() {
+		return this.failed;
+	}
+
+	static void main(String[] args) {
 		String[] addrs = { "128.119.240.21" };
 		int[] ports = { 3245 };
 		assert (addrs.length == ports.length);
