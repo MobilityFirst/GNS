@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -20,6 +21,7 @@ import edu.umass.cs.nio.JSONNIOTransport;
 
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
@@ -48,6 +50,11 @@ public class CommandHandler {
 
   private static long commandCount = 0;
 
+  private static final boolean USE_EXEC_POOL_TO_RUN_COMMANDS = true;
+
+  private static final ExecutorService execPool
+          = USE_EXEC_POOL_TO_RUN_COMMANDS == true ? Executors.newFixedThreadPool(100) : null;
+
   /**
    * Handles command packets coming in from the client.
    *
@@ -61,7 +68,67 @@ public class CommandHandler {
     handlePacketCommandRequest(incomingJSON, handler, null);
   }
 
-  private static final ExecutorService execPool = Executors.newFixedThreadPool(100);
+  private static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler,
+          NewApp app)
+          throws JSONException, UnknownHostException {
+    final Long receiptTime = System.currentTimeMillis(); // instrumentation
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
+    }
+    final CommandPacket packet = new CommandPacket(incomingJSON);
+    // FIXME: Don't do this every time. 
+    // Set the host field. Used by the help command and email module. 
+    commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":" + GnsHttpServer.getPort());
+    final JSONObject jsonFormattedCommand = packet.getCommand();
+    // Adds a field to the command to allow us to process the authentication of the signature
+    addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
+    final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
+    DelayProfiler.update("commandPreProc", receiptTime);
+    final Long runCommandStart = System.currentTimeMillis(); // instrumentation
+    if (USE_EXEC_POOL_TO_RUN_COMMANDS) {
+      execPool.submit(new WorkerTask(jsonFormattedCommand, command, handler, packet, app, receiptTime));
+    } else {
+      runCommand(jsonFormattedCommand, command, handler, packet, app, receiptTime);
+    }
+    DelayProfiler.update("runCommand", runCommandStart);
+  }
+
+  private static void runCommand(JSONObject jsonFormattedCommand, GnsCommand command,
+          ClientRequestHandlerInterface handler, CommandPacket packet, NewApp app, long receiptTime) {
+    try {
+      final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
+      CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
+      DelayProfiler.update("executeCommand", executeCommandStart);
+      // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
+      CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
+              packet.getLNSRequestId(),
+              packet.getServiceName(), returnValue,
+              handler.getReceivedRequests(), handler.getRequestsPerSecond(),
+              System.currentTimeMillis() - receiptTime);
+
+      if (app != null) {
+        // call back the app directly
+        try {
+          if (handler.getParameters().isDebugMode()) {
+            GNS.getLogger().info("HANDLING COMMAND REPLY : " + returnPacket.toString());
+          }
+          handleCommandReturnValuePacketForApp(returnPacket.toJSONObject(), app);
+        } catch (IOException e) {
+          GNS.getLogger().severe("Problem replying to command: " + e);
+        }
+      } else {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+        }
+        handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
+      }
+
+    } catch (JSONException e) {
+      GNS.getLogger().severe("Problem  executing command: " + e);
+      e.printStackTrace();
+    }
+    DelayProfiler.update("handlePacketCommandRequest", receiptTime);
+  }
 
   private static class WorkerTask implements Runnable {
 
@@ -83,93 +150,8 @@ public class CommandHandler {
 
     @Override
     public void run() {
-      try {
-        final Long execStart = System.currentTimeMillis(); // instrumentation
-        CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
-        DelayProfiler.update("executeCommand", execStart);
-        // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
-        CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
-                packet.getLNSRequestId(),
-                packet.getServiceName(), returnValue,
-                handler.getReceivedRequests(), handler.getRequestsPerSecond(),
-                System.currentTimeMillis() - receiptTime);
-
-        if (app != null) {
-          // call back the app directly
-          try {
-            if (handler.getParameters().isDebugMode()) {
-              GNS.getLogger().info("HANDLING COMMAND REPLY : " + returnPacket.toString());
-            }
-            handleCommandReturnValuePacketForApp(returnPacket.toJSONObject(), app);
-          } catch (IOException e) {
-            GNS.getLogger().severe("Problem replying to command: " + e);
-          }
-        } else {
-          if (handler.getParameters().isDebugMode()) {
-            GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
-          }
-          handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
-        }
-
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem  executing command: " + e);
-        e.printStackTrace();
-      }
-      DelayProfiler.update("handlePacketCommandRequest", receiptTime);
+      runCommand(jsonFormattedCommand, command, handler, packet, app, receiptTime);
     }
-  }
-
-  private static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler,
-          NewApp app)
-          throws JSONException, UnknownHostException {
-    final Long receiptTime = System.currentTimeMillis(); // instrumentation
-    if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("<<<<<<<<<<<<<<<<< COMMAND PACKET RECEIVED: " + incomingJSON);
-    }
-    final CommandPacket packet = new CommandPacket(incomingJSON);
-    // FIXME: Don't do this every time. 
-    // Set the host field. Used by the help command and email module. 
-    commandModule.setHTTPHost(handler.getNodeAddress().getHostString() + ":8080");
-    final JSONObject jsonFormattedCommand = packet.getCommand();
-    // Adds a field to the command to allow us to process the authentication of the signature
-    addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
-    final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    DelayProfiler.update("commandPreProc", receiptTime);
-
-    execPool.submit(new WorkerTask(jsonFormattedCommand, command, handler, packet, app, receiptTime));
-//    try {
-//      final Long execStart = System.currentTimeMillis(); // instrumentation
-//      CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
-//      DelayProfiler.update("executeCommand", execStart);
-//      // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
-//      CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
-//              packet.getLNSRequestId(),
-//              packet.getServiceName(), returnValue,
-//              handler.getReceivedRequests(), handler.getRequestsPerSecond(),
-//              System.currentTimeMillis() - receiptTime);
-//
-//      if (app != null) {
-//        // call back the app directly
-//        try {
-//          if (handler.getParameters().isDebugMode()) {
-//            GNS.getLogger().info("HANDLING COMMAND REPLY : " + returnPacket.toString());
-//          }
-//          handleCommandReturnValuePacketForApp(returnPacket.toJSONObject(), app);
-//        } catch (IOException e) {
-//          GNS.getLogger().severe("Problem replying to command: " + e);
-//        }
-//      } else {
-//        if (handler.getParameters().isDebugMode()) {
-//          GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
-//        }
-//        handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
-//      }
-//
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("Problem  executing command: " + e);
-//      e.printStackTrace();
-//    }
-//    DelayProfiler.update("handlePacketCommandRequest", receiptTime);
   }
 
   // this little dance is because we need to remove the signature to get the message that was signed
@@ -215,6 +197,8 @@ public class CommandHandler {
     } catch (SignatureException e) {
       return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (InvalidKeyException e) {
+      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+    } catch (UnsupportedEncodingException e) {
       return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     }
   }
@@ -268,7 +252,6 @@ public class CommandHandler {
 //      ccpAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CCP_TCP_PORT);
 //    }
 //  }
-
   public static void handleCommandPacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandPacket packet = new CommandPacket(json);
     // Squirrel away the host and port so we know where to send the command return value

@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.localnameserver.nodeconfig;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;

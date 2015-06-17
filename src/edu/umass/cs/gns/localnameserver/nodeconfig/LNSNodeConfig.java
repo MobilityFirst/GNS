@@ -5,14 +5,14 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.localnameserver;
+package edu.umass.cs.gns.localnameserver.nodeconfig;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.nio.InterfaceNodeConfig;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -33,7 +33,7 @@ import org.json.JSONException;
 
 /**
  * This class maintains information that allows the LNS to communicate with Active Replicas and Reconfigurators.
- * 
+ *
  * It parses a hosts file to gather information about each name server in the system.
  *
  * Also has support for checking to see if the hosts file changes. When that happens the host info is
@@ -48,10 +48,10 @@ import org.json.JSONException;
  * <code>addHostInfo</code> and <code>readHostsFile</code> for the details on
  * how those are generated.
  */
-public class LNSNodeConfig implements  
+public class LNSNodeConfig implements
         InterfaceNodeConfig<InetSocketAddress>,
-        InterfaceReconfigurableNodeConfig<InetSocketAddress>, 
-        Shutdownable{
+        GNSInterfaceNodeConfig<InetSocketAddress>,
+        Shutdownable {
 
   public static final long INVALID_PING_LATENCY = -1L;
   public static final int INVALID_PORT = -1;
@@ -93,27 +93,29 @@ public class LNSNodeConfig implements
    *
    * @return
    */
+  @Override
   public Set<InetSocketAddress> getActiveReplicas() {
-      Set<InetSocketAddress> result = new HashSet<>();
-      for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
-        result.add(new InetSocketAddress(hostInfo.getIpAddress(), 
-                hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset()));
-      }
-      return result;
+    Set<InetSocketAddress> result = new HashSet<>();
+    for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
+      result.add(new InetSocketAddress(hostInfo.getIpAddress(),
+              hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset()));
+    }
+    return result;
   }
-  
+
   /**
    * Returns the set of reconfigurator addresses.
    *
    * @return
    */
+  @Override
   public Set<InetSocketAddress> getReconfigurators() {
     Set<InetSocketAddress> result = new HashSet<>();
-      for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
-        result.add(new InetSocketAddress(hostInfo.getIpAddress(), 
-                hostInfo.getStartingPortNumber() + GNS.PortType.RECONFIGURATOR_PORT.getOffset()));
-      }
-      return result;
+    for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
+      result.add(new InetSocketAddress(hostInfo.getIpAddress(),
+              hostInfo.getStartingPortNumber() + GNS.PortType.RECONFIGURATOR_PORT.getOffset()));
+    }
+    return result;
   }
 
   /**
@@ -130,7 +132,7 @@ public class LNSNodeConfig implements
     }
     return null;
   }
-  
+
   /**
    * Returns the number of name server nodes.
    *
@@ -147,6 +149,7 @@ public class LNSNodeConfig implements
    * @param address
    * @return
    */
+  @Override
   public long getPingLatency(InetSocketAddress address) {
     LNSNodeInfo nodeInfo = getNodeInfoForAnyNode(address);
     return (nodeInfo == null) ? INVALID_PING_LATENCY : nodeInfo.getPingLatency();
@@ -159,12 +162,23 @@ public class LNSNodeConfig implements
    * @param address
    * @param responseTime
    */
+  @Override
   public void updatePingLatency(InetSocketAddress address, long responseTime) {
     LNSNodeInfo nodeInfo = getNodeInfoForAnyNode(address);
     if (nodeInfo != null) {
       nodeInfo.setPingLatency(responseTime);
     } else {
       GNS.getLogger().warning("Can't update latency for " + address.toString() + ".");
+    }
+  }
+  
+  @Override
+  public int getPingPort(InetSocketAddress id) {
+    LNSNodeInfo nodeInfo = getNodeInfoForAnyNode(id);
+    if (nodeInfo != null) {
+      return nodeInfo.getStartingPortNumber() + GNS.PortType.NS_PING_PORT.getOffset();
+    } else {
+      return INVALID_PORT;
     }
   }
 
@@ -177,13 +191,13 @@ public class LNSNodeConfig implements
    */
   @Override
   public boolean nodeExists(InetSocketAddress address) {
-    return address instanceof InetSocketAddress && getNodeInfoForAnyNode((InetSocketAddress)address) != null;
+    return address instanceof InetSocketAddress && getNodeInfoForAnyNode((InetSocketAddress) address) != null;
   }
-  
+
   @Override
   public InetAddress getNodeAddress(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
-      return ((InetSocketAddress)address).getAddress();
+      return ((InetSocketAddress) address).getAddress();
     } else {
       return null;
     }
@@ -192,14 +206,14 @@ public class LNSNodeConfig implements
   @Override
   public int getNodePort(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {
-      return ((InetSocketAddress)address).getPort();
+      return ((InetSocketAddress) address).getPort();
     } else {
       return -1;
     }
   }
 
   @Override
-  public Set getNodeIDs() {
+  public Set<InetSocketAddress> getNodeIDs() {
     return getActiveReplicas();
   }
 
@@ -231,7 +245,7 @@ public class LNSNodeConfig implements
     // save the old one... maybe we'll need it again?
     ConcurrentMap<Object, LNSNodeInfo> previousHostInfoMapping = hostInfoMapping;
     // Create a new one so we don't hose the old one if the new file is bogus
-    ConcurrentMap<Object, LNSNodeInfo> newHostInfoMapping 
+    ConcurrentMap<Object, LNSNodeInfo> newHostInfoMapping
             = new ConcurrentHashMap<Object, LNSNodeInfo>(16, 0.75f, 8);
     for (HostSpec<Object> spec : hosts) {
       addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(), spec.getExternalIP(),
@@ -360,16 +374,36 @@ public class LNSNodeConfig implements
 
   @Override
   public InetSocketAddress valueOf(String strValue) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public Set<InetSocketAddress> getValuesFromStringSet(Set<String> strNodes) {
-    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    throw new UnsupportedOperationException("Not supported yet.");
   }
 
   @Override
   public Set<InetSocketAddress> getValuesFromJSONArray(JSONArray array) throws JSONException {
+    throw new UnsupportedOperationException("Not supported yet.");
+  }
+
+  @Override
+  public int getAdminPort(InetSocketAddress id) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public int getCcpPort(InetSocketAddress id) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public int getCcpPingPort(InetSocketAddress id) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+  }
+
+  @Override
+  public int getCcpAdminPort(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 }

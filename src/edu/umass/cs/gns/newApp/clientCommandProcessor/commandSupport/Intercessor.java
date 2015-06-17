@@ -30,6 +30,7 @@ import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
+import edu.umass.cs.utils.DelayProfiler;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
@@ -206,6 +207,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   }
 
   private QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
+    final Long startTime = System.currentTimeMillis(); // instrumentation
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending query: " + name + " " + field);
     }
@@ -254,7 +256,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       GNS.getLogger().info("Query (" + id + "): " + name + "/" + field + "\n  Returning: " + result.toString());
     }
     result.setRoundTripTime(rtt);
+    DelayProfiler.update("sendQueryInternal", startTime);
     return result;
+    
   }
 
   /**

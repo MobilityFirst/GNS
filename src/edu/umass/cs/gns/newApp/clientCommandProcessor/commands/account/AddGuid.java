@@ -21,6 +21,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.httpserver.Defs;
 import edu.umass.cs.gns.util.Base64;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -50,7 +51,7 @@ public class AddGuid extends GnsCommand {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {

@@ -65,8 +65,8 @@ import org.json.JSONException;
  */
 public class NewClientRequestHandler<NodeIDType> implements EnhancedClientRequestHandlerInterface<NodeIDType> {
 
-  private final Intercessor intercessor;
-  private final Admintercessor admintercessor;
+  private final Intercessor<NodeIDType> intercessor;
+  private final Admintercessor<NodeIDType> admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
@@ -91,7 +91,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
 
-  private final ConsistentReconfigurableNodeConfig nodeConfig;
+  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 
   private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
 
@@ -107,12 +107,12 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   private final InetSocketAddress nodeAddress;
   //
-  private final Object activeReplicaID;
+  private final NodeIDType activeReplicaID;
   private final NewApp app;
 
   private long receivedRequests = 0;
 
-  public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
+  public NewClientRequestHandler(Intercessor<NodeIDType> intercessor, Admintercessor<NodeIDType> admintercessor,
           InetSocketAddress nodeAddress,
           NodeIDType activeReplicaID,
           NewApp app,
@@ -127,7 +127,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
             : gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
     this.app = app;
     // FOR NOW WE KEEP BOTH
-    this.nodeConfig = new ConsistentReconfigurableNodeConfig(gnsNodeConfig);
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -141,11 +141,6 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.deleteServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.activesServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
-  }
-
-  @Override
-  public boolean isNewApp() {
-    return true;
   }
 
   @Override
@@ -179,17 +174,17 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public Object getActiveReplicaID() {
+  public NodeIDType getActiveReplicaID() {
     return activeReplicaID;
   }
 
   @Override
-  public Intercessor getIntercessor() {
+  public Intercessor<NodeIDType> getIntercessor() {
     return intercessor;
   }
 
   @Override
-  public Admintercessor getAdmintercessor() {
+  public Admintercessor<NodeIDType> getAdmintercessor() {
     return admintercessor;
   }
 

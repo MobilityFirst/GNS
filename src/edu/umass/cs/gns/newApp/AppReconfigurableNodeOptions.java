@@ -90,8 +90,11 @@ public class AppReconfigurableNodeOptions {
   public static final String DEBUG_RECON = "debugRecon";
   public static final String DEBUG_PAXOS = "debugPaxos";
   public static final String DEBUG_MISC = "debugMisc";
+  /**
+   * This option is used to create multiple nodes on a single host
+   */
   public static final String TEST = "test";
-  public static final String STANDALONE = "standAlone";
+  public static final String STANDALONE = "standalone";
   public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
   // for CCP
   public static final String DNS_GNS_ONLY = "dnsGnsOnly";

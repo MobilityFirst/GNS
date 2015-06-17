@@ -16,6 +16,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -47,7 +48,7 @@ public class RetrieveAliases extends GnsCommand {
 
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
-          JSONException, NoSuchAlgorithmException, SignatureException {
+          JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {

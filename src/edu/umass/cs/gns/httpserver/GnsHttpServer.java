@@ -44,7 +44,8 @@ import org.json.JSONObject;
 public class GnsHttpServer {
 
   private static final String GNSPATH = GNS.GNS_URL_PATH;
-  private static final int port = 8080;
+  private static final int startingPort = 8080;
+  private static int port;
   // handles command processing
   private static final CommandModule commandModule = new CommandModule();
   private static ClientRequestHandlerInterface requestHandler;
@@ -60,7 +61,10 @@ public class GnsHttpServer {
   public static void runServer() {
     int cnt = 0;
     do {
-      if (tryPort(port + cnt)) {
+      // Find the first port after starting port that actually works.
+      // Usually if 8080 is busy we can get 8081.
+      if (tryPort(startingPort + cnt)) {
+        port = startingPort + cnt;
         break;
       }
     } while (cnt++ < 100);
@@ -222,7 +226,7 @@ public class GnsHttpServer {
         String activeReplicasString = "Active replicas: " + resultString.toString();
         String consoleLogLevelString = "Console log level is " + GNS.getLogger().getLevel().getLocalizedName();
         String fileLogLevelString = "File log level is " + GNS.getLogger().getLevel().getLocalizedName();
-        
+
         responseBody.write(responsePreamble.getBytes());
         responseBody.write(buildVersionInfo.getBytes());
         responseBody.write("<br>".getBytes());
@@ -244,12 +248,11 @@ public class GnsHttpServer {
         responseBody.write("<br>".getBytes());
         responseBody.write(requestsRateString.getBytes());
         responseBody.write("<br>".getBytes());
-        //if (!Config.useOldPaxos) {
+
         responseBody.write("Gigapaxos is enabled<br>".getBytes());
-        //}
-        if (GnsHttpServer.requestHandler.isNewApp()) {
-          responseBody.write("New app is enabled<br>".getBytes());
-        }
+     
+        responseBody.write("New app is enabled<br>".getBytes());
+
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           responseBody.write("Server debug is true<br>".getBytes());
         }
@@ -275,5 +278,8 @@ public class GnsHttpServer {
     }
   }
 
-  public static String Version = "$Revision$";
+  public static int getPort() {
+    return port;
+  }
+  
 }

@@ -17,7 +17,7 @@ import org.xbill.DNS.SimpleResolver;
  * 
  * @author westy
  */
-public class GnsDnsLookupTask implements Callable {
+public class GnsDnsLookupTask implements Callable<Message> {
 
   enum WorkerClass {
 

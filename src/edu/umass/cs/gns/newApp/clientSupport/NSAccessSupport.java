@@ -45,8 +45,20 @@ public class NSAccessSupport {
   // try this for now
   private static final Set<String> WORLDREADABLEFIELDS = new HashSet<String>(Arrays.asList(GroupAccess.JOINREQUESTS, GroupAccess.LEAVEREQUESTS));
 
-  public static boolean verifySignature(String accessorPublicKey, String signature, String message) throws NoSuchAlgorithmException,
-          InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
+  private static KeyFactory keyFactory;
+  private static Signature sig;
+
+  static {
+    try {
+      keyFactory = KeyFactory.getInstance(RSAALGORITHM);
+      sig = Signature.getInstance(SIGNATUREALGORITHM);
+    } catch (NoSuchAlgorithmException e) {
+      GNS.getLogger().severe("Unable to initialize for authentication:" + e);
+    }
+  }
+
+  public static boolean verifySignature(String accessorPublicKey, String signature, String message) throws
+          InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
     if (!GNS.enableSignatureVerification) {
       return true;
     }
@@ -61,18 +73,24 @@ public class NSAccessSupport {
       GNS.getLogger().info("NS: public key:" + accessorPublicKey + " signature:"
               + signature + " message: " + message);
     }
-    KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
-    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
-    PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
-
-    Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
-    sig.initVerify(publicKey);
-    sig.update(message.getBytes("UTF-8"));
-    boolean result = sig.verify(ByteUtils.hexStringToByteArray(signature));
+    boolean result = verifySignatureInternal(publickeyBytes, signature, message);
     if (debuggingEnabled) {
       GNS.getLogger().info("Public key " + accessorPublicKey + (result ? " verified " : " NOT verified ") + "as author of message " + message);
     }
     return result;
+  }
+
+  public static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
+          throws InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
+
+    //KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
+    X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(publickeyBytes);
+    PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+    //Signature sig = Signature.getInstance(SIGNATUREALGORITHM);
+    sig.initVerify(publicKey);
+    sig.update(message.getBytes("UTF-8"));
+    return sig.verify(ByteUtils.hexStringToByteArray(signature));
   }
 
   /**
@@ -146,7 +164,7 @@ public class NSAccessSupport {
       return true;
     }
     try {
-      Set<String> allowedusers = (Set<String>)(Set<?>)NSFieldMetaData.lookupOnThisNameServer(access, 
+      Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access,
               guid, field, activeReplica);
       if (debuggingEnabled) {
         GNS.getLogger().info(guid + " allowed users of " + field + " : " + allowedusers);
@@ -180,7 +198,7 @@ public class NSAccessSupport {
       // see if allowed users (the public keys for the guids and group guids that is in the ACL) 
       // intersects with the groups that this
       // guid is a member of (which is stored with this guid)
-      return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers), 
+      return !Sets.intersection(ClientUtils.convertPublicKeysToGuids(allowedUsers),
               NSGroupAccess.lookupGroups(accessorGuid, activeReplica, lnsAddress)).isEmpty();
     }
   }
@@ -198,14 +216,14 @@ public class NSAccessSupport {
       return false;
     }
   }
-  
+
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           GnsApplicationInterface activeReplica) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
     try {
-      return (Set<String>)(Set<?>)NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica);
+      return (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica);
     } catch (FieldNotFoundException e) {
       // do nothing
     } catch (RecordNotFoundException e) {

@@ -82,6 +82,7 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    * Constructs a cache entry using data from a DNS packet
    *
    * @param packet DNS packet
+   * @param replicaControllers
    */
   public CacheEntry(DNSPacket<NodeIDType> packet, Set<NodeIDType> replicaControllers) {
     this.name = packet.getGuid();

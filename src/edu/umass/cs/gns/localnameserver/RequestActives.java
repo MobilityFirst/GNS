@@ -23,7 +23,7 @@ import java.util.List;
 
 import org.json.JSONException;
 
-public class RequestActives implements SchedulableProtocolTask {
+public class RequestActives implements SchedulableProtocolTask<String, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
 

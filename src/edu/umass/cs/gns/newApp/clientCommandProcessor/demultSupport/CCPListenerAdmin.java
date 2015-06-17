@@ -48,7 +48,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
    * The PingManager is here because one of the admin functions is to allow is to display
    * latencies.
    */
-  private final PingManager<NodeIDType> pingManager;
+  private final PingManager pingManager;
 
   /**
    *
@@ -56,7 +56,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
    *
    * @throws IOException
    */
-  public CCPListenerAdmin(ClientRequestHandlerInterface<NodeIDType> handler, PingManager<NodeIDType> pingManager) throws IOException {
+  public CCPListenerAdmin(ClientRequestHandlerInterface<NodeIDType> handler, PingManager pingManager) throws IOException {
     super("ListenerAdmin");
     this.serverSocket = new ServerSocket(handler.getGnsNodeConfig().getCcpAdminPort((NodeIDType)handler.getActiveReplicaID()));
     replicationMap = new HashMap<>();
@@ -179,11 +179,11 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
               }
               break;
             case PINGVALUE:
-              NodeIDType node1 = (NodeIDType) new String(incomingPacket.getArgument());
-              NodeIDType node2 = (NodeIDType) new String(incomingPacket.getArgument2());
+              String node1 = new String(incomingPacket.getArgument());
+              String node2 = new String(incomingPacket.getArgument2());
               // null or LNS means return the LNS data
-              if (node1 == null || node1.equals("LNS") || handler.getGnsNodeConfig().nodeExists(node1)
-                      && handler.getGnsNodeConfig().nodeExists(node2)) {
+              if (node1 == null || node1.equals("LNS") || handler.getGnsNodeConfig().nodeExists((NodeIDType)node1)
+                      && handler.getGnsNodeConfig().nodeExists((NodeIDType)node2)) {
                 if (node1 == null || node1.equals("LNS")) {
                   // handle it here
                   jsonResponse = new JSONObject();

@@ -24,8 +24,9 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  **
  * An interface for handling of client requests, comms and cacheing.
  * Abstracts out the methods for storing of request info, caching and
- * communication needs of a node. A lot of this code used to be static methods in the LocalNameServer.
- * This class makes the code that uses it not depend statically on the LocalNameServer.
+ * communication needs of a node. A lot of this code used to be static methods in the 
+ * ClientCommandProcessor (CCP) (formerly the LocalNameServer).
+ * This class makes the code that uses it not depend statically on the CCP.
  *
  * @param <NodeIDType>
  */
@@ -62,7 +63,7 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    */
   public InetSocketAddress getNodeAddress();
 
-  public Object getActiveReplicaID();
+  public NodeIDType getActiveReplicaID();
 
   public Intercessor<NodeIDType> getIntercessor();
 
@@ -289,12 +290,5 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @return
    */
   public int getRequestsPerSecond();
-
-  /**
-   * A little hack so we can tell if we're running in the new app.
-   *
-   * @return
-   */
-  public boolean isNewApp();
 
 }
