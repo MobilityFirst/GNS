@@ -16,13 +16,10 @@ import edu.umass.cs.gns.newApp.NewApp;
 import edu.umass.cs.gns.newApp.packet.CommandPacket;
 import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.util.CanonicalJSON;
-import edu.umass.cs.gns.util.NetworkUtils;
-import edu.umass.cs.nio.JSONNIOTransport;
 
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.json.JSONException;

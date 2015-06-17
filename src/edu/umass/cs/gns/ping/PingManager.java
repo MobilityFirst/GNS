@@ -43,11 +43,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
   private Thread managerThread;
 
   // The list of actives we should be pinging.
-  private Set<NodeIDType> activeReplicas = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
-
-  public void addActiveReplicas(Set<NodeIDType> activeReplicas) {
-    this.activeReplicas.addAll(activeReplicas);
-  }
+  private final Set<NodeIDType> activeReplicas;
 
   private final boolean debug = false;
 
@@ -65,9 +61,14 @@ public class PingManager<NodeIDType> implements Shutdownable {
     } else {
       this.pingClient = null;
     }
-    this.pingServer = new PingServer<NodeIDType>(nodeId, gnsNodeConfig);
-    new Thread(pingServer).start();
+    if (nodeId != null) {
+      this.pingServer = new PingServer<NodeIDType>(nodeId, gnsNodeConfig);
+      new Thread(pingServer).start();
+    } else {
+      this.pingServer = null;
+    }
     this.pingTable = new SparseMatrix<NodeIDType, Integer, Long>(GNSNodeConfig.INVALID_PING_LATENCY);
+    this.activeReplicas = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
   }
 
   /**
@@ -86,12 +87,16 @@ public class PingManager<NodeIDType> implements Shutdownable {
    * @param gnsNodeConfig
    */
   public PingManager(GNSInterfaceNodeConfig<NodeIDType> gnsNodeConfig) {
-    this.nodeId = null;
-    this.nodeConfig = gnsNodeConfig;
-    this.pingClient = new PingClient(gnsNodeConfig);
-    this.pingTable = new SparseMatrix<NodeIDType, Integer, Long>(GNSNodeConfig.INVALID_PING_LATENCY);
-    // don't start a ping server 
-    this.pingServer = null;
+    this(null, gnsNodeConfig, false);
+  }
+
+  /**
+   * Add active replicas to the list that this server sends pings to.
+   * 
+   * @param activeReplicas 
+   */
+  public void addActiveReplicas(Set<NodeIDType> activeReplicas) {
+    this.activeReplicas.addAll(activeReplicas);
   }
 
   /**

@@ -10,8 +10,9 @@ package edu.umass.cs.gns.newApp;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import org.json.JSONObject;
 
 /**
  * This pulls out some methods from GnsReconfigurableInterface that were needed for
@@ -28,7 +29,7 @@ public interface GnsApplicationInterface<NodeIDType> {
 
   InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
 
-  InterfaceJSONNIOTransport<NodeIDType> getNioServer();
+  InterfaceMessenger<NodeIDType,JSONObject> getNioServer();
   
   PingManager getPingManager();
   

@@ -3,8 +3,8 @@ package edu.umass.cs.gns.newApp.packet;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
-import edu.umass.cs.nio.JSONNIOTransport;
 
+import edu.umass.cs.nio.MessageNIOTransport;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -16,8 +16,8 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
 
   private final static String CLIENTREQUESTID = "reqID";
   private final static String LNSREQUESTID = "LNSreqID";
-  private final static String SENDERADDRESS = JSONNIOTransport.DEFAULT_IP_FIELD;
-  private final static String SENDERPORT = JSONNIOTransport.DEFAULT_PORT_FIELD;
+  private final static String SENDERADDRESS = MessageNIOTransport.DEFAULT_IP_FIELD;
+  private final static String SENDERPORT = MessageNIOTransport.DEFAULT_PORT_FIELD;
   private final static String COMMAND = "command";
   
   public final static String BOGUS_SERVICE_NAME = "unknown";

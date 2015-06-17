@@ -31,6 +31,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import static edu.umass.cs.gns.util.ParametersAndOptions.printOptions;
 
 import edu.umass.cs.nio.InterfaceNIOTransport;
+import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -299,8 +300,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   public void sendToClosestServer(Set<InetSocketAddress> servers, JSONObject packet) throws IOException {
     InetSocketAddress address = getClosestServer(servers);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
-    packet.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
-    packet.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
+    packet.remove(MessageNIOTransport.DEFAULT_IP_FIELD);
+    packet.remove(MessageNIOTransport.DEFAULT_PORT_FIELD);
     if (debuggingEnabled) {
       LOG.info("Sending to " + address + ": " + packet);
     }

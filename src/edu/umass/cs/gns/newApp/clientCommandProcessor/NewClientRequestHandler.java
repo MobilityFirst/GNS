@@ -26,7 +26,7 @@ import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
@@ -93,7 +93,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 
-  private final InterfaceJSONNIOTransport<NodeIDType> tcpTransport;
+  private final InterfaceMessenger<NodeIDType, JSONObject> tcpTransport;
 
   private final JSONMessenger<NodeIDType> messenger;
 

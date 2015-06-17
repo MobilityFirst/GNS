@@ -10,7 +10,6 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 

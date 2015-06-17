@@ -41,7 +41,7 @@ import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceJSONNIOTransport;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
@@ -73,12 +73,12 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   /**
    * The Nio server
    */
-  private final InterfaceJSONNIOTransport<String> nioServer;
+  private final InterfaceMessenger<String, JSONObject> nioServer;
 
   private boolean useLocalCCP = true;
   private ClientCommandProcessor<String> localCCP = null;
 
-  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceJSONNIOTransport<String> nioServer,
+  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceMessenger<String, JSONObject> nioServer,
           MongoRecords<String> mongoRecords) {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
@@ -520,7 +520,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   }
 
   @Override
-  public InterfaceJSONNIOTransport getNioServer() {
+  public InterfaceMessenger<String, JSONObject> getNioServer() {
     return nioServer;
   }
 
