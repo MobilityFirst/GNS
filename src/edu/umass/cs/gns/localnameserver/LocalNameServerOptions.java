@@ -10,9 +10,11 @@ package edu.umass.cs.gns.localnameserver;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
+import edu.umass.cs.gns.ping.PingManager;
 import static edu.umass.cs.gns.util.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -29,6 +31,8 @@ public class LocalNameServerOptions {
   public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
   public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
   public static final String DEBUG = "debug";
+  public static final String DEBUG_PING = "debugPing";
+  public static final String DEBUG_MISC = "debugMisc";
 
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
@@ -38,6 +42,8 @@ public class LocalNameServerOptions {
     Option fileLoggingLevel = new Option(FILE_LOGGING_LEVEL, true, "Verbosity level of log file. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
     Option consoleOutputLevel = new Option(CONSOLE_OUTPUT_LEVEL, true, "Verbosity level of console output. Should be one of SEVERE, WARNING, INFO, CONFIG, FINE, FINER, FINEST.");
     Option debug = new Option(DEBUG, "Enables debugging output");
+    Option debugPing = new Option(DEBUG_PING, "Enables debugging output for PingManager");
+    Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for miscellaneous subsystems");
     
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -45,6 +51,8 @@ public class LocalNameServerOptions {
     commandLineOptions.addOption(nsFile);
     commandLineOptions.addOption(port);
     commandLineOptions.addOption(debug);
+    commandLineOptions.addOption(debugPing);
+    commandLineOptions.addOption(debugMisc);
     commandLineOptions.addOption(fileLoggingLevel);
     commandLineOptions.addOption(consoleOutputLevel);
 
@@ -71,7 +79,19 @@ public class LocalNameServerOptions {
 
     if (isOptionTrue(DEBUG, allValues)) {
       LocalNameServer.debuggingEnabled = true;
-      System.out.println("******** DEBUGGING IS ENABLED IN LOCAL NAME SERVER *********");
+      System.out.println("******** DEBUGGING IS ENABLED IN LocalNameServer *********");
+    }
+    
+    if (isOptionTrue(DEBUG_PING, allValues)) {
+      PingManager.debuggingEnabled = true;
+      System.out.println("******** DEBUGGING IS ENABLED IN PingManager *********");
+    }
+    
+    if (isOptionTrue(DEBUG_MISC, allValues)) {
+      System.out.println("******** DEBUGGING IS ENABLED IN ProtocolExecutor *********");
+      ProtocolExecutor.getLogger().setLevel(Level.INFO);
+    } else {
+      ProtocolExecutor.getLogger().setLevel(Level.WARNING);
     }
 
     if (allValues.containsKey(CONSOLE_OUTPUT_LEVEL)) {
