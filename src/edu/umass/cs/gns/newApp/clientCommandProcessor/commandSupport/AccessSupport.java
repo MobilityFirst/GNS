@@ -54,7 +54,7 @@ public class AccessSupport {
    */
   public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws InvalidKeySpecException, 
           InvalidKeyException, SignatureException, UnsupportedEncodingException {
-    if (!GNS.enableSignatureVerification) {
+    if (!GNS.enableSignatureAuthentication) {
       return true;
     }
     //GNS.getLogger().info("LocalNS: User " + guidInfo.getName() + " signature:" + signature + " message: " + message);

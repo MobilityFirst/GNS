@@ -239,12 +239,12 @@ public class AccountAccess {
    * @param password
    * @return
    */
-  public static CommandResponse addAccountWithVerification(String host, String name, String guid, String publicKey,
-          String password, ClientRequestHandlerInterface handler) {
+  public static CommandResponse addAccountWithVerification(final String host, final String name, final String guid, 
+          String publicKey, String password, ClientRequestHandlerInterface handler) {
     CommandResponse response;
     if ((response = addAccount(name, guid, publicKey, password,
-            GNS.enableEmailAccountAuthentication, handler)).getReturnValue().equals(OKRESPONSE)) {
-      if (GNS.enableEmailAccountAuthentication) {
+            GNS.enableEmailAccountVerification, handler)).getReturnValue().equals(OKRESPONSE)) {
+      if (GNS.enableEmailAccountVerification) {
         String verifyCode = createVerificationCode(name);
         AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler);
         if (accountInfo == null) {
@@ -255,15 +255,22 @@ public class AccountAccess {
         if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
           boolean emailOK = Email.email("GNS Account Verification", name,
                   String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
-          boolean adminEmailOK = Email.email("GNS Account Notification",
-                  Email.ACCOUNT_CONTACT_EMAIL,
-                  String.format(ADMIN_NOTICE, name, host, guid));
+          // do the admin email in another thread so it's faster and because we don't care if it completes
+          (new Thread() {
+            @Override
+            public void run() {
+              boolean adminEmailOK = Email.email("GNS Account Notification",
+                      Email.ACCOUNT_CONTACT_EMAIL,
+                      String.format(ADMIN_NOTICE, name, host, guid));
+            }
+          }).start();
+
           if (emailOK) {
             return new CommandResponse(OKRESPONSE);
           } else {
             // if we can't send the confirmation back out of the account creation
             removeAccount(accountInfo, handler);
-            return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send email");
+            return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send verification email");
           }
         } else {
           // Account info could not be updated.
