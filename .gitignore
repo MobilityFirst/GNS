@@ -21,3 +21,5 @@ build.number
 /scripts/3nodeslocal/paxos_large_checkpoints/
 /scripts/3nodeslocal/paxos_logs/
 /scripts/3nodeslocal/reconfiguration_DB/
+/scripts/newApp/NSlogfile
+/scripts/newApp/LNSlogfile
