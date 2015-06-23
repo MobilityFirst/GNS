@@ -23,3 +23,5 @@ build.number
 /scripts/3nodeslocal/reconfiguration_DB/
 /scripts/newApp/NSlogfile
 /scripts/newApp/LNSlogfile
+/scripts/newApp/NSlogfile.txt
+/scripts/newApp/LNSlogfile.txt
