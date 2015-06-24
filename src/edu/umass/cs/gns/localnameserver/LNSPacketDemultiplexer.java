@@ -84,6 +84,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     return isPacketTypeFound;
   }
 
+  private static boolean disableRequestActives = true;
+
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
 
     CommandPacket packet = new CommandPacket(json);
@@ -95,10 +97,18 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
     // Send it to the client command handler
     Set<InetSocketAddress> actives;
-    //if ((actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName())) != null) {
-    if ((actives = handler.getActivesIfValid(packet.getServiceName())) != null) {
+    if (!disableRequestActives) {
+      actives = handler.getActivesIfValid(packet.getServiceName());
+    } else {
+      actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName());
+    }
+    if (actives != null) {
       if (handler.isDebugMode()) {
-        GNS.getLogger().info("Found actives in cache: " + actives);
+        if (!disableRequestActives) {
+          GNS.getLogger().info("Found actives in cache for " + packet.getServiceName() + ": " + actives);
+        } else {
+          GNS.getLogger().info("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
+        }
       }
       handler.sendToClosestServer(actives, packet.toJSONObject());
     } else {
@@ -141,10 +151,16 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   private void handleRequestActives(JSONObject json) {
     if (handler.isDebugMode()) {
       GNS.getLogger().info(")))))))))))))))))))))))))))) REQUEST ACTIVES RECEIVED: " + json.toString());
+
     }
     try {
       RequestActiveReplicas requestActives = new RequestActiveReplicas(json);
       if (requestActives.getActives() != null) {
+        if (handler.isDebugMode()) {
+          for (InetSocketAddress address : requestActives.getActives()) {
+            GNS.getLogger().info("ACTIVE ADDRESS HOST: " + address.getHostString());
+          }
+        }
         handler.updateCacheEntry(requestActives.getServiceName(), requestActives.getActives());
         // also update the set of the nodes the ping manager is using
         handler.getPingManager().addActiveReplicas(requestActives.getActives());
