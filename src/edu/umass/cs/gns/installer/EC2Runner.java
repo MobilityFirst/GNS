@@ -14,7 +14,6 @@ import edu.umass.cs.aws.support.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.GEOLocator;
-import edu.umass.cs.gns.util.ScreenUtils;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -47,8 +46,6 @@ import org.apache.commons.cli.ParseException;
 public class EC2Runner {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
-  private static final String PRIVATEKEYFILEEXTENSION = ".pem";
-  private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final AMIRecordType DEFAULT_AMI_RECORD_TYPE = AMIRecordType.Amazon_Linux_AMI_2013_03_1;
@@ -95,6 +92,7 @@ public class EC2Runner {
     ArrayList<Thread> threads = new ArrayList<Thread>();
     // use threads to do a bunch of installs in parallel
     do {
+      hostsThatDidNotStart.clear();
       //StatusModel.getInstance().queueDeleteAllEntries(); // for gui
       int cnt = STARTINGNODENUMBER;
       for (EC2RegionSpec regionSpec : regionsList) {
@@ -142,7 +140,7 @@ public class EC2Runner {
   private static final String mongoInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
-          //+ "yum --quiet --assumeyes install emacs\n" // for debugging
+          + "yum --quiet --assumeyes install emacs\n" // for debugging
           + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
           + "echo \\\"[MongoDB]\n" // crazy double escaping for JAVA and BASH going on here!!
           + "name=MongoDB Repository\n"
@@ -151,7 +149,10 @@ public class EC2Runner {
           + "enabled=1\\\" > mongodb.repo\n" // crazy double escaping for JAVA and BASH going on here!!
           + "mv mongodb.repo /etc/yum.repos.d/mongodb.repo\n"
           + "yum --quiet --assumeyes install mongodb-org\n"
-          + "service mongod start\n";
+          + "service mongod start\n"
+          // fix the sudoers so ssh sudo works all the time
+          + "chmod ug+rw /etc/sudoers"
+          + "sed \\\"s/requiretty/!requiretty/\\\" /etc/sudoers";
 //  private static final String mongoInstallScript = "#!/bin/bash\n"
 //          + "cd /home/ec2-user\n"
 //          + "yum --quiet --assumeyes update\n"
@@ -242,7 +243,7 @@ public class EC2Runner {
       AmazonEC2 ec2 = new AmazonEC2Client(credentials);
       String nodeName = "GNS Node " + idString;
       System.out.println("Starting install for " + nodeName + " in " + region.name() + " as part of run set " + runSetName);
-      HashMap<String,String> tags = new HashMap<>();
+      HashMap<String, String> tags = new HashMap<>();
       tags.put("runset", runSetName);
       tags.put("id", idString);
 //      StatusModel.getInstance().queueUpdate(id, "Creating instance");
@@ -456,9 +457,9 @@ public class EC2Runner {
 
       configName = createRunsetName != null ? createRunsetName
               : terminateRunsetName != null ? terminateRunsetName
-              : runsetDescribe != null ? runsetDescribe
-              : runSetWriteConfig != null ? runSetWriteConfig
-              : null;
+                      : runsetDescribe != null ? runsetDescribe
+                              : runSetWriteConfig != null ? runSetWriteConfig
+                                      : null;
 
       System.out.println("Config name: " + configName);
       if (configName != null) {
@@ -494,7 +495,7 @@ public class EC2Runner {
     String ip;
     int timeout;
 
-    public EC2RunnerThread(String runSetName, RegionRecord region,  String id, String ip, int timeout) {
+    public EC2RunnerThread(String runSetName, RegionRecord region, String id, String ip, int timeout) {
       super("Install Start " + id);
       this.runSetName = runSetName;
       this.region = region;
@@ -512,9 +513,10 @@ public class EC2Runner {
   private static void writeGNSINstallerConf(String configName) {
     File jarPath = getJarPath();
     System.out.println("Jar path: " + jarPath);
-    String confFileLocation = jarPath.getParent() + FILESEPARATOR + "conf" + FILESEPARATOR + "gnsInstaller" + FILESEPARATOR + configName + ".xml";
-    WriteXMLConfFile.writeFile(confFileLocation, keyName, ec2UserName, "linux", dataStoreType.toString(), hostTable);
-
+    String confFileDirectory = jarPath.getParent() + FILESEPARATOR + "conf" + FILESEPARATOR + configName + "-init";
+    //String confFileLocation = jarPath.getParent() + FILESEPARATOR + "conf" + FILESEPARATOR + "gnsInstaller" + FILESEPARATOR + configName + ".xml";
+    WriteConfFile.writeConfFiles(confFileDirectory, keyName, ec2UserName, keyName, "linux", hostTable);
+    //WriteConfFile.writeXMLFile(confFileLocation, keyName, ec2UserName, "linux", dataStoreType.toString(), hostTable);
   }
 
   public static File getJarPath() {

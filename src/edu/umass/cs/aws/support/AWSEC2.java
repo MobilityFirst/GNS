@@ -666,7 +666,7 @@ public class AWSEC2 {
   }
 
   
-  public static int DEFAULTREACHABILITYWAITTIME = 180000; // THREE minutes...
+  public static int DEFAULTREACHABILITYWAITTIME = 240000; // FOUR minutes...
 
   /**
    * Creates an EC2 instance in the region given.

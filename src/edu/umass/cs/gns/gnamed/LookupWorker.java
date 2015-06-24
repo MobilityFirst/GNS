@@ -31,7 +31,6 @@ import org.xbill.DNS.RRset;
 import org.xbill.DNS.Section;
 import org.xbill.DNS.Credibility;
 
-//import edu.umass.cs.gns.client.UniversalGnsClient;
 /**
  * This class defines a LookupWorker which handles a single query.
  *
@@ -73,6 +72,7 @@ public class LookupWorker implements Runnable {
     this.gnsServer = gnsServer;
     this.handler = handler;
   }
+
   /**
    * @see java.lang.Thread#run()
    */
@@ -157,9 +157,9 @@ public class LookupWorker implements Runnable {
     } else {
       tasks = Arrays.asList(
               // Create GNS lookup task
-              new GnsDnsLookupTask(query, gnsServer, true, /* isGNS */ handler ),
+              new GnsDnsLookupTask(query, gnsServer, true, /* isGNS */ handler),
               // Create DNS lookup task
-              new GnsDnsLookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler ));
+              new GnsDnsLookupTask(dnsQuery, dnsServer, false, /* isGNS */ handler));
     }
 
     // A little bit of overkill for two tasks, but it's really not that much longer (if any) than
@@ -203,16 +203,17 @@ public class LookupWorker implements Runnable {
           RRset[] answers = successResponse.getSectionRRsets(Section.ANSWER);
           boolean isAuth = successResponse.getHeader().getFlag(Flags.AA);
           int qClass = successResponse.getQuestion().getDClass();
-          for(int i = 0; i < answers.length; i++) {
-            if (answers[i].getDClass() != qClass)
+          for (int i = 0; i < answers.length; i++) {
+            if (answers[i].getDClass() != qClass) {
               continue;
+            }
             int cred = getCred(Section.ANSWER, isAuth);
             dnsCache.addRRset(answers[i], cred);
             GNS.getLogger().info("Records added to cache " + answers[i].toString());
           }
         }
       } catch (NullPointerException e) {
-        GNS.getLogger().warning("Failed to add a dns response to cache" + e );
+        GNS.getLogger().warning("Failed to add a dns response to cache" + e);
       }
       return successResponse;
     } else if (errorResponse != null) {
@@ -238,21 +239,23 @@ public class LookupWorker implements Runnable {
     }
   }
 
-  private final int
-  getCred(int section, boolean isAuth) {
+  private final int getCred(int section, boolean isAuth) {
     if (section == Section.ANSWER) {
-      if (isAuth)
+      if (isAuth) {
         return Credibility.AUTH_ANSWER;
-      else
+      } else {
         return Credibility.NONAUTH_ANSWER;
+      }
     } else if (section == Section.AUTHORITY) {
-      if (isAuth)
+      if (isAuth) {
         return Credibility.AUTH_AUTHORITY;
-      else        return Credibility.NONAUTH_AUTHORITY;
+      } else {
+        return Credibility.NONAUTH_AUTHORITY;
+      }
     } else if (section == Section.ADDITIONAL) {
       return Credibility.ADDITIONAL;
     } else {
-        throw new IllegalArgumentException("getCred: invalid section");
+      throw new IllegalArgumentException("getCred: invalid section");
     }
   }
 }
