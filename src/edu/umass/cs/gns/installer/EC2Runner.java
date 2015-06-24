@@ -151,8 +151,8 @@ public class EC2Runner {
           + "yum --quiet --assumeyes install mongodb-org\n"
           + "service mongod start\n"
           // fix the sudoers so ssh sudo works all the time
-          + "chmod ug+rw /etc/sudoers"
-          + "sed \\\"s/requiretty/!requiretty/\\\" /etc/sudoers";
+          + "chmod ug+rw /etc/sudoers\n"
+          + "sed -i 's/requiretty/!requiretty/' /etc/sudoers\n";
 //  private static final String mongoInstallScript = "#!/bin/bash\n"
 //          + "cd /home/ec2-user\n"
 //          + "yum --quiet --assumeyes update\n"
