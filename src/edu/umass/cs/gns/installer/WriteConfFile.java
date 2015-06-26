@@ -30,26 +30,26 @@ import org.w3c.dom.Element;
 
 public class WriteConfFile {
 
-  public static void writeConfFiles(String directory, String keyName, String ec2UserName, String hostType, String datastore,
+  public static void writeConfFiles(String configName, String directory, String keyName, String ec2UserName, String hostType, String datastore,
           ConcurrentHashMap<String, HostInfo> idTable) {
     System.out.println("Config directory: " + directory);
     if (new File(directory).mkdirs()) {
-      writeInstallerConfigFile(directory, keyName, ec2UserName, hostType, datastore);
+      writeInstallerConfigFile(configName, directory, keyName, ec2UserName, hostType, datastore);
       writeNsHostsFile(directory, idTable);
       writeLnsHostsFile(directory, idTable);
     }
   }
 
-  private static void writeInstallerConfigFile(String directory, String keyName, String ec2UserName, String hostType, String datastore) {
+  private static void writeInstallerConfigFile(String configName, String directory, String keyName, String ec2UserName, String hostType, String datastore) {
     try {
       Properties props = new Properties();
       props.setProperty("userName", ec2UserName);
-      props.setProperty("keyFile", keyName);
+      props.setProperty("keyFile", keyName + ".pem");
       props.setProperty("hostType", hostType);
       props.setProperty("datastore", datastore);
       File f = new File(directory + System.getProperty("file.separator") + "installer_config");
       OutputStream out = new FileOutputStream(f);
-      props.store(out, "This is an optional header comment string");
+      props.store(out, "Auto generated installer config file for " + configName);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -71,7 +71,7 @@ public class WriteConfFile {
 
   private static void writeLnsHostsFile(String directory, ConcurrentHashMap<String, HostInfo> idTable) {
     try {
-      FileWriter fw = new FileWriter(directory + System.getProperty("file.separator") + "ns_hosts.txt");
+      FileWriter fw = new FileWriter(directory + System.getProperty("file.separator") + "lns_hosts.txt");
       for (HostInfo info : idTable.values()) {
         fw.write(info.getHostname() + System.getProperty("line.separator"));
       }
