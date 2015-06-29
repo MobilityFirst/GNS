@@ -25,3 +25,6 @@ build.number
 /scripts/newApp/LNSlogfile
 /scripts/newApp/NSlogfile.txt
 /scripts/newApp/LNSlogfile.txt
+/scripts/noopTest/paxos_logs/
+/scripts/noopTest/paxos_large_checkpoints/
+/scripts/noopTest/reconfiguration_DB/

@@ -1,0 +1,26 @@
+----------------------------------------------------------------
+Mon Jun 29 13:16:18 EDT 2015:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance a816c00e-014e-4051-c883-00000cf57f28 
+on database directory /Users/westy/Documents/Code/GNS/scripts/noopTest/paxos_logs with class loader sun.misc.Launcher$AppClassLoader@591ce4fe 
+Loaded from file:/Users/westy/Documents/Code/GNS/dist/GNS.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.7.0_45-b18
+user.dir=/Users/westy/Documents/Code/GNS/scripts/noopTest
+os.name=Mac OS X
+os.arch=x86_64
+os.version=10.10.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''
+----------------------------------------------------------------
+Mon Jun 29 13:16:24 EDT 2015:
+Booting Derby version The Apache Software Foundation - Apache Derby - 10.11.1.1 - (1616546): instance f33d40c7-014e-4051-c883-00000cf57f28 
+on database directory /Users/westy/Documents/Code/GNS/scripts/noopTest/reconfiguration_DB with class loader sun.misc.Launcher$AppClassLoader@591ce4fe 
+Loaded from file:/Users/westy/Documents/Code/GNS/dist/GNS.jar
+java.vendor=Oracle Corporation
+java.runtime.version=1.7.0_45-b18
+user.dir=/Users/westy/Documents/Code/GNS/scripts/noopTest
+os.name=Mac OS X
+os.arch=x86_64
+os.version=10.10.1
+derby.system.home=null
+Database Class Loader started - derby.database.classpath=''

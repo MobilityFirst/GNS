@@ -53,7 +53,6 @@ public class GNSInstaller {
   private static final String DEFAULT_INSTALL_PATH = "gns";
   private static final String INSTALLER_CONFIG_FILENAME = "installer_config";
   private static final String LNS_CONF_FILENAME = "lns.conf";
-  //private static final String CCP_CONF_FILENAME = "ccp.conf";
   private static final String NS_CONF_FILENAME = "ns.conf";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
@@ -87,8 +86,8 @@ public class GNSInstaller {
   private static String lnsConfFileName;
 
   private static final String StartLNSClass = "edu.umass.cs.gns.localnameserver.LocalNameServer";
-  //private static final String StartCCPClass = "edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor";
   private static final String StartNSClass = "edu.umass.cs.gns.newApp.AppReconfigurableNode";
+  private static final String StartNoopClass = "edu.umass.cs.gns.newApp.noopTest.DistributedNoopReconfigurableNode";
 
   private static final String CHANGETOINSTALLDIR
           = "# make current directory the directory this script is in\n"
@@ -180,12 +179,13 @@ public class GNSInstaller {
    * @param runAsRoot
    */
   public static void updateRunSet(String name, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
-          String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot) {
+          String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot, boolean noopTest) {
     ArrayList<Thread> threads = new ArrayList<>();
     for (HostInfo info : hostTable.values()) {
-      threads.add(new UpdateThread(info.getHostname(), info.getNsId(), info.isCreateLNS(),
+      threads.add(new UpdateThread(info.getHostname(), info.getNsId(), 
+              noopTest ? false : info.isCreateLNS(),
               action, removeLogs, deleteDatabase,
-              lnsHostsFile, nsHostsFile, scriptFile, runAsRoot));
+              lnsHostsFile, nsHostsFile, scriptFile, runAsRoot, noopTest));
     }
     for (Thread thread : threads) {
       thread.start();
@@ -234,9 +234,14 @@ public class GNSInstaller {
    */
   public static void updateAndRunGNS(String nsId, boolean createLNS, String hostname, InstallerAction action,
           boolean removeLogs, boolean deleteDatabase,
-          String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot) throws UnknownHostException {
+          String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot,
+          boolean noopTest) throws UnknownHostException {
     if (!action.equals(InstallerAction.STOP)) {
-      System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
+      if (!noopTest) {
+        System.out.println("**** NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " starting update ****");
+      } else {
+        System.out.println("#### Noop test " + nsId + " on " + hostname + " starting update ****");
+      }
       if (action == InstallerAction.UPDATE) {
         makeInstallDir(hostname);
       }
@@ -252,14 +257,19 @@ public class GNSInstaller {
       }
       switch (action) {
         case UPDATE:
-          copyJarAndConfFiles(hostname, createLNS);
+          copyJarAndConfFiles(hostname, createLNS, noopTest);
           copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
           break;
         case RESTART:
           break;
       }
-      startServers(nsId, createLNS, hostname, runAsRoot);
-      System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
+      if (!noopTest) {
+        startServers(nsId, createLNS, hostname, runAsRoot);
+        System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " finished update ####");
+      } else {
+        startNoopServers(nsId, hostname, runAsRoot);
+        System.out.println("#### Noop test " + nsId + " on " + hostname + " finished update ####");
+      }
     } else {
       killAllServers(hostname, runAsRoot);
       System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " has been stopped ####");
@@ -312,31 +322,34 @@ public class GNSInstaller {
               + NS_CONF_FILENAME + " "
               + " -demandProfileClass edu.umass.cs.gns.newApp.NullDemandProfile "
               + " > NSlogfile 2>&1 &");
-//      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName,
-//              //runAsRoot,
-//              buildInstallFilePath("runCCP.sh"),
-//              "#!/bin/bash\n"
-//              + CHANGETOINSTALLDIR
-//              + "if [ -f CCPlogfile ]; then\n"
-//              + "mv --backup=numbered CCPlogfile CCPlogfile.save\n"
-//              + "fi\n"
-//              + ((runAsRoot) ? "sudo " : "")
-//              + "nohup " + JAVA_COMMAND + " " + gnsJarFileName + " " + StartCCPClass + " "
-//              + "-host "
-//              + hostname + " "
-//              + "-port "
-//              + GNS.DEFAULT_CCP_TCP_PORT + " "
-//              // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the CCP needs this
-//              + "-nsfile "
-//              + NS_HOSTS_FILENAME + " "
-//              + "-configFile "
-//              + CCP_CONF_FILENAME + " "
-//              + "-activeReplicaID "
-//              + nsId.toString() + " "
-//              + "-debug "
-//              + " > CCPlogfile 2>&1 &");
     }
     System.out.println("All servers started");
+  }
+
+  /**
+   * Starts a noop test server.
+   *
+   * @param nsId
+   * @param hostname
+   * @param runAsRoot
+   */
+  private static void startNoopServers(String nsId, String hostname, boolean runAsRoot) {
+    File keyFileName = getKeyFile();
+    if (nsId != null) {
+      System.out.println("Starting noop server");
+      ExecuteBash.executeBashScriptNoSudo(userName, hostname, keyFileName, buildInstallFilePath("runNoop.sh"),
+              "#!/bin/bash\n"
+              + CHANGETOINSTALLDIR
+              + "if [ -f Nooplogfile ]; then\n"
+              + "mv --backup=numbered Nooplogfile Nooplogfile.save\n"
+              + "fi\n"
+              + ((runAsRoot) ? "sudo " : "")
+              + "nohup " + javaCommand + " -cp " + gnsJarFileName + " " + StartNoopClass + " "
+              + nsId.toString() + " "
+              + NS_HOSTS_FILENAME + " "
+              + " > Nooplogfile 2>&1 &");
+    }
+    System.out.println("Noop server started");
   }
 
   /**
@@ -345,15 +358,17 @@ public class GNSInstaller {
    * @param id
    * @param hostname
    */
-  private static void copyJarAndConfFiles(String hostname, boolean createLNS) {
+  private static void copyJarAndConfFiles(String hostname, boolean createLNS, boolean noopTest) {
     File keyFileName = getKeyFile();
     System.out.println("Copying jar and conf files");
     RSync.upload(userName, hostname, keyFileName, gnsJarFileLocation, buildInstallFilePath(gnsJarFileName));
-    if (createLNS) {
+    if (createLNS && !noopTest) {
       RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
     }
     //RSync.upload(userName, hostname, keyFileName, ccpConfFileLocation, buildInstallFilePath(ccpConfFileName));
-    RSync.upload(userName, hostname, keyFileName, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
+    if (!noopTest) {
+      RSync.upload(userName, hostname, keyFileName, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
+    }
   }
 
   /**
@@ -408,7 +423,7 @@ public class GNSInstaller {
             ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + javaCommand + " -cp " + gnsJarFileName + "\""
             // catch this one as well just in case
-            + "\n"       
+            + "\n"
             + ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + "java -ea -cp " + gnsJarFileName + "\""
     );
@@ -431,9 +446,9 @@ public class GNSInstaller {
             + ((runAsRoot) ? "sudo " : "")
             + "rm NSlogfile*\n"
             + ((runAsRoot) ? "sudo " : "")
+            + "rm Nooplogfile*\n"
+            + ((runAsRoot) ? "sudo " : "")
             + "rm LNSlogfile*\n"
-//            + ((runAsRoot) ? "sudo " : "")
-//            + "rm CCPlogfile*\n"
             + ((runAsRoot) ? "sudo " : "")
             + "rm -rf log\n"
             + ((runAsRoot) ? "sudo " : "")
@@ -506,9 +521,6 @@ public class GNSInstaller {
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_CONF_FILENAME);
     }
-//    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + CCP_CONF_FILENAME, confFolderPath)) {
-//      System.out.println("Config folder " + configNameOrFolder + " missing file " + CCP_CONF_FILENAME);
-//    }
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_CONF_FILENAME);
     }
@@ -519,10 +531,8 @@ public class GNSInstaller {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_HOSTS_FILENAME);
     }
     lnsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath).toString();
-    //ccpConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + CCP_CONF_FILENAME, confFolderPath).toString();
     nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath).toString();
     lnsConfFileName = new File(lnsConfFileLocation).getName();
-    //ccpConfFileName = new File(ccpConfFileLocation).getName();
     nsConfFileName = new File(nsConfFileLocation).getName();
     return true;
   }
@@ -586,6 +596,7 @@ public class GNSInstaller {
             .withDescription("stops GNS servers in a installation")
             .create("stop");
     Option root = new Option("root", "run the installation as root");
+    Option noopTest = new Option("noopTest", "starts noop test servers instead of GNS APP servers");
 
     commandLineOptions = new Options();
     commandLineOptions.addOption(update);
@@ -596,6 +607,7 @@ public class GNSInstaller {
     commandLineOptions.addOption(dataStore);
     commandLineOptions.addOption(scriptFile);
     commandLineOptions.addOption(root);
+    commandLineOptions.addOption(noopTest);
     commandLineOptions.addOption(help);
 
     CommandLineParser parser = new GnuParser();
@@ -621,6 +633,7 @@ public class GNSInstaller {
       boolean deleteDatabase = parser.hasOption("deleteDatabase");
       String scriptFile = parser.getOptionValue("scriptFile");
       boolean runAsRoot = parser.hasOption("root");
+      boolean noopTest = parser.hasOption("noopTest");
 
       if (dataStoreName != null) {
         try {
@@ -660,12 +673,12 @@ public class GNSInstaller {
 
       if (runsetUpdate != null) {
         updateRunSet(runsetUpdate, InstallerAction.UPDATE, removeLogs, deleteDatabase,
-                lnsHostFile, nsHostFile, scriptFile, runAsRoot);
+                lnsHostFile, nsHostFile, scriptFile, runAsRoot, noopTest);
       } else if (runsetRestart != null) {
         updateRunSet(runsetRestart, InstallerAction.RESTART, removeLogs, deleteDatabase,
-                lnsHostFile, nsHostFile, scriptFile, runAsRoot);
+                lnsHostFile, nsHostFile, scriptFile, runAsRoot, noopTest);
       } else if (runsetStop != null) {
-        updateRunSet(runsetStop, InstallerAction.STOP, false, false, null, null, null, runAsRoot);
+        updateRunSet(runsetStop, InstallerAction.STOP, false, false, null, null, null, runAsRoot, noopTest);
       } else {
         printUsage();
         System.exit(1);
@@ -694,9 +707,10 @@ public class GNSInstaller {
     private final String nsHostsFile;
     private final String scriptFile;
     private final boolean runAsRoot;
+    private final boolean noopTest;
 
     public UpdateThread(String hostname, String nsId, boolean createLNS, InstallerAction action, boolean removeLogs, boolean deleteDatabase,
-            String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot) {
+            String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot, boolean noopTest) {
       this.hostname = hostname;
       this.nsId = nsId;
       this.createLNS = createLNS;
@@ -707,13 +721,14 @@ public class GNSInstaller {
       this.lnsHostsFile = lnsHostsFile;
       this.nsHostsFile = nsHostsFile;
       this.runAsRoot = runAsRoot;
+      this.noopTest = noopTest;
     }
 
     @Override
     public void run() {
       try {
         GNSInstaller.updateAndRunGNS(nsId, createLNS, hostname, action, removeLogs, deleteDatabase,
-                lnsHostsFile, nsHostsFile, scriptFile, runAsRoot);
+                lnsHostsFile, nsHostsFile, scriptFile, runAsRoot, noopTest);
       } catch (UnknownHostException e) {
         GNS.getLogger().info("Unknown hostname while updating " + hostname + ": " + e);
       }

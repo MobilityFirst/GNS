@@ -46,7 +46,9 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
   private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {
     GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, nodeID);
+    System.out.println("********* Starting active replica. *********");
     new AppReconfigurableNode((String) nodeConfig.getReplicaNodeIdForTopLevelNode(nodeID), nodeConfig);
+    System.out.println("********* Starting reconfigurator. *********");
     new AppReconfigurableNode((String) nodeConfig.getReconfiguratorNodeIdForTopLevelNode(nodeID), nodeConfig);
     System.out.println("********* Nodes have started. Server is ready. *********");
   }
@@ -62,7 +64,8 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     GNSNodeConfig<String> nodeConfig = new GNSNodeConfig<String>(nodeConfigFilename, true);
     try {
       for (String activeID : (Set<String>) nodeConfig.getActiveReplicas()) {
-        System.out.println("#####################################################");
+        System.out.println("########### Multi-node test #############");
+        System.out.println("###################################");
         System.out.println("############# Setting up active replica " + activeID);
         new AppReconfigurableNode(activeID, nodeConfig);
       }
