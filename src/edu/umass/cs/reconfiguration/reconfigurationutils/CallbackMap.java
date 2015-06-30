@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
 
 /**

@@ -50,7 +50,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurabl
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -148,7 +148,7 @@ public class Reconfigurator<NodeIDType> implements
 		try {
 			ReconfigurationPacket.PacketType rcType = ReconfigurationPacket
 					.getReconfigurationPacketType(jsonObject);
-			log.log(Level.FINEST, ML.F[3], new Object[] { this, "received",
+			log.log(Level.FINEST, MyLogger.FORMAT[3], new Object[] { this, "received",
 					rcType, jsonObject });
 			/*
 			 * This assertion is true only if TLS with mutual authentication is
@@ -167,7 +167,7 @@ public class Reconfigurator<NodeIDType> implements
 			// all packets are handled through executor, nice and simple
 			if (!this.protocolExecutor.handleEvent(rcPacket))
 				// do nothing
-				log.log(Level.FINE, ML.F[2], new Object[] { this,
+				log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] { this,
 						"unable to handle packet", jsonObject });
 		} catch (JSONException je) {
 			je.printStackTrace();
@@ -211,7 +211,7 @@ public class Reconfigurator<NodeIDType> implements
 	public GenericMessagingTask<NodeIDType, ?>[] handleDemandReport(
 			DemandReport<NodeIDType> report,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
-		log.log(Level.FINEST, ML.F[3],
+		log.log(Level.FINEST, MyLogger.FORMAT[3],
 				new Object[] { this, "received", report.getType(), report });
 		if (report.needsCoordination())
 			this.DB.handleIncoming(report); // coordinated
@@ -673,7 +673,7 @@ public class Reconfigurator<NodeIDType> implements
 		assert (!this.isTaskRunning(this.getTaskKey(WaitAckStopEpoch.class,
 				rcRecReq)));
 		log.log(Level.FINE,
-				ML.F[8],
+				MyLogger.FORMAT[8],
 				new Object[] { this, "spawning WaitAckStopEpoch for",
 						rcRecReq.startEpoch.getPrevGroupName(), ":",
 						rcRecReq.getEpochNumber() - 1, "for starting",
@@ -693,7 +693,7 @@ public class Reconfigurator<NodeIDType> implements
 		assert (!this.isTaskRunning(this.getTaskKey(WaitPrimaryExecution.class,
 				rcRecReq)));
 
-		log.log(Level.FINE, ML.F[3],
+		log.log(Level.FINE, MyLogger.FORMAT[3],
 				new Object[] { this, " spawning WaitPrimaryExecution for ",
 						rcRecReq.getServiceName(),
 						rcRecReq.getEpochNumber() - 1 });
@@ -1382,7 +1382,7 @@ public class Reconfigurator<NodeIDType> implements
 	protected void sendRCReconfigurationErrorToInitiator(
 			ReconfigureRCNodeConfig<NodeIDType> changeRCReq) {
 		try {
-			log.log(Level.INFO, ML.F[2],
+			log.log(Level.INFO, MyLogger.FORMAT[2],
 					new Object[] { this,
 							"sending ReconfigureRCNodeConfig error to",
 							changeRCReq.getRequester() });

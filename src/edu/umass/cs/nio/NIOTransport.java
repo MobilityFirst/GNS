@@ -3,7 +3,7 @@ package edu.umass.cs.nio;
 import edu.umass.cs.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 import edu.umass.cs.utils.Stringer;
 
 import java.io.IOException;
@@ -457,7 +457,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
-		log.log(Level.FINE, ML.F[2], new Object[] { this,
+		log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] { this,
 				"accepted connection from", socketChannel.getRemoteAddress() });
 		NIOInstrumenter.incrAccepted();
 		socketChannel.socket().setKeepAlive(true);
@@ -647,7 +647,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			if (queue.size() < getMaxQueuedSends()) {
 				queue.add(ByteBuffer.wrap(data));
 				queuedBytes = data.length;
-				log.log(Level.FINE, ML.F[3], new Object[] { this,
+				log.log(Level.FINE, MyLogger.FORMAT[3], new Object[] { this,
 						"queued", new Stringer(data) });
 			} else {
 				log.log(Level.WARNING,

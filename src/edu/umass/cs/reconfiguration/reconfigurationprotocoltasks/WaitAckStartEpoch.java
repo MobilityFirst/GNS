@@ -20,7 +20,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -62,7 +62,7 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		log.log(Level.WARNING, ML.F[2], new Object[] { this.refreshKey(),
+		log.log(Level.WARNING, MyLogger.FORMAT[2], new Object[] { this.refreshKey(),
 				" re-starting ", this.startEpoch.getSummary() });
 		if (!this.amObviated())
 			return start();
@@ -83,7 +83,7 @@ public class WaitAckStartEpoch<NodeIDType>
 
 		assert (!this.startEpoch.isMerge() || this.startEpoch.curEpochGroup
 				.contains(this.DB.getMyID()));
-		log.log(Level.INFO, ML.F[2], new Object[] { this.refreshKey(),
+		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this.refreshKey(),
 				" starting ", this.startEpoch.getSummary() });
 
 		GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>> mtask = !this.startEpoch
@@ -132,7 +132,7 @@ public class WaitAckStartEpoch<NodeIDType>
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType().equals(types[0]));
 		AckStartEpoch<NodeIDType> ackStart = ((AckStartEpoch<NodeIDType>) event);
-		log.log(Level.FINE, ML.F[2],
+		log.log(Level.FINE, MyLogger.FORMAT[2],
 				new Object[] { this, "received", ackStart.getSummary(), "from",
 						ackStart.getSender() });
 
@@ -151,7 +151,7 @@ public class WaitAckStartEpoch<NodeIDType>
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 
-		log.log(Level.INFO, ML.F[3], new Object[] {
+		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {
 				this,
 				" received MAJORITY ACKs for ",
 				startEpoch.getSummary(),

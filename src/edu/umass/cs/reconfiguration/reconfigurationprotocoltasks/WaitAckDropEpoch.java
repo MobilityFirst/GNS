@@ -20,7 +20,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -93,7 +93,7 @@ public class WaitAckDropEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
 		// send DropEpoch to all new actives and await acks from all?
-		log.log(Level.INFO, ML.F[2], new Object[] {
+		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] {
 				this.refreshKey(),
 				" (re-)sending[" + this.numRestarts + " of " + MAX_RESTARTS
 						+ "] ", this.dropEpoch.getSummary() });
@@ -157,7 +157,7 @@ public class WaitAckDropEpoch<NodeIDType>
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType()
 				.equals(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE));
-		log.log(Level.FINE, ML.F[2],
+		log.log(Level.FINE, MyLogger.FORMAT[2],
 				new Object[] { this.refreshKey(), "received",
 						((AckDropEpochFinalState<String>) event).getSummary() });
 		return true;

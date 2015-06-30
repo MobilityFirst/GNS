@@ -30,7 +30,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigureRCNodeConf
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -111,7 +111,7 @@ public class ReconfigurableClient {
 			RequestParseException {
 		InetSocketAddress sockAddr = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
 				.getFirstActiveReplica() : this.getRandomActiveReplica());
-		log.log(Level.INFO, ML.F[7].replace(" ", ""), new Object[] {
+		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[] {
 				"Sending ", req.getRequestType(), " to ", sockAddr, ":",
 				(sockAddr), ": ", req });
 		this.sentRequests.put(req.getServiceName(), System.currentTimeMillis());
@@ -122,7 +122,7 @@ public class ReconfigurableClient {
 			throws JSONException, IOException {
 		InetSocketAddress sockAddr = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
 				.getFirstRCReplica() : this.getRandomRCReplica());
-		log.log(Level.INFO, ML.F[7].replace(" ", ""), new Object[] {
+		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[] {
 				"Sending ", req.getSummary(), " to ", sockAddr, ":",
 				(sockAddr), ": ", req });
 		this.sentRequests.put(req.getServiceName(), System.currentTimeMillis());
@@ -148,7 +148,7 @@ public class ReconfigurableClient {
 
 		@Override
 		public boolean handleMessage(JSONObject json) {
-			log.log(Level.FINEST, ML.F[1], new Object[] { "Client received: ",
+			log.log(Level.FINEST, MyLogger.FORMAT[1], new Object[] { "Client received: ",
 					json });
 			try {
 				ReconfigurationPacket.PacketType rcType = ReconfigurationPacket
@@ -225,7 +225,7 @@ public class ReconfigurableClient {
 					case DEFAULT_APP_REQUEST:
 						AppRequest request = new AppRequest(json);
 						log.log(Level.INFO,
-								ML.F[1],
+								MyLogger.FORMAT[1],
 								new Object[] {
 										"App executed request",
 										request.getRequestID() + ":"

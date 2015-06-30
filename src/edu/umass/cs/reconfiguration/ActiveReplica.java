@@ -47,7 +47,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDe
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -143,7 +143,7 @@ public class ActiveReplica<NodeIDType> implements
 							.getReconfigurationPacket(jsonObject)) != null) {
 				if (!this.protocolExecutor.handleEvent(rcPacket)) {
 					// do nothing
-					log.log(Level.FINE, ML.F[2], new Object[] { this,
+					log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] { this,
 							"unable to handle packet", jsonObject });
 				}
 			}
@@ -385,7 +385,7 @@ public class ActiveReplica<NodeIDType> implements
 				.getTaskKeyPrev(WaitEpochFinalState.class, dropEpoch, this
 						.getMyID().toString())) != null);
 		if (removed)
-			log.log(Level.FINEST, ML.F[4], new Object[] { this,
+			log.log(Level.FINEST, MyLogger.FORMAT[4], new Object[] { this,
 					" removed WaitEpochFinalState", dropEpoch.getServiceName(),
 					":", (dropEpoch.getEpochNumber() - 1) });
 	}
@@ -404,7 +404,7 @@ public class ActiveReplica<NodeIDType> implements
 		StringContainer stateContainer = this.getFinalStateContainer(
 				request.getServiceName(), request.getEpochNumber());
 		if (stateContainer == null) {
-			log.log(Level.INFO, ML.F[2],
+			log.log(Level.INFO, MyLogger.FORMAT[2],
 					new Object[] { this,
 							"****did not find any epoch final state for****",
 							request.getSummary() });
@@ -417,7 +417,7 @@ public class ActiveReplica<NodeIDType> implements
 		GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>> mtask = null;
 
 		log.log(Level.INFO,
-				ML.F[3],
+				MyLogger.FORMAT[3],
 				new Object[] { this, "returning epoch final state to ",
 						event.getKey(), epochState.getSummary() });
 		mtask = new GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>>(

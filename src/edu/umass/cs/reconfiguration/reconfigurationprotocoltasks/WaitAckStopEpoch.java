@@ -23,7 +23,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -83,7 +83,7 @@ public class WaitAckStopEpoch<NodeIDType>
 		}
 		// else
 		if (++restartCount % 2 == 0)
-			log.log(Level.WARNING, ML.F[2], new Object[] { this.refreshKey(),
+			log.log(Level.WARNING, MyLogger.FORMAT[2], new Object[] { this.refreshKey(),
 					" resending ", this.stopEpoch.getSummary() });
 		return start();
 	}

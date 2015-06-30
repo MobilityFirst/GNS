@@ -17,7 +17,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -80,7 +80,7 @@ public class WaitCoordinatedCommit<NodeIDType>
 			return killMyself();
 		// else coordinate RC record request again
 		log.log(Level.INFO,
-				ML.F[3],
+				MyLogger.FORMAT[3],
 				new Object[] {
 						this.refreshKey(),
 						" re-proposing ",

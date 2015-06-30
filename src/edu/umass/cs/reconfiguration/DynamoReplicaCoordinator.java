@@ -13,7 +13,7 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author arun
@@ -51,7 +51,7 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
 		try {
-			log.log(Level.INFO, ML.F[4], new Object[] { this,
+			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this,
 					"lazily coordinating", request.getRequestType(), ": ",
 					request });
 			this.sendAllLazy(request);

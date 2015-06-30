@@ -26,7 +26,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.utils.DelayProfiler;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -203,7 +203,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		boolean handled = false;
 		if (rcRecReq.isReconfigurationIntent()) {
 			// READY -> WAIT_ACK_STOP
-			log.log(Level.FINE, ML.F[10],
+			log.log(Level.FINE, MyLogger.FORMAT[10],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "->",
@@ -217,7 +217,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					rcRecReq.getInitiator());
 		} else if (rcRecReq.isReconfigurationComplete()) {
 			// WAIT_ACK_START -> READY
-			log.log(Level.FINE, ML.F[9],
+			log.log(Level.FINE, MyLogger.FORMAT[9],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "->",
@@ -234,7 +234,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			// merge ops should be specified at new epoch creation time
 		} else if (rcRecReq.isDeleteIntent()) {
 			// WAIT_ACK_STOP -> WAIT_DELETE
-			log.log(Level.FINE, ML.F[7],
+			log.log(Level.FINE, MyLogger.FORMAT[7],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "-> DELETE" });
@@ -244,7 +244,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							rcRecReq.getEpochNumber() /*- 1*/);
 		} else if (rcRecReq.isReconfigurationPrevDropComplete()) {
 			// READY -> READY_READY or WAIT_DELETE -> DELETE
-			log.log(Level.FINE, ML.F[7],
+			log.log(Level.FINE, MyLogger.FORMAT[7],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(),
@@ -266,7 +266,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		} else if (rcRecReq.isReconfigurationMerge()) {
 			// MERGE
 			log.log(Level.FINE,
-					ML.F[9],
+					MyLogger.FORMAT[9],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; merging state",
 							rcRecReq.startEpoch.getPrevGroupName(),

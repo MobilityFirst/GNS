@@ -33,7 +33,7 @@ import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Keyable;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -743,7 +743,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 		if ((preActiveProposals = this.coordinator.getPreActivesIfPreempted(
 				prepareReply, this.groupMembers)) != null) {
-			log.log(Level.INFO, ML.F[4], new Object[] { this.getNodeState(),
+			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this.getNodeState(),
 					"(", this.coordinator.getBallotStr(),
 					") election PREEMPTED by ", prepareReply.ballot });
 			if (!preActiveProposals.isEmpty())
@@ -755,7 +755,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				&& !acceptList.isEmpty()) {
 			mtask = new MessagingTask(this.groupMembers,
 					MessagingTask.toPaxosPacketArray(acceptList.toArray()));
-			log.log(Level.INFO, ML.F[2], new Object[] { this.getNodeState(),
+			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this.getNodeState(),
 					"elected coordinator; sending ACCEPTs for:", mtask });
 		}
 
@@ -865,7 +865,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 								.makeNoop().setForwarderID(this.getMyID()));
 				committedPValue.addDebugInfo("f");
 			}
-			log.log(Level.INFO, ML.F[4], new Object[] { this.getNodeState(),
+			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this.getNodeState(),
 					"forwarding preempted request as no-op to node",
 					acceptReply.ballot.coordinatorID, ": ", committedPValue });
 		}
@@ -925,7 +925,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			fixGapsRequest = this
 					.requestMissingDecisions((committed.ballot.coordinatorID));
 			if (fixGapsRequest != null) {
-				log.log(Level.INFO, ML.F[2], new Object[] {
+				log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] {
 						this.getNodeState(), "fixing gaps:", fixGapsRequest });
 				activeState.justSyncd(); // don't need to put into map again
 
@@ -992,7 +992,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						this.clientRequestHandler.getState(pid),
 						this.paxosState.getGCSlot(),
 						inorderDecision.getCreateTime());
-				log.log(Level.INFO, ML.F[0],
+				log.log(Level.INFO, MyLogger.FORMAT[0],
 						new Object[] { DelayProfiler.getStats() });
 			}
 			/*
@@ -1060,7 +1060,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					this.clientRequestHandler.getState(getPaxosID()),
 					this.paxosState.getGCSlot());
 			log.log(Level.INFO,
-					ML.F[2],
+					MyLogger.FORMAT[2],
 					new Object[] {
 							this.getNodeState(),
 							"inserted checkpoint through handleCheckpoint, next slot =",
@@ -1092,7 +1092,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 							this.paxosState.getGCSlot());
 					checkpointed = true;
 					log.log(Level.INFO,
-							ML.F[7],
+							MyLogger.FORMAT[7],
 							new Object[] {
 									this.getNodeState(),
 									"forcing checkpoint at slot",
@@ -1125,7 +1125,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				this.clientRequestHandler.getState(pid),
 				this.paxosState.getGCSlot());
 		log.log(Level.INFO,
-				ML.F[7],
+				MyLogger.FORMAT[7],
 				new Object[] {
 						this.getNodeState(),
 						"forcing checkpoint at slot",
@@ -1263,7 +1263,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			 * (much longer than the typical node failure detection timeout).
 			 */
 			log.log(Level.INFO,
-					ML.F[3],
+					MyLogger.FORMAT[3],
 					new Object[] {
 							getNodeState(),
 							" decides to run for coordinator as node ",
@@ -1369,7 +1369,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		AcceptPacket accept = this.coordinator
 				.reissueAcceptIfWaitingTooLong(this.paxosState.getSlot());
 		if (accept != null)
-			log.log(Level.INFO, ML.F[2], new Object[] { this.getNodeState(),
+			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this.getNodeState(),
 					" resending timed out ACCEPT ", accept });
 		MessagingTask reAccept = (accept != null ? new MessagingTask(
 				this.groupMembers, accept) : null);
@@ -1420,7 +1420,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		SyncDecisionsPacket srp = new SyncDecisionsPacket(this.getMyID(), 1,
 				missingSlotNumbers, true);
 
-		log.log(Level.INFO, ML.F[1], new Object[] { this,
+		log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] { this,
 				"requesting missing zeroth checkpoint." });
 		// send sync request to coordinator or multicast to others if I am
 		// coordinator
@@ -1535,7 +1535,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				.get(0) ? StatePacket.getStatePacket(this.paxosManager
 				.getPaxosLogger().getSlotBallotState(this.getPaxosID())) : null);
 		if (statePacket != null)
-			log.log(Level.INFO, ML.F[4], new Object[] { this.getNodeState(),
+			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this.getNodeState(),
 					"sending checkpoint to node", syncReply.nodeID, ":",
 					statePacket });
 		else

@@ -56,7 +56,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.StringLocker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -435,7 +435,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		if (record == null || record.getEpoch() != epoch)
 			return false;
 
-		log.log(Level.INFO, ML.F[4],
+		log.log(Level.INFO, MyLogger.FORMAT[4],
 				new Object[] { "==============================> ", this, name,
 						" ->", "DELETE" });
 		boolean deleted = this.deleteReconfigurationRecord(name,
@@ -456,7 +456,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 		// READY possible under merge operations
 		assert (record.getState().equals(RCStates.WAIT_ACK_STOP)) : record;
-		log.log(Level.INFO, ML.F[4], new Object[] {
+		log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] {
 				"==============================> ", this, name, " ->",
 				"DELETE PENDING" });
 

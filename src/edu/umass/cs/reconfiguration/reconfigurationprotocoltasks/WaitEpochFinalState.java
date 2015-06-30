@@ -22,7 +22,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestEpochFinalState;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -79,7 +79,7 @@ public class WaitEpochFinalState<NodeIDType>
 					.iterator();
 		GenericMessagingTask<NodeIDType, ?>[] mtasks = start();
 		if (mtasks != null)
-			log.log(Level.WARNING, ML.F[2], new Object[] { getKey(),
+			log.log(Level.WARNING, MyLogger.FORMAT[2], new Object[] { getKey(),
 					" resending request to ", mtasks[0].recipients[0] });
 		return mtasks;
 	}
@@ -186,7 +186,7 @@ public class WaitEpochFinalState<NodeIDType>
 			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>) event;
 			if (!checkEpochFinalState(event))
 				break;
-			log.log(Level.INFO, ML.F[4],
+			log.log(Level.INFO, MyLogger.FORMAT[4],
 					new Object[] { this, "received", state.getSummary(),
 							"state=", state.getState() });
 			handled = this.appCoordinator.createReplicaGroup(
@@ -257,7 +257,7 @@ public class WaitEpochFinalState<NodeIDType>
 			ackStartEpoch.setKey(this.notifiees.get(node));
 			mtasks.add(new GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>(
 					node, ackStartEpoch));
-			log.log(Level.INFO, ML.F[5], new Object[] { this,
+			log.log(Level.INFO, MyLogger.FORMAT[5], new Object[] { this,
 					"sending", ackStartEpoch.getSummary(), "to RC" + node,
 					"with key", this.notifiees.get(node) });
 		}
