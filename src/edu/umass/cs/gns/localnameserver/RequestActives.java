@@ -51,9 +51,13 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
   public GenericMessagingTask[] restart() {
     if (this.amObviated()) {
       try {
-        handler.sendToClosestServer(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-                lnsRequestInfo.getCommandPacket().toJSONObject());
-      } catch (IOException | JSONException e) {
+        handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
+                lnsRequestInfo.getCommandPacket().toJSONObject(),
+                handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+                handler));
+//       handler.sendToClosestServer(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+//                lnsRequestInfo.getCommandPacket().toJSONObject());
+      } catch (JSONException e) {
         log.severe(this.refreshKey() + " unable to send command packet " + e);
       }
       ProtocolExecutor.cancel(this);
@@ -84,11 +88,11 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
   public GenericMessagingTask[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
             lnsRequestInfo.getServiceName(), 0);
-    
+
     int reconfigIndex = requestCount % reconfigurators.size();
     if (handler.isDebugMode()) {
-      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " / " + lnsRequestInfo.getServiceName() 
-              + " Sending to " + reconfigurators.get(reconfigIndex) 
+      log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " / " + lnsRequestInfo.getServiceName()
+              + " Sending to " + reconfigurators.get(reconfigIndex)
               + " " + packet);
     }
     GenericMessagingTask mtasks[] = new GenericMessagingTask(reconfigurators.get(reconfigIndex), packet).toArray();

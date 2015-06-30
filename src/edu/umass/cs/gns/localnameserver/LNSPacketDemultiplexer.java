@@ -110,7 +110,9 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
           GNS.getLogger().info("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
         }
       }
-      handler.sendToClosestServer(actives, packet.toJSONObject());
+      //handler.sendToClosestServer(actives, packet.toJSONObject());
+      handler.getProtocolExecutor().schedule(new CommandRetransmitter(requestId, packet.toJSONObject(), 
+              actives, handler));
     } else {
       handler.getProtocolExecutor().schedule(new RequestActives(requestInfo, handler));
     }
@@ -144,7 +146,9 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
                 + " vs. " + returnPacket.getServiceName());
       }
     } else {
-      GNS.getLogger().severe("Command response packet info not found for " + id + ": " + json);
+      if (handler.isDebugMode()) {
+        GNS.getLogger().info("Duplicate response for " + id + ": " + json);
+      }
     }
   }
 

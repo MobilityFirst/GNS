@@ -320,7 +320,7 @@ public class GNSInstaller {
               + NS_HOSTS_FILENAME + " "
               + "-configFile "
               + NS_CONF_FILENAME + " "
-              + " -demandProfileClass edu.umass.cs.gns.newApp.NullDemandProfile "
+              //+ " -demandProfileClass edu.umass.cs.gns.newApp.NullDemandProfile "
               + " > NSlogfile 2>&1 &");
     }
     System.out.println("All servers started");

@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.newApp.packet;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 

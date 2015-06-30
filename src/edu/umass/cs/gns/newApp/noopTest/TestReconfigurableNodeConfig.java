@@ -131,7 +131,10 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
       System.out.println("For node " + spec.getId()
               + ":  public name => " + spec.getName()
               + " public ip => " + spec.getExternalIP());
-      add(spec.getId(), InetAddress.getByName(spec.getName()));
+      add(spec.getId(), 
+              InetAddress.getByName(spec.getExternalIP())
+              //InetAddress.getByName(spec.getName())
+      );
     }
 
   }
