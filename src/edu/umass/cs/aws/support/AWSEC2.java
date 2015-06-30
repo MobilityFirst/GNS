@@ -22,6 +22,7 @@ import com.amazonaws.services.ec2.model.DescribeAvailabilityZonesResult;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
 import com.amazonaws.services.ec2.model.DescribeKeyPairsResult;
 import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
+import com.amazonaws.services.ec2.model.DomainType;
 import com.amazonaws.services.ec2.model.ImportKeyPairRequest;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.IpPermission;
@@ -70,6 +71,8 @@ public class AWSEC2 {
    *            sample.
    * http://aws.amazon.com/security-credentials
    */
+
+  public static final String DEFAULT_SECURITY_GROUP_NAME = "aws";
 
   private static String currentTab = "";
   private static final List<String> IPRANGESALL = new ArrayList<String>(Arrays.asList("0.0.0.0/0"));
@@ -264,12 +267,12 @@ public class AWSEC2 {
    * @param name
    * @return the same name if it exists, null otherwise
    */
-  public static String findSecurityGroup(AmazonEC2 ec2, String name) {
+  public static SecurityGroup findSecurityGroup(AmazonEC2 ec2, String name) {
     DescribeSecurityGroupsResult describeSecurityGroupsResult = ec2.describeSecurityGroups();
     for (SecurityGroup securityGroup : describeSecurityGroupsResult.getSecurityGroups()) {
       if (name.equals(securityGroup.getGroupName())) {
         System.out.println("Found security group " + name);
-        return name;
+        return securityGroup;
       }
     }
     return null;
@@ -282,13 +285,13 @@ public class AWSEC2 {
    * @param name
    * @return the name of the group
    */
-  public static String findOrCreateSecurityGroup(AmazonEC2 ec2, String name) {
-    String result = findSecurityGroup(ec2, name);
+  public static SecurityGroup findOrCreateSecurityGroup(AmazonEC2 ec2, String name) {
+    SecurityGroup result = findSecurityGroup(ec2, name);
     if (result == null) {
-      result = createSecurityGroup(ec2, name);
+      createSecurityGroup(ec2, name);
       System.out.println("Created security group " + name);
     }
-    return result;
+    return findSecurityGroup(ec2, name);
   }
 
   /**
@@ -423,8 +426,17 @@ public class AWSEC2 {
   }
 
   public static void associateAddress(AmazonEC2 ec2, String ip, Instance instance) {
-    if (findElasticIP(ec2, ip) != null) {
-      ec2.associateAddress(new AssociateAddressRequest(instance.getInstanceId(), ip));
+    Address address;
+    if ((address = findElasticIP(ec2, ip)) != null) {
+      if (address.getDomain().equals("vpc")) {
+        System.out.println("VPC Elastic IP:  " + ip);
+        ec2.associateAddress(new AssociateAddressRequest()
+                .withInstanceId(instance.getInstanceId())
+                .withAllocationId(address.getAllocationId()));
+      } else {
+        System.out.println("EC2 Classic Elastic IP:  " + ip);
+        ec2.associateAddress(new AssociateAddressRequest(instance.getInstanceId(), ip));
+      }
     }
   }
 
@@ -435,20 +447,32 @@ public class AWSEC2 {
    * @param securityGroups
    * @return the instanceID string
    */
-  public static String createInstanceAndWait(AmazonEC2 ec2, AMIRecord image, String key, String securityGroup) {
-    int minInstanceCount = 1; // create 1 instance
-    int maxInstanceCount = 1;
-    RunInstancesRequest runInstancesRequest = new RunInstancesRequest(image.getName(), minInstanceCount, maxInstanceCount);
-    runInstancesRequest.setInstanceType(image.getInstanceType());
-    runInstancesRequest.setKeyName(key);
-    runInstancesRequest.setSecurityGroups(new ArrayList<String>(Arrays.asList(securityGroup)));
+  public static String createInstanceAndWait(AmazonEC2 ec2, AMIRecord amiRecord, String key, SecurityGroup securityGroup) {
+    RunInstancesRequest runInstancesRequest;
+    if (amiRecord.getVpcSubnet() != null) {
+      System.out.println("subnet: " + amiRecord.getVpcSubnet() + " securityGroup: " + securityGroup.getGroupName());
+      // new VPC
+      runInstancesRequest = new RunInstancesRequest()
+              .withMinCount(1)
+              .withMaxCount(1)
+              .withImageId(amiRecord.getName())
+              .withInstanceType(amiRecord.getInstanceType())
+              .withKeyName(key)
+              .withSubnetId(amiRecord.getVpcSubnet())
+              .withSecurityGroupIds(Arrays.asList(securityGroup.getGroupId()));
+    } else {
+      runInstancesRequest = new RunInstancesRequest(amiRecord.getName(), 1, 1);
+      runInstancesRequest.setInstanceType(amiRecord.getInstanceType());
+      runInstancesRequest.setSecurityGroups(new ArrayList<String>(Arrays.asList(securityGroup.getGroupName())));
+      runInstancesRequest.setKeyName(key);
+    }
 
     RunInstancesResult runInstancesResult = ec2.runInstances(runInstancesRequest);
 
     Instance instance = runInstancesResult.getReservation().getInstances().get(0);
     String createdInstanceId = instance.getInstanceId();
 
-    System.out.println("Waiting for instance to start");
+    System.out.println("Waiting for instance " + amiRecord.getName() + " to start");
     long startTime = System.currentTimeMillis();
     do {
       ThreadUtils.sleep(1000);
@@ -665,12 +689,11 @@ public class AWSEC2 {
     }
   }
 
-  
-  public static int DEFAULTREACHABILITYWAITTIME = 180000; // THREE minutes...
+  public static int DEFAULTREACHABILITYWAITTIME = 240000; // FOUR minutes...
 
   /**
    * Creates an EC2 instance in the region given.
-   * 
+   *
    * @param ec2
    * @param region
    * @param ami
@@ -679,36 +702,37 @@ public class AWSEC2 {
    * @param script
    * @param tags
    * @param elasticIP - an IP string or null to indicate that we're just using the address assigned by AWS
-   * @return 
+   * @return
    */
   public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord ami, String instanceName,
-          String keyName, String script, Map<String,String> tags, String elasticIP) {
-    return createAndInitInstance(ec2, region, ami, instanceName, keyName, script, tags, elasticIP, DEFAULTREACHABILITYWAITTIME);
+          String keyName, String securityGroupName, String script, Map<String, String> tags, String elasticIP) {
+    return createAndInitInstance(ec2, region, ami, instanceName, keyName, securityGroupName, script, tags, elasticIP, DEFAULTREACHABILITYWAITTIME);
   }
 
   /**
    * Creates an EC2 instance in the region given. Timeout in milleseconds can be specified.
+   *
    * @param ec2
    * @param region
-   * @param ami
+   * @param amiRecord
    * @param instanceName
    * @param keyName
    * @param script
    * @param tags
    * @param elasticIP
    * @param timeout
-   * @return 
+   * @return
    */
-  public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord ami, String instanceName,
-          String keyName, String script, Map<String,String> tags, String elasticIP, int timeout) {
+  public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord amiRecord, String instanceName,
+          String keyName, String securityGroupName, String script, Map<String, String> tags, String elasticIP, int timeout) {
 
     try {
       // set the region (AKA endpoint)
       setRegion(ec2, region);
       // create the instance
-      String securityGroup = findOrCreateSecurityGroup(ec2, keyName);
+      SecurityGroup securityGroup = findOrCreateSecurityGroup(ec2, securityGroupName);
       String keyPair = findOrCreateKeyPair(ec2, keyName);
-      String instanceID = createInstanceAndWait(ec2, ami, keyPair, securityGroup);
+      String instanceID = createInstanceAndWait(ec2, amiRecord, keyPair, securityGroup);
       if (instanceID == null) {
         return null;
       }
@@ -788,9 +812,10 @@ public class AWSEC2 {
     String installScript = "#!/bin/bash\n"
             + "cd /home/ec2-user\n"
             + "yum --quiet --assumeyes update\n";
-    HashMap<String,String> tags = new HashMap<>();
+    HashMap<String, String> tags = new HashMap<>();
     tags.put("runset", new Date().toString());
 
-    createAndInitInstance(ec2, region, AMIRecord.getAMI(AMIRecordType.Amazon_Linux_AMI_2013_03_1, region), "Test Instance", keyName, installScript, tags, "23.21.120.250");
+    createAndInitInstance(ec2, region, AMIRecord.getAMI(AMIRecordType.Amazon_Linux_AMI_2013_03_1, region),
+            "Test Instance", keyName, DEFAULT_SECURITY_GROUP_NAME, installScript, tags, "23.21.120.250");
   }
 }

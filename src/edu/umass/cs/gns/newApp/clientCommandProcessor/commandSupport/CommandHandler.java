@@ -16,13 +16,10 @@ import edu.umass.cs.gns.newApp.NewApp;
 import edu.umass.cs.gns.newApp.packet.CommandPacket;
 import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
 import edu.umass.cs.gns.util.CanonicalJSON;
-import edu.umass.cs.gns.util.NetworkUtils;
-import edu.umass.cs.nio.JSONNIOTransport;
 
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
 import org.json.JSONException;
@@ -278,6 +275,8 @@ public class CommandHandler {
     }
   }
 
+  private static long lastStatsTime = 0;
+
   public static void handleCommandReturnValuePacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     int id = returnPacket.getClientRequestId();
@@ -290,8 +289,13 @@ public class CommandHandler {
       }
       app.getNioServer().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
               json);
-      if (commandCount++ % 500 == 0) {
-        System.out.println("8888888888888888888888888888>>>> " + DelayProfiler.getStats());
+
+      // shows us stats every 100 commands, but not more than once every 5 seconds
+      if (commandCount++ % 100 == 0) {
+        if (System.currentTimeMillis() - lastStatsTime > 5000) {
+          System.out.println("8888888888888888888888888888>>>> " + DelayProfiler.getStats());
+          lastStatsTime = System.currentTimeMillis();
+        }
       }
     } else {
       GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);

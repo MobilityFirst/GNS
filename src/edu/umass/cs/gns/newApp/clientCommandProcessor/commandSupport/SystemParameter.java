@@ -18,13 +18,13 @@ public enum SystemParameter {
 
   // NOTE: All the fields in here MUST be static fields.
 
-  EMAIL(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableEmailAccountAuthentication",
-          "Determines if email authentication is used."),
-  SIGNATURE(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableSignatureVerification",
+  EMAIL_VERIFICATION(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableEmailAccountVerification",
+          "Determines if email verification is used."),
+  SIGNATURE_AUTHENTICATION(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableSignatureAuthentication",
           "Determines if query and field authentication using signatures and ACLS is enabled."),
-  MAXGUIDS(ParameterType.Integer, "edu.umass.cs.gns.localnameserver.httpserver.Defs", "MAXGUIDS",
+  MAX_GUIDS(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXGUIDS",
           "Puts a limit on the number of guids an account can have."),
-  MAXALIASES(ParameterType.Integer, "edu.umass.cs.gns.localnameserver.httpserver.Defs", "MAXALIASES",
+  MAX_ALIASES(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXALIASES",
           "Puts a limit on the number of alias an account can have.");
 
   //

@@ -1,0 +1,5 @@
+uswest1 ec2-54-215-16-99.us-west-1.compute.amazonaws.com 54.215.16.99
+useast1 ec2-107-20-245-102.compute-1.amazonaws.com 107.20.245.102
+euwest1 ec2-54-217-221-135.eu-west-1.compute.amazonaws.com 54.217.221.135
+saeast1 ec2-54-232-125-83.sa-east-1.compute.amazonaws.com 54.232.125.83
+uswest2 ec2-50-112-116-12.us-west-2.compute.amazonaws.com 50.112.116.12

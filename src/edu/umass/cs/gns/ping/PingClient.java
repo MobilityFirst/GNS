@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * The PingClient class handles the client side of the GNS ping protocol.
  * The PingServer class handles the flip side of this protocol.
- * 
+ *
  * @author westy
  * @param <NodeIDType>
  */
@@ -53,31 +53,35 @@ public class PingClient<NodeIDType> {
 
   /**
    * Sends a ping request to the node.
-   * 
+   *
    * @param nodeId
    * @return the round trip time or INVALID_INTERVAL if the request times out
-   * @throws IOException 
+   * @throws IOException
    */
   public long sendPing(NodeIDType nodeId) throws IOException, InterruptedException {
     InetAddress IPAddress = nodeConfig.getNodeAddress(nodeId);
     int port = nodeConfig.getPingPort(nodeId);
-    byte[] sendData;
-    // make an id and turn it into a string for sending out
-    int id = nextRequestID();
-    String sendString = Integer.toString(id);
-    sendData = sendString.getBytes();
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-    // record the send time
-    queryTimeStamp.put(id, System.currentTimeMillis());
-    clientSocket.send(sendPacket);
-    //GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
-    waitForResponsePacket(id);
-    long result = queryResultMap.get(id);
+    if (port != GNSNodeConfig.INVALID_PORT) { // sanity checking
+      byte[] sendData;
+      // make an id and turn it into a string for sending out
+      int id = nextRequestID();
+      String sendString = Integer.toString(id);
+      sendData = sendString.getBytes();
+      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+      // record the send time
+      queryTimeStamp.put(id, System.currentTimeMillis());
+      clientSocket.send(sendPacket);
+      //GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
+      waitForResponsePacket(id);
+      long result = queryResultMap.get(id);
 //    if (result == INVALID_INTERVAL) {
 //      GNS.getLogger().fine("TIMEOUT for send to " + nodeId);
 //    }
-    queryResultMap.remove(id);
-    return result;
+      queryResultMap.remove(id);
+      return result;
+    } else {
+      return GNSNodeConfig.INVALID_PING_LATENCY;
+    }
   }
 
   public void shutdown() {
@@ -106,13 +110,13 @@ public class PingClient<NodeIDType> {
           return;
         }
         GNS.getLogger().severe("Error waiting for response " + e);
-       Thread.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
+        Thread.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
       } catch (NumberFormatException e) {
         GNS.getLogger().severe("Error parsing response " + e);
       }
     }
   }
-  
+
   private static final int TIMEOUT = 10000;
 
   private void waitForResponsePacket(int id) throws InterruptedException {
@@ -123,17 +127,17 @@ public class PingClient<NodeIDType> {
 //          monitor.wait();
 //        }
 //      }
-      synchronized (monitor) {
-        long timeoutExpiredMs = System.currentTimeMillis() + TIMEOUT;
-        while (!queryResultMap.containsKey(id)) {
-          monitor.wait(timeoutExpiredMs - System.currentTimeMillis());
-          if (System.currentTimeMillis() >= timeoutExpiredMs) {
-            // we timed out... only got partial results{
-            queryResultMap.put(id, -1L);
-            break;
-          }
+    synchronized (monitor) {
+      long timeoutExpiredMs = System.currentTimeMillis() + TIMEOUT;
+      while (!queryResultMap.containsKey(id)) {
+        monitor.wait(timeoutExpiredMs - System.currentTimeMillis());
+        if (System.currentTimeMillis() >= timeoutExpiredMs) {
+          // we timed out... only got partial results{
+          queryResultMap.put(id, -1L);
+          break;
         }
       }
+    }
 //    } catch (InterruptedException x) {
 //      GNS.getLogger().severe("Wait for packet was interrupted " + x);
 //    }

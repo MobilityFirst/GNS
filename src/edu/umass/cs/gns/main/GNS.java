@@ -59,8 +59,8 @@ public class GNS {
       return offset;
     }
   }
-  public static boolean enableEmailAccountAuthentication = true;
-  public static boolean enableSignatureVerification = true;
+  public static boolean enableEmailAccountVerification = true;
+  public static boolean enableSignatureAuthentication = true;
   /**
    * Number of primary nameservers. Default is 3 *
    */

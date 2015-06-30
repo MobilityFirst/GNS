@@ -43,13 +43,9 @@ public class PingManager<NodeIDType> implements Shutdownable {
   private Thread managerThread;
 
   // The list of actives we should be pinging.
-  private Set<NodeIDType> activeReplicas = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
+  private final Set<NodeIDType> activeReplicas;
 
-  public void addActiveReplicas(Set<NodeIDType> activeReplicas) {
-    this.activeReplicas.addAll(activeReplicas);
-  }
-
-  private final boolean debug = false;
+  public static boolean debuggingEnabled = false;
 
   /**
    * Starts a ping manager. Start a server and optional client.
@@ -65,9 +61,14 @@ public class PingManager<NodeIDType> implements Shutdownable {
     } else {
       this.pingClient = null;
     }
-    this.pingServer = new PingServer<NodeIDType>(nodeId, gnsNodeConfig);
-    new Thread(pingServer).start();
+    if (nodeId != null) {
+      this.pingServer = new PingServer<NodeIDType>(nodeId, gnsNodeConfig);
+      new Thread(pingServer).start();
+    } else {
+      this.pingServer = null;
+    }
     this.pingTable = new SparseMatrix<NodeIDType, Integer, Long>(GNSNodeConfig.INVALID_PING_LATENCY);
+    this.activeReplicas = Collections.newSetFromMap(new ConcurrentHashMap<NodeIDType, Boolean>());
   }
 
   /**
@@ -86,12 +87,16 @@ public class PingManager<NodeIDType> implements Shutdownable {
    * @param gnsNodeConfig
    */
   public PingManager(GNSInterfaceNodeConfig<NodeIDType> gnsNodeConfig) {
-    this.nodeId = null;
-    this.nodeConfig = gnsNodeConfig;
-    this.pingClient = new PingClient(gnsNodeConfig);
-    this.pingTable = new SparseMatrix<NodeIDType, Integer, Long>(GNSNodeConfig.INVALID_PING_LATENCY);
-    // don't start a ping server 
-    this.pingServer = null;
+    this(null, gnsNodeConfig, false);
+  }
+
+  /**
+   * Add active replicas to the list that this server sends pings to.
+   * 
+   * @param activeReplicas 
+   */
+  public void addActiveReplicas(Set<NodeIDType> activeReplicas) {
+    this.activeReplicas.addAll(activeReplicas);
   }
 
   /**
@@ -131,12 +136,12 @@ public class PingManager<NodeIDType> implements Shutdownable {
         NodeIDType id = nodes.remove();
         try {
           if (!id.equals(nodeId)) {
-            if (debug) {
-              GNS.getLogger().fine("Send from " + nodeId + " to " + id);
+            if (debuggingEnabled) {
+              GNS.getLogger().info("Send from " + nodeId + " to " + id);
             }
             long rtt = pingClient.sendPing(id);
-            if (debug) {
-              GNS.getLogger().fine("From " + nodeId + " to " + id + " RTT = " + rtt);
+            if (debuggingEnabled) {
+              GNS.getLogger().info("From " + nodeId + " to " + id + " RTT = " + rtt);
             }
             pingTable.put(id, windowSlot, rtt);
             // update the configuration file info with the current average... the reason we're here
@@ -151,7 +156,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
 
       //long timeForAllPings = (System.currentTimeMillis() - t0) / 1000;
       //GNS.getStatLogger().info("\tAllPingsTime " + timeForAllPings + "\tNode\t" + nodeId + "\t");
-      if (debug) {
+      if (debuggingEnabled) {
         GNS.getLogger().info("PINGER: \n" + tableToString(nodeId));
       }
       Thread.sleep(TIME_BETWEEN_PINGS);

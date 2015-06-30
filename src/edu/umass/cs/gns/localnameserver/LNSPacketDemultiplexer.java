@@ -84,6 +84,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     return isPacketTypeFound;
   }
 
+  private static boolean disableRequestActives = true;
+
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
 
     CommandPacket packet = new CommandPacket(json);
@@ -95,12 +97,22 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
     // Send it to the client command handler
     Set<InetSocketAddress> actives;
-    //if ((actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName())) != null) {
-    if ((actives = handler.getActivesIfValid(packet.getServiceName())) != null) {
+    if (!disableRequestActives) {
+      actives = handler.getActivesIfValid(packet.getServiceName());
+    } else {
+      actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName());
+    }
+    if (actives != null) {
       if (handler.isDebugMode()) {
-        GNS.getLogger().info("Found actives in cache: " + actives);
+        if (!disableRequestActives) {
+          GNS.getLogger().info("Found actives in cache for " + packet.getServiceName() + ": " + actives);
+        } else {
+          GNS.getLogger().info("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
+        }
       }
-      handler.sendToClosestServer(actives, packet.toJSONObject());
+      //handler.sendToClosestServer(actives, packet.toJSONObject());
+      handler.getProtocolExecutor().schedule(new CommandRetransmitter(requestId, packet.toJSONObject(), 
+              actives, handler));
     } else {
       handler.getProtocolExecutor().schedule(new RequestActives(requestInfo, handler));
     }
@@ -134,21 +146,31 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
                 + " vs. " + returnPacket.getServiceName());
       }
     } else {
-      GNS.getLogger().severe("Command response packet info not found for " + id + ": " + json);
+      if (handler.isDebugMode()) {
+        GNS.getLogger().info("Duplicate response for " + id + ": " + json);
+      }
     }
   }
 
   private void handleRequestActives(JSONObject json) {
     if (handler.isDebugMode()) {
       GNS.getLogger().info(")))))))))))))))))))))))))))) REQUEST ACTIVES RECEIVED: " + json.toString());
+
     }
     try {
       RequestActiveReplicas requestActives = new RequestActiveReplicas(json);
-      handler.updateCacheEntry(requestActives.getServiceName(), requestActives.getActives());
-      // also update the set of the nodes the ping manager is using
-      handler.getPingManager().addActiveReplicas(requestActives.getActives());
+      if (requestActives.getActives() != null) {
+        if (handler.isDebugMode()) {
+          for (InetSocketAddress address : requestActives.getActives()) {
+            GNS.getLogger().info("ACTIVE ADDRESS HOST: " + address.getHostString());
+          }
+        }
+        handler.updateCacheEntry(requestActives.getServiceName(), requestActives.getActives());
+        // also update the set of the nodes the ping manager is using
+        handler.getPingManager().addActiveReplicas(requestActives.getActives());
+      }
     } catch (JSONException e) {
-      GNS.getLogger().severe("Problem parsing RequestActiveReplicas packet info not found from " + json + ": " + e);
+      GNS.getLogger().severe("Problem parsing RequestActiveReplicas packet info from " + json + ": " + e);
     }
 
   }

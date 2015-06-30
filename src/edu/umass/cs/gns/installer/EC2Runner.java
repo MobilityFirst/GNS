@@ -14,7 +14,7 @@ import edu.umass.cs.aws.support.RegionRecord;
 import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.GEOLocator;
-import edu.umass.cs.gns.util.ScreenUtils;
+import edu.umass.cs.gns.util.ThreadUtils;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.GnuParser;
@@ -47,8 +49,6 @@ import org.apache.commons.cli.ParseException;
 public class EC2Runner {
 
   private static final String FILESEPARATOR = System.getProperty("file.separator");
-  private static final String PRIVATEKEYFILEEXTENSION = ".pem";
-  private static final String KEYHOME = System.getProperty("user.home") + FILESEPARATOR + ".ssh";
   private static final String CREDENTIALSFILE = System.getProperty("user.home") + FILESEPARATOR + "AwsCredentials.properties";
   private static final DataStoreType DEFAULT_DATA_STORE_TYPE = DataStoreType.MONGO;
   private static final AMIRecordType DEFAULT_AMI_RECORD_TYPE = AMIRecordType.Amazon_Linux_AMI_2013_03_1;
@@ -92,9 +92,11 @@ public class EC2Runner {
     System.out.println("Datastore: " + dataStoreType.toString());
     //preferences.put(RUNSETNAME, runSetName); // store the last one
     startAllMonitoringAndGUIProcesses();
+    attachShutDownHook(runSetName);
     ArrayList<Thread> threads = new ArrayList<Thread>();
     // use threads to do a bunch of installs in parallel
     do {
+      hostsThatDidNotStart.clear();
       //StatusModel.getInstance().queueDeleteAllEntries(); // for gui
       int cnt = STARTINGNODENUMBER;
       for (EC2RegionSpec regionSpec : regionsList) {
@@ -119,8 +121,17 @@ public class EC2Runner {
       if (!hostsThatDidNotStart.isEmpty()) {
         System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
         timeout = (int) ((float) timeout * 1.5);
-        System.out.println("Killing them all and trying again with timeout " + timeout + "ms");
-        terminateRunSet(runSetName);
+        System.out.println("Maybe kill them all and try again with timeout " + timeout + "ms?");
+        if (showDialog("Hosts that did not start: " + hostsThatDidNotStart.keySet()
+                + "\nKill them all and try again with with timeout " + timeout + "ms?"
+                + "\nIf you don't respond in 10 seconds this will happen.", 10000)) {
+          System.out.println("Yes, kill them all and try again with timeout " + timeout + "ms.");
+          terminateRunSet(runSetName);
+        } else {
+          terminateRunSet(runSetName);
+          System.out.println("No, kill them all and quit.");
+          return;
+        }
       }
 
       threads.clear();
@@ -135,6 +146,7 @@ public class EC2Runner {
     System.out.println("Hosts that did not start: " + hostsThatDidNotStart.keySet());
     // write out a config file that the GNS installer can use for this set of EC2 hosts
     writeGNSINstallerConf(configName);
+    removeShutDownHook();
     System.out.println("Finished creation of Run Set " + runSetName);
   }
   private static final String keyName = "aws";
@@ -142,7 +154,7 @@ public class EC2Runner {
   private static final String mongoInstallScript = "#!/bin/bash\n"
           + "cd /home/ec2-user\n"
           + "yum --quiet --assumeyes update\n"
-          //+ "yum --quiet --assumeyes install emacs\n" // for debugging
+          + "yum --quiet --assumeyes install emacs\n" // for debugging
           + "yum --quiet --assumeyes install java-1.7.0-openjdk\n"
           + "echo \\\"[MongoDB]\n" // crazy double escaping for JAVA and BASH going on here!!
           + "name=MongoDB Repository\n"
@@ -151,7 +163,10 @@ public class EC2Runner {
           + "enabled=1\\\" > mongodb.repo\n" // crazy double escaping for JAVA and BASH going on here!!
           + "mv mongodb.repo /etc/yum.repos.d/mongodb.repo\n"
           + "yum --quiet --assumeyes install mongodb-org\n"
-          + "service mongod start\n";
+          + "service mongod start\n"
+          // fix the sudoers so ssh sudo works all the time
+          + "chmod ug+rw /etc/sudoers\n"
+          + "sed -i 's/requiretty/!requiretty/' /etc/sudoers\n";
 //  private static final String mongoInstallScript = "#!/bin/bash\n"
 //          + "cd /home/ec2-user\n"
 //          + "yum --quiet --assumeyes update\n"
@@ -200,8 +215,8 @@ public class EC2Runner {
    */
   public static void initAndUpdateEC2Host(RegionRecord region, String runSetName, String id, String elasticIP, int timeout) {
     String installScript;
-    AMIRecord ami = AMIRecord.getAMI(amiRecordType, region);
-    if (ami == null) {
+    AMIRecord amiRecord = AMIRecord.getAMI(amiRecordType, region);
+    if (amiRecord == null) {
       System.out.println("Invalid combination of " + amiRecordType + " and Region " + region.name());
       return;
     }
@@ -223,7 +238,7 @@ public class EC2Runner {
             case Mongo_2014_5_6_micro:
               installScript = null;
               break;
-            case Mongo_2014_5_6_small:
+            case Mongo_2015_6_25_vpc:
               installScript = null;
               break;
             default:
@@ -242,12 +257,15 @@ public class EC2Runner {
       AmazonEC2 ec2 = new AmazonEC2Client(credentials);
       String nodeName = "GNS Node " + idString;
       System.out.println("Starting install for " + nodeName + " in " + region.name() + " as part of run set " + runSetName);
-      HashMap<String,String> tags = new HashMap<>();
+      HashMap<String, String> tags = new HashMap<>();
       tags.put("runset", runSetName);
       tags.put("id", idString);
 //      StatusModel.getInstance().queueUpdate(id, "Creating instance");
       // create an instance
-      Instance instance = AWSEC2.createAndInitInstance(ec2, region, ami, nodeName, keyName, installScript, tags, elasticIP, timeout);
+      Instance instance = AWSEC2.createAndInitInstance(ec2, region, amiRecord, nodeName,
+              keyName,
+              amiRecord.getSecurityGroup(),
+              installScript, tags, elasticIP, timeout);
       if (instance != null) {
 //        StatusModel.getInstance().queueUpdate(id, "Instance created");
 //        StatusModel.getInstance().queueUpdate(id, StatusEntry.State.INITIALIZING);
@@ -432,6 +450,58 @@ public class EC2Runner {
 //    }
   }
 
+  private static boolean showDialog(String message, final long timeout) {
+    try {
+      int dialog = JOptionPane.YES_NO_OPTION;
+      JOptionPane optionPane = new JOptionPane(message, JOptionPane.QUESTION_MESSAGE,
+              JOptionPane.YES_NO_OPTION);
+      final JDialog dlg = optionPane.createDialog("Error");
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          {
+            ThreadUtils.sleep(timeout);
+            dlg.dispose();
+          }
+        }
+      }).start();
+      dlg.setVisible(true);
+      int value = ((Integer) optionPane.getValue()).intValue();
+      if (value == JOptionPane.YES_OPTION) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (RuntimeException e) {
+      return true;
+    }
+  }
+
+  private static Thread shutdownHook = null;
+
+  private static void attachShutDownHook(final String runSetName) {
+    shutdownHook = new Thread() {
+      @Override
+      public void run() {
+        // Just an extra check to make sure we don't kill a perfectly good run set.
+        if (!hostsThatDidNotStart.isEmpty()) {
+          System.out.println("Killing all instances.");
+          terminateRunSet(runSetName);
+        }
+      }
+    };
+    Runtime.getRuntime().addShutdownHook(shutdownHook);
+    System.out.println("ShutdownHook attached.");
+  }
+
+  private static void removeShutDownHook() {
+    if (shutdownHook != null) {
+      Runtime.getRuntime().removeShutdownHook(shutdownHook);
+    }
+    shutdownHook = null;
+    System.out.println("ShutdownHook removed.");
+  }
+
   public static void main(String[] args) {
     try {
       CommandLine parser = initializeOptions(args);
@@ -456,9 +526,9 @@ public class EC2Runner {
 
       configName = createRunsetName != null ? createRunsetName
               : terminateRunsetName != null ? terminateRunsetName
-              : runsetDescribe != null ? runsetDescribe
-              : runSetWriteConfig != null ? runSetWriteConfig
-              : null;
+                      : runsetDescribe != null ? runsetDescribe
+                              : runSetWriteConfig != null ? runSetWriteConfig
+                                      : null;
 
       System.out.println("Config name: " + configName);
       if (configName != null) {
@@ -494,7 +564,7 @@ public class EC2Runner {
     String ip;
     int timeout;
 
-    public EC2RunnerThread(String runSetName, RegionRecord region,  String id, String ip, int timeout) {
+    public EC2RunnerThread(String runSetName, RegionRecord region, String id, String ip, int timeout) {
       super("Install Start " + id);
       this.runSetName = runSetName;
       this.region = region;
@@ -512,9 +582,10 @@ public class EC2Runner {
   private static void writeGNSINstallerConf(String configName) {
     File jarPath = getJarPath();
     System.out.println("Jar path: " + jarPath);
-    String confFileLocation = jarPath.getParent() + FILESEPARATOR + "conf" + FILESEPARATOR + "gnsInstaller" + FILESEPARATOR + configName + ".xml";
-    WriteXMLConfFile.writeFile(confFileLocation, keyName, ec2UserName, "linux", dataStoreType.toString(), hostTable);
-
+    String confFileDirectory = jarPath.getParent() + FILESEPARATOR + "conf" + FILESEPARATOR + configName + "-init";
+    //String confFileLocation = jarPath.getParent() + FILESEPARATOR + "conf" + FILESEPARATOR + "gnsInstaller" + FILESEPARATOR + configName + ".xml";
+    WriteConfFile.writeConfFiles(configName, confFileDirectory, keyName, ec2UserName, "linux", "MONGO", hostTable);
+    //WriteConfFile.writeXMLFile(confFileLocation, keyName, ec2UserName, "linux", dataStoreType.toString(), hostTable);
   }
 
   public static File getJarPath() {

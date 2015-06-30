@@ -18,4 +18,4 @@ yum --quiet --assumeyes install mongodb-org
 service mongod start
 # fix the sudoers so ssh sudo works all the time
 chmod ug+rw /etc/sudoers
-sed "s/requiretty/!requiretty/" sudoers
+sed -i 's/requiretty/!requiretty/' /etc/sudoers
