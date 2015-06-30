@@ -18,7 +18,7 @@ import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.utils.ML;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -62,7 +62,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   public boolean handleMessage(JSONObject json) {
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], 
+      GNS.getLogger().log(Level.INFO, ML.F[1], 
               new Object[]{"*****************************> CCP RECEIVED: ", json});
     }
     try {

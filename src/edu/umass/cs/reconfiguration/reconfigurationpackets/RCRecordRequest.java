@@ -6,22 +6,22 @@ import org.json.JSONObject;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
+import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /*
  * @author arun
- *
+ * 
  * @param <NodeIDType>
  * 
- *            This packet is for any state change to a reconfiguration record.
- *            It is currently used only to mark the beginning of a
- *            reconfiguration.
+ * This packet is for any state change to a reconfiguration record. It is
+ * currently used only to mark the beginning of a reconfiguration.
  */
 @SuppressWarnings("javadoc")
 public class RCRecordRequest<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> implements
-		InterfaceReplicableRequest {
+		InterfaceReplicableRequest, InterfaceReconfigurableRequest {
 
 	private static enum Keys {
 		REQUEST_TYPE, START_EPOCH
@@ -32,24 +32,37 @@ public class RCRecordRequest<NodeIDType> extends
 	 */
 	public static enum RequestTypes {
 		/**
-		 * Step 1 of reconfiguration.
+		 * Step 1 of reconfiguration. Takes RC record from READY(n) to
+		 * WAIT_ACK_STOP(n).
 		 */
-		RECONFIGURATION_INTENT, 
+		RECONFIGURATION_INTENT,
+
 		/**
 		 * Step 2 of reconfiguration. We have two steps so that just a single
 		 * primary actually does the reconfiguration, and the other secondary
-		 * nodes simply record the corresponding state change.
+		 * nodes simply record the corresponding state change. Takes RC record
+		 * from WAIT_ACK_STOP(n) to READY(n+1). Typically, after
+		 * RECONFIGURATION_COMPLETE, the new epoch is considered operational.
 		 */
-		RECONFIGURATION_COMPLETE, 
+		RECONFIGURATION_COMPLETE,
+
 		/**
-		 * Analogous to RECONFIGURATION_COMPLETE but will delete the state
-		 * at reconfigurators.
+		 * Step 3 (optional) of reconfiguration that says that the previous
+		 * epoch's final state has been completely dropped. At this point, the
+		 * reconfiguration is really complete. Takes RC record from READY(n) to
+		 * READY_READY(n) provided all prior reconfigurations have been "clean",
+		 * i.e., they involved transitions to READY_READY after a transition to
+		 * READY. The reason we track this is that clean records can be quickly
+		 * deleted but unclean records have to wait for a MAX_FINAL_STATE_AGE
+		 * timeout.
 		 */
-		DELETE_COMPLETE, 
+		RECONFIGURATION_PREV_DROPPED,
+
 		/**
 		 * Merges one RC group with another upon RC node deletes.
 		 */
-		RECONFIGURATION_MERGE
+		RECONFIGURATION_MERGE,
+
 	};
 
 	private final RequestTypes reqType;
@@ -70,20 +83,6 @@ public class RCRecordRequest<NodeIDType> extends
 				startEpoch.getServiceName(), startEpoch.getEpochNumber());
 		this.reqType = reqType;
 		this.startEpoch = startEpoch;
-	}
-
-	/**
-	 * @param initiator
-	 * @param serviceName
-	 * @param epochNumber
-	 * @param reqType
-	 */
-	public RCRecordRequest(NodeIDType initiator, String serviceName,
-			int epochNumber, RequestTypes reqType) {
-		super(initiator, ReconfigurationPacket.PacketType.RC_RECORD_REQUEST,
-				serviceName, epochNumber);
-		this.reqType = reqType;
-		this.startEpoch = null;
 	}
 
 	/**
@@ -126,8 +125,22 @@ public class RCRecordRequest<NodeIDType> extends
 		return this.reqType.equals(RequestTypes.RECONFIGURATION_COMPLETE);
 	}
 
-	public boolean isDeleteConfirmation() {
-		return this.reqType.equals(RequestTypes.DELETE_COMPLETE);
+	public boolean isReconfigurationPrevDropComplete() {
+		return this.reqType.equals(RequestTypes.RECONFIGURATION_PREV_DROPPED);
+	}
+
+	public boolean isDeleteIntent() {
+		return this.startEpoch.noCurEpochGroup()
+				&& this.reqType.equals(RequestTypes.RECONFIGURATION_COMPLETE);
+	}
+
+	public boolean isDeleteIntentOrComplete() {
+		return this.isDeleteIntent()
+				|| this.reqType
+						.equals(RequestTypes.RECONFIGURATION_PREV_DROPPED);
+	}
+	public boolean isSplitIntent() {
+		return this.isReconfigurationIntent() && this.startEpoch.isSplit();
 	}
 
 	@Override
@@ -154,8 +167,54 @@ public class RCRecordRequest<NodeIDType> extends
 		return this.reqType;
 	}
 
-	public String getRCRequestTypeCompact() {
-		String[] tokens = this.getRCRequestType().toString().split("_");
-		return tokens[tokens.length - 1];
+	@Override
+	public boolean isStop() {
+		return false;
 	}
+
+	public static String getRCRequestTypeCompact(RequestTypes rType) {
+		return rType.toString().replaceAll("RECONFIGURATION_", "");
+	}
+
+	public String getSummary() {
+		return this.getServiceName()
+				+ ":"
+				+ this.getEpochNumber()
+				+ ":"
+				+ this.getRCRequestType()
+				+ (this.startEpoch.isSplitOrMerge() ? ":"
+						+ this.startEpoch.getPrevGroupName() + ":"
+						+ this.startEpoch.getPrevEpochNumber() : "");
+	}
+
+	/*
+	 * Equal if same operation, i.e., the object type, request type, name,
+	 * epoch, prevName, and prevEpoch are all equal.
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof RCRecordRequest))
+			return false;
+		@SuppressWarnings("unchecked")
+		RCRecordRequest<NodeIDType> req2 = (RCRecordRequest<NodeIDType>) o;
+		return this.getServiceName().equals(req2.getServiceName())
+				&& this.getEpochNumber() == req2.getEpochNumber()
+				&& this.getRCRequestType().equals(req2.getRCRequestType())
+				&& (this.startEpoch.getPrevGroupName().equals(
+						req2.startEpoch.getPrevGroupName()) && this.startEpoch
+						.getPrevEpochNumber() == req2.startEpoch
+						.getPrevEpochNumber());
+	}
+
+	// equals => summary string equality => hashCode equality
+	@Override
+	public int hashCode() {
+		return this.getSummary().hashCode();
+	}
+
+	public boolean lessThan(RCRecordRequest<NodeIDType> req2) {
+		return this.getServiceName().equals(req2.getServiceName())
+				&& this.getEpochNumber() - req2.getEpochNumber() < 0;
+	}
+
 }

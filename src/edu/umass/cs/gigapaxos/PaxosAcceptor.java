@@ -217,7 +217,8 @@ public class PaxosAcceptor {
 		ArrayList<Integer> missing=new ArrayList<Integer>();
 		int maxCommittedSlot = getMaxCommittedSlot();
 		// comparator should be wraparound-aware
-		for(int i=this.getSlot(); i - Math.min(maxCommittedSlot, this.getSlot()+sizeLimit) < 0; i++) missing.add(i);
+		for(int i=this.getSlot(); i - Math.min(maxCommittedSlot, this.getSlot()+sizeLimit) < 0; i++) 
+			if(!this.committedRequests.containsKey(i)) missing.add(i);
 		return missing; // in sorted order
 	}
 	protected synchronized int getMaxCommittedSlot() {
@@ -337,7 +338,7 @@ public class PaxosAcceptor {
 					if (pismarray == null)
 						pismarray = new PaxosInstanceStateMachine[size];
 					pismarray[i] = new PaxosInstanceStateMachine(ID+i, i,
-							(i % 3 == 0 ? coord : id), group, null, null, null, null);
+							(i % 3 == 0 ? coord : id), group, null, null, null, null, false);
 					pismMap.put(pismarray[i].getKey(), pismarray[i]);
 					pismarray[i].testingInit(0);
 				} else if (testMode.equals(InstanceType.ACCEPTOR)) {

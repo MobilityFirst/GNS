@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.utils.Util;
 
@@ -24,7 +25,9 @@ import edu.umass.cs.utils.Util;
 public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 
 	protected static enum Keys {
-		NAME, EPOCH, RC_STATE, ACTIVES, NEW_ACTIVES, ACKED_START, ACKED_DROP, MERGED, RC_NODE, RC_EPOCH, RC_EPOCH_MAP
+		NAME, EPOCH, RC_STATE, ACTIVES, NEW_ACTIVES, MERGED, // already merged
+		RC_NODE, RC_EPOCH, RC_EPOCH_MAP, STOPPED, MERGE_TASKS, // merge todos
+		DELETE_TIME, NUM_UNCLEAN
 	};
 
 	/**
@@ -32,22 +35,26 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	 */
 	public static enum RCStates {
 		/**
-		 * The default state and the only state from which reconfiguration can
-		 * be initiated.
+		 * The default state and one of only two states from which
+		 * reconfiguration can be initiated, the other being READY_READY.
 		 */
 		READY,
+
 		/**
 		 * Waiting for AckStopEpoch, typically for the epoch that was READY just
 		 * before this state transition.
 		 */
 		WAIT_ACK_STOP,
+
 		/**
 		 * Waiting for AckStartEpoch, for the incremented, current epoch that is
 		 * at least one higher than the epoch just before the transition.
 		 * Typically, an RC record transitions from WAIT_ACK_STOP(n) to
-		 * WAIT_ACK_START(n+1), where n and n+1 are epoch numbers.
+		 * WAIT_ACK_START(n+1), where n and n+1 are epoch numbers. This state is
+		 * currently not used as we directly skip from WAIT_ACK_STOP to READY.
 		 */
 		WAIT_ACK_START,
+
 		/**
 		 * Waiting for AckDropEpoch for the previous epoch. This state is not
 		 * currently used explicitly because we transition directly from
@@ -57,7 +64,14 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		 * previous epoch lazily. Dropping state for the previous epoch is
 		 * needed only for garbage collection and does not impact safety.
 		 */
-		WAIT_ACK_DROP
+		READY_READY,
+
+		/**
+		 * This is a pending delete state, i.e., we expect a deletion to occur
+		 * in the near future, but we can not delet it yet because
+		 * WaitAckDropEpoch may not have yet completed.
+		 */
+		WAIT_DELETE
 	};
 
 	private final String name;
@@ -66,8 +80,17 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	private RCStates state = RCStates.READY;
 	private Set<NodeIDType> newActives = null; // next epoch during epoch change
 
+	// FIXME: should change the two sets below to a hashmap
 	private Set<String> merged = null; // for at most once semantics
+	private Set<String> toMerge = null;
+
+	// used only in NC records to maintain RC epoch numbers consistently
 	private HashMap<NodeIDType, Integer> rcEpochs = new HashMap<NodeIDType, Integer>();
+
+	// to let deletes wait for MAX_FINAL_STATE_AGE by default
+	private Long deleteTime = null;
+	// optimization to track whether quick final-deletion is safe
+	private int numPossiblyUncleanReconfigurations = 0;
 
 	/**
 	 * @param name
@@ -110,7 +133,11 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		json.put(Keys.RC_STATE.toString(), this.state.toString());
 		json.put(Keys.NEW_ACTIVES.toString(), this.newActives);
 		json.putOpt(Keys.MERGED.toString(), this.merged);
+		json.putOpt(Keys.MERGE_TASKS.toString(), this.toMerge);
 		json.putOpt(Keys.RC_EPOCH_MAP.toString(), this.mapToJSONArray(rcEpochs));
+		json.putOpt(Keys.DELETE_TIME.toString(), this.deleteTime);
+		json.put(Keys.NUM_UNCLEAN.toString(),
+				this.numPossiblyUncleanReconfigurations);
 		return json;
 	}
 
@@ -129,8 +156,14 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 		this.newActives = toSet(json.getJSONArray(Keys.NEW_ACTIVES.toString()));
 		this.merged = json.has(Keys.MERGED.toString()) ? toStringSet(json
 				.getJSONArray(Keys.MERGED.toString())) : null;
+		this.toMerge = json.has(Keys.MERGE_TASKS.toString()) ? toStringSet(json
+				.getJSONArray(Keys.MERGE_TASKS.toString())) : null;
 		this.rcEpochs = this.jsonArrayToMap(
 				json.getJSONArray(Keys.RC_EPOCH_MAP.toString()), unstringer);
+		this.deleteTime = (json.has(Keys.DELETE_TIME.toString()) ? json
+				.getLong(Keys.DELETE_TIME.toString()) : null);
+		this.numPossiblyUncleanReconfigurations = json.getInt(Keys.NUM_UNCLEAN
+				.toString());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -203,10 +236,14 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	}
 
 	/**
-	 * @return Set of active replicas.
+	 * @return Set of current active replicas. Will return null if this record
+	 *         is pending a delete, will return newActives if it is awaiting the
+	 *         start of the next epoch, and the current actives otherwise.
 	 */
 	public Set<NodeIDType> getActiveReplicas() {
-		return this.actives;
+		Set<NodeIDType> activeReplicas = !this.getState().equals(
+				RCStates.WAIT_DELETE) ? this.actives : null;
+		return activeReplicas;
 	}
 
 	/**
@@ -224,13 +261,6 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	}
 
 	/**
-	 * @param state
-	 */
-	public void setState(RCStates state) {
-		this.state = state;
-	}
-
-	/**
 	 * @return RCStates.
 	 */
 	public RCStates getState() {
@@ -238,10 +268,29 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	}
 
 	/**
-	 * @param newActives
+	 * @return True if ready for the next epoch (but may not have dropped
+	 *         previous epoch final state yet).
 	 */
-	public void setNewActives(Set<NodeIDType> newActives) {
-		this.newActives = newActives;
+	public boolean isReady() {
+		return this.state.equals(RCStates.READY)
+				|| this.state.equals(RCStates.READY_READY);
+	}
+
+	/**
+	 * @return True if the new active replica group is ready and aggressive
+	 *         reconfigurations are allowed or the previous epoch final state
+	 *         has been completely dropped (a stronger condition), and in either
+	 *         case, merges are all done.
+	 */
+	public boolean isReconfigurationReady() {
+		return
+		// unclean ready
+		((this.state.equals(RCStates.READY) && ReconfigurationConfig
+				.aggressiveReconfigurationsAllowed())
+		// clean ready
+				|| this.state.equals(RCStates.READY_READY))
+				// only relevant for RC groups
+				&& this.areMergesAllDone();
 	}
 
 	/**
@@ -260,7 +309,7 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 
 	/**
 	 * @param s
-	 * @return Whether the String being added was already present,.
+	 * @return Whether the string being added was already present,.
 	 */
 	public boolean insertMerged(String s) {
 		if (this.merged == null)
@@ -269,11 +318,30 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	}
 
 	/**
+	 * @param s
+	 * @return Whether the string being added was already present.
+	 */
+	public boolean addToMerge(String s) {
+		if (this.toMerge == null)
+			this.toMerge = new HashSet<String>();
+		return this.toMerge.add(s);
+	}
+
+	/**
+	 * @return True if toMerge has not yet been initialized.
+	 */
+	public boolean isToMergeNull() {
+		return this.toMerge == null;
+	}
+
+	/**
 	 * 
 	 */
 	public void clearMerged() {
 		if (this.merged != null)
 			this.merged.clear();
+		if (this.toMerge != null)
+			this.toMerge.clear();
 	}
 
 	/**
@@ -290,15 +358,40 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	 * @param s
 	 * @return True if contains {@code s}.
 	 */
-	public boolean mergedContains(String s) {
+	public boolean hasBeenMerged(String s) {
 		return this.merged != null && this.merged.contains(s);
 	}
 
 	/**
-	 * @return True if null or empty.
+	 * @param mergees
+	 * @return True if contains all {@code mergees}.
 	 */
-	public boolean isMergeAllClear() {
-		return this.merged == null || this.merged.isEmpty();
+	public boolean hasBeenMerged(Set<String> mergees) {
+		return this.merged != null && this.merged.contains(mergees);
+	}
+
+	/**
+	 * @return True if all merges are done.
+	 */
+	public boolean areMergesAllDone() {
+		if (this.toMerge == null)
+			return true;
+		return this.toMerge.equals(this.merged);
+	}
+
+	/**
+	 * @param s
+	 * @return True is toMerge contains s.
+	 */
+	public boolean toMergeContains(String s) {
+		return this.toMerge != null && this.toMerge.contains(s);
+	}
+
+	/**
+	 * @return True if this record is pending a delete.
+	 */
+	public boolean isDeletePending() {
+		return this.state.equals(RCStates.WAIT_DELETE);
 	}
 
 	/**
@@ -311,16 +404,71 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	}
 
 	/**
+	 * @return True if reset to 0.
+	 */
+	public boolean setDropPreviousEpochCompleted() {
+		return --this.numPossiblyUncleanReconfigurations == 0;
+	}
+
+	/**
 	 * @param name
 	 * @param epoch
 	 * @param state
 	 */
 	public void setState(String name, int epoch, RCStates state) {
-		assert (this.name.equals(name));
-		assert (this.epoch == epoch || state.equals(RCStates.WAIT_ACK_START) || state
-				.equals(RCStates.READY)) : this.epoch + "!=" + epoch;
+		assert (this.name.equals(name) && (this.epoch == epoch
+				|| state.equals(RCStates.READY) // common case
+				|| state.equals(RCStates.READY_READY) // creation
+		|| state.equals(RCStates.WAIT_DELETE))) : this.epoch + "!=" + epoch;
+
+		// !READY to READY => unclean
+		if (!this.isReady() && state.equals(RCStates.READY))
+			this.numPossiblyUncleanReconfigurations++;
+		// READY to READY_READY => clean
+		else if (this.isReady() && state.equals(RCStates.READY_READY))
+			this.numPossiblyUncleanReconfigurations--;
+
+		assert (!state.equals(RCStates.READY_READY) || this.numPossiblyUncleanReconfigurations == 0);
+
 		this.epoch = epoch;
 		this.state = state;
+
+		if (state.equals(RCStates.WAIT_DELETE))
+			this.deleteTime = System.currentTimeMillis();
+	}
+
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param state
+	 * @param mergees
+	 */
+	public void setStateMerge(String name, int epoch, RCStates state,
+			Set<String> mergees) {
+		this.setState(name, epoch, state);
+		if (mergees != null)
+			for (String mergee : mergees)
+				this.addToMerge(mergee);
+	}
+
+	/**
+	 * @return True if it can be safely deleted.
+	 */
+	public boolean isDeletable() {
+		// must be WAIT_DELETE state and
+		return this.state.equals(RCStates.WAIT_DELETE) && (
+		// (all clean reconfigurations since creation
+				this.getUnclean() == 0
+				// or has spent long enough time in WAIT_DELETE state)
+				|| System.currentTimeMillis() - this.deleteTime > ReconfigurationConfig
+						.getMaxFinalStateAge());
+	}
+
+	/**
+	 * @return Number of unclean reconfigurations.
+	 */
+	public int getUnclean() {
+		return this.numPossiblyUncleanReconfigurations;
 	}
 
 	/**
@@ -343,11 +491,11 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	}
 
 	/**
-	 * To get the RC epoch upon a node config change completion. 
-	 * Used only when reconfiguring reconfigurators.
+	 * To get the RC epoch upon a node config change completion. Used only when
+	 * reconfiguring reconfigurators.
 	 * 
 	 * @param rcGroupName
-	 * @return The epoch number for the reconfigurator group name. 
+	 * @return The epoch number for the reconfigurator group name.
 	 */
 	public Integer getRCEpoch(String rcGroupName) {
 		for (NodeIDType node : this.rcEpochs.keySet()) {
@@ -412,6 +560,28 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 					json.getInt(Keys.RC_EPOCH.toString()));
 		}
 		return map;
+	}
+
+	/**
+	 * @return The time when the state was changed to WAIT_DELETE.
+	 */
+	public long getDeleteTime() {
+		return this.deleteTime;
+	}
+
+	/**
+	 * @return For instrumentation purposes.
+	 */
+	public String getSummary() {
+		return this.getName()
+				+ ":"
+				+ this.getEpoch()
+				+ ":"
+				+ this.getState()
+				+ (!this.areMergesAllDone() ? ":!merged[" + this.merged + "!="
+						+ this.toMerge + "]"
+						: !this.isToMergeNull() ? " merged[" + this.merged
+								+ "==" + this.toMerge + "]" : "");
 	}
 
 	static void main(String[] args) {

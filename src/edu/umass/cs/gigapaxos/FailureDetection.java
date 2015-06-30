@@ -2,6 +2,7 @@ package edu.umass.cs.gigapaxos;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Executors;
@@ -135,8 +136,11 @@ public class FailureDetection<NodeIDType> {
 		 * periodic ping tasks because there is no way to just change their
 		 * period midway.
 		 */
+		
+		// copy easiest way to avoid concurrent modification exceptions
+		Set<NodeIDType> copy = new HashSet<NodeIDType>(this.keepAliveTargets);
 		if (adjusted) {
-			for (NodeIDType id : this.keepAliveTargets) {
+			for (NodeIDType id : copy) {
 				dontSendKeepAlive(id);
 				// single-depth recursive call to adjustFDParams
 				sendKeepAlive(id);
@@ -157,13 +161,14 @@ public class FailureDetection<NodeIDType> {
 		}
 	}
 
-	private synchronized void dontSendKeepAlive(NodeIDType id) {
-		boolean wasPresent = this.keepAliveTargets.remove(id);
-		if (wasPresent && this.futures.containsKey(id)) {
+	protected synchronized boolean dontSendKeepAlive(NodeIDType id) {
+		if (this.futures.containsKey(id)) {
 			ScheduledFuture<PingTask> pingTask = futures.get(id);
 			pingTask.cancel(true);
 			futures.remove(id);
+			return true;
 		}
+		return false;
 	}
 
 	/*

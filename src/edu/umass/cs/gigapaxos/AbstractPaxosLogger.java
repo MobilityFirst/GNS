@@ -174,9 +174,9 @@ public abstract class AbstractPaxosLogger {
 	 * then invoke the child's remove method.
 	 */
 	protected static final boolean kill(AbstractPaxosLogger logger,
-			String paxosID) {
+			String paxosID, int version) {
 		logger.collapsingCheckpointer.dequeue(paxosID);
-		return logger.remove(paxosID);
+		return logger.remove(paxosID, version);
 	}
 
 	protected static final String listToString(ArrayList<PaxosPacket> list) {
@@ -284,6 +284,20 @@ public abstract class AbstractPaxosLogger {
 	/**
 	 * 
 	 * @param paxosID
+	 * @param version
+	 * @param group
+	 * @param slot
+	 * @param ballot
+	 * @param state
+	 * @param gcSlot
+	 * @param createTime
+	 */
+	public abstract void putCheckpointState(String paxosID, int version,
+			int[] group, int slot, Ballot ballot, String state, int gcSlot, long createTime);
+
+	/**
+	 * 
+	 * @param paxosID
 	 * @return Checkpointed state.
 	 */
 	public abstract StatePacket getStatePacket(String paxosID);
@@ -307,6 +321,9 @@ public abstract class AbstractPaxosLogger {
 	 */
 	public abstract StringContainer getEpochFinalCheckpointState(String paxosID,
 			int version);
+
+	public abstract Integer getEpochFinalCheckpointVersion(String paxosID
+			);
 
 	/**
 	 * 
@@ -381,10 +398,11 @@ public abstract class AbstractPaxosLogger {
 	 * Removes all state for the paxos group {@code paxosID}
 	 * 
 	 * @param paxosID
+	 * @param version TODO
 	 * @return Returns true if state was succcessfully removed (or didn't exist
 	 *         anyway).
 	 */
-	public abstract boolean remove(String paxosID);
+	public abstract boolean remove(String paxosID, int version);
 
 	/**
 	 * 
@@ -511,7 +529,7 @@ public abstract class AbstractPaxosLogger {
 			this.setProcessing(false);
 			if (!logged)
 				return;
-			DelayProfiler.update("log", t1, packets.length);
+			DelayProfiler.updateDelay("log", t1, packets.length);
 
 			// then message if successfully logged
 			for (LogMessagingTask lmTask : lmTasks) {

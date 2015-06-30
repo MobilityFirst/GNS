@@ -16,18 +16,18 @@ import edu.umass.cs.nio.StringifiableDefault;
 
 /**
  * @author V. Arun
+ * 
+ *         This class has an additional field for returning the set of active
+ *         replicas in addition to the fields in the generic
+ *         ClientReconfigurationPacket. This class is used to both request for
+ *         and return the set of active replicas for a name. If the field
+ *         actives is null, it is implicitly interpreted as a request, else as a
+ *         response.
  */
-
-/*
- * This class is used to both request for and return the set of active replicas
- * for a name. If the field actives is null, it is implicitly interpreted as a
- * request, else as a response.
- */
-public class RequestActiveReplicas extends
-		BasicReconfigurationPacket<InetSocketAddress> {
+public class RequestActiveReplicas extends ClientReconfigurationPacket {
 
 	private static enum Keys {
-		ACTIVE_REPLICAS, FAILED
+		ACTIVE_REPLICAS
 	};
 
 	/**
@@ -37,7 +37,6 @@ public class RequestActiveReplicas extends
 			new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
 
 	private Set<InetSocketAddress> actives = null;
-	private boolean failed = false;
 
 	/**
 	 * @param initiator
@@ -61,7 +60,6 @@ public class RequestActiveReplicas extends
 			throws JSONException {
 		super(json, RequestActiveReplicas.unstringer); // ignores arg unstringer
 		this.setSender(JSONNIOTransport.getSenderAddress(json));
-		this.failed = json.optBoolean(DeleteServiceName.Keys.FAILED.toString());
 
 		JSONArray jsonArray = json.has(Keys.ACTIVE_REPLICAS.toString()) ? json
 				.getJSONArray(Keys.ACTIVE_REPLICAS.toString()) : null;
@@ -86,7 +84,6 @@ public class RequestActiveReplicas extends
 		if (this.actives != null)
 			json.put(Keys.ACTIVE_REPLICAS.toString(), new JSONArray(
 					this.actives));
-		json.put(DeleteServiceName.Keys.FAILED.toString(), failed);
 		return json;
 	}
 
@@ -104,22 +101,7 @@ public class RequestActiveReplicas extends
 		return this.actives;
 	}
 
-	/**
-	 * @return Returns this after setting as failed.
-	 */
-	public RequestActiveReplicas setFailed() {
-		this.failed = true;
-		return this;
-	}
-
-	/**
-	 * @return Whether this request failed.
-	 */
-	public boolean isFailed() {
-		return this.failed;
-	}
-
-	static void main(String[] args) {
+	public static void main(String[] args) {
 		String[] addrs = { "128.119.240.21" };
 		int[] ports = { 3245 };
 		assert (addrs.length == ports.length);

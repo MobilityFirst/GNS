@@ -6,31 +6,25 @@ import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
-import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun
+ * 
+ *         This class has no special fields in addition to a generic
+ *         ClientReconfigurationPacket. It just needs information about
+ *         isFailed(), the correct set of reconfigurators, and the response
+ *         message, all of which are in ClientReconfigurationPacket anyway.
  */
-public class DeleteServiceName extends
-		BasicReconfigurationPacket<InetSocketAddress> implements
-		InterfaceReplicableRequest {
-
-	protected static enum Keys {
-		FAILED
-	};
+public class DeleteServiceName extends ClientReconfigurationPacket {
 
 	/**
 	 * Needed for unstringing InetSocketAddresses.
 	 */
-	public static final Stringifiable<InetSocketAddress> unstringer = new StringifiableDefault<InetSocketAddress>(
+	protected static final Stringifiable<InetSocketAddress> unstringer = new StringifiableDefault<InetSocketAddress>(
 			new InetSocketAddress(InetAddress.getLoopbackAddress(), 0));
-
-	private boolean failed = false;
 
 	/**
 	 * @param initiator
@@ -50,10 +44,8 @@ public class DeleteServiceName extends
 	 */
 	public DeleteServiceName(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
-		super(json, DeleteServiceName.unstringer); // ignores argument
-													// unstringer
+		super(json, DeleteServiceName.unstringer); // ignores unstringer
 		this.setSender(JSONNIOTransport.getSenderAddress(json));
-		this.failed = json.optBoolean(Keys.FAILED.toString());
 	}
 
 	/**
@@ -66,39 +58,6 @@ public class DeleteServiceName extends
 
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		if (this.failed)
-			json.put(Keys.FAILED.toString(), this.failed);
 		return json;
 	}
-
-	@Override
-	public IntegerPacketType getRequestType() throws RequestParseException {
-		return ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME;
-	}
-
-	@Override
-	public boolean needsCoordination() {
-		return false;
-	}
-
-	@Override
-	public void setNeedsCoordination(boolean b) {
-		// do nothing
-	}
-
-	/**
-	 * @return Returns this after setting as failed.
-	 */
-	public DeleteServiceName setFailed() {
-		this.failed = true;
-		return this;
-	}
-
-	/**
-	 * @return Whether this request failed.
-	 */
-	public boolean isFailed() {
-		return this.failed;
-	}
-	
 }

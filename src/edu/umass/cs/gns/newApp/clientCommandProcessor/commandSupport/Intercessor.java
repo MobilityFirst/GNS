@@ -256,7 +256,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       GNS.getLogger().info("Query (" + id + "): " + name + "/" + field + "\n  Returning: " + result.toString());
     }
     result.setRoundTripTime(rtt);
-    DelayProfiler.update("sendQueryInternal", startTime);
+    DelayProfiler.updateDelay("sendQueryInternal", startTime);
     return result;
     
   }

@@ -66,6 +66,7 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
 			boolean doNotReplyToClient) {
+		if(request.toString().equals(InterfaceRequest.NO_OP)) return true;
 		try {
 			switch ((AppRequest.PacketType) (request.getRequestType())) {
 			case DEFAULT_APP_REQUEST:
@@ -125,8 +126,10 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	public InterfaceRequest getRequest(String stringified)
 			throws RequestParseException {
 		NoopAppRequest request = null;
-		if (stringified.equals(InterfaceRequest.NO_OP))
+		if (stringified.equals(InterfaceRequest.NO_OP)) {
+			System.out.println("************** returning NO_OP");
 			return this.getNoopRequest();
+		}
 		try {
 			request = new NoopAppRequest(new JSONObject(stringified));
 		} catch (JSONException je) {
@@ -172,12 +175,13 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		 * If no previous state, set epoch to initial epoch, otherwise
 		 * putInitialState will be called.
 		 */
+
 		if (data == null && state != null) {
 			data = new AppData(name, state);
 			System.out.println(">>>App-" + myID + " creating " + name
 					+ " with state " + state);
 		} else if (state == null) {
-			System.out.println("App-" + myID + " deleting " + name
+			if(data!=null) System.out.println("App-" + myID + " deleting " + name
 					+ " with state " + data.state);
 			this.appData.remove(name);
 			assert (this.appData.get(name) == null);
@@ -190,16 +194,15 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 			;
 		if (state != null)
 			this.appData.put(name, data);
+
 		return true;
 	}
 
 	@Override
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-		return null;/*
-					 * new NoopAppRequest(name, epoch, (int) (Math.random() *
-					 * Integer.MAX_VALUE), "",
-					 * AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
-					 */
+		return new NoopAppRequest(name, epoch,
+				(int) (Math.random() * Integer.MAX_VALUE), "",
+				AppRequest.PacketType.DEFAULT_APP_REQUEST, true);
 	}
 
 	/*

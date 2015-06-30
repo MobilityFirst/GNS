@@ -21,11 +21,13 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.ML;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 /*
  * This protocol task is initiated at a reconfigurator to await a majority of
@@ -35,7 +37,10 @@ public class WaitAckStopEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private static final long RESTART_PERIOD = 1000;
+	/**
+	 * Retransmission timeout.
+	 */
+	public static final long RESTART_PERIOD = 2000;
 
 	private final String key;
 	private final StopEpoch<NodeIDType> stopEpoch;
@@ -45,6 +50,8 @@ public class WaitAckStopEpoch<NodeIDType>
 	private Iterator<NodeIDType> nodeIterator = null;
 
 	private String finalState = null;
+	private int restartCount = 0;
+	private final long initTime = System.currentTimeMillis();
 
 	private static final Logger log = Reconfigurator.getLogger();
 
@@ -54,7 +61,7 @@ public class WaitAckStopEpoch<NodeIDType>
 	 */
 	public WaitAckStopEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
-		super(startEpoch.getPrevEpochGroup(), 1); // default is all?
+		super(startEpoch.getPrevEpochGroup(), 1);
 		this.stopEpoch = new StopEpoch<NodeIDType>(DB.getMyID(),
 				startEpoch.getPrevGroupName(), startEpoch.getPrevEpochNumber(),
 				startEpoch.isMerge());
@@ -68,34 +75,52 @@ public class WaitAckStopEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
 		if (this.amObviated()) {
-			log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] { this,
-					"canceling itself as obviated" });
+			log.log(Level.INFO,
+					"{0} canceling itself as obviated; startEpoch = {1}",
+					new Object[] { this, this.startEpoch });
 			ProtocolExecutor.cancel(this);
 			return null;
 		}
 		// else
-		log.log(Level.INFO, MyLogger.FORMAT[2],
-				new Object[] { this.refreshKey() , " resending "
-						, this.stopEpoch.getSummary() });
+		if (++restartCount % 2 == 0)
+			log.log(Level.WARNING, ML.F[2], new Object[] { this.refreshKey(),
+					" resending ", this.stopEpoch.getSummary() });
 		return start();
 	}
 
 	/*
-	 * If DB has already moved on, then we might as well commit suicide.
+	 * If DB has already moved on beyond the epoch being stopped, then we might
+	 * as well commit suicide. A stop epoch task may not get a response if there
+	 * is no state for the name at the previous epoch replicas. The only way to
+	 * recognize this at a reconfigurator is to check the DB state.
 	 */
 	protected boolean amObviated() {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(this.stopEpoch.getServiceName());
-		if (record == null
-				|| (record.getEpoch() - this.startEpoch.getEpochNumber() > 0))
+		if (record == null // nothing to delete
+				// moved on 
+				|| (record.getEpoch() - this.stopEpoch.getEpochNumber() > 0)
+				// moved beyond WAIT_ACK_STOP
+				|| (record.getEpoch() == this.stopEpoch.getEpochNumber() && record
+						.getState().equals(RCStates.WAIT_DELETE)))
 			return true;
 		return false;
 	}
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
-		if (this.startEpoch.noPrevEpochGroup()) { // creation epoch
-			// spoof AckStopEpoch to self
+		/*
+		 * Creation epoch (nothing to stop) or split reconfiguration where the
+		 * splittee will be stopped by the reconfiguration operation for that
+		 * splittee group. In both cases, we don't actually need to stop
+		 * anything, so we spoof an AckStopEpoch to self.
+		 * 
+		 * We *must not* stop the splittee group because it needs to first
+		 * commit a reconfiguration intent and then do the stop itself;
+		 * otherwise we may prevent the intent from ever getting committed and
+		 * be stuck.
+		 */
+		if (this.startEpoch.noPrevEpochGroup() || this.startEpoch.isSplit()) {
 			return new GenericMessagingTask<NodeIDType, AckStopEpoch<NodeIDType>>(
 					this.DB.getMyID(), new AckStopEpoch<NodeIDType>(
 							this.startEpoch.getInitiator(),
@@ -105,9 +130,12 @@ public class WaitAckStopEpoch<NodeIDType>
 									this.startEpoch.getEpochNumber() - 1)))
 					.toArray();
 		}
+		NodeIDType nextNode = getNextNode();
+		log.log(Level.INFO, "{0} sending {1} to {2}", new Object[] { this,
+				this.stopEpoch.getSummary(), nextNode });
 		// else send stopEpoch sequentially to old actives and await a response
 		return this.startEpoch.hasPrevEpochGroup() ? new GenericMessagingTask<NodeIDType, StopEpoch<NodeIDType>>(
-				getNextNode(), this.stopEpoch).toArray() : null;
+				nextNode, this.stopEpoch).toArray() : null;
 	}
 
 	private NodeIDType getNextNode() {
@@ -119,17 +147,12 @@ public class WaitAckStopEpoch<NodeIDType>
 	/**
 	 * Note: Trying to start this task when one is already running will cause
 	 * the executor to get stuck.
-	 * @return The refrehshed key.
+	 * 
+	 * @return The refreshed key.
 	 */
 	public String refreshKey() {
 		return Reconfigurator.getTaskKey(getClass(), stopEpoch, this.DB
-				.getMyID().toString())
-				+ ":" +
-				// need different key for split/merge operations
-				(this.startEpoch.isSplitOrMerge() ? this.startEpoch
-						.getServiceName()
-						+ ":"
-						+ this.startEpoch.getEpochNumber() : "");
+				.getMyID().toString());
 	}
 
 	/**
@@ -154,11 +177,9 @@ public class WaitAckStopEpoch<NodeIDType>
 		assert (event.getType().equals(types[0]));
 		// asserted above
 		AckStopEpoch<NodeIDType> ackStopEpoch = (AckStopEpoch<NodeIDType>) event;
-		log.info(this
-				+ " received "
-				+ ackStopEpoch.getSummary()
-				+ (this.stopEpoch.shouldGetFinalState() ? ":"
-						+ ackStopEpoch.getFinalState() : ""));
+		log.log(Level.FINE, "{0} received {1} ", new Object[] { this,
+				ackStopEpoch.getSummary() });
+		this.startEpoch.setFirstPrevEpochCandidate(ackStopEpoch.getSender());
 		// finalState can not be null
 		if (this.stopEpoch.shouldGetFinalState())
 			return (this.finalState = ackStopEpoch.getFinalState()) != null;
@@ -169,33 +190,43 @@ public class WaitAckStopEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, PacketType, String>[] ptasks) {
-		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
-				"starting epoch", this.startEpoch.getSummary() });
+		if (this.DB.isRCGroupName(this.startEpoch.getServiceName())) {
+			DelayProfiler.updateDelay("stopRCEpoch", this.initTime);
+		} else
+			DelayProfiler.updateDelay("stopServiceEpoch", this.initTime);
+
+		log.log(Level.INFO, "{0} received ACK_{1} ", new Object[] { this,
+				this.stopEpoch.getSummary() });
+
+		GenericMessagingTask<NodeIDType, ?>[] mtasks = null;
 		// no next epoch group means delete record
-		if (this.startEpoch.noCurEpochGroup() && !this.startEpoch.isMerge()) {
+		if (this.startEpoch.noCurEpochGroup()) {
+			assert (!startEpoch.isMerge());
 			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
 					this.DB);
-			return this.getDeleteConfirmation();
+			// about to delete RC record, but send confirmation to client anyway
+			return this.prepareDeleteIntent();
 		} else if (this.startEpoch.isMerge()) {
-			ptasks[0] = new WaitCoordinatedCommit<NodeIDType>(
-					new RCRecordRequest<NodeIDType>(this.DB.getMyID(),
-					// just to update initialState with the received state
-							new StartEpoch<NodeIDType>(this.startEpoch,
-									this.finalState),
-							RCRecordRequest.RequestTypes.RECONFIGURATION_MERGE),
-					this.DB);
+			RCRecordRequest<NodeIDType> merge = new RCRecordRequest<NodeIDType>(
+					this.DB.getMyID(), new StartEpoch<NodeIDType>(
+							this.startEpoch, this.finalState),
+					RCRecordRequest.RequestTypes.RECONFIGURATION_MERGE);
+			mtasks = (new GenericMessagingTask<NodeIDType, Object>(
+					this.DB.getMyID(), merge)).toArray();
+			log.log(Level.INFO, "{0} sending out {1}", new Object[] { this,
+					merge.getSummary() });
 		} else
 			// else start next epoch group
 			ptasks[0] = new WaitAckStartEpoch<NodeIDType>(this.startEpoch,
 					this.DB);
 
-		return null; // ptasks[0].start() will actually send the startEpoch
+		return mtasks; // ptasks[0].start() will actually send the startEpoch
 	}
 
-	private GenericMessagingTask<NodeIDType, ?>[] getDeleteConfirmation() {
+	private GenericMessagingTask<NodeIDType, ?>[] prepareDeleteIntent() {
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 				this.DB.getMyID(), this.startEpoch,
-				RCRecordRequest.RequestTypes.DELETE_COMPLETE);
+				RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE);
 		return (new GenericMessagingTask<NodeIDType, Object>(this.DB.getMyID(),
 				rcRecReq)).toArray();
 	}

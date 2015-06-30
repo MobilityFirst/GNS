@@ -105,7 +105,8 @@ public class JSONMessenger<NodeIDType> implements
 					log.fine("Node " + this.nioTransport.getMyID() + " sent "
 							+ " to node " + mtask.recipients[r] + ": "
 							+ jsonMsg);
-				} else if (sent < length) {
+				} else if (sent < length && sent >= 0) {
+					assert(sent==0); // nio buffers all or none
 					log.info("Node "
 							+ this.nioTransport.getMyID()
 							+ " messenger experiencing congestion, this is not disastrous (yet)");
@@ -115,8 +116,8 @@ public class JSONMessenger<NodeIDType> implements
 					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS);
 				} else {
 					log.severe("Node " + this.nioTransport.getMyID() + " sent "
-							+ sent + " bytes out of a " + length
-							+ " byte message to node " + mtask.recipients[r]);
+							+ Math.max(-1, sent) + " characters out of a " + length
+							+ " message to node " + mtask.recipients[r]);
 				}
 			}
 		}

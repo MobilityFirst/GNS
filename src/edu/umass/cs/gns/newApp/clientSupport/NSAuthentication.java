@@ -48,7 +48,7 @@ public class NSAuthentication {
       // The simple case where we're accesing our own guid
       final long startTime = System.currentTimeMillis();
       publicKey = lookupPublicKeyFromGuid(guid, gnsApp);
-      DelayProfiler.update("authACLLookupPublicKey", startTime);
+      DelayProfiler.updateDelay("authACLLookupPublicKey", startTime);
       if (publicKey == null) {
         return NSResponseCode.BAD_GUID_ERROR;
       }
@@ -82,7 +82,7 @@ public class NSAuthentication {
       // FIXME: This ACL check Probably does more than it needs to.
       aclCheckPassed = NSAccessSupport.verifyAccess(access, guid, field, accessorGuid, gnsApp, lnsAddress);
     }
-    DelayProfiler.update("authACL", aclStartTime);
+    DelayProfiler.updateDelay("authACL", aclStartTime);
     long sigStartTime = System.currentTimeMillis();
     // now check signatures
     if (signature == null) {
@@ -106,7 +106,7 @@ public class NSAuthentication {
         return NSResponseCode.ACCESS_ERROR;
       }
     }
-    DelayProfiler.update("authSigCheck", sigStartTime);
+    DelayProfiler.updateDelay("authSigCheck", sigStartTime);
 
     return NSResponseCode.NO_ERROR;
   }

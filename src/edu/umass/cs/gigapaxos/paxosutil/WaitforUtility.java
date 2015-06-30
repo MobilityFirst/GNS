@@ -19,12 +19,12 @@ public class WaitforUtility {
 	private final int[] members;
 	private final boolean[] responded;
 	private int heardCount = 0;
-	private long initTime = 0; // to calculate how long we have been waiting
-	private int retransmissionCount = 0;
+	private final long initTime = System.currentTimeMillis(); // to calculate how long we have been waiting
+	private int retransmissionCount = -1;
 
 	public WaitforUtility(int[] m) {
 		this.members = m;
-		this.initTime = System.currentTimeMillis();
+		//this.initTime = System.currentTimeMillis();
 		responded = new boolean[m.length];
 		for (int i = 0; i < m.length; i++) {
 			responded[i] = false;
@@ -85,9 +85,11 @@ public class WaitforUtility {
 		return System.currentTimeMillis() - this.initTime;
 	}
 
+	/*
 	public void setInitTime() {
 		this.initTime = System.currentTimeMillis();
 	}
+	*/
 
 	private int getIndex(int node) {
 		int index = -1;

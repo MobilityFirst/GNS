@@ -146,9 +146,9 @@ public class MessagingTask {
 		s += (msgs.length>1) ? "s:\n[" : ": ";
 		for(int i=0; i<msgs.length; i++) {
 			s += (msgs.length>1 ? "\n    " : "");
-			if(i==10 && msgs.length>25) {
-				s+=".... (skipping " + (msgs.length-19) + ")";
-				i=msgs.length-11;
+			if(i==5 && msgs.length>25) {
+				s+=".... (skipping " + (msgs.length-9) + ")";
+				i=msgs.length-6;
 			} else 	s+=msgs[i];
 		}
 		if(msgs.length>1) s+="\n]";

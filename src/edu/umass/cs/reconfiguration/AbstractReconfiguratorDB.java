@@ -1,7 +1,6 @@
 package edu.umass.cs.reconfiguration;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +25,8 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurabl
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.ML;
 
 /**
  * @author V. Arun
@@ -52,7 +52,8 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		NODE_CONFIG
 	};
 
-	private final ArrayList<String> pendingRCProtocolTasks = new ArrayList<String>();
+	// FIXME: really belongs in RepliconfigurableReconfiguratorDB, not here
+	private final Set<String> pendingRCProtocolTasks = new HashSet<String>();
 	protected final NodeIDType myID;
 	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
 
@@ -77,7 +78,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			String name, int epoch) {
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(name);
-		return record.getEpoch() == epoch ? record : null;
+		return record != null && record.getEpoch() == epoch ? record : null;
 	}
 
 	protected ReconfigurationRecord<NodeIDType> createRecord(String name) {
@@ -98,8 +99,11 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
 			boolean doNotReplyToClient) {
-		log.info(this + " executing " + request);
-		assert (request instanceof BasicReconfigurationPacket<?>);
+		log.log(Level.FINE, "{0} executing {1}", new Object[] { this, request });
+		if (request.getServiceName().equals(InterfaceRequest.NO_OP)
+				&& request.toString().equals(InterfaceRequest.NO_OP))
+			return true;
+		assert (request instanceof BasicReconfigurationPacket<?>) : request;
 		// cast checked by assert above
 		BasicReconfigurationPacket<NodeIDType> rcPacket = (BasicReconfigurationPacket<NodeIDType>) request;
 		boolean handled = (Boolean) autoInvokeMethod(this, rcPacket,
@@ -130,8 +134,8 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 	/**
 	 * @param report
-	 * @return True if demand report is handled successfully. False means 
-	 * that it may not have been processed. 
+	 * @return True if demand report is handled successfully. False means that
+	 *         it may not have been processed.
 	 */
 	public boolean handleDemandReport(DemandReport<NodeIDType> report) {
 		return this.updateDemandStats(report);
@@ -140,13 +144,15 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	/**
 	 * If a reconfiguration intent is being registered, a protocol task must be
 	 * started that ensures that the reconfiguration completes successfully.
-	 * @param rcRecReq 
+	 * 
+	 * @param rcRecReq
 	 * @return True if the record was handled successfully.
 	 */
 	public boolean handleRCRecordRequest(RCRecordRequest<NodeIDType> rcRecReq) {
 
 		// create RC record upon a name creation request
 		if (rcRecReq.startEpoch.isInitEpoch()
+				&& !rcRecReq.isDeleteIntentOrComplete()
 				&& this.getReconfigurationRecord(rcRecReq.getServiceName()) == null)
 			this.createReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
 					rcRecReq.getServiceName(), rcRecReq.startEpoch
@@ -154,15 +160,23 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					rcRecReq.startEpoch.curEpochGroup));
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(rcRecReq.getServiceName());
-		assert (record != null);
+		assert (record != null || rcRecReq.isReconfigurationPrevDropComplete()) : rcRecReq;
+		if (record == null)
+			return false;
 
-		log.info("ARDB" + this.myID + " received RCRecordRequest " + rcRecReq
-				+ "\n rcRecord = " + record);
+		log.log(Level.FINE,
+				"{0} received RCRecordRequest {1} while rcRecord = {2}",
+				new Object[] { this, rcRecReq.getSummary(), record.getSummary() });
 
 		// verify legitimate transition and legitimate node config change
 		if (!this.isLegitTransition(rcRecReq, record)
-				|| !this.isLegitimateNodeConfigChange(rcRecReq, record))
+				|| !this.isLegitimateNodeConfigChange(rcRecReq, record)) {
+			log.log(Level.FINE,
+					"{0} received illegitimate RCRecordRequest {1} while rcRecord = {2}",
+					new Object[] { this, rcRecReq.getSummary(),
+							record.getSummary() });
 			return false;
+		}
 
 		// wait till node config change is complete
 		if (rcRecReq.isNodeConfigChange()
@@ -175,13 +189,21 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			this.garbageCollectOldReconfigurators(rcRecReq.getEpochNumber() - 1);
 			// garbage collect soft socket address mappings for deleted RC nodes
 			this.consistentNodeConfig.removeSlatedForRemoval();
-			System.out.println(this + " NODE_CONFIG change complete");
+
+			log.log(Level.INFO,
+					"{0} NODE_CONFIG change complete; new reconfigurators = {1}",
+					new Object[] { this,
+							this.consistentNodeConfig.getReconfigurators() });
+			System.out.println(this + " NODE_CONFIG change "
+					+ rcRecReq.getEpochNumber()
+					+ " complete; new reconfigurators = "
+					+ this.consistentNodeConfig.getReconfigurators());
 		}
 
 		boolean handled = false;
 		if (rcRecReq.isReconfigurationIntent()) {
 			// READY -> WAIT_ACK_STOP
-			log.log(Level.INFO, MyLogger.FORMAT[10],
+			log.log(Level.FINE, ML.F[10],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "->",
@@ -195,37 +217,56 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					rcRecReq.getInitiator());
 		} else if (rcRecReq.isReconfigurationComplete()) {
 			// WAIT_ACK_START -> READY
-			log.log(Level.INFO, MyLogger.FORMAT[9],
+			log.log(Level.FINE, ML.F[9],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "->",
 							rcRecReq.getEpochNumber(),
 							ReconfigurationRecord.RCStates.READY });
-			handled = this.setState(rcRecReq.getServiceName(),
-					rcRecReq.getEpochNumber(),
-					ReconfigurationRecord.RCStates.READY);
-			// notify to wake up node config completion wait
-			if (this.isRCGroupName(record.getName())) {
-				log.info(this
-						+ " selfNotifying upon completing reconfiguration of "
-						+ rcRecReq.getServiceName()
-						+ (this.isNodeConfigChangeComplete() ? " **all done**"
-								: ""));
-				selfNotify();
-			}
-		} else if (rcRecReq.isDeleteConfirmation()) {
-			// WAIT_ACK_STOP -> DELETE
-			log.log(Level.INFO, MyLogger.FORMAT[7],
+			handled = this
+					.setStateMerge(
+							rcRecReq.getServiceName(),
+							rcRecReq.getEpochNumber(),
+							rcRecReq.startEpoch.noCurEpochGroup() ? ReconfigurationRecord.RCStates.WAIT_DELETE
+									: rcRecReq.startEpoch.noPrevEpochGroup() ? ReconfigurationRecord.RCStates.READY_READY
+											: ReconfigurationRecord.RCStates.READY,
+							rcRecReq.startEpoch.getMergees());
+			// merge ops should be specified at new epoch creation time
+		} else if (rcRecReq.isDeleteIntent()) {
+			// WAIT_ACK_STOP -> WAIT_DELETE
+			log.log(Level.FINE, ML.F[7],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; changing state", rcRecReq.getServiceName(),
 							record.getEpoch(), record.getState(), "-> DELETE" });
 
-			handled = this.deleteReconfigurationRecord(
-					rcRecReq.getServiceName(), rcRecReq.getEpochNumber() - 1);
+			handled = this
+					.markDeleteReconfigurationRecord(rcRecReq.getServiceName(),
+							rcRecReq.getEpochNumber() /*- 1*/);
+		} else if (rcRecReq.isReconfigurationPrevDropComplete()) {
+			// READY -> READY_READY or WAIT_DELETE -> DELETE
+			log.log(Level.FINE, ML.F[7],
+					new Object[] { this, "received", rcRecReq.getSummary(),
+							"; changing state", rcRecReq.getServiceName(),
+							record.getEpoch(), record.getState(),
+							"-> READY_READY/DELETE" });
+
+			handled =
+			// typical reconfiguration READY -> READY_READY
+			rcRecReq.startEpoch.hasCurEpochGroup() ? this.setState(
+					rcRecReq.getServiceName(), rcRecReq.getEpochNumber(),
+					RCStates.READY_READY)
+			// isDeleteable WAIT_DELETE -> DELETE
+					: rcRecReq.startEpoch.noCurEpochGroup()
+							&& record.isDeletable() ? this
+							.deleteReconfigurationRecord(
+									rcRecReq.getServiceName(),
+									rcRecReq.getEpochNumber())
+					// else return value doesn't really matter
+							: true;
 		} else if (rcRecReq.isReconfigurationMerge()) {
 			// MERGE
-			log.log(Level.INFO,
-					MyLogger.FORMAT[9],
+			log.log(Level.FINE,
+					ML.F[9],
 					new Object[] { this, "received", rcRecReq.getSummary(),
 							"; merging state",
 							rcRecReq.startEpoch.getPrevGroupName(),
@@ -235,12 +276,41 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			handled = this.mergeState(rcRecReq.getServiceName(),
 					rcRecReq.getEpochNumber(),
 					rcRecReq.startEpoch.getPrevGroupName(),
+					rcRecReq.startEpoch.getPrevEpochNumber(),
 					rcRecReq.startEpoch.initialState);
 		} else
 			throw new RuntimeException("Received unexpected RCRecordRequest");
-		log.info(this + " returning " + handled + " for "
-				+ rcRecReq.getSummary());
+
+		log.log(Level.INFO,
+				"{0} {1} {2} when (previous) record = {3} ",
+				new Object[] {
+						this,
+						handled ? "successfully handled" : "turned into a noop",
+						rcRecReq.getSummary(), record.getSummary() });
+
+		if (handled
+				&& (rcRecReq.isReconfigurationComplete() || rcRecReq
+						.isReconfigurationMerge())
+				&& this.isRCGroupName(record.getName()))
+			// notify to wake up node config completion wait
+			selfNotify();
+		else if (handled && rcRecReq.isReconfigurationComplete()
+				&& rcRecReq.isNodeConfigChange())
+			assertMergesAllDone();
+
 		return handled;
+	}
+
+	private void assertMergesAllDone() {
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		for (NodeIDType rcNode : ncRecord.getNewActives()) {
+			ReconfigurationRecord<NodeIDType> record = this
+					.getReconfigurationRecord(this.getRCGroupName(rcNode),
+							ncRecord.getRCEpoch(this.getRCGroupName(rcNode)));
+			assert (record == null || record.areMergesAllDone());
+		}
 	}
 
 	/*
@@ -284,16 +354,47 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	@Override
 	public InterfaceRequest getRequest(String stringified)
 			throws RequestParseException {
-		// throw new RuntimeException("Method should never have been called");
+		if (stringified.equals(InterfaceRequest.NO_OP))
+			return getNoopRequest(stringified);
 		BasicReconfigurationPacket<NodeIDType> rcPacket = null;
 		try {
 			rcPacket = (BasicReconfigurationPacket<NodeIDType>) ReconfigurationPacket
 					.getReconfigurationPacket(new JSONObject(stringified),
 							this.consistentNodeConfig);
 		} catch (JSONException e) {
+			log.severe(this + " encoutered JSONException trying to decode ["
+					+ stringified + "]");
 			e.printStackTrace();
 		}
 		return rcPacket;
+	}
+
+	protected static InterfaceRequest getNoopRequest(String stringified) {
+		if (stringified.equals(InterfaceRequest.NO_OP)) {
+			return new InterfaceRequest() {
+				@Override
+				public IntegerPacketType getRequestType()
+						throws RequestParseException {
+					return new IntegerPacketType() {
+						@Override
+						public int getInt() {
+							return Integer.MAX_VALUE;
+						}
+					};
+				}
+
+				@Override
+				public String getServiceName() {
+					return InterfaceRequest.NO_OP;
+				}
+
+				@Override
+				public String toString() {
+					return InterfaceRequest.NO_OP;
+				}
+			};
+		}
+		return null;
 	}
 
 	/*
@@ -312,7 +413,6 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		return new HashSet<IntegerPacketType>(); // empty
 	}
 
-
 	// Reconfigurable methods below
 	@Override
 	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
@@ -324,17 +424,23 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 	@Override
 	public String getFinalState(String name, int epoch) {
-		return null;
+		throw new RuntimeException(
+				"Method not yet implemented and should never have been called"
+						+ "as AbstractReconfiguratorDB uses PaxosReplicaCoordinator");
 	}
 
 	@Override
 	public void putInitialState(String name, int epoch, String state) {
-		throw new RuntimeException("Method not yet implemented");
+		throw new RuntimeException(
+				"Method not yet implemented and should never have been called"
+						+ "as AbstractReconfiguratorDB uses PaxosReplicaCoordinator");
 	}
 
 	@Override
 	public boolean deleteFinalState(String name, int epoch) {
-		throw new RuntimeException("Method not yet implemented");
+		throw new RuntimeException(
+				"Method not yet implemented and should never have been called"
+						+ "as AbstractReconfiguratorDB uses PaxosReplicaCoordinator");
 	}
 
 	/*
@@ -344,6 +450,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	private boolean isLegitTransition(RCRecordRequest<NodeIDType> rcRecReq,
 			ReconfigurationRecord<NodeIDType> record) {
 		assert (record != null) : rcRecReq;
+
 		// always ignore lower epochs
 		if (rcRecReq.getEpochNumber() - record.getEpoch() < 0)
 			return false;
@@ -360,13 +467,17 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		if (rcRecReq.getEpochNumber() - record.getEpoch() >= 1) {
 			// initiating reconfiguration to next epoch
 			return
-			// ready to reconfigure OR
-			(record.getState().equals(RCStates.READY) && rcRecReq
-					.isReconfigurationIntent()) ||
-			// waiting on ackStop and reconfiguration complete (unlikely)
-					(record.getState().equals(RCStates.WAIT_ACK_STOP) && (rcRecReq
-							.isReconfigurationComplete() || rcRecReq
-							.isDeleteConfirmation()));
+			// ready to reconfigure
+			/*
+			 * FIXME: do we need to check if merges are all done correctly using
+			 * the pending task queue here as opposed to just record
+			 * information?
+			 */
+			(record.isReconfigurationReady() && rcRecReq
+					.isReconfigurationIntent())
+			// waitAckStop and reconfiguration/delete complete or delete intent
+					|| (record.getState().equals(RCStates.WAIT_ACK_STOP) && (rcRecReq
+							.isReconfigurationComplete()));
 			/*
 			 * If a reconfiguration intent is allowed only from READY, we have a
 			 * problem during recovery when reconfiguration completion is not
@@ -387,65 +498,73 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			// waiting on ackStart and reconfiguration complete
 			(record.getState().equals(RCStates.WAIT_ACK_START) && rcRecReq
 					.isReconfigurationComplete())
-					|| (record.getState().equals(RCStates.READY) && rcRecReq
-							.isReconfigurationMerge());
+			// ready and reconfiguration merge
+					|| (record.isReady() && (rcRecReq.isReconfigurationMerge() || rcRecReq
+							.isReconfigurationPrevDropComplete()))
+					// delete pending and delete complete
+					|| (record.getState().equals(RCStates.WAIT_DELETE) && rcRecReq
+							.isReconfigurationPrevDropComplete());
 		}
 		return false;
 	}
 
 	/*
-	 * A legitimate state transition must either advance the state in the same
-	 * epoch or advance the epoch.
-	 */
-	protected boolean isLegitTransition(
-			ReconfigurationRecord<NodeIDType> record, int epoch, RCStates state) {
-		if (epoch - record.getEpoch() < 0)
-			return false;
-		if (epoch - record.getEpoch() == 0) {
-			return
-			// WAIT_ACK_START -> READY
-			(record.getState().equals(RCStates.WAIT_ACK_START) && state
-					.equals(RCStates.READY)) ||
-			// READY -> WAIT_ACK_DROP
-					(record.getState().equals(RCStates.READY) && state
-							.equals(RCStates.WAIT_ACK_DROP));
-		}
-		if (epoch - record.getEpoch() > 0) {
-			// WAIT_ACK_STOP -> READY
-			return record.getState().equals(RCStates.WAIT_ACK_STOP)
-					|| record.getState().equals(RCStates.READY);
-		}
-		return false;
-	}
-
-	/*
-	 * Checks if all new RC groups are ready. FIXME: This check should be done
-	 * atomically, and we also need to check for the new NC group itself
-	 * existing.
+	 * Checks if all new RC groups are ready.
+	 * 
+	 * FIXME: This check should be done atomically, and we also need to check
+	 * for the new NC group itself existing.
 	 */
 	private boolean isNodeConfigChangeComplete() {
+		long t0 = System.currentTimeMillis();
 		Map<String, Set<NodeIDType>> newRCGroups = this.getNewRCGroups();
 		boolean complete = true;
 		ReconfigurationRecord<NodeIDType> ncRecord = this
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString());
+		String debug = "";
 		for (String newRCGroup : newRCGroups.keySet()) {
 			ReconfigurationRecord<NodeIDType> record = this
 					.getReconfigurationRecord(newRCGroup);
 			complete = complete
-					&& record.getState().equals(RCStates.READY)
-					&& record.getActiveReplicas().equals(
-							newRCGroups.get(newRCGroup))
-					&& ((record.getEpoch() == ncRecord.getRCEpoch(newRCGroup)));
-			if (!complete)
+					&& record != null
+					// epoch matches
+					&& ((record.getEpoch() == ncRecord.getRCEpoch(newRCGroup))
+					// ready and all merges done
+							&& ((record.isReconfigurationReady()
+									&& newRCGroups.get(newRCGroup).equals(
+											record.getActiveReplicas()) && record
+										.areMergesAllDone())
+							// or post-ready ( => ready and all merges done)
+							|| (record.getState()
+									.equals(RCStates.WAIT_ACK_STOP)))
+					// or moved on to strictly higher epochs (possible?)
+					|| (record.getEpoch() - ncRecord.getRCEpoch(newRCGroup) > 0));
+			if (!complete) {
+				debug += (record != null) ? "["
+						+ (!newRCGroups.get(newRCGroup).equals(
+								record.getActiveReplicas()) ? record
+								.getActiveReplicas()
+								+ " -> "
+								+ newRCGroups.get(newRCGroup) : "")
+						+ (record.getEpoch() != ncRecord.getRCEpoch(newRCGroup) ? "; ["
+								+ record.getEpoch()
+								+ " -> "
+								+ ncRecord.getRCEpoch(newRCGroup) + "]"
+								: "") + "] for RC record  "
+						+ record.getSummary()
+						: "record = null";
 				break;
+			}
 		}
 		if (!complete)
-			log.info(this + " does not have all RC group records ready yet");
+			log.log(Level.INFO,
+					"{0} does not have all RC group records ready yet for NODE_CONFIG epoch {1}, e.g.,: {2}",
+					new Object[] { this, ncRecord.getEpoch() + 1, debug });
 		complete = complete && this.isPendingRCTasksEmpty();
 		if (!this.isPendingRCTasksEmpty())
-			log.info(this + " has pending RC tasks: "
-					+ this.pendingRCProtocolTasks);
+			log.log(Level.INFO, "{0} has pending RC tasks: {1}", new Object[] {
+					this, this.pendingRCProtocolTasks });
+		DelayProfiler.updateDelay("isNodeConfigChangeComplete", t0);
 		return complete;
 	}
 
@@ -473,6 +592,61 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString());
 		return this.getRCGroups(this.getMyID(), ncRecord.getActiveReplicas());
+	}
+
+	protected Set<String> getMergeList(String newRCGroupName) {
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		Set<NodeIDType> deletedNodes = diff(ncRecord.getActiveReplicas(),
+				ncRecord.getNewActives());
+
+		Set<String> mergees = new HashSet<String>();
+		for (NodeIDType deletedNode : deletedNodes) {
+			String merger = this
+					.getRCGroupName(this
+							.getNewConsistentHashRing()
+							.getReplicatedServersArray(
+									this.getRCGroupName(deletedNode)).get(0));
+			if (merger.equals(newRCGroupName))
+				mergees.add(this.getRCGroupName(deletedNode));
+		}
+		if (!mergees.isEmpty())
+			log.log(Level.INFO, "{0} merging list of mergees {1}",
+					new Object[] { this, mergees });
+		return mergees;
+	}
+
+	protected HashMap<String, Set<String>> getMergeLists() {
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		Set<NodeIDType> deletedNodes = diff(ncRecord.getActiveReplicas(),
+				ncRecord.getNewActives());
+
+		HashMap<String, Set<String>> mergeLists = new HashMap<String, Set<String>>();
+		for (NodeIDType deletedNode : deletedNodes) {
+			String merger = this
+					.getRCGroupName(this
+							.getNewConsistentHashRing()
+							.getReplicatedServersArray(
+									this.getRCGroupName(deletedNode)).get(0));
+			if (!mergeLists.containsKey(merger))
+				mergeLists.put(merger, new HashSet<String>());
+			Set<String> mergees = mergeLists.get(merger);
+			mergees.add(this.getRCGroupName(deletedNode));
+			mergeLists.put(merger, mergees);
+		}
+		return mergeLists;
+	}
+
+	// return s1 - s2
+	private Set<NodeIDType> diff(Set<NodeIDType> s1, Set<NodeIDType> s2) {
+		Set<NodeIDType> diff = new HashSet<NodeIDType>();
+		for (NodeIDType node : s1)
+			if (!s2.contains(node))
+				diff.add(node);
+		return diff;
 	}
 
 	/*
@@ -516,6 +690,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		try {
 			while (!this.isNodeConfigChangeComplete()) {
 				this.wait();
+				;
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -531,7 +706,9 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	 * @return If this {@code stopEpoch} was handled successfully.
 	 */
 	public boolean handleStopEpoch(StopEpoch<NodeIDType> stopEpoch) {
-		log.info(this + " stopped " + stopEpoch.getSummary());
+		log.log(Level.INFO, "{0} stop-executed {1}", new Object[] { this,
+				stopEpoch.getSummary() });
+		// for exactly once semantics for merges
 		this.clearMerged(stopEpoch.getServiceName(), stopEpoch.getEpochNumber());
 		return true;
 	}

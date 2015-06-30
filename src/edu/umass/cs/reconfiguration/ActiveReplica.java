@@ -47,7 +47,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDe
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.utils.ML;
 
 /**
  * @author V. Arun
@@ -79,8 +79,11 @@ public class ActiveReplica<NodeIDType> implements
 	 * server-to-server communication as we may need different transport-layer
 	 * security schemes for server-server compared to client-server
 	 * communication.
+	 * 
+	 * The commented DEFAULT_CLIENT_PORT_OFFSET field below has been moved to
+	 * ReconfigurationConfig.
 	 */
-	public static int DEFAULT_CLIENT_PORT_OFFSET = 00; // default 100
+	// public static int DEFAULT_CLIENT_PORT_OFFSET = 00; // default 100
 
 	private final AbstractReplicaCoordinator<NodeIDType> appCoordinator;
 	private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
@@ -90,6 +93,7 @@ public class ActiveReplica<NodeIDType> implements
 
 	private final AggregateDemandProfiler demandProfiler;
 	private final boolean noReporting;
+	private boolean recovering = true;
 
 	private static final Logger log = (Reconfigurator.getLogger());
 
@@ -102,10 +106,9 @@ public class ActiveReplica<NodeIDType> implements
 
 	private ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
 			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
-			InterfaceSSLMessenger<NodeIDType, ?> messenger,
-			boolean noReporting) {
+			InterfaceSSLMessenger<NodeIDType, ?> messenger, boolean noReporting) {
 		this.appCoordinator = appC
-				.setActiveCallback((InterfaceReconfiguratorCallback) this);
+				.setStopCallback((InterfaceReconfiguratorCallback) this);
 		this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nodeConfig);
 		this.demandProfiler = new AggregateDemandProfiler(this.nodeConfig);
@@ -121,6 +124,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.noReporting = noReporting;
 		if (this.messenger.getClientMessenger() == null) // exactly once
 			this.messenger.setClientMessenger(initClientMessenger());
+		this.recovering = false;
 	}
 
 	protected ActiveReplica(AbstractReplicaCoordinator<NodeIDType> appC,
@@ -139,8 +143,8 @@ public class ActiveReplica<NodeIDType> implements
 							.getReconfigurationPacket(jsonObject)) != null) {
 				if (!this.protocolExecutor.handleEvent(rcPacket)) {
 					// do nothing
-					log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] {
-							this, "unable to handle packet", jsonObject });
+					log.log(Level.FINE, ML.F[2], new Object[] { this,
+							"unable to handle packet", jsonObject });
 				}
 			}
 			// else check if app request
@@ -163,9 +167,10 @@ public class ActiveReplica<NodeIDType> implements
 
 	@Override
 	public void executed(InterfaceRequest request, boolean handled) {
+		if (this.isRecovering())
+			return;
 		assert (request instanceof InterfaceReconfigurableRequest);
-		if (handled)
-			log.info(this + " executing executed for " + request);
+		assert(handled);
 		/*
 		 * We need to handle the callback in a separate thread, otherwise we
 		 * risk sending the ackStop before the epoch final state has been
@@ -256,7 +261,7 @@ public class ActiveReplica<NodeIDType> implements
 			StartEpoch<NodeIDType> event,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		StartEpoch<NodeIDType> startEpoch = ((StartEpoch<NodeIDType>) event);
-		this.logEvent(event);
+		this.logEvent(event, Level.FINE);
 		AckStartEpoch<NodeIDType> ackStart = new AckStartEpoch<NodeIDType>(
 				startEpoch.getSender(), startEpoch.getServiceName(),
 				startEpoch.getEpochNumber(), getMyID());
@@ -264,20 +269,31 @@ public class ActiveReplica<NodeIDType> implements
 				startEpoch.getSender(), ackStart)).toArray();
 		// send positive ack even if app has moved on
 		if (this.alreadyMovedOn(startEpoch)) {
-			log.info(this + " sending to " + startEpoch.getSender() + ": "
-					+ ackStart.getSummary());
+			log.log(Level.FINE,
+					"{0} sending to {1}: {2} as paxos group has already moved on to version {3}",
+					new Object[] {
+							this,
+							startEpoch.getSender(),
+							ackStart.getSummary(),
+							this.appCoordinator.getEpoch(startEpoch
+									.getServiceName()) });
 			return mtasks;
 		}
 		// else
 		// if no previous group, create replica group with empty state
-		if (startEpoch.getPrevEpochGroup() == null
-				|| startEpoch.getPrevEpochGroup().isEmpty()) {
+		if (startEpoch.noPrevEpochGroup()) {
 			// createReplicaGroup is a local operation
-			this.appCoordinator.createReplicaGroup(startEpoch.getServiceName(),
-					startEpoch.getEpochNumber(), startEpoch.getInitialState(),
-					startEpoch.getCurEpochGroup());
-			log.info(this + " sending to " + startEpoch.getSender() + ": "
-					+ ackStart.getSummary());
+			boolean created = this.appCoordinator
+					.createReplicaGroup(startEpoch.getServiceName(),
+							startEpoch.getEpochNumber(),
+							startEpoch.getInitialState(),
+							startEpoch.getCurEpochGroup());
+			assert (created && this.appCoordinator.getReplicaGroup(
+					startEpoch.getServiceName()).equals(
+					startEpoch.getCurEpochGroup()));
+			log.log(Level.FINE, "{0} sending to {1}: {2}", new Object[] { this,
+					startEpoch.getSender(), ackStart.getSummary() });
+
 			return mtasks; // and also send positive ack
 		}
 		/*
@@ -317,13 +333,17 @@ public class ActiveReplica<NodeIDType> implements
 			StopEpoch<NodeIDType> stopEpoch,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		this.logEvent(stopEpoch);
-		if (this.noStateOrAlreadyMovedOn(stopEpoch))
+		if (this.stoppedOrMovedOn(stopEpoch))
 			return this.sendAckStopEpoch(stopEpoch).toArray(); // still send ack
 		// else coordinate stop with callback
 		this.callbackMap.addStopNotifiee(stopEpoch);
-		log.info(this + " coordinating " + stopEpoch.getSummary());
-		this.appCoordinator.handleIncoming(this.getAppStopRequest(
-				stopEpoch.getServiceName(), stopEpoch.getEpochNumber()));
+		InterfaceReconfigurableRequest appStop = this.getAppStopRequest(
+				stopEpoch.getServiceName(), stopEpoch.getEpochNumber());
+		log.log(Level.FINE,
+				"{0} coordinating {1} as {2}:{3}",
+				new Object[] { this, stopEpoch.getSummary(),
+						appStop.getServiceName(), appStop.getEpochNumber() });
+		this.appCoordinator.handleIncoming(appStop);
 		return null; // need to wait until callback
 	}
 
@@ -338,17 +358,19 @@ public class ActiveReplica<NodeIDType> implements
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 		this.logEvent(event);
 		DropEpochFinalState<NodeIDType> dropEpoch = (DropEpochFinalState<NodeIDType>) event;
-		this.appCoordinator.deleteFinalState(dropEpoch.getServiceName(),
-				dropEpoch.getEpochNumber());
+		boolean deleted = this.appCoordinator.deleteFinalState(
+				dropEpoch.getServiceName(), dropEpoch.getEpochNumber());
 		AckDropEpochFinalState<NodeIDType> ackDrop = new AckDropEpochFinalState<NodeIDType>(
 				getMyID(), dropEpoch);
 		GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>>(
 				dropEpoch.getInitiator(), ackDrop);
 		assert (ackDrop.getInitiator().equals(dropEpoch.getInitiator()));
-		log.info(this + " sending " + ackDrop.getSummary() + " to "
-				+ ackDrop.getInitiator() + ": " + ackDrop);
+		log.log(Level.FINE,
+				"{0} {1} sending {2} to {3}",
+				new Object[] { this, deleted ? "" : "*NOT*",
+						ackDrop.getSummary(), ackDrop.getInitiator() });
 		this.garbageCollectPendingTasks(dropEpoch);
-		return mtask.toArray();
+		return deleted ? mtask.toArray() : null;
 	}
 
 	// drop any pending task (only WaitEpochFinalState possible) upon dropEpoch
@@ -363,7 +385,7 @@ public class ActiveReplica<NodeIDType> implements
 				.getTaskKeyPrev(WaitEpochFinalState.class, dropEpoch, this
 						.getMyID().toString())) != null);
 		if (removed)
-			log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this,
+			log.log(Level.FINEST, ML.F[4], new Object[] { this,
 					" removed WaitEpochFinalState", dropEpoch.getServiceName(),
 					":", (dropEpoch.getEpochNumber() - 1) });
 	}
@@ -382,9 +404,9 @@ public class ActiveReplica<NodeIDType> implements
 		StringContainer stateContainer = this.getFinalStateContainer(
 				request.getServiceName(), request.getEpochNumber());
 		if (stateContainer == null) {
-			log.log(Level.INFO, MyLogger.FORMAT[2],
+			log.log(Level.INFO, ML.F[2],
 					new Object[] { this,
-							"****did not find any epochFinalState for*****",
+							"****did not find any epoch final state for****",
 							request.getSummary() });
 			return null;
 		}
@@ -394,9 +416,10 @@ public class ActiveReplica<NodeIDType> implements
 				request.getEpochNumber(), stateContainer.state);
 		GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>> mtask = null;
 
-		log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this,
-				"returning to ", request.getInitiator(), event.getKey(),
-				epochState });
+		log.log(Level.INFO,
+				ML.F[3],
+				new Object[] { this, "returning epoch final state to ",
+						event.getKey(), epochState.getSummary() });
 		mtask = new GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>>(
 				request.getInitiator(), epochState);
 
@@ -425,24 +448,34 @@ public class ActiveReplica<NodeIDType> implements
 
 	private void handRequestToApp(InterfaceRequest request) {
 		long t1 = System.currentTimeMillis();
-		log.info(this + " ------------------handing request to app: " + request);
 		this.appCoordinator.handleIncoming(request);
-		DelayProfiler.update("appHandleIncoming@AR", t1);
+		DelayProfiler.updateDelay("appHandleIncoming@AR", t1);
 	}
 
-	private boolean noStateOrAlreadyMovedOn(BasicReconfigurationPacket<?> packet) {
+	private boolean stoppedOrMovedOn(BasicReconfigurationPacket<?> packet) {
 		boolean retval = false;
 		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());
-		// no state or higher epoch
-		if (epoch == null || (epoch - packet.getEpochNumber() > 0))
-			retval = true;
-		// FIXME: same epoch but no replica group (or stopped)
-		else if (epoch == packet.getEpochNumber()
-				&& this.appCoordinator.getReplicaGroup(packet.getServiceName()) == null)
+		if (epoch != null // has state
+				// and moved on
+				&& ((epoch - packet.getEpochNumber() > 0)
+				// or same epoch but no replica group (because already stopped)
+				|| (epoch == packet.getEpochNumber() && this.appCoordinator
+						.getReplicaGroup(packet.getServiceName()) == null)))
 			retval = true;
 		if (retval)
-			log.info(this + " has no state or already moved on "
-					+ packet.getSummary());
+			log.log(Level.INFO,
+					"{0} has no state or has already moved on {1}",
+					new Object[] { this, packet.getSummary() });
+		else
+			log.log(Level.INFO,
+					"{0} has {1}:{2} with replica group {3} when asked to stop {4}:{5}",
+					new Object[] {
+							this,
+							packet.getServiceName(),
+							epoch,
+							this.appCoordinator.getReplicaGroup(packet
+									.getServiceName()),
+							packet.getServiceName(), packet.getEpochNumber() });
 		return retval;
 	}
 
@@ -562,9 +595,8 @@ public class ActiveReplica<NodeIDType> implements
 								stopEpoch.getEpochNumber()) : null));
 		GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, Object>(
 				(stopEpoch.getInitiator()), ackStopEpoch);
-		log.log(Level.INFO, MyLogger.FORMAT[5], new Object[] { this, "sending",
-				ackStopEpoch.getType(), ackStopEpoch.getServiceName(),
-				ackStopEpoch.getEpochNumber(), mtask });
+		log.log(Level.INFO, "{0} sending {1} to {2}", new Object[] { this,
+				ackStopEpoch.getSummary(), stopEpoch.getInitiator() });
 		this.send(mtask);
 		return mtask;
 	}
@@ -604,7 +636,12 @@ public class ActiveReplica<NodeIDType> implements
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return cMsgr!=null ? cMsgr : (InterfaceAddressMessenger<JSONObject>)this.messenger;
+		return cMsgr != null ? cMsgr
+				: (InterfaceAddressMessenger<JSONObject>) this.messenger;
+	}
+
+	private boolean isRecovering() {
+		return this.recovering;
 	}
 
 	/**
@@ -612,14 +649,22 @@ public class ActiveReplica<NodeIDType> implements
 	 * @return The client facing port number corresponding to port.
 	 */
 	public static int getClientFacingPort(int port) {
-		return port + DEFAULT_CLIENT_PORT_OFFSET;
+		return port + ReconfigurationConfig.getClientPortOffset();
 	}
 
 	private void logEvent(BasicReconfigurationPacket<NodeIDType> event) {
-		log.log(Level.INFO,
-				MyLogger.FORMAT[6],
-				new Object[] { this, "received", event.getType(),
-						event.getServiceName(), event.getEpochNumber(),
-						"from " + event.getSender(), event });
+		log.log(Level.FINE, "{0} received {1} from {2}", new Object[] { this,
+				event.getSummary(), event.getSender() });
+	}
+
+	private void logEvent(BasicReconfigurationPacket<NodeIDType> event,
+			Level level) {
+		log.log(level, "{0} received {1} from {2}",
+				new Object[] { this, event.getSummary(), event.getSender() });
+	}
+
+	@Override
+	public void preExecuted(InterfaceRequest request) {
+		throw new RuntimeException("This method should not have gotten called");
 	}
 }

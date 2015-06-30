@@ -18,11 +18,12 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  */
 public class DefaultAppRequest implements
 		InterfaceReplicableRequest, InterfaceReconfigurableRequest {
-	protected enum Keys {STOP, SERVICE_NAME, EPOCH_NUMBER};
+	protected enum Keys {STOP, SERVICE_NAME, EPOCH_NUMBER, REQUEST_VALUE};
 	
 	private final boolean stop;
 	private final String serviceName;
 	private final int epochNumber;
+	private final String requestValue;
 	private boolean isCoord = true;
 	
 	/**
@@ -34,6 +35,7 @@ public class DefaultAppRequest implements
 		this.stop = stop;
 		this.serviceName = serviceName;
 		this.epochNumber = epochNumber;
+		this.requestValue = InterfaceRequest.NO_OP;
 	}
 	/**
 	 * @param json
@@ -43,6 +45,7 @@ public class DefaultAppRequest implements
 		this.stop = json.getBoolean(Keys.STOP.toString());
 		this.serviceName = json.getString(Keys.SERVICE_NAME.toString());
 		this.epochNumber = json.getInt(Keys.EPOCH_NUMBER.toString());
+		this.requestValue = json.getString(Keys.REQUEST_VALUE.toString());
 	}
 
 	@Override
@@ -57,7 +60,12 @@ public class DefaultAppRequest implements
 	
 	@Override
 	public String toString() {
-		return InterfaceRequest.NO_OP;
+		try {
+			return this.toJSONObject().toString();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	/**
@@ -69,6 +77,7 @@ public class DefaultAppRequest implements
 		json.put(Keys.STOP.toString(), this.stop); 
 		json.put(Keys.SERVICE_NAME.toString(), this.serviceName); 
 		json.put(Keys.EPOCH_NUMBER.toString(), this.epochNumber);
+		json.put(Keys.REQUEST_VALUE.toString(), this.requestValue);
 		return json;
 	}
 	

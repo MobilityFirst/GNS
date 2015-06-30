@@ -8,13 +8,14 @@ import java.util.logging.Logger;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author arun
@@ -89,27 +90,40 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 		String proposee = null;
 		if (request instanceof InterfaceReconfigurableRequest
 				&& ((InterfaceReconfigurableRequest) request).isStop())
-			proposee = this.paxosManager.proposeStop(paxosID, request
-					.toString(),
-					(short) ((InterfaceReconfigurableRequest) request)
-							.getEpochNumber());
+			proposee = this.paxosManager
+					.proposeStop(paxosID, request.toString(),
+							((InterfaceReconfigurableRequest) request)
+									.getEpochNumber());
 		else
 			proposee = this.paxosManager.propose(paxosID, request.toString());
 		return proposee;
 	}
 
 	// in case paxosGroupID is not the same as the name in the request
-	protected boolean coordinateRequest(String paxosGroupID,
+	/**
+	 * @param paxosGroupID
+	 * @param request
+	 * @return True if successfully proposed to some epoch of paxosGroupID.
+	 * @throws RequestParseException
+	 */
+	public boolean coordinateRequest(String paxosGroupID,
 			InterfaceRequest request) throws RequestParseException {
 		String proposee = this.propose(paxosGroupID, request);
 		log.log(Level.INFO,
-				MyLogger.FORMAT[6],
+				"{0} {1} request {2}:{3} [{4}] {5} to {6}",
 				new Object[] {
 						this,
 						(proposee != null ? "paxos-coordinated"
 								: "failed to paxos-coordinate"),
-						request.getRequestType(), " to ", proposee, ":",
-						request });
+						request.getServiceName(),
+						(request instanceof InterfaceReconfigurableRequest ? ((InterfaceReconfigurableRequest) request)
+								.getEpochNumber() : "[]"),
+						(request instanceof BasicReconfigurationPacket<?>) ? ((BasicReconfigurationPacket<?>) request)
+								.getSummary() : request.getRequestType(),
+						(request instanceof InterfaceReconfigurableRequest
+								&& ((InterfaceReconfigurableRequest) request)
+										.isStop() ? "||||||||STOP||||||||"
+								: ""), proposee });
 		return proposee != null;
 	}
 
@@ -121,20 +135,17 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 	@Override
 	public boolean createReplicaGroup(String groupName, int epoch,
 			String state, Set<NodeIDType> nodes) {
-		log.info(this + " about to create paxos instance " + groupName + ":"
-				+ epoch + (state != null ? " with initial state " + state : ""));
+		assert (state != null);
 		// will block for a default timeout if a lower unstopped epoch exits
 		boolean created = this.paxosManager.createPaxosInstanceForcibly(
-				groupName, (short) epoch, nodes, this, state);
-		if (!created)
-			log.info(this + " paxos instance " + groupName + ":" + epoch
-					+ " or higher already exists");
-
+				groupName, epoch, nodes, this, state);
 		boolean createdOrExistsOrHigher = (created || this.paxosManager
-				.existsOrHigher(groupName, (short) epoch));
+				.existsOrHigher(groupName, epoch));
 		;
-		assert (createdOrExistsOrHigher) : this + " failed to create "
-				+ groupName + ":" + epoch + " with state " + state;
+		if (!createdOrExistsOrHigher)
+			throw new PaxosInstanceCreationException(
+					(this + " failed to create " + groupName + ":" + epoch
+							+ " with state [" + state + "] probably because a higher version was already created and stopped."));
 		return createdOrExistsOrHigher;
 	}
 
@@ -152,8 +163,7 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 
 	@Override
 	public boolean deleteReplicaGroup(String serviceName, int epoch) {
-		return this.paxosManager.deleteStoppedPaxosInstance(serviceName,
-				(short) epoch);
+		return this.paxosManager.deleteStoppedPaxosInstance(serviceName, epoch);
 	}
 
 	protected void forceCheckpoint(String paxosID) {
@@ -172,21 +182,27 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 		return stateContainer != null ? stateContainer.state : null;
 	}
 
+	/**
+	 * Used by ActiveReplica and similar to getFinalState but wraps it in a
+	 * container so that we can distinguish between null final state (a possibly
+	 * legitimate value of the state) and no state at all (because the paxos
+	 * group has moved on and deleted the state or never created it in the first
+	 * place. An alternative is to disallow null as a legitimate app state, but
+	 * that means forcing apps to specify a non-null initial state (currently
+	 * not enforced) as initial state needs to be checkpointed for safety.
+	 * 
+	 * @param name
+	 * @param epoch
+	 * @return The final state wrapped in StringContainer.
+	 */
 	protected StringContainer getFinalStateContainer(String name, int epoch) {
 		StringContainer stateContainer = this.paxosManager.getFinalState(name,
-				(short) epoch);
+				epoch);
 		String state = stateContainer != null ? stateContainer.state : null;
-		log.info(this.getMyID()
-				+ " received request for epoch final state "
-				+ name
-				+ ":"
-				+ epoch
-				+ "; returning: "
-				+ state
-				+ (state == null ? " paxos instance status is "
-						+ this.paxosManager.getInstanceStatus(name,
-								(short) epoch) + " and epoch final state is "
-						+ state : ""));
+		log.log(Level.FINE,
+				"{0} received request for epoch final state {1}:{2}; returning [{3}]; (paxos instance status is {4})",
+				new Object[] { this, name, epoch, state,
+						this.paxosManager.getInstanceStatus(name, epoch) });
 		return stateContainer;
 	}
 
@@ -218,7 +234,7 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 		 * epoch is harmless. There is at most one lower epoch final state at a
 		 * node anyway.
 		 */
-		return this.paxosManager.deleteFinalState(name, (short) epoch, 1);
+		return this.paxosManager.deleteFinalState(name, epoch);
 	}
 
 	@Override
@@ -233,12 +249,20 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 	}
 
 	/**
+	 * @param node
+	 * @return True if was being monitored.
+	 */
+	public boolean stopFailureMonitoring(NodeIDType node) {
+		return this.paxosManager.stopFailureMonitoring(node);
+	}
+
+	/**
 	 * @param name
 	 * @param epoch
 	 * @return True if the {@code epoch} or higher version exists for
 	 *         {@code name}.
 	 */
 	public boolean existsOrHigher(String name, int epoch) {
-		return this.paxosManager.existsOrHigher(name, (short) epoch);
+		return this.paxosManager.existsOrHigher(name, epoch);
 	}
 }

@@ -16,4 +16,8 @@ public interface InterfaceReconfiguratorCallback {
 	 * @param handled
 	 */
 	public void executed(InterfaceRequest request, boolean handled);
+	/**
+	 * @param request
+	 */
+	public void preExecuted(InterfaceRequest request);
 }

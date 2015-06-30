@@ -30,7 +30,8 @@ public class PrepareReplyPacket extends PaxosPacket {
 	 */
 	public final Map<Integer, PValuePacket> accepted;
 	
-	private int firstSlot; // can be valid even if accepted is null
+	// first pvalue slot in accepted pvalues
+	private int firstSlot;
 
 	public PrepareReplyPacket(int receiverID, Ballot ballot, Map<Integer, PValuePacket> accepted, int gcSlot) {
 		super(accepted==null || accepted.isEmpty() ? (PaxosPacket)null : accepted.values().iterator().next());

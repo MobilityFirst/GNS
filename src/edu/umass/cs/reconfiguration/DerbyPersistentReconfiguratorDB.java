@@ -54,12 +54,13 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.StringLocker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.utils.ML;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 
 public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
@@ -142,6 +143,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	@Override
 	public synchronized ReconfigurationRecord<NodeIDType> getReconfigurationRecord(
 			String name) {
+		long t0 = System.currentTimeMillis();
 		PreparedStatement pstmt = null;
 		ResultSet recordRS = null;
 		Connection conn = null;
@@ -160,12 +162,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			}
 		} catch (SQLException | JSONException e) {
 			log.severe((e instanceof SQLException ? "SQL" : "JSON")
-					+ "Exception while getting slot for " + name + ":");
+					+ "Exception while getting RC record for " + name + ":");
 			e.printStackTrace();
 		} finally {
 			cleanup(pstmt, recordRS);
 			cleanup(conn);
 		}
+		DelayProfiler.updateDelay("DB.getReconfigurationRecord", t0);
 		return rcRecord;
 	}
 
@@ -208,60 +211,79 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return true;
 	}
 
-	/* One of two methods that changes state. Generally, this method will change
+	@Override
+	public synchronized boolean setState(String name, int epoch,
+			ReconfigurationRecord.RCStates state) {
+		return this.setStateMerge(name, epoch, state, null);
+	}
+
+	/*
+	 * One of two methods that changes state. Generally, this method will change
 	 * the state to READY, while setStateInitReconfiguration sets the state from
 	 * READY usually to WAIT_ACK_STOP.
 	 */
 
 	@Override
-	public synchronized boolean setState(String name, int epoch,
-			ReconfigurationRecord.RCStates state) {
+	public synchronized boolean setStateMerge(String name, int epoch,
+			ReconfigurationRecord.RCStates state, Set<String> mergees) {
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(name);
 		if (record == null)
 			return false;
+		if (record.isReady() && state.equals(RCStates.READY_READY)
+				&& record.getUnclean() != 1)
+			return false;
 
-		log.log(Level.INFO, MyLogger.FORMAT[8], new Object[] {
-				"==============================> ", this, record.getName(),
-				record.getEpoch(), record.getState(), " ->", epoch, state,
-				record.getNewActives() });
-		record.setState(name, epoch, state);
+		log.log(Level.INFO,
+				"==============================> {0} {1} {2}:{3} -> {4}:{5} {6} {7} {8}",
+				new Object[] { this, record.getName(), record.getEpoch(),
+						record.getState(), epoch, state,
+						record.getNewActives(),
+						mergees != null && !mergees.isEmpty() ? mergees : "",
+						isUnclean(record) ? "(unclean)" : "" });
+
+		record.setStateMerge(name, epoch, state, mergees);
 		// setStateInitReconfiguration used for intent
-		assert(state.equals(RCStates.READY)); 
-		if (state.equals(RCStates.READY)) {
+		assert (state.equals(RCStates.READY)
+				|| state.equals(RCStates.READY_READY) || state
+					.equals(RCStates.WAIT_DELETE));
+		if (record.isReady()) {
 			record.setActivesToNewActives();
 			/*
-			 * the list of pending reconfiguraitons is stored persistently so
+			 * The list of pending reconfigurations is stored persistently so
 			 * that we can resume the most recent incomplete reconfiguration
 			 * upon recovery. The ones before the most recent will be handled by
 			 * paxos roll forward automatically. The reason paxos is not enough
-			 * for the most recent one is because reconfiguration is a two step
-			 * process consisting of an "intent" followed by a "complete"
-			 * operation. Paxos will blindly replay all committed operations but
-			 * has no way of knowing application-specific information like the
-			 * fact that an intent has to be followed by complete. So if the
-			 * node crashes after an intent but before the corresponding
-			 * complete, the app has to redo just that last step.
+			 * for the most recent one is because reconfiguration is (at least)
+			 * a two step process consisting of an "intent" followed by a
+			 * "complete" operation. Paxos will blindly replay all committed
+			 * operations but has no way of knowing application-specific
+			 * information like the fact that an intent has to be followed by
+			 * complete. So if the node crashes after an intent but before the
+			 * corresponding complete, the app has to redo just that last step.
 			 */
 			this.setPending(name, false);
 			/*
 			 * Trimming RC epochs is needed only for the NODE_CONFIG record. It
-			 * removed entries for deleted RC nodes. The entries maintain the
+			 * removes entries for deleted RC nodes. The entries maintain the
 			 * current epoch number for the group corresponding to each RC node
 			 * in NODE_CONFIG. This information is needed in order for nodes to
-			 * know what epoch to reconfigure to what when the corresponding RC
-			 * groups may be out of date locally or may not even exist locally.
-			 * A simpler alternative is to force all RC groups to reconfigure
-			 * upon the addition or deletion of any RC nodes so that RC group
-			 * epoch numbers are always identical to the NODE_CONFIG epoch
-			 * number, but this is unsatisfying as it does not preserve the
-			 * "consistent hashing" like property for reconfigurations. Note
-			 * that even a "trivial" reconfiguration, i.e., when there is no
-			 * change in an RC group, must go through the stop, start, drop
-			 * sequence for correctness, and that process involves checkpointing
-			 * and restoring locally from the checkpoint. Even though the
+			 * know from what current epoch number to reconfigure to the next
+			 * epoch number when the corresponding RC groups may be out of date
+			 * locally or may not even exist locally. A simpler alternative is
+			 * to force all RC groups to reconfigure upon the addition or
+			 * deletion of any RC nodes so that RC group epoch numbers are
+			 * always identical to the NODE_CONFIG epoch number, but this is
+			 * unsatisfying as it does not preserve the "consistent hashing"
+			 * like property for reconfigurations, i.e., ideally only
+			 * reconfigurators on the ring near an added or deleted
+			 * reconfigurator should be affected. Note that even a "trivial"
+			 * reconfiguration, i.e., when there is no actual change in an RC
+			 * group, must go through the stop, start, drop sequence for
+			 * correctness, and that process involves checkpointing and
+			 * restoring locally from the checkpoint. Even though the
 			 * checkpoints are local, it can take a long time for a large number
-			 * of records and is better avoided when not needed.
+			 * of records, so it is better avoided when not needed.
 			 * 
 			 * A downside of allowing different epoch numbers for different
 			 * groups is that manual intervention if ever needed will be
@@ -273,6 +295,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		}
 		this.putReconfigurationRecord(record);
 		return true;
+	}
+
+	private boolean isUnclean(ReconfigurationRecord<?> record) {
+		return record.getUnclean() > 0 && !this.isRCGroupName(record.getName());
 	}
 
 	/*
@@ -288,16 +314,18 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				.getReconfigurationRecord(name);
 		assert (record != null && (epoch - record.getEpoch() == 0)) : epoch
 				+ "!=" + record.getEpoch() + " at " + myID;
-		if (!record.getState().equals(RCStates.READY)) {
-			log.info(this + " " + record.getName() + ":" + record.getEpoch()
-					+ " not ready for " + name + ":" + epoch + ":" + state);
+		if (!record.isReady()) {
+			log.log(Level.WARNING,
+					"{0} {1}:{2} not ready for transition to {3}:{4}:{5}",
+					new Object[] { this, record.getName(), record.getEpoch(),
+							name, epoch, state });
 			return false;
 		}
 		assert (state.equals(RCStates.WAIT_ACK_STOP));
-		log.log(Level.INFO, MyLogger.FORMAT[8], new Object[] {
-				"==============================> ", this, record.getName(),
-				record.getEpoch(), record.getState(), " ->", epoch, state,
-				newActives });
+		log.log(Level.INFO,
+				"==============================> {0} {1} {2}:{3} -> {4}:{5} {6}",
+				new Object[] { this, record.getName(), record.getEpoch(),
+						record.getState(), epoch, state, newActives });
 		record.setState(name, epoch, state, newActives);
 		this.setPending(name, true);
 		this.putReconfigurationRecord(record);
@@ -306,6 +334,12 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	private synchronized void putReconfigurationRecord(
 			ReconfigurationRecord<NodeIDType> rcRecord) {
+		this.putReconfigurationRecord(rcRecord,
+				this.getRCGroupName(rcRecord.getName()));
+	}
+
+	private synchronized void putReconfigurationRecord(
+			ReconfigurationRecord<NodeIDType> rcRecord, String rcGroupName) {
 		ReconfigurationRecord<NodeIDType> prev = this
 				.getReconfigurationRecord(rcRecord.getName());
 		String insertCmd = "insert into " + getRCRecordTable() + " ("
@@ -323,7 +357,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		try {
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
-			insertCP.setString(1, this.getRCGroupName(rcRecord.getName()));
+			insertCP.setString(1, rcGroupName);
 			if (RC_RECORD_CLOB_OPTION)
 				insertCP.setClob(2, new StringReader(rcRecord.toString()));
 			else
@@ -367,30 +401,30 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		}
 	}
 
-	// Should put RC records only for non-RC group names
-	private synchronized void putReconfigurationRecordIfNotName(
-			ReconfigurationRecord<NodeIDType> record, String rcGroupName) {
-		/*
-		 * FIXME: The documentation and commented code below are outdated.
-		 * 
-		 * First check if record name and group name are same. This check is
-		 * quick. It needs that we maintain the invariant that RC group records
-		 * always have the RC group as the record name. But we also need to be
-		 * able to initially create these records including through paxos, so we
-		 * allow such records to be inserted if no record for that group name
-		 * exists in the DB. Note that we need both parts of the conjunction in
-		 * the first clause below because in the case of node additions,
-		 * record.getName() will equal rcGroupName but this node may not yet
-		 * know about the existence of this node and that it corresponds to an
-		 * RC group name.
-		 */
-		/*
-		if ((!record.getName().equals(rcGroupName) && !this
-				.isRCGroupName(record.getName()))
-				|| (record.getName().equals(rcGroupName) && this
-						.getReconfigurationRecord(rcGroupName) == null))
-						*/
-		this.putReconfigurationRecord(record);
+	/*
+	 * Should put RC records only for non-RC group names.
+	 * 
+	 * FIXME: need to update pending reconfigurations table here.
+	 */
+	private synchronized boolean putReconfigurationRecordIfNotName(
+			ReconfigurationRecord<NodeIDType> record, String rcGroupName,
+			String mergee) {
+
+		// if RC group record, it must match rcGroupName
+		if (this.isRCGroupName(record.getName())
+				&& !record.getName().equals(rcGroupName))
+			return false;
+		// special case coz mergee may not be recognized by isRCGroupName
+		else if (record.getName().equals(mergee))
+			return false;
+
+		// else good to insert and set pending if needed
+		this.putReconfigurationRecord(record, rcGroupName);
+		if (!record.isReady()) // FIXME: READY
+			this.setPending(record.getName(), true, true);
+		log.log(Level.INFO, "{0} inserted RC record named {1} to RC group {2}",
+				new Object[] { this, record.getName(), rcGroupName });
+		return true;
 	}
 
 	@Override
@@ -401,7 +435,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		if (record == null || record.getEpoch() != epoch)
 			return false;
 
-		log.log(Level.INFO, MyLogger.FORMAT[4],
+		log.log(Level.INFO, ML.F[4],
 				new Object[] { "==============================> ", this, name,
 						" ->", "DELETE" });
 		boolean deleted = this.deleteReconfigurationRecord(name,
@@ -409,6 +443,29 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		this.deleteReconfigurationRecord(name, this.getPendingTable());
 		this.deleteReconfigurationRecord(name, this.getDemandTable());
 		return deleted;
+	}
+
+	@Override
+	public synchronized boolean markDeleteReconfigurationRecord(String name,
+			int epoch) {
+		ReconfigurationRecord<NodeIDType> record = this
+				.getReconfigurationRecord(name);
+		if (record == null)
+			return false;
+		assert (record.getEpoch() == epoch);
+
+		// READY possible under merge operations
+		assert (record.getState().equals(RCStates.WAIT_ACK_STOP)) : record;
+		log.log(Level.INFO, ML.F[4], new Object[] {
+				"==============================> ", this, name, " ->",
+				"DELETE PENDING" });
+
+		record.setState(name, epoch, RCStates.WAIT_DELETE);
+		this.putReconfigurationRecord(record);
+
+		// not necessary to delete demand right here
+		this.deleteReconfigurationRecord(name, this.getDemandTable());
+		return true;
 	}
 
 	@Override
@@ -423,6 +480,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	public synchronized ReconfigurationRecord<NodeIDType> createReconfigurationRecord(
 			ReconfigurationRecord<NodeIDType> record) {
 		assert (this.getReconfigurationRecord(record.getName()) == null);
+		log.log(Level.INFO,
+				"==============================> {0} [] -> {1}:{2} {3} {4} ",
+				new Object[] { this, record.getName(), record.getEpoch(),
+						record.getState(), record.getNewActives() });
 		this.putReconfigurationRecord(record);
 		return record;
 	}
@@ -479,14 +540,19 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				cleanup(writer);
 				cleanup(fos);
 			}
-			log.info(myID + " returning state for " + rcGroup + ":"
-					+ this.getCheckpointDir() + rcGroup + " ; wrote to file:\n"
-					+ debug);
+			log.log(Level.FINE,
+					"{0} returning state for {1}:{2}; wrote to file:\n{3}",
+					new Object[] { this, rcGroup,
+							this.getCheckpointDir() + rcGroup, debug });
 			// return filename, not actual checkpoint
-			return !exceptions
-					&& this.deleteOldCheckpoints(rcGroup, cpFilename) ? this
+			return !exceptions && this.deleteOldCheckpoints(rcGroup, 2) ? this
 					.getCheckpointURL(cpFilename) : null;
 		}
+	}
+
+	@Override
+	public synchronized boolean updateState(String rcGroup, String state) {
+		return this.updateState(rcGroup, state, null);
 	}
 
 	/*
@@ -494,13 +560,15 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * where the checkpoint state is actually stored. We assume that each RC
 	 * record in the checkpoint state is separated by a newline.
 	 */
-	@Override
-	public synchronized boolean updateState(String rcGroup, String state) {
+	private synchronized boolean updateState(String rcGroup, String state,
+			String mergee) {
 		synchronized (this.stringLocker.get(rcGroup)) {
 			// treat rcGroup as filename and read records from it
 			BufferedReader br = null;
 			if ((state = this.getRemoteCheckpoint(rcGroup, state)) == null)
 				return false;
+
+			// FIXME: need to delete existing state for rcGroup
 			try {
 				// read state from file
 				if (LARGE_CHECKPOINTS_OPTION
@@ -513,7 +581,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 						this.putReconfigurationRecordIfNotName(
 								new ReconfigurationRecord<NodeIDType>(
 										new JSONObject(line),
-										this.consistentNodeConfig), rcGroup);
+										this.consistentNodeConfig), rcGroup,
+								mergee);
 					}
 				} else { // state is actually the state
 					String[] lines = state.split("\n");
@@ -521,7 +590,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 						this.putReconfigurationRecordIfNotName(
 								new ReconfigurationRecord<NodeIDType>(
 										new JSONObject(line),
-										this.consistentNodeConfig), rcGroup);
+										this.consistentNodeConfig), rcGroup,
+								mergee);
 					}
 				}
 			} catch (IOException | JSONException e) {
@@ -580,6 +650,11 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	/************************ Private methods below *********************/
 
 	private boolean setPending(String name, boolean set) {
+		return this.setPending(name, set, false);
+	}
+
+	private boolean setPending(String name, boolean set,
+			boolean suppressExceptions) {
 		String cmd = "insert into " + getPendingTable() + " ("
 				+ Columns.SERVICE_NAME.toString() + " ) values (?)";
 		if (!set)
@@ -595,9 +670,11 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			insertCP.executeUpdate();
 			conn.commit();
 		} catch (SQLException sqle) {
-			log.severe("SQLException while modifying pending table using "
-					+ cmd);
-			sqle.printStackTrace();
+			if (!suppressExceptions) {
+				log.severe("SQLException while modifying pending table with "
+						+ name + ":" + set);
+				sqle.printStackTrace();
+			}
 		} finally {
 			cleanup(insertCP);
 			cleanup(conn);
@@ -617,6 +694,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			insertCP.setString(1, name);
 			rowcount = insertCP.executeUpdate();
 			conn.commit();
+			// this.setPending(name, false);
 		} catch (SQLException sqle) {
 			log.severe("SQLException while deleting RC record using " + cmd);
 			sqle.printStackTrace();
@@ -773,7 +851,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 									.getString(Keys.INET_SOCKET_ADDRESS
 											.toString()));
 					assert (sockAddr != null);
-					filename = this.getRemoteCheckpoint(rcGroup, sockAddr, filename, jsonUrl.getLong(Keys.FILESIZE.toString()));
+					filename = this
+							.getRemoteCheckpoint(rcGroup, sockAddr, filename,
+									jsonUrl.getLong(Keys.FILESIZE.toString()));
 				}
 			}
 		} catch (JSONException e) {
@@ -782,7 +862,6 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return filename;
 	}
 
-	// FIXME: crash may result in half written file
 	private synchronized String getRemoteCheckpoint(String rcGroupName,
 			InetSocketAddress sockAddr, String remoteFilename, long fileSize) {
 		String request = remoteFilename + "\n";
@@ -865,8 +944,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * checkpoint filename explicitly as we know it when this method is called
 	 * anyway.
 	 */
-	private boolean deleteOldCheckpoints(final String rcGroupName,
-			String latestCPFilename) {
+	private boolean deleteOldCheckpoints(final String rcGroupName, int keep) {
 		File dir = new File(getCheckpointDir());
 		assert (dir.exists());
 		// get files matching the prefix for this rcGroupName's checkpoints
@@ -877,7 +955,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		});
 		// delete all but the most recent
 		boolean allDeleted = true;
-		for (Filename f : this.getAllButLatestTwo(foundFiles))
+		for (Filename f : this.getAllButLatest(foundFiles, keep))
 			allDeleted = allDeleted && this.deleteFile(f.file);
 		return allDeleted;
 	}
@@ -886,15 +964,15 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return f.delete();
 	}
 
-	private Set<Filename> getAllButLatestTwo(File[] files) {
+	private Set<Filename> getAllButLatest(File[] files, int keep) {
 		TreeSet<Filename> allFiles = new TreeSet<Filename>();
 		TreeSet<Filename> oldFiles = new TreeSet<Filename>();
 		for (File file : files)
 			allFiles.add(new Filename(file));
-		if (allFiles.size() <= 2)
+		if (allFiles.size() <= keep)
 			return oldFiles;
 		Iterator<Filename> iter = allFiles.iterator();
-		for (int i = 0; i < allFiles.size() - 2; i++)
+		for (int i = 0; i < allFiles.size() - keep; i++)
 			oldFiles.add(iter.next());
 
 		return oldFiles;
@@ -940,10 +1018,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		try {
 			conn = this.getDefaultConn();
 			/*
-			 * Selects all RC group name records by asking for records
-			 * where service name equals RC group name. The index on RC group
-			 * names should make this query efficient but this performance needs
-			 * to be tested at scale.
+			 * Selects all RC group name records by asking for records where
+			 * service name equals RC group name. The index on RC group names
+			 * should make this query efficient but this performance needs to be
+			 * tested at scale.
 			 */
 			pstmt = this.getPreparedStatement(
 					conn,
@@ -1015,7 +1093,6 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				+ Columns.RC_NODE_ID.toString() + ", "
 				+ Columns.NODE_CONFIG_VERSION + "))";
 
-		log.info(cmdDP);
 		Statement stmt = null;
 		Connection conn = null;
 		try {
@@ -1121,7 +1198,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			Connection conn = null;
 			try {
 				connAttempts++;
-				log.info("Attempting getDefaultConn() to db " + dbCreation);
+				log.fine("Attempting getDefaultConn() to DB " + dbCreation);
 				getDefaultConn(); // open first connection
 				log.info("Connected to and created database " + DATABASE);
 				connected = true;
@@ -1497,7 +1574,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		String cmd = "select " + Columns.RC_NODE_ID.toString() + ", "
 				+ Columns.INET_ADDRESS.toString() + " from "
 				+ this.getNodeConfigTable() + " where "
-				+ Columns.NODE_CONFIG_VERSION.toString() + (maxOnly ? "=?" : ">=?");
+				+ Columns.NODE_CONFIG_VERSION.toString()
+				+ (maxOnly ? "=?" : ">=?");
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
@@ -1505,7 +1583,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		try {
 			conn = this.getDefaultConn();
 			pstmt = conn.prepareStatement(cmd);
-			pstmt.setInt(1, (maxOnly ? version : (version-1)));
+			pstmt.setInt(1, (maxOnly ? version : (version - 1)));
 			rs = pstmt.executeQuery();
 
 			while (rs.next()) {
@@ -1525,12 +1603,12 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return rcMap;
 	}
 
-	/* This method imports consistentNodeConfig from the persistent copy.
-	 * The persistent copy has both the latest (unstable) version and
-	 * the previous version. At the end of this method, 
-	 * consistentNodeConfig has the latest version nodes as well as the
-	 * previous version nodes with nodes present in the latter but not
-	 * in the former slated for removal.
+	/*
+	 * This method imports consistentNodeConfig from the persistent copy. The
+	 * persistent copy has both the latest (unstable) version and the previous
+	 * version. At the end of this method, consistentNodeConfig has the latest
+	 * version nodes as well as the previous version nodes with nodes present in
+	 * the latter but not in the former slated for removal.
 	 */
 	private void initAdjustSoftNodeConfig() {
 		Map<NodeIDType, InetSocketAddress> rcMapAll = this
@@ -1538,7 +1616,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		ReconfigurationRecord<NodeIDType> ncRecord = this
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString());
-		if(ncRecord==null) return;
+		if (ncRecord == null)
+			return;
 		// else
 		Set<NodeIDType> latestRCs = ncRecord.getNewActives();
 		if (rcMapAll == null || rcMapAll.isEmpty())
@@ -1563,27 +1642,53 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 */
 	@Override
 	public boolean mergeState(String rcGroupName, int epoch, String mergee,
-			String state) {
+			int mergeeEpoch, String state) {
 		synchronized (this.stringLocker.get(rcGroupName)) {
 			synchronized (this) {
 				ReconfigurationRecord<NodeIDType> record = this
 						.getReconfigurationRecord(rcGroupName);
 
-				if (record.getEpoch() == epoch
-						&& !record.mergedContains(mergee)) 
-					if (this.updateState(rcGroupName, state)) {
+				assert (record.getEpoch() == epoch);
+				if (!record.hasBeenMerged(mergee))
+					if (this.updateState(rcGroupName, state, mergee)) {
 						record.insertMerged(mergee);
 						this.putReconfigurationRecord(record);
+						// delete mergee RC record as it must have been stopped
+						this.setMergeeStateToWaitDelete(mergee, mergeeEpoch);
+						log.log(Level.INFO,
+								"{0} merged state from {1}:{2} into {3}:{4}",
+								new Object[] { this, mergee, mergeeEpoch,
+										rcGroupName, epoch, });
 					}
-				return false;
+				// paxos will still always see a true return value
+				return record.hasBeenMerged(mergee);
 			}
 		}
+	}
+
+	// wait before delete for safe re-creations
+	private boolean setMergeeStateToWaitDelete(String mergee, int mergeEpoch) {
+		ReconfigurationRecord<NodeIDType> record = this
+				.getReconfigurationRecord(mergee, mergeEpoch);
+		if (record == null)
+			return false;
+		/* Fast forward to WAIT_DELETE as the paxos group must have already
+		 * been stopped. The only reason to not simply delete this record is
+		 * to let it pend in WAIT_DELETE state in order to prevent it from
+		 * getting recreated before MAX_FINAL_STATE_AGE. 
+		 */
+		this.setStateInitReconfiguration(mergee, mergeEpoch,
+				RCStates.WAIT_ACK_STOP, new HashSet<NodeIDType>(), null);
+		this.setState(mergee, mergeEpoch + 1, RCStates.WAIT_DELETE);
+		return true;
 	}
 
 	@Override
 	public synchronized void clearMerged(String rcGroupName, int epoch) {
 		ReconfigurationRecord<NodeIDType> record = this
-				.getReconfigurationRecord(rcGroupName);
+				.getReconfigurationRecord(rcGroupName, epoch);
+		if (record == null)
+			return;
 		record.clearMerged();
 		this.putReconfigurationRecord(record);
 	}
@@ -1594,5 +1699,54 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString()))
 			return;
 		this.putReconfigurationRecord(ncRecord);
+	}
+
+	@Override
+	public boolean mergeIntent(String name, int epoch, String mergee) {
+		ReconfigurationRecord<NodeIDType> record = this
+				.getReconfigurationRecord(name);
+		boolean added = record.addToMerge(mergee);
+		this.putReconfigurationRecord(record);
+		return added;
+	}
+
+	private boolean recordLongPendingDelete(
+			ReconfigurationRecord<NodeIDType> record) {
+		return ((System.currentTimeMillis() - record.getDeleteTime()) > ReconfigurationConfig
+				.getMaxFinalStateAge());
+	}
+
+	@Override
+	public void delayedDeleteComplete() {
+		String deletee = null;
+		try {
+			String[] pending = getPendingReconfigurations();
+			for (String name : pending) {
+				deletee = name;
+				ReconfigurationRecord<NodeIDType> record = this
+						.getReconfigurationRecord(name);
+				if (record != null
+						&& record.getState().equals(RCStates.WAIT_DELETE)
+						&& recordLongPendingDelete(record)) {
+					this.deleteReconfigurationRecord(name, record.getEpoch());
+					log.log(Level.INFO, "{0} deleted record {1}", new Object[] {
+							this, record.getSummary() });
+				}
+			}
+		} catch (Exception e) {
+			// need to catch everything just to stay alive
+			log.severe(this + "encountered exception while delayedDeleting : "
+					+ deletee + " : " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void garbageCollectedDeletedNode(NodeIDType node) {
+		try {
+			this.deleteOldCheckpoints(this.getRCGroupName(node), 0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }

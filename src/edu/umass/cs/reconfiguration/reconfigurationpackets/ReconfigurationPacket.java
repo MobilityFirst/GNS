@@ -198,6 +198,10 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		return null;
 	}
 	
+	public ReconfigurationPacket.PacketType getReconfigurationPacketType() {
+		return this.type;
+	}
+	
 	public static final boolean isReconfigurationPacket(JSONObject json) throws JSONException {
 		return getReconfigurationPacketType(json)!=null;
 	}

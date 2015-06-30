@@ -83,14 +83,14 @@ public class CommandHandler {
     // Adds a field to the command to allow us to process the authentication of the signature
     addMessageWithoutSignatureToCommand(jsonFormattedCommand, handler);
     final GnsCommand command = commandModule.lookupCommand(jsonFormattedCommand);
-    DelayProfiler.update("commandPreProc", receiptTime);
+    DelayProfiler.updateDelay("commandPreProc", receiptTime);
     final Long runCommandStart = System.currentTimeMillis(); // instrumentation
     if (USE_EXEC_POOL_TO_RUN_COMMANDS) {
       execPool.submit(new WorkerTask(jsonFormattedCommand, command, handler, packet, app, receiptTime));
     } else {
       runCommand(jsonFormattedCommand, command, handler, packet, app, receiptTime);
     }
-    DelayProfiler.update("runCommand", runCommandStart);
+    DelayProfiler.updateDelay("runCommand", runCommandStart);
   }
 
   private static void runCommand(JSONObject jsonFormattedCommand, GnsCommand command,
@@ -98,7 +98,7 @@ public class CommandHandler {
     try {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
       CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
-      DelayProfiler.update("executeCommand", executeCommandStart);
+      DelayProfiler.updateDelay("executeCommand", executeCommandStart);
       // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
       CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
               packet.getLNSRequestId(),
@@ -127,7 +127,7 @@ public class CommandHandler {
       GNS.getLogger().severe("Problem  executing command: " + e);
       e.printStackTrace();
     }
-    DelayProfiler.update("handlePacketCommandRequest", receiptTime);
+    DelayProfiler.updateDelay("handlePacketCommandRequest", receiptTime);
   }
 
   private static class WorkerTask implements Runnable {

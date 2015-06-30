@@ -8,8 +8,10 @@ import java.util.logging.Logger;
 
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
+import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
+import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
@@ -17,7 +19,8 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
+import edu.umass.cs.utils.ML;
 
 /**
  * @author V. Arun
@@ -31,7 +34,7 @@ public class WaitAckStartEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private static final long RESTART_PERIOD = 8000;
+	private static final long RESTART_PERIOD = 8*WaitAckStopEpoch.RESTART_PERIOD;
 
 	private final StartEpoch<NodeIDType> startEpoch;
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
@@ -52,22 +55,20 @@ public class WaitAckStartEpoch<NodeIDType>
 				(!startEpoch.isMerge() ? startEpoch.getCurEpochGroup().size() / 2 + 1
 						: 1));
 		// need to recreate start epoch just to set initiator to self
-		this.startEpoch = new StartEpoch<NodeIDType>(DB.getMyID(),
-				startEpoch.getServiceName(), startEpoch.getEpochNumber(),
-				startEpoch.curEpochGroup, startEpoch.prevEpochGroup,
-				startEpoch.prevGroupName, startEpoch.isMerge,
-				startEpoch.prevEpoch, startEpoch.creator,
-				startEpoch.initialState, startEpoch.newlyAddedNodes);
+		this.startEpoch = new StartEpoch<NodeIDType>(DB.getMyID(), startEpoch);
 		this.DB = DB;
 		this.key = this.refreshKey();
 	}
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		log.log(Level.INFO, MyLogger.FORMAT[2],
-				new Object[] { this.refreshKey(), " re-starting ",
-						this.startEpoch.getSummary() });
-		return start();
+		log.log(Level.WARNING, ML.F[2], new Object[] { this.refreshKey(),
+				" re-starting ", this.startEpoch.getSummary() });
+		if (!this.amObviated())
+			return start();
+		// else
+		ProtocolExecutor.cancel(this);
+		return null;
 	}
 
 	@Override
@@ -79,14 +80,27 @@ public class WaitAckStartEpoch<NodeIDType>
 		 * 
 		 * Should send startEpoch only to self in case of merge operations.
 		 */
+
 		assert (!this.startEpoch.isMerge() || this.startEpoch.curEpochGroup
 				.contains(this.DB.getMyID()));
+		log.log(Level.INFO, ML.F[2], new Object[] { this.refreshKey(),
+				" starting ", this.startEpoch.getSummary() });
+
 		GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>> mtask = !this.startEpoch
 				.isMerge() ? new GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>>(
 				this.startEpoch.getCurEpochGroup().toArray(), this.startEpoch)
 				: new GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>>(
 						this.DB.getMyID(), this.startEpoch);
 		return mtask.toArray();
+	}
+
+	protected boolean amObviated() {
+		ReconfigurationRecord<NodeIDType> record = this.DB
+				.getReconfigurationRecord(this.startEpoch.getServiceName());
+		if (record == null
+				|| (record.getEpoch() - this.startEpoch.getEpochNumber() > 0))
+			return true;
+		return false;
 	}
 
 	/**
@@ -118,14 +132,9 @@ public class WaitAckStartEpoch<NodeIDType>
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType().equals(types[0]));
 		AckStartEpoch<NodeIDType> ackStart = ((AckStartEpoch<NodeIDType>) event);
-		if (isDone())
-			log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] { this,
-					"successfully processed", event.getType(),
-					"after being done" });
-		else
-			log.log(Level.INFO, MyLogger.FORMAT[2],
-					new Object[] { this, "received", ackStart.getSummary(),
-							"from", ackStart.getSender() });
+		log.log(Level.FINE, ML.F[2],
+				new Object[] { this, "received", ackStart.getSummary(), "from",
+						ackStart.getSender() });
 
 		return !isDone();
 	}
@@ -142,7 +151,7 @@ public class WaitAckStartEpoch<NodeIDType>
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 
-		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {
+		log.log(Level.INFO, ML.F[3], new Object[] {
 				this,
 				" received MAJORITY ACKs for ",
 				startEpoch.getSummary(),
@@ -151,15 +160,31 @@ public class WaitAckStartEpoch<NodeIDType>
 
 		this.setDone(true);
 		// multicast start epoch confirmation message
-		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
-				this.DB.getMyID(), this.startEpoch,
-				RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE);
 		GenericMessagingTask<NodeIDType, ?> epochStartCommit = new GenericMessagingTask(
-				this.DB.getMyID(), rcRecReq);
+				this.DB.getMyID(), new RCRecordRequest<NodeIDType>(
+						this.DB.getMyID(), this.startEpoch,
+						RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE));
 
-		if (this.startEpoch.hasPrevEpochGroup()) { // need to drop prev epoch
-			ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
-					this.DB);
+		/*
+		 * Reconfiguration split operations can not just drop previous epoch
+		 * final state, otherwise one part of the split may succeed and the
+		 * other can be stuck forever.
+		 * 
+		 * FIXME: We currently just never drop the final state for any RC group
+		 * here. We can drop the final state for mergee groups, but we do that
+		 * in Reconfigurator when the merge completes executing. For all other
+		 * RC groups, this means that RC group reconfigurations will necessarily
+		 * be unclean, but that is okay because of the WAIT_DELETE timeout.
+		 */
+		if (this.startEpoch.hasPrevEpochGroup()) {
+			// previous state is never dropped for RC group names
+			if (!this.DB.isRCGroupName(this.startEpoch.getServiceName())
+					&& !this.startEpoch.getServiceName().equals(
+							AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+									.toString()))
+				// drop previous epoch final state
+				ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
+						this.DB);
 		} else if (this.startEpoch.creator != null) { // creation epoch
 			/*
 			 * We used to send creation confirmation to client here earlier, but

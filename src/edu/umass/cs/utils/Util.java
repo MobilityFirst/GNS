@@ -56,6 +56,10 @@ public class Util {
 	public static String refreshKey(String id) {
 		return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
 	}
+	
+	public static boolean probability(int n) {
+		return Math.random() < 1.0/n ? true : false;
+	}
 
 	public static int roundToInt(double d) {
 		return (int) Math.round(d);
@@ -249,6 +253,11 @@ public class Util {
 			return;
 		}
 		throw new RuntimeException("Asserts not enabled; exiting");
+	}
+
+	public static String truncate(String str, int size) {
+		return str == null || str.length() < size ? str : str != null ? str
+				.substring(0, size) : null;
 	}
 
 	public static void main(String[] args) {

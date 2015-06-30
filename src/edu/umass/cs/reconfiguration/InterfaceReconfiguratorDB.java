@@ -37,6 +37,14 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	public boolean deleteReconfigurationRecord(String name, int epoch);
 
 	/**
+	 * @param name
+	 * @param epoch
+	 * @return True if record existed and was successfully marked as pending a
+	 *         deletion.
+	 */
+	public boolean markDeleteReconfigurationRecord(String name, int epoch);
+
+	/**
 	 * Update demand statistics.
 	 * 
 	 * @param report
@@ -126,12 +134,35 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	 * @param name
 	 * @param epoch
 	 * @param mergee
+	 * @param mergeeEpoch 
 	 * @param state
 	 * @return True if merged successfully.
 	 */
-	public boolean mergeState(String name, int epoch, String mergee,
+	public boolean mergeState(String name, int epoch, String mergee, int mergeeEpoch,
 			String state);
 
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param mergee
+	 * @return True if intent committed successfully.
+	 */
+	public boolean mergeIntent(String name, int epoch, String mergee);
+
+	/**
+	 * @param name
+	 * @param epoch
+	 * @param state
+	 * @param mergee
+	 * @return True if state and mergees set successfully.
+	 */
+	public boolean setStateMerge(String name, int epoch, ReconfigurationRecord.RCStates state, Set<String> mergee);
+
+	/**
+	 * 
+	 */
+	public void delayedDeleteComplete();
+	
 	/**
 	 * Clear all merged state in RC record. Invoked when a stop request is
 	 * executed just before transitioning to the next epoch.
@@ -149,6 +180,10 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	 */
 	public void setRCEpochs(ReconfigurationRecord<NodeIDType> ncRecord);
 
+	/**
+	 * @param node
+	 */
+	public void garbageCollectedDeletedNode(NodeIDType node);
 	/**
 	 * Close gracefully.
 	 */

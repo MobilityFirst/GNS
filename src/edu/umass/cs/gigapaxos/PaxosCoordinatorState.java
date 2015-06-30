@@ -39,7 +39,7 @@ import edu.umass.cs.utils.NullIfEmptyMap;
 public class PaxosCoordinatorState  {
 	private static final String NO_OP = RequestPacket.NO_OP;
 	private static final String STOP = "STOP";
-	private static final int PREPARE_TIMEOUT = 60000; // ms, should be int, not long
+	private static final int PREPARE_TIMEOUT = 60000; // ms
 	private static final int ACCEPT_TIMEOUT = 60000; // ms
 	private static final double RETRANSMISSION_BACKOFF_FACTOR = 2;
 	private static final int RERUN_DELAY_THRESHOLD = 10000; // ms
@@ -164,7 +164,6 @@ public class PaxosCoordinatorState  {
 	protected synchronized Ballot prepare(int[] members) {
 		if(this.active==true) return null; // I am already an active coordinator 
 		if(this.waitforMyBallot==null) this.waitforMyBallot = new WaitforUtility(members);
-		this.waitforMyBallot.setInitTime();
 		return new Ballot(this.myBallotNum, this.myBallotCoord);
 	}
 
@@ -282,7 +281,7 @@ public class PaxosCoordinatorState  {
 		log.log(Level.FINEST, "{0}{1}", new Object[]{"Waitfor = " , waitforMyBallot});
 		if(this.waitforMyBallot.heardFromMajority()) {
 			acceptedByMajority = true;
-			log.log(Level.INFO, "{0}{1}{2}{3}{4}{5}", new Object[] {prepareReply.getPaxosID(), 
+			log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {prepareReply.getPaxosID(), 
 					" coordinator ", 
 					Ballot.getBallotString(myBallotNum, myBallotCoord), 
 					" acquired PREPARE majority and about to conduct view change;", 
@@ -373,7 +372,7 @@ public class PaxosCoordinatorState  {
 						log.log(Level.FINE, "{0}{1}{2}", new Object[] {"Converting ", psac2.pValuePacket.slot, " to stop"});
 						ProposalStateAtCoordinator psac2ToStop = new ProposalStateAtCoordinator(members, 
 								new PValuePacket(new Ballot(this.myBallotNum, this.myBallotCoord), 
-										new ProposalPacket(reqSlot, psac1.pValuePacket)));
+										new ProposalPacket(reqSlot, psac1.pValuePacket/*isStopRequest()*/)));
 						modified.add(psac2ToStop);
 					}
 					else if(psac1.pValuePacket.ballot.compareTo(psac2.pValuePacket.ballot) < 0) { // stop ballot < other ballot
@@ -446,7 +445,8 @@ public class PaxosCoordinatorState  {
 	protected synchronized PValuePacket handleAcceptReplyMyBallot(int[] members, AcceptReplyPacket acceptReply) {
 		assert((acceptReply.ballot.compareTo(new Ballot(this.myBallotNum, this.myBallotCoord)) == 0));
 		assert(!this.myProposals.containsKey(acceptReply.slotNumber) ||  
-				this.myProposals.get(acceptReply.slotNumber).waitfor.contains(acceptReply.acceptor));
+				this.myProposals.get(acceptReply.slotNumber).waitfor.contains(acceptReply.acceptor)) : "ACCEPT = "
+					+ this.myProposals.get(acceptReply.slotNumber) + "; ACCEPT_REPLY = " + acceptReply;
 		// Current ballot, makes sense to process now
 		recordSlotNumber(members, acceptReply); // useful for garbage collection
 
@@ -531,7 +531,8 @@ public class PaxosCoordinatorState  {
 		return this.myProposals.size() > PaxosInstanceStateMachine.MAX_OUTSTANDING_LOAD || 
 				this.nextProposalSlotNumber - acceptorSlot > PaxosInstanceStateMachine.MAX_OUTSTANDING_LOAD;
 	}
-	protected synchronized boolean waitingTooLong() {
+	// checks and increments retransmission count
+	protected synchronized boolean testAndSetWaitingTooLong() {
 		if (!this.isActive() && this.waitforMyBallot.totalWaitTime() > PREPARE_TIMEOUT*Math.pow(
 				RETRANSMISSION_BACKOFF_FACTOR, this.waitforMyBallot.getRetransmissionCount())) {
 			this.waitforMyBallot.incrRetransmissonCount();
@@ -539,13 +540,12 @@ public class PaxosCoordinatorState  {
 		}
 		return false;
 	}
+	// checks and returns just whether it's been waiting for too long
 	protected synchronized boolean waitingTooLong(int slot) {
 		ProposalStateAtCoordinator psac = this.myProposals.get(slot);
 		if (this.isActive() && psac!=null && psac.waitfor.totalWaitTime() > ACCEPT_TIMEOUT*Math.pow(
-				RETRANSMISSION_BACKOFF_FACTOR, psac.waitfor.getRetransmissionCount())) {
-			psac.waitfor.incrRetransmissonCount();
+				RETRANSMISSION_BACKOFF_FACTOR, psac.waitfor.getRetransmissionCount())) 
 			return true;
-		}
 		return false;
 	}
 	protected synchronized boolean isCommandering(int slot) {
@@ -618,7 +618,7 @@ public class PaxosCoordinatorState  {
 	private synchronized AcceptPacket initCommander(ProposalStateAtCoordinator pstate) {
 		AcceptPacket acceptPacket = new AcceptPacket(this.myBallotCoord, 
 				pstate.pValuePacket, getMajorityCommittedSlot());
-		pstate.waitfor.setInitTime();
+		pstate.waitfor.incrRetransmissonCount();
 		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {"Node ", this.myBallotCoord, " initCommandering ", acceptPacket, 
 				" nodeSlotNumbers=", Arrays.toString(nodeSlotNumbers)});
 		return acceptPacket;

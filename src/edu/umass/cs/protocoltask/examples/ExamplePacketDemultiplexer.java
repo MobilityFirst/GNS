@@ -13,7 +13,7 @@ import edu.umass.cs.protocoltask.ProtocolExecutor;
  * @author V. Arun
  */
 public class ExamplePacketDemultiplexer extends AbstractJSONPacketDemultiplexer {
-	private static final boolean DEBUG = ProtocolExecutor.DEBUG;
+	private static final boolean DEBUG = true;
 	private final ExampleNode node;
 	private Logger log =
 			ProtocolExecutor.getLogger();

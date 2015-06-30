@@ -296,7 +296,13 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	}
 
 	public boolean isStopRequest() {
-		return stop;
+		return stop || this.isAnyBatchedRequestStop();
+	}
+	private boolean isAnyBatchedRequestStop() {
+		if(this.batchSize()==0) return false;
+		for(RequestPacket req : this.batched)
+			if(req.isStopRequest()) return true;
+		return false;
 	}
 
 	public boolean hasTakenTooLong() {

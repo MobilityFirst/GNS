@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 
 import org.json.JSONObject;
 
@@ -21,10 +23,10 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun
- * <p>
- * We need this class to extend both PaxosReplicationCoordinator and
- * AbstractReconfiguratorDB, so we use an interface for the latter.
- * @param <NodeIDType> 
+ *         <p>
+ *         We need this class to extend both PaxosReplicationCoordinator and
+ *         AbstractReconfiguratorDB, so we use an interface for the latter.
+ * @param <NodeIDType>
  */
 public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		PaxosReplicaCoordinator<NodeIDType> {
@@ -35,8 +37,10 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	private static ReplicaCoordinator RC_REPLICA_COORDINATOR = ReplicaCoordinator.PAXOS;
 
-	private final AbstractReconfiguratorDB<NodeIDType> app;
-	private final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
+	protected final AbstractReconfiguratorDB<NodeIDType> app;
+	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
+
+	private HashMap<NodeIDType, Long> pendingReconfiguratorDeletions = new HashMap<NodeIDType, Long>();
 
 	/**
 	 * @param app
@@ -48,7 +52,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			AbstractReconfiguratorDB<NodeIDType> app,
 			NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig,
-			InterfaceMessenger<NodeIDType,JSONObject> niot) {
+			InterfaceMessenger<NodeIDType, JSONObject> niot) {
 		// setting paxosManager out-of-order limit to 1
 		super(app, myID, consistentNodeConfig, niot, 1);
 		assert (niot != null);
@@ -69,28 +73,38 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	}
 
 	/*
-	 * FIXME: implement durability
+	 * FIXME: need to prevent nodes from falling behind on node config changes
+	 * in the first place to prevent the severe log below.
 	 */
-        @Override
+	@Override
 	public boolean coordinateRequest(InterfaceRequest request)
 			throws IOException, RequestParseException {
 		String rcGroupName = this.getRCGroupName(request.getServiceName());
-		// assert (this.getReplicaGroup(rcGroupName) != null);
-                
-//		assert (request.getServiceName().equals(rcGroupName) || request
-//				.getServiceName().equals("name0")) : rcGroupName + " "
-//				+ request;
+		// can only send stop request to own RC group
+		if (!rcGroupName.equals(request.getServiceName())
+				&& (request instanceof InterfaceReconfigurableRequest)
+				&& ((InterfaceReconfigurableRequest) request).isStop()) {
+			InterfaceReconfigurableRequest stop = ((InterfaceReconfigurableRequest) request);
+			log.log(Level.INFO,
+					"{0} received stop request for RC group {1}:{2} that is not (yet) "
+							+ " node config likely because this node has fallen behind.",
+					new Object[] { this, stop.getServiceName(),
+							stop.getEpochNumber() });
+			rcGroupName = request.getServiceName();
+		}
+
 		return super.coordinateRequest(rcGroupName, request);
 	}
 
 	/**
 	 * @param request
-	 * @return Returns the result of {@link #coordinateRequest(InterfaceRequest)}.
+	 * @return Returns the result of
+	 *         {@link #coordinateRequest(InterfaceRequest)}.
 	 */
 	public boolean coordinateRequestSuppressExceptions(InterfaceRequest request) {
 		try {
 			return this.coordinateRequest(request);
-		} catch (IOException | RequestParseException e) {
+		} catch (RequestParseException | IOException e) {
 			log.warning(this + " incurred " + e.getClass().getSimpleName()
 					+ " while coordinating " + request);
 			e.printStackTrace();
@@ -128,9 +142,10 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 					.getReplicatedReconfigurators(this.app.getRCGroupName(node));
 			// if I am present, create group
 			if (group.contains(this.getMyID())) {
-				log.info("Creating reconfigurator group "
-						+ this.app.getRCGroupName(node) + " with members "
-						+ group);
+				log.log(Level.INFO,
+						"{0} creating reconfigurator group {1} with members {2}",
+						new Object[] { this, this.app.getRCGroupName(node),
+								group });
 				this.createReplicaGroup(
 						this.app.getRCGroupName(node),
 						0,
@@ -159,15 +174,6 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			String state, Set<NodeIDType> nodes) {
 		boolean created = super.createReplicaGroup(groupName, epoch, state,
 				nodes);
-		/*
-		 * In case of split or merge operations, the createReplicaGroup call may
-		 * fail because the group has already been created for other reasons,
-		 * but we still need to update state.
-		 * 
-		 * FIXME: This way of updating state can not possibly be correct. Only
-		 * paxos must be able to call this method or for that matter any method
-		 * that changes app state.
-		 */
 		return created;
 	}
 
@@ -200,6 +206,14 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	/******************* Reconfigurator reconfiguration methods ***************/
 
+	protected Set<String> getMergeList(String newRCGroupName) {
+		return this.app.getMergeList(newRCGroupName);
+	}
+
+	protected Map<String, Set<String>> getMergeLists() {
+		return this.app.getMergeLists();
+	}
+
 	/*
 	 * Checks if I am affected because of the addition or deletion of the node
 	 * argument.
@@ -231,7 +245,6 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 			Set<NodeIDType> deleteNodes) {
 		return this.app.setRCEpochs(addNodes, deleteNodes);
 	}
-
 
 	/*
 	 * This method gets RC group names based on NodeConfig. This may in general
@@ -269,7 +282,8 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	 * Checks if RC group name is name itself by consulting the soft copy of
 	 * node config. We could also have checked if the name is node.toString()
 	 * for some node in the current set of reconfigurators.
-	 * @param name 
+	 * 
+	 * @param name
 	 * @return True if {@code name} represents a reconfigurator group name.
 	 */
 	public boolean isRCGroupName(String name) {
@@ -278,7 +292,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	/**
 	 * RC group name of node is just node.toString(). Changing it to anything
-	 * else will break code. 
+	 * else will break code.
 	 * 
 	 * @param node
 	 * @return String form of {@code node}.
@@ -306,7 +320,6 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		return this.app.getOldConsistentHashRing();
 	}
 
-
 	protected ConsistentHashing<NodeIDType> getNewConsistentHashRing() {
 		return this.app.getNewConsistentHashRing();
 	}
@@ -315,11 +328,19 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	protected Map<String, Set<NodeIDType>> getOldGroup(String newRCNode) {
 		ArrayList<NodeIDType> oldGroup = this.getOldConsistentHashRing()
 				.getReplicatedServersArray(newRCNode);
+		// oldGroupName != newRCNode in the case of RC node additions
 		String oldGroupName = this.app.getRCGroupName(oldGroup.get(0));
 		Map<String, Set<NodeIDType>> group = new HashMap<String, Set<NodeIDType>>();
 		group.put(oldGroupName, new HashSet<NodeIDType>(oldGroup));
 
 		return group;
+	}
+
+	protected Set<String> getNodeSetAsStringSet(Set<NodeIDType> nodeSet) {
+		Set<String> strSet = new HashSet<String>();
+		for (NodeIDType node : nodeSet)
+			strSet.add(this.getRCGroupName(node));
+		return strSet;
 	}
 
 	/*
@@ -350,9 +371,12 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	public boolean deleteFinalState(String rcGroupName, int epoch) {
 		boolean paxosInstanceDeleted = super.deleteFinalState(rcGroupName,
 				epoch);
-		// need to delete record itself if present
+		/*
+		 * Can also delete the record itself (not necessary for safety but not
+		 * unsafe either)
+		 */
 		return paxosInstanceDeleted
-				&& this.app.deleteReconfigurationRecord(rcGroupName, epoch);
+		/* && this.app.deleteReconfigurationRecord(rcGroupName, epoch) */;
 	}
 
 	/**
@@ -361,7 +385,8 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	 * incomplete operations will be rolled forward correctly in case of
 	 * failures anyway. We need this in-memory state only for RC group
 	 * reconfigurations, not regular serviceName record reconfigurations.
-	 * @param taskKey 
+	 * 
+	 * @param taskKey
 	 * @return True as specified by {@link Collection#add}.
 	 */
 	public boolean addRCTask(String taskKey) {
@@ -370,6 +395,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	/**
 	 * Inverts addRCTask
+	 * 
 	 * @param taskKey
 	 * @return True as specified by {@link Collection#remove(Object)}.
 	 */
@@ -387,5 +413,104 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 				presentInNew = true;
 		}
 		return !presentInNew;
+	}
+
+	protected void delayedDeleteComplete() {
+		this.app.delayedDeleteComplete();
+	}
+
+	/**
+	 * FIXME: Unsafe if the set of all actives can be out-of-date. This is meant
+	 * to be used only for testing purposes.
+	 * 
+	 * @return The set of all active replicas. This is used by WaitAckDropEpoch
+	 *         to force *all* active replica nodes, not just the previous
+	 *         epoch's active replicas, to drop any final state for the name
+	 *         before deleting it. We need this to speed up re-creations (delete
+	 *         followed by a creation of the same name) faster than
+	 *         MAX_FINAL_STATE_AGE time.
+	 */
+	public Set<NodeIDType> getAllActives() {
+		return this.consistentNodeConfig.getActiveReplicas();
+	}
+
+	protected int getCurNCEpoch() {
+		return this.getReconfigurationRecord(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
+				.getEpoch();
+	}
+
+	protected void garbageCollectDeletedNode(NodeIDType node) {
+		// to stop paxos failure detection
+		this.stopFailureMonitoring(node);
+		/*
+		 * To clean old checkpoint crap lying around. Could also put time here
+		 * and wait for MAX_FINAL_STATE_AGE.
+		 */
+		long curNCEpoch = getCurNCEpoch();
+		log.log(Level.INFO,
+				"{0} queueing {1}:{2} for garbage collection of old checkpoints; pending queue size = {3}",
+				new Object[] { this, node, curNCEpoch,
+						this.pendingReconfiguratorDeletions.size() + 1 });
+		this.pendingReconfiguratorDeletions.put(node, curNCEpoch);
+	}
+
+	/*
+	 * A reconfigurator's file system based checkpoints can be dropped after it
+	 * is more than 2 epochs old. If other reconfigurators have not kept pace
+	 * with node config changes, they have to be deleted from the system first
+	 * anyway before joining back in. There is no way for a reconfigurator to
+	 * recover and "roll forward" node config changes if it has missed multiple
+	 * node config changes. Subsequent RC node config changes should not be
+	 * continued with if some nodes have not completed the current node config
+	 * change, as doing so essentially means that those RC nodes will be treated
+	 * as failed.
+	 */
+	private static int RECONFIGURATOR_GC_WAIT_EPOCHS = 2;
+
+	protected void garbageCollectOldFileSystemBasedCheckpoints() {
+		for (Iterator<NodeIDType> iter = this.pendingReconfiguratorDeletions
+				.keySet().iterator(); iter.hasNext();) {
+			NodeIDType removedRC = iter.next();
+			long removedEpoch = this.pendingReconfiguratorDeletions
+					.get(removedRC);
+			if (getCurNCEpoch() - removedEpoch > RECONFIGURATOR_GC_WAIT_EPOCHS) {
+				log.log(Level.INFO, "{0} invoking RC GC on {1}", new Object[] {
+						this, removedRC });
+				this.app.garbageCollectedDeletedNode(removedRC);
+				iter.remove();
+			}
+		}
+	}
+
+	/**
+	 * Waits until the specified group is ready with timeout specifying how
+	 * frequently we should check. A better alternative is to synchronized
+	 * explicitly over the exact event being waited for, which would obviate the
+	 * DB read based check.
+	 * 
+	 * FIXME: To be deprecated.
+	 * 
+	 * @param name
+	 * @param epoch
+	 * @param timeout
+	 */
+	public void waitReady(String name, int epoch, long timeout) {
+		synchronized (this.app) {
+			ReconfigurationRecord<NodeIDType> record = null;
+			while ((record = this.app.getReconfigurationRecord(name, epoch)) == null
+					|| (record.getEpoch() - epoch < 0))
+				try {
+					this.app.wait(timeout);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			;
+		}
+	}
+
+	protected boolean isNCRecord(String name) {
+		return name.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+				.toString());
 	}
 }

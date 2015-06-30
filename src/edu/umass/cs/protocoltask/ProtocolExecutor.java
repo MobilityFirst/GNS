@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -18,16 +19,15 @@ import edu.umass.cs.utils.MultiArrayMap;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
- * @param <EventType> 
- * @param <KeyType> 
+ * @param <NodeIDType>
+ * @param <EventType>
+ * @param <KeyType>
  * 
- * The purpose of this class is to store ProtocolTasks and activate them when a
- * corresponding event arrives.
+ *            The purpose of this class is to store ProtocolTasks and activate
+ *            them when a corresponding event arrives.
  */
 @SuppressWarnings("javadoc")
 public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
-	public static final boolean DEBUG = false;
 	protected static final int MAX_TASKS = 10000;
 	protected static final int MAX_THREADS = 10;
 
@@ -47,7 +47,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	protected static final long TOO_MANY_TASKS_CHECK_PERIOD = 300; // seconds
 
 	private final NodeIDType myID;
-	private final InterfaceMessenger<NodeIDType,?> messenger;
+	private final InterfaceMessenger<NodeIDType, ?> messenger;
 	private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(
 			MAX_THREADS);
 	private static final HashSet<Object> canceledKeys = new HashSet<Object>();
@@ -63,7 +63,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		return log;
 	}
 
-	public ProtocolExecutor(InterfaceMessenger<NodeIDType,?> messenger) {
+	public ProtocolExecutor(InterfaceMessenger<NodeIDType, ?> messenger) {
 		this.messenger = messenger;
 		this.myID = messenger.getMyID();
 		this.executor.scheduleWithFixedDelay(new TooManyTasksWarner(), 0,
@@ -123,13 +123,16 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	public synchronized boolean spawnIfNotRunning(
 			ProtocolTask<NodeIDType, EventType, KeyType> actualTask) {
 		if (this.isRunning(actualTask.getKey())) {
-			log.info("Node" + myID
-					+ " unable to re-spawn already running task "
-					+ actualTask.getKey());
+			log.log(Level.FINE, "{0} unable to re-spawn already running task",
+					new Object[] { this, actualTask.getKey() });
 			return false;
 		}
 		this.spawn(actualTask);
 		return true;
+	}
+
+	public String toString() {
+		return this.getClass().getSimpleName() + myID;
 	}
 
 	// wraps protocol task into wrapper before spawning
@@ -138,18 +141,37 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = new ProtocolTaskWrapper<NodeIDType, EventType, KeyType>(
 				actualTask);
 		this.insert(task);
-		send(this.start(task), task.getKey());
+		//send(this.start(task), task.getKey());
+		this.kickStart(task);
+		// task inserted, but start() may be ongoing
 		return task;
+	}
+	
+	private void kickStart(ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
+		// don't wait for the future
+		this.executor.submit(new Runnable() {
+			public void run() {
+				send(start(task), task.getKey());
+			}
+		});
 	}
 
 	public void stop() {
 		this.messenger.stop();
 		this.executor.shutdown();
 	}
-	
+
 	// can also ask executor to act like a simple execpool
-	public Future<?> submit (Runnable task) {
+	public Future<?> submit(Runnable task) {
 		return this.executor.submit(task);
+	}
+	// can also ask executor to act like a simple execpool
+	public Future<?> scheduleWithFixedDelay(Runnable task, long initialDelay, long period, TimeUnit unit) {
+		return this.executor.scheduleWithFixedDelay(task, 0, period, unit);
+	}
+	// can also ask executor to act like a simple execpool
+	public Future<?> scheduleSimple(Runnable task, long initialDelay, TimeUnit unit) {
+		return this.executor.schedule(task, initialDelay, unit);
 	}
 
 	private synchronized void insert(
@@ -161,8 +183,8 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 			log.warning(errorMsg);
 			throw new ProtocolTaskCreationException(errorMsg);
 		}
-		log.info("Node" + myID + " inserting key " + task.getKey()
-				+ " for task " + task.task.getClass());
+		log.log(Level.FINE, "{0} inserting key {1} for task {2}", new Object[] {
+				this, task.getKey(), task.task.getClass() });
 		this.protocolTasks.put(task.getKey(), task);
 	}
 
@@ -185,7 +207,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 			} catch (Exception e) {
 				handleException(e, task);
 			}
-		} else
+		} else // FIXME: will never come here
 			return start(task);
 		return null;
 	}
@@ -194,6 +216,8 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 	 * schedule will periodically re-invoke task.start() for as long as it is
 	 * present in the hashmap. The periodic invocation will stop once the task
 	 * is removed from the hashmap.
+	 * 
+	 * FIXME: why synchronized?
 	 */
 	public synchronized void schedule(
 			SchedulableProtocolTask<NodeIDType, EventType, KeyType> actualTask,
@@ -201,9 +225,8 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task = wrapSpawn(actualTask);
 		// schedule restarts
 		Restarter restarter = new Restarter(task);
-		log.info("Node" + myID
-				+ " scheduling key for periodically restarting task "
-				+ task.getKey());
+		log.log(Level.FINE, "{0} scheduling {1} for periodic restarts",
+				new Object[] { this, task.getKey() });
 		task.setFuture(this.executor.scheduleWithFixedDelay(restarter, period,
 				period, TimeUnit.MILLISECONDS));
 	}
@@ -242,8 +265,8 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		if (task == null)
 			return null;
 		if (task.getFuture() != null) {
-			log.info("Node" + myID + " canceling protocol task "
-					+ task.task.getKey());
+			log.log(Level.FINE, "{0} canceling protocol task {1}",
+					new Object[] { this, task.task.getKey() });
 			task.getFuture().cancel(true);
 		}
 		return this.protocolTasks.remove(task.getKey());
@@ -335,6 +358,17 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 			throw new CancelProtocolTaskException("Canceling task "
 					+ task.getClass() + " with key " + task.getKey());
 	}
+	
+	public int getActiveCount() {
+		return this.executor.getActiveCount();
+	}
+	public long getTaskCount() {
+		return this.executor.getTaskCount();
+	}
+	public long getCompletedTaskCount() {
+		return this.executor.getCompletedTaskCount();
+	}
+
 
 	private boolean send(GenericMessagingTask<NodeIDType, ?>[] mtasks,
 			KeyType key) {

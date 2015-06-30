@@ -25,7 +25,7 @@ public class DelayProfiler {
 	 * @param field
 	 * @param time
 	 */
-	public synchronized static void update(String field, double time) {
+	public synchronized static void updateDelay(String field, double time) {
 		register(field); // register if not registered
 		double delay = delays.get(field);
 		delay = Util.movingAverage(System.currentTimeMillis() - time, delay);
@@ -37,9 +37,9 @@ public class DelayProfiler {
 	 * @param time
 	 * @param n
 	 */
-	public synchronized static void update(String field, long time, int n) {
+	public synchronized static void updateDelay(String field, long time, int n) {
 		for (int i = 0; i < n; i++)
-			update(field,
+			updateDelay(field,
 					System.currentTimeMillis()
 							- (System.currentTimeMillis() - time) * 1.0 / n);
 	}
@@ -50,6 +50,17 @@ public class DelayProfiler {
 	 */
 	public synchronized static double get(String field) {
 		return delays.containsKey(field) ? delays.get(field) : 0.0;
+	}
+	
+	/**
+	 * @param field
+	 * @param sample
+	 */
+	public synchronized static void updateMovAvg(String field, int sample) {
+		register(field); // register if not registered
+		double value = delays.get(field);
+		value = Util.movingAverage(sample, value);
+		delays.put(field, value);
 	}
 
 	/**

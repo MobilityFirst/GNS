@@ -3,6 +3,8 @@ package edu.umass.cs.nio;
 import edu.umass.cs.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
+import edu.umass.cs.utils.ML;
+import edu.umass.cs.utils.Stringer;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -83,8 +85,6 @@ import java.util.logging.Logger;
  */
 public class NIOTransport<NodeIDType> implements Runnable,
 		InterfaceHandshakeCallback {
-
-	private static final boolean DEBUG = false;
 
 	/**
 	 * Number of sends that can be queued because the connection was established
@@ -204,7 +204,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	// private constructor must remain private
 	private NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
 			InetSocketAddress mySockAddr, InterfaceDataProcessingWorker worker,
-			boolean start, SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+			boolean start, SSLDataProcessingWorker.SSL_MODES sslMode)
+			throws IOException {
 		this.myID = id;
 		// null node config means no ID-based communication possible
 		this.nodeConfig = nc;
@@ -267,11 +268,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @param address
 	 * @param port
 	 * @param worker
-	 * @param sslMode 
+	 * @param sslMode
 	 * @throws IOException
 	 */
 	public NIOTransport(InetAddress address, int port,
-			InterfaceDataProcessingWorker worker, SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+			InterfaceDataProcessingWorker worker,
+			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		this(null, null, new InetSocketAddress(address, port), worker, true,
 				sslMode);
 	}
@@ -283,11 +285,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	}
 
 	private InterfaceDataProcessingWorker getWorker(
-			InterfaceDataProcessingWorker worker, SSLDataProcessingWorker.SSL_MODES sslMode)
-			throws IOException {
+			InterfaceDataProcessingWorker worker,
+			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		try {
 			if (sslMode.equals(SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH)
-					|| sslMode.equals(SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH))
+					|| sslMode
+							.equals(SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH))
 				return (worker instanceof SSLDataProcessingWorker ? (SSLDataProcessingWorker) worker
 						: new SSLDataProcessingWorker((MessageExtractor) worker))
 						.setHandshakeCallback(this);
@@ -309,9 +312,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @throws IOException
 	 */
 	public int send(NodeIDType id, byte[] data) throws IOException {
-		if (DEBUG)
-			log.fine("Node " + myID + " invoked send (" + id + ", "
-					+ new String(data) + "), checking connection status..");
+		log.log(Level.FINEST,
+				"{0} invoked send ({1},{2}), checking connection status..",
+				new Object[] { this, id, new Stringer(data) });
 		if (this.nodeConfig == null)
 			throw new NullPointerException(
 					"Attempting ID-based communication with null InterfaceNodeConfig");
@@ -454,9 +457,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
-		if (DEBUG)
-			log.info("Node " + this.myID + " accepted connection from "
-					+ socketChannel.getRemoteAddress());
+		log.log(Level.FINE, ML.F[2], new Object[] { this,
+				"accepted connection from", socketChannel.getRemoteAddress() });
 		NIOInstrumenter.incrAccepted();
 		socketChannel.socket().setKeepAlive(true);
 		socketChannel.configureBlocking(false);
@@ -582,9 +584,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				// could hook to SSL here.
 				this.wrapSend(socketChannel, buf0);
 				// If the socket's buffer fills up, let the rest be in queue
-				if (DEBUG)
-					log.fine("Node " + this.myID + " wrote: "
-							+ new String(queue.get(0).array()) + " to " + isa);
+				log.log(Level.FINEST, "{0} wrote \"{1}\" to {2}", new Object[] {
+						this, new Stringer(buf0.array()), isa });
 				if (buf0.remaining() > 0) {
 					log.warning("Socket buffer congested because of high load..");
 					break;
@@ -646,15 +647,14 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			if (queue.size() < getMaxQueuedSends()) {
 				queue.add(ByteBuffer.wrap(data));
 				queuedBytes = data.length;
-				if (DEBUG)
-					log.fine("Node " + this.myID + " queued: "
-							+ new String(data));
+				log.log(Level.FINE, ML.F[3], new Object[] { this,
+						"queued", new Stringer(data) });
 			} else {
-				log.info("Node " + this.myID + "'s queue for " + isa
-						+ " too full, dropping message");
-				if (!this.isConnected(isa)) {
+				log.log(Level.WARNING,
+						"{0}'s message queue for {1} out of room, dropping message",
+						new Object[] { this, isa });
+				if (!this.isConnected(isa))
 					queuedBytes = -1; // could also drop queue here
-				}
 			}
 			return queuedBytes;
 		}
@@ -811,10 +811,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private void putSockAddrToSockChannel(InetSocketAddress isa,
 			SocketChannel socketChannel) {
 		synchronized (this.SockAddrToSockChannel) {
-			if (DEBUG) {
-				log.finer("Node " + myID + " inserting (" + isa + ", "
-						+ socketChannel + ")");
-			}
+			log.log(Level.FINER, "{0} inserting ({1}, {2})", new Object[] {
+					this, isa, socketChannel });
 			this.SockAddrToSockChannel.put(isa, socketChannel);
 		}
 	}
@@ -843,18 +841,16 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		}
 	}
 
+	// is connected or is connection pending
 	private boolean isConnected(InetSocketAddress isa) {
 		synchronized (this.SockAddrToSockChannel) {
 			SocketChannel sock = (SocketChannel) this.SockAddrToSockChannel
 					.get(isa);
 			if (sock != null
-					&& (sock.isConnected() || sock.isConnectionPending())) {
+					&& (sock.isConnected() || sock.isConnectionPending()))
 				return true;
-			}
-			if (DEBUG) {
-				log.finest("Node " + myID + " socket channel [" + sock
-						+ "] not connected");
-			}
+			log.log(Level.FINEST, "{0} socket channel [{1}] not connected",
+					new Object[] { this, sock });
 			return false;
 		}
 	}
@@ -911,10 +907,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			Iterator<ChangeRequest> changes = this.pendingConnects.iterator();
 			while (changes.hasNext()) {
 				ChangeRequest change = (ChangeRequest) changes.next();
-				if (DEBUG) {
-					log.fine("Node " + myID + " processing connect event : "
-							+ change);
-				}
+				log.log(Level.FINEST, "{0} processing connect event: {1}",
+						new Object[] { this, change });
 				SelectionKey key = change.socket.keyFor(this.selector);
 				switch (change.type) {
 				case ChangeRequest.CHANGEOPS:
@@ -1007,8 +1001,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		socketChannel.socket().setReceiveBufferSize(HINT_SOCK_BUFFER_SIZE);
 
 		// Kick off connection establishment
-		if (DEBUG)
-			log.info("Node " + myID + " connecting to socket address " + isa);
+		log.log(Level.FINE, "{0} connecting to socket address {1}",
+				new Object[] { this, isa });
 
 		socketChannel.connect(isa);
 		NIOInstrumenter.incrInitiated();
@@ -1049,7 +1043,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			 */
 		} catch (IOException e) {
 			// Cancel the channel's registration with our selector
-			log.warning("Node "
+			log.fine("Node "
 					+ this.myID
 					+ " failed to (re-)connect to "
 					+ new InetSocketAddress(socketChannel.socket()
@@ -1060,8 +1054,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			connected = false;
 		}
 		if (connected)
-			log.log(Level.FINEST, "{0}{1}{2}", new Object[] { this,
-					" finished connecting ", socketChannel });
+			log.log(Level.FINEST, "{0} finished connecting {1}", new Object[] {
+					this, socketChannel });
 		return connected;
 	}
 

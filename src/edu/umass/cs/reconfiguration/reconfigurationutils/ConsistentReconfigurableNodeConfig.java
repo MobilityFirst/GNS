@@ -123,6 +123,18 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		this.refreshReconfigurators();
 		return this.CH_RC.getReplicatedServers(name);
 	}
+	
+	/**
+	 * @param name
+	 * @return Reconfigurator addresses responsible for name.
+	 */
+	public Set<InetSocketAddress> getReconfiguratorsAsAddresses(String name) {
+		Set<NodeIDType> nodes = getReplicatedReconfigurators(name);
+		Set<InetSocketAddress> addrs = new HashSet<InetSocketAddress>();
+		for(NodeIDType node : nodes)
+			addrs.add(this.getNodeSocketAddress(node));
+		return addrs;
+	}
 
 	/**
 	 * @param name

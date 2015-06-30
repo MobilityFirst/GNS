@@ -17,13 +17,17 @@ import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
- * @param <NodeIDType> 
+ * @param <NodeIDType>
  */
 public class StartEpoch<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> {
 
 	protected static enum Keys {
-		PREV_EPOCH_GROUP, CUR_EPOCH_GROUP, CREATOR, INITIAL_STATE, PREV_GROUP_NAME, NEWLY_ADDED_NODES, NODE_ID, SOCKET_ADDRESS, PREV_EPOCH, IS_MERGE
+		PREV_EPOCH_GROUP, CUR_EPOCH_GROUP, CREATOR, FORWARDER, INITIAL_STATE,
+		//
+		PREV_GROUP_NAME, NEWLY_ADDED_NODES, NODE_ID, SOCKET_ADDRESS, PREV_EPOCH,
+		//
+		IS_MERGE, INIT_TIME, MERGEES, FIRST_PREV_EPOCH_CANDIDATE
 	};
 
 	/**
@@ -40,18 +44,23 @@ public class StartEpoch<NodeIDType> extends
 	public final String initialState;
 
 	/**
+	 * Creation time that remains unchanged across network transmissions.
+	 */
+	private final long initTime;
+
+	/**
 	 * Sender address.
 	 */
 	public final InetSocketAddress creator; // for creation (or first) epoch
 
 	/**
-	 * For supporting RC group merge or split operations wherein the
-	 * previous epoch group may have a different name.
+	 * For supporting RC group merge or split operations wherein the previous
+	 * epoch group may have a different name.
 	 */
 	public final String prevGroupName; // for merge or split group operations
 	/**
-	 * For supporting RC group merge or split operations wherein the
-	 * previous epoch group may have a different name and epoch number.
+	 * For supporting RC group merge or split operations wherein the previous
+	 * epoch group may have a different name and epoch number.
 	 */
 	public final int prevEpoch;
 
@@ -66,17 +75,30 @@ public class StartEpoch<NodeIDType> extends
 	 */
 	public final Map<NodeIDType, InetSocketAddress> newlyAddedNodes;
 
+	private final InetSocketAddress forwarder;
+
+	/**
+	 * The list of deleted nodes that must be merged with this node. Nonempty
+	 * only if prevGroupName==curGroupName and this is an RC group record and
+	 * there are nodes to be merged with this node.
+	 */
+	public final Set<String> mergees;
+
+	private NodeIDType firstPrevEpochCandidate = null;
+
 	/**
 	 * @param initiator
 	 * @param serviceName
 	 * @param epochNumber
 	 * @param curNodes
 	 * @param prevNodes
+	 * @param mergees
 	 */
 	public StartEpoch(NodeIDType initiator, String serviceName,
-			int epochNumber, Set<NodeIDType> curNodes, Set<NodeIDType> prevNodes) {
+			int epochNumber, Set<NodeIDType> curNodes,
+			Set<NodeIDType> prevNodes, Set<String> mergees) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
-				false, -1, null, null, null);
+				false, -1, null, null, null, null, mergees);
 	}
 
 	/**
@@ -94,7 +116,7 @@ public class StartEpoch<NodeIDType> extends
 			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
 			int prevEpoch) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
-				prevGroupName, isMerge, prevEpoch, null, null, null);
+				prevGroupName, isMerge, prevEpoch, null, null, null, null);
 	}
 
 	/**
@@ -104,19 +126,22 @@ public class StartEpoch<NodeIDType> extends
 	 * @param curNodes
 	 * @param prevNodes
 	 * @param creator
+	 * @param forwarder
 	 * @param initialState
 	 * @param newlyAddedNodes
 	 */
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
 			Set<NodeIDType> prevNodes, InetSocketAddress creator,
-			String initialState,
+			InetSocketAddress forwarder, String initialState,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
-				false, -1, creator, initialState, newlyAddedNodes);
+				false, -1, creator, forwarder, initialState, newlyAddedNodes);
 	}
 
 	/**
+	 * Just to reset final field {@code initialState}.
+	 * 
 	 * @param startEpoch
 	 * @param initialState
 	 */
@@ -125,7 +150,38 @@ public class StartEpoch<NodeIDType> extends
 				.getEpochNumber(), startEpoch.curEpochGroup,
 				startEpoch.prevEpochGroup, startEpoch.prevGroupName,
 				startEpoch.isMerge, startEpoch.prevEpoch, startEpoch.creator,
-				initialState, startEpoch.newlyAddedNodes);
+				startEpoch.forwarder, initialState, startEpoch.newlyAddedNodes,
+				startEpoch.mergees, startEpoch.initTime);
+		this.firstPrevEpochCandidate = startEpoch.firstPrevEpochCandidate;
+	}
+
+	/**
+	 * Just to reset final field {@code initiator}.
+	 * 
+	 * @param initiator
+	 * @param startEpoch
+	 */
+	public StartEpoch(NodeIDType initiator, StartEpoch<NodeIDType> startEpoch) {
+		this(initiator, startEpoch.getServiceName(), startEpoch
+				.getEpochNumber(), startEpoch.curEpochGroup,
+				startEpoch.prevEpochGroup, startEpoch.prevGroupName,
+				startEpoch.isMerge, startEpoch.prevEpoch, startEpoch.creator,
+				startEpoch.forwarder, startEpoch.initialState,
+				startEpoch.newlyAddedNodes, startEpoch.mergees,
+				startEpoch.initTime);
+		this.firstPrevEpochCandidate = startEpoch.firstPrevEpochCandidate;
+	}
+
+	private StartEpoch(NodeIDType initiator, String serviceName,
+			int epochNumber, Set<NodeIDType> curNodes,
+			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
+			int prevEpoch, InetSocketAddress creator,
+			InetSocketAddress forwarder, String initialState,
+			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
+		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
+				prevGroupName, isMerge, prevEpoch, creator, forwarder,
+				initialState, newlyAddedNodes, null);
+
 	}
 
 	/**
@@ -141,11 +197,26 @@ public class StartEpoch<NodeIDType> extends
 	 * @param initialState
 	 * @param newlyAddedNodes
 	 */
-	public StartEpoch(NodeIDType initiator, String serviceName,
+	private StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
 			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
-			int prevEpoch, InetSocketAddress creator, String initialState,
-			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
+			int prevEpoch, InetSocketAddress creator,
+			InetSocketAddress forwarder, String initialState,
+			Map<NodeIDType, InetSocketAddress> newlyAddedNodes,
+			Set<String> mergees) {
+		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
+				prevGroupName, isMerge, prevEpoch, creator, forwarder,
+				initialState, newlyAddedNodes, mergees, System
+						.currentTimeMillis());
+	}
+
+	private StartEpoch(NodeIDType initiator, String serviceName,
+			int epochNumber, Set<NodeIDType> curNodes,
+			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
+			int prevEpoch, InetSocketAddress creator,
+			InetSocketAddress forwarder, String initialState,
+			Map<NodeIDType, InetSocketAddress> newlyAddedNodes,
+			Set<String> mergees, long initTime) {
 		super(initiator, ReconfigurationPacket.PacketType.START_EPOCH,
 				serviceName, epochNumber);
 		this.prevEpochGroup = prevNodes;
@@ -156,6 +227,9 @@ public class StartEpoch<NodeIDType> extends
 		this.newlyAddedNodes = newlyAddedNodes;
 		this.prevEpoch = prevEpoch;
 		this.isMerge = isMerge;
+		this.mergees = mergees;
+		this.forwarder = forwarder;
+		this.initTime = initTime;
 	}
 
 	/**
@@ -168,20 +242,32 @@ public class StartEpoch<NodeIDType> extends
 		super(json, unstringer);
 		JSONArray jsonArray = json.getJSONArray(Keys.PREV_EPOCH_GROUP
 				.toString());
+		// prev epoch group
 		this.prevEpochGroup = new TreeSet<NodeIDType>();
 		for (int i = 0; i < jsonArray.length(); i++) {
 			this.prevEpochGroup.add((NodeIDType) unstringer.valueOf(jsonArray
 					.get(i).toString()));
 		}
+		// cur epoch group
 		jsonArray = json.getJSONArray(Keys.CUR_EPOCH_GROUP.toString());
 		this.curEpochGroup = new TreeSet<NodeIDType>();
 		for (int i = 0; i < jsonArray.length(); i++) {
 			this.curEpochGroup.add((NodeIDType) unstringer.valueOf(jsonArray
 					.get(i).toString()));
 		}
+		// mergees
+		jsonArray = json.getJSONArray(Keys.MERGEES.toString());
+		this.mergees = new TreeSet<String>();
+		for (int i = 0; i < jsonArray.length(); i++) {
+			this.mergees.add(jsonArray.get(i).toString());
+		}
 		this.creator = (json.has(Keys.CREATOR.toString()) ? Util
 				.getInetSocketAddressFromString(json.getString(Keys.CREATOR
 						.toString())) : null);
+		this.forwarder = (json.has(Keys.FORWARDER.toString()) ? Util
+				.getInetSocketAddressFromString(json.getString(Keys.FORWARDER
+						.toString())) : null);
+
 		this.prevGroupName = (json.has(Keys.PREV_GROUP_NAME.toString()) ? json
 				.getString(Keys.PREV_GROUP_NAME.toString()) : null);
 		this.isMerge = json.optBoolean(Keys.IS_MERGE.toString());
@@ -192,6 +278,10 @@ public class StartEpoch<NodeIDType> extends
 						json.getJSONArray(Keys.NEWLY_ADDED_NODES.toString()),
 						unstringer) : null);
 		this.prevEpoch = json.optInt(Keys.PREV_EPOCH.toString(), -1);
+		this.initTime = json.getLong(Keys.INIT_TIME.toString());
+		this.firstPrevEpochCandidate = json.has(Keys.FIRST_PREV_EPOCH_CANDIDATE
+				.toString()) ? unstringer.valueOf(json
+				.getString(Keys.FIRST_PREV_EPOCH_CANDIDATE.toString())) : null;
 	}
 
 	public JSONObject toJSONObjectImpl() throws JSONException {
@@ -201,10 +291,15 @@ public class StartEpoch<NodeIDType> extends
 				this.toJSONArray(prevEpochGroup));
 		json.put(Keys.CUR_EPOCH_GROUP.toString(),
 				this.toJSONArray(curEpochGroup));
+		json.put(Keys.MERGEES.toString(), new JSONArray(this.mergees));
+
 		if (initialState != null)
 			json.put(Keys.INITIAL_STATE.toString(), initialState);
 
 		json.put(Keys.CREATOR.toString(), this.creator);
+		json.put(Keys.FORWARDER.toString(), this.forwarder);
+
+		json.put(Keys.INIT_TIME.toString(), this.initTime);
 
 		// both prev name and epoch or neither
 		if (this.prevGroupName != null) {
@@ -216,6 +311,8 @@ public class StartEpoch<NodeIDType> extends
 		if (this.newlyAddedNodes != null)
 			json.put(Keys.NEWLY_ADDED_NODES.toString(),
 					this.mapToArray(newlyAddedNodes));
+		json.putOpt(Keys.FIRST_PREV_EPOCH_CANDIDATE.toString(),
+				firstPrevEpochCandidate);
 		return json;
 	}
 
@@ -228,6 +325,13 @@ public class StartEpoch<NodeIDType> extends
 				jsonArray.put(i++, member.toString());
 			}
 		return jsonArray;
+	}
+
+	/**
+	 * @return Time when the reconfiguration began.
+	 */
+	public long getInitTime() {
+		return this.initTime;
 	}
 
 	/**
@@ -254,13 +358,15 @@ public class StartEpoch<NodeIDType> extends
 	}
 
 	/**
-	 * @return Whether the epoch being created has no previous epoch group or 
-	 * it is split or merge reconfiguration operation.
+	 * @return Whether the epoch being created has no previous epoch group or it
+	 *         is split or merge reconfiguration operation.
 	 */
 	public boolean isInitEpoch() {
 		return (this.noPrevEpochGroup() && this.epochNumber == 0)
-				|| (this.prevGroupName != null && !this.prevGroupName
-						.equals(this.getServiceName()));
+				// split or merge operation
+				|| (this.prevGroupName != null && (!this.prevGroupName
+						.equals(this.getServiceName()) || (this
+						.getEpochNumber() == this.getPrevEpochNumber() + 1)));
 	}
 
 	/**
@@ -283,13 +389,28 @@ public class StartEpoch<NodeIDType> extends
 	public boolean hasPrevEpochGroup() {
 		return !this.noPrevEpochGroup();
 	}
-	
+
 	/**
-	 * @return Whether this is a create request, i.e., there is no
-	 * previous epoch group and there is a (non-null) creator.
+	 * @return True if the new epoch group is nonempty.
+	 */
+	public boolean hasCurEpochGroup() {
+		return !this.noCurEpochGroup();
+	}
+
+	/**
+	 * @return Whether this is a create request, i.e., there is no previous
+	 *         epoch group and there is a (non-null) creator.
 	 */
 	public boolean isCreateRequest() {
-		return this.noPrevEpochGroup() && this.creator!=null;
+		return this.noPrevEpochGroup() && this.creator != null;
+	}
+
+	/**
+	 * @return Whether this is a create request, i.e., there is no previous
+	 *         epoch group and there is a (non-null) creator.
+	 */
+	public boolean isDeleteRequest() {
+		return this.noCurEpochGroup() && this.creator != null;
 	}
 
 	/**
@@ -325,6 +446,13 @@ public class StartEpoch<NodeIDType> extends
 	}
 
 	/**
+	 * @return True if it is a split reconfiguration.
+	 */
+	public boolean isSplit() {
+		return isSplitOrMerge() && !isMerge();
+	}
+
+	/**
 	 * @return True if new RC nodes are being added.
 	 */
 	public boolean hasNewlyAddedNodes() {
@@ -339,6 +467,19 @@ public class StartEpoch<NodeIDType> extends
 		return this.isMerge;
 	}
 
+	/**
+	 * @return The set of groups to be merged.
+	 */
+	public Set<String> getMergees() {
+		return this.mergees;
+	}
+
+	/**
+	 * @return True if the set of mergees is nonempty.
+	 */
+	public boolean hasMergees() {
+		return this.mergees != null && !this.mergees.isEmpty();
+	}
 
 	/**
 	 * @return Set of newly added nodes.
@@ -348,10 +489,27 @@ public class StartEpoch<NodeIDType> extends
 				: new HashSet<NodeIDType>(this.newlyAddedNodes.keySet());
 	}
 
-	 static void main(String[] args) {
+	/**
+	 * @param node
+	 * @return {@code this}
+	 */
+	public StartEpoch<NodeIDType> setFirstPrevEpochCandidate(NodeIDType node) {
+		this.firstPrevEpochCandidate = node;
+		return this;
+	}
+
+	/**
+	 * @return The first candidate to try while requesting previous epoch final
+	 *         state.
+	 */
+	public NodeIDType getFirstPrevEpochCandidate() {
+		return this.firstPrevEpochCandidate;
+	}
+
+	static void main(String[] args) {
 		int[] group = { 3, 45, 6, 19 };
 		StartEpoch<Integer> se = new StartEpoch<Integer>(4, "name1", 2,
-				Util.arrayToIntSet(group), Util.arrayToIntSet(group));
+				Util.arrayToIntSet(group), Util.arrayToIntSet(group), null);
 		try {
 			System.out.println(se);
 			StartEpoch<Integer> se2 = new StartEpoch<Integer>(
@@ -393,5 +551,12 @@ public class StartEpoch<NodeIDType> extends
 			jArray.put(jElement);
 		}
 		return jArray;
+	}
+
+	/**
+	 * @return The forwarder socket address.
+	 */
+	public InetSocketAddress getForwarder() {
+		return this.forwarder;
 	}
 }

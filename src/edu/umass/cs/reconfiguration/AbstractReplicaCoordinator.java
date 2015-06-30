@@ -45,7 +45,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	private final ConcurrentHashMap<IntegerPacketType, Boolean> coordinationTypes = new ConcurrentHashMap<IntegerPacketType, Boolean>();
 
 	private InterfaceReconfiguratorCallback callback = null;
-	private InterfaceReconfiguratorCallback activeCallback = null; // for stops
+	private InterfaceReconfiguratorCallback stopCallback = null; // for stops
 	private boolean largeCheckpoints = false;
 	protected InterfaceMessenger<NodeIDType, ?> messenger;
 
@@ -121,9 +121,13 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 		return this;
 	}
 
-	protected final AbstractReplicaCoordinator<NodeIDType> setActiveCallback(
+	protected final InterfaceReconfiguratorCallback getCallback() {
+		return this.callback;
+	}
+
+	protected final AbstractReplicaCoordinator<NodeIDType> setStopCallback(
 			InterfaceReconfiguratorCallback callback) {
-		this.activeCallback = callback;
+		this.stopCallback = callback;
 		return this;
 	}
 
@@ -172,6 +176,8 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	public boolean handleRequest(InterfaceRequest request,
 			boolean noReplyToClient) {
 
+		if (this.callback != null)
+			this.callback.preExecuted(request);
 		boolean handled = ((this.app instanceof InterfaceReplicable) ? ((InterfaceReplicable) (this.app))
 				.handleRequest(request, noReplyToClient) : this.app
 				.handleRequest(request));
@@ -239,10 +245,10 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	/*********************** Start of private helper methods **********************/
 	// Call back active replica for stop requests, else call default callback
 	private void callCallback(InterfaceRequest request, boolean handled) {
-		if (request instanceof InterfaceReconfigurableRequest
-				&& ((InterfaceReconfigurableRequest) request).isStop()
-				&& this.activeCallback != null) {
-			this.activeCallback.executed(request, handled);
+		if (this.stopCallback != null
+				&& request instanceof InterfaceReconfigurableRequest
+				&& ((InterfaceReconfigurableRequest) request).isStop()) {
+			this.stopCallback.executed(request, handled);
 		} else if (this.callback != null)
 			this.callback.executed(request, handled);
 	}

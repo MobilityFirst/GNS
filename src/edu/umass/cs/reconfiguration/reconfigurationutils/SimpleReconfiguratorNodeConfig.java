@@ -49,12 +49,12 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	}
 
 	@Override
-	public Set<NodeIDType> getActiveReplicas() {
+	public synchronized Set<NodeIDType> getActiveReplicas() {
 		return this.nodeConfig.getActiveReplicas();
 	}
 
 	@Override
-	public Set<NodeIDType> getReconfigurators() {
+	public synchronized Set<NodeIDType> getReconfigurators() {
 		return new HashSet<NodeIDType>(this.rcMap.keySet());
 	}
 
@@ -105,19 +105,19 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	}
 
 	@Override
-	public InetSocketAddress addReconfigurator(NodeIDType id,
+	public synchronized InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress prevSockAddr = this.rcMap.put(id, sockAddr);
 		return prevSockAddr;
 	}
 
 	// @Override
-	public InetSocketAddress removeReconfigurator(NodeIDType id) {
+	public synchronized InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.rcMap.remove(id);
 	}
 
 	@Override
-	public InetSocketAddress addActiveReplica(NodeIDType id,
+	public synchronized InetSocketAddress addActiveReplica(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress old = (this.nodeConfig.getActiveReplicas().contains(
 				id) ? new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
@@ -132,7 +132,7 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	}
 
 	@Override
-	public InetSocketAddress removeActiveReplica(NodeIDType id) {
+	public synchronized InetSocketAddress removeActiveReplica(NodeIDType id) {
 		InetSocketAddress old = (this.nodeConfig.getActiveReplicas().contains(
 				id) ? new InetSocketAddress(this.nodeConfig.getNodeAddress(id),
 				this.nodeConfig.getNodePort(id)) : null);

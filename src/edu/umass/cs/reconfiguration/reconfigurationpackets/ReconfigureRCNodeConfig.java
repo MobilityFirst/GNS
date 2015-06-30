@@ -26,22 +26,25 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> {
 
 	private static enum Keys {
-		NEWLY_ADDED_NODES, NODE_ID, SOCKET_ADDRESS, DELETED_NODES
+		NEWLY_ADDED_NODES, NODE_ID, SOCKET_ADDRESS, DELETED_NODES, FAILED, RESPONSE_MESSAGE
 	};
 
 	/**
-	 *  Map used for adding new RC nodes.
+	 * Map used for adding new RC nodes.
 	 */
 	public final Map<NodeIDType, InetSocketAddress> newlyAddedNodes;
 	/**
 	 * Set of RC nodes being deleted.
 	 */
 	public final Set<NodeIDType> deletedNodes;
-	
+
 	/**
 	 * Requester address to send the confirmation.
 	 */
 	public final InetSocketAddress requester;
+
+	private boolean failed = false;
+	private String responseMessage = null;
 
 	/**
 	 * @param initiator
@@ -58,12 +61,15 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		this.deletedNodes = null;
 		this.requester = null;
 	}
+
 	/**
 	 * @param initiator
 	 * @param newlyAddedNodes
 	 * @param deletedNodes
 	 */
-	public ReconfigureRCNodeConfig(NodeIDType initiator, Map<NodeIDType, InetSocketAddress> newlyAddedNodes, Set<NodeIDType> deletedNodes) {
+	public ReconfigureRCNodeConfig(NodeIDType initiator,
+			Map<NodeIDType, InetSocketAddress> newlyAddedNodes,
+			Set<NodeIDType> deletedNodes) {
 		super(initiator,
 				ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG,
 				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString(), 0);
@@ -87,6 +93,10 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 				.arrayToSet(json.getJSONArray(Keys.DELETED_NODES.toString()),
 						unstringer) : null);
 		this.requester = JSONNIOTransport.getSenderAddress(json);
+		this.failed = json.optBoolean(Keys.FAILED.toString());
+		this.responseMessage = json.has(Keys.RESPONSE_MESSAGE.toString()) ? json
+				.getString(Keys.RESPONSE_MESSAGE.toString()) : null;
+
 	}
 
 	public JSONObject toJSONObjectImpl() throws JSONException {
@@ -98,6 +108,9 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 			json.put(Keys.DELETED_NODES.toString(),
 					this.setToArray(this.deletedNodes));
 		// no need to enter requester information
+		if (this.failed)
+			json.put(Keys.FAILED.toString(), this.failed);
+		json.put(Keys.RESPONSE_MESSAGE.toString(), this.responseMessage);
 
 		return json;
 	}
@@ -119,13 +132,15 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		return (this.newlyAddedNodes != null ? new HashSet<NodeIDType>(
 				this.newlyAddedNodes.keySet()) : new HashSet<NodeIDType>());
 	}
+
 	/**
 	 * @return Set of nodes being deleted.
 	 */
 	public Set<NodeIDType> getDeletedRCNodeIDs() {
-		return this.deletedNodes==null ? new HashSet<NodeIDType>() : this.deletedNodes;
+		return this.deletedNodes == null ? new HashSet<NodeIDType>()
+				: this.deletedNodes;
 	}
-	
+
 	/**
 	 * @return Requester address.
 	 */
@@ -183,6 +198,42 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		for (NodeIDType node : set)
 			stringSet.add(node.toString());
 		return new JSONArray(stringSet);
+	}
+
+	/**
+	 * @return {@code this}
+	 */
+	public ReconfigureRCNodeConfig<NodeIDType> setFailed() {
+		this.failed = true;
+		return this;
+	}
+
+	/**
+	 * @return True if failed.
+	 */
+	public boolean isFailed() {
+		return this.failed;
+	}
+
+	/**
+	 * @param msg
+	 * @return {@code this}
+	 */
+	public ReconfigureRCNodeConfig<NodeIDType> setResponseMessage(String msg) {
+		this.responseMessage = msg;
+		return this;
+	}
+
+	/**
+	 * @return The success or failure message.
+	 */
+	public String getResponseMessage() {
+		return this.responseMessage;
+	}
+
+	public String getSummary() {
+		return getServiceName() + ":" + getEpochNumber() + "[adds="
+				+ this.newlyAddedNodes + "; deletes=" + this.deletedNodes;
 	}
 
 }

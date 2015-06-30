@@ -47,6 +47,11 @@ public class EpochFinalState<NodeIDType> extends BasicReconfigurationPacket<Node
 		return json;
 	}
 	
+	@Override
+	public String getSummary() {
+		return super.getSummary() + ":" + this.state;
+	}
+	
 	public static void main(String[] args) {
 		EpochFinalState<Integer> obj1 = new EpochFinalState<Integer>(4, "name1", 2, "sample_state");
 		try {

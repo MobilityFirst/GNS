@@ -104,7 +104,7 @@ public class AppLookup {
       }
     }
 
-    DelayProfiler.update("totalLookupAuth", receiptTime);
+    DelayProfiler.updateDelay("totalLookupAuth", receiptTime);
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
@@ -150,7 +150,7 @@ public class AppLookup {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
         //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       }
-      DelayProfiler.update("totalLookup", receiptTime);
+      DelayProfiler.updateDelay("totalLookup", receiptTime);
     }
   }
 

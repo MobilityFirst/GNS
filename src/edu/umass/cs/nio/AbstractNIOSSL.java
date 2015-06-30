@@ -11,7 +11,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLEngineResult;
 import javax.net.ssl.SSLException;
 
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.utils.ML;
 
 /**
  * @author arun
@@ -85,7 +85,7 @@ public abstract class AbstractNIOSSL implements Runnable {
 			wrapSrc.put(unencrypted);
 		} catch (BufferOverflowException boe) {
 			wrapSrc = getBiggerBuffer(wrapSrc, unencrypted);
-			log.log(Level.FINE, MyLogger.FORMAT[1], new Object[] {
+			log.log(Level.FINE, ML.F[1], new Object[] {
 					"Increased wrapSrc buffer size to ", wrapSrc.capacity() });
 		}
 		run();
@@ -102,7 +102,7 @@ public abstract class AbstractNIOSSL implements Runnable {
 		} catch (BufferOverflowException boe) {
 			// try increasing buffer
 			unwrapSrc = getBiggerBuffer(unwrapSrc, encrypted);
-			log.log(Level.FINE, MyLogger.FORMAT[1],
+			log.log(Level.FINE, ML.F[1],
 					new Object[] { "Increased unwrapSrc buffer size to ",
 							unwrapSrc.capacity() });
 
@@ -162,11 +162,11 @@ public abstract class AbstractNIOSSL implements Runnable {
 			Runnable wrappedTask = new Runnable() {
 				@Override
 				public void run() {
-					log.log(Level.FINE, MyLogger.FORMAT[1], new Object[] {
+					log.log(Level.FINE, ML.F[1], new Object[] {
 							"async SSL task: ", sslTask });
 					long t0 = System.nanoTime();
 					sslTask.run();
-					log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] {
+					log.log(Level.FINE, ML.F[2], new Object[] {
 							"async SSL task took: ",
 							(System.nanoTime() - t0) / 1000000, "ms" });
 
@@ -227,7 +227,7 @@ public abstract class AbstractNIOSSL implements Runnable {
 			wrapDst.flip();
 			b.put(wrapDst);
 			wrapDst = b;
-			log.log(Level.FINE, MyLogger.FORMAT[0], new Object[] {
+			log.log(Level.FINE, ML.F[0], new Object[] {
 					"Increased wrapDst buffer size to " + wrapDst.capacity() });
 			// retry the operation.
 			break;
@@ -286,7 +286,7 @@ public abstract class AbstractNIOSSL implements Runnable {
 			unwrapDst.flip();
 			b.put(unwrapDst);
 			unwrapDst = b;
-			log.log(Level.FINE, MyLogger.FORMAT[1], new Object[] {
+			log.log(Level.FINE, ML.F[1], new Object[] {
 					"Increased unwrapDst buffer size to ", unwrapDst.capacity() });
 			// retry the operation.
 			break;

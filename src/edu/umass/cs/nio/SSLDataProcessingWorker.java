@@ -2,6 +2,7 @@ package edu.umass.cs.nio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -18,7 +19,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 
-import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author arun
@@ -74,7 +74,8 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	 * @throws SSLException
 	 */
 	public SSLDataProcessingWorker(InterfaceDataProcessingWorker worker,
-			SSLDataProcessingWorker.SSL_MODES sslMode) throws NoSuchAlgorithmException, SSLException {
+			SSLDataProcessingWorker.SSL_MODES sslMode)
+			throws NoSuchAlgorithmException, SSLException {
 		this.decryptedWorker = worker;
 		this.mode = sslMode;
 	}
@@ -89,10 +90,11 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	public void processData(SocketChannel channel, ByteBuffer encrypted) {
 		AbstractNIOSSL nioSSL = this.sslMap.get(channel);
 		assert (nioSSL != null);
-		log.log(Level.FINEST, MyLogger.FORMAT[6], new Object[] { this,
-				"received encrypted data of length ", encrypted.remaining(),
-				"bytes on", channel.socket().getLocalSocketAddress(), "from",
-				channel.socket().getRemoteSocketAddress() });
+		log.log(Level.FINEST,
+				"{0} received encrypted data of length {1} bytes on {2} from {3}",
+				new Object[] { this, encrypted.remaining(),
+						channel.socket().getLocalSocketAddress(),
+						channel.socket().getRemoteSocketAddress() });
 		// unwrap SSL
 		nioSSL.notifyReceived(encrypted);
 	}
@@ -101,11 +103,11 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	protected void wrap(SocketChannel channel, ByteBuffer unencrypted) {
 		AbstractNIOSSL nioSSL = this.sslMap.get(channel);
 		assert (nioSSL != null);
-		log.log(Level.FINEST, MyLogger.FORMAT[6], new Object[] { this,
-				"wrapping unencrypted data of length ",
-				unencrypted.remaining(), "bytes from",
-				channel.socket().getLocalSocketAddress(), "to",
-				channel.socket().getRemoteSocketAddress() });
+		log.log(Level.FINEST,
+				"{0} wrapping unencrypted data of length {1} bytes from {2} to {3}",
+				new Object[] { this, unencrypted.remaining(),
+						channel.socket().getLocalSocketAddress(),
+						channel.socket().getRemoteSocketAddress() });
 		nioSSL.nioSend(unencrypted);
 	}
 
@@ -129,9 +131,10 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 		if (this.mode.equals(SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH))
 			engine.setNeedClientAuth(true);
 		engine.beginHandshake();
-		log.log(Level.INFO, MyLogger.FORMAT[4], new Object[] { this,
-				"registered", (isClient ? "client" : "server"), "socket channel",
-				key.channel() });
+		log.log(Level.INFO,
+				"{0} registered {1} socket channel {2}",
+				new Object[] { this, (isClient ? "client" : "server"),
+						key.channel() });
 		this.sslMap.put(key.channel(), new NonBlockingSSLImpl(key, engine,
 				DEFAULT_PER_CONNECTION_IO_BUFFER_SIZE, this.taskWorkers));
 		return true;
@@ -159,17 +162,12 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 		// inbound decrypted data is simply handed over to worker
 		@Override
 		public void onInboundData(ByteBuffer decrypted) {
-			log.log(Level.FINEST, MyLogger.FORMAT[6],
-					new Object[] {
-							this,
-							"received decrypted data of length ",
-							decrypted.remaining(),
-							"bytes on",
-							((SocketChannel) (key.channel())).socket()
-									.getLocalSocketAddress(),
-							"from",
-							((SocketChannel) (key.channel())).socket()
-									.getRemoteSocketAddress() });
+			Socket socket = ((SocketChannel) (key.channel())).socket();
+			log.log(Level.FINEST,
+					"{0} received decrypted data of length {1} bytes on {2} from {3}",
+					new Object[] { this, decrypted.remaining(),
+							socket.getLocalSocketAddress(),
+							socket	.getRemoteSocketAddress() });
 			decryptedWorker.processData((SocketChannel) key.channel(),
 					decrypted);
 		}
@@ -177,9 +175,9 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 		@Override
 		public void onHandshakeFailure(Exception cause) {
 			cause.printStackTrace();
-			log.log(Level.WARNING, MyLogger.FORMAT[2], new Object[] { this,
-					"encountered SSL handshake failure; cleaning up channel",
-					key.channel() });
+			log.log(Level.WARNING,
+					"{0} encountered SSL handshake failure; cleaning up channel {1}",
+					new Object[] { this, key.channel() });
 			// should only be invoked by selection thread
 			cleanup(key);
 		}
@@ -187,34 +185,27 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 		@Override
 		public void onHandshakeSuccess() {
 			this.setHandshakeComplete();
-			log.log(Level.INFO, MyLogger.FORMAT[2],
-					new Object[] { this,
-							"conducted successful SSL handshake for channel",
-							key.channel() });
+			log.log(Level.INFO,
+					"{0} conducted successful SSL handshake for channel {1}",
+					new Object[] { this, key.channel() });
 		}
 
 		@Override
 		public void onClosed() {
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
-					"cleaning up closed SSL channel", key.channel() });
+			log.log(Level.INFO, "{0} cleaning up closed SSL channel {1}",
+					new Object[] { this, key.channel() });
 			cleanup(key);
 		}
 
 		@Override
 		public void onOutboundData(ByteBuffer encrypted) {
+			SocketChannel channel = ((SocketChannel) key.channel());
 			try {
 				log.log(Level.FINEST,
-						MyLogger.FORMAT[6],
-						new Object[] {
-								this,
-								"sending encrypted data of length",
-								encrypted.remaining(),
-								"bytes from",
-								((SocketChannel) key.channel()).socket()
-										.getLocalSocketAddress(),
-								"to",
-								((SocketChannel) key.channel()).socket()
-										.getRemoteSocketAddress() });
+						"{0} sending encrypted data of length {1} bytes from {2} to {3}",
+						new Object[] { this, encrypted.remaining(),
+								channel.socket().getLocalSocketAddress(),
+								channel.socket().getRemoteSocketAddress() });
 				/*
 				 * The assertion is true because we initialized key in the
 				 * parent constructor. This method is the only reason we need
@@ -225,23 +216,19 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 				int totalLength = encrypted.remaining();
 				// hack! try few times, but can't really wait here.
 				for (int attempts = 0; attempts < 3 && encrypted.hasRemaining(); attempts++)
-					((SocketChannel) this.key.channel()).write(encrypted);
+					channel.write(encrypted);
 
 				// not a showstopper if we don't absolutely complete the write
 				if (encrypted.hasRemaining())
-					log.log(Level.INFO, MyLogger.FORMAT[5],
-							new Object[] { this, " failed to bulk-write ",
-									totalLength,
-									" bytes despite multiple attempts (",
-									encrypted.remaining(),
-									" bytes left unsent)" });
+					log.log(Level.INFO,
+							"{0} failed to bulk-write {1} bytes despite multiple attempts ({2} bytes left unsent)",
+							new Object[] { this, totalLength,
+									encrypted.remaining(), });
 
 			} catch (IOException | IllegalStateException exc) {
 				// need to cleanup as we are screwed
-				log.log(Level.SEVERE, MyLogger.FORMAT[1], new Object[] {
-						this,
-						"ran into exception or illegal state while writing "
-								+ "outbound data; closing channel" });
+				log.severe(this
+						+ " ran into exception or illegal state while writing outbound data; closing channel");
 				cleanup(key);
 				throw new IllegalStateException(exc);
 			}

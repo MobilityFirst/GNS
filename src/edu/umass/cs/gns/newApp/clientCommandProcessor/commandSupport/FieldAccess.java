@@ -97,7 +97,7 @@ public class FieldAccess {
         resultString = GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.JSONPARSEERROR + " " + e;
       }
     }
-    DelayProfiler.update("FieldAccessreadLookup", startTime);
+    DelayProfiler.updateDelay("FieldAccessreadLookup", startTime);
     return new CommandResponse(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),

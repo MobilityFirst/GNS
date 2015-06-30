@@ -22,7 +22,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestEpochFinalState;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import edu.umass.cs.utils.MyLogger;
+import edu.umass.cs.utils.ML;
 
 /**
  * @author V. Arun
@@ -32,7 +32,7 @@ public class WaitEpochFinalState<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private static final long RESTART_PERIOD = 4000;
+	private static final long RESTART_PERIOD = WaitAckStopEpoch.RESTART_PERIOD;
 
 	private final StartEpoch<NodeIDType> startEpoch;
 	private final AbstractReplicaCoordinator<NodeIDType> appCoordinator;
@@ -79,7 +79,7 @@ public class WaitEpochFinalState<NodeIDType>
 					.iterator();
 		GenericMessagingTask<NodeIDType, ?>[] mtasks = start();
 		if (mtasks != null)
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { getKey(),
+			log.log(Level.WARNING, ML.F[2], new Object[] { getKey(),
 					" resending request to ", mtasks[0].recipients[0] });
 		return mtasks;
 	}
@@ -89,6 +89,7 @@ public class WaitEpochFinalState<NodeIDType>
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
 		if (!this.prevGroupIterator.hasNext())
 			return null;
+		this.sleepOptimization();
 		// Try myself first if I am in both old and new groups
 		NodeIDType target = this.positionIterator();
 		GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, Object>(
@@ -97,16 +98,17 @@ public class WaitEpochFinalState<NodeIDType>
 	}
 
 	private NodeIDType positionIterator() {
-		NodeIDType myID = this.appCoordinator.getMyID();
-		// if contains me or not first time
-		if (!this.startEpoch.getPrevEpochGroup().contains(myID) || !this.first
+		NodeIDType firstTry = this.startEpoch.getFirstPrevEpochCandidate()!=null ? this.startEpoch.getFirstPrevEpochCandidate() :
+			this.appCoordinator.getMyID();
+		// if not contains me or not first time
+		if (!this.startEpoch.getPrevEpochGroup().contains(firstTry) || !this.first
 				|| (this.first = false))
 			return this.prevGroupIterator.next();
 		// else if contains me and first time
 		while (this.prevGroupIterator.hasNext()
-				&& !this.prevGroupIterator.next().equals(myID))
+				&& !this.prevGroupIterator.next().equals(firstTry))
 			;
-		return myID; // leave iterator at self
+		return firstTry; // leave iterator at self
 	}
 
 	private boolean amObviated() {
@@ -116,6 +118,29 @@ public class WaitEpochFinalState<NodeIDType>
 				&& curEpoch - this.startEpoch.getEpochNumber() >= 0)
 			return true;
 		return false;
+	}
+	
+	private void sleepOptimization() {
+		try {
+			/*
+			 * FIXME: An optimization to wait a tiny bit to increase the
+			 * likelihood that the previous epoch final state is readily
+			 * available at most any previous epoch replica so that we
+			 * avoid a restart timeout. For service names, this is not
+			 * an issue because we supply a hint in startEpoch to try
+			 * the candidate that acked the stop of the previous epoch.
+			 * But for split reconfiguration operations, the timeout
+			 * may still be triggered as there is no stop phase in a 
+			 * split operation. Ideally, we would sleep just until the
+			 * splittee group has been stopped, but we don't have 
+			 * an easy way of determining that here.
+			 */
+			if (this.startEpoch.getFirstPrevEpochCandidate() == null
+					|| this.startEpoch.isSplitOrMerge())
+				Thread.sleep(200);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -161,13 +186,15 @@ public class WaitEpochFinalState<NodeIDType>
 			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>) event;
 			if (!checkEpochFinalState(event))
 				break;
-			log.log(Level.INFO, MyLogger.FORMAT[4],
+			log.log(Level.INFO, ML.F[4],
 					new Object[] { this, "received", state.getSummary(),
 							"state=", state.getState() });
 			handled = this.appCoordinator.createReplicaGroup(
 					this.startEpoch.getServiceName(),
 					this.startEpoch.getEpochNumber(), state.getState(),
 					this.startEpoch.getCurEpochGroup());
+			
+			
 			/*
 			 * createReplicaGroup should always return true to indicate that it
 			 * either succeeded in creating the group with the specified epoch
@@ -230,7 +257,7 @@ public class WaitEpochFinalState<NodeIDType>
 			ackStartEpoch.setKey(this.notifiees.get(node));
 			mtasks.add(new GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>(
 					node, ackStartEpoch));
-			log.log(Level.INFO, MyLogger.FORMAT[5], new Object[] { this,
+			log.log(Level.INFO, ML.F[5], new Object[] { this,
 					"sending", ackStartEpoch.getSummary(), "to RC" + node,
 					"with key", this.notifiees.get(node) });
 		}

@@ -67,9 +67,9 @@ public class Lookup {
     incomingPacket.getHeader().setId(ccpReqID);
     JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
     incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
-    DelayProfiler.update("handlePacketLookupRequestSetup", startTime);
+    DelayProfiler.updateDelay("handlePacketLookupRequestSetup", startTime);
     handler.getApp().handleRequest(new DNSPacket(outgoingJSON, handler.getGnsNodeConfig()));
-    DelayProfiler.update("handlePacketLookupRequest", startTime);
+    DelayProfiler.updateDelay("handlePacketLookupRequest", startTime);
     //handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
   }
 
@@ -88,7 +88,7 @@ public class Lookup {
       requestInfo.setSuccess(true);
       requestInfo.setFinishTime();
 
-      DelayProfiler.update("dnsRequest", requestInfo.getStartTime());
+      DelayProfiler.updateDelay("dnsRequest", requestInfo.getStartTime());
 //      if (handler.getParameters().isDebugMode()) {
 //        GNS.getLogger().info("8888888888888888888888888888>>>>: dns request #" + requestInfo.getCCPReqID() 
 //                + " " + requestInfo.getName() + " took " + requestInfo.getResponseLatency() + "ms");

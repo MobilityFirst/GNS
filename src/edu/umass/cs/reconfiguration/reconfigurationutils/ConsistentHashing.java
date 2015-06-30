@@ -179,7 +179,10 @@ public class ConsistentHashing<NodeIDType> {
 		return this.servers.values();
 	}
 
-	 static void main(String[] args) {
+	 /**
+	 * @param args
+	 */
+	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		String[] names = { "World", "Hello", "Hello World", "1", "10", "12",
 				"9", "34" };
@@ -195,7 +198,7 @@ public class ConsistentHashing<NodeIDType> {
 		Integer[] ids = {1100, 1101, 1102};
 		ConsistentHashing<Integer> chi = new ConsistentHashing<Integer>(ids);
 		System.out.println("ring ordering = " + chi.getServers());
-		Integer[] ids1 = {1100, 1101, 1102, 1103};
+		Integer[] ids1 = {1100, 1101, 1102, 7951};
 		ConsistentHashing<Integer> chi1 = new ConsistentHashing<Integer>(ids1);
 		System.out.println("ring ordering = " + chi1.getServers());
 	}

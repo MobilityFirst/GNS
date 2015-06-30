@@ -209,7 +209,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         DBObject obj = cursor.next();
         JSONObject json = new JSONObject(obj.toString());
         // instrumentation
-        DelayProfiler.update("lookupEntireRecord", startTime);
+        DelayProfiler.updateDelay("lookupEntireRecord", startTime);
         // older style
         int lookupTime = (int) (System.currentTimeMillis() - startTime);
         if (lookupTime > 20) {
@@ -268,10 +268,10 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
       }
 
-      DelayProfiler.update("lookupMSAUFPreFind", startTime);
+      DelayProfiler.updateDelay("lookupMSAUFPreFind", startTime);
       long findStartTime = System.currentTimeMillis();
       DBObject dbObject = collection.findOne(query, projection);
-      DelayProfiler.update("lookupMSAUFJustFind", findStartTime);
+      DelayProfiler.updateDelay("lookupMSAUFJustFind", findStartTime);
       long postFindStartTime = System.currentTimeMillis();
       if (dbObject == null) {
         throw new RecordNotFoundException(guid);
@@ -322,9 +322,9 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
         hashMap.put(valuesMapField, valuesMap);
       }
-      DelayProfiler.update("lookupMSAUFPostFind", postFindStartTime);
+      DelayProfiler.updateDelay("lookupMSAUFPostFind", postFindStartTime);
       // instrumentation
-      DelayProfiler.update("lookupMSAUF", startTime);
+      DelayProfiler.updateDelay("lookupMSAUF", startTime);
       // older style
       int lookupTime = (int) (System.currentTimeMillis() - startTime);
       if (lookupTime > 20) {
@@ -491,7 +491,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       } catch (MongoException e) {
         throw new FailedDBOperationException(collectionName, updates.toString());
       }
-      DelayProfiler.update("updateJustThe$set", startTime);
+      DelayProfiler.updateDelay("updateJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
       if (finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
@@ -556,7 +556,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         throw new FailedDBOperationException(collectionName, updates.toString());
       }
       actuallyUpdatedTheRecord = writeResult.isUpdateOfExisting();
-      DelayProfiler.update("updateConditionalJustThe$set", startTime);
+      DelayProfiler.updateDelay("updateConditionalJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
       if (finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
