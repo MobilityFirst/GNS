@@ -147,7 +147,7 @@ public class ProtocolExecutor<NodeIDType, EventType, KeyType> {
 		return task;
 	}
 	
-	private void kickStart(ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
+	private void kickStart(final ProtocolTaskWrapper<NodeIDType, EventType, KeyType> task) {
 		// don't wait for the future
 		this.executor.submit(new Runnable() {
 			public void run() {
