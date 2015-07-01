@@ -93,8 +93,8 @@ public class Select {
     // If sufficient time hasn't passed we just send the current value back
     if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // grab the timing parameters that we squirreled away from the SETUP
-      Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica, packet.getLnsAddress());
-      int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica, packet.getLnsAddress());
+      Date lastUpdate = NSGroupAccess.getLastUpdate(packet.getGuid(), replica, packet.getCppAddress());
+      int minRefreshInterval = NSGroupAccess.getMinRefresh(packet.getGuid(), replica, packet.getCppAddress());
       if (lastUpdate != null) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("GROUP_LOOKUP Request: " + new Date().getTime() + " - " + lastUpdate.getTime() + " <= " + minRefreshInterval);
@@ -104,8 +104,8 @@ public class Select {
           if (AppReconfigurableNodeOptions.debuggingEnabled) {
             GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
-          ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica, packet.getLnsAddress());
-          sendReponsePacketToLNS(packet.getId(), packet.getCcpQueryId(), packet.getLnsAddress(), result.toStringSet(), replica);
+          ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, replica, packet.getCppAddress());
+          sendReponsePacketToLNS(packet.getId(), packet.getCcpQueryId(), packet.getCppAddress(), result.toStringSet(), replica);
           return;
         }
       } else {
@@ -126,7 +126,7 @@ public class Select {
             packet.getQuery(), packet.getMinRefreshInterval(), packet.getGuid());
     if (packet.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       // the query string is supplied with a lookup so we stuff in it there. It was saved from the SETUP operation.
-      packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), replica, packet.getLnsAddress()));
+      packet.setQuery(NSGroupAccess.getQueryString(packet.getGuid(), replica, packet.getCppAddress()));
     }
     packet.setNameServerID(replica.getNodeID());
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
@@ -161,7 +161,7 @@ public class Select {
     try {
       // grab the records
       JSONArray jsonRecords = getJSONRecordsForSelect(request, replica);
-      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getLnsAddress(),
+      SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getCppAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), replica.getNodeID(), jsonRecords);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("NS " + replica.getNodeID().toString() + " sending back " + jsonRecords.length() + " records");
@@ -170,7 +170,7 @@ public class Select {
       replica.getNioServer().sendToID(request.getNameServerID(), response.toJSONObject());
     } catch (Exception e) {
       GNS.getLogger().severe("Exception while handling select request: " + e);
-      SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getLnsAddress(),
+      SelectResponsePacket failResponse = SelectResponsePacket.makeFailPacket(request.getId(), request.getCppAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), replica.getNodeID(), e.getMessage());
       try {
         replica.getNioServer().sendToID(request.getNameServerID(), failResponse.toJSONObject());
@@ -233,7 +233,7 @@ public class Select {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     // Pull the records out of the info structure and send a response back to the LNS
-    sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getLnsAddress(), guids, replica);
+    sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getCppAddress(), guids, replica);
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff
@@ -242,17 +242,17 @@ public class Select {
         GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " storing query string and other info");
       }
       // for setup we need to squirrel away the query for later lookups
-      NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery(), replica, packet.getLnsAddress());
-      NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval(), replica, packet.getLnsAddress());
+      NSGroupAccess.updateQueryString(info.getGuid(), info.getQuery(), replica, packet.getCppAddress());
+      NSGroupAccess.updateMinRefresh(info.getGuid(), info.getMinRefreshInterval(), replica, packet.getCppAddress());
     }
     if (info.getGroupBehavior().equals(GroupBehavior.GROUP_SETUP) || info.getGroupBehavior().equals(GroupBehavior.GROUP_LOOKUP)) {
       String guid = info.getGuid();
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().fine("NS" + replica.getNodeID().toString() + " updating group members");
       }
-      NSGroupAccess.updateMembers(guid, guids, replica, packet.getLnsAddress());
+      NSGroupAccess.updateMembers(guid, guids, replica, packet.getCppAddress());
       //NSGroupAccess.updateRecords(guid, processResponsesIntoJSONArray(info.getResponsesAsMap()), replica); 
-      NSGroupAccess.updateLastUpdate(guid, new Date(), replica, packet.getLnsAddress());
+      NSGroupAccess.updateLastUpdate(guid, new Date(), replica, packet.getCppAddress());
     }
   }
 

@@ -51,8 +51,8 @@ public class Packet {
     // Add
     ADD_RECORD(2, "edu.umass.cs.gns.newApp.packet.AddRecordPacket"),
     ADD_CONFIRM(3, "edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket"),
-    ACTIVE_ADD(4, "edu.umass.cs.gns.newApp.packet.AddRecordPacket"), // on an add request replica controller sends to active replica
-    ACTIVE_ADD_CONFIRM(5, "edu.umass.cs.gns.newApp.packet.AddRecordPacket"), // after adding name, active replica confirms to replica controller
+    //ACTIVE_ADD(4, "edu.umass.cs.gns.newApp.packet.AddRecordPacket"), // on an add request replica controller sends to active replica
+    //ACTIVE_ADD_CONFIRM(5, "edu.umass.cs.gns.newApp.packet.AddRecordPacket"), // after adding name, active replica confirms to replica controller
 
     // new client
     COMMAND(7, "edu.umass.cs.gns.newApp.packet.CommandPacket"),
@@ -60,9 +60,9 @@ public class Packet {
     // Remove
     REMOVE_RECORD(10, "edu.umass.cs.gns.newApp.packet.RemoveRecordPacket"),
     REMOVE_CONFIRM(11, "edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket"),
-    ACTIVE_REMOVE(12, null), // on a remove request, replica controller sends to active replica
+    //ACTIVE_REMOVE(12, null), // on a remove request, replica controller sends to active replica
     //ACTIVE_REMOVE_CONFIRM(13, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"), // after removing name, active replica confirms to replica controller
-    RC_REMOVE(14, "edu.umass.cs.gns.newApp.packet.RemoveRecordPacket"),
+    //RC_REMOVE(14, "edu.umass.cs.gns.newApp.packet.RemoveRecordPacket"),
     // Update
     UPDATE(20, "edu.umass.cs.gns.newApp.packet.UpdatePacket"), // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
     UPDATE_CONFIRM(21, "edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket"),
@@ -89,7 +89,7 @@ public class Packet {
     NOOP(99, null),
     // group change
     //NEW_ACTIVE_PROPOSE(100, "edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket"),
-    OLD_ACTIVE_STOP(101, null),
+    //OLD_ACTIVE_STOP(101, null),
     //OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY(102, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"),
     //DELETE_OLD_ACTIVE_STATE(103, "edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket"),
     //
@@ -226,8 +226,8 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket<String>(json, unstringer);
 //        case ACTIVE_REMOVE:
 //          return null; // on a remove request, replica controller sends to active replica
-       case RC_REMOVE:
-          return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket<String>(json, unstringer);
+//       case RC_REMOVE:
+//          return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket<String>(json, unstringer);
         // Update
         case UPDATE:
           return new edu.umass.cs.gns.newApp.packet.UpdatePacket<String>(json, unstringer); // this is for packets involving the LNS (that is client support -> LNS and LNS -> NS)
@@ -274,8 +274,8 @@ public class Packet {
         // group change
 //        case NEW_ACTIVE_PROPOSE:
 //          return new edu.umass.cs.gns.newApp.packet.deprecated.NewActiveProposalPacket<String>(json, unstringer);
-        case OLD_ACTIVE_STOP:
-          return null;
+//        case OLD_ACTIVE_STOP:
+//          return null;
 //        case OLD_ACTIVE_STOP_CONFIRM_TO_PRIMARY:
 //          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer);
 //        case DELETE_OLD_ACTIVE_STATE:

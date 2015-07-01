@@ -10,11 +10,12 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.util.ValuesMap;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 
 import java.text.ParseException;
+import org.json.JSONObject;
 
 /**
  * Provides Name Server side support for reading and writing guid account information from the database.
@@ -134,19 +135,28 @@ public class NSAccountAccess {
    *
    * @param guid
    * @param allowQueryToOtherNSs
+   * @param activeReplica
+   * @param lnsAddress
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsApplicationInterface activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
-    ResultValue guidResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
-            lnsAddress);
-    if (!guidResult.isEmpty()) {
+    ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, AccountAccess.GUID_INFO, activeReplica, lnsAddress);
+//    ResultValue guidResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,
+//            lnsAddress);
+    //GNS.getLogger().info("VALUESMAP=" + valuesMap.toString());
+    if (valuesMap.has(AccountAccess.GUID_INFO)) {
+    //if (!guidResult.isEmpty()) {
       try {
-        return new GuidInfo(guidResult.toResultValueString());
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
-      } catch (ParseException e) {
-        GNS.getLogger().severe("Problem parsing guidinfo:" + e);
+        //Object object = valuesMap.get(AccountAccess.GUID_INFO);
+        //GNS.getLogger().info("CLASS=" + object.getClass().getName());
+        // this is a hack
+        return new GuidInfo(new JSONObject(valuesMap.get(AccountAccess.GUID_INFO).toString()));
+        //return new GuidInfo(valuesMap.getJSONObject(AccountAccess.GUID_INFO));
+        //return new GuidInfo(guidResult.toResultValueString());
+      } catch (JSONException | ParseException e) {
+        GNS.getLogger().severe("Problem parsing guidinfo: " + e);
       }
     }
     return null;

@@ -45,16 +45,26 @@ public class CreateDelete {
       // do normal add which actually involves converting this into a CreateServiceName packet
       AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
       handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getCCPRequestID());
-      ValuesMap valuesMap = new ValuesMap();
-      valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
+      ValuesMap valuesMap;
+      if (addRecordPacket.getField() != null) {
+        valuesMap = new ValuesMap();
+        valuesMap.putAsArray(addRecordPacket.getField(), addRecordPacket.getFieldValue());
+      } else {
+        valuesMap = new ValuesMap(addRecordPacket.getValues());
+      }
       sendPacketWithRetransmission(addRecordPacket.getName(),
               new CreateServiceName(null, addRecordPacket.getName(), 0, valuesMap.toString()),
               handler);
     } else {
       // If we're running standalone just add the record.
       AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
-      ValuesMap valuesMap = new ValuesMap();
-      valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
+      ValuesMap valuesMap;
+      if (addRecordPacket.getField() != null) {
+        valuesMap = new ValuesMap();
+        valuesMap.putAsArray(addRecordPacket.getField(), addRecordPacket.getFieldValue());
+      } else {
+        valuesMap = new ValuesMap(addRecordPacket.getValues());
+      }
       NRState newState = new NRState(valuesMap, 0);
       handler.getApp().updateState(addRecordPacket.getName(), newState.toString());
       // and send a confirmation back

@@ -90,7 +90,7 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket im
    *
    * @return
    */
-  public InetSocketAddress getLnsAddress() {
+  public InetSocketAddress getCppAddress() {
     return ccpAddress;
   }
 

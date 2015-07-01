@@ -109,7 +109,7 @@ public class LNSUpdateHandler {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID().toString() + "; Sending add: " + name + " : " + key + "->" + value + " to LNS " + lnsAddress);
     }
-    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null, GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null);
     try {
       activeReplica.getNioServer().sendToAddress(lnsAddress, packet.toJSONObject());
     } catch (JSONException e) {

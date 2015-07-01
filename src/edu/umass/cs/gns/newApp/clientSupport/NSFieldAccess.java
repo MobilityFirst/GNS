@@ -157,7 +157,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ValuesMap containing the value of the field or null if field cannot be found
    */
-  public static ValuesMap lookupFieldLocalAndRemote(String guid, String field, GnsApplicationInterface activeReplica, 
+  public static ValuesMap lookupFieldAnywhere(String guid, String field, GnsApplicationInterface activeReplica, 
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     ValuesMap result = lookupFieldOnThisServer(guid, field, activeReplica);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS

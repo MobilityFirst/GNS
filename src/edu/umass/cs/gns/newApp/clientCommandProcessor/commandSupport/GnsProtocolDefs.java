@@ -5,6 +5,10 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * @author westy
@@ -25,8 +29,7 @@ public class GnsProtocolDefs {
   public final static String LOOKUPACCOUNTRECORD = "lookupAccountRecord";
   public final static String LOOKUPPRIMARYGUID = "lookupPrimaryGuid";
   public final static String RESETKEY = "resetKey";
-  //
-  // new
+  // update operations
   public final static String CREATE = "create";
   public final static String APPENDORCREATE = "appendOrCreate";
   public final static String REPLACE = "replace";
@@ -46,9 +49,14 @@ public class GnsProtocolDefs {
   public final static String SET = "set";
   public final static String SETFIELDNULL = "setFieldNull";
   public final static String CLEAR = "clear";
+  public final static String REMOVEFIELD = "removeField";
+  public final static String REPLACEUSERJSON = "replaceUserJSON";
+  
+  //
   public final static String READARRAY = "readArray";
   public final static String NEWREAD = "newRead";
   public final static String READARRAYONE = "readArrayOne";
+  //
   public final static String SELECT = "select";
   public final static String SELECTGROUP = "selectGroup";
   public final static String WITHIN = "within";
@@ -56,8 +64,6 @@ public class GnsProtocolDefs {
   public final static String QUERY = "query";
   public final static String INTERVAL = "interval";
   public final static String MAXDISTANCE = "maxDistance";
-  public final static String REMOVEFIELD = "removeField";
-  public final static String REPLACEUSERJSON = "replaceUserJSON";
   //
   public final static String ACLADD = "aclAdd";
   public final static String ACLREMOVE = "aclRemove";
@@ -73,6 +79,20 @@ public class GnsProtocolDefs {
   public final static String REQUESTLEAVEGROUP = "requestLeaveGroup";
   public final static String RETRIEVEGROUPLEAVEREQUESTS = "retrieveGroupLeaveRequests";
   public final static String REVOKEMEMBERSHIP = "revokeMembership";
+  //
+  public final static List<String> UPDATE_COMMANDS 
+          = Arrays.asList(CREATE, APPENDORCREATE, REPLACE, REPLACEORCREATE, APPENDWITHDUPLICATION, 
+                  APPEND, REMOVE, CREATELIST, APPENDORCREATELIST, REPLACEORCREATELIST, REPLACELIST,
+                  APPENDLISTWITHDUPLICATION, APPENDLIST, REMOVELIST, SUBSTITUTE, SUBSTITUTELIST, 
+                  SET, SETFIELDNULL, CLEAR, REMOVEFIELD, REPLACEUSERJSON,
+                  //
+                  //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
+                  VERIFYACCOUNT, SETPASSWORD, 
+                  //
+                  ACLADD, ACLREMOVE, ADDTOGROUP, REMOVEFROMGROUP
+                  );
+  public final static List<String> READ_COMMANDS
+          = Arrays.asList(READARRAY, NEWREAD, READARRAYONE);
   //
   public final static String HELP = "help";
   // admin commands 

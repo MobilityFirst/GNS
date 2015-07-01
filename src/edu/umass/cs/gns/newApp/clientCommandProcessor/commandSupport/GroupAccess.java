@@ -144,7 +144,7 @@ public class GroupAccess {
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message, 
           ClientRequestHandlerInterface handler) {
-    QueryResult result = handler.getIntercessor().sendQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(GROUP));
     } else {
@@ -163,7 +163,7 @@ public class GroupAccess {
    */
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    QueryResult result = handler.getIntercessor().sendQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUPS, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(GROUPS));
     } else {
@@ -231,7 +231,7 @@ public class GroupAccess {
   @Deprecated
   public static ResultValue retrieveGroupJoinRequests(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    QueryResult result = handler.getIntercessor().sendQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, JOINREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(JOINREQUESTS));
     } else {
@@ -251,7 +251,7 @@ public class GroupAccess {
   @Deprecated
   public static ResultValue retrieveGroupLeaveRequests(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    QueryResult result = handler.getIntercessor().sendQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, LEAVEREQUESTS, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new ResultValue(result.getArray(LEAVEREQUESTS));
     } else {

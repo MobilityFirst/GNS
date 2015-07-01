@@ -79,7 +79,7 @@ public class FieldAccess {
     String resultString;
     QueryResult result;
     if (field != null) {
-      result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
+      result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
     } else {
       result = handler.getIntercessor().sendMultiFieldQuery(guid, fields, reader, signature, message, ColumnFieldType.USER_JSON);
     }
@@ -123,8 +123,8 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    // Note the use of ColumnFieldType.LIST_STRING in the sendQuery call which implies old data format.
-    QueryResult result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -156,7 +156,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -184,7 +184,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -225,7 +225,7 @@ public class FieldAccess {
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {

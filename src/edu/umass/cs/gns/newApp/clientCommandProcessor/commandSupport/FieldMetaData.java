@@ -64,7 +64,7 @@ public class FieldMetaData {
    */
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
-    QueryResult result = handler.getIntercessor().sendQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
+    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, makeFieldMetaDataKey(type, key), reader, signature, message,
             ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
       return new HashSet<>(result.getArray(makeFieldMetaDataKey(type, key)).toStringSet());

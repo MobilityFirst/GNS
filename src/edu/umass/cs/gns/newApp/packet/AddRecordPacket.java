@@ -9,30 +9,27 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.nio.Stringifiable;
-
 import java.net.InetSocketAddress;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.util.Set;
 
 /**
  * This packet is sent by a local name server to a name server to add a name to GNS.
  *
  * The packet contains request IDs which are used by local name server, and the client (end-user).
  *
- * A client sending this packet sets an initial key/value pair associated with the name, and specifies
- * the TTL to be used for this name via the TTL field in this record.
+ * A client sending this packet sets an initial key/fieldValue pair associated with the name or
+ * the entire JSONObject associated with the name.
+ * 
  * A client must set the <code>requestID</code> field correctly to received a response.
  *
- * Once this packet reaches local name server, local name server sets the
+ * Once this packet reaches CCP, local name server sets the
  * <code>localNameServerID</code> and <code>CCPRequestID</code> fields before forwarding packet
  * to name server.
  *
  * When name server replies to the client after adding the record, it uses a different packet type:
- * <code>ConfirmUpdateLNSPacket</code>. But it uses fields in this packet in sending the reply.
+ * <code>ConfirmUpdatePacket</code>. But it uses fields in this packet in sending the reply.
  *
  * @param <NodeIDType>
  */
@@ -41,11 +38,12 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   private final static String REQUESTID = "reqID";
   private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
-  private final static String RECORDKEY = "recordkey";
-  private final static String VALUE = "value";
+  private final static String FIELD = "field";
+  private final static String FIELDVALUE = "fieldValue";
   private final static String SOURCE_ID = "sourceId";
-  private final static String TIME_TO_LIVE = "ttlAddress";
-  private final static String ACTIVE_NAMESERVERS = "actives";
+  private final static String VALUES = "values";
+  //private final static String TIME_TO_LIVE = "ttlAddress";
+  //private final static String ACTIVE_NAMESERVERS = "actives";
 
   /**
    * Unique identifier used by the entity making the initial request to confirm
@@ -63,34 +61,34 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   private final String name;
 
   /**
-   * The key of the value key pair. *
+   * The key of the fieldValue key pair. *
    */
-  private final String recordKey;
+  private final String field;
 
   /**
-   * the value *
+   * the fieldValue *
    */
-  private final ResultValue value;
+  private final ResultValue fieldValue;
 
-  /**
-   * Time interval (in seconds) that the record may be cached before it should be discarded
-   */
-  private final int ttl;
+  private final JSONObject values;
 
+//  /**
+//   * Time interval (in seconds) that the record may be cached before it should be discarded
+//   */
+//  private final int ttl;
   /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, null) that means go back the Intercessor otherwise
    * it came from another server.
    */
   private final NodeIDType sourceId;
 
+//  /**
+//   * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
+//   * replica set.
+//   */
+//  private Set<NodeIDType> activeNameServers = null;
   /**
-   * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
-   * replica set.
-   */
-  private Set<NodeIDType> activeNameServers = null;
-
-  /**
-   * Constructs a new AddRecordPacket with the given name, value, and TTL.
+   * Constructs a new AddRecordPacket with the given name, fieldValue, and TTL.
    * This constructor does not specify one fields in this packet: <code>CCPRequestID</code>.
    * <code>CCPRequestID</code> can be set by calling <code>setCCPRequestID</code>.
    *
@@ -100,23 +98,45 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    * @param sourceId
    * @param requestID Unique identifier used by the entity making the initial request to confirm
    * @param name Host/domain/device name
-   * @param recordKey The initial key that will be stored in the name record.
-   * @param value The inital value of the key that is specified.
+   * @param field The initial key that will be stored in the name record.
+   * @param fieldValue The inital fieldValue of the key that is specified.
    * @param lnsAddress
-   * @param ttl TTL of name record.
    */
-  public AddRecordPacket(NodeIDType sourceId, int requestID, String name, String recordKey, ResultValue value, InetSocketAddress lnsAddress, int ttl) {
+  public AddRecordPacket(NodeIDType sourceId, int requestID, String name, String field,
+          ResultValue fieldValue, InetSocketAddress lnsAddress) {
     super(null, lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
     this.sourceId = sourceId != null ? sourceId : null;
     this.requestID = requestID;
-    this.recordKey = recordKey;
     this.name = name;
-    this.value = value;
+    this.field = field;
+    this.fieldValue = fieldValue;
+    this.values = null;
     //this.localNameServerID = localNameServerID;
-    this.ttl = ttl;
+    //this.ttl = ttl;
     //this.nameServerID = null;
-    this.activeNameServers = null;
+    //this.activeNameServers = null;
+  }
+
+  /**
+   * Constructs a new AddRecordPacket with the given name and values.
+   * 
+   * @param sourceId
+   * @param requestID
+   * @param name
+   * @param values
+   * @param lnsAddress 
+   */
+  public AddRecordPacket(NodeIDType sourceId, int requestID, String name,
+          JSONObject values, InetSocketAddress lnsAddress) {
+    super(null, lnsAddress);
+    this.type = Packet.PacketType.ADD_RECORD;
+    this.sourceId = sourceId != null ? sourceId : null;
+    this.requestID = requestID;
+    this.name = name;
+    this.values = values;
+    this.field = null;
+    this.fieldValue = null;
   }
 
   /**
@@ -128,21 +148,26 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   public AddRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
-    if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD
-            && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
-            && Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM) {
+    if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD //&& Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
+            //&& Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM
+            ) {
       throw new JSONException("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
     this.requestID = json.getInt(REQUESTID);
     this.CCPRequestID = json.getInt(LNSREQID);
-    this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
-    this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
-    this.ttl = json.getInt(TIME_TO_LIVE);
-    this.activeNameServers = json.has(ACTIVE_NAMESERVERS)
-            ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
+    this.field = json.optString(FIELD, null);
+    if (json.has(FIELDVALUE)) {
+      this.fieldValue = JSONUtils.JSONArrayToResultValue(json.getJSONArray(FIELDVALUE));
+    } else {
+      this.fieldValue = null;
+    }
+    this.values = json.optJSONObject(VALUES);
+    //this.ttl = json.getInt(TIME_TO_LIVE);
+//    this.activeNameServers = json.has(ACTIVE_NAMESERVERS)
+//            ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
   }
 
   /**
@@ -159,13 +184,20 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     json.put(SOURCE_ID, sourceId);
     json.put(REQUESTID, getRequestID());
     json.put(LNSREQID, getCCPRequestID());
-    json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
-    json.put(VALUE, new JSONArray(getValue()));
-    json.put(TIME_TO_LIVE, getTTL());
-    if (getActiveNameServers() != null) {
-      json.put(ACTIVE_NAMESERVERS, getActiveNameServers());
+    if (field != null) {
+      json.put(FIELD, field);
     }
+    if (fieldValue != null) {
+      json.put(FIELDVALUE, new JSONArray(fieldValue));
+    }
+    if (values != null) {
+      json.put(VALUES, values);
+    }
+    //json.put(TIME_TO_LIVE, getTTL());
+//    if (getActiveNameServers() != null) {
+//      json.put(ACTIVE_NAMESERVERS, getActiveNameServers());
+//    }
     return json;
   }
 
@@ -198,42 +230,44 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   }
 
   /**
-   * @return the recordKey
+   * @return the field
    */
-  public String getRecordKey() {
-    return recordKey;
+  public String getField() {
+    return field;
   }
 
   /**
-   * @return the value
+   * @return the fieldValue
    */
-  public ResultValue getValue() {
-    return value;
+  public ResultValue getFieldValue() {
+    return fieldValue;
   }
 
-  /**
-   * @return the ttl
-   */
-  public int getTTL() {
-    return ttl;
-  }
-
+//  /**
+//   * @return the ttl
+//   */
+//  public int getTTL() {
+//    return ttl;
+//  }
   public NodeIDType getSourceId() {
     return sourceId;
   }
 
-  public Set<NodeIDType> getActiveNameServers() {
-    return activeNameServers;
-  }
-
-  public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
-    this.activeNameServers = activeNameServers;
-  }
-
+//  public Set<NodeIDType> getActiveNameServers() {
+//    return activeNameServers;
+//  }
+//
+//  public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
+//    this.activeNameServers = activeNameServers;
+//  }
   // For InterfaceRequest
   @Override
   public String getServiceName() {
     return this.name;
+  }
+
+  public JSONObject getValues() {
+    return values;
   }
 
 }

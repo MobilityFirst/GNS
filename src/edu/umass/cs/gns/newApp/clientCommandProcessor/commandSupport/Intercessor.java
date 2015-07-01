@@ -212,7 +212,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param returnFormat
    * @return
    */
-  public QueryResult sendQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  public QueryResult sendSingleFieldQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
   }
 
@@ -298,8 +298,12 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param field
    * @return
    */
-  public QueryResult sendQueryBypassingAuthentication(String name, String field) {
-    return sendQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
+  public QueryResult sendSingleFieldQueryBypassingAuthentication(String name, String field) {
+    return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
+  }
+  
+   public QueryResult sendFullQueryBypassingAuthentication(String name, String field) {
+    return sendSingleFieldQuery(name, GnsProtocolDefs.ALLFIELDS, null, null, null, ColumnFieldType.USER_JSON);
   }
 
   public NSResponseCode sendCreateRecord(String name, ValuesMap value) {
@@ -349,21 +353,19 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   }
 
   /**
-   * Sends an AddRecord packet to the Local Name Server with an initial value.
+   * Sends an AddRecord packet to the CCP with an initial value using a single field.
    *
    * @param name
    * @param field
    * @param value
    * @return
    */
-  @Deprecated
-  public NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
+  public NSResponseCode sendAddRecordWithSingleField(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
       GNS.getLogger().info("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<NodeIDType>(null, id, name, field, value,
-            nodeAddress, GNS.DEFAULT_TTL_SECONDS);
+    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<>(null, id, name, field, value, nodeAddress);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -382,20 +384,44 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     }
     return result;
   }
+  
+  public NSResponseCode sendFullAddRecord(String name, JSONObject value) {
+    int id = nextUpdateRequestID();
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Sending add: " + name + value);
+    }
+    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<>(null, id, name, value, nodeAddress);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
+    }
+    try {
+      JSONObject json = pkt.toJSONObject();
+      injectPacketIntoCCPQueue(json);
+
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    waitForUpdateConfirmationPacket(id);
+    NSResponseCode result = updateSuccessResult.get(id);
+    updateSuccessResult.remove(id);
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Add (" + id + "): " + name + "\n  Returning: " + result);
+    }
+    return result;
+  }
 
   /**
-   * Sends an RemoveRecord packet to the Local Name Server.
+   * Sends an RemoveRecord packet to the CPP.
    *
    * @param name
    * @return
    */
-  @Deprecated
   public NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<NodeIDType>(null, id, name,
+    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<>(null, id, name,
             nodeAddress);
     try {
       JSONObject json = pkt.toJSONObject();

@@ -82,7 +82,9 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP impl
   public RemoveRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
             json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
-    if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD && Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE) {
+    if (Packet.getPacketType(json) != Packet.PacketType.REMOVE_RECORD 
+            //&& Packet.getPacketType(json) != Packet.PacketType.RC_REMOVE
+            ) {
        throw new JSONException("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
     }
     this.type = Packet.getPacketType(json);

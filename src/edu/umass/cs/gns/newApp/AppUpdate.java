@@ -63,14 +63,14 @@ public class AppUpdate {
     // FIXME : handle ACL checks for full JSON user updates
     if (writer != null && field != null) { // writer will be null for internal system reads
       errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST,
-              app, updatePacket.getLnsAddress());
+              app, updatePacket.getCppAddress());
     }
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
       if (!doNotReplyToClient) {
         app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
-        //replica.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
+        //replica.getNioServer().sendToAddress(updatePacket.getCppAddress(), failConfirmPacket.toJSONObject());
 
       }
       return;
@@ -93,7 +93,7 @@ public class AppUpdate {
         ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         if (!doNotReplyToClient) {
           app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
-          //app.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failConfirmPacket.toJSONObject());
+          //app.getNioServer().sendToAddress(updatePacket.getCppAddress(), failConfirmPacket.toJSONObject());
 
         }
         return;
@@ -134,7 +134,7 @@ public class AppUpdate {
           }
           if (!doNotReplyToClient) {
             app.getClientCommandProcessor().injectPacketIntoCCPQueue(failPacket.toJSONObject());
-            //app.getNioServer().sendToAddress(updatePacket.getLnsAddress(), failPacket.toJSONObject());
+            //app.getNioServer().sendToAddress(updatePacket.getCppAddress(), failPacket.toJSONObject());
           }
         }
 
@@ -143,10 +143,6 @@ public class AppUpdate {
           GNS.getLogger().info("Update applied" + updatePacket);
         }
 
-        // FIXME: Abhigyan: commented this because we are using lns votes for this calculation.
-        // this should be uncommented once active replica starts to send read/write statistics for name.
-//        nameRecord.incrementUpdateRequest();
-        //
         // If this node proposed this update send the confirmation back to the client (CCP).
         if (updatePacket.getNameServerID().equals(app.getNodeID())) {
           ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM,
@@ -155,7 +151,7 @@ public class AppUpdate {
 
           if (!doNotReplyToClient) {
             app.getClientCommandProcessor().injectPacketIntoCCPQueue(confirmPacket.toJSONObject());
-            //app.getNioServer().sendToAddress(updatePacket.getLnsAddress(), confirmPacket.toJSONObject());
+            //app.getNioServer().sendToAddress(updatePacket.getCppAddress(), confirmPacket.toJSONObject());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS Sent confirmation to CCP. Sent packet: " + confirmPacket.toJSONObject());
             }
