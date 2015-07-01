@@ -1,10 +1,12 @@
 package edu.umass.cs.gns.newApp.packet;
 
-import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
 
+import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -12,14 +14,14 @@ import org.json.JSONObject;
  * Packet format sent from a client and handled by a local name server.
  *
  */
-public class CommandPacket extends BasicPacket implements InterfaceRequest {
+public class CommandPacket extends BasicPacket implements InterfaceReplicableRequest {
 
   private final static String CLIENTREQUESTID = "reqID";
   private final static String LNSREQUESTID = "LNSreqID";
   private final static String SENDERADDRESS = MessageNIOTransport.DEFAULT_IP_FIELD;
   private final static String SENDERPORT = MessageNIOTransport.DEFAULT_PORT_FIELD;
   private final static String COMMAND = "command";
-  
+
   public final static String BOGUS_SERVICE_NAME = "unknown";
 
   /**
@@ -43,6 +45,11 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
    * Almost always has a GUID field or NAME (for HRN records) field.
    */
   private final JSONObject command;
+  /**
+   * The stop requests needsCoordination() method must return true by default.
+   */
+  private boolean needsCoordination = true;
+  private boolean needsCoordinationExplicitlySet = false;
 
   /**
    *
@@ -62,9 +69,9 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
     this.type = Packet.getPacketType(json);
     this.clientRequestId = json.getInt(CLIENTREQUESTID);
     if (json.has(LNSREQUESTID)) {
-     this.LNSRequestId = json.getInt(LNSREQUESTID);
+      this.LNSRequestId = json.getInt(LNSREQUESTID);
     } else {
-     this.LNSRequestId = -1;
+      this.LNSRequestId = -1;
     }
     this.senderAddress = json.getString(SENDERADDRESS);
     this.senderPort = json.getInt(SENDERPORT);
@@ -94,7 +101,7 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
   public int getClientRequestId() {
     return clientRequestId;
   }
-  
+
   public int getLNSRequestId() {
     return LNSRequestId;
   }
@@ -131,7 +138,7 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
     }
     return BOGUS_SERVICE_NAME;
   }
-  
+
   public String getCommandName() {
     try {
       if (command != null) {
@@ -143,5 +150,23 @@ public class CommandPacket extends BasicPacket implements InterfaceRequest {
       // Just ignore it
     }
     return "unknown";
+  }
+
+  @Override
+  public boolean needsCoordination() {
+    if (needsCoordinationExplicitlySet) {
+      return needsCoordination;
+    } else {
+      // Cache it.
+      needsCoordinationExplicitlySet = true;
+      needsCoordination = GnsProtocolDefs.UPDATE_COMMANDS.contains(getCommandName());
+      return needsCoordination;
+    }
+  }
+
+  @Override
+  public void setNeedsCoordination(boolean needsCoordination) {
+    needsCoordinationExplicitlySet = true;
+    this.needsCoordination = needsCoordination;
   }
 }

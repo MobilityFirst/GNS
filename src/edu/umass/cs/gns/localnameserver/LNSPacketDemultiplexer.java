@@ -84,7 +84,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     return isPacketTypeFound;
   }
 
-  private static boolean disableRequestActives = true;
+  private static boolean disableRequestActives = false;
+  protected static boolean useCommandRetransmitter = false;
 
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
 
@@ -110,9 +111,13 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
           GNS.getLogger().info("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
         }
       }
-      //handler.sendToClosestServer(actives, packet.toJSONObject());
-      handler.getProtocolExecutor().schedule(new CommandRetransmitter(requestId, packet.toJSONObject(), 
-              actives, handler));
+      if (!useCommandRetransmitter) {
+        handler.sendToClosestServer(actives, packet.toJSONObject());
+      } else {
+        handler.getProtocolExecutor().schedule(new CommandRetransmitter(requestId, packet.toJSONObject(),
+                actives, handler));
+      }
+
     } else {
       handler.getProtocolExecutor().schedule(new RequestActives(requestInfo, handler));
     }
@@ -165,6 +170,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
             GNS.getLogger().info("ACTIVE ADDRESS HOST: " + address.getHostString());
           }
         }
+        // Update the cache so that request actives task will now complete
         handler.updateCacheEntry(requestActives.getServiceName(), requestActives.getActives());
         // also update the set of the nodes the ping manager is using
         handler.getPingManager().addActiveReplicas(requestActives.getActives());

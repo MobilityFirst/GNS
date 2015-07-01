@@ -210,10 +210,10 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer);
         case ADD_CONFIRM:
           return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket<String>(json, unstringer);
-        case ACTIVE_ADD:
-          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer); // on an add request replica controller sends to active replica
-        case ACTIVE_ADD_CONFIRM:
-          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer); // after adding name, active replica confirms to replica controller
+//        case ACTIVE_ADD:
+//          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer); // on an add request replica controller sends to active replica
+//        case ACTIVE_ADD_CONFIRM:
+//          return new edu.umass.cs.gns.newApp.packet.AddRecordPacket<String>(json, unstringer); // after adding name, active replica confirms to replica controller
         // new client
         case COMMAND:
           return new edu.umass.cs.gns.newApp.packet.CommandPacket(json);
@@ -224,11 +224,9 @@ public class Packet {
           return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket<String>(json, unstringer);
         case REMOVE_CONFIRM:
           return new edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket<String>(json, unstringer);
-        case ACTIVE_REMOVE:
-          return null; // on a remove request, replica controller sends to active replica
-//        case ACTIVE_REMOVE_CONFIRM:
-//          return new edu.umass.cs.gns.newApp.packet.deprecated.OldActiveSetStopPacket<String>(json, unstringer); // after removing name, active replica confirms to replica controller
-        case RC_REMOVE:
+//        case ACTIVE_REMOVE:
+//          return null; // on a remove request, replica controller sends to active replica
+       case RC_REMOVE:
           return new edu.umass.cs.gns.newApp.packet.RemoveRecordPacket<String>(json, unstringer);
         // Update
         case UPDATE:

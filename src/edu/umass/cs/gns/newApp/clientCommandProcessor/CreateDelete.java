@@ -44,7 +44,7 @@ public class CreateDelete {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       // do normal add which actually involves converting this into a CreateServiceName packet
       AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
-      handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getLNSRequestID());
+      handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getCCPRequestID());
       ValuesMap valuesMap = new ValuesMap();
       valuesMap.putAsArray(addRecordPacket.getRecordKey(), addRecordPacket.getValue());
       sendPacketWithRetransmission(addRecordPacket.getName(),
@@ -66,7 +66,7 @@ public class CreateDelete {
   public static void handleRemovePacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
-      handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getLNSRequestID());
+      handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getCCPRequestID());
       sendPacketWithRetransmission(removeRecordPacket.getName(),
               new DeleteServiceName(null, removeRecordPacket.getName(), 0),
               handler);
@@ -86,7 +86,7 @@ public class CreateDelete {
     UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
     handler.addRequestInfo(lnsReqID, info);
     // not sure why this isn't done like this above
-    addRecordPacket.setLNSRequestID(lnsReqID);
+    addRecordPacket.setCCPRequestID(lnsReqID);
     return addRecordPacket;
   }
 
@@ -96,7 +96,7 @@ public class CreateDelete {
     UpdateInfo info = new UpdateInfo(lnsReqID, removeRecordPacket.getName(), null, removeRecordPacket, handler);
     handler.addRequestInfo(lnsReqID, info);
     // not sure why this isn't done like this above
-    removeRecordPacket.setLNSRequestID(lnsReqID);
+    removeRecordPacket.setCCPRequestID(lnsReqID);
     return removeRecordPacket;
   }
 

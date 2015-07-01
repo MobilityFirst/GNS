@@ -40,6 +40,7 @@ public class AddRemove {
    * @throws JSONException
    * @throws UnknownHostException
    */
+  @Deprecated
   public static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
@@ -62,6 +63,7 @@ public class AddRemove {
    * @throws NoSuchAlgorithmException
    * @throws UnsupportedEncodingException
    */
+  @Deprecated
   public static void handlePacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
@@ -85,26 +87,20 @@ public class AddRemove {
    */
   public static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
-    UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getLNSRequestID());
+    UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getCCPRequestID());
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Confirm add packet for " + addInfo.getName() + ": " + confirmAddPacket.toString());
     }
     if (addInfo == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().warning("Add confirmation return info not found.: lns request id = "
-                + confirmAddPacket.getLNSRequestID());
+                + confirmAddPacket.getCCPRequestID());
       }
     } else {
       // update our cache BEFORE we confirm
       handler.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
       addInfo.setSuccess(confirmAddPacket.isSuccess());
       addInfo.setFinishTime();
-//      if (confirmAddPacket.isSuccess()) {
-//        addInfo.addEventCode(LNSEventCode.SUCCESS);
-//      } else {
-//        addInfo.addEventCode(LNSEventCode.OTHER_ERROR);
-//      }
-      //GNS.getStatLogger().info(addInfo.getLogString());
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket, handler);
     }
   }
@@ -114,26 +110,19 @@ public class AddRemove {
    */
   public static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
     ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
-    UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getLNSRequestID());
+    UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getCCPRequestID());
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Confirm remove packet for " + removeInfo.getName() + ": " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     }
     if (removeInfo == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().warning("Remove confirmation return info not found.: lns request id = " + confirmRemovePacket.getLNSRequestID());
+        GNS.getLogger().warning("Remove confirmation return info not found.: lns request id = " + confirmRemovePacket.getCCPRequestID());
       }
     } else {
       // update our cache BEFORE we confirm
       handler.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
       removeInfo.setSuccess(confirmRemovePacket.isSuccess());
       removeInfo.setFinishTime();
-//      if (confirmRemovePacket.isSuccess()) {
-//        removeInfo.addEventCode(LNSEventCode.SUCCESS);
-//      } else {
-//        removeInfo.addEventCode(LNSEventCode.OTHER_ERROR);
-//      }
-//      String stats = removeInfo.getLogString();
-//      GNS.getStatLogger().fine(stats);
       Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket, handler);
     }
   }

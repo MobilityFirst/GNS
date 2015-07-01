@@ -41,7 +41,8 @@ public class CCPProtocolTask<NodeIDType> implements
   private static final ReconfigurationPacket.PacketType[] types = {
     ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME,
     ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
-    ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS};
+   // ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS
+  };
 
   private final String key;
   private final EnhancedClientRequestHandlerInterface handler;
@@ -88,53 +89,53 @@ public class CCPProtocolTask<NodeIDType> implements
       case DELETE_SERVICE_NAME:
         mtask = handleDelete((DeleteServiceName) packet);
         break;
-      case REQUEST_ACTIVE_REPLICAS:
-        mtask = handleRequestActives((RequestActiveReplicas) packet);
-        break;
+//      case REQUEST_ACTIVE_REPLICAS:
+//        mtask = handleRequestActives((RequestActiveReplicas) packet);
+//        break;
       default:
         throw new RuntimeException("Unrecognizable message");
     }
     return mtask != null ? mtask.toArray() : null;
   }
 
-  private GenericMessagingTask handleRequestActives(RequestActiveReplicas packet) {
-    Integer lnsRequestID = handler.removeActivesRequestNameToIDMapping(packet.getServiceName());
-    if (lnsRequestID != null) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% RequestActives for " + packet.getServiceName() + " returns " + packet.getActives());
-      }
-    }
-    // The new RequestActiveReplicas returns InetSocketAddress, but the old LNS code
-    // assumes they will be NodeIDs.
-
-    // For now we're going to bridge the gap by createing an old-style RequestActivesPacket 
-    // with node ids that we look up from the nodeConfig and then invoking the old handler
-    // in PendingTasks.
-    //From Arun on 2/27/15:
-    //The LNS can maintain a NodeConfig but can not assume that it will be always be in sync with the
-    // system NodeConfig; you need a versioning mechanism to explicitly refresh to the most recent list 
-    // of reconfigurators irrespective of whether they are node IDs or just socket addresses. 
-    // Going forward, I expect contacting the reconfiguration service simply using a DNS name and 
-    // relying upon a simple anycast scheme to get to at least one legit reconfigurator that would 
-    // internally resolve client-to-RC requests. This will be a simpler and cleaner design than having
-    // external entities maintain NodeConfig.
-    RequestActivesPacket newPacket = new RequestActivesPacket(packet.getServiceName(), null, lnsRequestID, null);
-    Set<NodeIDType> actives = new HashSet<NodeIDType>();
-    for (InetSocketAddress host : packet.getActives()) {
-      NodeIDType nodeID = (NodeIDType) handler.getGnsNodeConfig().getActiveReplicaWhoseHostIs(host);
-      if (nodeID != null) {
-        actives.add(nodeID);
-      }
-    }
-    newPacket.setActiveNameServers(actives);
-    // then we'll have the LNS process this old-style packet
-    try {
-      PendingTasks.handleActivesRequestReply(newPacket.toJSONObject(), handler);
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Unable to process ActivesRequestReply for " + packet.getServiceName() + ":" + e);
-    }
-    return null;
-  }
+//  private GenericMessagingTask handleRequestActives(RequestActiveReplicas packet) {
+//    Integer lnsRequestID = handler.removeActivesRequestNameToIDMapping(packet.getServiceName());
+//    if (lnsRequestID != null) {
+//      if (handler.getParameters().isDebugMode()) {
+//        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% RequestActives for " + packet.getServiceName() + " returns " + packet.getActives());
+//      }
+//    }
+//    // The new RequestActiveReplicas returns InetSocketAddress, but the old LNS code
+//    // assumes they will be NodeIDs.
+//
+//    // For now we're going to bridge the gap by createing an old-style RequestActivesPacket 
+//    // with node ids that we look up from the nodeConfig and then invoking the old handler
+//    // in PendingTasks.
+//    //From Arun on 2/27/15:
+//    //The LNS can maintain a NodeConfig but can not assume that it will be always be in sync with the
+//    // system NodeConfig; you need a versioning mechanism to explicitly refresh to the most recent list 
+//    // of reconfigurators irrespective of whether they are node IDs or just socket addresses. 
+//    // Going forward, I expect contacting the reconfiguration service simply using a DNS name and 
+//    // relying upon a simple anycast scheme to get to at least one legit reconfigurator that would 
+//    // internally resolve client-to-RC requests. This will be a simpler and cleaner design than having
+//    // external entities maintain NodeConfig.
+//    RequestActivesPacket newPacket = new RequestActivesPacket(packet.getServiceName(), null, lnsRequestID, null);
+//    Set<NodeIDType> actives = new HashSet<NodeIDType>();
+//    for (InetSocketAddress host : packet.getActives()) {
+//      NodeIDType nodeID = (NodeIDType) handler.getGnsNodeConfig().getActiveReplicaWhoseHostIs(host);
+//      if (nodeID != null) {
+//        actives.add(nodeID);
+//      }
+//    }
+//    newPacket.setActiveNameServers(actives);
+//    // then we'll have the LNS process this old-style packet
+//    try {
+//      PendingTasks.handleActivesRequestReply(newPacket.toJSONObject(), handler);
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("Unable to process ActivesRequestReply for " + packet.getServiceName() + ":" + e);
+//    }
+//    return null;
+//  }
 
   private GenericMessagingTask handleCreate(CreateServiceName packet) {
     Integer lnsRequestID = handler.removeCreateRequestNameToIDMapping(packet.getServiceName());

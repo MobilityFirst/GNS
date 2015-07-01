@@ -30,6 +30,9 @@ import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
+import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.utils.DelayProfiler;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -61,6 +64,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   private final Object monitor = new Object();
   /* Used by update confirmation */
   private final Object monitorUpdate = new Object();
+  private final Object monitorCreate = new Object();
+  private final Object monitorDelete = new Object();
   /**
    * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
    * multiple value returns.
@@ -73,6 +78,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   // Instrumentation
   private final ConcurrentMap<Integer, Long> queryTimeStamp;
 
+  private final ConcurrentMap<String, NSResponseCode> createSuccessResult;
+  private final ConcurrentMap<String, NSResponseCode> deleteSuccessResult;
+
   public boolean debuggingEnabled = AppReconfigurableNodeOptions.debuggingEnabled;
 
   {
@@ -80,6 +88,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
     queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
     updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
+    createSuccessResult = new ConcurrentHashMap<String, NSResponseCode>(10, 0.75f, 3);
+    deleteSuccessResult = new ConcurrentHashMap<String, NSResponseCode>(10, 0.75f, 3);
   }
 
   private AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer;
@@ -108,57 +118,77 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   @Override
   public void handleIncomingPacket(JSONObject json) {
     try {
-      switch (getPacketType(json)) {
-        case UPDATE_CONFIRM:
-        case ADD_CONFIRM:
-        case REMOVE_CONFIRM:
-          ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json,
-                  nodeConfig);
-          int id = packet.getRequestID();
-          //Packet is a response and does not have a response error
-          if (debuggingEnabled) {
-            GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update/Add/Remove (" + id + ") ");
-          }
-          synchronized (monitorUpdate) {
-            updateSuccessResult.put(id, packet.getResponseCode());
-            monitorUpdate.notifyAll();
-          }
-          break;
-        case DNS:
-          DNSPacket<NodeIDType> dnsResponsePacket = new DNSPacket<NodeIDType>(json, nodeConfig);
-          id = dnsResponsePacket.getQueryId();
-          if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
+      if (ReconfigurationPacket.isReconfigurationPacket(json)) {
+        switch (ReconfigurationPacket.getReconfigurationPacketType(json)) {
+          case CREATE_SERVICE_NAME:
+            CreateServiceName csnPacket = new CreateServiceName(json, nodeConfig);
+            createSuccessResult.put(csnPacket.getServiceName(),
+                    csnPacket.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR);
+            monitorCreate.notifyAll();
+            break;
+          case DELETE_SERVICE_NAME:
+            DeleteServiceName dsnPacket = new DeleteServiceName(json, nodeConfig);
+            synchronized (monitorDelete) {
+              deleteSuccessResult.put(dsnPacket.getServiceName(),
+                      dsnPacket.isFailed() ? NSResponseCode.ERROR : NSResponseCode.NO_ERROR);
+              monitorDelete.notifyAll();
+            }
+          default:
+            break;
+        }
+      } else {
+        switch (getPacketType(json)) {
+          case UPDATE_CONFIRM:
+          case ADD_CONFIRM:
+          case REMOVE_CONFIRM:
+            ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json,
+                    nodeConfig);
+            int id = packet.getRequestID();
             //Packet is a response and does not have a response error
             if (debuggingEnabled) {
-              GNS.getLogger().fine("Query (" + id + "): "
-                      + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
-                      + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
+              GNS.getLogger().fine((packet.isSuccess() ? "Successful" : "Error") + " Update/Add/Remove (" + id + ") ");
             }
-            synchronized (monitor) {
-              queryResultMap.put(id,
-                      new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(),
-                              dnsResponsePacket.getResponder(),
-                              dnsResponsePacket.getLookupTime()));
-              monitor.notifyAll();
+            synchronized (monitorUpdate) {
+              updateSuccessResult.put(id, packet.getResponseCode());
+              monitorUpdate.notifyAll();
             }
-          } else {
-            if (debuggingEnabled) {
-              GNS.getLogger().info("Intercessor: Query (" + id + "): "
-                      + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
-                      + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
+            break;
+          case DNS:
+            DNSPacket<NodeIDType> dnsResponsePacket = new DNSPacket<NodeIDType>(json, nodeConfig);
+            id = dnsResponsePacket.getQueryId();
+            if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
+              //Packet is a response and does not have a response error
+              if (debuggingEnabled) {
+                GNS.getLogger().fine("Query (" + id + "): "
+                        + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
+                        + " Successful Received: " + dnsResponsePacket.toJSONObject().toString());
+              }
+              synchronized (monitor) {
+                queryResultMap.put(id,
+                        new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(),
+                                dnsResponsePacket.getResponder(),
+                                dnsResponsePacket.getLookupTime()));
+                monitor.notifyAll();
+              }
+            } else {
+              if (debuggingEnabled) {
+                GNS.getLogger().info("Intercessor: Query (" + id + "): "
+                        + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
+                        + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());// + nameRecordPacket.toJSONObject().toString());
+              }
+              synchronized (monitor) {
+                queryResultMap.put(id,
+                        new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(),
+                                dnsResponsePacket.getResponder(),
+                                dnsResponsePacket.getLookupTime()));
+                monitor.notifyAll();
+              }
             }
-            synchronized (monitor) {
-              queryResultMap.put(id,
-                      new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(),
-                              dnsResponsePacket.getResponder(),
-                              dnsResponsePacket.getLookupTime()));
-              monitor.notifyAll();
-            }
-          }
-          break;
-        case SELECT_RESPONSE:
-          SelectHandler.processSelectResponsePackets(json, nodeConfig);
-          break;
+            break;
+          case SELECT_RESPONSE:
+            SelectHandler.processSelectResponsePackets(json, nodeConfig);
+            break;
+        }
       }
     } catch (JSONException e) {
       GNS.getLogger().severe("JSON error: " + e);
@@ -258,7 +288,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     result.setRoundTripTime(rtt);
     DelayProfiler.updateDelay("sendQueryInternal", startTime);
     return result;
-    
+
   }
 
   /**
@@ -272,6 +302,52 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     return sendQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
 
+  public NSResponseCode sendCreateRecord(String name, ValuesMap value) {
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Sending create: " + name + value);
+    }
+    CreateServiceName pkt = new CreateServiceName(null, name, 0, value.toString());
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
+    }
+    try {
+      JSONObject json = pkt.toJSONObject();
+      injectPacketIntoCCPQueue(json);
+
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    waitForCreateConfirmationPacket(name);
+    NSResponseCode result = createSuccessResult.remove(name);
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Create (" + name + "): " + name + "\n  Returning: " + result);
+    }
+    return result;
+  }
+
+  public NSResponseCode sendDeleteRecord(String name) {
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Sending delete: " + name);
+    }
+    DeleteServiceName pkt = new DeleteServiceName(null, name, 0);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
+    }
+    try {
+      JSONObject json = pkt.toJSONObject();
+      injectPacketIntoCCPQueue(json);
+
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    waitForDeleteConfirmationPacket(name);
+    NSResponseCode result = deleteSuccessResult.remove(name);
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Delete (" + name + "): " + name + "\n  Returning: " + result);
+    }
+    return result;
+  }
+
   /**
    * Sends an AddRecord packet to the Local Name Server with an initial value.
    *
@@ -280,6 +356,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param value
    * @return
    */
+  @Deprecated
   public NSResponseCode sendAddRecord(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
@@ -312,6 +389,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param name
    * @return
    */
+  @Deprecated
   public NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
@@ -503,6 +581,30 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       }
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);
+    }
+  }
+
+  private void waitForCreateConfirmationPacket(String name) {
+    try {
+      synchronized (monitorCreate) {
+        while (!createSuccessResult.containsKey(name)) {
+          monitorCreate.wait();
+        }
+      }
+    } catch (InterruptedException x) {
+      GNS.getLogger().severe("Wait for create success confirmation packet was interrupted " + x);
+    }
+  }
+
+  private void waitForDeleteConfirmationPacket(String name) {
+    try {
+      synchronized (monitorDelete) {
+        while (!deleteSuccessResult.containsKey(name)) {
+          monitorDelete.wait();
+        }
+      }
+    } catch (InterruptedException x) {
+      GNS.getLogger().severe("Wait for delete success confirmation packet was interrupted " + x);
     }
   }
 

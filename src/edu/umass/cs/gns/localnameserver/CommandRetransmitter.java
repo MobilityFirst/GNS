@@ -21,7 +21,7 @@ import org.json.JSONObject;
 
 public class CommandRetransmitter implements SchedulableProtocolTask<String, PacketType, String> {
 
-  private final long RESTART_PERIOD = 5000;
+  private final long RESTART_PERIOD = 10000;
 
   private final int requestId;
   private final RequestHandlerInterface handler;

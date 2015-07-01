@@ -35,7 +35,6 @@ public class AppUpdate {
    *
    * @param updatePacket
    * @param app
-   * @param noCoordinationState
    * @param doNotReplyToClient
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
@@ -49,8 +48,9 @@ public class AppUpdate {
           boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info("Processing UPDATE with " + " recovery= " + doNotReplyToClient + " packet: " + updatePacket);
-
+      GNS.getLogger().info("Processing UPDATE with " + " "
+              + "doNotReplyToClient= " + doNotReplyToClient 
+              + " packet: " + updatePacket);
     }
 
     // First we do signature and ACL checks

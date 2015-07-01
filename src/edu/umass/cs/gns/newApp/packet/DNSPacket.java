@@ -31,7 +31,7 @@ import java.util.Set;
  *
  * @param <NodeIDType>
  */
-public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndLnsAddress implements InterfaceRequest {
+public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAddress implements InterfaceRequest {
 
   private final static String HEADER = "dns_header";
   private final static String GUID = "dns_guid";

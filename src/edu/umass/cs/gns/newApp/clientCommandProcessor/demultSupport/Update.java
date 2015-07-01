@@ -74,7 +74,7 @@ public class Update {
     }
     if (confirmPkt.isSuccess()) {
       // we are removing request info as processing for this request is complete
-      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getLNSRequestID());
+      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getCCPRequestID());
       // if update info isn't available, we cant do anything. probably response is overly delayed and an error response
       // has already been sent to client.
       if (updateInfo == null) {
@@ -96,7 +96,7 @@ public class Update {
 //      }
     } else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)) {
       // NOTE: we are NOT removing request info as processing for this request is still ongoing
-      UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(confirmPkt.getLNSRequestID());
+      UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(confirmPkt.getCCPRequestID());
       if (updateInfo == null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
@@ -108,7 +108,7 @@ public class Update {
       handleInvalidActiveError(updateInfo, handler);
     } else { // In all other types of errors, we immediately send response to client.
       // we are removing request info as processing for this request is complete
-      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getLNSRequestID());
+      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getCCPRequestID());
       if (updateInfo == null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);

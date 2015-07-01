@@ -10,11 +10,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Provides a packet with signature info and an LNS address field.
+ * Provides a packet with signature info and an CCP address field.
  *
  * @author westy
  */
-public abstract class BasicPacketWithSignatureInfoAndLnsAddress extends BasicPacketWithCCPAddress implements PacketInterface, ExtensiblePacketInterface {
+public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPacketWithCCPAddress implements PacketInterface, ExtensiblePacketInterface {
 
   public final static String ACCESSOR = "si_accessor";
   public final static String SIGNATURE = "si_signature";
@@ -27,22 +27,22 @@ public abstract class BasicPacketWithSignatureInfoAndLnsAddress extends BasicPac
   /**
    * Construct this guy with the address, but no signature info.
    *
-   * @param lnsAddress
+   * @param ccpAddress
    */
-  public BasicPacketWithSignatureInfoAndLnsAddress(InetSocketAddress lnsAddress) {
-    this(lnsAddress, null, null, null);
+  public BasicPacketWithSignatureInfoAndCCPAddress(InetSocketAddress ccpAddress) {
+    this(ccpAddress, null, null, null);
   }
 
   /**
    * Construct this with the address and all the signature info.
    *
-   * @param lnsAddress
+   * @param ccpAddress
    * @param accessor
    * @param signature
    * @param message
    */
-  public BasicPacketWithSignatureInfoAndLnsAddress(InetSocketAddress lnsAddress, String accessor, String signature, String message) {
-    super(lnsAddress);
+  public BasicPacketWithSignatureInfoAndCCPAddress(InetSocketAddress ccpAddress, String accessor, String signature, String message) {
+    super(ccpAddress);
     this.accessor = accessor;
     this.signature = signature;
     this.message = message;
@@ -57,7 +57,7 @@ public abstract class BasicPacketWithSignatureInfoAndLnsAddress extends BasicPac
    * @param signature
    * @param message
    */
-  public BasicPacketWithSignatureInfoAndLnsAddress(String address, Integer port, String accessor, String signature, String message) {
+  public BasicPacketWithSignatureInfoAndCCPAddress(String address, Integer port, String accessor, String signature, String message) {
     this(address != null && port != INVALID_PORT ? new InetSocketAddress(address, port) : null,
             accessor, signature, message);
   }

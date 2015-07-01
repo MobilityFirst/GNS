@@ -170,12 +170,12 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
     switch (packet.getType()) {
       case ADD_RECORD:
         AddRecordPacket addRecordPacket = (AddRecordPacket) packet;
-        addRecordPacket.setLNSRequestID(requestID);
+        addRecordPacket.setCCPRequestID(requestID);
         addRecordPacket.setCcpAddress(handler.getNodeAddress());
         break;
       case REMOVE_RECORD:
         RemoveRecordPacket removeRecordPacket = (RemoveRecordPacket) packet;
-        removeRecordPacket.setLNSRequestID(requestID);
+        removeRecordPacket.setCCPRequestID(requestID);
         removeRecordPacket.setCcpAddress(handler.getNodeAddress());
         break;
     }

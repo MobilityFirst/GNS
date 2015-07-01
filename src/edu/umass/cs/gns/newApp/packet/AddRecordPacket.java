@@ -28,7 +28,7 @@ import java.util.Set;
  * A client must set the <code>requestID</code> field correctly to received a response.
  *
  * Once this packet reaches local name server, local name server sets the
- * <code>localNameServerID</code> and <code>LNSRequestID</code> fields before forwarding packet
+ * <code>localNameServerID</code> and <code>CCPRequestID</code> fields before forwarding packet
  * to name server.
  *
  * When name server replies to the client after adding the record, it uses a different packet type:
@@ -53,9 +53,9 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   private int requestID;
 
   /**
-   * The ID the LNS uses to for bookkeeping
+   * The ID the CCP uses to for bookkeeping
    */
-  private int LNSRequestID;
+  private int CCPRequestID;
 
   /**
    * Host/domain/device name *
@@ -77,14 +77,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    */
   private final int ttl;
 
-//  /**
-//   * Id of local nameserver handling this request *
-//   */
-//  private int localNameServerID;
-//  /**
-//   * ID of name server receiving the message.
-//   */
-//  private NodeIDType nameServerID;
   /**
    * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, null) that means go back the Intercessor otherwise
    * it came from another server.
@@ -99,8 +91,8 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
 
   /**
    * Constructs a new AddRecordPacket with the given name, value, and TTL.
-   * This constructor does not specify one fields in this packet: <code>LNSRequestID</code>.
-   * <code>LNSRequestID</code> can be set by calling <code>setLNSRequestID</code>.
+   * This constructor does not specify one fields in this packet: <code>CCPRequestID</code>.
+   * <code>CCPRequestID</code> can be set by calling <code>setCCPRequestID</code>.
    *
    * We can also change the <code>localNameServerID</code> field in this packet by calling
    * <code>setLocalNameServerID</code>.
@@ -144,7 +136,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
     this.requestID = json.getInt(REQUESTID);
-    this.LNSRequestID = json.getInt(LNSREQID);
+    this.CCPRequestID = json.getInt(LNSREQID);
     this.recordKey = json.getString(RECORDKEY);
     this.name = json.getString(NAME);
     this.value = JSONUtils.JSONArrayToResultValue(json.getJSONArray(VALUE));
@@ -166,7 +158,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     super.addToJSONObject(json);
     json.put(SOURCE_ID, sourceId);
     json.put(REQUESTID, getRequestID());
-    json.put(LNSREQID, getLNSRequestID());
+    json.put(LNSREQID, getCCPRequestID());
     json.put(RECORDKEY, getRecordKey());
     json.put(NAME, getName());
     json.put(VALUE, new JSONArray(getValue()));
@@ -185,17 +177,17 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     this.requestID = requestID;
   }
 
-  public int getLNSRequestID() {
-    return LNSRequestID;
+  public int getCCPRequestID() {
+    return CCPRequestID;
   }
 
   /**
    * LNS uses this method to set the ID it will use for bookkeeping about this request.
    *
-   * @param LNSRequestID
+   * @param CCPRequestID
    */
-  public void setLNSRequestID(int LNSRequestID) {
-    this.LNSRequestID = LNSRequestID;
+  public void setCCPRequestID(int CCPRequestID) {
+    this.CCPRequestID = CCPRequestID;
   }
 
   /**

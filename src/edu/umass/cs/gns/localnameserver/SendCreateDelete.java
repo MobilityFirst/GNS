@@ -14,14 +14,13 @@ import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
 
-public class RequestActives implements SchedulableProtocolTask<String, PacketType, String> {
+public class SendCreateDelete implements SchedulableProtocolTask<String, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
 
@@ -31,9 +30,9 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
   private final List<InetSocketAddress> reconfigurators;
   private int requestCount = 0; // number of times we have requested
 
-  public static final Logger log = Logger.getLogger(RequestActives.class.getName());
+  public static final Logger log = Logger.getLogger(SendCreateDelete.class.getName());
 
-  public RequestActives(LNSRequestInfo lnsRequestInfo,
+  public SendCreateDelete(LNSRequestInfo lnsRequestInfo,
           RequestHandlerInterface handler) {
 
     this.lnsRequestInfo = lnsRequestInfo;
@@ -48,20 +47,16 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
   @Override
   public GenericMessagingTask[] restart() {
     if (this.amObviated()) {
-      try {
-        // got our actives and they're in the cache so now send out the command
-        if (LNSPacketDemultiplexer.useCommandRetransmitter) {
-          handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
-                  lnsRequestInfo.getCommandPacket().toJSONObject(),
-                  handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-                  handler));
-        } else {
-          handler.sendToClosestServer(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-                  lnsRequestInfo.getCommandPacket().toJSONObject());
-        }
-      } catch (JSONException | IOException e) {
-        log.severe(this.refreshKey() + " unable to send command packet " + e);
-      }
+      //try {
+//        handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
+//                lnsRequestInfo.getCommandPacket().toJSONObject(),
+//                handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+//                handler));
+//       handler.sendToClosestServer(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+//                lnsRequestInfo.getCommandPacket().toJSONObject());
+//      } catch (JSONException e) {
+//        log.severe(this.refreshKey() + " unable to send command packet " + e);
+//      }
       ProtocolExecutor.cancel(this);
     }
     if (handler.isDebugMode()) {
@@ -78,8 +73,8 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
         log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " No answer, using defaults");
       }
       // no answer so we stuff in the default choices and return
-      handler.updateCacheEntry(lnsRequestInfo.getServiceName(),
-              handler.getNodeConfig().getReplicatedActives(lnsRequestInfo.getServiceName()));
+//      handler.updateCacheEntry(lnsRequestInfo.getServiceName(),
+//              handler.getNodeConfig().getReplicatedActives(lnsRequestInfo.getServiceName()));
       return true;
     } else {
       return false;

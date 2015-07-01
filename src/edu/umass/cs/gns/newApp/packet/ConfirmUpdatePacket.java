@@ -5,11 +5,9 @@
  */
 package edu.umass.cs.gns.newApp.packet;
 
-//import edu.umass.cs.gns.packet.Packet.PacketType;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.nio.Stringifiable;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,7 +25,7 @@ import org.json.JSONObject;
 public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements InterfaceRequest {
 
   private final static String REQUESTID = "reqid";
-  private final static String LNSREQUESTID = "lnsreqid";
+  private final static String CCPREQUESTID = "ccpreqid";
   private final static String RESPONSECODE = "code";
   private final static String RETURNTO = "returnTo";
   /**
@@ -35,15 +33,15 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
    */
   private int requestID;
   /**
-   * The ID the LNS uses to for bookkeeping
+   * The ID the CCP uses to for bookkeeping
    */
-  private int LNSRequestID;
+  private int CCPRequestID;
   /**
    * indicates success or failure of operation
    */
   private NSResponseCode responseCode;
   /**
-   * Indicates if this is supposed to go back to an Intercessor at the LNS or another server.
+   * Indicates if this is supposed to go back to an Intercessor at the CCP or another server.
    */
   private NodeIDType returnTo;
 
@@ -53,11 +51,11 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
    * @param type Type of this packet
    * @param requestID Id of local or name server
    */
-  public ConfirmUpdatePacket(Packet.PacketType type, NodeIDType returnTo, int requestID, int LNSRequestID, NSResponseCode responseCode) {
+  public ConfirmUpdatePacket(Packet.PacketType type, NodeIDType returnTo, int requestID, int CCPRequestID, NSResponseCode responseCode) {
     this.type = type;
     this.returnTo = returnTo;
     this.requestID = requestID;
-    this.LNSRequestID = LNSRequestID;
+    this.CCPRequestID = CCPRequestID;
     this.responseCode = responseCode;
   }
 
@@ -91,13 +89,13 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
 
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.ADD_CONFIRM, packet.getSourceId(),
-            packet.getRequestID(), packet.getLNSRequestID(), code);
+            packet.getRequestID(), packet.getCCPRequestID(), code);
 
   }
 
   public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.REMOVE_CONFIRM, packet.getSourceId(),
-            packet.getRequestID(), packet.getLNSRequestID(), code);
+            packet.getRequestID(), packet.getCCPRequestID(), code);
   }
 
   /**
@@ -110,7 +108,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
     this.type = Packet.getPacketType(json);
     this.returnTo = json.has(RETURNTO) ? unstringer.valueOf(json.getString(RETURNTO)) : null;
     this.requestID = json.getInt(REQUESTID);
-    this.LNSRequestID = json.getInt(LNSREQUESTID);
+    this.CCPRequestID = json.getInt(CCPREQUESTID);
     // stored as an int in the JSON to keep the byte counting folks happy
     this.responseCode = NSResponseCode.getResponseCode(json.getInt(RESPONSECODE));
   }
@@ -129,7 +127,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
       json.put(RETURNTO, returnTo);
     }
     json.put(REQUESTID, requestID);
-    json.put(LNSREQUESTID, LNSRequestID);
+    json.put(CCPREQUESTID, CCPRequestID);
     // store it as an int in the JSON to keep the byte counting folks happy
     json.put(RESPONSECODE, responseCode.getCodeValue());
 
@@ -144,8 +142,8 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
     return requestID;
   }
 
-  public int getLNSRequestID() {
-    return LNSRequestID;
+  public int getCCPRequestID() {
+    return CCPRequestID;
   }
 
   public NSResponseCode getResponseCode() {

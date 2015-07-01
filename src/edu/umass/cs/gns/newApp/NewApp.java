@@ -34,6 +34,7 @@ import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.NoopPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
+import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.newApp.packet.StopPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
@@ -45,6 +46,7 @@ import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 import java.io.IOException;
@@ -221,6 +223,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   @Override
   public InterfaceRequest getRequest(String string)
           throws RequestParseException {
+    //GNS.getLogger().info(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine(">>>>>>>>>>>>>>> GET REQUEST: " + string);
     }
@@ -231,6 +234,10 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     try {
       JSONObject json = new JSONObject(string);
       InterfaceRequest request = (InterfaceRequest) Packet.createInstance(json, nodeConfig);
+//      if (request instanceof InterfaceReplicableRequest) {
+//        GNS.getLogger().info(">>>>>>>>>>>>>>>UPDATE PACKET********* needsCoordination is "
+//                + ((InterfaceReplicableRequest) request).needsCoordination());
+//      }
       return request;
     } catch (JSONException e) {
       throw new RequestParseException(e);

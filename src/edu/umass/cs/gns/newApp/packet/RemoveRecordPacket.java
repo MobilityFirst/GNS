@@ -19,7 +19,7 @@ import org.json.JSONObject;
  * A client must set the <code>requestID</code> field correctly to received a response.
  *
  * Once this packet reaches local name server, local name server sets the
- * <code>localNameServerID</code> and <code>LNSRequestID</code> field correctly before forwarding packet
+ * <code>localNameServerID</code> and <code>CCPRequestID</code> field correctly before forwarding packet
  * to name server.
  *
  * When name server replies to the client, it uses a different packet type: <code>ConfirmUpdateLNSPacket</code>.
@@ -30,7 +30,7 @@ import org.json.JSONObject;
 public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
-  private final static String LNSREQID = "lnreqID";
+  private final static String CCPREQID = "ccpreqID";
   private final static String NAME = "name";
   private final static String SOURCE_ID = "sourceId";
 
@@ -40,9 +40,9 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP impl
   private int requestID;
 
   /**
-   * The ID the LNS uses to for bookeeping
+   * The ID the CCP uses to for bookeeping
    */
-  private int LNSRequestID;
+  private int CCPRequestID;
 
   /**
    * Host/domain/device name
@@ -88,7 +88,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP impl
     this.type = Packet.getPacketType(json);
     this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
     this.requestID = json.getInt(REQUESTID);
-    this.LNSRequestID = json.getInt(LNSREQID);
+    this.CCPRequestID = json.getInt(CCPREQID);
     this.name = json.getString(NAME);
   }
 
@@ -105,7 +105,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP impl
     super.addToJSONObject(json);
     json.put(SOURCE_ID, sourceId);
     json.put(REQUESTID, getRequestID());
-    json.put(LNSREQID, getLNSRequestID());
+    json.put(CCPREQID, getCCPRequestID());
     json.put(NAME, getName());
     return json;
   }
@@ -114,12 +114,12 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP impl
     return requestID;
   }
 
-  public int getLNSRequestID() {
-    return LNSRequestID;
+  public int getCCPRequestID() {
+    return CCPRequestID;
   }
 
-  public void setLNSRequestID(int LNSRequestID) {
-    this.LNSRequestID = LNSRequestID;
+  public void setCCPRequestID(int CCPRequestID) {
+    this.CCPRequestID = CCPRequestID;
   }
 
   /**
@@ -133,12 +133,12 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP impl
     return sourceId;
   }
 
-  /**
-   * This really should be documented.
-   */
-  public void changePacketTypeToRcRemove() {
-    type = Packet.PacketType.RC_REMOVE;
-  }
+//  /**
+//   * This really should be documented.
+//   */
+//  public void changePacketTypeToRcRemove() {
+//    type = Packet.PacketType.RC_REMOVE;
+//  }
 
   public void setRequestID(int requestID) {
     this.requestID = requestID;
