@@ -79,6 +79,12 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
 
   private boolean useLocalCCP = true;
   private ClientCommandProcessor<String> localCCP = null;
+  
+  // Keep track of commands that are coming in
+  public final ConcurrentMap<Integer, CommandHandler.CommandRequestInfo> outStandingQueries 
+          = new ConcurrentHashMap<>(10, 0.75f, 3);
+  
+  
 
   public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceMessenger<String, JSONObject> nioServer,
           MongoRecords<String> mongoRecords) {
@@ -215,10 +221,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
       return port;
     }
   }
-
-  //a map between request ids and host and port that the command request needs to be sent back to
-  private final ConcurrentMap<Integer, CommandQuery> outStandingQueries = new ConcurrentHashMap<Integer, CommandQuery>(10, 0.75f, 3);
-
+  
   // For InterfaceApplication
   @Override
   public InterfaceRequest getRequest(String string)

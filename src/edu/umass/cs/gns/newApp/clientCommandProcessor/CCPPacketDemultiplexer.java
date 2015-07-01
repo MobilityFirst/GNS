@@ -95,7 +95,6 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
                 GNS.getLogger().warning("Unknown DNS packet subtype: " + incomingPacketType);
                 return false;
             }
-          // Update // some of these have been converted to use handler
           case UPDATE:
             Update.handlePacketUpdate(json, handler);
             return true;

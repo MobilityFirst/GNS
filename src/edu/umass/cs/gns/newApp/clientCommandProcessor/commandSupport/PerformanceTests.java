@@ -55,7 +55,7 @@ public class PerformanceTests {
       // if not we use the method  below which bypasses the normal email verification requirement
       // but first we create a GUID from our public key
       accountGuid = ClientUtils.createGuidStringFromPublicKey(PUBLICKEY.getBytes());
-      AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false, handler);
+      AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false, null, handler);
     }
     times = new HashMap<String, ArrayList<Double>>();
     if (verbose) {

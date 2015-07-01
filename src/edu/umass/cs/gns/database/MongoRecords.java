@@ -283,6 +283,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       // prepare to return the user values
       if (valuesMapField != null && valuesMapKeys != null) {
         // first we pull all the user values from the dbObject and put in a bson object
+        // FIXME: Why not convert this to a JSONObject right now? We know that's what it is.
         BasicDBObject bson = (BasicDBObject) dbObject.get(valuesMapField.getName());
         if (debuggingEnabled) {
           GNS.getLogger().info("@@@@@@@@ " + bson.toString());

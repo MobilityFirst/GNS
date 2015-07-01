@@ -75,24 +75,6 @@ public class AccountAccess {
     }
   }
 
-//  /**
-//   * Obtains the account info record for the given GUID if that GUID
-//   * was used to create an account.
-//   * <p>
-//   * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
-//   * GUID: "PRIMARY_GUID" -> GUID (primary) for secondary guid<br>
-//   * GUID: "GUID_INFO" -> {guid info}<br>
-//   * HRN: "GUID" -> GUID<br>
-//   * <p>
-//   * GUID = Globally Unique Identifier<br>
-//   * HRN = Human Readable Name<br>
-//   *
-//   * @param guid
-//   * @return
-//   */
-//  public static AccountInfo lookupAccountInfoFromGuid(String guid, ClientRequestHandlerInterface handler) {
-//    return lookupAccountInfoFromGuid(guid, false, handler);
-//  }
   /**
    * Obtains the account info record for the given GUID if that GUID
    * was used to create an account.
@@ -155,7 +137,7 @@ public class AccountAccess {
     try {
       if (!guidResult.isError()) {
         return guidResult.getValuesMap().getString(PRIMARY_GUID);
-      //return (String) guidResult.getArray(PRIMARY_GUID).get(0);
+        //return (String) guidResult.getArray(PRIMARY_GUID).get(0);
       }
     } catch (JSONException e) {
     }
@@ -194,7 +176,7 @@ public class AccountAccess {
    * @return an {@link GuidInfo} instance
    */
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler) {
-    
+
     QueryResult guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, GUID_INFO);
     //QueryResult guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, GUID_INFO);
     if (!guidResult.isError()) {
@@ -253,43 +235,41 @@ public class AccountAccess {
    */
   public static CommandResponse addAccountWithVerification(final String host, final String name, final String guid,
           String publicKey, String password, ClientRequestHandlerInterface handler) {
-    CommandResponse response;
-    if ((response = addAccount(name, guid, publicKey, password,
-            GNS.enableEmailAccountVerification, handler)).getReturnValue().equals(OKRESPONSE)) {
-      if (GNS.enableEmailAccountVerification) {
-        String verifyCode = createVerificationCode(name);
-        AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler);
-        if (accountInfo == null) {
-          return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
-        }
-        accountInfo.setVerificationCode(verifyCode);
-        accountInfo.noteUpdate();
-        if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
-          boolean emailOK = Email.email("GNS Account Verification", name,
-                  String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
-          // do the admin email in another thread so it's faster and because we don't care if it completes
-          (new Thread() {
-            @Override
-            public void run() {
-              boolean adminEmailOK = Email.email("GNS Account Notification",
-                      Email.ACCOUNT_CONTACT_EMAIL,
-                      String.format(ADMIN_NOTICE, name, host, guid));
-            }
-          }).start();
 
-          if (emailOK) {
-            return new CommandResponse(OKRESPONSE);
-          } else {
-            // if we can't send the confirmation back out of the account creation
-            removeAccount(accountInfo, handler);
-            return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send verification email");
+    CommandResponse response;
+    String verifyCode = createVerificationCode(name); // make this even if we don't need it
+    if ((response = addAccount(name, guid, publicKey, password,
+            GNS.enableEmailAccountVerification, verifyCode, handler)).getReturnValue().equals(OKRESPONSE)) {
+      if (GNS.enableEmailAccountVerification) {
+        // if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
+        boolean emailOK = Email.email("GNS Account Verification", name,
+                String.format(EMAIL_BODY, name, verifyCode, host, guid, verifyCode, name, verifyCode));
+        // do the admin email in another thread so it's faster and because we don't care if it completes
+        (new Thread() {
+          @Override
+          public void run() {
+            boolean adminEmailOK = Email.email("GNS Account Notification",
+                    Email.ACCOUNT_CONTACT_EMAIL,
+                    String.format(ADMIN_NOTICE, name, host, guid));
           }
+        }).start();
+
+        if (emailOK) {
+          return new CommandResponse(OKRESPONSE);
         } else {
-          // Account info could not be updated.
-          // If we're here we're probably hosed anyway, but just in case try to remove the account
-          removeAccount(accountInfo, handler);
-          return new CommandResponse(BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to update account info");
+          // if we can't send the confirmation back out of the account creation
+          AccountInfo accountInfo = lookupAccountInfoFromGuid(guid, handler);
+          if (accountInfo != null) {
+            removeAccount(accountInfo, handler);
+          }
+          return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send verification email");
         }
+//        } else {
+//          // Account info could not be updated.
+//          // If we're here we're probably hosed anyway, but just in case try to remove the account
+//          removeAccount(accountInfo, handler);
+//          return new CommandResponse(BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to update account info");
+//        }
       }
     }
     return response;
@@ -411,7 +391,7 @@ public class AccountAccess {
    * @return status result
    */
   public static CommandResponse addAccount(String name, String guid, String publicKey, String password,
-          boolean emailVerify, ClientRequestHandlerInterface handler) {
+          boolean emailVerify, String verifyCode, ClientRequestHandlerInterface handler) {
     try {
 
       NSResponseCode returnCode;
@@ -424,20 +404,16 @@ public class AccountAccess {
         // if that's cool then add the entry that links the GUID to the username and public key
         // this one could fail if someone uses the same public key to register another one... that's a nono
         AccountInfo accountInfo = new AccountInfo(name, guid, password);
+        accountInfo.noteUpdate();
         // if email verifications are off we just set it to verified
         if (!emailVerify) {
           accountInfo.setVerified(true);
+        } else {
+          accountInfo.setVerificationCode(verifyCode); 
         }
         JSONObject json = new JSONObject();
-//        // make it compatible with old format
-//        JSONArray jsonArrayAccountInfo = new JSONArray();
-//        jsonArrayAccountInfo.put(accountInfo.toJSONObject());
-        
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
         GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-//        // make it compatible with old format
-//        JSONArray jsonArrayGuidInfo = new JSONArray();
-//        jsonArrayGuidInfo.put(guidInfo.toJSONObject());
         json.put(GUID_INFO, guidInfo.toJSONObject());
         if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
           return new CommandResponse(OKRESPONSE);
@@ -519,10 +495,6 @@ public class AccountAccess {
       if (lookupGuidInfo(guid, handler) != null) {
         return new CommandResponse(BADRESPONSE + " " + DUPLICATEGUID + " " + guid);
       }
-      
-      GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
-      ResultValue guidInfoFormatted = guidInfo.toDBFormat();
-
       accountInfo.addGuid(guid);
       accountInfo.noteUpdate();
 
@@ -535,6 +507,7 @@ public class AccountAccess {
 //              new ResultValue(Arrays.asList(guid)))).isAnError()) {
         // update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
+          GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           JSONObject json = new JSONObject();
           json.put(GUID_INFO, guidInfo.toJSONObject());
           json.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
@@ -659,7 +632,7 @@ public class AccountAccess {
    * @param message
    * @return status result
    */
-  public static CommandResponse addAlias(AccountInfo accountInfo, String alias, String writer, 
+  public static CommandResponse addAlias(AccountInfo accountInfo, String alias, String writer,
           String signature, String message, ClientRequestHandlerInterface handler) {
     // insure that that name does not already exist
     try {
@@ -785,10 +758,8 @@ public class AccountAccess {
       JSONObject json = new JSONObject();
       json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
       NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(accountInfo.getPrimaryGuid(),
-              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE, 
+              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
               writer, signature, message);
-//      NSResponseCode response = handler.getIntercessor().sendUpdateRecord(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-//              accountInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);
       return response;
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing account info:" + e);
@@ -799,25 +770,7 @@ public class AccountAccess {
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler) {
     //try {
-      return !updateAccountInfo(accountInfo, null, null, null, handler).isAnError();
-//      JSONObject json = new JSONObject();
-//      json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-//      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(accountInfo.getPrimaryGuid(),
-//              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE, 
-//              null, null, null);
-//      if (!response.isAnError()) {
-//        return true;
-//      }
-//      ResultValue newvalue;
-//      newvalue = accountInfo.toDBFormat();
-//      if (!handler.getIntercessor().sendUpdateRecordBypassingAuthentication(accountInfo.getPrimaryGuid(), ACCOUNT_INFO,
-//              newvalue, null, UpdateOperation.SINGLE_FIELD_REPLACE_ALL).isAnError()) {
-//        return true;
-//      }
-//    } catch (JSONException e) {
-//      GNS.getLogger().warning("Problem parsing account info:" + e);
-//    }
-    //return false;
+    return !updateAccountInfo(accountInfo, null, null, null, handler).isAnError();
   }
 
   private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message,
@@ -827,7 +780,7 @@ public class AccountAccess {
       JSONObject json = new JSONObject();
       json.put(GUID_INFO, guidInfo.toJSONObject());
       NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guidInfo.getGuid(),
-              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE, 
+              new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
               writer, signature, message);
 //      NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guidInfo.getGuid(), GUID_INFO,
 //              guidInfo.toDBFormat(), null, -1, UpdateOperation.SINGLE_FIELD_REPLACE_ALL, writer, signature, message);

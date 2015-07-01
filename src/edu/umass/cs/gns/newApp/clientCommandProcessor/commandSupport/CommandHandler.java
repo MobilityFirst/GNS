@@ -30,8 +30,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -203,7 +201,8 @@ public class CommandHandler {
   //
   // Code for handling commands at the app
   //
-  static class CommandRequestInfo {
+  // public because the app uses this
+  public static class CommandRequestInfo {
 
     private final String host;
     private final int port;
@@ -236,19 +235,6 @@ public class CommandHandler {
 
   }
 
-  private static final ConcurrentMap<Integer, CommandRequestInfo> outStandingQueries = new ConcurrentHashMap<>(10, 0.75f, 3);
-
-//  private static InetSocketAddress ccpAddress;
-//
-//  static {
-//    try {
-//      ccpAddress = new InetSocketAddress(NetworkUtils.getLocalHostLANAddress().getHostAddress(), GNS.DEFAULT_CCP_TCP_PORT);
-//      GNS.getLogger().info("CCP Address is " + ccpAddress);
-//    } catch (UnknownHostException e) {
-//      GNS.getLogger().severe("Unabled to determine CCP address: " + e + "; using loopback address");
-//      ccpAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), GNS.DEFAULT_CCP_TCP_PORT);
-//    }
-//  }
   public static void handleCommandPacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandPacket packet = new CommandPacket(json);
     // Squirrel away the host and port so we know where to send the command return value
@@ -260,7 +246,7 @@ public class CommandHandler {
       commandString = command.optString(COMMANDNAME, null);
       guid = command.optString(GUID, command.optString(NAME, null));
     }
-    outStandingQueries.put(packet.getClientRequestId(),
+    app.outStandingQueries.put(packet.getClientRequestId(),
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
                     commandString, guid));
     // Send it to the client command handler
@@ -281,8 +267,8 @@ public class CommandHandler {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     int id = returnPacket.getClientRequestId();
     CommandRequestInfo sentInfo;
-    if ((sentInfo = outStandingQueries.get(id)) != null) {
-      outStandingQueries.remove(id);
+    if ((sentInfo = app.outStandingQueries.get(id)) != null) {
+      app.outStandingQueries.remove(id);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
         GNS.getLogger().info("&&&&&&& For " + sentInfo.getCommand() + " | " + sentInfo.getGuid() + " APP IS SENDING VALUE BACK TO "
                 + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
