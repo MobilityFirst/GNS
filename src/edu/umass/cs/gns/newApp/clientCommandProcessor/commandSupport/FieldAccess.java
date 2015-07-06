@@ -404,7 +404,8 @@ public class FieldAccess {
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
-        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, name, guid, publicKey, handler);
+        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo, 
+                name, guid, publicKey, handler);
         if (!groupGuidCreateresult.getReturnValue().equals(OKRESPONSE)) {
           return groupGuidCreateresult;
         }

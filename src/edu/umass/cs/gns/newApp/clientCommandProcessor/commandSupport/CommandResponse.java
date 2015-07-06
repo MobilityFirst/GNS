@@ -3,14 +3,13 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gns.util.NSResponseCode;
 
 /**
- * Encapsulates the response values and instrumentation that we pass back from the 
- * Local Name Server to the client.
+ * Encapsulates the response values and instrumentation that we pass back to the client.
  * @param <NodeIDType>
  */
 public class CommandResponse<NodeIDType> {
 
   /**
-   * Value returned... probably will become a JSONObject soon.
+   * Value returned.
    */
   private String returnValue;
   /**
@@ -20,9 +19,9 @@ public class CommandResponse<NodeIDType> {
   
   // instrumentation
   /**
-   * The RTT as measured from the LNS out and back.
+   * The RTT as measured from the CCP out and back.
    */
-  private long LNSRoundTripTime; // how long this query took
+  private long CCPRoundTripTime; // how long this query took
   /**
    * Instrumentation - what nameserver responded to this query
    */
@@ -37,14 +36,14 @@ public class CommandResponse<NodeIDType> {
    * 
    * @param returnValue
    * @param errorCode
-   * @param LNSRoundTripTime
+   * @param CCPRoundTripTime
    * @param responder
    */
   public CommandResponse(String returnValue, NSResponseCode errorCode, 
-          long LNSRoundTripTime, NodeIDType responder, int lookupTime) {
+          long CCPRoundTripTime, NodeIDType responder, int lookupTime) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
-    this.LNSRoundTripTime = LNSRoundTripTime;
+    this.CCPRoundTripTime = CCPRoundTripTime;
     this.responder = responder;
     this.lookupTime = lookupTime;
   }
@@ -90,7 +89,7 @@ public class CommandResponse<NodeIDType> {
    * @return
    */
   public long getCCPRoundTripTime() {
-    return LNSRoundTripTime;
+    return CCPRoundTripTime;
   }
 
   /**

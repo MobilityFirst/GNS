@@ -182,7 +182,7 @@ public class GNSInstaller {
           String lnsHostsFile, String nsHostsFile, String scriptFile, boolean runAsRoot, boolean noopTest) {
     ArrayList<Thread> threads = new ArrayList<>();
     for (HostInfo info : hostTable.values()) {
-      threads.add(new UpdateThread(info.getHostname(), info.getNsId(), 
+      threads.add(new UpdateThread(info.getHostname(), info.getNsId(),
               noopTest ? false : info.isCreateLNS(),
               action, removeLogs, deleteDatabase,
               lnsHostsFile, nsHostsFile, scriptFile, runAsRoot, noopTest));
@@ -272,6 +272,12 @@ public class GNSInstaller {
       }
     } else {
       killAllServers(hostname, runAsRoot);
+      if (removeLogs) {
+        removeLogFiles(hostname, runAsRoot);
+      }
+      if (deleteDatabase) {
+        deleteDatabase(hostname);
+      }
       System.out.println("#### NS " + nsId + " Create LNS " + createLNS + " running on " + hostname + " has been stopped ####");
     }
   }
@@ -678,7 +684,8 @@ public class GNSInstaller {
         updateRunSet(runsetRestart, InstallerAction.RESTART, removeLogs, deleteDatabase,
                 lnsHostFile, nsHostFile, scriptFile, runAsRoot, noopTest);
       } else if (runsetStop != null) {
-        updateRunSet(runsetStop, InstallerAction.STOP, false, false, null, null, null, runAsRoot, noopTest);
+        updateRunSet(runsetStop, InstallerAction.STOP, removeLogs, deleteDatabase,
+                null, null, null, runAsRoot, noopTest);
       } else {
         printUsage();
         System.exit(1);
