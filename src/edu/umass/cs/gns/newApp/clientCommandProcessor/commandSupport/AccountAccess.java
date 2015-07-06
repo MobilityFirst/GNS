@@ -14,7 +14,6 @@ import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.util.ByteUtils;
 import edu.umass.cs.gns.util.Email;
 import edu.umass.cs.gns.util.NSResponseCode;
-import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -24,6 +23,7 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -415,6 +415,19 @@ public class AccountAccess {
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
         GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
         json.put(GUID_INFO, guidInfo.toJSONObject());
+        // set up ACL to look like this
+        //"_GNS_ACL": {
+        //  "READ_WHITELIST": {"+ALL+": {"MD": "+ALL+"]}}}
+        JSONArray readlist = new JSONArray(Arrays.asList(EVERYONE));
+        JSONObject mdReadList = new JSONObject();
+        mdReadList.put("MD", readlist);
+        JSONObject readWhiteList = new JSONObject();
+        readWhiteList.put(ALLFIELDS, mdReadList);
+        JSONObject acl = new JSONObject();
+        acl.put("READ_WHITELIST", readWhiteList);
+        json.put("_GNS_ACL", acl);
+        // set up the default read access
+        //NEW json.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), EVERYONE);
         if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
           return new CommandResponse(OKRESPONSE);
         } else {
@@ -488,7 +501,7 @@ public class AccountAccess {
    * @param publicKey - the public key to use with the new account
    * @return status result
    */
-  public static CommandResponse addGuid(AccountInfo accountInfo, String name, String guid, String publicKey,
+  public static CommandResponse addGuid(AccountInfo accountInfo, GuidInfo accountGuidInfo, String name, String guid, String publicKey,
           ClientRequestHandlerInterface handler) {
     try {
       // insure that the guid doesn't exist already
@@ -511,6 +524,33 @@ public class AccountAccess {
           JSONObject json = new JSONObject();
           json.put(GUID_INFO, guidInfo.toJSONObject());
           json.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
+          // set up ACL to look like this
+          //"_GNS_ACL": {
+          //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
+          //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
+          JSONArray readlist = new JSONArray(Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()));
+          JSONArray writelist = new JSONArray(Arrays.asList(accountGuidInfo.getPublicKey()));
+          JSONObject mdReadList = new JSONObject();
+          mdReadList.put("MD", readlist);
+          JSONObject mdWriteList = new JSONObject();
+          mdWriteList.put("MD", writelist);
+          JSONObject readWhiteList = new JSONObject();
+          readWhiteList.put(ALLFIELDS, mdReadList);
+          JSONObject writeWhiteList = new JSONObject();
+          writeWhiteList.put(ALLFIELDS, mdWriteList);
+          JSONObject acl = new JSONObject();
+          acl.put("READ_WHITELIST", readWhiteList);
+          acl.put("WRITE_WHITELIST", writeWhiteList);
+          json.put("_GNS_ACL", acl);
+
+          // set up the default read access
+          //NEW - json.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), EVERYONE);
+          //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
+          // give account guid read and write access to all fields in the new guid
+          //NEW -  son.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), accountGuidInfo.getPublicKey());
+          //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
+          //NEW -  json.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), accountGuidInfo.getPublicKey());
+          //FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
           handler.getIntercessor().sendFullAddRecord(guid, json);
 
 //          // add the GUID_INFO link

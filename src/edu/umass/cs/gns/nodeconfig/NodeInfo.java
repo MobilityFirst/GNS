@@ -25,30 +25,28 @@ public class NodeInfo<NodeIDType> {
   private final NodeIDType reconfiguratorID;
   
   /**
-   * IP address of the name server *
+   * IP address of the name server
    */
   private InetAddress ipAddress = null;
 
   /**
-   * IP address of the name server - should be a host name*
+   * IP address of the name server - should be a host name
    */
   private final String ipAddressString;
   
   /**
-   * External IP address of the name server - should be in dot format *
+   * External IP address of the name server - should be in dot format
    */
   private final String externalIP;
 
   /**
-   * Starting port number *
+   * Starting port number
    */
   private final int startingPortNumber;
 
   /**
    * RTT latency between the this node and node with nodeID = id. This field in updated
-   * periodically by running pings during system deployment. During testing GNS, we emulate
-   * wide-area latencies between nodes, and in that case, this is the delay that we emulate
-   * between the nodes.
+   * periodically by running pings during system deployment.
    */
   private long pingLatency;
   /**
@@ -68,6 +66,7 @@ public class NodeInfo<NodeIDType> {
    * @param activeReplicaID id of the activeReplica part of the name server.
    * @param reconfiguratorID id of the reconfigurator part of the name server
    * @param ipAddressString ip address as a string
+   * @param externalIP
    * @param startingPortNumber first port number of block of ports used for TCP and UDP comms
    * @param pingLatency RTT latency between the local nameserver and this nameserver in milleseconds
    * @param latitude Latitude of the nameserver

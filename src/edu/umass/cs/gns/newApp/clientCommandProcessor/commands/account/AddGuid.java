@@ -79,15 +79,15 @@ public class AddGuid extends GnsCommand {
         } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
           return new CommandResponse(BADRESPONSE + " " + TOMANYGUIDS);
         } else {
-          CommandResponse result = AccountAccess.addGuid(accountInfo, name, newGuid, publicKey, handler);
+          CommandResponse result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
           if (result.getReturnValue().equals(OKRESPONSE)) {
-            // set up the default read access
-            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
-            // give account guid read and write access to all fields in the new guid
-            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
-            //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);
-            FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
-            //FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);            
+//            // set up the default read access
+//           FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
+//            // give account guid read and write access to all fields in the new guid
+//            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
+//            //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);
+//            FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
+//            //FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);            
             return new CommandResponse(newGuid);
           } else {
             return result;

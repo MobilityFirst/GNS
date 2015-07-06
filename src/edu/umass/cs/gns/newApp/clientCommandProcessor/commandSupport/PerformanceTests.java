@@ -6,6 +6,8 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADGUID;
+import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stats;
@@ -62,7 +64,10 @@ public class PerformanceTests {
       result.append("GUIDs:");
       result.append(NEWLINE);
     }
-    for (String guid : createSomeGuids(AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler), guidCnt, handler)) {
+    for (String guid : createSomeGuids(
+            AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler),
+            AccountAccess.lookupGuidInfo(accountGuid, handler),
+            guidCnt, handler)) {
       if (verbose) {
         result.append(guid);
         result.append(NEWLINE);
@@ -83,14 +88,14 @@ public class PerformanceTests {
     return result.toString();
   }
 
-  private static ArrayList<String> createSomeGuids(AccountInfo info, int count, ClientRequestHandlerInterface handler) {
+  private static ArrayList<String> createSomeGuids(AccountInfo info, GuidInfo accountGuidInfo, int count, ClientRequestHandlerInterface handler) {
     ArrayList<String> result = new ArrayList<String>();
 
     for (int i = 0; i < count; i++) {
       String name = "RTT-" + Util.randomString(6);
       String publicKey = name + "-KEY";
       String guid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
-      AccountAccess.addGuid(info, name, guid, publicKey, handler);
+      AccountAccess.addGuid(info, accountGuidInfo, name, guid, publicKey, handler);
       result.add(guid);
     }
     return result;

@@ -57,7 +57,7 @@ public class RegisterAccount extends GnsCommand {
               password, handler);
       if (result.getReturnValue().equals(OKRESPONSE)) {
         // set up the default read access
-        FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, handler);
+        //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, handler);
         return new CommandResponse(guid);
       } else {
         return result;
