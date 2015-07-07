@@ -15,7 +15,6 @@ import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
-import org.json.JSONObject;
 import java.util.HashSet;
 import java.util.TimerTask;
 
@@ -47,9 +46,18 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   private final EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 
   private NodeIDType nameServerID; // just send it to this one
+  // If this is true we send the update over the network to the AR
+  // This is not normally going to be false except in the case of updates happening during
+  // creation of guids which need to be explicitly coordinated by ARs 
+  final boolean reallySendUpdatesToReplica;
 
   public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface<NodeIDType> handler,
           UpdatePacket<NodeIDType> updatePacket, NodeIDType nameServerID) {
+    this(lnsReqID, handler, updatePacket, nameServerID, false);
+  }
+
+  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface<NodeIDType> handler,
+          UpdatePacket<NodeIDType> updatePacket, NodeIDType nameServerID, boolean reallySendUpdatesToReplica) {
     // based on request info.
     this.lnsReqID = lnsReqID;
     this.handler = handler;
@@ -57,6 +65,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     this.updatePacket = updatePacket;
     this.activesQueried = new HashSet<>();
     this.nameServerID = nameServerID;
+    this.reallySendUpdatesToReplica = reallySendUpdatesToReplica;
   }
 
   @Override
@@ -73,11 +82,11 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       }
       if (nameServerID == null) { // new code to not request actives and only send to one server
         CacheEntry<NodeIDType> cacheEntry = handler.getCacheEntry(name);
-      // IF we don't have one or more valid active replicas in the cache entry
+        // IF we don't have one or more valid active replicas in the cache entry
         // we need to request a new set for this name.
         if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
           requestNewActives(handler);
-        // Cancel the task now. 
+          // Cancel the task now. 
           // When the new actives are received, a new task in place of this task will be rescheduled.
           throw new CancelExecutorTaskException();
         }
@@ -212,19 +221,29 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     }
 
     // and send it off
-    //try {
-      //JSONObject jsonToSend = pkt.toJSONObject();
+    if (!reallySendUpdatesToReplica) {
       handler.getApp().handleRequest(pkt);
-      //handler.sendToNS(jsonToSend, nameServerID);
-      // keep track of which NS we sent it to
-      UpdateInfo<NodeIDType> updateInfo = (UpdateInfo) handler.getRequestInfo(lnsReqID);
-      if (updateInfo != null) {
-        updateInfo.setNameserverID(nameServerID);
+    } else {
+      // This is not normally used except in the case of updates happening during
+      // creation of guids which need to be explicitly coordinated by ARs 
+      try {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("++++++++++++++++++ REALLY SENDING " + pkt.toJSONObject() + " TO " + nameServerID);
+        }
+        handler.sendToNS(pkt.toJSONObject(), nameServerID);
+      } catch (JSONException e) {
+        GNS.getLogger().severe("Problem sending JSON update to " + nameServerID + ": " + e);
       }
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + lnsReqID
-                + " Time:" + System.currentTimeMillis() + " --> " + pkt.toString());
-      }
+    }
+    // keep track of which NS we sent it to
+    UpdateInfo<NodeIDType> updateInfo = (UpdateInfo) handler.getRequestInfo(lnsReqID);
+    if (updateInfo != null) {
+      updateInfo.setNameserverID(nameServerID);
+    }
+    if (handler.getParameters().isDebugMode()) {
+      GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + lnsReqID
+              + " Time:" + System.currentTimeMillis() + " --> " + pkt.toString());
+    }
 //    } catch (JSONException e) {
 //      e.printStackTrace();
 //    }

@@ -54,7 +54,8 @@ public class Update {
     handler.addRequestInfo(ccpRequestID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
     // For the new app we just send it to the colocated replica, but still with retransmission
-    SendUpdatesTask updateTask = new SendUpdatesTask(ccpRequestID, handler, updatePacket, handler.getActiveReplicaID());
+    SendUpdatesTask updateTask = new SendUpdatesTask(ccpRequestID, handler, updatePacket, 
+            handler.getActiveReplicaID(), handler.reallySendUpdateToReplica());
     handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
   }
 

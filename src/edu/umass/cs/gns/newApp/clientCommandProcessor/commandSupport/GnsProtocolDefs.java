@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -79,20 +78,6 @@ public class GnsProtocolDefs {
   public final static String REQUESTLEAVEGROUP = "requestLeaveGroup";
   public final static String RETRIEVEGROUPLEAVEREQUESTS = "retrieveGroupLeaveRequests";
   public final static String REVOKEMEMBERSHIP = "revokeMembership";
-  //
-  public final static List<String> UPDATE_COMMANDS 
-          = Arrays.asList(CREATE, APPENDORCREATE, REPLACE, REPLACEORCREATE, APPENDWITHDUPLICATION, 
-                  APPEND, REMOVE, CREATELIST, APPENDORCREATELIST, REPLACEORCREATELIST, REPLACELIST,
-                  APPENDLISTWITHDUPLICATION, APPENDLIST, REMOVELIST, SUBSTITUTE, SUBSTITUTELIST, 
-                  SET, SETFIELDNULL, CLEAR, REMOVEFIELD, REPLACEUSERJSON,
-                  //
-                  //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
-                  VERIFYACCOUNT, SETPASSWORD, 
-                  //
-                  ACLADD, ACLREMOVE, ADDTOGROUP, REMOVEFROMGROUP
-                  );
-  public final static List<String> READ_COMMANDS
-          = Arrays.asList(READARRAY, NEWREAD, READARRAYONE);
   //
   public final static String HELP = "help";
   // admin commands 
@@ -195,5 +180,22 @@ public class GnsProtocolDefs {
   public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   public static final String ACL_FIELD_NAME = "ACL";
+  public final static List<String> UPDATE_COMMANDS 
+          = Arrays.asList(CREATE, APPENDORCREATE, REPLACE, REPLACEORCREATE, APPENDWITHDUPLICATION, 
+                  APPEND, REMOVE, CREATELIST, APPENDORCREATELIST, REPLACEORCREATELIST, REPLACELIST,
+                  APPENDLISTWITHDUPLICATION, APPENDLIST, REMOVELIST, SUBSTITUTE, SUBSTITUTELIST, 
+                  SET, SETFIELDNULL, CLEAR, REMOVEFIELD, REPLACEUSERJSON,
+                  //
+                  //REGISTERACCOUNT, REMOVEACCOUNT, ADDGUID, REMOVEGUID, ADDALIAS, REMOVEALIAS, 
+                  VERIFYACCOUNT, SETPASSWORD, 
+                  //
+                  ACLADD, ACLREMOVE, 
+                  //ADDTOGROUP, REMOVEFROMGROUP,
+                  //
+                  ADDTAG, REMOVETAG
+                  );
+  public final static List<String> READ_COMMANDS
+          = Arrays.asList(READARRAY, NEWREAD, READARRAYONE);
+  //
 
 }

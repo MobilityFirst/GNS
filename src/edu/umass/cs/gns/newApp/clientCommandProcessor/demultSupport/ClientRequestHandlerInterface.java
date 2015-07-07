@@ -290,5 +290,9 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @return
    */
   public int getRequestsPerSecond();
+  
+  public boolean reallySendUpdateToReplica();
+  
+  public void setReallySendUpdateToReplica(boolean reallySend);
 
 }

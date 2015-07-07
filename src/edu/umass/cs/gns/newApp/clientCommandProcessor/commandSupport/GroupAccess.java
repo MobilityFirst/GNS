@@ -33,7 +33,7 @@ public class GroupAccess {
   /**
    * Hidden field that stores group member quit requests
    */
-   @Deprecated
+  @Deprecated
   public static final String LEAVEREQUESTS = InternalField.makeInternalFieldString("groupLeaveRequests");
 
   /**
@@ -49,13 +49,17 @@ public class GroupAccess {
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
+    handler.setReallySendUpdateToReplica(true);
     NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
+    handler.setReallySendUpdateToReplica(false);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
+      handler.setReallySendUpdateToReplica(true);
       handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
               UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+      handler.setReallySendUpdateToReplica(false);
     }
     return groupResponse;
   }
@@ -72,14 +76,18 @@ public class GroupAccess {
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
+    handler.setReallySendUpdateToReplica(true);
     NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
+    handler.setReallySendUpdateToReplica(false);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
+        handler.setReallySendUpdateToReplica(true);
         handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
                 UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE);
+        handler.setReallySendUpdateToReplica(false);
       }
     }
     return groupResponse;
@@ -97,13 +105,17 @@ public class GroupAccess {
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
+    handler.setReallySendUpdateToReplica(true);
     NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, memberGuid, null, 1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
+    handler.setReallySendUpdateToReplica(false);
     // We could roll back the above operation if the one below gets an error, but we don't
     // We'll worry about that when we migrate this into the Name Server
     if (!groupResponse.isAnError()) {
+      handler.setReallySendUpdateToReplica(true);
       handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
               UpdateOperation.SINGLE_FIELD_REMOVE);
+      handler.setReallySendUpdateToReplica(false);
     }
     return groupResponse;
   }
@@ -120,14 +132,18 @@ public class GroupAccess {
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
+    handler.setReallySendUpdateToReplica(true);
     NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
+    handler.setReallySendUpdateToReplica(false);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
       // We'll worry about that when we migrate this into the Name Server
       for (String memberGuid : members.toStringSet()) {
+        handler.setReallySendUpdateToReplica(true);
         handler.getIntercessor().sendUpdateRecordBypassingAuthentication(memberGuid, GROUPS, guid, null,
                 UpdateOperation.SINGLE_FIELD_REMOVE);
+        handler.setReallySendUpdateToReplica(false);
       }
     }
     return groupResponse;
@@ -142,7 +158,7 @@ public class GroupAccess {
    * @param message
    * @return
    */
-  public static ResultValue lookup(String guid, String reader, String signature, String message, 
+  public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
     QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, GROUP, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (!result.isError()) {
@@ -173,8 +189,8 @@ public class GroupAccess {
 
   /**
    * Removes all group links when we're deleting a guid.
-   * 
-   * @param guid 
+   *
+   * @param guid
    */
   public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler) {
     // just so you know all the nulls mean we're ignoring signatures and authentication
@@ -258,7 +274,7 @@ public class GroupAccess {
       return new ResultValue();
     }
   }
-  
+
   /**
    *
    * @param guid
@@ -306,9 +322,4 @@ public class GroupAccess {
     }
     return false;
   }
-
-  /**
-   *
-   */
-  public static String Version = "$Revision$";
 }

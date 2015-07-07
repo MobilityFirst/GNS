@@ -477,6 +477,18 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     }
     return preamble + cacheTable.toString();
   }
+  
+  boolean reallySendtoReplica = false;
+
+  @Override
+  public boolean reallySendUpdateToReplica() {
+    return reallySendtoReplica;
+  }
+
+  @Override
+  public void setReallySendUpdateToReplica(boolean reallySend) {
+    reallySendtoReplica = reallySend;
+  }
 
   static class CacheComparator implements Comparator<CacheEntry> {
 

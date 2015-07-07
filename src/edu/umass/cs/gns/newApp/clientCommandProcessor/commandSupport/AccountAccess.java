@@ -23,6 +23,7 @@ import org.json.JSONException;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -314,7 +315,7 @@ public class AccountAccess {
     accountInfo.setVerificationCode(null);
     accountInfo.setVerified(true);
     accountInfo.noteUpdate();
-    if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
+    if (updateAccountInfoNoAuthentication(accountInfo, handler, false)) {
       return new CommandResponse(GnsProtocolDefs.OKRESPONSE + " " + "Your account has been verified."); // add a little something for the kids
     } else {
       return new CommandResponse(GnsProtocolDefs.BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to update account info");
@@ -409,7 +410,7 @@ public class AccountAccess {
         if (!emailVerify) {
           accountInfo.setVerified(true);
         } else {
-          accountInfo.setVerificationCode(verifyCode); 
+          accountInfo.setVerificationCode(verifyCode);
         }
         JSONObject json = new JSONObject();
         json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
@@ -418,14 +419,16 @@ public class AccountAccess {
         // set up ACL to look like this
         //"_GNS_ACL": {
         //  "READ_WHITELIST": {"+ALL+": {"MD": "+ALL+"]}}}
-        JSONArray readlist = new JSONArray(Arrays.asList(EVERYONE));
-        JSONObject mdReadList = new JSONObject();
-        mdReadList.put("MD", readlist);
-        JSONObject readWhiteList = new JSONObject();
-        readWhiteList.put(ALLFIELDS, mdReadList);
-        JSONObject acl = new JSONObject();
-        acl.put("READ_WHITELIST", readWhiteList);
+        JSONObject acl = createACL(ALLFIELDS, Arrays.asList(EVERYONE), null, null);
         json.put("_GNS_ACL", acl);
+//        JSONArray readlist = new JSONArray(Arrays.asList(EVERYONE));
+//        JSONObject mdReadList = new JSONObject();
+//        mdReadList.put("MD", readlist);
+//        JSONObject readWhiteList = new JSONObject();
+//        readWhiteList.put(ALLFIELDS, mdReadList);
+//        JSONObject acl = new JSONObject();
+//        acl.put("READ_WHITELIST", readWhiteList);
+//        json.put("_GNS_ACL", acl);
         // set up the default read access
         //NEW json.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), EVERYONE);
         if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
@@ -519,7 +522,7 @@ public class AccountAccess {
 //      if (!(returnCode = handler.getIntercessor().sendAddRecordWithSingleField(name, HRN_GUID, 
 //              new ResultValue(Arrays.asList(guid)))).isAnError()) {
         // update the account info
-        if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
+        if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           JSONObject json = new JSONObject();
           json.put(GUID_INFO, guidInfo.toJSONObject());
@@ -528,20 +531,23 @@ public class AccountAccess {
           //"_GNS_ACL": {
           //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
           //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
-          JSONArray readlist = new JSONArray(Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()));
-          JSONArray writelist = new JSONArray(Arrays.asList(accountGuidInfo.getPublicKey()));
-          JSONObject mdReadList = new JSONObject();
-          mdReadList.put("MD", readlist);
-          JSONObject mdWriteList = new JSONObject();
-          mdWriteList.put("MD", writelist);
-          JSONObject readWhiteList = new JSONObject();
-          readWhiteList.put(ALLFIELDS, mdReadList);
-          JSONObject writeWhiteList = new JSONObject();
-          writeWhiteList.put(ALLFIELDS, mdWriteList);
-          JSONObject acl = new JSONObject();
-          acl.put("READ_WHITELIST", readWhiteList);
-          acl.put("WRITE_WHITELIST", writeWhiteList);
+          JSONObject acl = createACL(ALLFIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
+                  ALLFIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
           json.put("_GNS_ACL", acl);
+//          JSONArray readlist = new JSONArray(Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()));
+//          JSONArray writelist = new JSONArray(Arrays.asList(accountGuidInfo.getPublicKey()));
+//          JSONObject mdReadList = new JSONObject();
+//          mdReadList.put("MD", readlist);
+//          JSONObject mdWriteList = new JSONObject();
+//          mdWriteList.put("MD", writelist);
+//          JSONObject readWhiteList = new JSONObject();
+//          readWhiteList.put(ALLFIELDS, mdReadList);
+//          JSONObject writeWhiteList = new JSONObject();
+//          writeWhiteList.put(ALLFIELDS, mdWriteList);
+//          JSONObject acl = new JSONObject();
+//          acl.put("READ_WHITELIST", readWhiteList);
+//          acl.put("WRITE_WHITELIST", writeWhiteList);
+//          json.put("_GNS_ACL", acl);
 
           // set up the default read access
           //NEW - json.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), EVERYONE);
@@ -648,7 +654,7 @@ public class AccountAccess {
         // update the account guid to know that we deleted the guid
         accountInfo.removeGuid(guid.getGuid());
         accountInfo.noteUpdate();
-        if (updateAccountInfoNoAuthentication(accountInfo, handler)) {
+        if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           return new CommandResponse(OKRESPONSE);
         } else {
           return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
@@ -688,7 +694,8 @@ public class AccountAccess {
       }
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
-      if (updateAccountInfo(accountInfo, writer, signature, message, handler).isAnError()) {
+      if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+              writer, signature, message, handler, true).isAnError()) {
         // back out if we got an error
         handler.getIntercessor().sendRemoveRecord(alias);
         //accountInfo.removeAlias(alias);
@@ -726,7 +733,8 @@ public class AccountAccess {
     // Now updated the account record
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
-    if ((responseCode = updateAccountInfo(accountInfo, writer, signature, message, handler)).isAnError()) {
+    if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+            writer, signature, message, handler, true)).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
     return new CommandResponse(OKRESPONSE);
@@ -746,7 +754,7 @@ public class AccountAccess {
           String message, ClientRequestHandlerInterface handler) {
     accountInfo.setPassword(password);
     accountInfo.noteUpdate();
-    if (updateAccountInfo(accountInfo, writer, signature, message, handler).isAnError()) {
+    if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, writer, signature, message, handler, false).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + UPDATEERROR);
     }
     return new CommandResponse(OKRESPONSE);
@@ -792,14 +800,20 @@ public class AccountAccess {
     return new CommandResponse(OKRESPONSE);
   }
 
-  private static NSResponseCode updateAccountInfo(AccountInfo accountInfo, String writer, String signature, String message,
-          ClientRequestHandlerInterface handler) {
+  private static NSResponseCode updateAccountInfo(String guid, AccountInfo accountInfo, String writer, String signature, String message,
+          ClientRequestHandlerInterface handler, boolean sendToReplica) {
     try {
       JSONObject json = new JSONObject();
       json.put(ACCOUNT_INFO, accountInfo.toJSONObject());
-      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(accountInfo.getPrimaryGuid(),
+      if (sendToReplica) {
+        handler.setReallySendUpdateToReplica(true);
+      }
+      NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
               new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
               writer, signature, message);
+      if (sendToReplica) {
+        handler.setReallySendUpdateToReplica(false);
+      }
       return response;
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem parsing account info:" + e);
@@ -808,9 +822,10 @@ public class AccountAccess {
   }
 
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler, boolean sendToReplica) {
     //try {
-    return !updateAccountInfo(accountInfo, null, null, null, handler).isAnError();
+    return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+            null, null, null, handler, sendToReplica).isAnError();
   }
 
   private static NSResponseCode updateGuidInfo(GuidInfo guidInfo, String writer, String signature, String message,
@@ -852,6 +867,44 @@ public class AccountAccess {
 //      GNS.getLogger().warning("Problem parsing guid info:" + e);
 //    }
 //    return false;
+  }
+
+  /**
+   * Returns an ACL set up to look like the JSON Object below.
+   *
+   * "_GNS_ACL": {
+   * "READ_WHITELIST": {|readfield|: {"MD": [readAcessor1, readAcessor2,... ]}},
+   * "WRITE_WHITELIST": {|writefield|: {"MD": [writeAcessor1, writeAcessor2,... ]}}
+   *
+   * @param readField
+   * @param readAcessors
+   * @param writeField
+   * @param writeAcessors
+   * @return
+   * @throws JSONException
+   */
+  private static JSONObject createACL(String readField, List<String> readAcessors,
+          String writeField, List<String> writeAcessors) throws JSONException {
+    JSONObject result = new JSONObject();
+
+    if (readField != null && readAcessors != null) {
+      JSONArray readlist = new JSONArray(readAcessors);
+      JSONObject mdReadList = new JSONObject();
+      mdReadList.put("MD", readlist);
+      JSONObject readWhiteList = new JSONObject();
+      readWhiteList.put(readField, mdReadList);
+      result.put("READ_WHITELIST", readWhiteList);
+    }
+
+    if (writeField != null && writeAcessors != null) {
+      JSONArray writelist = new JSONArray(Arrays.asList(writeAcessors));
+      JSONObject mdWriteList = new JSONObject();
+      mdWriteList.put("MD", writelist);
+      JSONObject writeWhiteList = new JSONObject();
+      writeWhiteList.put(writeField, mdWriteList);
+      result.put("WRITE_WHITELIST", writeWhiteList);
+    }
+    return result;
   }
 
   //

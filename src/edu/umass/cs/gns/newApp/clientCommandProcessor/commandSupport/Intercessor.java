@@ -549,6 +549,24 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     return sendUpdateRecord(name, key, newValue, oldValue, -1, operation, null, null, null);
   }
 
+  /**
+   * Sends either a full JSON Object update or (newer style) or
+   * an old-style single field update depending on the values of
+   * newValue (old-style) and userJSON (new-style) one of which should be null
+   * in normal use.
+   * 
+   * @param id
+   * @param name
+   * @param key
+   * @param newValue
+   * @param oldValue
+   * @param argument
+   * @param userJSON
+   * @param operation
+   * @param writer
+   * @param signature
+   * @param message 
+   */
   private void sendUpdateRecordHelper(int id, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {

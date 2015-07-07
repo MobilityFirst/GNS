@@ -118,16 +118,9 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
    */
   public Integer removeActivesRequestNameToIDMapping(String name);
 
-  /**
-   * Adds a mapping between a ServiceName request and a CCPREquestID.
-   * Provides backward compatibility between old Add and Remove record code and new name service code.
-   *
-   * @param name
-   * @param id
-   * @return 
-   */
   @Override
   public NodeIDType getActiveReplicaID();
 
   public NewApp getApp();
+  
 }
