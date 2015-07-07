@@ -159,6 +159,7 @@ public class HostFileLoader {
   public static Long readVersionLine(String hostsFile) throws IOException {
     BufferedReader br = new BufferedReader(new FileReader(hostsFile));
     String line = br.readLine();
+    br.close();
     return getTheVersionFromLine(line);
   }
 
