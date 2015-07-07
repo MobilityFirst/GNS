@@ -188,6 +188,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 			ArrayList<String> strArray) {
 		if (strArray != null && !strArray.isEmpty()) {
 			for (String str : strArray) {
+				NIOInstrumenter.incrJSONRcvd(sender.getPort());
 				this.processMessage(sender, str);
 			}
 		}
@@ -195,7 +196,6 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 
 	private synchronized void processMessageInternal(
 			InetSocketAddress sockAddr, String msg) {
-		NIOInstrumenter.incrJSONRcvd();
 
 		MessageWorker worker = new MessageWorker(sockAddr, msg, packetDemuxes);
 		long delay = -1;

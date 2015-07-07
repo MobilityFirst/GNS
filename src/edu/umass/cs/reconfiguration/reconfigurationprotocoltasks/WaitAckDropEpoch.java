@@ -11,6 +11,7 @@ import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
+import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
@@ -20,7 +21,6 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
-import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -42,8 +42,10 @@ public class WaitAckDropEpoch<NodeIDType>
 	 * while too high values may result in a large number of pending tasks
 	 * consuming memory.
 	 */
-	private static final long RESTART_PERIOD_SERVICE_NAMES = 4*WaitAckStopEpoch.RESTART_PERIOD;
-	private static final long RESTART_PERIOD_RC_GROUP_NAMES = 64*WaitAckStopEpoch.RESTART_PERIOD;
+	private static final long RESTART_PERIOD_SERVICE_NAMES = 4 * WaitAckStopEpoch.RESTART_PERIOD;
+	private static final long RESTART_PERIOD_RC_GROUP_NAMES = 32 * WaitAckStopEpoch.RESTART_PERIOD;
+	private static final long RESTART_PERIOD_NC_CHANGE = WaitAckStopEpoch.RESTART_PERIOD;
+
 	private static final int MAX_RESTARTS = 5;
 
 	private final NodeIDType myID;
@@ -51,6 +53,7 @@ public class WaitAckDropEpoch<NodeIDType>
 	private final StartEpoch<NodeIDType> startEpoch;
 	private int numRestarts = 0;
 	private final long creationTime = System.currentTimeMillis();
+	private final boolean isNodeConfigChange;
 
 	private final String key;
 
@@ -63,15 +66,28 @@ public class WaitAckDropEpoch<NodeIDType>
 	 *            quicker. This has safety violation risks upon name re-creation
 	 *            and is meant only for instrumentation.
 	 *            <p>
-	 *            
+	 * 
 	 *            FIXME: We should not drop the previous epoch final state for
 	 *            split/merge RC group reconfigurations.
 	 */
 	public WaitAckDropEpoch(StartEpoch<NodeIDType> startEpoch,
 			RepliconfigurableReconfiguratorDB<NodeIDType> DB) {
-		super(startEpoch.noCurEpochGroup()
-				&& ReconfigurationConfig.aggressiveDeletionsAllowed() ? DB
-				.getAllActives() : startEpoch.getPrevEpochGroup());
+		/*
+		 * For node config changes, we require all *new* epoch replicas to
+		 * acknowledge "deleting" the previous epoch's final state. The final
+		 * state deletion is unnecessary, but we special case node config
+		 * changes so that only reconfigurators that have fully completed the
+		 * transition to the next epoch will respond positively to "dropping"
+		 * the previous epoch state. This allows the initiating node to know if
+		 * all current reconfigurators are current.
+		 */
+		super(
+				startEpoch.getServiceName().equals(
+						AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+								.toString()) ? startEpoch.getCommonMembers()
+						: startEpoch.getPrevEpochGroup());
+		this.isNodeConfigChange = startEpoch.getServiceName().equals(
+				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString());
 		/*
 		 * FIXME: dropEpoch service name should be previous group name for merge
 		 * and not be done at all for non-merge RC group change operations.
@@ -87,27 +103,38 @@ public class WaitAckDropEpoch<NodeIDType>
 		this.myID = DB.getMyID();
 		this.key = this.refreshKey();
 		this.setPeriod(DB.isRCGroupName(startEpoch.getServiceName()) ? RESTART_PERIOD_RC_GROUP_NAMES
-				: RESTART_PERIOD_SERVICE_NAMES);
+				: this.isNodeConfigChange ? RESTART_PERIOD_NC_CHANGE
+						: RESTART_PERIOD_SERVICE_NAMES);
 	}
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
 		// send DropEpoch to all new actives and await acks from all?
-		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] {
-				this.refreshKey(),
-				" (re-)sending[" + this.numRestarts + " of " + MAX_RESTARTS
-						+ "] ", this.dropEpoch.getSummary() });
-		if (// have something to drop in the first place
-		this.startEpoch.hasPrevEpochGroup()
-		// count limit on restarts for good garbage collection
-				&& this.numRestarts++ < MAX_RESTARTS
+		log.log(Level.INFO,
+				"{0} (re-)sending [{1} of {2}] {3} to {4} ",
+				new Object[] {
+						this.refreshKey(),
+						this.numRestarts,
+						MAX_RESTARTS,
+						this.dropEpoch.getSummary(),
+						this.isNodeConfigChange ? startEpoch.getCommonMembers()
+								: startEpoch.getPrevEpochGroup() });
+		if ((// have something to drop in the first place
+				this.startEpoch.hasPrevEpochGroup()
+				// count limit on restarts for good garbage collection
+						&& this.numRestarts++ < MAX_RESTARTS
 				// time limit on restarts to prevent ghost final state deletion
 				&& System.currentTimeMillis() - this.creationTime < ReconfigurationConfig
 						.getMaxFinalStateAge())
+				// or is node config change
+				|| this.isNodeConfigChange)
 			return (new GenericMessagingTask<NodeIDType, DropEpochFinalState<NodeIDType>>(
-					this.startEpoch.getPrevEpochGroup().toArray(),
-					this.dropEpoch)).toArray();
+					this.isNodeConfigChange ? this.startEpoch
+							.getCommonMembers().toArray() : this.startEpoch
+							.getPrevEpochGroup().toArray(), this.dropEpoch))
+					.toArray();
 		// else
+		log.info(this + " protocol task canceling itself ");
 		ProtocolExecutor.cancel(this);
 		return null;
 	}
@@ -157,8 +184,8 @@ public class WaitAckDropEpoch<NodeIDType>
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType()
 				.equals(ReconfigurationPacket.PacketType.ACK_DROP_EPOCH_FINAL_STATE));
-		log.log(Level.FINE, MyLogger.FORMAT[2],
-				new Object[] { this.refreshKey(), "received",
+		log.log(Level.INFO, "{0} received {1}",
+				new Object[] { this.refreshKey(),
 						((AckDropEpochFinalState<String>) event).getSummary() });
 		return true;
 	}
@@ -169,7 +196,7 @@ public class WaitAckDropEpoch<NodeIDType>
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
-		log.log(Level.INFO,
+		log.log(this.isNodeConfigChange ? Level.INFO : Level.FINE,
 				"{0} received all ACKs for {1}{2}",
 				new Object[] {
 						this.refreshKey(),

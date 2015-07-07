@@ -3,6 +3,7 @@ package edu.umass.cs.reconfiguration.reconfigurationprotocoltasks;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
@@ -68,6 +69,9 @@ public class WaitPrimaryExecution<NodeIDType> extends
 	 */
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] start() {
+		log.log(Level.INFO,
+				"{0} starting to wait for primary to complete reconfiguration",
+				new Object[] { this.refreshKey() });
 		return null;
 	}
 
@@ -78,7 +82,6 @@ public class WaitPrimaryExecution<NodeIDType> extends
 		return super.restart();
 	}
 
-	// FIXME: bail out if no longer necessary
 	protected boolean amObviated() {
 		return super.amObviated();
 	}

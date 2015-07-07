@@ -41,7 +41,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 	/**
 	 * Requester address to send the confirmation.
 	 */
-	public final InetSocketAddress requester;
+	public final InetSocketAddress creator;
 
 	private boolean failed = false;
 	private String responseMessage = null;
@@ -59,7 +59,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		(this.newlyAddedNodes = new HashMap<NodeIDType, InetSocketAddress>())
 				.put(nodeID, sockAddr);
 		this.deletedNodes = null;
-		this.requester = null;
+		this.creator = null;
 	}
 
 	/**
@@ -75,7 +75,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString(), 0);
 		this.newlyAddedNodes = newlyAddedNodes;
 		this.deletedNodes = deletedNodes;
-		this.requester = null;
+		this.creator = null;
 	}
 
 	/**
@@ -92,7 +92,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 		this.deletedNodes = (json.has(Keys.DELETED_NODES.toString()) ? this
 				.arrayToSet(json.getJSONArray(Keys.DELETED_NODES.toString()),
 						unstringer) : null);
-		this.requester = JSONNIOTransport.getSenderAddress(json);
+		this.creator = JSONNIOTransport.getSenderAddress(json);
 		this.failed = json.optBoolean(Keys.FAILED.toString());
 		this.responseMessage = json.has(Keys.RESPONSE_MESSAGE.toString()) ? json
 				.getString(Keys.RESPONSE_MESSAGE.toString()) : null;
@@ -144,8 +144,8 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 	/**
 	 * @return Requester address.
 	 */
-	public InetSocketAddress getRequester() {
-		return this.requester;
+	public InetSocketAddress getIssuer() {
+		return this.creator;
 	}
 
 	// Utility method for newly added nodes

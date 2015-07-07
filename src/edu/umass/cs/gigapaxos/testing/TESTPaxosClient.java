@@ -12,7 +12,6 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
@@ -96,7 +95,8 @@ public class TESTPaxosClient {
 	private final ConcurrentHashMap<Integer, RequestPacket> requests = new ConcurrentHashMap<Integer, RequestPacket>();
 	private final Timer timer = new Timer(); // for retransmission
 
-	private static Logger log = PaxosManager.getLogger();
+	private static Logger log = Logger.getLogger(TESTPaxosClient.class.getName()); 
+			//PaxosManager.getLogger();
 
 	private synchronized int incrReplyCount() {
 		return this.replyCount++;

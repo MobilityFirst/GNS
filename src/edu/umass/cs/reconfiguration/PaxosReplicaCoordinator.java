@@ -122,8 +122,8 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 								.getSummary() : request.getRequestType(),
 						(request instanceof InterfaceReconfigurableRequest
 								&& ((InterfaceReconfigurableRequest) request)
-										.isStop() ? "||||||||STOP||||||||"
-								: ""), proposee });
+										.isStop() ? "[STOPPING]" : ""),
+						proposee });
 		return proposee != null;
 	}
 
@@ -138,14 +138,15 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 		assert (state != null);
 		// will block for a default timeout if a lower unstopped epoch exits
 		boolean created = this.paxosManager.createPaxosInstanceForcibly(
-				groupName, epoch, nodes, this, state);
+				groupName, epoch, nodes, this, state, 0);
 		boolean createdOrExistsOrHigher = (created || this.paxosManager
-				.existsOrHigher(groupName, epoch));
+				.equalOrHigherVersionExists(groupName, epoch));
 		;
 		if (!createdOrExistsOrHigher)
-			throw new PaxosInstanceCreationException(
-					(this + " failed to create " + groupName + ":" + epoch
-							+ " with state [" + state + "] probably because a higher version was already created and stopped."));
+			throw new PaxosInstanceCreationException((this
+					+ " failed to create " + groupName + ":" + epoch
+					+ " with state [" + state + "] likely because epoch "
+					+ epoch + " or higher was previously created and stopped."));
 		return createdOrExistsOrHigher;
 	}
 
@@ -158,7 +159,7 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 		/*
 		 * if (this.paxosManager.isStopped(serviceName)) return null;
 		 */
-		return this.paxosManager.getPaxosNodeIDs(serviceName);
+		return this.paxosManager.getReplicaGroup(serviceName);
 	}
 
 	@Override
@@ -200,9 +201,8 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 				epoch);
 		String state = stateContainer != null ? stateContainer.state : null;
 		log.log(Level.FINE,
-				"{0} received request for epoch final state {1}:{2}; returning [{3}]; (paxos instance status is {4})",
-				new Object[] { this, name, epoch, state,
-						this.paxosManager.getInstanceStatus(name, epoch) });
+				"{0} received request for epoch final state {1}:{2}; returning [{3}];)",
+				new Object[] { this, name, epoch, state});
 		return stateContainer;
 	}
 
@@ -263,6 +263,6 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 	 *         {@code name}.
 	 */
 	public boolean existsOrHigher(String name, int epoch) {
-		return this.paxosManager.existsOrHigher(name, epoch);
+		return this.paxosManager.equalOrHigherVersionExists(name, epoch);
 	}
 }

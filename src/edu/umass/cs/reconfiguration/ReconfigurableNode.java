@@ -37,6 +37,8 @@ public abstract class ReconfigurableNode<NodeIDType> {
 	 * @param nodeConfig
 	 *            Maps node IDs of active replicas and reconfigurators to their
 	 *            socket addresses.
+	 * @param startCleanSlate Used to join newly added nodes.
+	 * 
 	 * @throws IOException
 	 *             Thrown if networking functions can not be successfully
 	 *             initialized. A common reason for this exception is that the
@@ -46,8 +48,8 @@ public abstract class ReconfigurableNode<NodeIDType> {
 	 *             not present at all in the supplied 'nodeConfig' argument.
 	 */
 	public ReconfigurableNode(NodeIDType id,
-			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig)
-			throws IOException {
+			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig,
+			boolean startCleanSlate) throws IOException {
 		this.myID = id;
 		this.nodeConfig = nodeConfig;
 
@@ -62,8 +64,8 @@ public abstract class ReconfigurableNode<NodeIDType> {
 
 		this.messenger = (new JSONMessenger<NodeIDType>(
 				(new JSONNIOTransport<NodeIDType>(this.myID, nodeConfig,
-						(pd = new ReconfigurationPacketDemultiplexer()), ReconfigurationConfig.getServerSSLMode()))
-						));
+						(pd = new ReconfigurationPacketDemultiplexer()),
+						ReconfigurationConfig.getServerSSLMode()))));
 
 		if (nodeConfig.getActiveReplicas().contains(id)) {
 			// create active
@@ -74,7 +76,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 		} else if (nodeConfig.getReconfigurators().contains(id)) {
 			// create reconfigurator
 			Reconfigurator<NodeIDType> reconfigurator = new Reconfigurator<NodeIDType>(
-					nodeConfig, messenger);
+					nodeConfig, messenger, startCleanSlate);
 			pd.register(reconfigurator.getPacketTypes().toArray(),
 					reconfigurator);
 
@@ -83,6 +85,17 @@ public abstract class ReconfigurableNode<NodeIDType> {
 					.getReconfigurableReconfiguratorAsActiveReplica();
 			pd.register(activeReplica.getPacketTypes(), this.activeReplica);
 		}
+	}
+
+	/**
+	 * @param id
+	 * @param nodeConfig
+	 * @throws IOException
+	 */
+	public ReconfigurableNode(NodeIDType id,
+			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig)
+			throws IOException {
+		this(id, nodeConfig, false);
 	}
 
 	/**

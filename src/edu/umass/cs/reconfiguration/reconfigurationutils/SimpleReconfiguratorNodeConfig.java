@@ -18,7 +18,7 @@ import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
  *
  * @param <NodeIDType>
  * 
- *  
+ * 
  *            The point of this class is to retain the supplied nodeConfig only
  *            for actives so that the supplier can change them at will. We make
  *            a separate copy of the reconfigurators as they have to be changed
@@ -108,12 +108,19 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	public synchronized InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress prevSockAddr = this.rcMap.put(id, sockAddr);
+		if (this.nodeConfig instanceof InterfaceModifiableRCConfig)
+			((InterfaceModifiableRCConfig<NodeIDType>) this.nodeConfig)
+					.addReconfigurator(id, sockAddr);
 		return prevSockAddr;
 	}
 
-	// @Override
+	@Override
 	public synchronized InetSocketAddress removeReconfigurator(NodeIDType id) {
-		return this.rcMap.remove(id);
+		InetSocketAddress removed = this.rcMap.remove(id);
+		if (this.nodeConfig instanceof InterfaceModifiableRCConfig)
+			((InterfaceModifiableRCConfig<NodeIDType>) this.nodeConfig)
+					.removeReconfigurator(id);
+		return removed;
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,7 +38,6 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	protected final AbstractReconfiguratorDB<NodeIDType> app;
 	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
-
 	private HashMap<NodeIDType, Long> pendingReconfiguratorDeletions = new HashMap<NodeIDType, Long>();
 
 	/**
@@ -47,20 +45,24 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 	 * @param myID
 	 * @param consistentNodeConfig
 	 * @param niot
+	 * @param startCleanSlate
 	 */
 	public RepliconfigurableReconfiguratorDB(
 			AbstractReconfiguratorDB<NodeIDType> app,
 			NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig,
-			InterfaceMessenger<NodeIDType, JSONObject> niot) {
+			InterfaceMessenger<NodeIDType, JSONObject> niot,
+			boolean startCleanSlate) {
 		// setting paxosManager out-of-order limit to 1
 		super(app, myID, consistentNodeConfig, niot, 1);
 		assert (niot != null);
 		this.app = app;
 		this.consistentNodeConfig = consistentNodeConfig;
+		// only request that needs coordination;
 		this.registerCoordination(ReconfigurationPacket.PacketType.RC_RECORD_REQUEST);
 		// default groups need only be created for paxos, not dynamo
-		if (RC_REPLICA_COORDINATOR.equals(ReplicaCoordinator.PAXOS))
+		if (RC_REPLICA_COORDINATOR.equals(ReplicaCoordinator.PAXOS)
+				&& !startCleanSlate)
 			this.createDefaultGroups();
 		this.setLargeCheckpoints();
 	}
@@ -369,38 +371,27 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	@Override
 	public boolean deleteFinalState(String rcGroupName, int epoch) {
-		boolean paxosInstanceDeleted = super.deleteFinalState(rcGroupName,
-				epoch);
-		/*
-		 * Can also delete the record itself (not necessary for safety but not
-		 * unsafe either)
-		 */
-		return paxosInstanceDeleted
-		/* && this.app.deleteReconfigurationRecord(rcGroupName, epoch) */;
+		// special case for node config changes
+		if (rcGroupName.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+				.toString()))
+			return isNCReady(epoch + 1); // final state deletion unnecessary
+		return super.deleteFinalState(rcGroupName, epoch);
 	}
 
-	/**
-	 * We need to keep track of ongoing RC tasks in order to know when a node
-	 * config change is complete. We can track it with volatile state as
-	 * incomplete operations will be rolled forward correctly in case of
-	 * failures anyway. We need this in-memory state only for RC group
-	 * reconfigurations, not regular serviceName record reconfigurations.
-	 * 
-	 * @param taskKey
-	 * @return True as specified by {@link Collection#add}.
-	 */
-	public boolean addRCTask(String taskKey) {
-		return this.app.addRCTask(taskKey);
-	}
-
-	/**
-	 * Inverts addRCTask
-	 * 
-	 * @param taskKey
-	 * @return True as specified by {@link Collection#remove(Object)}.
-	 */
-	public boolean removeRCTask(String taskKey) {
-		return this.app.removeRCTask(taskKey);
+	private boolean isNCReady(int epoch) {
+		ReconfigurationRecord<NodeIDType> ncRecord = this
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		if (ncRecord != null && ncRecord.getEpoch() == epoch
+				&& ncRecord.isReady())
+			return true;
+		else
+			log.log(Level.INFO,
+					"{0} has *NOT* completed node config change {1}; state = {2}",
+					new Object[] { this, epoch, ncRecord.getSummary() });
+		assert (ncRecord == null || ncRecord.getEpoch() != epoch || !ncRecord
+				.isReady()) : ncRecord;
+		return false;
 	}
 
 	protected boolean isBeingDeleted(String curRCGroup) {

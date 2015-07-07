@@ -45,7 +45,7 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		}
 	}
 
-	private final int myID;
+	private final String myID;
 	private final HashMap<String, AppData> appData = new HashMap<String, AppData>();
 	// only address based communication needed in app
 	private InterfaceSSLMessenger<?, JSONObject> messenger;
@@ -53,7 +53,7 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	/**
 	 * @param id
 	 */
-	public NoopApp(int id) {
+	public NoopApp(String id) {
 		this.myID = id;
 	}
 
@@ -102,7 +102,7 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 
 	private void sendResponse(NoopAppRequest request) {
 		assert (this.messenger != null && this.messenger.getClientMessenger() != null);
-		if (this.messenger == null || request.getEntryReplica() != this.myID)
+		if (this.messenger == null || !request.getEntryReplica().equals(this.myID))
 			return;
 		InetSocketAddress sockAddr = new InetSocketAddress(
 				request.getSenderAddress(), request.getSenderPort());
@@ -117,8 +117,6 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 
 	// no-op
 	private boolean processStopRequest(NoopAppRequest request) {
-		// AppData data = this.appData.get(request.getServiceName());
-		// if (data == null) return false;
 		return true;
 	}
 

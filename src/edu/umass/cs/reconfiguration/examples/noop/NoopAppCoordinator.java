@@ -21,7 +21,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 /**
  * @author V. Arun
  */
-public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
+public class NoopAppCoordinator extends PaxosReplicaCoordinator<String> {
 
 	/**
 	 * Intended to support two types of coordination policies: lazy and paxos.
@@ -42,9 +42,9 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 	private class CoordData {
 		final String name;
 		final int epoch;
-		final Set<Integer> replicas;
+		final Set<String> replicas;
 
-		CoordData(String name, int epoch, Set<Integer> replicas) {
+		CoordData(String name, int epoch, Set<String> replicas) {
 			this.name = name;
 			this.epoch = epoch;
 			this.replicas = replicas;
@@ -58,7 +58,7 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 	}
 
 	NoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
-			Stringifiable<Integer> unstringer, InterfaceSSLMessenger<Integer,JSONObject> msgr) {
+			Stringifiable<String> unstringer, InterfaceSSLMessenger<String,JSONObject> msgr) {
 		super(app, msgr.getMyID(), unstringer, msgr);
 		this.coordType = coordType;
 		this.registerCoordination(NoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
@@ -90,7 +90,7 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 
 	@Override
 	public boolean createReplicaGroup(String serviceName, int epoch,
-			String state, Set<Integer> nodes) {
+			String state, Set<String> nodes) {
 		boolean created = false;
 		if (this.coordType.equals(CoordType.LAZY)) {
 			this.groups.put(serviceName, new CoordData(serviceName, epoch,
@@ -114,7 +114,7 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 	}
 
 	@Override
-	public Set<Integer> getReplicaGroup(String serviceName) {
+	public Set<String> getReplicaGroup(String serviceName) {
 		if (this.coordType.equals(CoordType.LAZY)) {
 			CoordData data = this.groups.get(serviceName);
 			if (data != null)
@@ -147,14 +147,4 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<Integer> {
 		return (data != null && data.epoch == epoch);
 	}
 
-	/*
-	 * protected void sendAllLazy(NoopAppRequest request) throws IOException,
-	 * RequestParseException, JSONException {
-	 * if(this.getReplicaGroup(request.getServiceName())==null) return;
-	 * GenericMessagingTask<Integer, JSONObject> mtask = new
-	 * GenericMessagingTask<Integer, JSONObject>(
-	 * this.getReplicaGroup(request.getServiceName()).toArray(),
-	 * request.toJSONObject()); if (this.messenger != null)
-	 * this.messenger.send(mtask); }
-	 */
 }

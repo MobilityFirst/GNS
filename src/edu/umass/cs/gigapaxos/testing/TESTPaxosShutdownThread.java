@@ -16,8 +16,7 @@ import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 public class TESTPaxosShutdownThread extends Thread {
 
 	static {
-		Runtime.getRuntime().addShutdownHook(
-				new Thread(new TESTPaxosShutdownThread()));
+		Runtime.getRuntime().addShutdownHook(new Thread(new TESTPaxosShutdownThread()));
 	}
 	private static Set<TESTPaxosClient> testClients = new HashSet<TESTPaxosClient>();
 	private static Set<TESTPaxosReplicable> apps = new HashSet<TESTPaxosReplicable>();

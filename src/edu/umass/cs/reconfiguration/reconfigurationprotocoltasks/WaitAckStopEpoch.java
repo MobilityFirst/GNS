@@ -38,7 +38,9 @@ public class WaitAckStopEpoch<NodeIDType>
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
 	/**
-	 * Retransmission timeout.
+	 * Retransmission timeout. The restart periods for most other
+	 * reconfiguration protocol tasks are multiples of this, so it should be
+	 * changed with care.
 	 */
 	public static final long RESTART_PERIOD = 2000;
 
@@ -53,7 +55,7 @@ public class WaitAckStopEpoch<NodeIDType>
 	private int restartCount = 0;
 	private final long initTime = System.currentTimeMillis();
 
-	private static final Logger log = Reconfigurator.getLogger();
+	protected static final Logger log = Reconfigurator.getLogger();
 
 	/**
 	 * @param startEpoch
@@ -83,8 +85,9 @@ public class WaitAckStopEpoch<NodeIDType>
 		}
 		// else
 		if (++restartCount % 2 == 0)
-			log.log(Level.WARNING, MyLogger.FORMAT[2], new Object[] { this.refreshKey(),
-					" resending ", this.stopEpoch.getSummary() });
+			log.log(Level.WARNING, MyLogger.FORMAT[2],
+					new Object[] { this.refreshKey(), " resending ",
+							this.stopEpoch.getSummary() });
 		return start();
 	}
 
@@ -98,12 +101,15 @@ public class WaitAckStopEpoch<NodeIDType>
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(this.stopEpoch.getServiceName());
 		if (record == null // nothing to delete
-				// moved on 
+				// moved on
 				|| (record.getEpoch() - this.stopEpoch.getEpochNumber() > 0)
 				// moved beyond WAIT_ACK_STOP
 				|| (record.getEpoch() == this.stopEpoch.getEpochNumber() && record
-						.getState().equals(RCStates.WAIT_DELETE)))
+						.getState().equals(RCStates.WAIT_DELETE))) {
+			log.log(Level.INFO, "{0} obviated because record = ", new Object[] {
+					this.getKey(), record!=null ? record.getSummary() : record});
 			return true;
+		}
 		return false;
 	}
 

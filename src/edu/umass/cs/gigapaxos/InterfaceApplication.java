@@ -16,11 +16,11 @@ public interface InterfaceApplication {
 	public boolean handleRequest(InterfaceRequest request);
 
 	/**
-	 * App must support string to InterfaceRequest conversion and back.
+	 * App must support string-to-InterfaceRequest conversion and back.
 	 * Furthermore, the conversion to a string and back must preserve the return
 	 * values of all InterfaceRequest methods, i.e.,
-	 * (app.getRequest(request.toString())).getRequestType =
-	 * request.getRequestType() ... and so on
+	 * {@code InterfaceApplication.getRequest(request.toString())).getRequestType =
+	 * request.getRequestType()} ... and so on
 	 * 
 	 * @param stringified
 	 * @return InterfaceRequest corresponding to {@code stringified}.

@@ -32,6 +32,10 @@ public class WaitEpochFinalState<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
+	/*
+	 * This restart period can be small because if the state is large, we should
+	 * be sending summary handles instead anyway.
+	 */
 	private static final long RESTART_PERIOD = WaitAckStopEpoch.RESTART_PERIOD;
 
 	private final StartEpoch<NodeIDType> startEpoch;
@@ -90,6 +94,8 @@ public class WaitEpochFinalState<NodeIDType>
 		if (!this.prevGroupIterator.hasNext())
 			return null;
 		this.sleepOptimization();
+		log.log(Level.INFO, "{0} initiating request for final epoch state {1}",
+				new Object[] { this, reqState.getSummary() });
 		// Try myself first if I am in both old and new groups
 		NodeIDType target = this.positionIterator();
 		GenericMessagingTask<NodeIDType, ?> mtask = new GenericMessagingTask<NodeIDType, Object>(
@@ -98,11 +104,11 @@ public class WaitEpochFinalState<NodeIDType>
 	}
 
 	private NodeIDType positionIterator() {
-		NodeIDType firstTry = this.startEpoch.getFirstPrevEpochCandidate()!=null ? this.startEpoch.getFirstPrevEpochCandidate() :
-			this.appCoordinator.getMyID();
+		NodeIDType firstTry = this.startEpoch.getFirstPrevEpochCandidate() != null ? this.startEpoch
+				.getFirstPrevEpochCandidate() : this.appCoordinator.getMyID();
 		// if not contains me or not first time
-		if (!this.startEpoch.getPrevEpochGroup().contains(firstTry) || !this.first
-				|| (this.first = false))
+		if (!this.startEpoch.getPrevEpochGroup().contains(firstTry)
+				|| !this.first || (this.first = false))
 			return this.prevGroupIterator.next();
 		// else if contains me and first time
 		while (this.prevGroupIterator.hasNext()
@@ -119,21 +125,20 @@ public class WaitEpochFinalState<NodeIDType>
 			return true;
 		return false;
 	}
-	
+
 	private void sleepOptimization() {
 		try {
 			/*
 			 * FIXME: An optimization to wait a tiny bit to increase the
 			 * likelihood that the previous epoch final state is readily
-			 * available at most any previous epoch replica so that we
-			 * avoid a restart timeout. For service names, this is not
-			 * an issue because we supply a hint in startEpoch to try
-			 * the candidate that acked the stop of the previous epoch.
-			 * But for split reconfiguration operations, the timeout
-			 * may still be triggered as there is no stop phase in a 
-			 * split operation. Ideally, we would sleep just until the
-			 * splittee group has been stopped, but we don't have 
-			 * an easy way of determining that here.
+			 * available at most any previous epoch replica so that we avoid a
+			 * restart timeout. For service names, this is not an issue because
+			 * we supply a hint in startEpoch to try the candidate that acked
+			 * the stop of the previous epoch. But for split reconfiguration
+			 * operations, the timeout may still be triggered as there is no
+			 * stop phase in a split operation. Ideally, we would sleep just
+			 * until the splittee group has been stopped, but we don't have an
+			 * easy way of determining that here.
 			 */
 			if (this.startEpoch.getFirstPrevEpochCandidate() == null
 					|| this.startEpoch.isSplitOrMerge())
@@ -186,22 +191,14 @@ public class WaitEpochFinalState<NodeIDType>
 			EpochFinalState<NodeIDType> state = (EpochFinalState<NodeIDType>) event;
 			if (!checkEpochFinalState(event))
 				break;
-			log.log(Level.INFO, MyLogger.FORMAT[4],
-					new Object[] { this, "received", state.getSummary(),
-							"state=", state.getState() });
+			log.log(Level.INFO, "{0} received {1}; state=[{2}]", new Object[] {
+					this, state.getSummary(), state.getState() });
 			handled = this.appCoordinator.createReplicaGroup(
 					this.startEpoch.getServiceName(),
 					this.startEpoch.getEpochNumber(), state.getState(),
 					this.startEpoch.getCurEpochGroup());
-			
-			
-			/*
-			 * createReplicaGroup should always return true to indicate that it
-			 * either succeeded in creating the group with the specified epoch
-			 * number or higher and the supplied state. This should always be
-			 * possible, if necessary as a blocking operation. So we invoke
-			 */
-			assert (handled);
+
+			// if !handled, we will be stuck retrying until it is true
 
 		default:
 			break;
@@ -257,9 +254,9 @@ public class WaitEpochFinalState<NodeIDType>
 			ackStartEpoch.setKey(this.notifiees.get(node));
 			mtasks.add(new GenericMessagingTask<NodeIDType, AckStartEpoch<NodeIDType>>(
 					node, ackStartEpoch));
-			log.log(Level.INFO, MyLogger.FORMAT[5], new Object[] { this,
-					"sending", ackStartEpoch.getSummary(), "to RC" + node,
-					"with key", this.notifiees.get(node) });
+			log.log(Level.INFO, "{0} sending {1} to RC {2} with key {3}",
+					new Object[] { this, ackStartEpoch.getSummary(), node,
+							this.notifiees.get(node) });
 		}
 		return mtasks.toArray(mtasks.iterator().next().toArray());
 	}

@@ -14,8 +14,8 @@ import org.json.JSONObject;
 
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
@@ -47,7 +47,7 @@ import edu.umass.cs.utils.MyLogger;
 public class ReconfigurableClient {
 
 	private final Set<InetSocketAddress> reconfigurators;
-	private final JSONMessenger<Integer> messenger;
+	private final JSONMessenger<?> messenger;
 	private final ConcurrentHashMap<String, Long> sentRequests = new ConcurrentHashMap<String, Long>();
 	private final ConcurrentHashMap<String, BasicReconfigurationPacket<?>> rcvdResponses = new ConcurrentHashMap<String, BasicReconfigurationPacket<?>>();
 	private Set<InetSocketAddress> activeReplicas = null;
@@ -55,7 +55,7 @@ public class ReconfigurableClient {
 	private Logger log = Logger.getLogger(getClass().getName());
 
 	ReconfigurableClient(Set<InetSocketAddress> reconfigurators,
-			JSONMessenger<Integer> messenger) {
+			JSONMessenger<?> messenger) {
 		this.reconfigurators = reconfigurators;
 		this.messenger = messenger;
 		messenger.addPacketDemultiplexer(new ClientPacketDemultiplexer());
@@ -148,8 +148,7 @@ public class ReconfigurableClient {
 
 		@Override
 		public boolean handleMessage(JSONObject json) {
-			log.log(Level.FINEST, MyLogger.FORMAT[1], new Object[] { "Client received: ",
-					json });
+			log.log(Level.FINEST, "Client received {0}", new Object[] { json });
 			try {
 				ReconfigurationPacket.PacketType rcType = ReconfigurationPacket
 						.getReconfigurationPacketType(json);
@@ -195,8 +194,8 @@ public class ReconfigurableClient {
 						notifyAnyReply(reqActives);
 						break;
 					case RECONFIGURE_RC_NODE_CONFIG:
-						ReconfigureRCNodeConfig<Integer> rcnc = new ReconfigureRCNodeConfig<Integer>(
-								json, new StringifiableDefault<Integer>(0));
+						ReconfigureRCNodeConfig<String> rcnc = new ReconfigureRCNodeConfig<String>(
+								json, new StringifiableDefault<String>(""));
 						log.log(Level.INFO,
 								"Received node config change {0} {1}{2}",
 								new Object[] {
@@ -242,6 +241,7 @@ public class ReconfigurableClient {
 			} catch (JSONException je) {
 				je.printStackTrace();
 			} catch (RuntimeException re) {
+				re.printStackTrace();
 				fatalException(re);
 			}
 			return true;
@@ -334,6 +334,11 @@ public class ReconfigurableClient {
 	}
 
 	/**
+	 * 
+	 */
+	public static int TEST_PORT = 61000;
+
+	/**
 	 * Simple test client for the reconfiguration package. Clients only know the
 	 * set of all reconfigurators, not active replicas for any name. All
 	 * information about active replicas for a name is obtained from
@@ -350,16 +355,16 @@ public class ReconfigurableClient {
 			 * Client can only send/receive clear text or do server-only
 			 * authentication
 			 */
-			JSONMessenger<Integer> messenger = new JSONMessenger<Integer>(
-					(new JSONNIOTransport<Integer>(null, null,
-							new PacketDemultiplexerDefault(),
+			JSONMessenger<?> messenger = new JSONMessenger<String>(
+					(new MessageNIOTransport<String, JSONObject>(null, null, 
+							new PacketDemultiplexerDefault(), true,
 							ReconfigurationConfig.getClientSSLMode())));
 			client = new ReconfigurableClient(TestConfig.getReconfigurators(),
 					messenger);
 			int numRequests = 2;
 			String requestValuePrefix = "request_value";
 			long nameReqInterArrivalTime = 200;
-			long NCReqInterArrivalTime = 2000;
+			long NCReqInterArrivalTime = 1000;
 			String initValue = "initial_value";
 			int numIterations = 10000;
 			boolean testReconfigureRC = true;
@@ -367,7 +372,7 @@ public class ReconfigurableClient {
 			for (int j = 0; j < numIterations; j++) {
 				String namePrefix = "name"
 						+ (int) (Math.random() * Integer.MAX_VALUE);
-				int reconfiguratorID = (int) (Math.random() * 64000);
+				String reconfiguratorID = "RC"+ (int) (Math.random() * 64000);
 				long t0 = System.currentTimeMillis();
 
 				// /////////////request active replicas////////////////////
@@ -462,10 +467,10 @@ public class ReconfigurableClient {
 				// ////////////////////////////////////////////////////////
 				// add RC node; the port below does not matter in this test
 				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(new ReconfigureRCNodeConfig<Integer>(
+				//do
+					client.sendRequest(new ReconfigureRCNodeConfig<String>(
 							null, reconfiguratorID, new InetSocketAddress(
-									InetAddress.getByName("localhost"), 3103)));
+									InetAddress.getByName("localhost"), TEST_PORT)));
 				while (!client
 						.waitForReconfigureRCSuccess(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 								.toString()));
@@ -475,11 +480,11 @@ public class ReconfigurableClient {
 				Thread.sleep(NCReqInterArrivalTime);
 
 				// //////////////// delete just added RC node//////////////////
-				HashSet<Integer> deleted = new HashSet<Integer>();
+				HashSet<String> deleted = new HashSet<String>();
 				deleted.add(reconfiguratorID);
 				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(new ReconfigureRCNodeConfig<Integer>(
+				//do
+					client.sendRequest(new ReconfigureRCNodeConfig<String>(
 							null, null, deleted));
 				while (!client
 						.waitForReconfigureRCSuccess(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG

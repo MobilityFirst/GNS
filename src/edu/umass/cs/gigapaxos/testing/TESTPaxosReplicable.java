@@ -14,7 +14,6 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
@@ -46,7 +45,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		private HashMap<Integer, String> committed = new HashMap<Integer, String>();
 	}
 
-	private static Logger log = PaxosManager.getLogger();
+	private static Logger log = Logger.getLogger(TESTPaxosReplicable.class.getName());
+			//PaxosManager.getLogger();
 
 	public TESTPaxosReplicable(JSONNIOTransport<Integer> nio) {
 		this();

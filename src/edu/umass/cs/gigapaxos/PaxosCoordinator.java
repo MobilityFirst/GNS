@@ -49,7 +49,8 @@ import edu.umass.cs.gigapaxos.paxosutil.HotRestoreInfo;
 public class PaxosCoordinator {
 	private PaxosCoordinatorState pcs=null; // This gets recreated for each ballot.
 
-	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosCoordinator.class.getName()); // GNS.getLogger();
+	private static Logger log = //PaxosManager.getLogger();//
+			Logger.getLogger(PaxosCoordinator.class.getName());
 
 	/* Come to exist if nonexistent. Called by PaxosInstanceStateMachine
 	 */
@@ -80,8 +81,9 @@ public class PaxosCoordinator {
 		ArrayList<ProposalPacket> preActiveProposals=null;
 		if(this.exists() && !pcs.isActive()) {
 			preActiveProposals = pcs.getPreActiveProposals();
-			log.info("Coordinator "+this.pcs.getBallot() + " resigning, " +
-					"preActive proposals = " + preActiveProposals);
+			log.log(Level.INFO,
+					"Coordinator {0} resigning; preActiveproposals = ",
+					new Object[] { this.pcs.getBallot(), preActiveProposals });
 		}
 
 		pcs = null; // The main point of this method.
@@ -117,18 +119,23 @@ public class PaxosCoordinator {
 				/* Can ignore return value of preActiveProposals below as handleAcceptReplyHigherBallot 
 				 * returns true only if there are no proposals at this coordinator.
 				 */
-				log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {"Coordinator ", this.pcs.getBallot(), " PREEMPTED request#: ", 
-						acceptReply.slotNumber, ", ", acceptReply.getPaxosID()});
+				log.log(Level.FINE,
+						"Coordinator {0} PREEMPTED {1}:request#{2}",
+						new Object[] { this.pcs.getBallot(),
+								acceptReply.getPaxosID(),
+								acceptReply.slotNumber });
 				assert(preemptedPValue.ballot.compareTo(acceptReply.ballot) < 0);
 				if(pcs.preemptedFully()) {
-					log.log(Level.FINE, "{0}{1}{2}", new Object[] {"Coordinator ", this.pcs.getBallot(), " preempted fully, about to resign"});
+					log.log(Level.FINE,
+							"Coordinator {0} preempted fully, about to resign",
+							new Object[] { this.pcs.getBallot() });
 					resignAsCoordinator();
 				}
 			}
 		}
 		else if(acceptReply.ballot.compareTo(pcs.getBallot()) == 0) {
 			committedPValue = pcs.handleAcceptReplyMyBallot(members, acceptReply);
-		} else log.warning("YIKES! Acceptor "+acceptReply.acceptor+" replied without updating its ballot:\n" +
+		} else log.severe("YIKES! Acceptor "+acceptReply.acceptor+" replied without updating its ballot:\n" +
 			acceptReply.ballot + " < " + this.pcs.getBallotStr());
 		return committedPValue!=null ? committedPValue : preemptedPValue; // both could be null too
 	}
@@ -152,12 +159,16 @@ public class PaxosCoordinator {
 		if(!this.exists()) return null; 
 		ArrayList<AcceptPacket> acceptPacketList = null;
 
-		if(this.pcs.isPrepareAcceptedByMajority(prepareReply, members)) { // pcs still valid
-			assert(!this.pcs.isActive());   // ******ensures this block is called exactly once
-			this.pcs.combinePValuesOntoProposals(members); // okay even for multiple threads to call in parallel
-			acceptPacketList = this.pcs.spawnCommandersForProposals(); // should be called only once, o/w conflicts possible
-			this.pcs.setCoordinatorActive(); // *****ensures this block is called exactly once
-		} // "synchronized" in the method definition ensures that this else block is called atomically 
+		if (this.pcs.isPrepareAcceptedByMajority(prepareReply, members)) {
+			// ******ensures this block is called exactly once
+			assert (!this.pcs.isActive());
+			// okay even for multiple threads to call in parallel
+			this.pcs.combinePValuesOntoProposals(members);
+			// should be called only once, o/w conflicts possible
+			acceptPacketList = this.pcs.spawnCommandersForProposals();
+			this.pcs.setCoordinatorActive();
+			// *****ensures this block is called exactly once
+		} // "synchronized" method ensures that this else block is called atomically 
 
 		return (acceptPacketList);
 	}
@@ -186,12 +197,22 @@ public class PaxosCoordinator {
 	protected synchronized boolean ranRecently() {
 		return (this.exists() && this.pcs.ranRecently());
 	}
-	protected synchronized Ballot getBallot() {return this.exists() ? this.pcs.getBallot() : null;} 
-	protected synchronized String getBallotStr() {return this.exists() ? this.pcs.getBallotStr() : null;} 
 	protected int getMajorityCommittedSlot() {return (this.isActive() ? this.pcs.getMajorityCommittedSlot():-1);}
 	protected synchronized boolean caughtUp() {return !this.exists() || this.pcs.caughtUp();}
 	protected synchronized int getNextProposalSlot() {return this.exists() ? this.pcs.getNextProposalSlot() : -1;}
 	protected synchronized int[] getNodeSlots() {return this.exists() ? this.pcs.getNodeSlots() : null;}
+
+	// unsynchronized to prevent logging console deadlocks
+	protected String getBallotStr() {
+		PaxosCoordinatorState coordState = this.pcs;
+		return coordState != null ? coordState.getBallotStr() : null;
+	}
+
+	// unsynchronized to prevent logging console deadlocks
+	protected Ballot getBallot() {
+		PaxosCoordinatorState coordState = this.pcs;
+		return coordState != null ? coordState.getBallot() : null;
+	}
 
 	// Testing methods
 	protected boolean isActive() {return this.exists() && this.pcs.isActive();}

@@ -38,7 +38,7 @@ public class TESTPaxosNode {
 					(niot = new JSONNIOTransport<Integer>(id, TESTPaxosConfig
 							.getNodeConfig(), new PacketDemultiplexerDefault(),
 							true)),
-					(this.app = new TESTPaxosReplicable(niot)), null);
+					(this.app = new TESTPaxosReplicable(niot)), null, false);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -103,7 +103,7 @@ public class TESTPaxosNode {
 						.getGroup(groupID));
 				if (id == myID)
 					this.getPaxosManager().createPaxosInstance(groupID,
-							 0, group, (Replicable) null);
+							 0, group, (Replicable) null, null);
 			}
 			if (i % j == 0 && ((j *= 2) > 1) || (i % 100000 == 0)) {
 				System.out.print(i + " ");

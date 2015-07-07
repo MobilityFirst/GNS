@@ -70,9 +70,15 @@ public class PaxosAcceptor {
 	 */
 	private NullIfEmptyMap<Integer, PValuePacket> acceptedProposals=new NullIfEmptyMap<Integer,PValuePacket>();
 	private NullIfEmptyMap<Integer, PValuePacket> committedRequests=new NullIfEmptyMap<Integer,PValuePacket>();
+	
+	// used for pausing
+	private byte lastActiveTime = 0;
+	// used to limit sync decisions rate 
+	private byte lastSyncdTime = 0;
 
 	// static, so does not count towards space.
-	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosAcceptor.class.getName()); 	
+	private static Logger log = //PaxosManager.getLogger();//
+	Logger.getLogger(PaxosAcceptor.class.getName()); 	
 
 
 	PaxosAcceptor(int b, int c, int s, HotRestoreInfo hri) {
@@ -102,14 +108,17 @@ public class PaxosAcceptor {
 	
 	protected synchronized void setActive() {this.state = (byte)STATES.ACTIVE.ordinal();}
 	protected synchronized boolean isActive() {return this.state==(byte)STATES.ACTIVE.ordinal();}
-
+	protected synchronized int getBallotCoord() {return this.ballotCoord;}
 	protected synchronized int getGCSlot() {return this.acceptedGCSlot;}
 	protected synchronized int getSlot() {return _slot;}
 	protected synchronized Ballot getBallot() {return new Ballot(ballotNum, ballotCoord);}
-	protected synchronized String getBallotStr() {return Ballot.getBallotString(ballotNum, ballotCoord);}
-	protected synchronized String getBallotSlot() {return getBallot()+", "+getSlot();}
-	protected synchronized int getBallotNum() {return this.ballotNum;}
-	protected synchronized int getBallotCoord() {return this.ballotCoord;}
+
+
+	// unsynchronized for logging
+	protected Ballot getBallotLog() {return new Ballot(ballotNum, ballotCoord);}
+	protected int getBallotCoordLog() {return this.ballotCoord;}
+	protected String getBallotSlot() {return this.ballotCoord+":"+this.ballotNum +", "+this._slot;}
+	protected int getSlotLog() {return _slot;}
 
 	protected synchronized void setGCSlotAfterPuttingInitialSlot() {this.acceptedGCSlot=0;}
 
@@ -213,7 +222,7 @@ public class PaxosAcceptor {
 	protected synchronized ArrayList<Integer> getMissingCommittedSlots(int sizeLimit) {
 		if(this.isStopped()) return null;
 
-		if(this.committedRequests.isEmpty()) return null;
+		//if(this.committedRequests.isEmpty()) return null;
 		ArrayList<Integer> missing=new ArrayList<Integer>();
 		int maxCommittedSlot = getMaxCommittedSlot();
 		// comparator should be wraparound-aware
@@ -256,7 +265,7 @@ public class PaxosAcceptor {
 
 	/***************** Start of testing methods *******************************/
 	public String toString() {
-		return "{Acceptor: [slot=" + this.getSlot() + ", ballot="+this.ballotNum+":"+this.ballotCoord +
+		return "{Acceptor: [slot=" + this._slot + ", ballot="+this.ballotNum+":"+this.ballotCoord +
 				", isStopped="+this.isStopped()+", |accepted|="+this.acceptedProposals.size() + ", |committed|=" + 
 				this.committedRequests.size() + ", committedFrontier="+ this.acceptedGCSlot + 
 				this.getAccepted() + this.getCommitted() + "]}";
@@ -317,7 +326,36 @@ public class PaxosAcceptor {
 		return true;
 	}
 	
+	////////////////////////////////////////////////////////////////
+	protected void justActive() {
+		this.lastActiveTime = byteSecs();
+	}
 
+	protected void justSyncd() {
+		this.lastSyncdTime = byteSecs();
+	}
+
+	private static byte byteSecs() {
+		return (byte) (System.currentTimeMillis() / 1000);
+	}
+	
+	// handles byte wraparound
+	private static long millisSince(byte lastTime) {
+		return ((byte) (byteSecs() - lastTime)) * 1000;
+	}
+	
+	private static boolean isOlderThan(byte t0, long t1) {
+		return millisSince(t0) > t1 || millisSince(t0) < 0; 
+	}
+
+	protected boolean canSync() {
+		return isOlderThan(this.lastSyncdTime, PaxosInstanceStateMachine.MIN_RESYNC_DELAY);
+	}
+	
+	protected boolean isLongIdle() {
+		return isOlderThan(lastActiveTime, PaxosManager.getDeactivationPeriod());
+	}	
+	////////////////////////////////////////////////////////////////
 
 	private static enum InstanceType {FULL, ACCEPTOR};
 
@@ -452,9 +490,12 @@ public class PaxosAcceptor {
 		}
 	}
 
-	static void main(String[] args) {
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
-		// testMemory();
+		testMemory();
 		testAcceptor();
 		System.out.println("SUCCESS!");
 	}

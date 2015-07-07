@@ -37,7 +37,6 @@ import edu.umass.cs.utils.DelayProfiler;
  *         DerbyPaxosLogger that extends this class for a more scalable,
  *         efficient, and persistent logger.
  */
-@SuppressWarnings("javadoc")
 public abstract class AbstractPaxosLogger {
 	protected static final boolean BATCH_GC_ENABLED = false;
 
@@ -49,8 +48,6 @@ public abstract class AbstractPaxosLogger {
 	private boolean aboutToClose = false;
 
 	private synchronized boolean isAboutToClose() {
-		if (myID == 100 && this.aboutToClose)
-			System.out.println("isAboutToClose check" + myID);
 		return this.aboutToClose;
 	}
 
@@ -64,7 +61,8 @@ public abstract class AbstractPaxosLogger {
 	private final Messenger<?> messenger;
 	private final Checkpointer collapsingCheckpointer;
 
-	private static Logger log = PaxosManager.getLogger();// Logger.getLogger(AbstractPaxosLogger.class.getName());
+	private static Logger log = //PaxosManager.getLogger();//
+	Logger.getLogger(AbstractPaxosLogger.class.getName());
 
 	protected AbstractPaxosLogger(int id, String logDir, Messenger<?> msgr) {
 		this.myID = id;
@@ -176,6 +174,7 @@ public abstract class AbstractPaxosLogger {
 	protected static final boolean kill(AbstractPaxosLogger logger,
 			String paxosID, int version) {
 		logger.collapsingCheckpointer.dequeue(paxosID);
+		// there isn't an easy way to remove pending log messages
 		return logger.remove(paxosID, version);
 	}
 
@@ -322,6 +321,10 @@ public abstract class AbstractPaxosLogger {
 	public abstract StringContainer getEpochFinalCheckpointState(String paxosID,
 			int version);
 
+	/**
+	 * @param paxosID
+	 * @return The most recent final state version (possibly null).
+	 */
 	public abstract Integer getEpochFinalCheckpointVersion(String paxosID
 			);
 
@@ -427,6 +430,9 @@ public abstract class AbstractPaxosLogger {
 
 	/**
 	 * Gets a list of all logged messages for the paxos group {@code paxosID}.
+	 * Used by rollForward. We don't need to bother about the version here
+	 * because non-version-compliant logged messages if any will be rejected by
+	 * PaxosInstanceStateMachine anyway.
 	 * 
 	 * @param paxosID
 	 * @return The list of logged messages for the paxos group {@code paxosID}.
@@ -434,22 +440,28 @@ public abstract class AbstractPaxosLogger {
 	public abstract ArrayList<PaxosPacket> getLoggedMessages(String paxosID);
 
 	/**
+	 * We must supply the version here for safety.
+	 * 
 	 * @param paxosID
+	 * @param version
 	 * @param firstSlot
 	 * @return A map of logged ACCEPTs indexed by their integer slot numbers.
 	 */
-	public abstract Map<Integer, PValuePacket> getLoggedAccepts(String paxosID,
+	public abstract Map<Integer, PValuePacket> getLoggedAccepts(String paxosID, int version,
 			int firstSlot);
 
 	/**
 	 * 
+	 * We must supply the version here for safety.
+	 * 
 	 * @param paxosID
+	 * @param version 
 	 * @param minSlot
 	 * @param maxSlot
 	 * @return Returns logged decisions for the paxos group {@code paxosID}.
 	 * @throws JSONException
 	 */
-	public abstract ArrayList<PValuePacket> getLoggedDecisions(String paxosID,
+	public abstract ArrayList<PValuePacket> getLoggedDecisions(String paxosID, int version,
 			int minSlot, int maxSlot) throws JSONException;
 
 	// pausing methods
@@ -459,6 +471,11 @@ public abstract class AbstractPaxosLogger {
 
 	/**************** End of extensible methods ***********************/
 
+
+	/**
+	 * @param packet
+	 * @return The slot and ballot as a 3-integer array.
+	 */
 	// A utility method with seemingly no other place to put
 	public static int[] getSlotBallot(PaxosPacket packet) {
 		int slot = -1;
@@ -510,7 +527,7 @@ public abstract class AbstractPaxosLogger {
 			throw new RuntimeException(this.getClass().getName()
 					+ ".dequeueImpl() should not have been called");
 		}
-
+		
 		@Override
 		public void process(LogMessagingTask task) {
 			throw new RuntimeException(this.getClass().getName()
@@ -609,6 +626,7 @@ public abstract class AbstractPaxosLogger {
 			task.checkpoint();
 		}
 
+		// used to clear any pending checkpoint
 		private void dequeue(String paxosID) {
 			synchronized (checkpoints) {
 				this.checkpoints.remove(paxosID);
