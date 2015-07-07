@@ -27,10 +27,8 @@ import java.io.IOException;
  *            This class also supports delay emulation and short-circuiting
  *            local sends by directly sending it to the packet demultiplexer.
  */
-@SuppressWarnings("deprecation")
 public class JSONNIOTransport<NodeIDType> extends
-		MessageNIOTransport<NodeIDType, JSONObject> implements
-		InterfaceJSONNIOTransport<NodeIDType> {
+		MessageNIOTransport<NodeIDType, JSONObject>  {
 
 	/**
 	 * Initiates transporter with id and nodeConfig.

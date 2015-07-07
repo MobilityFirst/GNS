@@ -1,29 +1,38 @@
 package edu.umass.cs.nio.nioutils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.reconfiguration.examples.ReconfigurableClient;
 import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
  * 
  *         Helps instrument read/write stats in NIOTransport. Used for testing
- *         and instrumentation purposes only. 
+ *         and instrumentation purposes only.
  */
 
 @SuppressWarnings("javadoc")
 public class NIOInstrumenter {
-	private static int totalSent = 0; // Sent by NIOTransport or GNSNIOTransport
-	private static int totalRcvd = 0; // Received by NIOTransport or
-										// GNSNIOTransport
+	private static int totalSent = 0; // Sent by NIOTransport
+	private static int totalRcvd = 0; // Received by NIOTransport
+
 	private static int totalConnAccepted = 0; // NIOTransport
 	private static int totalConnInitiated = 0; // NIOTransport
 	private static int totalJSONRcvd = 0; // JSONMessageWorker
 	private static int totalPktsRcvd = 0; // PacketDemultiplexer
 	private static double averageDelay = 0;
 	private static boolean enabled = true;
+	
+	private static Set<Integer> excludePorts = new HashSet<Integer>();
+	static {
+		excludePorts.add(ReconfigurableClient.TEST_PORT);
+	}
 
 	public static synchronized void incrSent() {
 		totalSent++;
@@ -43,6 +52,20 @@ public class NIOInstrumenter {
 
 	public static synchronized void incrJSONRcvd() {
 		totalJSONRcvd++;
+	}
+	public static synchronized boolean incrJSONRcvd(int port) {
+		if(!excludePorts.contains(port)) {
+			totalJSONRcvd++;
+			return true;
+		}
+		return false;
+	}
+	public static synchronized boolean incrSent(int port) {
+		if(!excludePorts.contains(port)) {
+			totalSent++;
+			return true;
+		}
+		return false;
 	}
 
 	public static synchronized void incrPktsRcvd() {
@@ -67,6 +90,10 @@ public class NIOInstrumenter {
 		return totalSent - totalJSONRcvd;
 	}
 
+	public static synchronized void addExcludePort(int port) {
+		excludePorts.add(port);
+	}
+
 	public void disable() {
 		enabled = (enabled ? false : false);
 	}
@@ -74,6 +101,7 @@ public class NIOInstrumenter {
 	public void enable() {
 		enabled = true;
 	}
+	
 
 	public synchronized static String getJSONStats() {
 		return "[NIO stats: [ #sent=" + totalSent + " | #rcvd=" + totalJSONRcvd

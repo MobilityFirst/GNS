@@ -5,15 +5,12 @@ import edu.umass.cs.gigapaxos.paxospackets.FindReplicaGroupPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
-import edu.umass.cs.gigapaxos.paxosutil.ActivePaxosState;
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gigapaxos.paxosutil.HotRestoreInfo;
 import edu.umass.cs.gigapaxos.paxosutil.IntegerMap;
 import edu.umass.cs.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.Messenger;
-import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
-import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
@@ -37,6 +34,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -72,12 +70,10 @@ public class PaxosManager<NodeIDType> {
 	private static final long MORGUE_DELAY = 30000;
 	private static final boolean MAINTAIN_CORPSES = true;// false;
 	private static final int PINSTANCES_CAPACITY = 2000000;
-	private static final boolean CRASH_AND_RECOVER_ME_OPTION = false;
 	private static final boolean HIBERNATE_OPTION = false;
-	private static final boolean PAUSE_OPTION = true;// true;
+	private static final boolean PAUSE_OPTION = true;
 	private static final long DEACTIVATION_PERIOD = 30000; // 30s default
 	private static final boolean ONE_PASS_RECOVERY = true;
-	private static final int MAX_POKE_RATE = 1000; // per sec
 	/**
 	 * Refer to documentation in AbstractReconfiguratorDB.
 	 */
@@ -86,7 +82,12 @@ public class PaxosManager<NodeIDType> {
 	 * Whether request batching is enabled.
 	 */
 	protected static final boolean BATCHING_ENABLED = true;
-	protected static final long CAN_CREATE_TIMEOUT = 1; // non-zero
+
+	/*
+	 * FIXME: Unclear what a good default is for good liveness. It doesn't
+	 * really matter for safety of reconfiguration.
+	 */
+	protected static final long CAN_CREATE_TIMEOUT = 10000;
 	private static final boolean EMULATE_UNREPLICATED = false;
 
 	// final
@@ -102,7 +103,7 @@ public class PaxosManager<NodeIDType> {
 	// stopped paxos instances about to be incinerated
 	private final HashMap<String, PaxosInstanceStateMachine> corpses;
 	// active paxos instances hopefully small in number
-	protected final HashMap<String, ActivePaxosState> activePaxii;
+	// protected final HashMap<String, ActivePaxosState> activePaxii;
 	private final IntegerMap<NodeIDType> integerMap = new IntegerMap<NodeIDType>();
 	private final Stringifiable<NodeIDType> unstringer;
 	private final RequestBatcher batched;
@@ -170,10 +171,10 @@ public class PaxosManager<NodeIDType> {
 		this.pinstances = new MultiArrayMap<String, PaxosInstanceStateMachine>(
 				PINSTANCES_CAPACITY);
 		this.corpses = new HashMap<String, PaxosInstanceStateMachine>();
-		this.activePaxii = new HashMap<String, ActivePaxosState>();
+		// this.activePaxii = new HashMap<String, ActivePaxosState>();
 		this.messenger = new Messenger<NodeIDType>(niot, this.integerMap);
-		this.paxosLogger = new DerbyPaxosLogger(this.myID, paxosLogFolder,
-				this.messenger);
+		this.paxosLogger = new DerbyPaxosLogger(this.myID, id.toString(),
+				paxosLogFolder, this.messenger);
 		this.nullCheckpointsEnabled = enableNullCheckpoints;
 		// periodically remove active state for idle paxii
 		timer.schedule(new Deactivator(), DEACTIVATION_PERIOD);
@@ -216,11 +217,15 @@ public class PaxosManager<NodeIDType> {
 	 * recursion breaks after at most one step.
 	 * 
 	 * On recovery: initiateRecovery() -> recover(info) ->
-	 * createPaxosInstance(info) -> getInstance(paxosID) ->? unpause(paxosID)
-	 * ->? createPaxosInstance(info) Upon createPaxosInstance any time after
-	 * recovery, the same chain as above is followed.
+	 * createPaxosInstance(info) -> getInstance(paxosID, tryHotRestore) ->?
+	 * unpause(paxosID) ->? createPaxosInstance(info, hri). An inifinite
+	 * recursion is prevented because createPaxosInstance will not again call
+	 * getInstance with the tryHotRestore option if hri!=null.
 	 * 
-	 * On deactivate: deactivate(paxosID) ->? pause(paxosID) // may or may not
+	 * Upon createPaxosInstance any time after recovery, the same chain as above
+	 * is followed.
+	 * 
+	 * On deactivation: deactivate(paxosID) ->? pause(paxosID) // may or may not
 	 * be successful
 	 * 
 	 * On incoming packet: handleIncomingPacket() -> getInstance(paxosID) ->?
@@ -228,41 +233,49 @@ public class PaxosManager<NodeIDType> {
 	 */
 
 	/**
+	 * Returns members of this paxos instance if it is active, and null
+	 * otherwise. Note that this means that we return null even if the paxos
+	 * instance is being created (but has not yet completed recovery). A
+	 * non-null answer to this method necessarily means that the paxos instance
+	 * was ready to take more requests at the time of the query.
+	 * 
 	 * @param paxosID
+	 *            The name of the object or service being managed as a
+	 *            replicated state machine.
 	 * @param version
-	 * @return Group members.
+	 *            The reconfiguration version.
+	 * @return Set of members in the paxos instance paxosID:version.
 	 */
-	public synchronized Set<NodeIDType> getPaxosNodeIDs(String paxosID,
-			int version) {
-		return isActive(paxosID, version) ? this.getPaxosNodeIDs(paxosID)
-				: null;
+	public Set<NodeIDType> getReplicaGroup(String paxosID, int version) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if (pism != null && pism.getVersion() == version && pism.isActive())
+			return this.integerMap.getIntArrayAsNodeSet(pism.getMembers());
+		return null;
 	}
 
 	/**
 	 * @param paxosID
 	 * @return Set of members in the paxos instance named paxosID. There can
 	 *         only be one version of a paxos instance at a node, so we don't
-	 *         have to specify a version here.
+	 *         really have to specify a version unless we want to explicitly get
+	 *         the members for a specific version, in which case,
+	 *         {@link #getReplicaGroup(String, int)} should be used.
 	 */
-	public Set<NodeIDType> getPaxosNodeIDs(String paxosID) {
-		/*
-		 * Important to invoke getInstance anywhere we want to get from
-		 * pinstance because the instance may be paused.
-		 */
-		PaxosInstanceStateMachine pism = this.getInstance(paxosID); // this.pinstances.get(paxosID);
-		if (pism != null) {
+	public Set<NodeIDType> getReplicaGroup(String paxosID) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if (pism != null && pism.isActive())
 			return this.integerMap.getIntArrayAsNodeSet(pism.getMembers());
-		}
 		return null;
 	}
 
 	/**
+	 * FIXME: method unused.
 	 * 
 	 * @param paxosID
 	 * @param version
 	 * @return Whether paxos instance exists and is active.
 	 */
-	public boolean isActive(String paxosID, int version) {
+	protected boolean isActive(String paxosID, int version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.isActive() && pism.getVersion() == version)
 			return true;
@@ -270,68 +283,47 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	/**
-	 * @param paxosID
-	 * @return Whether a paxos instance with the name {@code paxosID} is active
-	 *         irrespective of the version number.
-	 */
-	public boolean isActive(String paxosID) {
-		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
-		if (pism != null && pism.isActive())
-			return true;
-		return false;
-	}
-
-	/**
-	 * This method calls pism.isStopped that is synchronized, so a call to it
-	 * can act as a way to force completion of synchronized methods in pism.
+	 * 
+	 * FIXME: method unused.
 	 * 
 	 * @param paxosID
 	 * @return Returns true if this paxos instance exists and is stopped.
 	 */
-	public boolean isStopped(String paxosID) {
+	protected boolean isStopped(String paxosID) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.isStopped())
 			return true;
 		return false;
 	}
 
-	/**
-	 * Exists only for debugging purposes to check status.
-	 * 
-	 * @param paxosID
-	 * @param version
-	 * @return Status as a string; null if the instance does not exist.
-	 */
-	public String getInstanceStatus(String paxosID, int version) {
+	private void synchronizedNoop(String paxosID, int version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version)
-			return pism.isActive() ? PaxosAcceptor.STATES.ACTIVE.toString()
-					: pism.isStopped() ? PaxosAcceptor.STATES.STOPPED
-							.toString() : null;
-		return null;
-	}
-
-	// PaxosInstanceStateMachine.isStopped is synchronized
-	private void waitForPISMSynchronization(String paxosID) {
-		this.isStopped(paxosID);
+			pism.synchronizedNoop();
 	}
 
 	/**
+	 * A method that specifies the minimum number of necessary arguments to
+	 * create a paxos instance. The version is assumed to be 0 here. The use of
+	 * this method is encouraged only if reconfiguration is not desired. The
+	 * initialState argument can be {@code null} if
+	 * {@link #isNullCheckpointStateEnabled()} is true.
+	 * 
 	 * @param paxosID
-	 * @param version
 	 * @param gms
-	 * @param app
+	 * @param initialState
 	 * @return Returns true if the paxos instance paxosID:version or one with a
 	 *         higher version number was successfully created.
 	 */
 
-	public boolean createPaxosInstance(String paxosID, int version,
-			Set<NodeIDType> gms, InterfaceReplicable app) {
-		return this.createPaxosInstance(paxosID, version, this.myID, gms, app,
-				null, null, true);
+	public boolean createPaxosInstance(String paxosID, Set<NodeIDType> gms,
+			String initialState) {
+		return this.createPaxosInstance(paxosID, 0, gms, myApp, null, null,
+				true);
 	}
 
 	/**
+	 * Paxos instance creation with an initial state specified.
 	 * 
 	 * @param paxosID
 	 *            Paxos group name.
@@ -347,14 +339,14 @@ public class PaxosManager<NodeIDType> {
 	 */
 	public boolean createPaxosInstance(String paxosID, int version,
 			Set<NodeIDType> gms, InterfaceReplicable app, String initialState) {
-		return this.createPaxosInstance(paxosID, version, this.myID, gms, app,
+		return this.createPaxosInstance(paxosID, version, gms, app,
 				initialState, null, true);
 	}
 
-	protected synchronized boolean createPaxosInstance(String paxosID,
-			int version, int id, Set<NodeIDType> gms, InterfaceReplicable app,
+	private synchronized boolean createPaxosInstance(String paxosID,
+			int version, Set<NodeIDType> gms, InterfaceReplicable app,
 			String initialState, HotRestoreInfo hri, boolean tryRestore) {
-		return this.createPaxosInstance(paxosID, version, id, gms, app,
+		return this.createPaxosInstance(paxosID, version, gms, app,
 				initialState, hri, tryRestore, false);
 	}
 
@@ -367,68 +359,73 @@ public class PaxosManager<NodeIDType> {
 	 * not both true.
 	 */
 	private synchronized boolean createPaxosInstance(String paxosID,
-			int version, int id, Set<NodeIDType> gms, InterfaceReplicable app,
+			int version, Set<NodeIDType> gms, InterfaceReplicable app,
 			String initialState, HotRestoreInfo hri, boolean tryRestore,
 			boolean missedBirthing) {
-		if (this.isClosed() || id != myID)
-			return false;
-		if (this.equalOrHigherStopped(paxosID, version))
+
+		if (this.isClosed())
 			return false;
 
 		boolean tryHotRestore = (hasRecovered() && hri == null);
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID,
 				tryHotRestore, tryRestore);
-		// if exists or moved on, return false
-		if ((pism != null) &&
-		// higher version exists
-				(pism.getVersion() - version > 0 ||
-				// existing version exactly matches
-				(pism.getVersion() == version && membersMatch(
-						pism.getMembers(), gms)))) {
-			log.log(Level.INFO,
-					"{0} paxos instance {1}:{2} or higher version already exists",
+		// if equal or higher version exists, return false
+		if ((pism != null) && (pism.getVersion() - version >= 0)) {
+			log.log(Level.FINE,
+					"{0} paxos instance {1}:{2} or higher version currently exists",
 					new Object[] { this, paxosID, version });
 			return false;
 		}
 
-		// lower version exists
+		// if lower version exists, return false
 		if (pism != null && (pism.getVersion() - version < 0)) {
-			log.log(Level.INFO, "{0} has pre-existing paxos instance {1}",
-					new Object[] { this, pism.getPaxosIDVersion() });
+			log.log(Level.INFO,
+					"{0} has pre-existing paxos instance {1} when asked to create version {2}",
+					new Object[] { this, pism.getPaxosIDVersion(), version });
+			// pism must be explicitly stopped first
 			return false; // initialState will also be ignored here
 		}
-
-		try {
-			pism = new PaxosInstanceStateMachine(paxosID, version, id,
-					this.integerMap.put(gms), app != null ? app : this.myApp,
-					initialState, this, hri, missedBirthing);
-		} catch (PaxosInstanceCreationException pice) {
-			pice.printStackTrace();
+		// if equal or higher version stopped on disk, return false
+		if (pism == null && equalOrHigherVersionStopped(paxosID, version)) {
+			log.log(Level.INFO,
+					"{0} paxos instance {1}:{2} can not be created as equal or higher "
+							+ "version {3}:{4} was previously created and stopped",
+					new Object[] { this, paxosID, version, paxosID,
+							this.getVersion(paxosID) });
 			return false;
 		}
+
+		// else try to create (could still run into exception)
+		pism = new PaxosInstanceStateMachine(paxosID, version, myID,
+				this.integerMap.put(gms), app != null ? app : this.myApp,
+				initialState, this, hri, missedBirthing);
+
 		pinstances.put(paxosID, pism);
 		assert (this.getInstance(paxosID, false, false) != null);
-		log.log(Level.FINE, "{0} successfully created paxos instance {1}",
-				new Object[] { this, pism.getPaxosIDVersion() });
+		log.log(Level.FINE,
+				"{0} successfully {1} paxos instance {2}",
+				new Object[] { this, hri != null ? "unpaused" : "created",
+						pism.getPaxosIDVersion() });
 		/*
 		 * Note: rollForward can not be done inside the instance as we first
-		 * need to update the instance map here so that networking (trivially
-		 * sending message to self) works.
+		 * need to update the instance map here so that networking--even
+		 * trivially sending message to self--works.
 		 */
-		if (!tryHotRestore)
+		assert (hri == null || hasRecovered());
+		if (hri == null) // not hot restore
 			rollForward(paxosID);
+		// to sync decisions initially if necessary
+		this.syncPaxosInstance(pism);
 
 		// keepalives only if needed
-		if (!TESTPaxosConfig.isCrashed(this.myID))
-			this.FD.sendKeepAlive(gms);
+		this.FD.sendKeepAlive(gms);
 		return true;
 	}
 
-	private boolean equalOrHigherStopped(String paxosID, int version) {
-		Integer stoppedVersion = this.getVersion(paxosID);
-		if (stoppedVersion != null && stoppedVersion - version >= 0)
-			return true;
-		return false;
+	// sync is just a noop event that will trigger fixLongDecisionGaps
+	private void syncPaxosInstance(PaxosInstanceStateMachine pism) {
+		if (pism != null)
+			pism.poke();
 	}
 
 	/**
@@ -439,10 +436,6 @@ public class PaxosManager<NodeIDType> {
 	 */
 	public boolean stopFailureMonitoring(NodeIDType id) {
 		return this.FD.dontSendKeepAlive(id);
-	}
-
-	private boolean membersMatch(int[] members, Set<NodeIDType> gms) {
-		return this.integerMap.put(gms).equals(Util.arrayToIntSet(members));
 	}
 
 	private boolean canCreateOrExistsOrHigher(String paxosID, int version) {
@@ -474,6 +467,8 @@ public class PaxosManager<NodeIDType> {
 						|| !type.equals(PaxosPacket.PaxosPacketType.PAXOS_PACKET))
 					return false;
 
+				log.log(Level.FINEST, "{0} packet demultiplexer received {1}",
+						new Object[] { PaxosManager.this, jsonMsg });
 				paxosManager.handleIncomingPacket(jsonMsg);
 				return true;
 			} catch (JSONException e) {
@@ -487,9 +482,9 @@ public class PaxosManager<NodeIDType> {
 	private void handleIncomingPacket(JSONObject jsonMsg) {
 		try {
 			if (BATCHING_ENABLED)
-				this.handleIncomingPacketPreBatch(fixNodeStringToInt(jsonMsg));
+				this.enqueueRequest(fixNodeStringToInt(jsonMsg));
 			else
-				this.handleIncomingPacketInternal(fixNodeStringToInt(jsonMsg));
+				this.handlePaxosPacket(fixNodeStringToInt(jsonMsg));
 		} catch (JSONException e) {
 			log.severe(this + " unable to fix node ID string to integer");
 			e.printStackTrace();
@@ -500,13 +495,13 @@ public class PaxosManager<NodeIDType> {
 	 * If RequestPacket, hand over to batcher that will then call
 	 * handleIncomingPacketInternal on batched requests.
 	 */
-	private void handleIncomingPacketPreBatch(JSONObject jsonMsg) {
+	private void enqueueRequest(JSONObject jsonMsg) {
 		try {
 			if (PaxosPacket.getPaxosPacketType(jsonMsg).equals(
 					PaxosPacket.PaxosPacketType.REQUEST))
 				this.batched.enqueue(new RequestPacket(jsonMsg));
 			else
-				this.handleIncomingPacketInternal(jsonMsg);
+				this.handlePaxosPacket(jsonMsg);
 		} catch (JSONException e) {
 			log.severe(this + " unable to process JSONObject " + jsonMsg);
 			e.printStackTrace();
@@ -519,7 +514,7 @@ public class PaxosManager<NodeIDType> {
 	 * 
 	 * @param jsonMsg
 	 */
-	public void handleIncomingPacketInternal(JSONObject jsonMsg) {
+	protected void handlePaxosPacket(JSONObject jsonMsg) {
 		if (this.isClosed())
 			return;
 		else if (emulateUnreplicated(jsonMsg)) // testing
@@ -544,6 +539,9 @@ public class PaxosManager<NodeIDType> {
 				assert (jsonMsg.has(PaxosPacket.PAXOS_ID)) : jsonMsg;
 				String paxosID = jsonMsg.getString(PaxosPacket.PAXOS_ID);
 				PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+				log.log(Level.FINEST,
+						"{0} received paxos message for retrieved instance {1} : {2}",
+						new Object[] { this, pism, jsonMsg });
 				if (pism != null)
 					// version checked internally
 					pism.handlePaxosMessage(jsonMsg);
@@ -553,7 +551,7 @@ public class PaxosManager<NodeIDType> {
 				break;
 			}
 		} catch (JSONException je) {
-			log.severe("Node " + this.myID + " received bad JSON message: "
+			log.severe("Node" + this.myID + " received bad JSON message: "
 					+ jsonMsg);
 			je.printStackTrace();
 		}
@@ -576,13 +574,26 @@ public class PaxosManager<NodeIDType> {
 			log.log(Level.INFO,
 					"{0} could not find paxos instance {1} for request {2}; this can happen if a"
 							+ " request arrives before (after) a paxos instance is created (stopped)"
-							+ "; last know version was {3}",
+							+ "; last known version was {3}",
 					new Object[] {
 							this,
-							paxosID,"["+
-							Util.truncate(requestPacket.getRequestValue()[0],
-									64)+"..]", this.getVersion(paxosID) });
+							paxosID,
+							"["
+									+ Util.truncate(
+											requestPacket.getRequestValue()[0],
+											64) + "..]",
+							this.getVersion(paxosID) });
 		return matched ? pism.getPaxosIDVersion() : null;
+	}
+
+	// used (only) by RequestBatcher for already batched RequestPackets
+	protected void proposeBatched(RequestPacket requestPacket) {
+		try {
+			this.handlePaxosPacket(requestPacket.toJSONObject());
+		} catch (JSONException e) {
+			log.severe(this + " " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -608,7 +619,10 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	/**
-	 * Proposes a request to stop a specific version of paxosID.
+	 * Proposes a request to stop a specific version of paxosID. There is no way
+	 * to stop a paxos replicated state machine other than by issuing a stop
+	 * request. The only way to know for sure that the RSM is stopped is by the
+	 * application receiving the stop request.
 	 * 
 	 * @param paxosID
 	 * @param value
@@ -628,15 +642,32 @@ public class PaxosManager<NodeIDType> {
 				e.printStackTrace();
 			}
 		} else
-			log.info(this
-					+ " not proposing stop request for "
-					+ paxosID
-					+ ":"
-					+ version
-					+ " : "
-					+ (pism == null ? " no paxos instance found " : pism
-							.getPaxosIDVersion() + " pre-exists"));
+			log.log(Level.INFO,
+					"{0} failed to propose stop request for {1}:{2}; {3}",
+					new Object[] {
+							this,
+							paxosID,
+							version,
+							(pism == null ? " no paxos instance found " : pism
+									.getPaxosIDVersion() + " pre-exists") });
 		return null;
+	}
+
+	/**
+	 * Stop the paxos instance named paxosID on this machine irrespective of the
+	 * version. Note that there can be at most one paxos version with a given
+	 * name on a machine.
+	 * 
+	 * @param paxosID
+	 * @param value
+	 * @return The paxosID:version string to which the request was proposed.
+	 */
+	public String proposeStop(String paxosID, String value) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if (pism == null)
+			return null;
+		else
+			return this.proposeStop(paxosID, value, pism.getVersion());
 	}
 
 	/**
@@ -648,53 +679,37 @@ public class PaxosManager<NodeIDType> {
 	 */
 	public StringContainer getFinalState(String paxosID, int version) {
 		/*
-		 * FIXME: The isStopped check below is a hack to force a little wait
-		 * through synchronization. PaxosInstanceStateMachine.isStopped is
-		 * synchronized, so if a stop request is being executed concurrently
+		 * The wait below is a hack to force a little wait through
+		 * synchronization. If a stop request is being executed concurrently
 		 * while a getFinalState request arrives, it is better for the stop
 		 * request to finish and the final checkpoint to be created before we
 		 * issue getEpochFinalCheckpoint. Otherwise, we would return a null
 		 * response for getEpochFinalCheckpointState here and the requester of
 		 * the checkpoint is forced to time out and resend the request after a
-		 * coarse-grained timeout. It is unnecessary to check the version in the
-		 * isStopped call as its return value is not used to do anything.
+		 * coarse-grained timeout. This wait is just an optimization and is not
+		 * necessary for safety.
 		 */
-		this.waitForPISMSynchronization(paxosID);
-		// FIXME: need to ensure that paxosID:version or lower is not active?
+		this.synchronizedNoop(paxosID, version);
 		return this.paxosLogger.getEpochFinalCheckpointState(paxosID, version);
 	}
 
 	/**
 	 * We are only allowed to delete a stopped paxos instance. There is no
-	 * "public" method to force-kill a paxos instance other than by creating a
-	 * paxos instance with the same name and higher version. The only way to
-	 * stop a paxos instance is to get a stop request committed.
+	 * public method to force-kill a paxos instance other than by successfully
+	 * creating a paxos instance with the same name and higher version. The only
+	 * way to stop a paxos instance is to get a stop request committed.
 	 * 
 	 * @param paxosID
 	 * @param version
 	 * @return Returns true if the paxos instance {@code paxosID:version} exists
-	 *         and is stopped. If so, the instance will be deleted. This method
-	 *         will almost never return true because stopped paxos instances
-	 *         don't exist for long and are automatically killed; it will return
-	 *         true only if called during the brief period when a stop request
-	 *         has been executed but the final checkpoint has not yet completed.
+	 *         and is stopped. If so, the instance will be deleted.
 	 */
 	public boolean deleteStoppedPaxosInstance(String paxosID, int version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
-		if (pism != null && pism.getVersion() == version) {
-			/*
-			 * Need to wait for ongoing pism.extractExecuteCheckpoint to
-			 * complete, otherwise we may lose epoch final state before making a
-			 * copy of it.
-			 */
-
-			if (pism.isStopped()) {
-				assert(false);
-				kill(pism);
+		if (pism != null && pism.getVersion() == version)
+			// nothing to do here as stopped paxos instances are auto-killed
+			if (pism.synchronizedNoop() && pism.isStopped())
 				return true;
-			}
-		}
-
 		return false;
 	}
 
@@ -748,7 +763,7 @@ public class PaxosManager<NodeIDType> {
 	 * @param limit
 	 */
 	public void setOutOfOrderLimit(int limit) {
-		this.outOfOrderLimit = limit;
+		this.outOfOrderLimit = Math.max(limit, 1);
 	}
 
 	protected int getOutOfOrderLimit() {
@@ -853,7 +868,7 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	/**
-	 * @return Idle period after which paxos instances are deactivated.
+	 * @return Idle period after which paxos instances are paused.
 	 */
 	public static long getDeactivationPeriod() {
 		return DEACTIVATION_PERIOD;
@@ -903,6 +918,14 @@ public class PaxosManager<NodeIDType> {
 		return this.getInstance(paxosID, true, true);
 	}
 
+	private boolean isPauseEnabled() {
+		return PAUSE_OPTION;
+	}
+
+	private boolean isHibernateable() {
+		return HIBERNATE_OPTION;
+	}
+
 	/*
 	 * For each paxosID in the logs, this method creates the corresponding paxos
 	 * instance and rolls it forward from the last checkpointed state.
@@ -916,8 +939,6 @@ public class PaxosManager<NodeIDType> {
 		int groupCount = 0, freq = 1;
 		log.log(Level.INFO, "{0} beginning to recover checkpoints",
 				new Object[] { this });
-		// System.out.print("Node " + this.myID
-		// +" beginning to recover checkpoints: ");
 		while (this.paxosLogger.initiateReadCheckpoints(true))
 			; // acquires lock
 		RecoveryInfo pri = null;
@@ -927,10 +948,10 @@ public class PaxosManager<NodeIDType> {
 			// start paxos instance, restore app state from checkpoint if any
 			// and roll forward
 			this.recover(pri.getPaxosID(), pri.getVersion(), this.myID,
-					getNodesFromStringSet(pri.getMembers()), myApp);
+					getNodesFromStringSet(pri.getMembers()), myApp,
+					pri.getState());
 			if ((++groupCount) % freq == 0) {
 				freq *= 2;
-				// System.out.print(" " + groupCount);
 			}
 		}
 		this.paxosLogger.closeReadAll(); // releases lock
@@ -946,10 +967,8 @@ public class PaxosManager<NodeIDType> {
 		}
 		int logCount = 0;
 		freq = 1;
-		if (ONE_PASS_RECOVERY) { // roll forward all logged messages in a single
-									// pass
-			// System.out.print("\nNode " + this.myID +
-			// " beginning to roll forward logged messages: ");
+		// roll forward all logged messages in a single pass
+		if (ONE_PASS_RECOVERY) {
 			log.log(Level.INFO,
 					"{0} beginning to roll forward logged messages",
 					new Object[] { this });
@@ -961,11 +980,10 @@ public class PaxosManager<NodeIDType> {
 					log.log(Level.FINEST,
 							"{0} rolling forward logged message {1}",
 							new Object[] { this, packet });
-					this.handleIncomingPacketInternal(PaxosPacket
-							.markRecovered(packet).toJSONObject());
+					this.handlePaxosPacket(PaxosPacket.markRecovered(packet)
+							.toJSONObject());
 					if ((++logCount) % freq == 0) {
 						freq *= 2;
-						// System.out.print(" " + logCount);
 					}
 				} catch (JSONException je) {
 					je.printStackTrace();
@@ -977,7 +995,6 @@ public class PaxosManager<NodeIDType> {
 					new Object[] { this, logCount, groupCount });
 		}
 
-		this.pokeAll();
 		this.hasRecovered = true;
 		this.notifyRecovered();
 		log.log(Level.INFO, "\n{0} recovery complete", new Object[] { this });
@@ -995,35 +1012,6 @@ public class PaxosManager<NodeIDType> {
 			return (pism != null && pism.isActive());
 	}
 
-	private synchronized void pokeAll() {
-		if (PaxosInstanceStateMachine.POKE_ENABLED) {
-			log.log(Level.INFO, "{0} beginning to poke all instances",
-					new Object[] { this });
-			while (this.paxosLogger.initiateReadCheckpoints(false))
-				; // acquires lock
-			RecoveryInfo pri = null;
-			RateLimiter rl = new RateLimiter(MAX_POKE_RATE);
-			int count = 0, freq = 1;
-			while ((pri = this.paxosLogger.readNextCheckpoint(false)) != null) {
-				String paxosID = pri.getPaxosID();
-				if (paxosID != null) {
-					PaxosInstanceStateMachine pism = this.getInstance(paxosID);
-					if (pism != null)
-						pism.sendTestPaxosMessageToSelf();
-					rl.record();
-					if ((++count) % freq == 0) {
-						freq *= 2;
-						log.info(" " + count);
-					}
-				}
-			}
-			this.paxosLogger.closeReadAll(); // releases lock
-			log.log(Level.INFO,
-					"{0}{1} has finished poking all instances",
-					new Object[] { (count > 0 ? "\n" : ""), "Node ", this.myID });
-		}
-	}
-
 	/*
 	 * All messaging is done using PaxosMessenger and MessagingTask. This method
 	 */
@@ -1039,156 +1027,209 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	/*
-	 * synchronized because we want to move the paxos instance atomically from
-	 * pinstances to corpses. If not atomic, it can result in the corpse (to-be)
-	 * getting resurrected if a packet for the instance arrives in between.
+	 * A clean kill completely removes all trace of the paxos instance (unlike
+	 * pause or hibernate or an unclean kill). The copy of the instance kept in
+	 * corpses will not be revived; in fact, is there temporarily only to make
+	 * sure that the instance does not get re-created as a "missed birthing"
+	 * instance creation.
 	 * 
-	 * kill completely removes all trace of the paxos instance unlike hibernate
-	 * or pause. The copy of the instance kept in corpses will not be revived;
-	 * in fact, is there temporarily only to make sure that the instance does
-	 * not get re-created.
+	 * synchronized because any changes to pinstances must be synchronized as
+	 * createPaxosInstance and other methods also use it. Also, we want to move
+	 * the paxos instance atomically from pinstances to corpses. If not atomic,
+	 * it can result in the corpse (to-be) getting resurrected if a packet for
+	 * the instance arrives in between.
+	 * 
+	 * Note: pause or hibernate or crashAndRecover like options just invoke
+	 * softCrash and not kill that is more fatal. None of them do any of the
+	 * following: (1) wipe out checkpoint state, (2) nullify app state, or (3)
+	 * move pism to corpses, all of which kill does.
 	 */
-	protected synchronized void kill(PaxosInstanceStateMachine pism) {
+	protected synchronized void kill(PaxosInstanceStateMachine pism,
+			boolean clean) {
 		if (pism == null || this.isClosed())
 			return;
-		
-		while (!pism.kill()) 
+
+		/*
+		 * Do nothing if existing version not same as kill target. Note that if
+		 * existing is null, we still kill pism. It is unlikely but possible for
+		 * existing to be null, say, because the instance pism just got paused,
+		 * but for pism or this paxos manager to issue a kill immediately after.
+		 */
+		PaxosInstanceStateMachine existing = this
+				.getInstance(pism.getPaxosID());
+		if (existing != null && pism.getVersion() != existing.getVersion()) {
+			log.log(Level.INFO,
+					"{0} not killing {1} because {2} already exists in the map",
+					new Object[] { this, pism, existing });
+			return;
+		}
+
+		// else got murder work to do (even if existing==null)
+		while (!pism.kill(clean))
 			log.severe("Problem stopping paxos instance " + pism.getPaxosID()
 					+ ":" + pism.getVersion());
-		this.pinstances.remove(pism.getPaxosID());
+		this.softCrash(pism);
 		this.corpses.put(pism.getPaxosID(), pism);
 		timer.schedule(new Cremator(pism.getPaxosID(), this.corpses),
 				MORGUE_DELAY);
 		this.notifyUponKill();
 	}
 
-	// For testing. Similar to hibernate without checkpoint and immediately
-	// restore (from older checkpoint)
-	protected void crashAndRecoverMe(PaxosInstanceStateMachine pism) {
-		if (pism == null || this.isClosed())
+	/*
+	 * Default kill is clean. Unclean kill is used by PaxosInstanceStateMachine
+	 * when it is unable to execute an app request successfully. An unclean kill
+	 * does not wipe out checkpoint state or app state, but does move the paxos
+	 * instance to corpses because it is as good as dead at this point.
+	 * 
+	 * FIXME: Why not just do a softCrash instead of corpsing out in the case of
+	 * an app execution error? The instance might get re-created as a "missed
+	 * birthing" case, but that would still be safe and, maybe, the roll forward
+	 * this time around might succeed.
+	 */
+	private void kill(PaxosInstanceStateMachine pism) {
+		this.kill(pism, true);
+	}
+
+	// soft crash means stopping and "forgetting" the instance
+	private synchronized void softCrash(PaxosInstanceStateMachine pism) {
+		assert (pism != null);
+		pism.forceStop();
+		this.pinstances.remove(pism.getPaxosID());
+	}
+
+	/*
+	 * For testing. Similar to hibernate but without forcing a checkpoint and
+	 * followed immediately by a restore from the most recent (but possibly
+	 * still quite old) checkpoint.
+	 */
+	protected void crashAndRecover(PaxosInstanceStateMachine pism) {
+		if (pism == null || this.isClosed()
+				|| !this.pinstances.containsValue(pism))
 			return;
-		if (CRASH_AND_RECOVER_ME_OPTION) {
-			log.severe("OVERLOAD: Restarting overloaded coordinator node "
-					+ this.myID + "of " + pism.getPaxosID());
-			pism.forceStop();
-			this.pinstances.remove(pism.getPaxosID());
-			this.recover(pism.getPaxosID(), pism.getVersion(),
-					pism.getNodeID(),
-					this.integerMap.get(Util.arrayToIntSet(pism.getMembers())),
-					pism.getApp(), true);
-		}
+		log.warning(this + " crash-and-recovering paxos instance " + pism);
+		this.softCrash(pism);
+		this.recover(pism.getPaxosID(), pism.getVersion(), pism.getMyID(),
+				this.integerMap.get(Util.arrayToIntSet(pism.getMembers())),
+				pism.getApp()); // state will be auto-recovered
 	}
 
 	// Checkpoint and go to sleep on disk. Currently not used.
 	protected synchronized boolean hibernate(PaxosInstanceStateMachine pism) {
-		if (pism == null || this.isClosed())
+		if (pism == null || this.isClosed()
+				|| !this.pinstances.containsValue(pism)
+				|| !this.isHibernateable())
 			return false;
-		boolean hibernated = false;
-		if (HIBERNATE_OPTION) {
-			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] { "Node ", myID,
-					" trying to hibernate ", pism.getPaxosID() });
-			boolean stopped = pism.tryForcedCheckpointAndStop();
 
-			if (stopped) {
-				this.pinstances.remove(pism.getPaxosID());
-				hibernated = true;
-				log.log(Level.INFO, "{0}{1}{2}{3}",
-						new Object[] { "Node ", this.myID,
-								" sucessfully hibernated ", pism.getPaxosID() });
-			}
+		// else hibernate
+		boolean hibernated = false;
+		log.log(Level.INFO, "{0} trying to hibernate {1}", new Object[] { this,
+				pism });
+		boolean stopped = pism.tryForcedCheckpointAndStop();
+
+		if (stopped) {
+			this.softCrash(pism);
+			hibernated = true;
+			log.log(Level.INFO, "{0} sucessfully hibernated {1}", new Object[] {
+					this, pism });
 		}
 		return hibernated;
 	}
 
 	// Undo hibernate. Will rollback, so not very efficient.
 	private synchronized boolean restore(String paxosID) {
-		if (this.isClosed())
+		if (this.isClosed() || !this.isHibernateable())
 			return false;
-		boolean restored = false;
-		if (HIBERNATE_OPTION) {
-			PaxosInstanceStateMachine pism = null;
-			if ((pism = this.pinstances.get(paxosID)) != null)
-				return true;
-			log.log(Level.INFO, "{0}{1}{2}{3}", new Object[] {
-					"Trying to restore node ", this.myID, " : ", paxosID });
-			RecoveryInfo pri = this.paxosLogger.getRecoveryInfo(paxosID);
-			if (pri != null)
-				pism = this.recover(paxosID, pri.getVersion(), this.myID,
-						this.getNodesFromStringSet(pri.getMembers()),
-						this.myApp, true);
-			if (pism != null) {
-				restored = true;
-				log.log(Level.INFO,
-						"{0} successfully restored hibernated instance {1}",
-						new Object[] { this, paxosID });
-			} else
-				log.log(Level.WARNING,
-						"{0} unable to restore paxos instance {1}",
-						new Object[] { this, paxosID });
-		}
-		return restored;
+		PaxosInstanceStateMachine pism = null;
+		if ((pism = this.pinstances.get(paxosID)) != null)
+			return true;
+		log.log(Level.INFO, "{0} trying to restore instance {1}", new Object[] {
+				this, paxosID });
+		RecoveryInfo pri = this.paxosLogger.getRecoveryInfo(paxosID);
+		if (pri != null)
+			pism = this.recover(paxosID, pri.getVersion(), this.myID,
+					this.getNodesFromStringSet(pri.getMembers()), this.myApp,
+					pri.getState());
+		if (pism != null)
+			log.log(Level.INFO,
+					"{0} successfully restored hibernated instance {1}",
+					new Object[] { this, pism });
+		else
+			log.log(Level.WARNING, "{0} unable to restore paxos instance {1}",
+					new Object[] { this, paxosID });
+		return pism != null;
 	}
 
 	// Like hibernate but without checkpointing or subsequent recovery
 	protected synchronized boolean pause(PaxosInstanceStateMachine pism) {
-		if (pism == null || this.isClosed())
+		if (pism == null || this.isClosed()
+				|| !this.pinstances.containsValue(pism))
 			return false;
 		boolean paused = false;
-		if (PAUSE_OPTION) {
-			log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] { "Node ",
-					this.myID, " trying to pause ", pism.getPaxosID() });
-			long pauseInitTime = System.currentTimeMillis();
-			paused = pism.tryPause();
-			if (paused) {
-				this.pinstances.remove(pism.getPaxosID());
-				DelayProfiler.updateDelay("pause", pauseInitTime);
-				log.log(Level.FINER, "{0}{1}{2}{3}", new Object[] { "Node ",
-						this.myID, " sucessfully paused ", pism.getPaxosID() });
-			} else
-				log.log(Level.FINE, "{0}{1}", new Object[] {
-						"Failed to pause ", pism });
-		}
+		log.log(Level.FINE, "{0} trying to pause {1}", new Object[] { this,
+				pism.getPaxosIDVersion() });
+
+		// else try to pause
+		long pauseInitTime = System.currentTimeMillis();
+		paused = pism.tryPause();
+		if (paused) {
+			/*
+			 * crash means the same as removing from pinstances as well as
+			 * activePaxii for an already stopped paxos instance.
+			 */
+			assert (pism.isStopped());
+			this.softCrash(pism);
+			DelayProfiler.updateDelay("pause", pauseInitTime);
+			log.log(Level.FINE, "{0} successfully paused {1}", new Object[] {
+					this, pism.getPaxosIDVersion() });
+		} else
+			log.log(Level.FINE, "{0} failed to pause {1}", new Object[] { this,
+					pism });
 		return paused;
 	}
 
 	// Hot restores from disk, i.e., restores quickly without need for rollback
 	private synchronized boolean unpause(String paxosID) {
-		if (this.isClosed())
+		if (this.isClosed() || !this.hasRecovered() || !this.isPauseEnabled()
+				|| this.pinstances.containsKey(paxosID))
 			return false;
 		boolean restored = false;
-		if (PAUSE_OPTION) {
-			if (this.pinstances.get(paxosID) != null)
-				return true;
-			HotRestoreInfo hri = this.paxosLogger.unpause(paxosID);
-			if (hri != null) {
-				log.log(Level.FINER, "{0}{1}{2}{3}", new Object[] { "Node",
-						myID, " successfully hot restored paused instance ",
-						paxosID });
-				restored = this.createPaxosInstance(hri.paxosID, hri.version,
-						myID,
-						this.integerMap.get(Util.arrayToIntSet(hri.members)),
-						this.myApp, null, hri, false);
-			} else
-				log.log(Level.FINE, "{0}{1}{2}{3}{4}", new Object[] { "Node",
-						myID, " unable to hot restore instance ", paxosID });
-		}
+
+		long unpauseInitTime = System.currentTimeMillis();
+		HotRestoreInfo hri = this.paxosLogger.unpause(paxosID);
+		if (hri != null) {
+			log.log(Level.FINE,
+					"{0} successfully unpaused paused instance {1}",
+					new Object[] { this, paxosID });
+			restored = this.createPaxosInstance(hri.paxosID, hri.version,
+					this.integerMap.get(Util.arrayToIntSet(hri.members)),
+					this.myApp, null, hri, false);
+		} else
+			log.log(Level.FINE, "{0} unable to unpause instance {1}",
+					new Object[] { this, paxosID });
+		DelayProfiler.updateDelay("unpause", unpauseInitTime);
 		return restored;
 	}
 
 	/*
 	 * Create paxos instance restoring app state from checkpoint if any and roll
-	 * forward
+	 * forward.
 	 */
 	private PaxosInstanceStateMachine recover(String paxosID, int version,
 			int id, Set<NodeIDType> members, InterfaceReplicable app,
-			boolean restoration) {
+			String state) {
 		log.log(Level.FINE, "{0} {1}:{2} recovering", new Object[] { this,
 				paxosID, version });
-		this.createPaxosInstance(paxosID, version, id, (members), app, null,
-				null, false);
+		this.createPaxosInstance(paxosID, version, (members), app, null, null,
+				false);
 		PaxosInstanceStateMachine pism = (this
 				.getInstance(paxosID, true, false));
 		return pism;
+	}
+
+	private PaxosInstanceStateMachine recover(String paxosID, int version,
+			int id, Set<NodeIDType> members, InterfaceReplicable app) {
+		// state will be auto-recovered if it exists
+		return this.recover(paxosID, version, id, members, app, null);
 	}
 
 	/*
@@ -1211,14 +1252,9 @@ public class PaxosManager<NodeIDType> {
 			pism.setActive();
 			assert (this.getInstance(paxosID, false, false) != null);
 			if (pism != null)
-				pism.sendTestPaxosMessageToSelf();
+				pism.poke();
 		}
 		TESTPaxosConfig.setRecovered(this.myID, paxosID, true); // testing
-	}
-
-	private PaxosInstanceStateMachine recover(String paxosID, int version,
-			int id, Set<NodeIDType> members, InterfaceReplicable app) {
-		return this.recover(paxosID, version, id, members, app, false);
 	}
 
 	private void findPaxosInstance(JSONObject jsonMsg, String paxosID)
@@ -1315,16 +1351,21 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	/**
-	 * This is a common default create paxos instance behavior, i.e., we wait
-	 * for lower versions to be killed if necessary but, after a timeout, create
-	 * the new instance forcibly anyway. This method won't create the instance
-	 * if the same or higher version already exists. One concern with this
-	 * method is that force killing lower versions in order to start higher
-	 * versions can cause the epoch final state to be unavailable at any node in
-	 * immediately lower version. It is okay to kill even an immediately
+	 * This is a common default create paxos instance creation method, i.e., we
+	 * wait for lower versions to be killed if necessary but, after a timeout,
+	 * create the new instance forcibly anyway. This method won't create the
+	 * instance if the same or higher version already exists. One concern with
+	 * this method is that force killing lower versions in order to start higher
+	 * versions can cause the epoch final state to be unavailable at *any* node
+	 * in immediately lower version. It is okay to kill even an immediately
 	 * preceding instance only if we already have the necessary state
 	 * (presumably obtained from a stopped immediately preceding instance at
-	 * some other group member).
+	 * some other group member). In the reconfiguration protocol, we must ensure
+	 * this by starting a new epoch only after receiving a successful
+	 * acknowledgment for stopping the previous epoch. However, if say only one
+	 * node has executed the previous epoch's stop and then starts the new epoch
+	 * and causes other new epoch replicas to force-create the new epoch, and
+	 * then crashes, the new epoch is stuck.
 	 * 
 	 * @param paxosID
 	 * @param version
@@ -1338,6 +1379,8 @@ public class PaxosManager<NodeIDType> {
 	public boolean createPaxosInstanceForcibly(String paxosID, int version,
 			Set<NodeIDType> gms, InterfaceReplicable app, String state,
 			long timeout) {
+		if (timeout < CAN_CREATE_TIMEOUT)
+			timeout = CAN_CREATE_TIMEOUT;
 		// still do a timed wait
 		this.timedWaitCanCreateOrExistsOrHigher(paxosID, version, timeout);
 		if (this.instanceExistsOrHigher(paxosID, version))
@@ -1354,36 +1397,7 @@ public class PaxosManager<NodeIDType> {
 		}
 		boolean created = this.createPaxosInstance(paxosID, version, gms, app,
 				state);
-		assert (created || this.instanceExistsOrHigher(paxosID, version));
 		return created;
-	}
-
-	/**
-	 * @param paxosID
-	 * @param version
-	 * @param gms
-	 * @param app
-	 * @param state
-	 * @return Returns true if this paxos instance or one with a higher version
-	 *         number was successfully created.
-	 */
-	public boolean createPaxosInstanceForcibly(String paxosID, int version,
-			Set<NodeIDType> gms, InterfaceReplicable app, String state) {
-		return this.createPaxosInstanceForcibly(paxosID, version, gms, app,
-				state, CAN_CREATE_TIMEOUT);
-	}
-
-	/**
-	 * @param paxosID
-	 * @param version
-	 * @return Returns true if the paxos instance {@code paxosID:version}
-	 *         exists.
-	 */
-	public boolean exists(String paxosID, int version) {
-		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
-		if (pism != null && pism.getVersion() == version)
-			return true;
-		return false;
 	}
 
 	/**
@@ -1392,9 +1406,28 @@ public class PaxosManager<NodeIDType> {
 	 * @return Returns true if the paxos instance {@code paxosID:version} exists
 	 *         or a higher version exists.
 	 */
-	public boolean existsOrHigher(String paxosID, int version) {
+	public boolean equalOrHigherVersionExists(String paxosID, int version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && (pism.getVersion() - version >= 0))
+			return true;
+		return false;
+	}
+
+	/**
+	 * Unlike the method {@link #equalOrHigherVersionExists(String, int)}, this
+	 * method checks for whether an equal or higher version was previously
+	 * stopped. We need this check to prevent going back in time, i.e., starting
+	 * an epoch after it has been stopped.
+	 * 
+	 * @param paxosID
+	 * @param version
+	 * @return
+	 */
+	private boolean equalOrHigherVersionStopped(String paxosID, int version) {
+		// lastVersion may be active or recently stopped
+		Integer lastStoppedVersion = this.paxosLogger
+				.getEpochFinalCheckpointVersion(paxosID);
+		if (lastStoppedVersion != null && lastStoppedVersion - version >= 0)
 			return true;
 		return false;
 	}
@@ -1414,7 +1447,7 @@ public class PaxosManager<NodeIDType> {
 		int nodeID = FindReplicaGroupPacket.getNodeID(msg);
 		if (nodeID >= 0) {
 			try {
-				log.log(Level.WARNING,
+				log.log(Level.INFO,
 						"{0} received paxos message for non-existent instance {1}; contacting {2} for help",
 						new Object[] { this, paxosID, nodeID });
 				this.send(new MessagingTask(nodeID, findGroup));
@@ -1445,15 +1478,18 @@ public class PaxosManager<NodeIDType> {
 					.getPaxosID());
 			if (pism == null
 					|| (pism.getVersion() - findGroup.getVersion()) < 0) {
-				// kill lower versions if any and create new paxos instance
+				// kill lower versions if any before creating new paxos instance
 				if (pism != null
-						&& (pism.getVersion() - findGroup.getVersion() < 0))
+						&& (pism.getVersion() - findGroup.getVersion() < 0)) {
+					this.timedWaitCanCreateOrExistsOrHigher(
+							findGroup.getPaxosID(), findGroup.getVersion(),
+							CAN_CREATE_TIMEOUT);
 					this.kill(pism);
-				boolean created = this
-						.createPaxosInstance(findGroup.getPaxosID(), findGroup
-								.getVersion(), this.myID, this.integerMap
-								.get(Util.arrayToIntSet(findGroup.group)),
-								myApp, null, null, false, true);
+				}
+				boolean created = this.createPaxosInstance(findGroup
+						.getPaxosID(), findGroup.getVersion(), this.integerMap
+						.get(Util.arrayToIntSet(findGroup.group)), myApp, null,
+						null, false, true);
 				if (created)
 					log.log(Level.INFO,
 							"{0} created paxos instance {1}:{2} from nothing because it apparently missed its birthing",
@@ -1470,54 +1506,96 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	/*************************** Start of activePaxii related methods **********************/
+
 	private void deactivate() {
-		if (this.activePaxii.isEmpty())
+		if (isClosed() || this.pinstances.size() == 0)
 			return;
-		// FIXME: Should try to avoid cloning
-		Object[] actives = this.getActivePaxosIDs();
-		int count = 0;
-		for (Object active : actives) {
-			String paxosID = (String) active;
-			ActivePaxosState activeState = this.getActiveState(false, paxosID);
-			if (!isClosed() && activeState.isLongIdle()) {
-				boolean paused = pause(pinstances.get(paxosID));
-				if (paused) {
-					this.removeActiveState(paxosID);
-					count = count + 1;
-				}
+
+		long t0=System.currentTimeMillis();
+		log.log(Level.FINE,
+				"{0} initiating deactivation attempt, |activePaxii| = {1}",
+				new Object[] { this, this.pinstances.size() });
+		ArrayList<String> paused = new ArrayList<String>();
+
+		// cuckoo hashmap now supports an efficient iterator 
+		for (Iterator<PaxosInstanceStateMachine> pismIter = this.pinstances
+				.concurrentIterator(); pismIter.hasNext();) {
+			PaxosInstanceStateMachine pism = pismIter.next();
+
+			String paxosID = pism.getPaxosID();
+
+			if (pism.isLongIdle()) {
+				log.log(Level.FINER, "{0} trying to pause {1} [{2}]",
+						new Object[] { this, paxosID, pism });
+				/*
+				 * The sync below ensures that, at least once every deactivation
+				 * period, we sync decisions for an active paxos instance. This
+				 * is handy when a paxos instance is not caught up but doesn't
+				 * get any new messages either, say, because nothing new is
+				 * happening, then it has no reason to do anything but will
+				 * remain unnecessarily active; the sync here allows it to
+				 * potentially catch up and possibly be paused in the next
+				 * deactivation round if there is still no action by then.
+				 * 
+				 * The sync is also useful irrespective of whether or not the
+				 * instance is caught up for pausability as it simply allows all
+				 * active paxos instances to infrequently check for missing
+				 * decisions even if no new decisions are being generated.
+				 * 
+				 * Overhead: This sync imposes a message overhead of up to A
+				 * messages A is the number of active paxos instances. For
+				 * example, with 10K active instances, this method could send
+				 * 10K messages, which is high. However, for each instance, the
+				 * sync message will get sent only if it has not recently sent a
+				 * sync message *and* it is out of sync or it has just started
+				 * up and has a very low outOfOrder limit. Consequently, we
+				 * should avoid having a large number of paxos instances with a
+				 * very low outOfOrderLimit, especially if all they plan to do
+				 * is to start up and do nothing, otherwise, they will cause a
+				 * one-time deluge of sync messages before being paused.
+				 * 
+				 * If active instances are generally busy but out of sync, we
+				 * could impose a bandwidth overhead of A/D where D is the
+				 * deactivation thread's period, e.g., A=10K, D=30secs => an
+				 * overhead of 333 messages/sec, which although seems high is
+				 * possible only if none of those paxos instances sent a sync
+				 * reauest in the last S seconds, where S is the minimum
+				 * inter-sync interval for each instance (default 1 second). In
+				 * expectation, a high overhead relative to the inevitable paxos
+				 * commit overhead (of 3 messages per replica per decision) is
+				 * unlikely unless the workload and network behave
+				 * adversarially, i.e., in every D period, each active paxos
+				 * instance executes just enough decisions for it to be possible
+				 * for its outOfOrder threshold to be triggered and the network
+				 * reorders some of those decisions. If the instance commits
+				 * many more decisions than the outOfOrder threshold, then the
+				 * sync message adds only a small relative overhead, e.g., if
+				 * the outOfOrder threshold is 10, roughly 33 messages (accept,
+				 * acceptReply, decision) would be required to commit at least
+				 * 11 decisions that would then trigger just one sync message.
+				 * If the outOfOrder threshold is 1, then the sync message could
+				 * add one message to every 6 expected messages (for 2 paxos
+				 * commits) at this replica, a ~15% overhead. But with such a
+				 * low outOfOrder threshold, we should not be having a large
+				 * number of paxos instances in the first place.
+				 */
+				this.syncPaxosInstance(pism);
+				if (pause(pism))
+						paused.add(paxosID);
 			}
 		}
-		if (PAUSE_OPTION)
-			log.log(Level.INFO,
-					"{0} deactivated {1} idle instances; total #actives = {2}; average_get_instance_delay = {3}; average_pause_delay = {4}",
-					new Object[] { this, count, activePaxii.size(),
-							Util.mu(DelayProfiler.get("getInstance")),
-							Util.mu(DelayProfiler.get("pause")) });
+		DelayProfiler.updateDelay("deactivationLoop", t0);
+		log.log(paused.size() > 0 ? Level.INFO : Level.FINE,
+				"{0} deactivated {1} idle instances {2}; has {3} active instances; average_pause_delay = {4};"
+				+ " average_deactivation_delay = {5}",
+				new Object[] { this, paused.size(),
+						Util.truncatedLog(paused, PRINT_LOG_SIZE),
+						this.pinstances.size(),
+						Util.mu(DelayProfiler.get("pause")),
+						Util.mu(DelayProfiler.get("deactivationLoop"))});
 	}
 
-	private Object[] getActivePaxosIDs() {
-		synchronized (this.activePaxii) {
-			return this.activePaxii.keySet().toArray();
-		}
-	}
-
-	private void removeActiveState(String paxosID) {
-		synchronized (this.activePaxii) {
-			this.activePaxii.remove(paxosID);
-		}
-	}
-
-	protected ActivePaxosState getActiveState(boolean active, String paxosID) {
-		synchronized (this.activePaxii) {
-			ActivePaxosState activeState = this.activePaxii.get(paxosID);
-			if (activeState == null)
-				this.activePaxii.put(paxosID,
-						(activeState = new ActivePaxosState(paxosID)));
-			if (active)
-				activeState.justActive();
-			return activeState;
-		}
-	}
+	private static final int PRINT_LOG_SIZE = 16;
 
 	/*************************** End of activePaxii related methods **********************/
 
@@ -1544,9 +1622,16 @@ public class PaxosManager<NodeIDType> {
 	 */
 	private class Deactivator extends TimerTask {
 		public void run() {
-			deactivate(); // should not schedule periodically as the previous
-							// one may not have finished
-			timer.schedule(new Deactivator(), PaxosManager.DEACTIVATION_PERIOD);
+			try {
+				if (PAUSE_OPTION) {
+					deactivate();
+					// should use executor for scheduledWithFixedDelay
+					timer.schedule(new Deactivator(),
+							PaxosManager.DEACTIVATION_PERIOD);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -1608,7 +1693,11 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	public String toString() {
-		return this.getClass().getSimpleName() + myID;
+		return this.getClass().getSimpleName() + this.integerMap.get(myID);
+	}
+
+	protected String intToString(int id) {
+		return this.integerMap.get(id).toString();
 	}
 
 	/* ********************** Testing methods below ********************* */
@@ -1616,10 +1705,22 @@ public class PaxosManager<NodeIDType> {
 	 * @return Logger used by PaxosManager.
 	 */
 	public static Logger getLogger() {
-		return log;
+		return Logger.getLogger(PaxosManager.class.getName().replace(
+				"PaxosManager", ""));
 	}
 
-	static void main(String[] args) throws InterruptedException, IOException,
+	/**
+	 * This test method is deprecated and will either be removed or
+	 * significantly revamped. Use TESTPaxosMain instead to run a single machine
+	 * test with multiple virtual nodes.
+	 * 
+	 * @param args
+	 * @throws InterruptedException
+	 * @throws IOException
+	 * @throws JSONException
+	 */
+	@Deprecated
+	static void test(String[] args) throws InterruptedException, IOException,
 			JSONException {
 		int[] members = TESTPaxosConfig.getDefaultGroup();
 		int numNodes = members.length;
@@ -1684,7 +1785,7 @@ public class PaxosManager<NodeIDType> {
 			int k = 1;
 			for (int group = 0; group < numPaxosGroups; group++) {
 				// creating a paxos instance may induce recovery from disk
-				pms[node].createPaxosInstance(names[group], 0, members[node],
+				pms[node].createPaxosInstance(names[group], 0,
 						Util.arrayToIntSet(members), apps[node], null, null,
 						false);
 				if (numPaxosGroups > 1000
@@ -1709,7 +1810,7 @@ public class PaxosManager<NodeIDType> {
 				log.info("Waiting for node " + members[i] + " to recover ");
 				pms[i].waitToRecover();
 			}
-			log.info("Node " + members[i]
+			log.info("Node" + members[i]
 					+ " finished recovery including rollback;\n" + names[0]
 					+ " recovered at slot " + apps[i].getNumCommitted(names[0]));
 			// need max recovery slot for names[0] below

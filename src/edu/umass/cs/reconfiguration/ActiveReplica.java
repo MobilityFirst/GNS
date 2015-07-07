@@ -47,7 +47,6 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDe
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
-import edu.umass.cs.utils.MyLogger;
 
 /**
  * @author V. Arun
@@ -143,8 +142,8 @@ public class ActiveReplica<NodeIDType> implements
 							.getReconfigurationPacket(jsonObject)) != null) {
 				if (!this.protocolExecutor.handleEvent(rcPacket)) {
 					// do nothing
-					log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] { this,
-							"unable to handle packet", jsonObject });
+					log.log(Level.FINE, "{0} unable to handle packet {1}",
+							new Object[] { this, jsonObject });
 				}
 			}
 			// else check if app request
@@ -170,7 +169,7 @@ public class ActiveReplica<NodeIDType> implements
 		if (this.isRecovering())
 			return;
 		assert (request instanceof InterfaceReconfigurableRequest);
-		assert(handled);
+		assert (handled);
 		/*
 		 * We need to handle the callback in a separate thread, otherwise we
 		 * risk sending the ackStop before the epoch final state has been
@@ -282,12 +281,13 @@ public class ActiveReplica<NodeIDType> implements
 		// else
 		// if no previous group, create replica group with empty state
 		if (startEpoch.noPrevEpochGroup()) {
-			// createReplicaGroup is a local operation
+			// createReplicaGroup is a local operation (but may fail)
 			boolean created = this.appCoordinator
 					.createReplicaGroup(startEpoch.getServiceName(),
 							startEpoch.getEpochNumber(),
 							startEpoch.getInitialState(),
 							startEpoch.getCurEpochGroup());
+			// the creation above will throw an exception if it fails
 			assert (created && this.appCoordinator.getReplicaGroup(
 					startEpoch.getServiceName()).equals(
 					startEpoch.getCurEpochGroup()));
@@ -365,7 +365,7 @@ public class ActiveReplica<NodeIDType> implements
 		GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>>(
 				dropEpoch.getInitiator(), ackDrop);
 		assert (ackDrop.getInitiator().equals(dropEpoch.getInitiator()));
-		log.log(Level.FINE,
+		log.log(deleted ? Level.INFO : Level.INFO,
 				"{0} {1} sending {2} to {3}",
 				new Object[] { this, deleted ? "" : "*NOT*",
 						ackDrop.getSummary(), ackDrop.getInitiator() });
@@ -385,9 +385,10 @@ public class ActiveReplica<NodeIDType> implements
 				.getTaskKeyPrev(WaitEpochFinalState.class, dropEpoch, this
 						.getMyID().toString())) != null);
 		if (removed)
-			log.log(Level.FINEST, MyLogger.FORMAT[4], new Object[] { this,
-					" removed WaitEpochFinalState", dropEpoch.getServiceName(),
-					":", (dropEpoch.getEpochNumber() - 1) });
+			log.log(Level.FINEST,
+					"{0} removed WaitEpochFinalState {1}:{2}",
+					new Object[] { this, dropEpoch.getServiceName(),
+							(dropEpoch.getEpochNumber() - 1) });
 	}
 
 	/**
@@ -404,10 +405,9 @@ public class ActiveReplica<NodeIDType> implements
 		StringContainer stateContainer = this.getFinalStateContainer(
 				request.getServiceName(), request.getEpochNumber());
 		if (stateContainer == null) {
-			log.log(Level.INFO, MyLogger.FORMAT[2],
-					new Object[] { this,
-							"****did not find any epoch final state for****",
-							request.getSummary() });
+			log.log(Level.INFO,
+					"{0} ####did not find any epoch final state for#### {1}",
+					new Object[] { this, request.getSummary() });
 			return null;
 		}
 
@@ -416,10 +416,8 @@ public class ActiveReplica<NodeIDType> implements
 				request.getEpochNumber(), stateContainer.state);
 		GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>> mtask = null;
 
-		log.log(Level.INFO,
-				MyLogger.FORMAT[3],
-				new Object[] { this, "returning epoch final state to ",
-						event.getKey(), epochState.getSummary() });
+		log.log(Level.INFO, "{0} returning epoch final state to {1} {2}",
+				new Object[] { this, event.getKey(), epochState.getSummary() });
 		mtask = new GenericMessagingTask<NodeIDType, EpochFinalState<NodeIDType>>(
 				request.getInitiator(), epochState);
 
@@ -463,9 +461,8 @@ public class ActiveReplica<NodeIDType> implements
 						.getReplicaGroup(packet.getServiceName()) == null)))
 			retval = true;
 		if (retval)
-			log.log(Level.INFO,
-					"{0} has no state or has already moved on {1}",
-					new Object[] { this, packet.getSummary() });
+			log.log(Level.INFO, "{0} has no state or has already moved on to epoch {1} when received {2}",
+					new Object[] { this, epoch, packet.getSummary() });
 		else
 			log.log(Level.INFO,
 					"{0} has {1}:{2} with replica group {3} when asked to stop {4}:{5}",
@@ -479,10 +476,26 @@ public class ActiveReplica<NodeIDType> implements
 		return retval;
 	}
 
+	// true means move on, so the replica group won't get created
 	private boolean alreadyMovedOn(BasicReconfigurationPacket<?> packet) {
 		Integer epoch = this.appCoordinator.getEpoch(packet.getServiceName());
-		if (epoch != null && epoch - packet.getEpochNumber() >= 0)
-			return true;
+		if (epoch != null)
+			if (epoch - packet.getEpochNumber() > 0)
+				return true;
+			/*
+			 * If state for this epoch exists and the replica group is not null,
+			 * this is an active replica group, so we return true so that the
+			 * replica group is not created; else the replica group is stopped
+			 * locally and the only reason we got a re-creation request from
+			 * reconfigurators is because it is legitimate to do so (i..e, the
+			 * delete pending period has passed), so we return false so that the
+			 * replica group is created after forcibly wiping out previous epoch
+			 * final state that must be necessarily outdated at this point.
+			 */
+			else if (epoch == packet.getEpochNumber())
+				// active epoch
+				return (this.appCoordinator
+						.getReplicaGroup(packet.getServiceName()) != null);
 		return false;
 	}
 

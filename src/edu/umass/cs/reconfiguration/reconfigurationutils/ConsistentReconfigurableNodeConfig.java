@@ -269,14 +269,23 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		return this.reconfigurators = curReconfigurators;
 	}
 
-	// @Override
+	@Override
 	public InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress isa = this.nodeConfig.addReconfigurator(id, sockAddr);
+		assert(this.nodeConfig.getNodeAddress(id)!=null);
 		return isa;
 	}
+	/**
+	 * @param id
+	 * @return Socket address corresponding to node {@code id}.
+	 */
+	public InetSocketAddress getNodeSocketAddress(NodeIDType id) {
+		InetAddress ip = this.nodeConfig.getNodeAddress(id);
+		return (ip!=null ? new InetSocketAddress(ip, this.nodeConfig.getNodePort(id)) : null);
+	}
 
-	// @Override
+	@Override
 	public InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.nodeConfig.removeReconfigurator(id);
 	}
@@ -316,5 +325,13 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	@Override
 	public long getVersion() {
 		return this.nodeConfig.getVersion();
+	}
+	
+	public String toString() {
+		String s="";
+		for(NodeIDType id : this.nodeConfig.getNodeIDs()) {
+			s += id+":"+this.getNodeSocketAddress(id)+" ";
+		}
+		return s;
 	}
 }

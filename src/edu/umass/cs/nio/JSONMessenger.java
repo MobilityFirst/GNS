@@ -21,9 +21,7 @@ import edu.umass.cs.protocoltask.json.ProtocolPacket;
  *            than ephemeral traffic bursts. If you are overloaded, you are
  *            overloaded, so you must just reduce the load.
  */
-@SuppressWarnings("deprecation")
 public class JSONMessenger<NodeIDType> implements
-		InterfaceJSONNIOTransport<NodeIDType>,
 		InterfaceSSLMessenger<NodeIDType, JSONObject> {
 
 	/**

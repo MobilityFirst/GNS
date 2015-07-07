@@ -211,9 +211,10 @@ public class CommitWorker<NodeIDType> implements Runnable {
 			if (repeatable(request)) {
 				this.coordinate(request);
 				this.lastAttempts.put(request, System.currentTimeMillis());
-			}
-			oldestAttempt = Math.min(oldestAttempt,
-					this.getLastAttempt(request));
+				oldestAttempt = Math.min(oldestAttempt,
+						this.getLastAttempt(request));
+			} else if (this.removable(request))
+				reqIter.remove();
 		}
 		return getWaitTime(oldestAttempt);
 	}
@@ -232,10 +233,22 @@ public class CommitWorker<NodeIDType> implements Runnable {
 		return false;
 	}
 
+	private static final long MAX_PREV_DROP_COMMIT_ATTEMPT_TIME = 32 * WaitAckStopEpoch.RESTART_PERIOD;
+
 	private boolean repeatable(RCRecordRequest<NodeIDType> request) {
+		// else
 		return System.currentTimeMillis() - this.getLastAttempt(request) > (this.nonDefaultRestartPeriods
 				.containsKey(request.getServiceName()) ? this.nonDefaultRestartPeriods
 				.get(request.getServiceName()) : RESTART_PERIOD);
+	}
+
+	private boolean removable(RCRecordRequest<NodeIDType> request) {
+		if (request.isReconfigurationPrevDropComplete()
+				&& System.currentTimeMillis()
+						- request.startEpoch.getInitTime() < MAX_PREV_DROP_COMMIT_ATTEMPT_TIME) {
+			return true;
+		}
+		return false;
 	}
 
 	private long getWaitTime(long oldestAttempt) {

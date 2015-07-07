@@ -153,13 +153,21 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private PreparedStatement checkpointStmt = null;
 	private PreparedStatement cursorPstmt = null;
 	private ResultSet cursorRset = null;
+	
+	private final String strID;
 
-	private static Logger log = PaxosManager.getLogger();
+	private static Logger log = //PaxosManager.getLogger();
+			Logger.getLogger(DerbyPaxosLogger.class.getName());
 
-	DerbyPaxosLogger(int id, String dbPath, Messenger<?> messenger) {
+	DerbyPaxosLogger(int id, String strID, String dbPath, Messenger<?> messenger) {
 		super(id, dbPath, messenger);
+		this.strID = strID;
 		addDerbyLogger(this);
 		initialize(); // will set up db, connection, tables, etc. as needed
+	}
+	DerbyPaxosLogger(int id, String dbPath, Messenger<?> messenger) {
+		this(id, ""+id, dbPath, messenger);
+		
 	}
 
 	private synchronized Connection getDefaultConn() throws SQLException {
@@ -236,7 +244,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				log.log(Level.INFO,
 						"{0} copied epoch final state for {1}:{2}: [{3}]",
 						new Object[] { this, paxosID, version,
-								cpRecord.getString("state") });
+								Util.truncate(cpRecord.getString("state"), 32,32) });
 			}
 		} catch (SQLException sqle) {
 			log.severe("SQLException while copying epoch final state for "
@@ -302,36 +310,33 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				&& (System.currentTimeMillis() - sbs.getCreateTime() < MAX_FINAL_STATE_AGE) ? new StringContainer(
 				sbs.state) : null;
 	}
+	
+	private boolean garbageCollectEpochFinalCheckpointState(String paxosID, int version) {
+		SlotBallotState sbs = this.getSlotBallotState(getPCTable(), paxosID,
+				version, true);
+		if(sbs != null
+				&& (System.currentTimeMillis() - sbs.getCreateTime() > MAX_FINAL_STATE_AGE)) 
+			return this.deleteEpochFinalCheckpointState(paxosID, version);
+		return false;
+	}
 
 	// can reuse getSlotBallotState here
 	@Override
 	public Integer getEpochFinalCheckpointVersion(String paxosID) {
-		Integer version = null;
-		ResultSet stateRS = null;
-		PreparedStatement cpStmt = null;
-		Connection conn = null;
-		try {
-			conn = this.getDefaultConn();
-			assert (conn != null);
-
-			cpStmt = this.getPreparedStatement(conn, getPCTable(), paxosID,
-					"version");
-
-			cpStmt.setString(1, paxosID);
-			stateRS = cpStmt.executeQuery();
-			while (stateRS.next()) {
-				version = stateRS.getInt("version");
+		SlotBallotState sbs = this.getSlotBallotState(getPCTable(), paxosID, 0,
+				false);
+		if (sbs != null)
+			if (System.currentTimeMillis() - sbs.getCreateTime() < MAX_FINAL_STATE_AGE)
+				return sbs.getVersion();
+			else {
+				log.log(Level.INFO,
+						"{0} garbage collecting expired epoch final checkpoint state for {1}:{2}",
+						new Object[] { paxosID, sbs.getVersion() });
+				this.garbageCollectEpochFinalCheckpointState(paxosID,
+						sbs.getVersion());
 			}
-		} catch (SQLException e) {
-			log.severe((e instanceof SQLException ? "SQL" : "IO")
-					+ "Exception while getting slot " + " : " + e);
-			e.printStackTrace();
-		} finally {
-			cleanup(stateRS);
-			cleanup(cpStmt);
-			cleanup(conn);
-		}
-		return version;
+		;
+		return null;
 	}
 
 	@Override
@@ -1064,14 +1069,15 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * fetch logged decisions from the disk to handle synchronization requests.
 	 */
 	public synchronized ArrayList<PValuePacket> getLoggedDecisions(
-			String paxosID, int minSlot, int maxSlot) {
+			String paxosID, int version, int minSlot, int maxSlot) {
 		ArrayList<PValuePacket> decisions = new ArrayList<PValuePacket>();
 		if (maxSlot - minSlot <= 0)
 			return decisions;
 		ArrayList<PaxosPacket> list = this.getLoggedMessages(paxosID,
-				" and packet_type=" + PaxosPacketType.DECISION.getInt()
-						+ " and " + getIntegerGTEConstraint("slot", minSlot)
-						+ " and " + getIntegerLTConstraint("slot", maxSlot)); // wraparound-arithmetic
+				"and version=" + version + " and packet_type="
+						+ PaxosPacketType.DECISION.getInt() + " and "
+						+ getIntegerGTEConstraint("slot", minSlot) + " and "
+						+ getIntegerLTConstraint("slot", maxSlot)); // wraparound-arithmetic
 		assert (list != null);
 		for (PaxosPacket p : list)
 			decisions.add((PValuePacket) p);
@@ -1085,12 +1091,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	 * committed.
 	 */
 	public synchronized Map<Integer, PValuePacket> getLoggedAccepts(
-			String paxosID, int firstSlot) {
+			String paxosID, int version, int firstSlot) {
 		long t1 = System.currentTimeMillis();
 		// fetch all accepts and then weed out those below firstSlot
 		ArrayList<PaxosPacket> list = this.getLoggedMessages(paxosID,
 				" and packet_type=" + PaxosPacketType.ACCEPT.getInt() + " and "
-						+ getIntegerGTEConstraint("slot", firstSlot));
+						+ getIntegerGTEConstraint("slot", firstSlot)
+						+ " and version=" + version);
 		TreeMap<Integer, PValuePacket> accepted = new TreeMap<Integer, PValuePacket>();
 		for (PaxosPacket p : list) {
 			int slot = AbstractPaxosLogger.getSlotBallot(p)[0];
@@ -1114,12 +1121,22 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		Statement stmt = null;
 		String cmdC = "delete from "
 				+ getCTable()
-				+ (paxosID != null ? " where paxos_id='" + paxosID
-						+ "' and version=" + version : " where true");
+				+ (paxosID != null ? " where paxos_id='"
+						+ paxosID
+						+ "' and (version="
+						+ version
+						+ " and "
+						+ DerbyPaxosLogger.getIntegerLTConstraint("version",
+								version) + ")" : " where true");
 		String cmdM = "delete from "
 				+ getMTable()
-				+ (paxosID != null ? " where paxos_id='" + paxosID
-						+ "' and version=" + version : " where true");
+				+ (paxosID != null ? " where paxos_id='"
+						+ paxosID
+						+ "' and (version="
+						+ version
+						+ " or "
+						+ DerbyPaxosLogger.getIntegerLTConstraint("version",
+								version) + ")" : " where true");
 		String cmdP = "delete from "
 				+ getPTable()
 				+ (paxosID != null ? " where paxos_id='" + paxosID + "'"
@@ -1135,7 +1152,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			stmt.execute(cmdP);
 			removedP = true;
 			conn.commit();
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} removed all state for {1}:{2} and pause state for all versions of {3} ",
 					new Object[] { this, paxosID, version, paxosID });
 		} catch (SQLException sqle) {
@@ -1164,7 +1181,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	public String toString() {
-		return this.getClass().getSimpleName() + myID;
+		return this.getClass().getSimpleName() + strID;
 	}
 
 	private static boolean isEmbeddedDB() {

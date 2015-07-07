@@ -5,7 +5,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptReplyPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
@@ -26,7 +25,7 @@ public class RequestInstrumenter {
 
 	private static final HashMap<Integer, String> map = new HashMap<Integer, String>();
 
-	private static Logger log = PaxosManager.getLogger();// Logger.getLogger(RequestInstrumenter.class.getName());
+	private static Logger log =  Logger.getLogger(RequestInstrumenter.class.getName());
 
 	public synchronized static void received(RequestPacket request, int sender,
 			int receiver) {

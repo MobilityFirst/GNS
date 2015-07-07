@@ -313,8 +313,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 */
 	public int send(NodeIDType id, byte[] data) throws IOException {
 		log.log(Level.FINEST,
-				"{0} invoked send ({1},{2}), checking connection status..",
-				new Object[] { this, id, new Stringer(data) });
+				"{0} invoked send to ({1}={2}:{3}: {4}), checking connection status..",
+				new Object[] { this, id, this.nodeConfig.getNodeAddress(id),
+						this.nodeConfig.getNodePort(id), new Stringer(data) });
 		if (this.nodeConfig == null)
 			throw new NullPointerException(
 					"Attempting ID-based communication with null InterfaceNodeConfig");
@@ -330,7 +331,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 */
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
 		testAndIntiateConnection(isa);
-		NIOInstrumenter.incrSent();
+		NIOInstrumenter.incrSent(isa.getPort());
 		int written = this.queuePendingWrite(isa, data);
 		// wake up our selecting thread so it can make the required changes
 		this.selector.wakeup();
@@ -457,8 +458,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 		// Accept the connection and make it non-blocking
 		SocketChannel socketChannel = serverSocketChannel.accept();
-		log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] { this,
-				"accepted connection from", socketChannel.getRemoteAddress() });
+		log.log(Level.FINE, "{0} accepted connection from {1}", new Object[] {
+				this, socketChannel.getRemoteAddress() });
 		NIOInstrumenter.incrAccepted();
 		socketChannel.socket().setKeepAlive(true);
 		socketChannel.configureBlocking(false);
@@ -601,8 +602,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	// invokes wrap before nio write if SSL enabled
 	private void wrapSend(SocketChannel socketChannel, ByteBuffer unencrypted)
 			throws IOException {
-		// if(!socketChannel.isConnected()) throw new
-		// IOException("Socket channel not connected");
 		if (this.isSSL())
 			((SSLDataProcessingWorker) this.worker).wrap(socketChannel,
 					unencrypted);

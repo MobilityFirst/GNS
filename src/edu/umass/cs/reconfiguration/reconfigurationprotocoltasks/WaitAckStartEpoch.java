@@ -11,7 +11,6 @@ import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
-import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
@@ -34,7 +33,16 @@ public class WaitAckStartEpoch<NodeIDType>
 		extends
 		ThresholdProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String> {
 
-	private static final long RESTART_PERIOD = 8*WaitAckStopEpoch.RESTART_PERIOD;
+	/*
+	 * The restart period here should generally be much longer and should
+	 * reflect the time expected to fetch the epoch final state from the
+	 * previous epoch replicas. Redundant restarts here won't cause
+	 * WaitEpochFinalState to request the state again and again (which would be
+	 * bad), but just add the request to the list of notifiees when the epoch
+	 * start is complete. Still, there is no value in resending this faster than
+	 * needed.
+	 */
+	private static final long RESTART_PERIOD = 8 * WaitAckStopEpoch.RESTART_PERIOD;
 
 	private final StartEpoch<NodeIDType> startEpoch;
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
@@ -62,8 +70,9 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	@Override
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
-		log.log(Level.WARNING, MyLogger.FORMAT[2], new Object[] { this.refreshKey(),
-				" re-starting ", this.startEpoch.getSummary() });
+		log.log(Level.WARNING, MyLogger.FORMAT[2],
+				new Object[] { this.refreshKey(), " re-starting ",
+						this.startEpoch.getSummary() });
 		if (!this.amObviated())
 			return start();
 		// else
@@ -83,8 +92,10 @@ public class WaitAckStartEpoch<NodeIDType>
 
 		assert (!this.startEpoch.isMerge() || this.startEpoch.curEpochGroup
 				.contains(this.DB.getMyID()));
-		log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this.refreshKey(),
-				" starting ", this.startEpoch.getSummary() });
+		log.log(Level.INFO,
+				MyLogger.FORMAT[2],
+				new Object[] { this.refreshKey(), " starting ",
+						this.startEpoch.getSummary() });
 
 		GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>> mtask = !this.startEpoch
 				.isMerge() ? new GenericMessagingTask<NodeIDType, StartEpoch<NodeIDType>>(
@@ -132,9 +143,8 @@ public class WaitAckStartEpoch<NodeIDType>
 	public boolean handleEvent(ProtocolEvent<PacketType, String> event) {
 		assert (event.getType().equals(types[0]));
 		AckStartEpoch<NodeIDType> ackStart = ((AckStartEpoch<NodeIDType>) event);
-		log.log(Level.FINE, MyLogger.FORMAT[2],
-				new Object[] { this, "received", ackStart.getSummary(), "from",
-						ackStart.getSender() });
+		log.log(Level.FINE, "{0} received {1} from {2}", new Object[] { this,
+				ackStart.getSummary(), ackStart.getSender() });
 
 		return !isDone();
 	}
@@ -179,9 +189,9 @@ public class WaitAckStartEpoch<NodeIDType>
 		if (this.startEpoch.hasPrevEpochGroup()) {
 			// previous state is never dropped for RC group names
 			if (!this.DB.isRCGroupName(this.startEpoch.getServiceName())
-					&& !this.startEpoch.getServiceName().equals(
+					/*&& !this.startEpoch.getServiceName().equals(
 							AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
-									.toString()))
+									.toString())*/)
 				// drop previous epoch final state
 				ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
 						this.DB);

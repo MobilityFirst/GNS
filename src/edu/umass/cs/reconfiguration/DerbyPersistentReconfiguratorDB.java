@@ -45,7 +45,6 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
 import edu.umass.cs.reconfiguration.examples.ReconfigurableSampleNodeConfig;
-import edu.umass.cs.reconfiguration.examples.TestConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
@@ -435,9 +434,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		if (record == null || record.getEpoch() != epoch)
 			return false;
 
-		log.log(Level.INFO, MyLogger.FORMAT[4],
-				new Object[] { "==============================> ", this, name,
-						" ->", "DELETE" });
+		log.log(Level.INFO,
+				"==============================> {0} {1} -> DELETE",
+				new Object[] { this, name });
 		boolean deleted = this.deleteReconfigurationRecord(name,
 				this.getRCRecordTable());
 		this.deleteReconfigurationRecord(name, this.getPendingTable());
@@ -551,7 +550,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	}
 
 	@Override
-	public synchronized boolean updateState(String rcGroup, String state) {
+	public boolean updateState(String rcGroup, String state) {
 		return this.updateState(rcGroup, state, null);
 	}
 
@@ -559,18 +558,31 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * The second argument "state" here is implemented as the name of the file
 	 * where the checkpoint state is actually stored. We assume that each RC
 	 * record in the checkpoint state is separated by a newline.
+	 * 
+	 * FIXME: clean up the design of this method to make it more readable. We
+	 * assume here that if state is not decodeable as a remote file handle or a
+	 * local file by that name does not exist, state must be the actual state
+	 * itself. This design is for having the convenience of treating the state
+	 * either as a large checkpoint handle or the state itself as appropriate.
+	 * But we need a more systematic way of distinguishing between handles and
+	 * actual state.
 	 */
-	private synchronized boolean updateState(String rcGroup, String state,
+	private boolean updateState(String rcGroup, String state,
 			String mergee) {
 		synchronized (this.stringLocker.get(rcGroup)) {
-			// treat rcGroup as filename and read records from it
-			BufferedReader br = null;
-			if ((state = this.getRemoteCheckpoint(rcGroup, state)) == null)
-				return false;
 
-			// FIXME: need to delete existing state for rcGroup
+			this.wipeOutState(rcGroup);
+			if (state == null) // all done already
+				return true;
+
+			// else first try treating state as remote file handle
+			if ((state = this.getRemoteCheckpoint(rcGroup, state)) == null)
+				throw new RuntimeException(this
+						+ " unable to fetch checkpoint state");
+
+			BufferedReader br = null;
 			try {
-				// read state from file
+				// read state from "state" transformed into a local filename
 				if (LARGE_CHECKPOINTS_OPTION
 						&& state.length() < MAX_FILENAME_LENGTH
 						&& (new File(state)).exists()) {
@@ -584,7 +596,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 										this.consistentNodeConfig), rcGroup,
 								mergee);
 					}
-				} else { // state is actually the state
+				} else { // state is actually the state itself
 					String[] lines = state.split("\n");
 					for (String line : lines) {
 						this.putReconfigurationRecordIfNotName(
@@ -610,6 +622,15 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 			return true;
 		}
+	}
+
+	/*
+	 * FIXME: to be implemented. Currently, by design, it makes no difference
+	 * whether or not we delete the RC group state before replacing it because
+	 * of the nature of the RC group database. But paxos safety semantics
+	 * require us to do this, so we should.
+	 */
+	private void wipeOutState(String rcGroup) {
 	}
 
 	@Override
@@ -1459,7 +1480,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		ReconfigurableSampleNodeConfig nc = new ReconfigurableSampleNodeConfig();
-		nc.localSetup(TestConfig.getNodes());
+		nc.localSetup(3);
 		ConsistentReconfigurableNodeConfig<Integer> consistentNodeConfig = new ConsistentReconfigurableNodeConfig<Integer>(
 				nc);
 		DerbyPersistentReconfiguratorDB<Integer> rcDB = new DerbyPersistentReconfiguratorDB<Integer>(
@@ -1608,17 +1629,24 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * persistent copy has both the latest (unstable) version and the previous
 	 * version. At the end of this method, consistentNodeConfig has the latest
 	 * version nodes as well as the previous version nodes with nodes present in
-	 * the latter but not in the former slated for removal.
+	 * the latter but not in the former being slated for removal.
 	 */
 	private void initAdjustSoftNodeConfig() {
+		// get node config containing all reconfigurators from DB
 		Map<NodeIDType, InetSocketAddress> rcMapAll = this
 				.getRCNodeConfig(false);
+		// if no hard copy, copy soft to hard and return
+		if (rcMapAll.isEmpty() && copySoftNodeConfigToDB())
+			return;
+
+		// else get NC record with the current and next set of reconfigurators
 		ReconfigurationRecord<NodeIDType> ncRecord = this
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString());
 		if (ncRecord == null)
-			return;
-		// else
+			return; // else we have something to do
+
+		// get only the latest version reconfigurators
 		Set<NodeIDType> latestRCs = ncRecord.getNewActives();
 		if (rcMapAll == null || rcMapAll.isEmpty())
 			return;
@@ -1635,10 +1663,25 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				this.consistentNodeConfig.slateForRemovalReconfigurator(node);
 	}
 
+	// copy soft to hard if no hard copy
+	private boolean copySoftNodeConfigToDB() {
+		boolean added = true;
+		for (NodeIDType reconfigurator : this.consistentNodeConfig
+				.getReconfigurators())
+			added = added
+					&& this.addReconfigurator(reconfigurator,
+							this.consistentNodeConfig
+									.getNodeSocketAddress(reconfigurator), 0);
+		assert (added);
+		return added;
+	}
+
 	/*
 	 * The double synchronized is because we need to synchronize over "this" to
-	 * perform testAndSet checks over record, but we have to do that before,
-	 * never after, stringLocker lock.
+	 * perform testAndSet checks over record, but we have to do that after,
+	 * never before, stringLocker lock. The stringLocker lock is so that 
+	 * we don't have to lock all records in order to just synchronize a 
+	 * single group's getState or updateState.
 	 */
 	@Override
 	public boolean mergeState(String rcGroupName, int epoch, String mergee,
@@ -1659,7 +1702,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 								"{0} merged state from {1}:{2} into {3}:{4}",
 								new Object[] { this, mergee, mergeeEpoch,
 										rcGroupName, epoch, });
-					}
+					} else
+						log.warning(this + " attempt to merge " + mergee + ":"
+								+ mergeeEpoch + " failed.");
 				// paxos will still always see a true return value
 				return record.hasBeenMerged(mergee);
 			}
@@ -1672,10 +1717,11 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				.getReconfigurationRecord(mergee, mergeEpoch);
 		if (record == null)
 			return false;
-		/* Fast forward to WAIT_DELETE as the paxos group must have already
-		 * been stopped. The only reason to not simply delete this record is
-		 * to let it pend in WAIT_DELETE state in order to prevent it from
-		 * getting recreated before MAX_FINAL_STATE_AGE. 
+		/*
+		 * Fast forward to WAIT_DELETE as the paxos group must have already been
+		 * stopped. The only reason to not simply delete this record is to let
+		 * it pend in WAIT_DELETE state in order to prevent it from getting
+		 * recreated before MAX_FINAL_STATE_AGE.
 		 */
 		this.setStateInitReconfiguration(mergee, mergeEpoch,
 				RCStates.WAIT_ACK_STOP, new HashSet<NodeIDType>(), null);

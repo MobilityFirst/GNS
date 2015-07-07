@@ -347,6 +347,19 @@ public class StartEpoch<NodeIDType> extends
 	public Set<NodeIDType> getPrevEpochGroup() {
 		return this.prevEpochGroup;
 	}
+	
+	/**
+	 * @return Set of common members between prev and cur epoch group.
+	 */
+	public Set<NodeIDType> getCommonMembers() {
+		Set<NodeIDType> common = new HashSet<NodeIDType>();
+		if (this.hasCurEpochGroup() && this.hasPrevEpochGroup())
+			for (NodeIDType curNode : this.curEpochGroup) {
+				if (this.prevEpochGroup.contains(curNode))
+					common.add(curNode);
+			}
+		return common;
+	}
 
 	/**
 	 * @return A single element set containing the initiator node.

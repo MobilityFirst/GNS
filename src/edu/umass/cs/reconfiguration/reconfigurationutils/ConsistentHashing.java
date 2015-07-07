@@ -198,8 +198,18 @@ public class ConsistentHashing<NodeIDType> {
 		Integer[] ids = {1100, 1101, 1102};
 		ConsistentHashing<Integer> chi = new ConsistentHashing<Integer>(ids);
 		System.out.println("ring ordering = " + chi.getServers());
-		Integer[] ids1 = {1100, 1101, 1102, 7951};
+
+		Integer[] ids1 = {1100, 1101, 1102, 19150};
 		ConsistentHashing<Integer> chi1 = new ConsistentHashing<Integer>(ids1);
 		System.out.println("ring ordering = " + chi1.getServers());
+
+		String[] IDs = {"RC0", "RC1", "RC2"};
+		ConsistentHashing<String> CHI = new ConsistentHashing<String>(IDs);
+		System.out.println("ring ordering = " + CHI.getServers());
+
+		String[] IDs1 = {"RC0", "RC1", "RC2", "RC48772"};
+		ConsistentHashing<String> CHI1 = new ConsistentHashing<String>(IDs1);
+		System.out.println("ring ordering = " + CHI1.getServers());
+
 	}
 }

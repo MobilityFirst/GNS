@@ -114,7 +114,8 @@ public class PaxosCoordinatorState  {
 	 */
 	private int[] nodeSlotNumbers=null;
 
-	private static Logger log = PaxosManager.getLogger();//Logger.getLogger(PaxosCoordinatorState.class.getName());
+	private static Logger log = //PaxosManager.getLogger();//
+			Logger.getLogger(PaxosCoordinatorState.class.getName());
 
 	// Used in myProposals map above and nowhere else
 	private class ProposalStateAtCoordinator {
@@ -139,7 +140,7 @@ public class PaxosCoordinatorState  {
 			this.copyOverPrevious(prev.myProposals, prev.nextProposalSlotNumber, members); // wasteful to drop these preactives
 	}
 	private void copyOverPrevious(NullIfEmptyMap<Integer,ProposalStateAtCoordinator> prev, int nextSlot, int[] members) {
-		String s="[";  
+		String s="";  
 		String paxosID=null;
 		for(ProposalStateAtCoordinator psac : prev.values()) {
 			PValuePacket prevProp = psac.pValuePacket;
@@ -148,7 +149,8 @@ public class PaxosCoordinatorState  {
 			paxosID = prevProp.getPaxosID();
 			this.myProposals.put(prevProp.slot, new ProposalStateAtCoordinator(members, curProp));
 		}
-		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}{6}", new Object[] {"Node ",this.myBallotCoord, ", ", paxosID,  " copying over slots ", s,"]"});
+		log.log(Level.FINE, "Coordinator {0}, {1} copying over slots [{2}]",
+				new Object[] { this.myBallotCoord, paxosID, s });
 		this.nextProposalSlotNumber = nextSlot;
 	}
 	protected void setNodeSlots(int[] slots) {this.nodeSlotNumbers=slots;}
@@ -511,18 +513,25 @@ public class PaxosCoordinatorState  {
 		return false;
 	}
 	/*********************** End of Phase2b methods ************************/
-
-	protected synchronized Ballot getBallot() {
+	protected Ballot getBallot() {
 		return new Ballot(this.myBallotNum, this.myBallotCoord);
 	}
-	protected synchronized String getBallotStr() {
+
+	protected String getBallotStr() {
 		return Ballot.getBallotString(this.myBallotNum, this.myBallotCoord);
 	}
+
+	protected int getBallotCoord() {
+		return this.myBallotCoord;
+	}
+
+	protected int getBallotNum() {
+		return this.myBallotNum;
+	}
+
 	protected synchronized int getNextProposalSlot() {return this.nextProposalSlotNumber;}
 	protected synchronized int[] getNodeSlots() {return this.nodeSlotNumbers;}
 
-	protected synchronized int getBallotCoord() {return this.myBallotCoord;}
-	protected synchronized int getBallotNum() {return this.myBallotNum;}
 
 	protected synchronized boolean isActive() {
 		return this.active;
@@ -590,8 +599,11 @@ public class PaxosCoordinatorState  {
 				}
 			}
 		}
-		if(updated) log.log(Level.FINEST, "{0}{1}{2}{3}", new Object[]{"Node ", this.myBallotCoord, " updated nodeSlotNumbers on a prepare reply: " , 
-				Arrays.toString(nodeSlotNumbers)});
+		if (updated)
+			log.log(Level.FINEST, "{0}{1}{2}{3}",
+					new Object[] { "Node ", this.myBallotCoord,
+							" updated nodeSlotNumbers on a prepare reply: ",
+							Arrays.toString(nodeSlotNumbers) });
 	}
 	/* Record the cumulative committed slot number in the accept reply. After becoming active,
 	 * the coordinator will disseminate the slot number cumulatively committed by a majority 
@@ -608,8 +620,11 @@ public class PaxosCoordinatorState  {
 				}
 			}
 		}
-		if(updated) log.log(Level.FINE, "{0}{1}{2}{3}", new Object[]{"Node ", this.myBallotCoord , " updated nodeSlotNumbers on an accept reply: " , 
-				Arrays.toString(nodeSlotNumbers)});
+		if (updated)
+			log.log(Level.FINE, "{0}{1}{2}{3}",
+					new Object[] { "Node ", this.myBallotCoord,
+							" updated nodeSlotNumbers on an accept reply: ",
+							Arrays.toString(nodeSlotNumbers) });
 	}
 
 	private synchronized AcceptPacket initCommander(int[] members, PValuePacket pvalue) {

@@ -47,6 +47,7 @@ public abstract class PaxosPacket extends JSONPacket {
 	 */
 	public static final String PAXOS_VERSION = "PAXOS_VERSION";
 
+	public static final String MARK_ACTIVE = "DONT_MARK_ACTIVE";
 	/*
 	 * Every PaxosPacket has a minimum of the following three fields. The fields
 	 * paxosID and version are preserved across inheritances, e.g.,

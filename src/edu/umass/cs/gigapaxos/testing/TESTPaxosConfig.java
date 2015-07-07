@@ -33,7 +33,7 @@ public class TESTPaxosConfig {
 	/**
 	 * Will turn on more verbose logging.
 	 */
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;//false;
 
 	protected static final String SINGLE_NODE_CONFIG_DIR = "/Users/arun/GNS/conf/gigapaxos/";
 	private static final String DISTRIBUTED_CONFIG_DIR = "/home/arun/GNS/conf/gigapaxos/";
@@ -65,7 +65,7 @@ public class TESTPaxosConfig {
 	 * When memory testing, the number of paxos instances can be very large, so
 	 * this flag is used to disable some logging.
 	 */
-	public static final boolean MEMORY_TESTING = false;
+	public static boolean memoryTesting = true;//false;
 
 	private static final int MAX_TEST_REQS = 1000000;
 	private static final int RANDOM_SEED = 3142;
@@ -75,6 +75,13 @@ public class TESTPaxosConfig {
 	 * Disables persistent logging if true.
 	 */
 	public static final boolean DISABLE_LOGGING = false; 
+
+	public static boolean isMemoryTesting() {
+		return memoryTesting;
+	}
+	public static void setMemoryTesting() {
+		 memoryTesting = true;
+	}
 
 	private static final boolean TEST_WITH_RECOVERY = true;
 

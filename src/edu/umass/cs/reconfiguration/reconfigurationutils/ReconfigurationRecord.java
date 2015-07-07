@@ -80,7 +80,6 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	private RCStates state = RCStates.READY;
 	private Set<NodeIDType> newActives = null; // next epoch during epoch change
 
-	// FIXME: should change the two sets below to a hashmap
 	private Set<String> merged = null; // for at most once semantics
 	private Set<String> toMerge = null;
 

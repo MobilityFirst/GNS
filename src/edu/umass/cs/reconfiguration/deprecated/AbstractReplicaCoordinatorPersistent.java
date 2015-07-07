@@ -45,7 +45,7 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 	public boolean createReplicaGroup(String serviceName, int epoch,
 			String state, Set<NodeIDType> nodes) {
 		return this.paxosManager.createPaxosInstanceForcibly(serviceName,
-				(short) epoch, nodes, this.app, state);
+				(short) epoch, nodes, this.app, state, 0);
 	}
 
 	@Override
@@ -55,10 +55,6 @@ public abstract class AbstractReplicaCoordinatorPersistent<NodeIDType> extends
 
 	@Override
 	public Set<NodeIDType> getReplicaGroup(String serviceName) {
-		return this.paxosManager.getPaxosNodeIDs(serviceName);
-	}
-
-	public boolean isActive(String serviceName, int epoch) {
-		return this.paxosManager.isActive(serviceName, (short) epoch);
+		return this.paxosManager.getReplicaGroup(serviceName);
 	}
 }

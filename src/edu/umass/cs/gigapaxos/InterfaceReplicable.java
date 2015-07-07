@@ -24,24 +24,25 @@ public interface InterfaceReplicable extends InterfaceApplication {
 	 * Checkpoints the current application state and returns it.
 	 * 
 	 * @param name
-	 * @return Returns the checkpointed state. If the application encounters an
+	 * @return Returns the checkpoint state. If the application encounters an
 	 *         error while creating the checkpoint, it must retry until
 	 *         successful or throw a RuntimeException. Returning a null value
 	 *         will be interpreted to mean that the application state is indeed
-	 *         null. Returning a legitimate null value for a checkpoint is a bad
-	 *         idea as it can cause reconfiguration of paxos groups to stall; it
-	 *         is better to return an empty string instead.
+	 *         null.
 	 */
 	public String getState(String name);
 
 	/**
-	 * Resets the current application state for {@code name} to {@code state}. Note that
-	 * {@code state} may simply be an app-specific handle, e.g., a file name, representing
-	 * the state as opposed to the actual state.
+	 * Resets the current application state for {@code name} to {@code state}.
+	 * Note that {@code state} may simply be an app-specific handle, e.g., a
+	 * file name, representing the state as opposed to the actual state.
 	 * 
 	 * @param name
 	 * @param state
-	 * @return True if the app atomically updated the state successfully. Else, it must return false. 
+	 * @return True if the app atomically updated the state successfully. Else,
+	 *         it must throw an exception. If it returns false, the replica
+	 *         coordination protocol may try to repeat the operation until
+	 *         successful causing the application to get stuck.
 	 */
 	public boolean updateState(String name, String state);
 }

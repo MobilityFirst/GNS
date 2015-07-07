@@ -78,7 +78,7 @@ public class FailureDetection<NodeIDType> {
 	private HashMap<NodeIDType, Long> lastHeardFrom;
 	private HashMap<NodeIDType, ScheduledFuture<PingTask>> futures;
 
-	private static Logger log = PaxosManager.getLogger();// Logger.getLogger(FailureDetection.class.getName());
+	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
 
 	FailureDetection(NodeIDType id,
 			InterfaceNIOTransport<NodeIDType, JSONObject> niot,
@@ -156,6 +156,7 @@ public class FailureDetection<NodeIDType> {
 	}
 
 	public void sendKeepAlive(Set<NodeIDType> nodes) {
+		if (TESTPaxosConfig.isCrashed(this.myID)) return; // testing
 		for (NodeIDType id : nodes) {
 			sendKeepAlive(id);
 		}
@@ -258,9 +259,10 @@ public class FailureDetection<NodeIDType> {
 
 		public void run() {
 			try {
-				if (!TESTPaxosConfig.isCrashed(myID)) // only to simulate
-														// crashes while testing
+				// only to simulate crashes while testing
+				if (!TESTPaxosConfig.isCrashed(myID)) {
 					nioTransport.sendToID(destID, pingJson);
+				}
 			} catch (IOException e) {
 				try {
 					log.log(Level.INFO,

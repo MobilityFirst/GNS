@@ -56,9 +56,9 @@ public class Util {
 	public static String refreshKey(String id) {
 		return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
 	}
-	
+
 	public static boolean probability(int n) {
-		return Math.random() < 1.0/n ? true : false;
+		return Math.random() < 1.0 / n ? true : false;
 	}
 
 	public static int roundToInt(double d) {
@@ -258,6 +258,32 @@ public class Util {
 	public static String truncate(String str, int size) {
 		return str == null || str.length() < size ? str : str != null ? str
 				.substring(0, size) : null;
+	}
+
+	public static String truncate(String str, int prefixSize, int suffixSize) {
+		int size = prefixSize + suffixSize;
+		return str == null || str.length() < size ? str : str != null ? str
+				.substring(0, prefixSize)
+				+ "..[truncated].."
+				+ str.substring(str.length() - suffixSize) : null;
+	}
+
+	public static Collection<?> truncate(Collection<?> list, int size) {
+		if (list.size() <= size)
+			return list;
+		ArrayList<Object> truncated = new ArrayList<Object>();
+		int i = 0;
+		for (Object o : list)
+			if (i++ < size)
+				truncated.add((Object) o);
+			else
+				break;
+		return truncated;
+	}
+
+	public static String truncatedLog(Collection<?> list, int size) {
+		return truncate(list, size).toString()
+				+ (list.size() <= size ? "" : "...");
 	}
 
 	public static void main(String[] args) {

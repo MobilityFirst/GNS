@@ -5,8 +5,8 @@ import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -23,6 +23,8 @@ import edu.umass.cs.utils.Util;
 public class IntegerMap<NodeIDType> {
 	private HashMap<Integer, NodeIDType> nodeMap = new HashMap<Integer, NodeIDType>();
 
+	private static Logger log = Logger.getLogger(IntegerMap.class.getName());
+	
 	/**
 	 * Maps NodeIDType to int and stores the mapping
 	 * 
@@ -46,7 +48,7 @@ public class IntegerMap<NodeIDType> {
 	public synchronized NodeIDType get(int id) {
 		NodeIDType node = this.nodeMap.get(id);
 		if (node == null) {
-			PaxosManager.getLogger().severe(id + message);
+			log.severe(id + message);
 			// this should never happen
 			assert (false) : id + message;
 			throw new RuntimeException(id + message);

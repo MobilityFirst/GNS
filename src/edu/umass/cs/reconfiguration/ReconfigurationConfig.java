@@ -85,15 +85,32 @@ public class ReconfigurationConfig {
 	private static boolean aggressiveReconfigurations = DEFAULT_AGGRESSIVE_RECONFIGURATIONS;
 
 	/**
-	 * Necessary to ensure safety under name re-creations. We also use this
-	 * timeout for garbage collecting remote checkpoints transferred using the
-	 * file system.
+	 * Necessary to ensure safety under name re-creations (see
+	 * {@link #getDelayedDeleteWaitDuration()} below). We also use this timeout
+	 * for garbage collecting remote checkpoints transferred using the file
+	 * system.
 	 * 
-	 * @return The value of MAX_FINAL_STATE_AGE used by paxos.
+	 * @return The value of MAX_FINAL_STATE_AGE used by paxos. This is the time
+	 *         after which paxos' epoch final state can be safely deleted.
 	 */
 	public static final long getMaxFinalStateAge() {
-		long defaultMaxAge = PaxosManager.MAX_FINAL_STATE_AGE;
-		return Math.min(defaultMaxAge, 60 * 1000); // for testing only
+		return PaxosManager.MAX_FINAL_STATE_AGE;
+	}
+
+	/**
+	 * The time for which we must wait before finally deleting a name's
+	 * reconfiguration record (i.e., all memory of that name is lost) must be at
+	 * least as high as paxos' MAX_FINAL_STATE_AGE, otherwise it can cause the
+	 * creation of a name or addition of a reconfigurator to stall for
+	 * arbitrarily long, or worse, violate safety by using incorrect state from
+	 * previous incarnations.
+	 * 
+	 * @return The time for which deleted records should be left waiting so that
+	 *         they don't get recreated subsequently with un-garbage-collected
+	 *         copies of epoch final state from previous incarnations.
+	 */
+	public static final long getDelayedDeleteWaitDuration() {
+		return getMaxFinalStateAge();
 	}
 
 	/**

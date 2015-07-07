@@ -5,15 +5,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
 
-import org.json.JSONException;
-
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.ConsumerTask;
 
 /**
  * @author arun
  *
- * A utility class to consume batched requests.
+ *         A utility class to consume batched requests.
  */
 public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	/*
@@ -48,8 +46,8 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		this.batched.put(task.getPaxosID(), taskList); // unnecessary
 	}
 
-
-	/* This method extracts a batched request from enqueued requests of batch
+	/*
+	 * This method extracts a batched request from enqueued requests of batch
 	 * size at most MAX_BATCH_SIZE.
 	 */
 	@Override
@@ -59,7 +57,8 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		// pluck first list (each grouped by paxosID)
 		Iterator<Entry<String, ArrayList<RequestPacket>>> mapEntryIter = this.batched
 				.entrySet().iterator();
-		Entry<String, ArrayList<RequestPacket>> firstEntry = mapEntryIter.next();
+		Entry<String, ArrayList<RequestPacket>> firstEntry = mapEntryIter
+				.next();
 
 		// make a batched request out of this extracted (nonempty) list
 		Iterator<RequestPacket> reqPktIter = firstEntry.getValue().iterator();
@@ -86,10 +85,6 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 	@Override
 	public void process(RequestPacket task) {
-		try {
-			this.paxosManager.handleIncomingPacketInternal(task.toJSONObject());
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
+		this.paxosManager.proposeBatched(task);
 	}
 }

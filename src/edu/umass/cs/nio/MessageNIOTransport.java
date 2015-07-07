@@ -325,7 +325,6 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 
 		String msg = message.toString();
 		int length = msg.length();
-		NIOInstrumenter.incrSent();
 		((InterfaceMessageExtractor) worker)
 				.processMessage(new InetSocketAddress(this.getNodeAddress(),
 						this.getNodePort()), msg);

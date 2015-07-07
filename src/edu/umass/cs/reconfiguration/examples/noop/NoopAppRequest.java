@@ -16,7 +16,7 @@ public class NoopAppRequest extends AppRequest implements InterfaceReconfigurabl
 	private static enum Keys {ENTRY_REPLICA};
 	
 	// the first replica that received the request
-	private int entryReplica = -1; 
+	private String entryReplica = null; 
 	
 	/**
 	 *  Can define IntegerPacketType types here other than
@@ -56,24 +56,24 @@ public class NoopAppRequest extends AppRequest implements InterfaceReconfigurabl
 	public NoopAppRequest(JSONObject json) throws JSONException {
 		super(json);
 		this.entryReplica = (json.has(Keys.ENTRY_REPLICA.toString()) ? json
-				.getInt(Keys.ENTRY_REPLICA.toString()) : this.entryReplica);
+				.getString(Keys.ENTRY_REPLICA.toString()) : this.entryReplica);
 	}
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		json.put(Keys.ENTRY_REPLICA.toString(), this.entryReplica);
+		if(this.entryReplica!=null) json.put(Keys.ENTRY_REPLICA.toString(), this.entryReplica);
 		return json;
 	}
 	
 	/**
 	 * @param id
 	 */
-	public void setEntryReplica(int id) {
+	public void setEntryReplica(String id) {
 		this.entryReplica = id;
 	}
 	/**
 	 * @return ID of entry replica that received this request.
 	 */
-	public int getEntryReplica() {
+	public String getEntryReplica() {
 		return this.entryReplica;
 	}
 

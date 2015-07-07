@@ -130,6 +130,12 @@ public class TESTPaxosMain {
 	 * @throws InterruptedException
 	 */
 	public static void main(String[] args) throws InterruptedException {
+		// ConsoleHandler handler = new ConsoleHandler();
+		// handler.setLevel(Level.FINE);
+		// PaxosManager.getLogger().setLevel(Level.FINE);
+		// PaxosManager.getLogger().addHandler(handler);
+		// PaxosManager.getLogger().setUseParentHandler(false);
+
 		processArgs(args);
 
 		System.out
