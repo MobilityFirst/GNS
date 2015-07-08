@@ -9,6 +9,8 @@ package edu.umass.cs.gns.gnamed;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
+import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -50,7 +52,7 @@ public class LookupWorker implements Runnable {
   private final DatagramSocket socket;
   private final DatagramPacket incomingPacket;
   private final byte[] incomingData;
-  private final ClientRequestHandlerInterface handler;
+  private final EnhancedClientRequestHandlerInterface handler;
 
   /**
    * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
@@ -63,7 +65,7 @@ public class LookupWorker implements Runnable {
    * @param dnsCache (might be null meaning DNS responses are not cached)
    */
   public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver gnsServer,
-          SimpleResolver dnsServer, Cache dnsCache, ClientRequestHandlerInterface handler) {
+          SimpleResolver dnsServer, Cache dnsCache, EnhancedClientRequestHandlerInterface handler) {
     this.socket = socket;
     this.incomingPacket = incomingPacket;
     this.incomingData = incomingData;
@@ -78,6 +80,7 @@ public class LookupWorker implements Runnable {
    */
   @Override
   public void run() {
+    long startTime = System.currentTimeMillis();
     Message query;
     Message response;
     int maxLength;
@@ -92,6 +95,7 @@ public class LookupWorker implements Runnable {
     }
     // THE MEAT IS IN HERE. Try to get a response from the GNS or DNS servers.
     response = generateReply(query);
+    long postStart = System.currentTimeMillis();
     if (response == null) { // means we don't need to do anything
       return;
     }
@@ -104,7 +108,11 @@ public class LookupWorker implements Runnable {
       GNS.getLogger().info("Q/R: " + NameResolution.queryAndResponseToString(query, response));
     }
     // Send out the response.
+    DelayProfiler.updateDelay("LookupWorker.postGenerate", postStart);
+    long sendStart = System.currentTimeMillis();
     sendResponse(response.toWire(maxLength));
+    DelayProfiler.updateDelay("LookupWorker.sendResponse", sendStart);
+    DelayProfiler.updateDelay("LookupWorker", startTime);
   }
 
   /**
@@ -114,6 +122,7 @@ public class LookupWorker implements Runnable {
    * anything. Currently this only happens if this is an AXFR request over TCP.
    */
   private Message generateReply(Message query) {
+    long startTime = System.currentTimeMillis();
     if (NameResolution.debuggingEnabled) {
       GNS.getLogger().fine("Incoming request: " + query.toString());
     }
@@ -123,15 +132,19 @@ public class LookupWorker implements Runnable {
       return null;
     }
 
+    long checkStart = System.currentTimeMillis();
     // Check for wierd queries we can't handle.
     Message errorMessage;
     if ((errorMessage = NameResolution.checkForErroneousQueries(query)) != null) {
       return errorMessage;
     }
+    DelayProfiler.updateDelay("checkForErroneousQueries", checkStart);
 
     // If we're not consulting the DNS server as well just send the query to GNS.
     if (dnsServer == null) {
-      return NameResolution.lookupGnsServer(query, handler);
+      Message result = NameResolution.lookupGnsServer(query, handler);
+      DelayProfiler.updateDelay("generateReply", startTime);
+      return result;
     }
 
     // Otherwise as a first step before performing GNS/DNS lookup we check our own local cache.
