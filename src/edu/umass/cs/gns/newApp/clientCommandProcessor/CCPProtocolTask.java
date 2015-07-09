@@ -40,8 +40,7 @@ public class CCPProtocolTask<NodeIDType> implements
 
   private static final ReconfigurationPacket.PacketType[] types = {
     ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME,
-    ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME,
-   // ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS
+    ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME, // ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS
   };
 
   private final String key;
@@ -136,17 +135,18 @@ public class CCPProtocolTask<NodeIDType> implements
 //    }
 //    return null;
 //  }
-
   private GenericMessagingTask handleCreate(CreateServiceName packet) {
     Integer lnsRequestID = handler.removeCreateRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("App created " + packet.getServiceName());
-      }
+
       // Basically we gin up a confirmation packet for the original AddRecord packet and
       // send it back to the originator of the request.
       UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
       if (info != null) {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("App created " + packet.getServiceName()
+                  + " in " + (System.currentTimeMillis() - info.getStartTime()) + "ms");
+        }
         AddRecordPacket originalPacket = (AddRecordPacket) info.getUpdatePacket();
         ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
 
@@ -170,13 +170,14 @@ public class CCPProtocolTask<NodeIDType> implements
     if (!packet.isFailed()) { // it appears that these requests can fail now
       Integer lnsRequestID = handler.removeDeleteRequestNameToIDMapping(packet.getServiceName());
       if (lnsRequestID != null) {
-        if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("App removed " + packet.getServiceName());
-        }
         // Basically we gin up a confirmation packet for the original AddRecord packet and
         // send it back to the originator of the request.
         UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
         if (info != null) {
+          if (handler.getParameters().isDebugMode()) {
+            GNS.getLogger().info("App removed " + packet.getServiceName()
+                    + "in " + (System.currentTimeMillis() - info.getStartTime()) + "ms");
+          }
           RemoveRecordPacket originalPacket = (RemoveRecordPacket) info.getUpdatePacket();
           ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
 

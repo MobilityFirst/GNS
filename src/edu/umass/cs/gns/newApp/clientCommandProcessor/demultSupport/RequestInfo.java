@@ -22,6 +22,9 @@ public abstract class RequestInfo {
 
   /** Time that CCP started processing this request */
   protected long startTime;
+  
+  /** Time that CCP completed processing this request */
+  protected long finishTime =  -1;
 
   /** True if CCP is requesting current set of active replicas for this request. False, otherwise */
   private boolean lookupActives = false;
@@ -31,25 +34,16 @@ public abstract class RequestInfo {
    * sent only to replica controllers (and never to active replicas) */
   protected int numLookupActives = 0;
 
-
   /***********
    * Fields only for collecting statistics for a request and write log entries
    ***********/
 
   protected Packet.PacketType requestType;
 
-  /** Time that LNS completed processing this request */
-  protected long finishTime =  -1;
-
   /** Whether requests is finally successful or not. */
   protected boolean success = false;
 
   // Abstract methods
-
-  /** 
-   * Returns the log entry that we will log at local name server
-   * @return  */
-  public abstract String getLogString();
 
   /** 
    * Returns the error message to be sent to client if name server returns no response to a request.
