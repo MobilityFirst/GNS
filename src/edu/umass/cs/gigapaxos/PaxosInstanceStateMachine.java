@@ -384,7 +384,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		 * resend accepts. There is little reason to send prepares proactively
 		 * if no new activity is happening.
 		 */
-		mtasks[0] = (!recovery ? !this.coordinator.isActive() && !isPoke ? checkRunForCoordinator()
+		mtasks[0] = (!recovery ? !this.coordinator.isActive() //&& !isPoke 
+				? checkRunForCoordinator()
 				: this.pokeLocalCoordinator()
 				: null);
 
