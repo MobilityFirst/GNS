@@ -28,3 +28,10 @@ build.number
 /scripts/noopTest/paxos_logs/
 /scripts/noopTest/paxos_large_checkpoints/
 /scripts/noopTest/reconfiguration_DB/
+/scripts/singlenodetests/paxos_logs/
+/scripts/singlenodetests/paxos_large_checkpoints/
+/scripts/singlenodetests/reconfiguration_DB/
+/scripts/singlenodetests/log/
+/scripts/singlenodetests/NSlogfile.txt
+/scripts/singlenodetests/LNSlogfile
+/scripts/singlenodetests/LNSlogfile.txt

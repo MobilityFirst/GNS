@@ -92,21 +92,21 @@ public class CreateDelete {
 
   public static AddRecordPacket registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
-    int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
-    handler.addRequestInfo(lnsReqID, info);
+    int ccpReqId = handler.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(ccpReqId, addRecordPacket.getName(), null, addRecordPacket, handler);
+    handler.addRequestInfo(ccpReqId, info);
     // not sure why this isn't done like this above
-    addRecordPacket.setCCPRequestID(lnsReqID);
+    addRecordPacket.setCCPRequestID(ccpReqId);
     return addRecordPacket;
   }
 
   public static RemoveRecordPacket registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
-    int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecordPacket.getName(), null, removeRecordPacket, handler);
-    handler.addRequestInfo(lnsReqID, info);
+    int ccpReqId = handler.getUniqueRequestID();
+    UpdateInfo info = new UpdateInfo(ccpReqId, removeRecordPacket.getName(), null, removeRecordPacket, handler);
+    handler.addRequestInfo(ccpReqId, info);
     // not sure why this isn't done like this above
-    removeRecordPacket.setCCPRequestID(lnsReqID);
+    removeRecordPacket.setCCPRequestID(ccpReqId);
     return removeRecordPacket;
   }
 

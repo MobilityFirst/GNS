@@ -36,6 +36,8 @@ public class DNSRequestInfo<NodeIDType> extends RequestInfo{
    * @param lnsReqId Query id
    * @param name Host/Domain name
    * @param nameserverID Response name server ID
+   * @param incomingPacket
+   * @param unstringer
    **************************************************************/
   public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket<NodeIDType> incomingPacket, 
           Stringifiable<NodeIDType> unstringer) {
@@ -59,30 +61,6 @@ public class DNSRequestInfo<NodeIDType> extends RequestInfo{
    */
   public synchronized DNSPacket<NodeIDType> getIncomingPacket() {
     return incomingPacket;
-  }
-
-  @Override
-  public synchronized String getLogString() {
-    StringBuilder str = new StringBuilder();
-    str.append(isSuccess() ? "Success-Lookup": "Failed-Lookup");
-    if(isCacheHit()) str.append("CacheHit");
-    str.append("\t");
-    str.append("0\t");
-    str.append(incomingPacket.getKey() + "\t");
-    str.append(name);
-    str.append("\t" + getResponseLatency());
-    str.append("\t0");
-    str.append("\t0");
-    str.append("\t0");
-    str.append("\t0");
-    str.append("\t" + nameserverID);
-    str.append("\t" + "LNS BooYaa");
-    str.append("\t" + startTime);
-    str.append("\t" + numLookupActives);
-    str.append("\t[]");
-    str.append("\t");
-    //str.append(getEventCodesString());
-    return str.toString();
   }
 
   @Override

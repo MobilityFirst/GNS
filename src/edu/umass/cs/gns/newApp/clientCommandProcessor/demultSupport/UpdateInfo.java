@@ -47,34 +47,6 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
   }
 
   @Override
-  public synchronized String getLogString() {
-    String success = isSuccess() ? "Success" : "Failed";
-    if (requestType.equals(Packet.PacketType.ADD_RECORD)) {
-      success += "-Add";
-    } else if (requestType.equals(Packet.PacketType.REMOVE_RECORD)) {
-      success += "-Remove";
-    } else if (requestType.equals(Packet.PacketType.UPDATE)) {
-      success += "-Update";
-    }
-    return getFinalString(success, name, getResponseLatency(), 0, nameserverID, handler.getNodeAddress(),
-            getCCPReqID(), numLookupActives, System.currentTimeMillis()
-            //, getEventCodesString()
-    );
-  }
-
-  private String getFinalString(String queryStatus, String name, long latency, int numTransmissions,
-          NodeIDType nameServerID, InetSocketAddress address, int requestID, int numInvalidActiveError,
-          long curTime 
-          //,String eventCodes
-  ) {
-    return queryStatus + "\t" + name + "\t" + latency + "\t" + numTransmissions + "\t" 
-            + (nameServerID != null ? nameServerID.toString() : "LNS") + "\t"
-            + address.toString() + "\t" + requestID + "\t" + numInvalidActiveError + "\t" + curTime + "\t"
-            //+ eventCodes
-            ;
-  }
-
-  @Override
   public synchronized JSONObject getErrorMessage() {
     return getErrorMessage(NSResponseCode.FAIL_ACTIVE_NAMESERVER);
   }

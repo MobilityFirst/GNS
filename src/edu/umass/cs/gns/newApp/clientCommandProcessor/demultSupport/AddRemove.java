@@ -11,6 +11,7 @@ import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
@@ -99,8 +100,9 @@ public class AddRemove {
     } else {
       // update our cache BEFORE we confirm
       handler.updateCacheEntry(confirmAddPacket, addInfo.getName(), null);
-      addInfo.setSuccess(confirmAddPacket.isSuccess());
-      addInfo.setFinishTime();
+      //addInfo.setSuccess(confirmAddPacket.isSuccess());
+      //addInfo.setFinishTime();
+      DelayProfiler.updateDelay("serviceNameAdd", (System.currentTimeMillis() - addInfo.getStartTime()));
       Update.sendConfirmUpdatePacketBackToSource(confirmAddPacket, handler);
     }
   }
@@ -121,8 +123,9 @@ public class AddRemove {
     } else {
       // update our cache BEFORE we confirm
       handler.updateCacheEntry(confirmRemovePacket, removeInfo.getName(), null);
-      removeInfo.setSuccess(confirmRemovePacket.isSuccess());
-      removeInfo.setFinishTime();
+      //removeInfo.setSuccess(confirmRemovePacket.isSuccess());
+      //removeInfo.setFinishTime();
+      DelayProfiler.updateDelay("serviceNameRemove", (System.currentTimeMillis() - removeInfo.getStartTime()));
       Update.sendConfirmUpdatePacketBackToSource(confirmRemovePacket, handler);
     }
   }

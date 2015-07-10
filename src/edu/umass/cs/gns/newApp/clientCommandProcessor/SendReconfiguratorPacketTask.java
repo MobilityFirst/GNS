@@ -69,19 +69,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   }
 
   private boolean isResponseReceived() {
-    Integer lnsRequestID = null;
-    if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
-      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
-      lnsRequestID = handler.getCreateRequestNameToIDMapping(name);
-    } else if (packet.getType().equals(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME)) {
-      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
-      lnsRequestID = handler.getDeleteRequestNameToIDMapping(name);
-    } else if (packet.getType().equals(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS)) {
-      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
-      lnsRequestID = handler.getActivesRequestNameToIDMapping(name);
-    } else {
-      GNS.getLogger().warning("BAD PACKET TYPE: " + packet.getType());
-    }
+    Integer lnsRequestID = getRequestNameToIDMapping(name);
     if (lnsRequestID == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " info not found. Operation complete. Cancel task.");
@@ -101,33 +89,24 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
     }
     return false;
   }
+  
+  
 
   private boolean isMaxWaitTimeExceeded() {
     if (sendCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
-      Integer lnsRequestID = null;
-      if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
-        lnsRequestID = handler.removeCreateRequestNameToIDMapping(name);
-      } else if (packet.getType().equals(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME)) {
-        lnsRequestID = handler.removeDeleteRequestNameToIDMapping(name);
-      } else if (packet.getType().equals(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS)) {
-        lnsRequestID = handler.removeActivesRequestNameToIDMapping(name);
-      } else {
-        GNS.getLogger().warning("BAD PACKET TYPE: " + packet.getType());
-      }
-      //Integer lnsRequestID = handler.removeCreateRequestNameToIDMapping(name);
-      if (lnsRequestID != null) {
-        UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+      Integer ccpRequestID = removeRequestNameToIDMapping(name);
+      if (ccpRequestID != null) {
+        UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(ccpRequestID);
         if (updateInfo == null) {
           GNS.getLogger().warning("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
           return true;
         }
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType()
-                  + " Request FAILED no response until MAX-wait time: " + lnsRequestID);
+                  + " Request FAILED no response until MAX-wait time: " + ccpRequestID);
         }
         updateInfo.setSuccess(false);
         updateInfo.setFinishTime();
-        //updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
         return true;
       } else {
         if (handler.getParameters().isDebugMode()) {
@@ -172,6 +151,37 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
       e.printStackTrace();
     }
 
+  }
+  
+  private Integer getRequestNameToIDMapping(String serviceName) {
+    Integer ccpRequestId = null;
+    if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
+      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
+      ccpRequestId = handler.getCreateRequestNameToIDMapping(name);
+    } else if (packet.getType().equals(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME)) {
+      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
+      ccpRequestId = handler.getDeleteRequestNameToIDMapping(name);
+    } else if (packet.getType().equals(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS)) {
+      //GNS.getLogger().info("PACKET TYPE: " + packet.getType());
+      ccpRequestId = handler.getActivesRequestNameToIDMapping(name);
+    } else {
+      GNS.getLogger().warning("BAD PACKET TYPE: " + packet.getType());
+    }
+    return ccpRequestId;
+  }
+
+  private Integer removeRequestNameToIDMapping(String serviceName) {
+    Integer ccpRequestID = null;
+    if (packet.getType().equals(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME)) {
+      ccpRequestID = handler.removeCreateRequestNameToIDMapping(serviceName);
+    } else if (packet.getType().equals(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME)) {
+      ccpRequestID = handler.removeDeleteRequestNameToIDMapping(serviceName);
+    } else if (packet.getType().equals(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS)) {
+      ccpRequestID = handler.removeActivesRequestNameToIDMapping(serviceName);
+    } else {
+      GNS.getLogger().warning("BAD PACKET TYPE: " + packet.getType());
+    }
+    return ccpRequestID;
   }
 
 }

@@ -47,9 +47,9 @@ public class AccessSupport {
    * @param signature
    * @param message
    * @return
-   * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    * @throws InvalidKeyException
+   * @throws java.io.UnsupportedEncodingException
    * @throws SignatureException 
    */
   public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws InvalidKeySpecException, 

@@ -12,6 +12,7 @@ import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
 
 import java.io.IOException;
@@ -47,6 +48,7 @@ public class AppUpdate {
   public static void executeUpdateLocal(UpdatePacket<String> updatePacket, GnsApplicationInterface app,
           boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
+    Long receiptTime = System.currentTimeMillis();
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Processing UPDATE with " + " "
               + "doNotReplyToClient= " + doNotReplyToClient 
@@ -65,6 +67,7 @@ public class AppUpdate {
       errorCode = NSAuthentication.signatureAndACLCheck(guid, field, writer, signature, message, MetaDataTypeName.WRITE_WHITELIST,
               app, updatePacket.getCppAddress());
     }
+    DelayProfiler.updateDelay("totalUpdateAuth", receiptTime);
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
       ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
@@ -162,6 +165,7 @@ public class AppUpdate {
       GNS.getLogger().severe("Field not found exception. Exception = " + e.getMessage());
       e.printStackTrace();
     }
+    DelayProfiler.updateDelay("totalUpdate", receiptTime);
   }
 
 }
