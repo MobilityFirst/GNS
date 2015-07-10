@@ -33,7 +33,7 @@ import edu.umass.cs.utils.DelayProfiler;
  * 
  *         This abstract class exists to make the logger pluggable. An example
  *         is a quick and dirty, fake, memory-based logger DummyPaxosLogger that
- *         was implemented long back but it not maintained anymore. Use
+ *         was implemented long back but has been deprecated now. Use
  *         DerbyPaxosLogger that extends this class for a more scalable,
  *         efficient, and persistent logger.
  */
@@ -41,9 +41,9 @@ public abstract class AbstractPaxosLogger {
 	protected static final boolean BATCH_GC_ENABLED = false;
 
 	// protected coz the pluggable logger needs it
-	protected final int myID; 
+	protected final int myID;
 	// protected coz the pluggable logger needs it.
-	protected final String logDirectory; 
+	protected final String logDirectory;
 
 	private boolean aboutToClose = false;
 
@@ -61,8 +61,8 @@ public abstract class AbstractPaxosLogger {
 	private final Messenger<?> messenger;
 	private final Checkpointer collapsingCheckpointer;
 
-	private static Logger log = //PaxosManager.getLogger();//
-	Logger.getLogger(AbstractPaxosLogger.class.getName());
+	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class
+			.getName());
 
 	protected AbstractPaxosLogger(int id, String logDir, Messenger<?> msgr) {
 		this.myID = id;
@@ -292,7 +292,8 @@ public abstract class AbstractPaxosLogger {
 	 * @param createTime
 	 */
 	public abstract void putCheckpointState(String paxosID, int version,
-			int[] group, int slot, Ballot ballot, String state, int gcSlot, long createTime);
+			int[] group, int slot, Ballot ballot, String state, int gcSlot,
+			long createTime);
 
 	/**
 	 * 
@@ -318,15 +319,14 @@ public abstract class AbstractPaxosLogger {
 	 * @param version
 	 * @return Final checkpoint state of the epoch {@code paxosID:version}.
 	 */
-	public abstract StringContainer getEpochFinalCheckpointState(String paxosID,
-			int version);
+	public abstract StringContainer getEpochFinalCheckpointState(
+			String paxosID, int version);
 
 	/**
 	 * @param paxosID
 	 * @return The most recent final state version (possibly null).
 	 */
-	public abstract Integer getEpochFinalCheckpointVersion(String paxosID
-			);
+	public abstract Integer getEpochFinalCheckpointVersion(String paxosID);
 
 	/**
 	 * 
@@ -401,7 +401,8 @@ public abstract class AbstractPaxosLogger {
 	 * Removes all state for the paxos group {@code paxosID}
 	 * 
 	 * @param paxosID
-	 * @param version TODO
+	 * @param version
+	 *            TODO
 	 * @return Returns true if state was succcessfully removed (or didn't exist
 	 *         anyway).
 	 */
@@ -447,22 +448,22 @@ public abstract class AbstractPaxosLogger {
 	 * @param firstSlot
 	 * @return A map of logged ACCEPTs indexed by their integer slot numbers.
 	 */
-	public abstract Map<Integer, PValuePacket> getLoggedAccepts(String paxosID, int version,
-			int firstSlot);
+	public abstract Map<Integer, PValuePacket> getLoggedAccepts(String paxosID,
+			int version, int firstSlot);
 
 	/**
 	 * 
 	 * We must supply the version here for safety.
 	 * 
 	 * @param paxosID
-	 * @param version 
+	 * @param version
 	 * @param minSlot
 	 * @param maxSlot
 	 * @return Returns logged decisions for the paxos group {@code paxosID}.
 	 * @throws JSONException
 	 */
-	public abstract ArrayList<PValuePacket> getLoggedDecisions(String paxosID, int version,
-			int minSlot, int maxSlot) throws JSONException;
+	public abstract ArrayList<PValuePacket> getLoggedDecisions(String paxosID,
+			int version, int minSlot, int maxSlot) throws JSONException;
 
 	// pausing methods
 	protected abstract boolean pause(String paxosID, String serialized);
@@ -470,7 +471,6 @@ public abstract class AbstractPaxosLogger {
 	protected abstract HotRestoreInfo unpause(String paxosID);
 
 	/**************** End of extensible methods ***********************/
-
 
 	/**
 	 * @param packet
@@ -527,7 +527,7 @@ public abstract class AbstractPaxosLogger {
 			throw new RuntimeException(this.getClass().getName()
 					+ ".dequeueImpl() should not have been called");
 		}
-		
+
 		@Override
 		public void process(LogMessagingTask task) {
 			throw new RuntimeException(this.getClass().getName()
@@ -572,9 +572,8 @@ public abstract class AbstractPaxosLogger {
 		final String state;
 		final int gcSlot;
 
-		CheckpointTask(AbstractPaxosLogger logger, String paxosID,
-				int version, int[] members, int slot, Ballot ballot,
-				String state, int gcSlot) {
+		CheckpointTask(AbstractPaxosLogger logger, String paxosID, int version,
+				int[] members, int slot, Ballot ballot, String state, int gcSlot) {
 			this.logger = logger;
 			this.paxosID = paxosID;
 			this.version = version;

@@ -14,8 +14,7 @@ import java.util.Timer;
 
 /*
  * This class helps emulate delays in NIO transport. It is mostly
- * self-explanatory. TBD: Need to figure out how to use StartNameServer's
- * emulated latencies.
+ * self-explanatory.
  * 
  * FIXME: This class works only for Integer/String/InetSocketAddress node IDs as
  * it is essentially a static class.
@@ -28,10 +27,10 @@ public class JSONDelayEmulator {
 
 	private static boolean EMULATE_RECEIVER_DELAYS = false;
 	private static double VARIATION = 0.1; // 10% variation in latency
-	private static boolean USE_CONFIG_FILE_INFO = false; 
+	private static boolean USE_CONFIG_FILE_INFO = false;
 	private static long DEFAULT_DELAY = 100; // 100ms
 
-	private static Object gnsNodeConfig = null; 
+	private static Object gnsNodeConfig = null;
 
 	private static final Timer timer = new Timer();
 
@@ -46,8 +45,8 @@ public class JSONDelayEmulator {
 	 * @param gnsNodeConfig
 	 * @param variation
 	 */
-	public static void emulateConfigFileDelays(InterfaceDelayEmulator<?> gnsNodeConfig,
-			double variation) {
+	public static void emulateConfigFileDelays(
+			InterfaceDelayEmulator<?> gnsNodeConfig, double variation) {
 		JSONDelayEmulator.EMULATE_RECEIVER_DELAYS = true;
 		JSONDelayEmulator.VARIATION = variation;
 		JSONDelayEmulator.USE_CONFIG_FILE_INFO = true;
@@ -124,7 +123,8 @@ public class JSONDelayEmulator {
 		return getEmulatedDelay(json);
 	}
 
-	@SuppressWarnings("unchecked") // checked explicitly
+	@SuppressWarnings("unchecked")
+	// checked explicitly
 	private static long getDelay(Object id) {
 		long delay = 0;
 		if (JSONDelayEmulator.EMULATE_RECEIVER_DELAYS) {
@@ -150,15 +150,5 @@ public class JSONDelayEmulator {
 			delay = (long) ((1.0 + VARIATION * Math.random()) * delay);
 		}
 		return delay;
-	}
-
-	static class Main {
-		public static void main(String[] args) {
-			System.out.println("Delay to node " + 3 + " = " + getDelay("3"));
-			System.out
-					.println("There is no testing code for this class as it is unclear"
-							+ " how to access and use ConfigFileInfo. It is unclear what getPingLatency(id) even means."
-							+ " How does one specify the source node id?");
-		}
 	}
 }

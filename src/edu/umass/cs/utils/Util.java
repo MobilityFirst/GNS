@@ -9,9 +9,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+
+import edu.umass.cs.gigapaxos.PaxosManager;
 
 /**
  * @author arun
@@ -20,6 +23,8 @@ import org.json.JSONException;
  */
 @SuppressWarnings("javadoc")
 public class Util {
+	
+	private static Logger log = Logger.getLogger(Util.class.getName());
 
 	public static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
 	public static final double ALPHA = 0.05;
@@ -286,6 +291,13 @@ public class Util {
 				+ (list.size() <= size ? "" : "...");
 	}
 
+	public static String suicide(String error) {
+		log.severe(error);
+		new RuntimeException(error).printStackTrace();
+		System.exit(1);
+		return null; // will never come here
+	}
+	
 	public static void main(String[] args) {
 		System.out.println(Util.getInetSocketAddressFromString(
 				(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))

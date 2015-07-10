@@ -83,7 +83,7 @@ public class TESTPaxosConfig {
 		 memoryTesting = true;
 	}
 
-	private static final boolean TEST_WITH_RECOVERY = true;
+	private static final boolean TEST_WITH_RECOVERY = !DISABLE_LOGGING;
 
 	public static final int MAX_NODE_ID = 10000;
 	/**

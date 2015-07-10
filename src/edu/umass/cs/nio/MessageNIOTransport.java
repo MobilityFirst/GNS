@@ -36,14 +36,14 @@ import java.util.concurrent.TimeUnit;
  *            packet demultiplexer on the other end must be able to reconstruct
  *            the MessageType object from the String. The one exception is
  *            byte[] that is supported here. However, MessageType can not extend
- *            Object[] or be any primitive array other than byte[]. If byte[] as
+ *            Object[] or be any primitive array other than byte[]. If byte[] is
  *            MessageType, the corresponding
  *            AbstractPacketDemultiplexer.getMessage(byte[]) method should
  *            return a String decoded from the byte[] assuming ISO-8859-1
  *            encoding.
  * 
- *            This class also supports delay emulation and short-circuiting
- *            local sends by directly sending it to the packet demultiplexer.
+ *            This class short-circuits local sends by directly sending it to
+ *            the packet demultiplexer.
  */
 
 public class MessageNIOTransport<NodeIDType, MessageType> extends
@@ -133,7 +133,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		// Switched order of the latter two arguments
 		super(id, nodeConfig, new MessageExtractor(pd), start, sslMode);
 	}
-	
+
 	/**
 	 * @param address
 	 * @param port
@@ -142,7 +142,8 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * @throws IOException
 	 */
 	public MessageNIOTransport(InetAddress address, int port,
-			AbstractPacketDemultiplexer<?> pd, SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+			AbstractPacketDemultiplexer<?> pd,
+			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		super(address, port, new MessageExtractor(pd), sslMode);
 	}
 

@@ -92,7 +92,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		// else
 		Tasker tasker = new Tasker(message, this.demuxMap.get(type));
 		if (this.myThreadPoolSize==0)
-			tasker.run(); // task better be lightining quick
+			tasker.run(); // task better be lightning quick
 		else
 			// task should still be non-blocking
 			executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);

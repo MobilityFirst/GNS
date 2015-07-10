@@ -71,9 +71,9 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	/* ********************************************************************
 	 * DB related parameters to be changed to use a different database service.
 	 */
-	private static final String FRAMEWORK = "embedded";
+	private static final boolean EMBEDDED = true; // false if network DB server
 	private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
-	private static final String PROTOCOL = "jdbc:derby:";
+	private static final String PROTOCOL_OR_URL = "jdbc:derby:";
 	private static final String USER = "user";
 	private static final String PASSWORD = "user";
 	private static final String DATABASE = "paxos_logs";
@@ -95,10 +95,11 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 
 	// disable persistent logging altogether
 	private static final boolean DISABLE_LOGGING = TESTPaxosConfig.DISABLE_LOGGING; // false;
+	private static boolean disableLogging = DISABLE_LOGGING;
 
 	// maximum size of a paxos group name
 	private static final int PAXOS_ID_SIZE = 40;
-	private static final int PAUSE_STATE_SIZE = 256;
+	private static final int PAUSE_STATE_SIZE = 1024;
 	// maximum size of a paxos replica group
 	private static final int MAX_GROUP_SIZE = 256;
 	// maximum size of a log message
@@ -110,6 +111,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private static final int MAX_OLD_DECISIONS = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
 	private static final int MAX_VARCHAR_SIZE = 32672;
 	private static final boolean CHECKPOINT_CLOB_OPTION = (MAX_CHECKPOINT_SIZE > MAX_VARCHAR_SIZE);
+
+	/*
+	 * Batching can make log messages really big. Derby still seems to choke
+	 * with large log messages for batched requests, most likely because of
+	 * derby bugs.
+	 */
 	private static final boolean LOG_MESSAGE_CLOB_OPTION = (MAX_LOG_MESSAGE_SIZE > MAX_VARCHAR_SIZE)
 			|| PaxosManager.BATCHING_ENABLED;
 
@@ -140,7 +147,11 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private boolean closed = true;
 
 	protected static boolean isLoggingEnabled() {
-		return !DISABLE_LOGGING;
+		return !disableLogging;
+	}
+
+	protected static boolean disableLogging() {
+		return disableLogging && (disableLogging = true);
 	}
 
 	/*
@@ -153,11 +164,11 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	private PreparedStatement checkpointStmt = null;
 	private PreparedStatement cursorPstmt = null;
 	private ResultSet cursorRset = null;
-	
+
 	private final String strID;
 
-	private static Logger log = //PaxosManager.getLogger();
-			Logger.getLogger(DerbyPaxosLogger.class.getName());
+	private static Logger log = // PaxosManager.getLogger();
+	Logger.getLogger(DerbyPaxosLogger.class.getName());
 
 	DerbyPaxosLogger(int id, String strID, String dbPath, Messenger<?> messenger) {
 		super(id, dbPath, messenger);
@@ -165,9 +176,10 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		addDerbyLogger(this);
 		initialize(); // will set up db, connection, tables, etc. as needed
 	}
+
 	DerbyPaxosLogger(int id, String dbPath, Messenger<?> messenger) {
-		this(id, ""+id, dbPath, messenger);
-		
+		this(id, "" + id, dbPath, messenger);
+
 	}
 
 	private synchronized Connection getDefaultConn() throws SQLException {
@@ -243,8 +255,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				conn.commit();
 				log.log(Level.INFO,
 						"{0} copied epoch final state for {1}:{2}: [{3}]",
-						new Object[] { this, paxosID, version,
-								Util.truncate(cpRecord.getString("state"), 32,32) });
+						new Object[] {
+								this,
+								paxosID,
+								version,
+								Util.truncate(cpRecord.getString("state"), 32,
+										32) });
 			}
 		} catch (SQLException sqle) {
 			log.severe("SQLException while copying epoch final state for "
@@ -310,12 +326,13 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 				&& (System.currentTimeMillis() - sbs.getCreateTime() < MAX_FINAL_STATE_AGE) ? new StringContainer(
 				sbs.state) : null;
 	}
-	
-	private boolean garbageCollectEpochFinalCheckpointState(String paxosID, int version) {
+
+	private boolean garbageCollectEpochFinalCheckpointState(String paxosID,
+			int version) {
 		SlotBallotState sbs = this.getSlotBallotState(getPCTable(), paxosID,
 				version, true);
-		if(sbs != null
-				&& (System.currentTimeMillis() - sbs.getCreateTime() > MAX_FINAL_STATE_AGE)) 
+		if (sbs != null
+				&& (System.currentTimeMillis() - sbs.getCreateTime() > MAX_FINAL_STATE_AGE))
 			return this.deleteEpochFinalCheckpointState(paxosID, version);
 		return false;
 	}
@@ -1185,7 +1202,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	private static boolean isEmbeddedDB() {
-		return FRAMEWORK.equals("embedded");
+		return EMBEDDED;
 	}
 
 	/**
@@ -1217,11 +1234,12 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		 * instances.
 		 */
 
-		if (FRAMEWORK.equals("embedded")) {
+		if (isEmbeddedDB()) {
 			try {
 				// the shutdown=true attribute shuts down Derby
 				if (!DONT_SHUTDOWN_EMBEDDED)
-					DriverManager.getConnection(PROTOCOL + ";shutdown=true");
+					DriverManager.getConnection(PROTOCOL_OR_URL
+							+ ";shutdown=true");
 
 				// To shut down a specific database only, but keep the
 				// databases), specify a database in the connection URL:
@@ -1422,7 +1440,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 			e.printStackTrace();
 			return false;
 		}
-		Connection conn = DriverManager.getConnection(PROTOCOL
+		Connection conn = DriverManager.getConnection(PROTOCOL_OR_URL
 				+ this.logDirectory + DATABASE
 				+ (!this.dbDirectoryExists() ? ";create=true" : ""));
 		cleanup(conn);
@@ -1437,7 +1455,7 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 		// providing a user name and PASSWORD is optional in embedded derby
 		props.put("user", DerbyPaxosLogger.USER + this.myID);
 		props.put("password", DerbyPaxosLogger.PASSWORD);
-		String dbCreation = PROTOCOL + this.logDirectory + DATABASE;
+		String dbCreation = PROTOCOL_OR_URL + this.logDirectory + DATABASE;
 
 		try {
 			if (!this.existsDB(dbCreation, props))
@@ -1712,7 +1730,8 @@ public class DerbyPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	private void fixURI() {
-		this.dataSource.setJdbcUrl(PROTOCOL + this.logDirectory + DATABASE);
+		this.dataSource.setJdbcUrl(PROTOCOL_OR_URL + this.logDirectory
+				+ DATABASE);
 	}
 
 	/**

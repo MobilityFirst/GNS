@@ -25,7 +25,8 @@ public class RequestInstrumenter {
 
 	private static final HashMap<Integer, String> map = new HashMap<Integer, String>();
 
-	private static Logger log =  Logger.getLogger(RequestInstrumenter.class.getName());
+	private static Logger log = Logger.getLogger(RequestInstrumenter.class
+			.getName());
 
 	public synchronized static void received(RequestPacket request, int sender,
 			int receiver) {
@@ -83,7 +84,8 @@ public class RequestInstrumenter {
 	}
 
 	public synchronized static String getLog(int requestID) {
-		return map.get(requestID);
+		return map.containsKey(requestID) ? map.get(requestID) :
+				"-----------------["+requestID+":null]-------";
 	}
 
 	private synchronized static String rcvformat(int requestID,

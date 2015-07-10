@@ -36,6 +36,13 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		this.batched = lock;
 		this.paxosManager = paxosManager;
 	}
+	/**
+	 * @param paxosManager
+	 */
+	public RequestBatcher(
+			PaxosManager<?> paxosManager) {
+		this(new HashMap<String, ArrayList<RequestPacket>>(), paxosManager);
+	}
 
 	@Override
 	public void enqueueImpl(RequestPacket task) {

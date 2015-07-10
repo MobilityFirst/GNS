@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -130,11 +133,11 @@ public class TESTPaxosMain {
 	 * @throws InterruptedException
 	 */
 	public static void main(String[] args) throws InterruptedException {
-		// ConsoleHandler handler = new ConsoleHandler();
-		// handler.setLevel(Level.FINE);
-		// PaxosManager.getLogger().setLevel(Level.FINE);
-		// PaxosManager.getLogger().addHandler(handler);
-		// PaxosManager.getLogger().setUseParentHandler(false);
+		 ConsoleHandler handler = new ConsoleHandler();
+		 handler.setLevel(Level.INFO);
+		 PaxosManager.getLogger().setLevel(Level.INFO);
+		 PaxosManager.getLogger().addHandler(handler);
+		 PaxosManager.getLogger().setUseParentHandlers(false);
 
 		processArgs(args);
 

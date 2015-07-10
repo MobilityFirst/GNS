@@ -283,23 +283,45 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			state1 = app1.allState.get(paxosID).committed.get(seqnum);
 		if (app2.allState.containsKey(paxosID))
 			state2 = app2.allState.get(paxosID).committed.get(seqnum);
-		assert (state1 == null || state2 == null || state1.equals(state2)) : app1
-				.getMyID()
-				+ ":"
-				+ paxosID
-				+ ":"
-				+ seqnum
-				+ ": "
-				+ state1
-				+ " != "
-				+ app2.getMyID()
-				+ ":"
-				+ paxosID
-				+ ":"
-				+ seqnum
-				+ ": "
-				+ state2;
+		assert (state1 == null || state2 == null || state1.equals(state2) || hasHoles(
+				app1, app2, paxosID, seqnum)) :		(getTrace(app1, app2, paxosID, seqnum));
 		return (state1 == null || state2 == null || state1.equals(state2));
+	}
+
+	// legitimate holes can be caused because of checkpoint transfers
+	private boolean hasHoles(TESTPaxosReplicable app1,
+			TESTPaxosReplicable app2, String paxosID, int seqnum) {
+		for (int i = seqnum; i >= 0; i--)
+			if (app1.allState.get(paxosID).committed.get(i) == null
+					&& app2.allState.get(paxosID).committed.get(i) != null
+					|| app2.allState.get(paxosID).committed.get(i) == null
+					&& app1.allState.get(paxosID).committed.get(i) != null)
+				return true;
+		return false;
+	}
+	
+	private String getTrace(TESTPaxosReplicable app1,
+			TESTPaxosReplicable app2, String paxosID, int seqnum) {
+		String s="";
+		for(int i=seqnum; i>=0; i--) {
+			s += app1
+			.getMyID()
+			+ ":"
+			+ paxosID
+			+ ":"
+			+ i
+			+ ": "
+			+ app1.allState.get(paxosID).committed.get(i)
+			+ " != "
+			+ app2.getMyID()
+			+ ":"
+			+ paxosID
+			+ ":"
+			+ seqnum
+			+ ": "
+			+ app2.allState.get(paxosID).committed.get(i) + "\n";
+		}
+		return s;
 	}
 
 	// check invariant at seqnum

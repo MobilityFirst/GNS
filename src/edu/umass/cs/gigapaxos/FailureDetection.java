@@ -78,7 +78,8 @@ public class FailureDetection<NodeIDType> {
 	private HashMap<NodeIDType, Long> lastHeardFrom;
 	private HashMap<NodeIDType, ScheduledFuture<PingTask>> futures;
 
-	private static Logger log = Logger.getLogger(FailureDetection.class.getName());
+	private static Logger log = Logger.getLogger(FailureDetection.class
+			.getName());
 
 	FailureDetection(NodeIDType id,
 			InterfaceNIOTransport<NodeIDType, JSONObject> niot,
@@ -136,7 +137,7 @@ public class FailureDetection<NodeIDType> {
 		 * periodic ping tasks because there is no way to just change their
 		 * period midway.
 		 */
-		
+
 		// copy easiest way to avoid concurrent modification exceptions
 		Set<NodeIDType> copy = new HashSet<NodeIDType>(this.keepAliveTargets);
 		if (adjusted) {
@@ -156,7 +157,8 @@ public class FailureDetection<NodeIDType> {
 	}
 
 	public void sendKeepAlive(Set<NodeIDType> nodes) {
-		if (TESTPaxosConfig.isCrashed(this.myID)) return; // testing
+		if (TESTPaxosConfig.isCrashed(this.myID))
+			return; // testing
 		for (NodeIDType id : nodes) {
 			sendKeepAlive(id);
 		}
@@ -221,13 +223,15 @@ public class FailureDetection<NodeIDType> {
 		this.lastHeardFrom.put(id, System.currentTimeMillis());
 	}
 
-	protected synchronized boolean isNodeUp(NodeIDType id) {
+	// don't synchronize; invoked in log messages
+	protected boolean isNodeUp(NodeIDType id) {
 		if (id == this.myID)
 			return true;
 		return ((System.currentTimeMillis() - lastHeardTime(id)) < node_detection_timeout_millis);
 	}
 
-	protected synchronized boolean lastCoordinatorLongDead(NodeIDType id) {
+	// don't synchronize; invoked in log messages
+	protected boolean lastCoordinatorLongDead(NodeIDType id) {
 		return ((System.currentTimeMillis() - lastHeardTime(id)) > FailureDetection.coordinator_failure_detection_timeout);
 	}
 

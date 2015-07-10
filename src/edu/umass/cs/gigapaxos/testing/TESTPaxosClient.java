@@ -95,8 +95,10 @@ public class TESTPaxosClient {
 	private final ConcurrentHashMap<Integer, RequestPacket> requests = new ConcurrentHashMap<Integer, RequestPacket>();
 	private final Timer timer = new Timer(); // for retransmission
 
-	private static Logger log = Logger.getLogger(TESTPaxosClient.class.getName()); 
-			//PaxosManager.getLogger();
+	private static Logger log = Logger.getLogger(TESTPaxosClient.class
+			.getName());
+
+	// PaxosManager.getLogger();
 
 	private synchronized int incrReplyCount() {
 		return this.replyCount++;
@@ -305,8 +307,7 @@ public class TESTPaxosClient {
 
 	protected RequestPacket makeRequest(String paxosID) {
 		RequestPacket req = this.makeRequest();
-		req.putPaxosID(paxosID != null ? paxosID : TESTPaxosConfig.TEST_GUID,
-				 0);
+		req.putPaxosID(paxosID != null ? paxosID : TESTPaxosConfig.TEST_GUID, 0);
 		return req;
 	}
 
@@ -456,43 +457,43 @@ public class TESTPaxosClient {
 				+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms";
 	}
 
-	static class Main {
-		public static void main(String[] args) {
-			try {
-				TESTPaxosConfig.setDistribtedTest(args.length > 0 ? args[0]
-						: null);
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		try {
+			TESTPaxosConfig.setDistribtedTest(args.length > 0 ? args[0] : null);
 
-				TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
-				int numReqs = TESTPaxosConfig.getNumRequestsPerClient();
+			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
+			int numReqs = TESTPaxosConfig.getNumRequestsPerClient();
 
-				// begin first run
-				long t1 = System.currentTimeMillis();
-				sendTestRequests(numReqs, clients);
-				waitForResponses(clients);
-				long t2 = System.currentTimeMillis();
-				System.out.println("\n[run1]"
-						+ getAggregateOutput(numReqs, t2 - t1));
-				// end first run
+			// begin first run
+			long t1 = System.currentTimeMillis();
+			sendTestRequests(numReqs, clients);
+			waitForResponses(clients);
+			long t2 = System.currentTimeMillis();
+			System.out.println("\n[run1]"
+					+ getAggregateOutput(numReqs, t2 - t1));
+			// end first run
 
-				resetLatencyComputation();
-				Thread.sleep(1000);
+			resetLatencyComputation();
+			Thread.sleep(1000);
 
-				// begin second run
-				t1 = System.currentTimeMillis();
-				sendTestRequests(numReqs, clients);
-				waitForResponses(clients);
-				t2 = System.currentTimeMillis();
-				printOutput(clients); // printed only after second
-				System.out.println("\n[run2] "
-						+ getAggregateOutput(numReqs, t2 - t1));
-				// end second run
+			// begin second run
+			t1 = System.currentTimeMillis();
+			sendTestRequests(numReqs, clients);
+			waitForResponses(clients);
+			t2 = System.currentTimeMillis();
+			printOutput(clients); // printed only after second
+			System.out.println("\n[run2] "
+					+ getAggregateOutput(numReqs, t2 - t1));
+			// end second run
 
-				for (TESTPaxosClient client : clients) {
-					client.close();
-				}
-			} catch (Exception e) {
-				e.printStackTrace();
+			for (TESTPaxosClient client : clients) {
+				client.close();
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }

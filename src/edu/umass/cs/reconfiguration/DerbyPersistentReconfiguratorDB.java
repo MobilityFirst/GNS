@@ -774,6 +774,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return initCheckpointServer();
 	}
 
+	// /////// Start of file system checkpoint methods and classes /////////
+
+	// opens the server thread for file system based checkpoints
 	private boolean initCheckpointServer() {
 		try {
 			this.serverSock = new ServerSocket();
@@ -790,6 +793,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return false;
 	}
 
+	// spawns off a new thread to process file system based checkpoint request
 	private class CheckpointServer implements Runnable {
 
 		@Override
@@ -807,6 +811,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		}
 	}
 
+	// sends a requested file system based checkpoint
 	private class CheckpointTransporter implements Runnable {
 
 		final Socket sock;
@@ -821,7 +826,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		}
 	}
 
-	// synchronized prevents concurrent file delete
+	/*
+	 * FIXME: synchronized is meant to prevent concurrent file delete. But we
+	 * should really be using something like stringLocker here locking just the
+	 * specific RC group name in question.
+	 * 
+	 * Reads request and transfers requested checkpoint.
+	 */
 	private synchronized void transferCheckpoint(Socket sock) {
 		BufferedReader brSock = null, brFile = null;
 		try {
@@ -855,6 +866,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	}
 
+	/* Sends request for and receives remote checkpoint file if correctly
+	 * formatted URL. If so, it returns a local filename. If not, it
+	 * returns the url back as-is.
+	 */
 	private String getRemoteCheckpoint(String rcGroup, String url) {
 		if (url == null)
 			return url;
@@ -883,6 +898,16 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return filename;
 	}
 
+	/** 
+	 * Helper function for getRemoteCheckpoint above that actually fetches the
+	 * reads from the socket and writes to a local file.
+	 * 
+	 * @param rcGroupName
+	 * @param sockAddr
+	 * @param remoteFilename
+	 * @param fileSize
+	 * @return
+	 */
 	private synchronized String getRemoteCheckpoint(String rcGroupName,
 			InetSocketAddress sockAddr, String remoteFilename, long fileSize) {
 		String request = remoteFilename + "\n";
@@ -923,6 +948,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return localCPFilename;
 	}
 
+	// makes a checkpoint URL out of a local filename
 	private String getCheckpointURL(String localFilename) {
 		String url = null;
 		try {
@@ -957,7 +983,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return this.getCheckpointDir() + rcGroupName + "."
 				+ System.currentTimeMillis(); // + ":" + epoch;
 	}
-
+	
+	// garbage collection methods below for file system based checkpoints
+	
 	/*
 	 * Deletes all but the most recent checkpoint for the RC group name. We
 	 * could track recency based on timestamps using either the timestamp in the
@@ -1019,6 +1047,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				return 1;
 		}
 	}
+	
+	// /////// End of file system based checkpoint transfer methods ///////
+
 
 	public Map<String, Set<NodeIDType>> getRCGroups() {
 		Set<String> rcGroupNames = this.getRCGroupNames();

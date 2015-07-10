@@ -29,7 +29,7 @@ import java.util.logging.Logger;
  *         result in double-writing bytes sometimes. And there is no way of
  *         knowing in this class that the byte stream on the new connection is
  *         related to a byte stream on a previous connection. So we have to
- *         accept that some messages might get lost because as portions of the
+ *         accept that some messages might get lost because portions of the
  *         byte stream will fail format checks. We can live with this as
  *         connection failures are (hopefully) rare.
  * 
@@ -127,7 +127,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		this.timer.cancel();
 	}
 
-	public synchronized void processMessage(InetSocketAddress sockAddr,
+	public void processMessage(InetSocketAddress sockAddr,
 			final String jsonMsg) {
 		this.processMessageInternal(sockAddr, jsonMsg);
 	}
@@ -194,7 +194,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		}
 	}
 
-	private synchronized void processMessageInternal(
+	private void processMessageInternal(
 			InetSocketAddress sockAddr, String msg) {
 
 		MessageWorker worker = new MessageWorker(sockAddr, msg, packetDemuxes);

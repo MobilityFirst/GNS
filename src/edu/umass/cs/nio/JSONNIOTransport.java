@@ -24,8 +24,6 @@ import java.io.IOException;
  *            Currently, there is no way to directly use NIOTransport other than
  *            with MessageNIOTransport or JSONNIOTransport.
  * 
- *            This class also supports delay emulation and short-circuiting
- *            local sends by directly sending it to the packet demultiplexer.
  */
 public class JSONNIOTransport<NodeIDType> extends
 		MessageNIOTransport<NodeIDType, JSONObject>  {

@@ -650,7 +650,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 						"queued", new Stringer(data) });
 			} else {
 				log.log(Level.WARNING,
-						"{0}'s message queue for {1} out of room, dropping message",
+						"{0} message queue for {1} out of room, dropping message",
 						new Object[] { this, isa });
 				if (!this.isConnected(isa))
 					queuedBytes = -1; // could also drop queue here

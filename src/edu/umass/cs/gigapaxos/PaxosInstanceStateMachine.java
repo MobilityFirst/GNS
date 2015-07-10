@@ -83,48 +83,6 @@ import edu.umass.cs.utils.DelayProfiler;
  *         *requests* at a machine is on average ~100K. The number of active
  *         paxos instances at that machine is at most the number of active
  *         requests at that machine.
- *         <p>
- * 
- *         Can this state machine get stuck permanently? Hopefully not coz here
- *         is how we deal with loss. Under high load, messages to an unreachable
- *         destination can get dropped. NIO will buffer up to a threshold limit
- *         and keep trying to reconnect and send to the destination, and
- *         Messenger will keep trying to retransmit with exponential backoff,
- *         but if a destination is just dead, the send buffer will eventually
- *         fill up and we have to stop retransmitting (or exhaust heap space).
- *         Now if the destination comes back up, it would have missed some
- *         messages. If more than a majority of destinations are highly loaded
- *         and they also crash at some point (i.e., they become !isConnected()
- *         from NIO's view) and they subsequently come back up, they could have
- *         missed some messages. If a majority miss some message, say a prepare
- *         or an accept, and there is nothing in the code here (not just in
- *         Messenger as that might eventually give up) to trigger their
- *         retransmission, the state machine can get stuck forever. We address
- *         these as follows.
- *         <p>
- * 
- *         FIXED: If a majority miss a prepare, the coordinator may never get
- *         elected as follows. The minority of acceptors who did receive the
- *         prepare will assume the prepare's sender as the current coordinator.
- *         The rest might still think the previous coordinator is the current
- *         coordinator. All acceptors could be thinking that their current
- *         coordinator is up, so nobody will bother running for coordinator. To
- *         break this impasse, we need to resend the prepare. This has been now
- *         incorporated in the checkRunForCoordinator method that periodically
- *         checks to see if we need to "(re)run for coordinator" (for the same
- *         ballot) if we have been waiting for too long (having neither received
- *         a prepare majority nor a preemption) for the ballot to complete.
- *         <p>
- * 
- *         FIXED: If a majority miss an accept, but any messages are still being
- *         received at all, then the loss will eventually get fixed by a check
- *         similar to checkRunForCoordinator that upon receipt of every message
- *         will poke the local coordinator to recommander the next-in-line
- *         accept if the accept has been waiting for too long (for a majority or
- *         preemption). Both the prepare and accept waiting checks are quick
- *         O(1) operations.
- * 
- *         So can the state machine still get stuck forever? Hopefully not!
  * 
  */
 public class PaxosInstanceStateMachine implements Keyable<String> {
@@ -164,7 +122,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * final state.
 	 */
 	protected static final boolean ENABLE_NULL_CHECKPOINT_STATE = true;
-
 
 	/************ final Paxos state that is unchangeable after creation ***************/
 	private final int[] groupMembers;
@@ -217,9 +174,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		assert (hri == null || initialState == null) : "Can not specify initial state for existing, paused paxos instance";
 		incrInstanceCount(); // for instrumentation
 
-		// log creation only if the number of instances is small 
-		log.log((hri == null && notManyInstances() ) ? Level.INFO
-				: Level.FINER,
+		// log creation only if the number of instances is small
+		log.log((hri == null && notManyInstances()) ? Level.INFO : Level.FINER,
 				"Initialized paxos {0} {1} at node {2} with {3} members. {4} {5} {6}{7}",
 				new Object[] {
 						(this.paxosState.getBallotCoordLog() == this.getMyID() ? "COORDINATOR"
@@ -308,12 +264,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 	// not synchronized as coordinator can die anytime anyway
 	protected boolean forceStop() {
-		if(!this.paxosState.isStopped()) decrInstanceCount(); // for instrumentation
+		if (!this.paxosState.isStopped())
+			decrInstanceCount(); // for instrumentation
 		this.coordinator.forceStop();
 		this.paxosState.forceStop(); //
 		return true;
 	}
-	
+
 	private boolean nullCheckpointStateEnabled() {
 		return this.paxosManager.isNullCheckpointStateEnabled();
 	}
@@ -411,15 +368,23 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		if (!this.paxosManager.hasRecovered(this) && !recovery)
 			return; // don't process regular messages until ready for
 					// rollForward
-		this.paxosState.justActive();
 
 		PaxosPacketType msgType = PaxosPacket.getPaxosPacketType(msg);
 		log.log(Level.FINEST, "{0}{1}{2}{3}{4}", new Object[] { this,
 				" received ", msgType, ": ", msg });
 
+		boolean isPoke = msgType.equals(PaxosPacketType.NO_TYPE);
+		if (!isPoke)
+			this.justActive();
+
 		MessagingTask[] mtasks = new MessagingTask[2];
-		// check possible coordinator'ing upon *every* message
-		mtasks[0] = (!recovery ? !this.coordinator.isActive() ? checkRunForCoordinator()
+		/*
+		 * Check for coordinator'ing upon *every* message except poke messages.
+		 * Pokes are primarily for sync'ing decisions and could be also used to
+		 * resend accepts. There is little reason to send prepares proactively
+		 * if no new activity is happening.
+		 */
+		mtasks[0] = (!recovery ? !this.coordinator.isActive() && !isPoke ? checkRunForCoordinator()
 				: this.pokeLocalCoordinator()
 				: null);
 
@@ -474,7 +439,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			// if no coordinator'ing to do, sync if needed and can sync
 			if (mtasks[0] == null)
 				mtasks[0] = this.fixLongDecisionGaps(null,
-						msg.optBoolean(PaxosPacket.MARK_ACTIVE));
+						msg.getBoolean(PaxosPacket.FORCE_SYNC));
 
 			break;
 		default:
@@ -538,11 +503,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		if (slotBallot == null && initialState == null
 				&& !this.paxosManager.isNullCheckpointStateEnabled()
 				&& !TESTPaxosConfig.isMemoryTesting())
-			 throw new PaxosInstanceCreationException(
-			 "A paxos instance with null initial state can"
-			 + " be created only if null checkpoints are enabled")
-			;
-		
+			throw new PaxosInstanceCreationException(
+					"A paxos instance with null initial state can"
+							+ " be created only if null checkpoints are enabled");
+
 		/*
 		 * If this is a "missed-birthing" instance creation, we still set the
 		 * acceptor nextSlot to 0 but don't checkpoint initialState. In fact,
@@ -637,7 +601,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 
 	// will send a noop message to self to force event-driven actions
-	protected void poke(boolean markActive) {
+	protected void poke(boolean forceSync) {
 		if (POKE_ENABLED) {
 			try {
 				JSONObject msg = new JSONObject();
@@ -645,18 +609,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				msg.put(PaxosPacket.PAXOS_VERSION, this.getVersion());
 				msg.put(PaxosPacket.PAXOS_PACKET_TYPE,
 						PaxosPacketType.NO_TYPE.getInt());
-				if (markActive)
-					msg.put(PaxosPacket.MARK_ACTIVE, markActive);
+				msg.put(PaxosPacket.FORCE_SYNC, forceSync);
 				log.log(Level.FINE, "{0} being poked", new Object[] { this });
 				this.handlePaxosMessage(msg);
 			} catch (JSONException je) {
 				je.printStackTrace();
 			}
 		}
-	}
-
-	protected void poke() {
-		this.poke(false);
 	}
 
 	/*
@@ -696,13 +655,14 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					this.getMyID());
 		if (this.coordinator.exists(this.paxosState.getBallot())) {
 			// multicast ACCEPT to all
+			boolean isActive = this.coordinator.isActive();
 			log.log(Level.FINER,
 					"{0} issuing Phase2a/ACCEPT after {1} ms : {2}",
 					new Object[] {
 							this,
 							(System.currentTimeMillis() - proposal
 									.getCreateTime()),
-							(this.coordinator.isActive() ? " sending accept for request "
+							(isActive ? " sending accept for request "
 									: " received pre-active request "),
 							proposal });
 			AcceptPacket multicastAccept = null;
@@ -772,7 +732,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		 */
 		if (prepareReply.accepted.isEmpty()
 				&& this.paxosState.getGCSlot() == -1
-				&& this.paxosState.getSlot() == 1) 
+				&& this.paxosState.getSlot() == 1)
 			prepareReply.setFirstSlot(0);
 
 		log.log(Level.FINE,
@@ -825,7 +785,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					new Object[] { this, mtask });
 		} else
 			log.log(Level.FINE,
-					"{0} received {1} pvalues for slots between {2}{3} from {4}",
+					"{0} received {1} pvalues for slots between {2}-{3} from {4}",
 					new Object[] { this, prepareReply.accepted.size(),
 							prepareReply.getMinSlot(),
 							prepareReply.getMaxSlot(), prepareReply.acceptor });
@@ -988,19 +948,18 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * It is good to prevent such scenarios (even though they don't affect
 	 * safety), so we have shouldSync always return true at creation time i.e.,
 	 * expected slot is 0 or 1.
+	 * 
+	 * forceSync is used only in the beginning in the case of missedBirthing.
 	 */
 	private MessagingTask fixLongDecisionGaps(PValuePacket committed,
-			boolean markActive) {
-
-		if (markActive)
-			this.paxosState.justActive();
+			boolean forceSync) {
 
 		MessagingTask fixGapsRequest = null;
 		if (this.shouldSync((committed != null ? committed.slot
 				: this.paxosState.getSlot() - 1), this.getPaxosManager()
 				.getOutOfOrderLimit())
 				// rate limit syncs
-				&& this.paxosState.canSync()) {
+				&& this.paxosState.canSync() || forceSync) {
 			fixGapsRequest = this
 					.requestMissingDecisions(committed != null ? committed.ballot.coordinatorID
 							: this.paxosState.getBallotCoord());
@@ -1014,7 +973,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 
 	private MessagingTask fixLongDecisionGaps(PValuePacket committed) {
-		return this.fixLongDecisionGaps(committed, true);
+		return this.fixLongDecisionGaps(committed, false);
 	}
 
 	protected boolean isLongIdle() {
@@ -1230,16 +1189,16 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				this.paxosState.getBallot(),
 				this.clientRequestHandler.getState(pid),
 				this.paxosState.getGCSlot());
+		// need to acquire these without locking
+		int gcSlot = this.paxosState.getGCSlot();
+		int maxCommittedSlot = this.paxosState.getMaxCommittedSlot();
+		String maxCommittedFrontier = (this.paxosState.getBallotCoordLog() == this
+				.getMyID() ? "; maxCommittedFrontier="
+				+ this.coordinator.getMajorityCommittedSlot() : "");
 		log.log(Level.INFO,
 				"{0} forcing checkpoint at slot {1}; garbage collected accepts up to slot {2}; max committed slot = {3} {4}",
-				new Object[] {
-						this,
-						cpSlot,
-						this.paxosState.getGCSlot(),
-						this.paxosState.getMaxCommittedSlot(),
-						(this.paxosState.getBallotCoordLog() == this.getMyID() ? "; maxCommittedFrontier="
-								+ this.coordinator.getMajorityCommittedSlot()
-								: "") });
+				new Object[] { this, cpSlot, gcSlot, maxCommittedSlot,
+						maxCommittedFrontier });
 		return true;
 	}
 
@@ -1319,8 +1278,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						this.forceStop();
 				} else
 					log.log(Level.FINE,
-							"{0} not pausing because it is not caught up: {1}",
-							new Object[] { this, this.paxosState });
+							"{0} not pausing because it is not caught up: {1} {2}",
+							new Object[] { this, this.paxosState,
+									this.coordinator });
 			}
 		}
 		return paused;
@@ -1346,10 +1306,23 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	/********************** Start of failure detection and recovery methods *****************/
 
 	/*
-	 * Should be called regularly. Checks whether current ballot coordinator is
-	 * alive. If not, it checks if it should try to be the nest coordinator and
-	 * if so, it becomes the next coordinator. This method can be called any
-	 * time safely by any thread.
+	 * FIXED: If a majority miss a prepare, the coordinator may never get
+	 * elected as follows. The minority of acceptors who did receive the prepare
+	 * will assume the prepare's sender as the current coordinator. The rest
+	 * might still think the previous coordinator is the current coordinator.
+	 * All acceptors could be thinking that their current coordinator is up, so
+	 * nobody will bother running for coordinator. To break this impasse, we
+	 * need to resend the prepare. This has been now incorporated in the
+	 * handleMessage that quickly checks upon every message if we need to
+	 * "(re)run for coordinator" (for the same ballot) if we have been waiting
+	 * for too long (having neither received a prepare majority nor a
+	 * preemption) for the ballot to complete.
+	 */
+
+	/*
+	 * Checks whether current ballot coordinator is alive. If not, it checks if
+	 * it should try to be the nest coordinator and if so, it becomes the next
+	 * coordinator. This method can be called any time safely by any thread.
 	 */
 	private MessagingTask checkRunForCoordinator() {
 		return this.checkRunForCoordinator(false);
@@ -1507,7 +1480,15 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		return this.getMembers()[ballotnum % this.getMembers().length];
 	}
 
-	// Resend long-waiting accepts. Otherwise, the machine can get stuck.
+	/*
+	 * FIXED: If a majority miss an accept, but any messages are still being
+	 * received at all, then the loss will eventually get fixed by a check
+	 * similar to checkRunForCoordinator that upon receipt of every message will
+	 * poke the local coordinator to recommander the next-in-line accept if the
+	 * accept has been waiting for too long (for a majority or preemption). Both
+	 * the prepare and accept waiting checks are quick O(1) operations.
+	 */
+
 	private MessagingTask pokeLocalCoordinator() {
 		AcceptPacket accept = this.coordinator
 				.reissueAcceptIfWaitingTooLong(this.paxosState.getSlot());
@@ -1735,12 +1716,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		if (statePacket != null)
 			log.log(Level.INFO, "{0} sending checkpoint to node {1}: {2}",
 					new Object[] { this, syncReply.nodeID, statePacket });
-		else
-			log.warning(this
-					+ (!this.coordinator.exists() ? "[acceptor]"
-							: this.coordinator.isActive() ? "[coordinator]"
-									: "[preactive-coordinator]")
-					+ " has no state (yet) for " + syncReply);
+		else {
+			String myStatus = (!this.coordinator.exists() ? "[acceptor]"
+					: this.coordinator.isActive() ? "[coordinator]"
+							: "[preactive-coordinator]");
+			log.warning(this + myStatus + " has no state (yet) for "
+					+ syncReply);
+		}
 
 		return statePacket != null ? new MessagingTask(syncReply.nodeID,
 				statePacket) : null;
@@ -1762,19 +1744,23 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		this.paxosState = new PaxosAcceptor(0, this.groupMembers[0], initSlot,
 				null);
 	}
-	
+
 	private static int CREATION_LOG_THRESHOLD = 100000;
-	private static int creationCount=0;
+	private static int creationCount = 0;
+
 	private static void incrInstanceCount() {
 		creationCount++;
 	}
+
 	protected static void decrInstanceCount() {
 		creationCount--;
 	}
+
 	// only an approximate count for instrumentation purposes
 	private static int getInstanceCount() {
 		return creationCount;
 	}
+
 	private static boolean notManyInstances() {
 		return getInstanceCount() < CREATION_LOG_THRESHOLD;
 	}

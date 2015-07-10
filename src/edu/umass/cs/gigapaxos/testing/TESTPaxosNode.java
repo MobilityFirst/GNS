@@ -15,7 +15,6 @@ import edu.umass.cs.utils.Util;
  * 
  *         The main server node class for gigapaxos testing.
  */
-@SuppressWarnings("javadoc")
 public class TESTPaxosNode {
 
 	private final int myID;
@@ -45,6 +44,9 @@ public class TESTPaxosNode {
 		return pm;
 	}
 
+	/**
+	 * 
+	 */
 	public void close() {
 		this.pm.close();
 	}
@@ -102,8 +104,8 @@ public class TESTPaxosNode {
 				Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig
 						.getGroup(groupID));
 				if (id == myID)
-					this.getPaxosManager().createPaxosInstance(groupID,
-							 0, group, (Replicable) null, null);
+					this.getPaxosManager().createPaxosInstance(groupID, 0,
+							group, (Replicable) null, null);
 			}
 			if (i % j == 0 && ((j *= 2) > 1) || (i % 100000 == 0)) {
 				System.out.print(i + " ");
@@ -131,27 +133,29 @@ public class TESTPaxosNode {
 		return myID;
 	}
 
-	static class Main {
-		public static void main(String[] args) {
-			try {
-				int myID = processArgs(args);
-				TESTPaxosNode me = new TESTPaxosNode(myID);
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		try {
+			int myID = processArgs(args);
+			TESTPaxosNode me = new TESTPaxosNode(myID);
 
-				// Creating default groups
-				int numGroups = TESTPaxosConfig.getNumGroups();
-				System.out.println("Creating "
-						+ TESTPaxosConfig.PRE_CONFIGURED_GROUPS
-						+ " default groups");
-				me.createDefaultGroupInstances();
-				System.out.println("Creating "
-						+ (numGroups - TESTPaxosConfig.PRE_CONFIGURED_GROUPS)
-						+ " additional non-default groups");
-				me.createNonDefaultGroupInstanes(numGroups);
+			// Creating default groups
+			int numGroups = TESTPaxosConfig.getNumGroups();
+			System.out
+					.println("Creating "
+							+ TESTPaxosConfig.PRE_CONFIGURED_GROUPS
+							+ " default groups");
+			me.createDefaultGroupInstances();
+			System.out.println("Creating "
+					+ (numGroups - TESTPaxosConfig.PRE_CONFIGURED_GROUPS)
+					+ " additional non-default groups");
+			me.createNonDefaultGroupInstanes(numGroups);
 
-				System.out.println("\n\nFinished creating all groups\n\n");
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			System.out.println("\n\nFinished creating all groups\n\n");
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 }
