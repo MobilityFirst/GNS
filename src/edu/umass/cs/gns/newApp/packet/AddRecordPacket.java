@@ -15,13 +15,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * This packet is sent by a local name server to a name server to add a name to GNS.
+ * This packet is sent by a CCP to a name server to add a name to GNS.
  *
  * The packet contains request IDs which are used by local name server, and the client (end-user).
  *
  * A client sending this packet sets an initial key/fieldValue pair associated with the name or
  * the entire JSONObject associated with the name.
- * 
+ *
  * A client must set the <code>requestID</code> field correctly to received a response.
  *
  * Once this packet reaches CCP, local name server sets the
@@ -109,23 +109,19 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     this.sourceId = sourceId != null ? sourceId : null;
     this.requestID = requestID;
     this.name = name;
+    this.values = null;
     this.field = field;
     this.fieldValue = fieldValue;
-    this.values = null;
-    //this.localNameServerID = localNameServerID;
-    //this.ttl = ttl;
-    //this.nameServerID = null;
-    //this.activeNameServers = null;
   }
 
   /**
    * Constructs a new AddRecordPacket with the given name and values.
-   * 
+   *
    * @param sourceId
    * @param requestID
    * @param name
    * @param values
-   * @param lnsAddress 
+   * @param lnsAddress
    */
   public AddRecordPacket(NodeIDType sourceId, int requestID, String name,
           JSONObject values, InetSocketAddress lnsAddress) {
@@ -165,9 +161,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
       this.fieldValue = null;
     }
     this.values = json.optJSONObject(VALUES);
-    //this.ttl = json.getInt(TIME_TO_LIVE);
-//    this.activeNameServers = json.has(ACTIVE_NAMESERVERS)
-//            ? unstringer.getValuesFromJSONArray(json.getJSONArray(ACTIVE_NAMESERVERS)) : null;
   }
 
   /**
@@ -194,10 +187,6 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     if (values != null) {
       json.put(VALUES, values);
     }
-    //json.put(TIME_TO_LIVE, getTTL());
-//    if (getActiveNameServers() != null) {
-//      json.put(ACTIVE_NAMESERVERS, getActiveNameServers());
-//    }
     return json;
   }
 
@@ -242,24 +231,12 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   public ResultValue getFieldValue() {
     return fieldValue;
   }
-
-//  /**
-//   * @return the ttl
-//   */
-//  public int getTTL() {
-//    return ttl;
-//  }
+  
+ 
   public NodeIDType getSourceId() {
     return sourceId;
   }
 
-//  public Set<NodeIDType> getActiveNameServers() {
-//    return activeNameServers;
-//  }
-//
-//  public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
-//    this.activeNameServers = activeNameServers;
-//  }
   // For InterfaceRequest
   @Override
   public String getServiceName() {

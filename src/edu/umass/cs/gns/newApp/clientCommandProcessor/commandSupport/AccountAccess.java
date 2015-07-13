@@ -235,7 +235,8 @@ public class AccountAccess {
    * @return
    */
   public static CommandResponse addAccountWithVerification(final String host, final String name, final String guid,
-          String publicKey, String password, ClientRequestHandlerInterface handler) {
+          String publicKey, String password,
+          ClientRequestHandlerInterface handler) {
 
     CommandResponse response;
     String verifyCode = createVerificationCode(name); // make this even if we don't need it
@@ -265,12 +266,10 @@ public class AccountAccess {
           }
           return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " " + "Unable to send verification email");
         }
-//        } else {
-//          // Account info could not be updated.
-//          // If we're here we're probably hosed anyway, but just in case try to remove the account
-//          removeAccount(accountInfo, handler);
-//          return new CommandResponse(BADRESPONSE + " " + GnsProtocolDefs.VERIFICATIONERROR + " " + "Unable to update account info");
-//        }
+      } else {
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().warning("**** EMAIL VERIFICATION IS OFF! ****");
+        }
       }
     }
     return response;
@@ -392,7 +391,8 @@ public class AccountAccess {
    * @return status result
    */
   public static CommandResponse addAccount(String name, String guid, String publicKey, String password,
-          boolean emailVerify, String verifyCode, ClientRequestHandlerInterface handler) {
+          boolean emailVerify, String verifyCode,
+          ClientRequestHandlerInterface handler) {
     try {
 
       NSResponseCode returnCode;
@@ -694,7 +694,7 @@ public class AccountAccess {
       }
       accountInfo.addAlias(alias);
       accountInfo.noteUpdate();
-      if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+      if (updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
               writer, signature, message, handler, true).isAnError()) {
         // back out if we got an error
         handler.getIntercessor().sendRemoveRecord(alias);
@@ -733,7 +733,7 @@ public class AccountAccess {
     // Now updated the account record
     accountInfo.removeAlias(alias);
     accountInfo.noteUpdate();
-    if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+    if ((responseCode = updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
             writer, signature, message, handler, true)).isAnError()) {
       return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
@@ -824,7 +824,7 @@ public class AccountAccess {
   private static boolean updateAccountInfoNoAuthentication(AccountInfo accountInfo,
           ClientRequestHandlerInterface handler, boolean sendToReplica) {
     //try {
-    return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo, 
+    return !updateAccountInfo(accountInfo.getPrimaryGuid(), accountInfo,
             null, null, null, handler, sendToReplica).isAnError();
   }
 

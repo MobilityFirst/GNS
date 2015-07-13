@@ -52,13 +52,13 @@ public class AccessSupport {
    * @throws java.io.UnsupportedEncodingException
    * @throws SignatureException 
    */
-  public static boolean verifySignature(GuidInfo guidInfo, String signature, String message) throws InvalidKeySpecException, 
+  public static boolean verifySignature(String publicKey, String signature, String message) throws InvalidKeySpecException, 
           InvalidKeyException, SignatureException, UnsupportedEncodingException {
     if (!GNS.enableSignatureAuthentication) {
       return true;
     }
     //GNS.getLogger().info("LocalNS: User " + guidInfo.getName() + " signature:" + signature + " message: " + message);
-    byte[] encodedPublicKey = Base64.decode(guidInfo.getPublicKey());
+    byte[] encodedPublicKey = Base64.decode(publicKey);
     if (encodedPublicKey == null) { // bogus signature
       return false;
     }

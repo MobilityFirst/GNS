@@ -59,7 +59,7 @@ public class GNS {
       return offset;
     }
   }
-  public static boolean enableEmailAccountVerification = true;
+  public static boolean enableEmailAccountVerification = false;
   public static boolean enableSignatureAuthentication = true;
   /**
    * Number of primary nameservers. Default is 3 *
@@ -76,7 +76,7 @@ public class GNS {
    * a negative response will be sent back to a client indicating that a 
    * record could not be found.
    */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 8000; // was 10
+  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 16000; // was 10
   
   // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
   // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE

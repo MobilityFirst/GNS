@@ -58,7 +58,7 @@ public class RemoveAccount extends GnsCommand {
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
-      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+      if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromName(name, handler);
         if (accountInfo != null) {
           return AccountAccess.removeAccount(accountInfo, handler);
