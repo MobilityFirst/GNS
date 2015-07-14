@@ -897,7 +897,7 @@ public class AccountAccess {
     }
 
     if (writeField != null && writeAcessors != null) {
-      JSONArray writelist = new JSONArray(Arrays.asList(writeAcessors));
+      JSONArray writelist = new JSONArray(writeAcessors);
       JSONObject mdWriteList = new JSONObject();
       mdWriteList.put("MD", writelist);
       JSONObject writeWhiteList = new JSONObject();
