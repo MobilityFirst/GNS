@@ -47,7 +47,7 @@ public class JSONMessenger<NodeIDType> implements
 	/**
 	 * @param niot
 	 */
-	public JSONMessenger(InterfaceNIOTransport<NodeIDType, JSONObject> niot) {
+	public JSONMessenger(final InterfaceNIOTransport<NodeIDType, JSONObject> niot) {
 		// to not create thread pools unnecessarily
 		if (niot instanceof JSONMessenger)
 			this.execpool = ((JSONMessenger<NodeIDType>) niot).execpool;
