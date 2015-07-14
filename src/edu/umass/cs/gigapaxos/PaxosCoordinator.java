@@ -12,7 +12,6 @@ import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gigapaxos.paxosutil.HotRestoreInfo;
-import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
@@ -67,9 +66,8 @@ public class PaxosCoordinator {
 				&& !pcs.isActive())
 			sendPrepare = true; // resend prepare
 
-		return sendPrepare ? pcs.prepare(members) : null; // For ballotnum>0,
-															// must explicitly
-															// prepare
+		// for ballotnum>0, must explicitly prepare
+		return sendPrepare ? pcs.prepare(members) : null; 
 	}
 
 	protected synchronized Ballot remakeCoordinator(int[] members) {
@@ -94,15 +92,15 @@ public class PaxosCoordinator {
 		ArrayList<ProposalPacket> preActiveProposals = null;
 		if (this.exists() && !pcs.isActive()) {
 			preActiveProposals = pcs.getPreActiveProposals();
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"Coordinator {0} resigning; preActiveproposals = ",
 					new Object[] { this.pcs.getBallot(), preActiveProposals });
 		}
 
-		pcs = null; // The main point of this method.
+		pcs = null; // main point of this method.
 
-		return preActiveProposals; // Pass these to the coordinator to whom you
-									// deferred
+		// pass these to the coordinator to whom you deferred
+		return preActiveProposals; 
 	}
 
 	/*
@@ -132,7 +130,7 @@ public class PaxosCoordinator {
 			RequestPacket req) {
 		if (!this.exists())
 			log.severe("Coordinator resigned after check, DROPPING request: "
-					+ req);
+					+ req.getSummary());
 		return this.exists() ? this.pcs.propose(groupMembers, req) : null;
 	}
 
@@ -171,13 +169,14 @@ public class PaxosCoordinator {
 			committedPValue = pcs.handleAcceptReplyMyBallot(members,
 					acceptReply);
 		} else
-			assert false : Util.suicide("YIKES! Acceptor "
-					+ acceptReply.acceptor
-					+ " seems to have replied without updating its ballot:\n"
-					+ acceptReply.ballot + " < " + this.pcs.getBallotStr()
-					+ "\nThis should be reported as a bug.");
+			log.log(Level.INFO,
+					"{0}:{1} acceptor {1} is replying to a lower ballot proposal: {2} < {3} : {4}",
+					new Object[] { acceptReply.getPaxosID(),
+							acceptReply.getVersion(), acceptReply.acceptor,
+							acceptReply.ballot, this.pcs.getBallotStr(),
+							acceptReply });
 		// both could be null too
-		return committedPValue != null ? committedPValue : preemptedPValue; 
+		return committedPValue != null ? committedPValue : preemptedPValue;
 	}
 
 	/*

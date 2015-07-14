@@ -75,4 +75,9 @@ public final class PreparePacket extends PaxosPacket {
 	public void setRecovery() {
 		this.recovery = true;
 	}
+
+	@Override
+	protected String getSummaryString() {
+		return ballot + "(" +this.firstUndecidedSlot+")";
+	}
 }

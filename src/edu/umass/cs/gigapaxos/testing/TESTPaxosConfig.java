@@ -33,7 +33,7 @@ public class TESTPaxosConfig {
 	/**
 	 * Will turn on more verbose logging.
 	 */
-	public static final boolean DEBUG = true;//false;
+	public static final boolean DEBUG = false;
 
 	protected static final String SINGLE_NODE_CONFIG_DIR = "/Users/arun/GNS/conf/gigapaxos/";
 	private static final String DISTRIBUTED_CONFIG_DIR = "/home/arun/GNS/conf/gigapaxos/";

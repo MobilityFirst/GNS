@@ -220,8 +220,11 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		this.SockAddrToSockChannel = new HashMap<InetSocketAddress, SocketChannel>();
 		this.connAttempts = new ConcurrentHashMap<InetSocketAddress, Long>();
 
-		if (start)
-			(new Thread(this)).start();
+		if (start) {
+			Thread me = (new Thread(this));
+			me.setName(getClass().getSimpleName()+myID);
+			me.start();
+		}
 	}
 
 	/**
@@ -588,7 +591,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				log.log(Level.FINEST, "{0} wrote \"{1}\" to {2}", new Object[] {
 						this, new Stringer(buf0.array()), isa });
 				if (buf0.remaining() > 0) {
-					log.warning("Socket buffer congested because of high load..");
+					log.warning(this + " socket buffer congested because of high load..");
 					break;
 				}
 				queue.remove(0); // remove buf0

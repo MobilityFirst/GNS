@@ -38,9 +38,11 @@ import edu.umass.cs.utils.NullIfEmptyMap;
 public class PaxosCoordinatorState {
 	private static final String NO_OP = RequestPacket.NO_OP;
 	private static final String STOP = "STOP";
-	private static final int PREPARE_TIMEOUT = 20000; // ms
+	private static final int PREPARE_TIMEOUT = 60000; // ms
 	private static final int ACCEPT_TIMEOUT = 60000; // ms
-	private static final double RETRANSMISSION_BACKOFF_FACTOR = 2;
+	private static final double ACCEPT_RETRANSMISSION_BACKOFF_FACTOR = 2;
+	// private static final double PREPARE_RETRANSMISSION_BACKOFF_FACTOR = 2;
+
 	private static final int RERUN_DELAY_THRESHOLD = 10000; // ms
 
 	// final ballot, takes birth and dies with this PaxosCoordinatorState
@@ -191,7 +193,7 @@ public class PaxosCoordinatorState {
 		if (this.active == true)
 			return null; // I am already an active coordinator
 		if (this.waitforMyBallot == null)
-			this.waitforMyBallot = new WaitforUtility(members);
+			this.waitforMyBallot = new WaitforUtility(members, 1);
 		return new Ballot(this.myBallotNum, this.myBallotCoord);
 	}
 
@@ -208,12 +210,8 @@ public class PaxosCoordinatorState {
 	 */
 	protected synchronized AcceptPacket propose(int[] members,
 			RequestPacket request) {
-		if (this.myProposals.containsKey(this.nextProposalSlotNumber - 1) && // no
-																				// point
-																				// enqueuing
-																				// anything
-																				// after
-																				// stop
+		if (this.myProposals.containsKey(this.nextProposalSlotNumber - 1) &&
+		// no point enqueuing anything after stop
 				this.myProposals.get(this.nextProposalSlotNumber - 1).pValuePacket
 						.isStopRequest())
 			return null;
@@ -225,8 +223,9 @@ public class PaxosCoordinatorState {
 		assert (!this.myProposals.containsKey(pvalue.slot));
 		this.myProposals.put(pvalue.slot, new ProposalStateAtCoordinator(
 				members, pvalue));
-		log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] { "Node ",
-				myBallot.coordinatorID, " inserted proposal: ", pvalue });
+		log.log(Level.FINE, "{0}{1}{2}{3}",
+				new Object[] { "Node", myBallot.coordinatorID,
+						" inserted proposal: ", pvalue.getSummary() });
 		if (this.isActive()) {
 			log.log(Level.FINEST, "{0}{1}{2}", new Object[] {
 					"Coordinator at node ", myBallot.coordinatorID,
@@ -279,10 +278,11 @@ public class PaxosCoordinatorState {
 		 */
 		else if (prepareReply.ballot.compareTo(new Ballot(this.myBallotNum,
 				this.myBallotCoord)) < 0) {
-			log.warning("Node " + this.myBallotCoord
-					+ " received outdated prepare reply "
-					+ "which should normally happen only during recovery): "
-					+ prepareReply);
+			log.log(Level.FINE,
+					"Node{0} received outdated prepare reply, "
+							+ "which should normally happen only during recovery: {1}): ",
+					new Object[] { this.myBallotCoord,
+							prepareReply.getSummary() });
 			return true;
 		}
 
@@ -335,6 +335,10 @@ public class PaxosCoordinatorState {
 					|| pvalue.ballot.compareTo(existing.ballot) > 0) {
 				assert (pvalue.ballot.compareTo(this.getBallot()) <= 0) : pvalue
 						+ " > " + this.getBallotStr();
+				if (existing != null
+						&& pvalue.ballot.compareTo(existing.ballot) > 0)
+					log.log(Level.INFO, "{0} dropping overwritten request {1}",
+							new Object[] { this, existing.getSummary() });
 				this.carryoverProposals.put(pvalue.slot, pvalue);
 			} else if (pvalue.ballot.compareTo(existing.ballot) == 0) {
 				assert (pvalue.requestValue.equals(existing.requestValue));
@@ -581,15 +585,14 @@ public class PaxosCoordinatorState {
 			waitfor.updateHeardFrom(acceptReply.acceptor);
 			log.log(Level.FINEST, "{0}{1}{2}{3}{4}{5}", new Object[] { "Node ",
 					this.myBallotCoord, " updated waitfor to: ", waitfor,
-					" for ", pstate.pValuePacket });
+					" for ", pstate.pValuePacket.getSummary() });
 			if (waitfor.heardFromMajority()) {
 				// phase2b success
 				acceptedByMajority = true;
 				decision = (pstate.pValuePacket
 						.makeDecision(getMajorityCommittedSlot()));
-				log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] {
-						"Node ", this.myBallotCoord, " decided for slot ",
-						decision.slot, ": ", decision });
+				log.log(Level.FINE, "{0} decided {1}", new Object[] { this,
+						decision.getSummary() });
 				assert (!decision.isRecovery());
 				this.myProposals.remove(decision.slot);
 			} else
@@ -677,11 +680,9 @@ public class PaxosCoordinatorState {
 
 	// checks and increments retransmission count
 	protected synchronized boolean testAndSetWaitingTooLong() {
-		if (!this.isActive()
-				&& this.waitforMyBallot.totalWaitTime() > PREPARE_TIMEOUT
-						* Math.pow(RETRANSMISSION_BACKOFF_FACTOR,
-								this.waitforMyBallot.getRetransmissionCount())) {
-			this.waitforMyBallot.incrRetransmissonCount();
+		if (!this.isActive() // periodic retransmission
+				&& this.waitforMyBallot.waitTime() > PREPARE_TIMEOUT) {
+			this.waitforMyBallot.incrRetransmissonCount(true);
 			return true;
 		}
 		return false;
@@ -692,8 +693,9 @@ public class PaxosCoordinatorState {
 		ProposalStateAtCoordinator psac = this.myProposals.get(slot);
 		if (this.isActive()
 				&& psac != null
+				// exponential backoff
 				&& psac.waitfor.totalWaitTime() > ACCEPT_TIMEOUT
-						* Math.pow(RETRANSMISSION_BACKOFF_FACTOR,
+						* Math.pow(ACCEPT_RETRANSMISSION_BACKOFF_FACTOR,
 								psac.waitfor.getRetransmissionCount()))
 			return true;
 		return false;
@@ -796,9 +798,10 @@ public class PaxosCoordinatorState {
 		AcceptPacket acceptPacket = new AcceptPacket(this.myBallotCoord,
 				pstate.pValuePacket, getMajorityCommittedSlot());
 		pstate.waitfor.incrRetransmissonCount();
-		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] { "Node ",
-				this.myBallotCoord, " initCommandering ", acceptPacket,
-				" nodeSlotNumbers=", Arrays.toString(nodeSlotNumbers) });
+		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}",
+				new Object[] { "Node ", this.myBallotCoord,
+						" initCommandering ", acceptPacket.getSummary(),
+						" nodeSlotNumbers=", Arrays.toString(nodeSlotNumbers) });
 		return acceptPacket;
 	}
 
@@ -840,6 +843,7 @@ public class PaxosCoordinatorState {
 		if (pvalue != null)
 			proposalPacket = new ProposalPacket(curSlot, pvalue.makeNoop());
 		else
+			// actual noop (as opposed to RequestPacket converted noop)
 			proposalPacket = new ProposalPacket(curSlot, new RequestPacket(0,
 					0, NO_OP, false));
 		PValuePacket noop = new PValuePacket(new Ballot(this.myBallotNum,
@@ -880,18 +884,23 @@ public class PaxosCoordinatorState {
 	/********************** Start of testing methods ****************************/
 	// no synchronized methods should be used here
 	public String toString() {
-		return "[ballot="
+		return "["
 				+ this.myBallotNum
 				+ ":"
 				+ this.myBallotCoord
-				+ ", nextProposalSlotNumber="
+				+ ", "
 				+ this.nextProposalSlotNumber
-				+ ", active="
-				+ this.active
-				+ ", |adopted|="
-				+ (this.carryoverProposals != null ? this.carryoverProposals
-						.size() : 0) + ", |myProposals|="
-				+ this.myProposals.size() + "]";
+				+ ", "
+				+ (this.active ? "active" : "inactive")
+				+ (this.carryoverProposals != null
+						&& !this.carryoverProposals.isEmpty() ? ", |adopted|="
+						+ this.carryoverProposals.size() : 0)
+				+ (!this.myProposals.isEmpty() ? ", |myProposals|="
+						+ this.myProposals.size() : "")
+				+ (!this.active
+						&& this.waitforMyBallot.getRetransmissionCount() >= 5 ? ", retries="
+						+ this.waitforMyBallot.getRetransmissionCount()
+						: "") + "]";
 	}
 
 	private String printState() {

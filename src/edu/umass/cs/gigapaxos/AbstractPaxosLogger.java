@@ -38,8 +38,6 @@ import edu.umass.cs.utils.DelayProfiler;
  *         efficient, and persistent logger.
  */
 public abstract class AbstractPaxosLogger {
-	protected static final boolean BATCH_GC_ENABLED = false;
-
 	// protected coz the pluggable logger needs it
 	protected final int myID;
 	// protected coz the pluggable logger needs it.
@@ -70,10 +68,10 @@ public abstract class AbstractPaxosLogger {
 		this.messenger = msgr;
 		(this.batchLogger = new BatchedLogger(
 				new ArrayList<LogMessagingTask>(), this, this.messenger))
-				.start();
+				.start(AbstractPaxosLogger.class.getSimpleName()+myID);
 		;
 		(this.collapsingCheckpointer = new Checkpointer(
-				new HashMap<String, CheckpointTask>())).start();
+				new HashMap<String, CheckpointTask>())).start(AbstractPaxosLogger.class.getSimpleName()+myID);
 		addLogger(this);
 	}
 
@@ -106,7 +104,7 @@ public abstract class AbstractPaxosLogger {
 		// else spawn a log-and-message task
 		PaxosPacket packet = logMTask.logMsg;
 		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] { "Node ",
-				logger.myID, " logging ", (packet.getType()), ": ", packet });
+				logger.myID, " logging ", (packet.getType()), ": ", packet.getSummary() });
 		assert (packet.getPaxosID() != null) : ("Null paxosID in " + packet);
 		logger.batchLogger.enqueue(logMTask); // batchLogger will also send
 	}

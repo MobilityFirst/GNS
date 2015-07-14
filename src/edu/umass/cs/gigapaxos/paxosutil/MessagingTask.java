@@ -149,7 +149,7 @@ public class MessagingTask {
 			if(i==5 && msgs.length>25) {
 				s+=".... (skipping " + (msgs.length-9) + ")";
 				i=msgs.length-6;
-			} else 	s+=msgs[i];
+			} else 	s+=msgs[i].getSummary();
 		}
 		if(msgs.length>1) s+="\n]";
 		return s;

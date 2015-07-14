@@ -64,4 +64,9 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 		return json;
 	}
 
+	@Override
+	protected String getSummaryString() {
+		return "";
+	}
+
 }

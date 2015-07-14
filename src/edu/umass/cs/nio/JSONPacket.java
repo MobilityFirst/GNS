@@ -37,7 +37,7 @@ public abstract class JSONPacket {
 	 *         class.
 	 * @throws JSONException
 	 */
-	public abstract JSONObject toJSONObjectImpl() throws JSONException;
+	protected abstract JSONObject toJSONObjectImpl() throws JSONException;
 
 	/**
 	 * @return JSONObject corresponding to this class' (including subclasses)

@@ -3,6 +3,7 @@ package edu.umass.cs.gigapaxos;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class PaxosAcceptor {
 	 * not memory-log accepts *at all*. But it is useful to keep accepts in
 	 * memory so that we can easily disable and enable persistent logging.
 	 */
-	protected static final boolean ACCEPTED_PROPOSALS_ON_DISK = DerbyPaxosLogger
+	protected static final boolean GET_ACCEPTED_PVALUES_FROM_DISK = SQLPaxosLogger
 			.isLoggingEnabled();
 
 	protected static enum STATES {
@@ -157,7 +158,7 @@ public class PaxosAcceptor {
 	}
 
 	protected String getBallotSlot() {
-		return this.ballotCoord + ":" + this.ballotNum + ", " + this._slot;
+		return this.ballotNum + ":" + this.ballotCoord + ", " + this._slot;
 	}
 
 	protected int getSlotLog() {
@@ -187,9 +188,9 @@ public class PaxosAcceptor {
 
 		PrepareReplyPacket preply = null;
 		if (prepare.ballot.compareTo(new Ballot(ballotNum, ballotCoord)) > 0) {
-			log.log(Level.FINE, "{0}{1}{2}{3}{4}",
-					new Object[] { "Node", myID, " acceptor ",
-							" updating to higher ballot ", prepare.ballot });
+			log.log(Level.FINE,
+					"Node {0} acceptor updating to higher ballot {1}",
+					new Object[] { myID, prepare.ballot });
 			this.ballotNum = prepare.ballot.ballotNumber;
 			this.ballotCoord = prepare.ballot.coordinatorID;
 		}
@@ -198,21 +199,31 @@ public class PaxosAcceptor {
 		 * ballots? So that the preparer knows the set of accepted values to
 		 * carry over across a view change.
 		 */
-		preply = new PrepareReplyPacket(myID, this.getBallot(),
-				pruneAcceptedProposals(this.acceptedProposals.getMap(),
-						prepare.firstUndecidedSlot), this.getGCSlot());
+		preply = new PrepareReplyPacket(
+				myID,
+				this.getBallot(),
+				// send pvalues only if not NACKing
+				this.getBallot().compareTo(prepare.ballot) > 0 ? new HashMap<Integer, PValuePacket>()
+						: pruneAcceptedProposals(
+								this.acceptedProposals.getMap(),
+								prepare.firstUndecidedSlot),
+				// higest garbage collected slot
+				this.getGCSlot());
+
 		return preply;
 	}
 
 	// prunes accepted pvalues below those requested by coordinator
 	private synchronized Map<Integer, PValuePacket> pruneAcceptedProposals(
 			Map<Integer, PValuePacket> acceptedMap, int minSlot) {
+		// long t = System.currentTimeMillis();
 		Iterator<Integer> slotIterator = acceptedMap.keySet().iterator();
 		while (slotIterator.hasNext()) {
 			// comparator should be wraparound-aware
 			if (slotIterator.next() - minSlot < 0)
 				slotIterator.remove();
 		}
+		// DelayProfiler.updateDelay("getMemoryLoggedAccepts", t);
 		return acceptedMap;
 	}
 
@@ -238,9 +249,8 @@ public class PaxosAcceptor {
 			this.ballotCoord = accept.ballot.coordinatorID;
 			if (accept.slot - this.acceptedGCSlot > 0)
 				this.acceptedProposals.put(accept.slot, accept); // wraparound
-			log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] { "Node",
-					myID, " acceptor accepting pvalue for slot ", accept.slot,
-					" : ", accept });
+			log.log(Level.FINE, "Node{0} acceptor accepting {1}", new Object[] {
+					myID, accept.getSummary() });
 		}
 		garbageCollectAccepted(accept.getMedianCheckpointedSlot());
 		return new Ballot(ballotNum, ballotCoord);
@@ -259,7 +269,7 @@ public class PaxosAcceptor {
 
 		this.garbageCollectAccepted(decision.getMedianCheckpointedSlot());
 		// corresponding accept must be disk-logged at a majority
-		if (ACCEPTED_PROPOSALS_ON_DISK)
+		if (GET_ACCEPTED_PVALUES_FROM_DISK)
 			this.acceptedProposals.remove(decision.slot);
 
 		// wraparound-aware arithmetic
@@ -319,8 +329,12 @@ public class PaxosAcceptor {
 	}
 
 	protected synchronized boolean caughtUp() {
-		return this.acceptedProposals.isEmpty()
-				&& this.committedRequests.isEmpty();
+		return this.committedRequests.isEmpty()
+		/*
+		 * pause/unpause will lost acceptedProposals state, which is okay iff we
+		 * always return accepted pvalues from disk.
+		 */
+		&& (this.acceptedProposals.isEmpty() || GET_ACCEPTED_PVALUES_FROM_DISK);
 	}
 
 	/********************** Start of private methods ***************************/
@@ -355,13 +369,26 @@ public class PaxosAcceptor {
 	/***************** Start of testing methods *******************************/
 	// no synchronized methods should be used here
 	public String toString() {
-		return "{Acceptor: [slot=" + this._slot + ", ballot=" + this.ballotNum
-				+ ":" + this.ballotCoord + ", isStopped="
-				+ (this.state == STATES.STOPPED.ordinal()) + ", |accepted|="
-				+ this.acceptedProposals.size() + ", |committed|="
-				+ this.committedRequests.size() + ", committedFrontier="
-				+ this.acceptedGCSlot + this.getAccepted()
-				+ this.getCommitted() + "]}";
+		return "{Acceptor=["
+				+ this._slot
+				+ ", "
+				+ this.ballotNum
+				+ ":"
+				+ this.ballotCoord
+				+ ", "
+				+ (this.state == STATES.STOPPED.ordinal() ? "stopped"
+						: this.state == STATES.RECOVERY.ordinal() ? "recovery"
+								: "active")
+				+ (this.acceptedProposals.isEmpty() ? "" : ", |accepted|="
+						+ this.acceptedProposals.size())
+				+ (this.committedRequests.isEmpty() ? "" : ", |committed|="
+						+ this.committedRequests.size())
+				+ ", gcSlot="
+				+ this.acceptedGCSlot
+				+ (this.acceptedProposals.isEmpty() ? "" : ", "
+						+ this.getAccepted())
+				+ (this.committedRequests.isEmpty() ? "" : ", "
+						+ this.getCommitted()) + "]}";
 	}
 
 	private String getAccepted() {
@@ -401,7 +428,8 @@ public class PaxosAcceptor {
 			this.executed(i, false);
 			this.committedRequests.remove(i);
 			// have to be logged on disk for correctness
-			this.acceptedProposals.remove(i);
+			if (GET_ACCEPTED_PVALUES_FROM_DISK)
+				this.acceptedProposals.remove(i);
 		}
 		assert (slotNumber == getSlot());
 	}

@@ -2,6 +2,7 @@ package edu.umass.cs.gigapaxos.paxospackets;
 
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
+import edu.umass.cs.utils.Util;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,5 +67,11 @@ public final class StatePacket extends PaxosPacket{
 	
 	public static StatePacket getStatePacket(SlotBallotState sbs) {
 		return new StatePacket(new Ballot(sbs.ballotnum, sbs.coordinator), sbs.slot, sbs.state);
+	}
+
+	@Override
+	protected String getSummaryString() {
+		return ballot + ", " + slotNumber + ", ["
+				+ Util.truncate(state, 16, 16) + "]";
 	}
 }

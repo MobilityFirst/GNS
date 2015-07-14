@@ -11,6 +11,7 @@ import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 /**
@@ -28,7 +29,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	 * have to worry about these.
 	 */
 	protected static enum Keys {
-		 IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
+		IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
 	}
 
 	private static final long MAX_AGREEMENT_TIME = 30000;
@@ -49,12 +50,12 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	 */
 	public final int requestID;
 	/**
-	 * The actual request body. The client will get back this string if that is 
+	 * The actual request body. The client will get back this string if that is
 	 * what it sent to paxos. If it issued a RequestPacket, then it will get
 	 * back the whole RequestPacket back.
 	 */
 	public final String requestValue;
-	/** 
+	/**
 	 * Whether this request is a stop request.
 	 */
 	public final boolean stop;
@@ -66,7 +67,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	// the client port
 	private int clientPort = -1;
 	// whether to return requestValue or this.toString() back to client
-	private boolean returnRequestValue = false;
+	private boolean shouldReturnRequestValue = false;
 
 	// needed to stop ping-ponging under coordinator confusion
 	private int forwardCount = 0;
@@ -83,31 +84,43 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	private long receiptTime = System.currentTimeMillis();
 	private String debugInfo = null;
 
+	// let a random request ID be picked
 	public RequestPacket(int clientID, String value, boolean stop) {
 		this(clientID, random.nextInt(), value, stop);
 	}
 
+	// the common-case constructor
 	public RequestPacket(int clientID, int reqID, String value, boolean stop) {
-		super((PaxosPacket) null);
+		this(clientID, reqID, value, stop, null);
+	}
+
+	// called by inheritors
+	public RequestPacket(RequestPacket req) {
+		this(req.clientID, req.requestID, req.requestValue, req.stop, req);
+	}
+
+	// used by makeNoop to convert req to a noop
+	public RequestPacket(int clientID, int reqID, String value, boolean stop,
+			RequestPacket req) {
+		super(req); // will take paxosID and version from req
+
+		// final fields
+		this.packetType = PaxosPacketType.REQUEST;
 		this.clientID = clientID;
 		this.requestID = reqID;
 		this.requestValue = value;
-		this.packetType = PaxosPacketType.REQUEST;
 		this.stop = stop;
-	}
 
-	public RequestPacket(RequestPacket req) {
-		super(req);
-		this.clientID = req.clientID;
-		this.requestID = req.requestID;
-		this.requestValue = req.requestValue;
-		this.stop = req.stop;
+		if (req == null)
+			return;
+
+		// non-final fields
 		this.entryReplica = req.entryReplica;
 		this.clientAddress = req.clientAddress;
 		this.clientPort = req.clientPort;
-		this.returnRequestValue = req.returnRequestValue;
-		this.packetType = PaxosPacketType.REQUEST;
-		// debug/testing fields below
+		this.shouldReturnRequestValue = req.shouldReturnRequestValue;
+
+		// debug/testing fields
 		this.createTime = req.createTime;
 		this.receiptTime = req.receiptTime;
 		this.forwardCount = req.forwardCount;
@@ -117,27 +130,18 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	}
 
 	public RequestPacket makeNoop() {
-		RequestPacket noop = this.makeNoopUtility();
+		RequestPacket noop = new RequestPacket(clientID, requestID, NO_OP,
+				stop, this);
 		// make batched requests noop as well
-		for (int i = 0; this.batched != null && i < this.batched.length; i++) {
+		for (int i = 0; this.batched != null && i < this.batched.length; i++)
 			this.batched[i] = this.batched[i].makeNoop();
-		}
-		return noop;
-	}
-
-	private RequestPacket makeNoopUtility() {
-		RequestPacket noop = new RequestPacket(clientID, requestID,
-				NO_OP, stop);
-		noop.entryReplica = this.entryReplica;
-		noop.clientAddress = this.clientAddress;
-		noop.clientPort = this.clientPort;
-		noop.createTime = this.createTime;
-		noop.returnRequestValue = this.returnRequestValue;
+		// and put them inside the newly minted noop
+		noop.batched = this.batched;
 		return noop;
 	}
 
 	public RequestPacket setReturnRequestValue() {
-		this.returnRequestValue = true;
+		this.shouldReturnRequestValue = true;
 		return this;
 	}
 
@@ -156,6 +160,9 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	public int setEntryReplica(int id) {
 		if (this.entryReplica == -1) // one-time
 			this.entryReplica = id;
+		if (this.isBatched())
+			for (RequestPacket req : this.batched)
+				req.setEntryReplica(id); // recursive
 		return this.entryReplica;
 	}
 
@@ -243,7 +250,8 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 				.getSenderPort(json));
 		this.entryReplica = json.getInt(PaxosPacket.NodeIDKeys.ENTRY_REPLICA
 				.toString());
-		this.returnRequestValue = json.getBoolean(Keys.RETURN_VALUE.toString());
+		this.shouldReturnRequestValue = json.getBoolean(Keys.RETURN_VALUE
+				.toString());
 		// unwrap latched along batch
 		JSONArray batchedJSON = json.has(Keys.BATCHED.toString()) ? json
 				.getJSONArray(Keys.BATCHED.toString()) : null;
@@ -275,7 +283,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 			json.put(Keys.CLIENT_ADDR.toString(), this.clientAddress);
 		if (this.clientPort >= 0)
 			json.put(Keys.CLIENT_PORT.toString(), this.clientPort);
-		json.put(Keys.RETURN_VALUE.toString(), this.returnRequestValue);
+		json.put(Keys.RETURN_VALUE.toString(), this.shouldReturnRequestValue);
 		// convert latched along batch to json array
 		if (this.batched != null && this.batched.length > 0) {
 			JSONArray batchedJSON = new JSONArray();
@@ -298,10 +306,13 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	public boolean isStopRequest() {
 		return stop || this.isAnyBatchedRequestStop();
 	}
+
 	private boolean isAnyBatchedRequestStop() {
-		if(this.batchSize()==0) return false;
-		for(RequestPacket req : this.batched)
-			if(req.isStopRequest()) return true;
+		if (this.batchSize() == 0)
+			return false;
+		for (RequestPacket req : this.batched)
+			if (req.isStopRequest())
+				return true;
 		return false;
 	}
 
@@ -340,32 +351,126 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	public long getReceiptTime() {
 		return this.receiptTime;
 	}
-	
-	public RequestPacket latchToBatch(RequestPacket[] req) {
-		if(this.batched == null) this.batched = req;
-		else throw new RuntimeException("Trying to latch further to an existing batch");
+
+	private boolean isBatched() {
+		return this.batchSize() > 0;
+	}
+
+	public RequestPacket latchToBatch(RequestPacket[] reqs) {
+		// first flatten out the argument
+		RequestPacket[] allThreaded = toArray(reqs);
+		if (this.batched == null)
+			this.batched = allThreaded;
+		else
+			this.batched = concatenate(this.batched, allThreaded);
+		for (int i = 0; i < this.batched.length; i++)
+			assert (!this.batched[i].isBatched());
 		return this;
 	}
+
+	private static RequestPacket[] concatenate(RequestPacket[] a,
+			RequestPacket[] b) {
+		RequestPacket[] c = new RequestPacket[a.length + b.length];
+		for (int i = 0; i < a.length; i++)
+			c[i] = a[i];
+		for (int i = 0; i < b.length; i++)
+			c[a.length + i] = b[i];
+		return c;
+	}
+
+	/*
+	 * Returns this request unraveled as an array wherein each element is an
+	 * unbatched request.
+	 * 
+	 * Note: This operation is not idempotent because batched gets reset to
+	 * null.
+	 */
+	private RequestPacket[] toArray() {
+		RequestPacket[] array = new RequestPacket[1 + this.batchSize()];
+		array[0] = this;
+		for (int i = 0; i < this.batchSize(); i++) {
+			array[i + 1] = this.batched[i];
+			assert (!this.batched[i].isBatched());
+		}
+		// toArray always returns an array of unbatched packets
+		this.batched = null;
+		return array;
+	}
+
+	/*
+	 * Converts an array of possibly batched requests to a single unraveled
+	 * array wherein each request is unbatched.
+	 */
+	private static RequestPacket[] toArray(RequestPacket[] reqs) {
+		ArrayList<RequestPacket[]> reqArrayList = new ArrayList<RequestPacket[]>();
+		int totalSize = 0;
+		for (RequestPacket req : reqs) {
+			RequestPacket[] reqArray = req.toArray();
+			totalSize += reqArray.length;
+			// if(reqArray.length > 1)
+			// PaxosManager.getLogger().info("##############" +
+			// print(reqArray));
+			reqArrayList.add(reqArray);
+		}
+		assert (totalSize == size(reqArrayList));
+		// : "totalSize = " + totalSize + " !~= " + print(reqArrayList);
+		RequestPacket[] allThreaded = new RequestPacket[totalSize];
+		int count = 0;
+		for (RequestPacket[] reqArray : reqArrayList) {
+			for (int j = 0; j < reqArray.length; j++) {
+				assert (!reqArray[j].isBatched());
+				allThreaded[count++] = reqArray[j];
+			}
+		}
+		assert (count == totalSize) : count + " != " + totalSize
+				+ " while unraveling " + print(reqArrayList);
+		return allThreaded;
+	}
+
+	private static int size(ArrayList<RequestPacket[]> reqArrayList) {
+		int size = 0;
+		for (RequestPacket[] reqArray : reqArrayList)
+			size += reqArray.length;
+		return size;
+	}
+
 	public RequestPacket[] getBatched() {
 		return this.batched;
 	}
 
-	public String[] getRequestValue() {
+	private static String print(ArrayList<RequestPacket[]> reqArrayList) {
+		String s = "[\n";
+		int count = 0;
+		for (RequestPacket[] reqArray : reqArrayList) {
+			s += "req" + count++ + " = \n[\n";
+			for (RequestPacket req : reqArray) {
+				s += "    " + req + "\n";
+			}
+			s += "]\n";
+
+		}
+		return s;
+	}
+
+	public String[] getRequestValues() {
 		String[] reqValues = null;
-		if(this.returnRequestValue)  {
+		if (this.shouldReturnRequestValue) {
 			reqValues = new String[this.batchSize() + 1];
 			reqValues[0] = this.requestValue;
-			if(this.batched!=null) 
-				for(int i=0; i<this.batched.length; i++)
-					reqValues[i+1] = this.batched[i].requestValue;
+			if (this.batched != null)
+				for (int i = 0; i < this.batched.length; i++) {
+					reqValues[i + 1] = this.batched[i].requestValue;
+					assert (this.batched[i].batched == null);
+				}
 		} else {
 			reqValues = new String[1];
 			reqValues[0] = toString();
 		}
 		return reqValues;
 	}
+
 	private int batchSize() {
-		return this.batched!=null ? this.batched.length : 0;
+		return this.batched != null ? this.batched.length : 0;
 	}
 
 	@Override
@@ -378,23 +483,32 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		return this.paxosID;
 	}
 
+	@Override
+	protected String getSummaryString() {
+		return requestID + ":" + "["
+				+ (NO_OP.equals(this.requestValue) ? NO_OP : "...")
+				// Util.truncate(requestValue, 16, 16)
+				+ "]" + (stop ? ":STOP" : "")
+				+ (isBatched() ? "+(" + batchSize() + " batched" + ")" : "");
+	}
+
 	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		int numReqs = 25;
 		RequestPacket[] reqs = new RequestPacket[numReqs];
-		RequestPacket req = new RequestPacket(999, "asd"+999, true);
-		for(int i=0; i<numReqs; i++) {
-			reqs[i] = new RequestPacket(i, "asd"+i, true);
+		RequestPacket req = new RequestPacket(999, "asd" + 999, true);
+		for (int i = 0; i < numReqs; i++) {
+			reqs[i] = new RequestPacket(i, "asd" + i, true);
 		}
 		req.latchToBatch(reqs);
 		String reqStr = req.toString();
 		try {
 			RequestPacket reqovered = new RequestPacket(req.toJSONObject());
 			String reqoveredStr = reqovered.toString();
-			assert(reqStr.equals(reqoveredStr));
+			assert (reqStr.equals(reqoveredStr));
 			System.out.println(reqovered.batched.length);
 			System.out.println(reqovered.batched[3]);
-			
+
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

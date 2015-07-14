@@ -135,4 +135,14 @@ public class PrepareReplyPacket extends PaxosPacket {
 			json.put(PaxosPacket.Keys.ACCEPTED_MAP.toString(), jsonArray);
 		}
 	}
+
+	@Override
+	protected String getSummaryString() {
+		return acceptor
+				+ ":"
+				+ ballot
+				+ (!accepted.isEmpty() ? ", |accepted|=" + accepted.size()
+						+ "[" + this.getMinSlot() + "-" + this.getMaxSlot()
+						+ "]" : "");
+	}
 }

@@ -47,7 +47,7 @@ public abstract class PaxosPacket extends JSONPacket {
 	 */
 	public static final String PAXOS_VERSION = "PAXOS_VERSION";
 
-	public static final String FORCE_SYNC = "FORCE_SYNC";
+	public static final String SYNC_MODE = "SYNC_MODE";
 	/*
 	 * Every PaxosPacket has a minimum of the following three fields. The fields
 	 * paxosID and version are preserved across inheritances, e.g.,
@@ -127,7 +127,7 @@ public abstract class PaxosPacket extends JSONPacket {
 				.getInt(PaxosPacket.PAXOS_PACKET_TYPE));
 	}
 
-	public abstract JSONObject toJSONObjectImpl() throws JSONException;
+	protected abstract JSONObject toJSONObjectImpl() throws JSONException;
 
 	/*
 	 * PaxosPacket has no no-arg constructor for a good reason. All classes
@@ -209,6 +209,17 @@ public abstract class PaxosPacket extends JSONPacket {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	protected abstract String getSummaryString();
+
+	public Object getSummary() {
+		return new Object() {
+			public String toString() {
+				return getPaxosID() + ":" + getVersion() +  ":"+getType() + ":[" 
+						+ getSummaryString() + "]";
+			}
+		};
 	}
 
 	/************* Type-specific methods below *******************/

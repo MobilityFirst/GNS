@@ -84,7 +84,7 @@ public class NullIfEmptyMap<KeyType,ValueType> {
 		return map.values();
 	}
 	/**
-	 * Make a copy and return, otherwise caller can modify map.
+	 * Make a copy and return. Caller can modify returned map without affecting this map.
 	 * @return The copied map.
 	 */
 	public synchronized HashMap<KeyType,ValueType> getMap() {

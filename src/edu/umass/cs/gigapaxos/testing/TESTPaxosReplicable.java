@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -22,6 +23,7 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
@@ -34,19 +36,21 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 public class TESTPaxosReplicable implements InterfaceReplicable {
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
-	private InterfaceNIOTransport<Integer,JSONObject> niot = null;
+	private InterfaceNIOTransport<Integer, JSONObject> niot = null;
 
 	private HashMap<String, PaxosState> allState = new HashMap<String, PaxosState>();
 
 	private class PaxosState {
 		private int seqnum = -1;
-		private String value = null;//"Initial state";
+		private String value = null;// "Initial state";
 		private int numExecuted = 0;
 		private HashMap<Integer, String> committed = new HashMap<Integer, String>();
 	}
 
-	private static Logger log = Logger.getLogger(TESTPaxosReplicable.class.getName());
-			//PaxosManager.getLogger();
+	private static Logger log = Logger.getLogger(TESTPaxosReplicable.class
+			.getName());
+
+	// PaxosManager.getLogger();
 
 	public TESTPaxosReplicable(JSONNIOTransport<Integer> nio) {
 		this();
@@ -95,12 +99,11 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			if (state.seqnum == -1)
 				state.seqnum = requestPacket.slot;
 
-				log.fine("Node" + (this.niot != null ? getMyID() : null) + " "
-						+ paxosID + " executing request with slot "
-						+ requestPacket.slot + ", id = "
-						+ requestPacket.requestID + " with value "
-						+ requestPacket.requestValue + "; seqnum="
-						+ state.seqnum + ": prev_state_value=" + state.value);
+			log.log(Level.FINE,
+					"Node{0} executing {1}; seqnum={2}, prev_state={3}",
+					new Object[] { (this.niot != null ? getMyID() : "[?]"),
+							requestPacket.getSummary(), state.seqnum,
+							Util.truncate(state.value, 16, 16)});
 
 			/*
 			 * Set state to current request value concatenated with the hash of
@@ -133,24 +136,18 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 
 			if (TESTPaxosConfig.shouldAssertRSMInvariant())
 				assert (RSMInvariant(requestPacket.getPaxosID(),
-						state.seqnum - 1)) : requestPacket;
+						requestPacket.slot)) : requestPacket;
 			state.committed.remove(state.seqnum - MAX_STORED_REQUESTS); // GC
 
 			// testing and logging below
 			this.notify(); // needed for paxos manager's unit-test
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
-			// FIXME: reply back only if not recovery and I am entry replica
-			// (untested change)
 			if (!doNotReplyToClient && niot != null
-					&& requestPacket.getEntryReplica() == this.getMyID()) {
-					log.fine("App sending response to client "
-							+ requestPacket.clientID + ": " + requestPacket);
-				if (TESTPaxosConfig.getSendReplyToClient()) 
-					this.sendResponseToClient(requestPacket);
-				RequestInstrumenter.remove(requestPacket.requestID);
-			} else 
-				log.fine("Node" + getMyID() + " not sending reply to client: "
-						+ requestPacket);
+					&& TESTPaxosConfig.getSendReplyToClient()) {
+				this.sendResponseToClient(requestPacket);
+			} else
+				log.log(Level.FINE, "Node{0} not sending reply {1} to client",
+						new Object[] { getMyID(), requestPacket.getSummary() });
 		} catch (JSONException je) {
 			je.printStackTrace();
 		} catch (IOException ioe) {
@@ -158,25 +155,27 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		}
 		return executed;
 	}
-	
-	private void sendResponseToClient(ProposalPacket requestPacket) throws JSONException, IOException {
-		niot.sendToAddress(
-				new InetSocketAddress(requestPacket
-						.getClientAddress(), requestPacket
-						.getClientPort()), requestPacket
-						.toJSONObject());
+
+	private void sendResponseToClient(ProposalPacket requestPacket)
+			throws JSONException, IOException {
+		log.log(Level.FINE, "App {0} sending response to client {0}",
+				new Object[] { getMyID(), requestPacket.getSummary() });
+		RequestInstrumenter.remove(requestPacket.requestID);
+		/*
+		 * Entry replica check must be done here as requests with different
+		 * entry replicas can get batched when forwarded between replicas.
+		 */
+		if (requestPacket.getEntryReplica() == this.getMyID())
+			niot.sendToAddress(
+					new InetSocketAddress(requestPacket.getClientAddress(),
+							requestPacket.getClientPort()), requestPacket
+							.toJSONObject());
 		// send responses for batched requests as well
-		if (requestPacket.getBatched() != null) {
-			for (RequestPacket batchedReq : requestPacket
-					.getBatched()) {
-				ProposalPacket batchedProposal = new ProposalPacket(
-						requestPacket.slot, batchedReq);
-				niot.sendToAddress(new InetSocketAddress(
-						batchedProposal.getClientAddress(),
-						batchedProposal.getClientPort()),
-						batchedProposal.toJSONObject());
-			}
-		}
+		if (requestPacket.getBatched() != null)
+			for (RequestPacket batchedReq : requestPacket.getBatched())
+				// single-level recursion as batches can not be deeper
+				this.sendResponseToClient(new ProposalPacket(
+						requestPacket.slot, batchedReq));
 	}
 
 	@Override
@@ -200,7 +199,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 
 	public int digest(String s) {
 		// null check needed if null checkpoints are enabled
-		if(s==null) return 0;
+		if (s == null)
+			return 0;
 		md.update(s.getBytes());
 		byte[] digest = md.digest();
 		int dig = 0;
@@ -214,8 +214,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		this.allState.clear();
 	}
 
-	private InterfaceNIOTransport<Integer,JSONObject> setNIOTransport(
-			InterfaceNIOTransport<Integer,JSONObject> nio) {
+	private InterfaceNIOTransport<Integer, JSONObject> setNIOTransport(
+			InterfaceNIOTransport<Integer, JSONObject> nio) {
 		niot = nio;
 		return nio;
 	}
@@ -278,13 +278,17 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 
 	public boolean RSMInvariant(TESTPaxosReplicable app1,
 			TESTPaxosReplicable app2, String paxosID, int seqnum) {
+		// invariant makes sense only when not recovery
+		if (!TESTPaxosConfig.getCleanDB())
+			return true;
 		String state1 = null, state2 = null;
 		if (app1.allState.containsKey(paxosID))
 			state1 = app1.allState.get(paxosID).committed.get(seqnum);
 		if (app2.allState.containsKey(paxosID))
 			state2 = app2.allState.get(paxosID).committed.get(seqnum);
 		assert (state1 == null || state2 == null || state1.equals(state2) || hasHoles(
-				app1, app2, paxosID, seqnum)) :		(getTrace(app1, app2, paxosID, seqnum));
+				app1, app2, paxosID, seqnum)) : (getTrace(app1, app2, paxosID,
+				seqnum));
 		return (state1 == null || state2 == null || state1.equals(state2));
 	}
 
@@ -299,27 +303,15 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 				return true;
 		return false;
 	}
-	
-	private String getTrace(TESTPaxosReplicable app1,
-			TESTPaxosReplicable app2, String paxosID, int seqnum) {
-		String s="";
-		for(int i=seqnum; i>=0; i--) {
-			s += app1
-			.getMyID()
-			+ ":"
-			+ paxosID
-			+ ":"
-			+ i
-			+ ": "
-			+ app1.allState.get(paxosID).committed.get(i)
-			+ " != "
-			+ app2.getMyID()
-			+ ":"
-			+ paxosID
-			+ ":"
-			+ seqnum
-			+ ": "
-			+ app2.allState.get(paxosID).committed.get(i) + "\n";
+
+	private String getTrace(TESTPaxosReplicable app1, TESTPaxosReplicable app2,
+			String paxosID, int seqnum) {
+		String s = "";
+		for (int i = seqnum; i >= 0; i--) {
+			s += app1.getMyID() + ":" + paxosID + ":" + i + ": "
+					+ app1.allState.get(paxosID).committed.get(i) + " != "
+					+ app2.getMyID() + ":" + paxosID + ":" + i + ": "
+					+ app2.allState.get(paxosID).committed.get(i) + "\n";
 		}
 		return s;
 	}
@@ -394,9 +386,11 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			throws RequestParseException {
 		try {
 			JSONObject json = new JSONObject(stringified);
-			if(PaxosPacket.getPaxosPacketType(json).equals(PaxosPacket.PaxosPacketType.REQUEST))
+			if (PaxosPacket.getPaxosPacketType(json).equals(
+					PaxosPacket.PaxosPacketType.REQUEST))
 				return new RequestPacket(json);
-			else return new ProposalPacket(json);
+			else
+				return new ProposalPacket(json);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -416,11 +410,14 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		if (request instanceof ProposalPacket)
 			return this.handleDecision((ProposalPacket) request,
 					doNotReplyToClient);
-		else if(request instanceof RequestPacket)
-			return this.sendEchoResponse((RequestPacket)request);
-		else throw new RuntimeException("TESTPaxosReplicable received non-RequestPacket type request : " + request);
+		else if (request instanceof RequestPacket)
+			return this.sendEchoResponse((RequestPacket) request);
+		else
+			throw new RuntimeException(
+					"TESTPaxosReplicable received non-RequestPacket type request : "
+							+ request);
 	}
-	
+
 	public boolean sendEchoResponse(RequestPacket request) {
 		try {
 			// arbitrary slot number of 0

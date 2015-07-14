@@ -94,16 +94,10 @@ public class PValuePacket extends ProposalPacket {
 	public void setRecovery() {
 		this.recovery = true;
 	}
-
-	/*
-	 * A convenience method for when we really need a RequestPacket, not a
-	 * deeper inherited PaxosPacket, e.g., when forwarding a preempted pvalue to
-	 * the current, new coordinator to re-propose. Else, we would need to
-	 * explicitly handle the PREEMPTED type in
-	 * PaxosInstanceStateMachine.handlePaxosMessage.
-	 */
-	public RequestPacket getRequestPacket() {
-		return new RequestPacket(this);
+	
+	@Override
+	protected String getSummaryString() {
+		return ballot + ", " + super.getSummaryString();
 	}
 
 	@Override
