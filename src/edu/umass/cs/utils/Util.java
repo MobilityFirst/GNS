@@ -14,8 +14,6 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
-
 /**
  * @author arun
  *
@@ -23,7 +21,7 @@ import edu.umass.cs.gigapaxos.PaxosManager;
  */
 @SuppressWarnings("javadoc")
 public class Util {
-	
+
 	private static Logger log = Logger.getLogger(Util.class.getName());
 
 	public static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
@@ -62,7 +60,7 @@ public class Util {
 		return (id.toString() + (int) (Math.random() * Integer.MAX_VALUE));
 	}
 
-	public static boolean probability(int n) {
+	public static boolean oneIn(int n) {
 		return Math.random() < 1.0 / n ? true : false;
 	}
 
@@ -260,20 +258,35 @@ public class Util {
 		throw new RuntimeException("Asserts not enabled; exiting");
 	}
 
-	public static String truncate(String str, int size) {
-		return str == null || str.length() < size ? str : str != null ? str
-				.substring(0, size) : null;
+	/*
+	 * The methods below return an Object with a toString method so that the
+	 * string won't actually get created until its toString method is invoked.
+	 * This is useful to optimize logging.
+	 */
+
+	public static Object truncate(String str, int size) {
+		return new Object() {
+			public String toString() {
+				return str == null || str.length() < size ? str
+						: str != null ? str.substring(0, size) : null;
+			}
+		};
 	}
 
-	public static String truncate(String str, int prefixSize, int suffixSize) {
+	public static Object truncate(String str, int prefixSize, int suffixSize) {
 		int size = prefixSize + suffixSize;
-		return str == null || str.length() < size ? str : str != null ? str
-				.substring(0, prefixSize)
-				+ "..[truncated].."
-				+ str.substring(str.length() - suffixSize) : null;
+		return new Object() {
+			public String toString() {
+				return str == null || str.length() < size ? str
+						: str != null ? str.substring(0, prefixSize)
+								+ "..[snip].."
+								+ str.substring(str.length() - suffixSize)
+								: null;
+			}
+		};
 	}
 
-	public static Collection<?> truncate(Collection<?> list, int size) {
+	private static Collection<?> truncate(Collection<?> list, int size) {
 		if (list.size() <= size)
 			return list;
 		ArrayList<Object> truncated = new ArrayList<Object>();
@@ -286,9 +299,13 @@ public class Util {
 		return truncated;
 	}
 
-	public static String truncatedLog(Collection<?> list, int size) {
-		return truncate(list, size).toString()
-				+ (list.size() <= size ? "" : "...");
+	public static Object truncatedLog(Collection<?> list, int size) {
+		return new Object() {
+			public String toString() {
+				return truncate(list, size).toString()
+						+ (list.size() <= size ? "" : "...");
+			}
+		};
 	}
 
 	public static String suicide(String error) {
@@ -297,7 +314,7 @@ public class Util {
 		System.exit(1);
 		return null; // will never come here
 	}
-	
+
 	public static void main(String[] args) {
 		System.out.println(Util.getInetSocketAddressFromString(
 				(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))

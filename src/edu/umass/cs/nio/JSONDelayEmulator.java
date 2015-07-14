@@ -32,7 +32,7 @@ public class JSONDelayEmulator {
 
 	private static Object gnsNodeConfig = null;
 
-	private static final Timer timer = new Timer();
+	private static final Timer timer = new Timer(JSONDelayEmulator.class.getSimpleName());
 
 	/**
 	 * Enables delay emulation at receiver.

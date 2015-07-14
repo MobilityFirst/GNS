@@ -42,6 +42,7 @@ import org.json.JSONObject;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.paxosutil.SQL;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
 import edu.umass.cs.reconfiguration.examples.ReconfigurableSampleNodeConfig;
@@ -62,31 +63,33 @@ import edu.umass.cs.utils.MyLogger;
  * @param <NodeIDType>
  */
 
-public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
+public class SQLReconfiguratorDB<NodeIDType> extends
 		AbstractReconfiguratorDB<NodeIDType> implements
 		InterfaceReconfiguratorDB<NodeIDType> {
-	// private static final String FRAMEWORK = "embedded";
-	private static final String DRIVER = "org.apache.derby.jdbc.EmbeddedDriver";
-	private static final String PROTOCOL = "jdbc:derby:";
-	private static final boolean CONN_POOLING = true;
-	private static final String DUPLICATE_KEY = "23505";
-	private static final String DUPLICATE_TABLE = "X0Y32";
-	// private static final String NONEXISTENT_TABLE = "42Y07";
-	private static final String USER = "user";
-	private static final String PASSWORD = "user";
+	/* ********************************************************************
+	 * DB related parameters to be changed to use a different database service.
+	 */
+	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY;
 	private static final String DATABASE = "reconfiguration_DB";
+	/* ************ End of DB service related parameters ************** */
+	
+	// private static final boolean DISABLE_LOGGING = false;	
 	private static final String RECONFIGURATION_RECORD_TABLE = "checkpoint";
 	private static final String PENDING_TABLE = "messages";
 	private static final String DEMAND_PROFILE_TABLE = "demand";
 	private static final String NODE_CONFIG_TABLE = "nodeconfig";
-	// private static final boolean DISABLE_LOGGING = false;
-	private static final boolean AUTO_COMMIT = true;
+	
+	private static final boolean CONN_POOLING = true;
 	private static final int MAX_POOL_SIZE = 100;
 	private static final int MAX_NAME_SIZE = 40;
+	
 	private static final int MAX_RC_RECORD_SIZE = 4096;
 	private static final int MAX_DEMAND_PROFILE_SIZE = 4096;
-	private static final boolean RC_RECORD_CLOB_OPTION = MAX_RC_RECORD_SIZE > 4096;
-	private static final boolean DEMAND_PROFILE_CLOB_OPTION = MAX_DEMAND_PROFILE_SIZE > 4096;
+	private static final boolean RC_RECORD_CLOB_OPTION = MAX_RC_RECORD_SIZE > SQL
+			.getVarcharSize(SQL_TYPE);
+	private static final boolean DEMAND_PROFILE_CLOB_OPTION = MAX_DEMAND_PROFILE_SIZE > SQL
+			.getVarcharSize(SQL_TYPE);
+	
 	private static final boolean COMBINE_STATS = false;
 	private static final String CHECKPOINT_TRANSFER_DIR = "paxos_large_checkpoints";
 	private static final boolean LARGE_CHECKPOINTS_OPTION = true;
@@ -101,7 +104,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		INET_SOCKET_ADDRESS, FILENAME, FILESIZE
 	};
 
-	private static final ArrayList<DerbyPersistentReconfiguratorDB<?>> instances = new ArrayList<DerbyPersistentReconfiguratorDB<?>>();
+	private static final ArrayList<SQLReconfiguratorDB<?>> instances = new ArrayList<SQLReconfiguratorDB<?>>();
 
 	protected String logDirectory;
 
@@ -120,7 +123,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * @param nc
 	 * @param logDir
 	 */
-	public DerbyPersistentReconfiguratorDB(NodeIDType myID,
+	public SQLReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc, String logDir) {
 		super(myID, nc);
 		logDirectory = (logDir == null ? "." : logDir) + "/";
@@ -132,7 +135,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * @param myID
 	 * @param nc
 	 */
-	public DerbyPersistentReconfiguratorDB(NodeIDType myID,
+	public SQLReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc) {
 		this(myID, nc, null);
 	}
@@ -199,7 +202,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				insertCP.setString(1, combined.toString());
 			insertCP.setString(2, report.getServiceName());
 			insertCP.executeUpdate();
-			conn.commit();
+			// conn.commit();
 		} catch (SQLException sqle) {
 			log.severe("SQLException while updating stats using " + cmd);
 			sqle.printStackTrace();
@@ -363,7 +366,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				insertCP.setString(2, rcRecord.toString());
 			insertCP.setString(3, rcRecord.getName());
 			insertCP.executeUpdate();
-			conn.commit();
+			// conn.commit();
 		} catch (SQLException sqle) {
 			log.severe("SQLException while inserting RC record using " + cmd);
 			sqle.printStackTrace();
@@ -567,8 +570,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	 * But we need a more systematic way of distinguishing between handles and
 	 * actual state.
 	 */
-	private boolean updateState(String rcGroup, String state,
-			String mergee) {
+	private boolean updateState(String rcGroup, String state, String mergee) {
 		synchronized (this.stringLocker.get(rcGroup)) {
 
 			this.wipeOutState(rcGroup);
@@ -689,7 +691,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setString(1, name);
 			insertCP.executeUpdate();
-			conn.commit();
+			// conn.commit();
 		} catch (SQLException sqle) {
 			if (!suppressExceptions) {
 				log.severe("SQLException while modifying pending table with "
@@ -714,7 +716,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setString(1, name);
 			rowcount = insertCP.executeUpdate();
-			conn.commit();
+			// conn.commit();
 			// this.setPending(name, false);
 		} catch (SQLException sqle) {
 			log.severe("SQLException while deleting RC record using " + cmd);
@@ -866,9 +868,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 	}
 
-	/* Sends request for and receives remote checkpoint file if correctly
-	 * formatted URL. If so, it returns a local filename. If not, it
-	 * returns the url back as-is.
+	/*
+	 * Sends request for and receives remote checkpoint file if correctly
+	 * formatted URL. If so, it returns a local filename. If not, it returns the
+	 * url back as-is.
 	 */
 	private String getRemoteCheckpoint(String rcGroup, String url) {
 		if (url == null)
@@ -898,7 +901,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return filename;
 	}
 
-	/** 
+	/**
 	 * Helper function for getRemoteCheckpoint above that actually fetches the
 	 * reads from the socket and writes to a local file.
 	 * 
@@ -983,9 +986,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return this.getCheckpointDir() + rcGroupName + "."
 				+ System.currentTimeMillis(); // + ":" + epoch;
 	}
-	
+
 	// garbage collection methods below for file system based checkpoints
-	
+
 	/*
 	 * Deletes all but the most recent checkpoint for the RC group name. We
 	 * could track recency based on timestamps using either the timestamp in the
@@ -1036,7 +1039,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 		@Override
 		public int compareTo(
-				DerbyPersistentReconfiguratorDB<NodeIDType>.Filename o) {
+				SQLReconfiguratorDB<NodeIDType>.Filename o) {
 			long t1 = file.lastModified();
 			long t2 = o.file.lastModified();
 			if (t1 < t2)
@@ -1047,9 +1050,8 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				return 1;
 		}
 	}
-	
-	// /////// End of file system based checkpoint transfer methods ///////
 
+	// /////// End of file system based checkpoint transfer methods ///////
 
 	public Map<String, Set<NodeIDType>> getRCGroups() {
 		Set<String> rcGroupNames = this.getRCGroupNames();
@@ -1112,13 +1114,21 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private boolean createTables() {
 		boolean createdRCRecordTable = false, createdPendingTable = false, createdDemandTable = false, createdNodeConfigTable = false;
 		// simply store everything in stringified form and pull all when needed
-		String cmdRCR = "create table " + getRCRecordTable() + " ("
-				+ Columns.SERVICE_NAME.toString() + " varchar(" + MAX_NAME_SIZE
-				+ ") not null, " + Columns.RC_GROUP_NAME.toString()
-				+ " varchar(" + MAX_NAME_SIZE + ") not null,  "
+		String cmdRCR = "create table "
+				+ getRCRecordTable()
+				+ " ("
+				+ Columns.SERVICE_NAME.toString()
+				+ " varchar("
+				+ MAX_NAME_SIZE
+				+ ") not null, "
+				+ Columns.RC_GROUP_NAME.toString()
+				+ " varchar("
+				+ MAX_NAME_SIZE
+				+ ") not null,  "
 				+ Columns.STRINGIFIED_RECORD.toString()
-				+ (RC_RECORD_CLOB_OPTION ? " clob(" : " varchar(")
-				+ MAX_RC_RECORD_SIZE + "), primary key ("
+				+ (RC_RECORD_CLOB_OPTION ? SQL
+						.getClobString(MAX_RC_RECORD_SIZE, SQL_TYPE) : " varchar("
+						+ MAX_RC_RECORD_SIZE + ")") + ", primary key ("
 				+ Columns.SERVICE_NAME + "))";
 		// index based on rc group name for optimizing checkpointing
 		String cmdRCRCI = "create index rc_group_index on "
@@ -1130,11 +1140,17 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 				+ ") not null, primary key(" + Columns.SERVICE_NAME.toString()
 				+ "))";
 		// demand profiles of records, need not be fault-tolerant or precise
-		String cmdDP = "create table " + getDemandTable() + " ("
-				+ Columns.SERVICE_NAME.toString() + " varchar(" + MAX_NAME_SIZE
-				+ ") not null, " + Columns.DEMAND_PROFILE.toString()
-				+ (DEMAND_PROFILE_CLOB_OPTION ? " clob(" : " varchar(")
-				+ MAX_DEMAND_PROFILE_SIZE + "), primary key("
+		String cmdDP = "create table "
+				+ getDemandTable()
+				+ " ("
+				+ Columns.SERVICE_NAME.toString()
+				+ " varchar("
+				+ MAX_NAME_SIZE
+				+ ") not null, "
+				+ Columns.DEMAND_PROFILE.toString()
+				+ (DEMAND_PROFILE_CLOB_OPTION ? SQL
+						.getClobString(MAX_DEMAND_PROFILE_SIZE, SQL_TYPE) : " varchar("
+						+ MAX_DEMAND_PROFILE_SIZE + ")") + ", primary key("
 				+ Columns.SERVICE_NAME.toString() + "))";
 		// node config information, needs to be correct under faults
 		String cmdNC = "create table " + getNodeConfigTable() + " ("
@@ -1180,7 +1196,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			stmt.execute(cmd);
 			created = true;
 		} catch (SQLException sqle) {
-			if (sqle.getSQLState().equals(DUPLICATE_TABLE)) {
+			if (SQL.DUPLICATE_TABLE.contains(sqle.getSQLState())) {
 				log.log(Level.INFO, "{0}{1}{2}", new Object[] { "Table ",
 						table, " already exists" });
 				created = true;
@@ -1196,11 +1212,16 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		return createTable(stmt, cmd, table);
 	}
 
+
+	
+	private static boolean isEmbeddedDB() {
+		return SQL_TYPE.equals(SQL.SQLType.EMBEDDED_DERBY);
+	}
+	
 	private boolean dbDirectoryExists() {
 		File f = new File(this.logDirectory + DATABASE);
 		return f.exists() && f.isDirectory();
 	}
-
 	/*
 	 * This method will connect to the DB while creating it if it did not
 	 * already exist. This method is not really needed but exists only because
@@ -1211,13 +1232,13 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	private boolean existsDB(String dbCreation, Properties props)
 			throws SQLException {
 		try {
-			Class.forName(DRIVER).newInstance();
+			Class.forName(SQL.getDriver(SQL_TYPE)).newInstance();
 		} catch (InstantiationException | IllegalAccessException
 				| ClassNotFoundException e) {
 			e.printStackTrace();
 			return false;
 		}
-		Connection conn = DriverManager.getConnection(PROTOCOL
+		Connection conn = DriverManager.getConnection(SQL.getProtocolOrURL(SQL_TYPE)
 				+ this.logDirectory + DATABASE
 				+ (!this.dbDirectoryExists() ? ";create=true" : ""));
 		cleanup(conn);
@@ -1230,9 +1251,11 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
 		// providing a user name and PASSWORD is optional in embedded derby
-		props.put("user", USER + this.myID);
-		props.put("password", PASSWORD);
-		String dbCreation = PROTOCOL + this.logDirectory + DATABASE;
+		props.put("user", SQL.getUser());
+		props.put("password", SQL.getPassword());
+		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
+				+ (isEmbeddedDB() ? this.logDirectory + DATABASE : DATABASE
+						+ "?createDatabaseIfNotExist=true");
 
 		try {
 			if (!this.existsDB(dbCreation, props))
@@ -1275,11 +1298,11 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 
 		ComboPooledDataSource cpds = new ComboPooledDataSource();
 		try {
-			cpds.setDriverClass(DRIVER);
+			cpds.setDriverClass(SQL.getDriver(SQL_TYPE));
 			cpds.setJdbcUrl(connectURI);
 			cpds.setUser(props.getProperty("user"));
 			cpds.setPassword(props.getProperty("password"));
-			cpds.setAutoCommitOnClose(AUTO_COMMIT);
+			cpds.setAutoCommitOnClose(true);
 			cpds.setMaxPoolSize(MAX_POOL_SIZE);
 		} catch (PropertyVetoException pve) {
 			pve.printStackTrace();
@@ -1289,16 +1312,16 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	}
 
 	private static void addDerbyPersistentReconfiguratorDB(
-			DerbyPersistentReconfiguratorDB<?> rcDB) {
-		synchronized (DerbyPersistentReconfiguratorDB.instances) {
-			if (!DerbyPersistentReconfiguratorDB.instances.contains(rcDB))
-				DerbyPersistentReconfiguratorDB.instances.add(rcDB);
+			SQLReconfiguratorDB<?> rcDB) {
+		synchronized (SQLReconfiguratorDB.instances) {
+			if (!SQLReconfiguratorDB.instances.contains(rcDB))
+				SQLReconfiguratorDB.instances.add(rcDB);
 		}
 	}
 
 	private static boolean allClosed() {
-		synchronized (DerbyPersistentReconfiguratorDB.instances) {
-			for (DerbyPersistentReconfiguratorDB<?> rcDB : instances) {
+		synchronized (SQLReconfiguratorDB.instances) {
+			for (SQLReconfiguratorDB<?> rcDB : instances) {
 				if (!rcDB.isClosed())
 					return false;
 			}
@@ -1425,7 +1448,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	}
 
 	private static void testRCRecordReadAfterWrite(String name,
-			DerbyPersistentReconfiguratorDB<Integer> rcDB) {
+			SQLReconfiguratorDB<Integer> rcDB) {
 		int groupSize = (int) Math.random() * 10;
 		Set<Integer> newActives = new HashSet<Integer>();
 		for (int i = 0; i < groupSize; i++)
@@ -1462,7 +1485,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	}
 
 	private static void testDemandProfileUpdate(String name,
-			DerbyPersistentReconfiguratorDB<Integer> rcDB) {
+			SQLReconfiguratorDB<Integer> rcDB) {
 		AbstractDemandProfile demandProfile = new DemandProfile(name);
 		int numRequests = 20;
 		// fake random request demand
@@ -1514,7 +1537,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 		nc.localSetup(3);
 		ConsistentReconfigurableNodeConfig<Integer> consistentNodeConfig = new ConsistentReconfigurableNodeConfig<Integer>(
 				nc);
-		DerbyPersistentReconfiguratorDB<Integer> rcDB = new DerbyPersistentReconfiguratorDB<Integer>(
+		SQLReconfiguratorDB<Integer> rcDB = new SQLReconfiguratorDB<Integer>(
 				consistentNodeConfig.getReconfigurators().iterator().next(),
 				consistentNodeConfig);
 		String name = "name0";
@@ -1549,10 +1572,10 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			insertCP.setInt(3, sockAddr.getPort());
 			insertCP.setInt(4, version);
 			insertCP.executeUpdate();
-			conn.commit();
+			// conn.commit();
 			added = true;
 		} catch (SQLException sqle) {
-			if (!sqle.getSQLState().equals(DUPLICATE_KEY)) {
+			if (!SQL.DUPLICATE_KEY.contains(sqle.getSQLState())) {
 				log.severe("SQLException while inserting RC record using "
 						+ cmd);
 				sqle.printStackTrace();
@@ -1577,7 +1600,7 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setInt(1, version);
 			insertCP.executeUpdate();
-			conn.commit();
+			// conn.commit();
 			removed = true;
 		} catch (SQLException sqle) {
 			log.severe("SQLException while deleting node config version "
@@ -1710,9 +1733,9 @@ public class DerbyPersistentReconfiguratorDB<NodeIDType> extends
 	/*
 	 * The double synchronized is because we need to synchronize over "this" to
 	 * perform testAndSet checks over record, but we have to do that after,
-	 * never before, stringLocker lock. The stringLocker lock is so that 
-	 * we don't have to lock all records in order to just synchronize a 
-	 * single group's getState or updateState.
+	 * never before, stringLocker lock. The stringLocker lock is so that we
+	 * don't have to lock all records in order to just synchronize a single
+	 * group's getState or updateState.
 	 */
 	@Override
 	public boolean mergeState(String rcGroupName, int epoch, String mergee,

@@ -335,7 +335,8 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	// returns the number of characters written, not bytes written
 	private int stampHeaderAndSend(Object id, String msg) throws IOException {
 		int written = this.stampHeaderAndSendBytes(id, msg);
-		return written < 0 ? written : msg.length();
+		// "cheat" and return the original length as nio writes all or none
+		return written <= 0 ? written : msg.length();
 	}
 
 	/**
@@ -359,10 +360,10 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		int written = (id instanceof InetSocketAddress ? this.sendUnderlying(
 				(InetSocketAddress) id, headeredMsgBytes) : this
 				.sendUnderlying((NodeIDType) id, headeredMsgBytes))
-				- headerByteLength; // subtract header length
-		assert (written < 0 || written == (headeredMsgBytes.length - headerByteLength));
-		// need to return the number of characters written finally
-		return written;
+				; 
+		assert (written <= 0 || written == (headeredMsgBytes.length));
+		// number of bytes written without counting the header
+		return written <= 0 ? written : written - headerByteLength; 
 	}
 
 	/**
@@ -392,7 +393,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 			throws IOException {
 		int written = this.stampHeaderAndSendBytes(id, new String(msgBytes,
 				MessageNIOTransport.NIO_CHARSET_ENCODING));
-		return written < 0 ? written : msgBytes.length;
+		return written <= 0 ? written : msgBytes.length;
 	}
 
 	/**

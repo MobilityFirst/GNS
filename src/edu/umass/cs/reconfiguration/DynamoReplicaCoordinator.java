@@ -19,7 +19,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  *
  * @param <NodeIDType>
  * 
- * FIXME: Incomplete.
+ *            FIXME: Incomplete. This class is unusable.
  */
 public class DynamoReplicaCoordinator<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {
@@ -38,6 +38,8 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 			JSONMessenger<NodeIDType> messenger) {
 		super(app, messenger);
 		this.consistentNodeConfig = nodeConfig;
+		throw new RuntimeException(
+				"This class is incomplete and currently unusable. Check back later.");
 	}
 
 	@Override
@@ -67,7 +69,7 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 	public String toString() {
 		return this.getClass().getSimpleName() + getMyID();
 	}
-	
+
 	/*
 	 * Consistent hashing means that groups don't have to be explicitly created.
 	 */
@@ -75,12 +77,12 @@ public class DynamoReplicaCoordinator<NodeIDType> extends
 	public boolean createReplicaGroup(String serviceName, int epoch,
 			String state, Set<NodeIDType> nodes) {
 		throw new RuntimeException(
-				"This method should not be invoked as groups are implicitly defined with consistent hashing.");
+				"This method should not be invoked as groups are "
+				+ "implicitly defined with consistent hashing.");
 	}
 
 	@Override
 	public boolean deleteReplicaGroup(String serviceName, int epoch) {
 		throw new RuntimeException("Method not yet implemented");
 	}
-
 }

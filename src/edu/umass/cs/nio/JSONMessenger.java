@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -51,7 +52,14 @@ public class JSONMessenger<NodeIDType> implements
 		if (niot instanceof JSONMessenger)
 			this.execpool = ((JSONMessenger<NodeIDType>) niot).execpool;
 		else
-			this.execpool = Executors.newScheduledThreadPool(5);
+			this.execpool = Executors.newScheduledThreadPool(5, new ThreadFactory() {
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread thread = Executors.defaultThreadFactory().newThread(r);
+					thread.setName(this.getClass().getSimpleName() + niot.getMyID() + thread.getName());
+					return thread;
+				}
+			});
 		nioTransport = (InterfaceNIOTransport<NodeIDType, JSONObject>) niot;
 	}
 
@@ -103,8 +111,7 @@ public class JSONMessenger<NodeIDType> implements
 					log.fine("Node " + this.nioTransport.getMyID() + " sent "
 							+ " to node " + mtask.recipients[r] + ": "
 							+ jsonMsg);
-				} else if (sent < length && sent >= 0) {
-					assert(sent==0); // nio buffers all or none
+				} else if (sent==0) {
 					log.info("Node "
 							+ this.nioTransport.getMyID()
 							+ " messenger experiencing congestion, this is not disastrous (yet)");
@@ -112,10 +119,11 @@ public class JSONMessenger<NodeIDType> implements
 							(mtask.recipients[r]), jsonMsg, RTX_DELAY);
 					// can't block here, so have to ignore returned future
 					execpool.schedule(rtxTask, RTX_DELAY, TimeUnit.MILLISECONDS);
-				} else {
-					log.severe("Node " + this.nioTransport.getMyID() + " sent "
-							+ Math.max(-1, sent) + " characters out of a " + length
-							+ " message to node " + mtask.recipients[r]);
+				} else { 
+					assert(sent==-1) : sent;
+					log.severe("Node " + this.nioTransport.getMyID()
+							+ " failed to send message to node "
+							+ mtask.recipients[r] + ": " + msg);
 				}
 			}
 		}
@@ -162,6 +170,8 @@ public class JSONMessenger<NodeIDType> implements
 				ioe.printStackTrace();
 			} finally {
 				if (sent < msg.toString().length() && sent != -1) {
+					// nio can only send all or none, hence the assert
+					assert(sent==0);
 					log.warning("Node "
 							+ nioTransport.getMyID()
 							+ "->"

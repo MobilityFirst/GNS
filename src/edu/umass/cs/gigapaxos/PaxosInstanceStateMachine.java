@@ -110,6 +110,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	// minimum interval before another sync decisions request can be issued
 	protected static final long MIN_RESYNC_DELAY = 1000;
 
+	private static enum SyncMode {
+		DEFAULT_SYNC, FORCE_SYNC, SYNC_TO_PAUSE
+	};
+
 	/*
 	 * Enabling this will slow down instance creation for null initialState as
 	 * an initial checkpoint will still be made. It will make no difference if
@@ -176,13 +180,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 		// log creation only if the number of instances is small
 		log.log((hri == null && notManyInstances()) ? Level.INFO : Level.FINER,
-				"Initialized paxos {0} {1} at node {2} with {3} members. {4} {5} {6}{7}",
+				"Node{0} initialized paxos {1} {2} with members {3}; {4} {5} {6}{7}",
 				new Object[] {
+						this.getNodeID(),
 						(this.paxosState.getBallotCoordLog() == this.getMyID() ? "COORDINATOR"
 								: "instance"),
 						this.getPaxosIDVersion(),
-						this.getNodeID(),
-						groupMembers.length,
+						Util.arrayOfIntToString(groupMembers),
 						this.paxosState,
 						this.coordinator,
 						(initialState == null ? "{recoveredState=["
@@ -205,6 +209,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 	public String toString() {
 		return this.getNodeState();
+	}
+
+	protected String toStringLong() {
+		return this.getNodeState() + this.paxosState + this.coordinator;
 	}
 
 	/**
@@ -366,8 +374,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		 * acceptor state.
 		 */
 		if (!this.paxosManager.hasRecovered(this) && !recovery)
-			return; // don't process regular messages until ready for
-					// rollForward
+			return; // only process recovery message during rollForward
 
 		PaxosPacketType msgType = PaxosPacket.getPaxosPacketType(msg);
 		log.log(Level.FINEST, "{0}{1}{2}{3}{4}", new Object[] { this,
@@ -376,6 +383,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		boolean isPoke = msgType.equals(PaxosPacketType.NO_TYPE);
 		if (!isPoke)
 			this.justActive();
+		else
+			log.log(Level.FINER,
+					"{0} received a no_type poke {1};",
+					new Object[] { this,
+							msg.getString(PaxosPacket.SYNC_MODE.toString()) });
 
 		MessagingTask[] mtasks = new MessagingTask[2];
 		/*
@@ -384,9 +396,14 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		 * resend accepts. There is little reason to send prepares proactively
 		 * if no new activity is happening.
 		 */
-		mtasks[0] = (!recovery ? !this.coordinator.isActive() //&& !isPoke 
-				? checkRunForCoordinator()
+		mtasks[0] = (!recovery ?
+		// check run for coordinator criterion
+		(!this.coordinator.isActive() && (!isPoke || SyncMode.SYNC_TO_PAUSE
+				.equals(SyncMode.valueOf(msg.getString(PaxosPacket.SYNC_MODE
+						.toString()))))) ? checkRunForCoordinator()
+		// else reissue long waiting accepts
 				: this.pokeLocalCoordinator()
+		// neither during recovery
 				: null);
 
 		MessagingTask mtask = null;
@@ -434,13 +451,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			mtask = handleCheckpoint(new StatePacket(msg));
 			break;
 		case NO_TYPE:
-			log.log(Level.FINE,
-					"{0} received a no_type poke; invoking fixLongDecisionGaps",
-					new Object[] { this });
-			// if no coordinator'ing to do, sync if needed and can sync
-			if (mtasks[0] == null)
-				mtasks[0] = this.fixLongDecisionGaps(null,
-						msg.getBoolean(PaxosPacket.FORCE_SYNC));
+			// sync if needed on poke
+			mtasks[0] = (mtasks[0] != null) ? mtasks[0] : this
+					.fixLongDecisionGaps(null, SyncMode.valueOf(msg
+							.getString(PaxosPacket.SYNC_MODE)));
 
 			break;
 		default:
@@ -500,21 +514,36 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		 * in its pre-active queue for a long time.
 		 */
 
-		// allow null state without null checkpoints for memory testing
+		// allow null state without null checkpoints just for memory testing
 		if (slotBallot == null && initialState == null
 				&& !this.paxosManager.isNullCheckpointStateEnabled()
 				&& !TESTPaxosConfig.isMemoryTesting())
 			throw new PaxosInstanceCreationException(
-					"A paxos instance with null initial state can"
-							+ " be created only if null checkpoints are enabled");
+					"A paxos instance with null initial state can be"
+							+ " created only if null checkpoints are enabled");
 
 		/*
 		 * If this is a "missed-birthing" instance creation, we still set the
 		 * acceptor nextSlot to 0 but don't checkpoint initialState. In fact,
-		 * initialState better be null in that case as we can't possibly have an
-		 * initialState with missed birthing.
+		 * initialState better be null here in that case as we can't possibly
+		 * have an initialState with missed birthing.
 		 */
 		assert (!(missedBirthing && initialState != null));
+		/*
+		 * If it is possible for there to be no initial state checkpoint, under
+		 * missed birthing, an acceptor may incorrectly report its gcSlot as -1,
+		 * and if a majority do so (because that majority consists all of missed
+		 * birthers), a coordinator may propose a proposal for slot 0 even
+		 * though an initial state does exist, which would end up overwriting
+		 * the initial state. So we can not support ambiguity in whether there
+		 * is initial state or not. If we force initial state checkpoints (even
+		 * null state checkpoints) to always exist, missed birthers can always
+		 * set the initial gcSlot to 0. The exception and assert above imply the
+		 * assertion below.
+		 */
+		assert (!missedBirthing || this.paxosManager
+				.isNullCheckpointStateEnabled());
+
 		this.paxosState = new PaxosAcceptor(
 				slotBallot != null ? slotBallot.ballotnum : 0,
 				slotBallot != null ? slotBallot.coordinator : this
@@ -522,6 +551,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				slotBallot != null ? (slotBallot.slot + 1) : 0, null);
 		if (slotBallot == null && !missedBirthing)
 			this.putInitialState(initialState);
+		if (missedBirthing)
+			this.paxosState.setGCSlotAfterPuttingInitialSlot();
+
 		if (slotBallot == null)
 			TESTPaxosConfig.setRecovered(this.getMyID(), pid, true);
 
@@ -574,6 +606,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				mtask });
 		mtask.putPaxosIDVersion(this.getPaxosID(), this.getVersion());
 		try {
+			// assert(this.paxosState.isActive());
 			paxosManager.send(mtask);
 		} catch (IOException ioe) {
 			log.severe(this + " encountered IOException while sending " + mtask);
@@ -610,7 +643,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				msg.put(PaxosPacket.PAXOS_VERSION, this.getVersion());
 				msg.put(PaxosPacket.PAXOS_PACKET_TYPE,
 						PaxosPacketType.NO_TYPE.getInt());
-				msg.put(PaxosPacket.FORCE_SYNC, forceSync);
+				msg.put(PaxosPacket.SYNC_MODE,
+						forceSync ? SyncMode.FORCE_SYNC.toString()
+								: SyncMode.SYNC_TO_PAUSE.toString());
 				log.log(Level.FINE, "{0} being poked", new Object[] { this });
 				this.handlePaxosMessage(msg);
 			} catch (JSONException je) {
@@ -627,7 +662,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 */
 	private MessagingTask handleRequest(RequestPacket msg) throws JSONException {
 		log.log(Level.FINE, "{0}{1}{2}", new Object[] { this,
-				" Phase0/CLIENT_REQUEST: ", msg });
+				" Phase0/CLIENT_REQUEST: ", msg.getSummary() });
 		RequestInstrumenter.received(msg, msg.clientID, this.getMyID());
 		msg.setEntryReplica(getMyID());
 		return handleProposal(new ProposalPacket(0, msg));
@@ -656,35 +691,34 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					this.getMyID());
 		if (this.coordinator.exists(this.paxosState.getBallot())) {
 			// multicast ACCEPT to all
-			boolean isActive = this.coordinator.isActive();
-			log.log(Level.FINER,
-					"{0} issuing Phase2a/ACCEPT after {1} ms : {2}",
-					new Object[] {
-							this,
-							(System.currentTimeMillis() - proposal
-									.getCreateTime()),
-							(isActive ? " sending accept for request "
-									: " received pre-active request "),
-							proposal });
 			AcceptPacket multicastAccept = null;
 			proposal.addDebugInfo("a");
 			multicastAccept = this.coordinator.propose(this.groupMembers,
 					proposal);
 			mtask = multicastAccept != null ? new MessagingTask(
 					this.groupMembers, multicastAccept) : null; // multicast
-			if (multicastAccept != null)
+			if (multicastAccept != null) {
 				RequestInstrumenter.sent(multicastAccept, this.getMyID(), -1);
+				log.log(Level.FINER,
+						"{0} issuing (after {2} ms) {3} ",
+						new Object[] {
+								this,
+								(System.currentTimeMillis() - proposal
+										.getCreateTime()),
+								multicastAccept.getSummary() });
+
+			}
 		} else { // else unicast to current coordinator
 			log.log(Level.FINER, "{0}{1}{2}{3}{4}",
 					new Object[] { this,
 							" is not the coordinator, forwarding to ",
 							this.paxosState.getBallotCoordLog(), " : ",
-							proposal });
+							proposal.getSummary() });
 			mtask = new MessagingTask(this.paxosState.getBallotCoord(),
 					proposal.setForwarderID(this.getMyID())); // unicast
 			if (proposal.isPingPonging()) {
 				log.warning(this + " dropping ping-ponging proposal: "
-						+ proposal);
+						+ proposal.getSummary());
 				mtask = this.checkRunForCoordinator(true);
 			} else
 				proposal.addDebugInfo("f");
@@ -717,32 +751,28 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 							// recovery as networking is disabled anyway
 
 		// may also need to look into disk if ACCEPTED_PROPOSALS_ON_DISK is true
-		if (PaxosAcceptor.ACCEPTED_PROPOSALS_ON_DISK) {
+		if (PaxosAcceptor.GET_ACCEPTED_PVALUES_FROM_DISK
+		// no need to gather pvalues if NACKing anyway
+				&& prepareReply.ballot.compareTo(prepare.ballot) <= 0)
 			prepareReply.accepted.putAll(this.paxosManager.getPaxosLogger()
 					.getLoggedAccepts(this.getPaxosID(), this.getVersion(),
 							prepare.firstUndecidedSlot));
-			for (PValuePacket pvalue : prepareReply.accepted.values())
-				// if I accepted a pvalue, my acceptor ballot must reflect it
-				assert (this.paxosState.getBallot().compareTo(pvalue.ballot) >= 0) : this
-						+ ":" + pvalue;
-		}
-		/*
-		 * We need to special-case this as there is no logged ACCEPT
-		 * corresponding to the initial state, so the coordinator must be
-		 * explicitly informed of firstSlot that is higher than gcSlot+1.
-		 */
-		if (prepareReply.accepted.isEmpty()
-				&& this.paxosState.getGCSlot() == -1
-				&& this.paxosState.getSlot() == 1)
-			prepareReply.setFirstSlot(0);
+
+		for (PValuePacket pvalue : prepareReply.accepted.values())
+			// if I accepted a pvalue, my acceptor ballot must reflect it
+			assert (this.paxosState.getBallot().compareTo(pvalue.ballot) >= 0) : this
+					+ ":" + pvalue;
 
 		log.log(Level.FINE,
-				"{0} sending {1} accepted pvalues starting at {2}; firstUndecidedSlot = {3}",
-				new Object[] { this, prepareReply.accepted.size(),
-						prepareReply.getMinSlot(), prepare.firstUndecidedSlot });
+				"{0} {1} {2} with {3}",
+				new Object[] {
+						this,
+						prepareReply.ballot.compareTo(prepare.ballot) > 0 ? "preempting"
+								: "acking", prepare.ballot,
+						prepareReply.getSummary() });
 
 		LogMessagingTask mtask = new LogMessagingTask(
-				prepareReply.ballot.coordinatorID, prepareReply,
+				prepare.ballot.coordinatorID, prepareReply,
 				(PaxosPacket) prepare);
 		return mtask;
 	}
@@ -781,15 +811,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				&& !acceptList.isEmpty()) {
 			mtask = new MessagingTask(this.groupMembers,
 					MessagingTask.toPaxosPacketArray(acceptList.toArray()));
-			log.log(Level.INFO,
-					"{0} elected coordinator; sending ACCEPTS for: {1}",
+			log.log(Level.INFO, "{0} elected coordinator; sending {1}",
 					new Object[] { this, mtask });
 		} else
-			log.log(Level.FINE,
-					"{0} received {1} pvalues for slots between {2}-{3} from {4}",
-					new Object[] { this, prepareReply.accepted.size(),
-							prepareReply.getMinSlot(),
-							prepareReply.getMaxSlot(), prepareReply.acceptor });
+			log.log(Level.FINE, "{0} received {1}", new Object[] { this,
+					prepareReply.getSummary() });
 
 		return mtask; // Could be unicast or multicast
 	}
@@ -802,7 +828,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 */
 	private MessagingTask handleAccept(AcceptPacket accept)
 			throws JSONException {
-		this.paxosManager.heardFrom(accept.sender); // FD optimization
+		this.paxosManager.heardFrom(accept.ballot.coordinatorID); // FD
+																	// optimization
 		RequestInstrumenter.received(accept, accept.sender, this.getMyID());
 		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept,
 				this.getMyID());
@@ -817,9 +844,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.getMyID(),
 				ballot, accept.slot,
 				lastCheckpointSlot(this.paxosState.getSlot() - 1), accept);
-		// lower ballot => no logging, only accept reply
+		// FIXME: lower ballot => no logging, only accept reply
 		AcceptPacket toLog = (accept.ballot.compareTo(ballot) >= 0 ? accept
-				: null);
+				: /* null */accept);
 		MessagingTask mtask = toLog != null ? new LogMessagingTask(
 				accept.sender, acceptReply, toLog) : new MessagingTask(
 				accept.sender, acceptReply);
@@ -869,6 +896,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			// this.handleCommittedRequest(committedPValue);
 			multicastDecision = new MessagingTask(this.groupMembers,
 					committedPValue); // inform everyone of the decision
+			log.log(Level.FINE, "{0} announcing decision {1}", new Object[] {
+					this, committedPValue.getSummary() });
 		} else if (committedPValue.getType() == PaxosPacket.PaxosPacketType.PREEMPTED) {
 			/*
 			 * Could drop the request, but we forward the preempted proposal as
@@ -890,23 +919,30 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					.hasTakenTooLong()) : (committedPValue + " >= "
 					+ acceptReply + ", hasTakenTooLong=" + committedPValue
 						.hasTakenTooLong());
-			if (!committedPValue.isNoop()) {
+			if (!committedPValue.isNoop() || shouldForwardNoops()) {
 				// forward only if not already a no-op
 				unicastPreempted = new MessagingTask(
 						acceptReply.ballot.coordinatorID, committedPValue
 								.makeNoop().setForwarderID(this.getMyID()));
 				committedPValue.addDebugInfo("f");
-			}
-			log.log(Level.INFO,
-					"{0} forwarding preempted request as no-op to node {1}:{2}",
-					new Object[] { this, acceptReply.ballot.coordinatorID,
-							committedPValue });
+				log.log(Level.INFO,
+						"{0} forwarding preempted request as no-op to node {1}:{2}",
+						new Object[] { this, acceptReply.ballot.coordinatorID,
+								committedPValue.getSummary() });
+			} else
+				log.log(Level.WARNING,
+						"{0} dropping no-op preempted by coordinator {1}: {2}",
+						new Object[] { this, acceptReply.ballot.coordinatorID,
+								committedPValue.getSummary() });
 		}
-		log.log(Level.FINE, "{0} announcing decision to {2} : {3}",
-				new Object[] { this, Util.intToIntegerArray(getMembers()),
-						committedPValue.requestValue });
+
 		return committedPValue.getType() == PaxosPacket.PaxosPacketType.DECISION ? multicastDecision
 				: unicastPreempted;
+	}
+
+	// whether to "save" a noop, i.e., an already preempted request
+	private static final boolean shouldForwardNoops() {
+		return false;
 	}
 
 	/*
@@ -933,7 +969,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			log.log(Level.FINE, "{0}{1}{2}{3}{4} {5}", new Object[] { this,
 					" expecting ", this.paxosState.getSlotLog(),
 					" recieved out-of-order commit: ", committed.slot,
-					committed.requestValue });
+					committed.getSummary() });
 
 		return mtask;
 	}
@@ -953,14 +989,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * forceSync is used only in the beginning in the case of missedBirthing.
 	 */
 	private MessagingTask fixLongDecisionGaps(PValuePacket committed,
-			boolean forceSync) {
+			SyncMode syncMode) {
 
 		MessagingTask fixGapsRequest = null;
-		if (this.shouldSync((committed != null ? committed.slot
-				: this.paxosState.getSlot() - 1), this.getPaxosManager()
-				.getOutOfOrderLimit())
-				// rate limit syncs
-				&& this.paxosState.canSync() || forceSync) {
+		if (this.paxosState.canSync()
+				&& (this.shouldSync((committed != null ? committed.slot
+						: this.paxosState.getMaxCommittedSlot()), this
+						.getPaxosManager().getOutOfOrderLimit(), syncMode))) {
 			fixGapsRequest = this
 					.requestMissingDecisions(committed != null ? committed.ballot.coordinatorID
 							: this.paxosState.getBallotCoord());
@@ -974,7 +1009,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 
 	private MessagingTask fixLongDecisionGaps(PValuePacket committed) {
-		return this.fixLongDecisionGaps(committed, false);
+		return this.fixLongDecisionGaps(committed, SyncMode.DEFAULT_SYNC);
 	}
 
 	protected boolean isLongIdle() {
@@ -1019,9 +1054,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		while ((inorderDecision = this.paxosState
 				.putAndRemoveNextExecutable(loggedDecision)) != null) {
 			log.log(inorderDecision.isStopRequest() ? Level.FINE : Level.FINE,
-					"{0} received in-order commit {1} {2}", new Object[] {
-							this, inorderDecision.slot,
-							inorderDecision.requestValue });
+					"{0} received in-order commit {1} {2}",
+					new Object[] { this, inorderDecision.slot,
+							inorderDecision.getSummary() });
 			String pid = this.getPaxosID();
 
 			/*
@@ -1030,7 +1065,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			 * checkpointing below.
 			 */
 			if (execute(this, this.clientRequestHandler,
-					inorderDecision.getRequestValue(),
+					inorderDecision.getRequestValues(),
 					inorderDecision.isRecovery()))
 				// +1 for each batch, not for each constituent requestValue
 				execCount++;
@@ -1047,8 +1082,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						this.clientRequestHandler.getState(pid),
 						this.paxosState.getGCSlot(),
 						inorderDecision.getCreateTime());
-				log.log(Level.INFO, "{0}",
-						new Object[] { DelayProfiler.getStats() });
+				if (Util.oneIn(10))
+					log.log(Level.INFO, "{0}",
+							new Object[] { DelayProfiler.getStats() });
 			}
 			/*
 			 * If stop request, copy epoch final state and kill self. If copy is
@@ -1311,13 +1347,12 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * elected as follows. The minority of acceptors who did receive the prepare
 	 * will assume the prepare's sender as the current coordinator. The rest
 	 * might still think the previous coordinator is the current coordinator.
-	 * All acceptors could be thinking that their current coordinator is up, so
-	 * nobody will bother running for coordinator. To break this impasse, we
-	 * need to resend the prepare. This has been now incorporated in the
-	 * handleMessage that quickly checks upon every message if we need to
-	 * "(re)run for coordinator" (for the same ballot) if we have been waiting
-	 * for too long (having neither received a prepare majority nor a
-	 * preemption) for the ballot to complete.
+	 * All acceptors could be thinking that their up, so nobody will bother
+	 * running for coordinator. To break this impasse, we need to resend the
+	 * prepare. This has been now incorporated in the handleMessage that quickly
+	 * checks upon every message if we need to "(re)run for coordinator" (for
+	 * the same ballot) if we have been waiting for too long (having neither
+	 * received a prepare majority nor a preemption) for the ballot to complete.
 	 */
 
 	/*
@@ -1379,7 +1414,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			 * e.g., the next-in-line coordinator thinks the current coordinator
 			 * is up but most everyone else thinks the current coordinator is
 			 * down. Or the next-in-line coordinator itself could be dead. The
-			 * downside of this lasCoordinatorLongDead check is that many nodes
+			 * downside of this lastCoordinatorLongDead check is that many nodes
 			 * might near simultaneously try to become coordinator with no one
 			 * succeeding for a while, but this is unlikely to be a problem if
 			 * we rely on the deterministic round-robin rule in the common case
@@ -1387,11 +1422,14 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			 * (much longer than the typical node failure detection timeout).
 			 */
 			log.log(Level.INFO,
-					"{0} decides to run for coordinator as node {1} {2}",
+					"{0} running for coordinator as node {1} {2}",
 					new Object[] {
 							this,
 							curBallot.coordinatorID,
-							(curBallot.coordinatorID != this.getMyID() ? " appears to be dead"
+							(curBallot.coordinatorID != this.getMyID() ? " seems dead (last pinged "
+									+ (this.paxosManager
+											.getDeadTime(curBallot.coordinatorID) / 1000)
+									+ " secs back)"
 									: " has not yet initialized its coordinator") });
 			Ballot newBallot = new Ballot(curBallot.ballotNumber + 1,
 					this.getMyID());
@@ -1402,9 +1440,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						new PreparePacket(newBallot, this.paxosState.getSlot()));
 			}
 		} else if (this.coordinator.waitingTooLong()) {
-			// FIXME: why resend prepare instead of just running anew?
-			log.warning(this
-					+ " resending timed out PREPARE; this is only needed under high congestion");
+			assert (!this.coordinator.waitingTooLong()) : this + " "
+					+ this.coordinator;
+			log.warning(this + " resending timed out PREPARE "
+					+ this.coordinator.getBallot()
+					+ "; this is only needed under high congestion");
 			Ballot newBallot = this.coordinator.remakeCoordinator(groupMembers);
 			if (newBallot != null) {
 				multicastPrepare = new MessagingTask(this.groupMembers,
@@ -1412,14 +1452,14 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			}
 		} else if (!this.paxosManager.isNodeUp(curBallot.coordinatorID)
 				&& !this.coordinator.exists(curBallot)) { // not my job
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} thinks current coordinator {1} is {2} dead, the next-in-line is {3}{4}",
 					new Object[] {
 							this,
 							curBallot.coordinatorID,
 							(paxosManager
-									.lastCoordinatorLongDead(curBallot.coordinatorID) ? " *long* "
-									: " "),
+									.lastCoordinatorLongDead(curBallot.coordinatorID) ? "*long*"
+									: ""),
 							getNextCoordinator(curBallot.ballotNumber + 1,
 									this.groupMembers),
 							(this.coordinator.ranRecently() ? ", and I ran too recently to try again"
@@ -1438,8 +1478,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 
 	private String getNodeState() {
-		return "Node" + this.getNodeID() + " " + this.getBallots() + ", "
-				+ this.getPaxosIDVersion();
+		return "Node" + this.getNodeID() + ":" + this.getPaxosIDVersion() + ":"
+				+ this.getBallots();
 	}
 
 	/*
@@ -1495,7 +1535,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				.reissueAcceptIfWaitingTooLong(this.paxosState.getSlot());
 		if (accept != null)
 			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
-					" resending timed out ACCEPT ", accept });
+					" resending timed out ACCEPT ", accept.getSummary() });
+		else
+			log.log(Level.FINEST, "{0} coordinator {1} is good for now",
+					new Object[] { this, this.coordinator });
 		MessagingTask reAccept = (accept != null ? new MessagingTask(
 				this.groupMembers, accept) : null);
 		return reAccept;
@@ -1518,7 +1561,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						.getMaxSyncDecisionsGap());
 		// initially we might want to send an empty sync request
 		if (missingSlotNumbers == null)
-			return null;
+			return null; // if stopped
 		else if (missingSlotNumbers.isEmpty())
 			missingSlotNumbers.add(this.paxosState.getSlot());
 
@@ -1539,26 +1582,38 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * and the expected slot is at least as high as the threshold. But we also
 	 * sync in the beginning when the expected slot is 0 (if we disable null
 	 * checkpoints) or 1 and there is either a nonzero gap or simply if the
-	 * threshold is 1. The initial nonzero gap is just an (understandable)
+	 * threshold is 1. The initial nonzero gap is an understandable
 	 * optimization. But we also sync in the special case when the threshold is
 	 * low and this paxos instance has just gotten created (even when there is
 	 * no gap) because it is possible that other replicas have committed
 	 * decisions that I don't even know have happened. This optimizaiton is not
 	 * necessary for safety, but it is useful for liveness especially in the
 	 * case when an epoch start (in reconfiguration) is not considered complete
-	 * until all replicas have committed the first decision.
+	 * until all replicas have committed the first decision (as in the special
+	 * case of reconfigurator node reconfigurations).
 	 */
 	private static final int INITIAL_SYNC_THRESHOLD = 1;
 
-	private boolean shouldSync(int maxDecisionSlot, int threshold) {
+	private boolean shouldSync(int maxDecisionSlot, int threshold,
+			SyncMode syncMode) {
 		int expectedSlot = this.paxosState.getSlot();
-		return // typical legitimate sync criterion
+		boolean nonzeroGap = maxDecisionSlot - expectedSlot > 0;
+		boolean smallGapThreshold = threshold <= INITIAL_SYNC_THRESHOLD;
+
+		return
+		// typical legitimate sync criterion
 		(maxDecisionSlot - expectedSlot >= threshold)
-		// sync decisions initially if nonzero gap
-				|| ((expectedSlot == 0 || expectedSlot == 1) && (maxDecisionSlot
-						- expectedSlot > 0
-				// sync decisions initially even if no gap and threshold low
-				|| threshold <= INITIAL_SYNC_THRESHOLD));
+		// sync decisions initially if nonzer gap or small threshold
+				|| ((expectedSlot == 0 || expectedSlot == 1) && (nonzeroGap || smallGapThreshold))
+				// non-zero gap and syncMode is SYNC_IF_NONZERO_GAP
+				|| (nonzeroGap && SyncMode.SYNC_TO_PAUSE.equals(syncMode))
+				// force sync
+				|| SyncMode.FORCE_SYNC.equals(syncMode);
+
+	}
+
+	private boolean shouldSync(int maxDecisionSlot, int threshold) {
+		return shouldSync(maxDecisionSlot, threshold, SyncMode.DEFAULT_SYNC);
 	}
 
 	private boolean isMissingTooMuch() {
@@ -1608,9 +1663,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	private MessagingTask handleSyncDecisionsPacket(
 			SyncDecisionsPacket syncReply) throws JSONException {
 		int minMissingSlot = syncReply.missingSlotNumbers.get(0);
-		log.log(Level.INFO,
-				"{0} handling sync decisions request from node {1} for minMissingSlot {2}",
-				new Object[] { this, syncReply.nodeID, minMissingSlot });
+		log.log(Level.INFO, "{0} handling sync decisions request {1}",
+				new Object[] { this, syncReply.getSummary() });
 
 		// try to get checkpoint
 		MessagingTask checkpoint = null;
@@ -1715,14 +1769,16 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				.get(0) ? StatePacket.getStatePacket(this.paxosManager
 				.getPaxosLogger().getSlotBallotState(this.getPaxosID())) : null);
 		if (statePacket != null)
-			log.log(Level.INFO, "{0} sending checkpoint to node {1}: {2}",
-					new Object[] { this, syncReply.nodeID, statePacket });
+			log.log(Level.INFO,
+					"{0} sending checkpoint to node {1}: {2}",
+					new Object[] { this, syncReply.nodeID,
+							statePacket.getSummary() });
 		else {
 			String myStatus = (!this.coordinator.exists() ? "[acceptor]"
 					: this.coordinator.isActive() ? "[coordinator]"
 							: "[preactive-coordinator]");
-			log.warning(this + myStatus + " has no state (yet) for "
-					+ syncReply);
+			log.info(this + myStatus + " has no state (yet) for "
+					+ syncReply.getSummary());
 		}
 
 		return statePacket != null ? new MessagingTask(syncReply.nodeID,

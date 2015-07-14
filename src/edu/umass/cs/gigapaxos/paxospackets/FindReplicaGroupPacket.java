@@ -121,4 +121,9 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	protected String getSummaryString() {
+		return nodeID + Util.arrayOfIntToString(group);
+	}
 }

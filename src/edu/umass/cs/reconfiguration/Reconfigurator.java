@@ -115,7 +115,7 @@ public class Reconfigurator<NodeIDType> implements
 		this.consistentNodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nc);
 		this.DB = new RepliconfigurableReconfiguratorDB<NodeIDType>(
-				new DerbyPersistentReconfiguratorDB<NodeIDType>(
+				new SQLReconfiguratorDB<NodeIDType>(
 						this.messenger.getMyID(), this.consistentNodeConfig),
 				getMyID(), this.consistentNodeConfig, this.messenger,
 				startCleanSlate);

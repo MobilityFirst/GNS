@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -15,19 +17,21 @@ import java.util.logging.Level;
 
 /**
  * @author V. Arun
- * @param <MessageType> Indicates the generic type of messages processed by this demultiplexer.
+ * @param <MessageType>
+ *            Indicates the generic type of messages processed by this
+ *            demultiplexer.
  */
 public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		InterfacePacketDemultiplexer<MessageType> {
 
 	/**
-	 * The default thread pool size. 
+	 * The default thread pool size.
 	 * 
 	 * FIXME: Unclear what a good value is.
 	 */
 	public static final int DEFAULT_THREAD_POOL_SIZE = 5;
 	private static int threadPoolSize = DEFAULT_THREAD_POOL_SIZE;
-	
+
 	private final int myThreadPoolSize;
 
 	/**
@@ -52,16 +56,26 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	 *            a request over the network and wait until it gets back a
 	 *            response.
 	 */
-	public static synchronized void setThreadPoolSize(int threadPoolSize) {AbstractPacketDemultiplexer.threadPoolSize = threadPoolSize;}
-	protected static synchronized int getThreadPoolSize() {return threadPoolSize;}
-	
+	public static synchronized void setThreadPoolSize(int threadPoolSize) {
+		AbstractPacketDemultiplexer.threadPoolSize = threadPoolSize;
+	}
+
+	protected static synchronized int getThreadPoolSize() {
+		return threadPoolSize;
+	}
+
 	private final ScheduledExecutorService executor;
 	private final HashMap<Integer, InterfacePacketDemultiplexer<MessageType>> demuxMap = new HashMap<Integer, InterfacePacketDemultiplexer<MessageType>>();
 	protected static final Logger log = NIOTransport.getLogger();
 
 	abstract protected Integer getPacketType(MessageType message);
+
 	abstract protected MessageType getMessage(String message);
-	
+
+	private static final String DEFAULT_THREAD_NAME = AbstractPacketDemultiplexer.class
+			.getSimpleName();
+	private String threadName = DEFAULT_THREAD_NAME;
+
 	/**
 	 * 
 	 * @param threadPoolSize
@@ -69,7 +83,16 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	 *            setThreadPoolsize(int)}.
 	 */
 	public AbstractPacketDemultiplexer(int threadPoolSize) {
-		this.executor = Executors.newScheduledThreadPool(threadPoolSize);
+		this.executor = Executors.newScheduledThreadPool(threadPoolSize,
+				new ThreadFactory() {
+					@Override
+					public Thread newThread(Runnable r) {
+						Thread thread = Executors.defaultThreadFactory()
+								.newThread(r);
+						thread.setName(threadName);
+						return thread;
+					}
+				});
 		this.myThreadPoolSize = threadPoolSize;
 	}
 
@@ -77,11 +100,15 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		this(getThreadPoolSize());
 	}
 
+	protected void setThreadName(String name) {
+		this.threadName = DEFAULT_THREAD_NAME + name;
+	}
+
 	// This method will be invoked by NIO
 	protected boolean handleMessageSuper(MessageType message)
 			throws JSONException {
 		Integer type = getPacketType(message);
-		if (type==null || !this.demuxMap.containsKey(type)) {
+		if (type == null || !this.demuxMap.containsKey(type)) {
 			/*
 			 * It is natural for some demultiplexers to not handle some packet
 			 * types, so it is not a "bad" thing that requires a warning log.
@@ -89,10 +116,10 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 			log.log(Level.FINE, "Ignoring unknown packet type: {0}", type);
 			return false;
 		}
-		// else
 		Tasker tasker = new Tasker(message, this.demuxMap.get(type));
-		if (this.myThreadPoolSize==0)
-			tasker.run(); // task better be lightning quick
+		if (this.myThreadPoolSize == 0)
+			// task better be lightning quick
+			tasker.run();
 		else
 			// task should still be non-blocking
 			executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
@@ -104,8 +131,9 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		return true;
 	}
 
-	/** 
+	/**
 	 * Registers {@code type} with {@code this}.
+	 * 
 	 * @param type
 	 */
 	public void register(IntegerPacketType type) {
@@ -114,30 +142,34 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 
 	/**
 	 * Registers {@code type} with {@code pd}.
+	 * 
 	 * @param type
 	 * @param pd
 	 */
 	public void register(IntegerPacketType type,
 			InterfacePacketDemultiplexer<MessageType> pd) {
-		if(pd==null) return;
+		if (pd == null)
+			return;
 		log.finest("Registering type " + type.getInt() + " with " + pd);
 		this.demuxMap.put(type.getInt(), pd);
 	}
 
 	/**
 	 * Registers {@code types} with {@code pd};
+	 * 
 	 * @param types
 	 * @param pd
 	 */
 	public void register(Set<IntegerPacketType> types,
 			InterfacePacketDemultiplexer<MessageType> pd) {
 		log.info("Registering types " + types + " for " + pd);
-		for (IntegerPacketType type : types) 
+		for (IntegerPacketType type : types)
 			register(type, pd);
 	}
 
 	/**
 	 * Registers {@code types} with {@code this}.
+	 * 
 	 * @param types
 	 */
 	public void register(Set<IntegerPacketType> types) {
@@ -146,6 +178,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 
 	/**
 	 * Registers {@code types} with {@code this}.
+	 * 
 	 * @param types
 	 * @param pd
 	 */
@@ -153,19 +186,19 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 			InterfacePacketDemultiplexer<MessageType> pd) {
 		log.info("Registering types "
 				+ (new HashSet<Object>(Arrays.asList(types))) + " for " + pd);
-		for (Object type : types) 
+		for (Object type : types)
 			register((IntegerPacketType) type, pd);
 	}
 
 	/**
 	 * Any created instance of AbstractPacketDemultiplexer or its inheritors
-	 * must be cleanly closed by invoking this stop method. 
+	 * must be cleanly closed by invoking this stop method.
 	 */
 	public void stop() {
 		this.executor.shutdown();
 	}
 
-	// Helper task for handleMessageSuper
+	// helper task for handleMessageSuper
 	protected class Tasker implements Runnable {
 
 		private final MessageType json;
@@ -179,6 +212,9 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		public void run() {
 			try {
 				pd.handleMessage(this.json);
+			} catch (RejectedExecutionException ree) {
+				if (!executor.isShutdown())
+					ree.printStackTrace(); 
 			} catch (Exception e) {
 				e.printStackTrace(); // unless printed task will die silently
 			} catch (Error e) {

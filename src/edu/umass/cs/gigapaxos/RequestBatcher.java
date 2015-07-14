@@ -18,7 +18,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	 * Warning: setting this to a high value seems to cause problems with long
 	 * log messages in derby DB. Increase with care.
 	 */
-	private static final int MAX_BATCH_SIZE = 50;
+	private static final int MAX_BATCH_SIZE = 40;
 
 	private final HashMap<String, ArrayList<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
@@ -71,7 +71,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		Iterator<RequestPacket> reqPktIter = firstEntry.getValue().iterator();
 		assert (reqPktIter.hasNext());
 		// first pluck the first request from the list
-		RequestPacket first = new RequestPacket(reqPktIter.next());
+		RequestPacket first = (reqPktIter.next());
 		reqPktIter.remove();
 		// then pluck the rest into a batch within the first request
 		RequestPacket[] rest = new RequestPacket[Math.min(firstEntry.getValue()
@@ -93,5 +93,12 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	@Override
 	public void process(RequestPacket task) {
 		this.paxosManager.proposeBatched(task);
+	}
+	
+	// just to name the thread, otherwise super suffices
+	public void start() {
+		Thread me = (new Thread(this));
+		me.setName(RequestBatcher.class.getSimpleName()+this.paxosManager.getMyID());
+		me.start();
 	}
 }

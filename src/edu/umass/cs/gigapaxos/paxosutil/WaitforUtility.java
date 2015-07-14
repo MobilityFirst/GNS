@@ -19,7 +19,7 @@ public class WaitforUtility {
 	private final int[] members;
 	private final boolean[] responded;
 	private int heardCount = 0;
-	private final long initTime = System.currentTimeMillis(); // to calculate how long we have been waiting
+	private long initTime = System.currentTimeMillis(); // to calculate how long we have been waiting
 	private int retransmissionCount = -1;
 
 	public WaitforUtility(int[] m) {
@@ -29,6 +29,10 @@ public class WaitforUtility {
 		for (int i = 0; i < m.length; i++) {
 			responded[i] = false;
 		}
+	}
+	public WaitforUtility(int[] m, int rtxCount) {
+		this(m);
+		this.retransmissionCount = rtxCount;
 	}
 
 	public boolean updateHeardFrom(int node) {
@@ -84,12 +88,9 @@ public class WaitforUtility {
 	public long totalWaitTime() {
 		return System.currentTimeMillis() - this.initTime;
 	}
-
-	/*
-	public void setInitTime() {
-		this.initTime = System.currentTimeMillis();
+	public long waitTime() {
+		return System.currentTimeMillis() - this.initTime;
 	}
-	*/
 
 	private int getIndex(int node) {
 		int index = -1;
@@ -102,6 +103,10 @@ public class WaitforUtility {
 
 	public void incrRetransmissonCount() {
 		this.retransmissionCount++;
+	}
+	public void incrRetransmissonCount(boolean resetInitTime) {
+		this.retransmissionCount++;
+		if(resetInitTime) this.initTime = System.currentTimeMillis();
 	}
 
 	public int getRetransmissionCount() {

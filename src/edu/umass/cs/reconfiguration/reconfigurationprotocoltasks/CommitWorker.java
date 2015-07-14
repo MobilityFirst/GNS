@@ -49,7 +49,7 @@ public class CommitWorker<NodeIDType> implements Runnable {
 		boolean enqueued = false;
 		if (!this.checkIfObviated(request))
 			enqueued = this.pending.add(request);
-		log.log(Util.probability(10) ? Level.INFO : Level.FINE,
+		log.log(Util.oneIn(10) ? Level.INFO : Level.FINE,
 				"{0} pendingQSize = " + this.pending.size()
 						+ "; executedQSize = " + this.executed.size() + "\n  "
 						+ this.getSetSummary(pending) + "\n  "

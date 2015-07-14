@@ -42,6 +42,11 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 	public void start() {
 		(new Thread(this)).start();
 	}
+	public void start(String name) {
+		Thread me = new Thread(this);
+		me.setName(name);
+		me.start();
+	}
 
 	protected boolean isEmpty() {
 		synchronized (lock) {

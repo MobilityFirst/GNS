@@ -8,6 +8,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -68,8 +69,7 @@ public class FailureDetection<NodeIDType> {
 			- getPessimismOffset();
 
 	// final
-	private final ScheduledExecutorService execpool = Executors
-			.newScheduledThreadPool(5);
+	private final ScheduledExecutorService execpool;
 	private final NodeIDType myID;
 	private final InterfaceNIOTransport<NodeIDType, JSONObject> nioTransport;
 
@@ -86,6 +86,14 @@ public class FailureDetection<NodeIDType> {
 			String paxosLogFolder) {
 		nioTransport = niot;
 		myID = id;
+		this.execpool = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread thread = Executors.defaultThreadFactory().newThread(r);
+				thread.setName(FailureDetection.class.getSimpleName() + myID);
+				return thread;
+			}
+		});
 		lastHeardFrom = new HashMap<NodeIDType, Long>();
 		keepAliveTargets = new TreeSet<NodeIDType>();
 		futures = new HashMap<NodeIDType, ScheduledFuture<PingTask>>();
@@ -233,6 +241,11 @@ public class FailureDetection<NodeIDType> {
 	// don't synchronize; invoked in log messages
 	protected boolean lastCoordinatorLongDead(NodeIDType id) {
 		return ((System.currentTimeMillis() - lastHeardTime(id)) > FailureDetection.coordinator_failure_detection_timeout);
+	}
+
+	// don't synchronize; invoked in log messages
+	protected long getDeadTime(NodeIDType id) {
+		return (System.currentTimeMillis() - lastHeardTime(id));
 	}
 
 	private long lastHeardTime(NodeIDType id) {

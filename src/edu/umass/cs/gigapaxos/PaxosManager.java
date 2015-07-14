@@ -39,6 +39,7 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,8 +85,8 @@ public class PaxosManager<NodeIDType> {
 	 * FIXME: Unclear what a good default is for good liveness. It doesn't
 	 * really matter for safety of reconfiguration.
 	 */
-	protected static final long CAN_CREATE_TIMEOUT = 10000;
-	private static final long WAIT_TO_GET_CREATED_TIMEOUT = 1000; // needed?
+	protected static final long CAN_CREATE_TIMEOUT = 5000;
+	private static final long WAIT_TO_GET_CREATED_TIMEOUT = 2000; // needed?
 
 	private static final boolean EMULATE_UNREPLICATED = false;
 
@@ -106,8 +107,7 @@ public class PaxosManager<NodeIDType> {
 	private final InterfaceReplicable myApp; // default app for all paxosIDs
 
 	// background deactivation/cremation tasks, all else event-driven
-	private final ScheduledExecutorService executor = Executors
-			.newScheduledThreadPool(1);
+	private final ScheduledExecutorService executor;
 	// paxos instance mapping
 	private final MultiArrayMap<String, PaxosInstanceStateMachine> pinstances;
 	// stopped paxos instances about to be incinerated
@@ -173,6 +173,17 @@ public class PaxosManager<NodeIDType> {
 			InterfaceReplicable pi, String paxosLogFolder,
 			boolean enableNullCheckpoints) {
 		this.myID = this.integerMap.put(id);// id.hashCode();
+		this.executor = Executors.newScheduledThreadPool(1,
+				new ThreadFactory() {
+					@Override
+					public Thread newThread(Runnable r) {
+						Thread thread = Executors.defaultThreadFactory()
+								.newThread(r);
+						thread.setName(PaxosManager.class.getSimpleName()
+								+ myID);
+						return thread;
+					}
+				});
 		this.unstringer = unstringer;
 		this.myApp = pi;
 		this.FD = new FailureDetection<NodeIDType>(id, niot, paxosLogFolder);
@@ -181,7 +192,7 @@ public class PaxosManager<NodeIDType> {
 		this.corpses = new HashMap<String, PaxosInstanceStateMachine>();
 		// this.activePaxii = new HashMap<String, ActivePaxosState>();
 		this.messenger = new Messenger<NodeIDType>(niot, this.integerMap);
-		this.paxosLogger = new DerbyPaxosLogger(this.myID, id.toString(),
+		this.paxosLogger = new SQLPaxosLogger(this.myID, id.toString(),
 				paxosLogFolder, this.messenger);
 		this.nullCheckpointsEnabled = enableNullCheckpoints;
 		// periodically remove active state for idle paxii
@@ -428,11 +439,6 @@ public class PaxosManager<NodeIDType> {
 		return true;
 	}
 
-	// sync is just a noop event that will trigger fixLongDecisionGaps
-	private void syncPaxosInstance(PaxosInstanceStateMachine pism) {
-		this.syncPaxosInstance(pism, false);
-	}
-
 	private void syncPaxosInstance(PaxosInstanceStateMachine pism,
 			boolean forceSync) {
 		if (pism != null)
@@ -466,6 +472,7 @@ public class PaxosManager<NodeIDType> {
 		public PaxosPacketDemultiplexer(PaxosManager<NodeIDType> pm) {
 			paxosManager = pm;
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
+			this.setThreadName("" + myID);
 		}
 
 		public boolean handleMessage(JSONObject jsonMsg) {
@@ -590,7 +597,7 @@ public class PaxosManager<NodeIDType> {
 					new Object[] {
 							this,
 							paxosID,
-							Util.truncate(requestPacket.getRequestValue()[0],
+							Util.truncate(requestPacket.getRequestValues()[0],
 									64), this.getVersion(paxosID) });
 		return matched ? pism.getPaxosIDVersion() : null;
 	}
@@ -895,7 +902,7 @@ public class PaxosManager<NodeIDType> {
 				return false;
 
 			PaxosInstanceStateMachine.execute(null, myApp, (new RequestPacket(
-					jsonMsg)).getRequestValue(), false);
+					jsonMsg)).getRequestValues(), false);
 		} catch (JSONException e) {
 			log.severe(this + " unable to parse " + jsonMsg);
 			e.printStackTrace();
@@ -914,13 +921,13 @@ public class PaxosManager<NodeIDType> {
 	/* Separate method only for instrumentation */
 	private synchronized PaxosInstanceStateMachine getInstance(String paxosID,
 			boolean tryHotRestore, boolean tryRestore) {
-		long methodEntryTime = System.currentTimeMillis();
+		// long methodEntryTime = System.currentTimeMillis();
 		PaxosInstanceStateMachine pism = pinstances.get(paxosID);
 		if (pism == null
 				&& ((tryHotRestore && this.unpause(paxosID)) || (tryRestore && this
 						.restore(paxosID))))
 			pism = pinstances.get(paxosID);
-		DelayProfiler.updateDelay("getInstance", methodEntryTime);
+		// DelayProfiler.updateDelay("getInstance", methodEntryTime);
 		return pism;
 	}
 
@@ -1001,13 +1008,15 @@ public class PaxosManager<NodeIDType> {
 			}
 			this.paxosLogger.closeReadAll(); // releases lock
 			log.log(Level.INFO,
-					"{0} has rolled forward {1} messages in a single pass across {2} paxos groups",
+					"{0} rolled forward {1} messages total across {2} paxos groups",
 					new Object[] { this, logCount, groupCount });
 		}
 
 		this.hasRecovered = true;
 		this.notifyRecovered();
-		log.log(Level.INFO, "\n{0} recovery complete", new Object[] { this });
+		log.log(Level.INFO,
+				"------------------{0} recovery complete-------------------",
+				new Object[] { this });
 	}
 
 	protected boolean hasRecovered() {
@@ -1270,6 +1279,19 @@ public class PaxosManager<NodeIDType> {
 			throws JSONException {
 		if (!this.hasRecovered())
 			return;
+		/*
+		 * If it is possible for there to be no initial state checkpoint, under
+		 * missed birthing, an acceptor may incorrectly report its gcSlot as -1,
+		 * and if a majority do so (because that majority consists all of missed
+		 * birthers), a coordinator may propose a proposal for slot 0 even
+		 * though an initial state does exist, which would end up overwriting
+		 * the initial state. So we can not support ambiguity in whether there
+		 * is initial state or not. If we force initial state checkpoints (even
+		 * null state checkpoints) to always exist, so that missed birthers can
+		 * always set the initial gcSlot to 0.
+		 */
+		if (!this.isNullCheckpointStateEnabled())
+			return;
 		PaxosInstanceStateMachine zombie = this.corpses.get(paxosID);
 		if (jsonMsg.has(PaxosPacket.PAXOS_VERSION)) {
 			int version = jsonMsg.getInt(PaxosPacket.PAXOS_VERSION);
@@ -1296,6 +1318,11 @@ public class PaxosManager<NodeIDType> {
 				.lastCoordinatorLongDead(this.integerMap.get(id)) : true);
 	}
 
+	protected long getDeadTime(int id) {
+		return (FD != null ? FD.getDeadTime(this.integerMap.get(id)) : System
+				.currentTimeMillis());
+	}
+	
 	protected AbstractPaxosLogger getPaxosLogger() {
 		return paxosLogger;
 	}
@@ -1610,12 +1637,12 @@ public class PaxosManager<NodeIDType> {
 				 * low outOfOrder threshold, we should not be having a large
 				 * number of paxos instances in the first place.
 				 */
-				this.syncPaxosInstance(pism);
+				this.syncPaxosInstance(pism, false);
 				if (pause(pism))
 					paused.add(paxosID);
 			}
 		}
-		DelayProfiler.updateDelay("deactivationLoop", t0);
+		DelayProfiler.updateDelay("deactivator", t0);
 		log.log(paused.size() > 0 ? Level.INFO : Level.FINE,
 				"{0} deactivated {1} idle instances {2}; has {3} active instances; average_pause_delay = {4};"
 						+ " average_deactivation_delay = {5}",
@@ -1732,7 +1759,7 @@ public class PaxosManager<NodeIDType> {
 	 * @return Disables persistent logging.
 	 */
 	public static boolean disableLogging() {
-		return DerbyPaxosLogger.disableLogging();
+		return SQLPaxosLogger.disableLogging();
 	}
 
 	protected String intToString(int id) {

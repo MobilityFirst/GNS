@@ -56,7 +56,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 														// string
 	private final HashMap<SocketChannel, ByteArrayOutputStream> sockStreams;
 	private final ArrayList<AbstractPacketDemultiplexer<?>> packetDemuxes;
-	private Timer timer = new Timer(); // timer object to schedule packets with
+	private Timer timer = new Timer(MessageExtractor.class.getSimpleName()); // timer object to schedule packets with
 										// delay if we are emulating delays
 
 	private static final Logger log = NIOTransport.getLogger();

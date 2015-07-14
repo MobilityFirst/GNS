@@ -70,8 +70,8 @@ public class RequestInstrumenter {
 
 	public synchronized static String remove(int requestID) {
 		String retval = map.remove(requestID);
-		log.log(Level.FINE, "{0}{1}{2}", new Object[] { requestID, " :\n",
-				retval });
+		if (retval != null)
+			log.log(Level.FINE, "{0}\n{2}", new Object[] { requestID, retval });
 		return retval;
 	}
 
@@ -84,8 +84,8 @@ public class RequestInstrumenter {
 	}
 
 	public synchronized static String getLog(int requestID) {
-		return map.containsKey(requestID) ? map.get(requestID) :
-				"-----------------["+requestID+":null]-------";
+		return map.containsKey(requestID) ? map.get(requestID)
+				: "-----------------[" + requestID + ":null]-------";
 	}
 
 	private synchronized static String rcvformat(int requestID,

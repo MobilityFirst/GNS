@@ -17,7 +17,6 @@ import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONNIOTransport;
-import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -93,7 +92,7 @@ public class TESTPaxosClient {
 	private int preRecoveryExecutedCount = 0;
 
 	private final ConcurrentHashMap<Integer, RequestPacket> requests = new ConcurrentHashMap<Integer, RequestPacket>();
-	private final Timer timer = new Timer(); // for retransmission
+	private final Timer timer; // for retransmission
 
 	private static Logger log = Logger.getLogger(TESTPaxosClient.class
 			.getName());
@@ -168,6 +167,7 @@ public class TESTPaxosClient {
 		private ClientPacketDemultiplexer(TESTPaxosClient tpc) {
 			this.client = tpc;
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
+			this.setThreadName(""+tpc.myID);
 		}
 
 		public synchronized boolean handleMessage(JSONObject msg) {
@@ -190,12 +190,10 @@ public class TESTPaxosClient {
 					}
 				} else {
 					log.log(Level.FINE,
-							"{0}{1}{2}{3}{4}{5}{6}{7}{8}",
-							new Object[] { "Client ", client.myID,
-									" received PHANTOM response #",
-									client.getReplyCount(), " with latency ",
-									latency, proposal.getDebugInfo(), " : ",
-									msg });
+							"Client {0} received PHANTOM response #{1} with latency {2} [{3}] for request {4} : {5}",
+							new Object[] { client.myID, client.getReplyCount(),
+									latency, proposal.getDebugInfo(),
+									proposal.requestID, msg });
 				}
 				if (proposal.isNoop())
 					client.incrNoopCount();
@@ -253,9 +251,8 @@ public class TESTPaxosClient {
 		this.myID = id;
 		niot = (new JSONNIOTransport<Integer>(id,
 				TESTPaxosConfig.getNodeConfig(),
-				(new PacketDemultiplexerDefault()), false));
-		niot.addPacketDemultiplexer(new ClientPacketDemultiplexer(this));
-		new Thread(niot).start();
+				(new ClientPacketDemultiplexer(this)), true));
+		this.timer = new Timer(TESTPaxosClient.class.getSimpleName() + myID);
 	}
 
 	protected void sendRequest(RequestPacket req) throws IOException,
@@ -274,7 +271,7 @@ public class TESTPaxosClient {
 	protected void sendRequest(int id, RequestPacket req) throws IOException,
 			JSONException {
 		log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] {
-				"Sending request to node ", id, ": ", req });
+				"Sending request to node ", id, ": ", req.getSummary() });
 		this.requests.put(req.requestID, req);
 		this.niot.sendToID(id, req.toJSONObject());
 		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
@@ -371,16 +368,17 @@ public class TESTPaxosClient {
 		for (int i = 0; i < TESTPaxosConfig.getNumClients(); i++) {
 			while (clients[i].requests.size() > 0) {
 				synchronized (clients[i]) {
-					try {
-						System.out.println(getWaiting(clients)
-								+ "; #num_total_retransmissions = "
-								+ getRtxCount()
-								+ "; num_retransmitted_requests = "
-								+ getNumRtxReqs());
-						clients[i].wait();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
+					if(clients[i].requests.size() > 0)
+						try {
+							System.out.println(getWaiting(clients)
+									+ "; #num_total_retransmissions = "
+									+ getRtxCount()
+									+ "; num_retransmitted_requests = "
+									+ getNumRtxReqs());
+							clients[i].wait();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 				}
 				System.out.println("Cumulative response rate = "
 						+ Util.df(getTotalThroughput(clients)) + " reqs/sec");

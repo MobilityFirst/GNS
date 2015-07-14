@@ -38,7 +38,8 @@ public class TESTPaxosShutdownThread extends Thread {
 		if (RequestInstrumenter.DEBUG) {
 			String sep = "-------\n";
 			for (RequestPacket req : missing) {
-				System.out.print(sep
+				// logging doesn't seem to work here
+				System.err.println(sep
 						+ (RequestInstrumenter.getLog(req.requestID)));
 			}
 			System.out.println("\n#missing=" + missing.size());
