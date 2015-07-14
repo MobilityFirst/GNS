@@ -144,7 +144,7 @@ public class CCPProtocolTask<NodeIDType> implements
       UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
       if (info != null) {
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("App created " + packet.getServiceName()
+          GNS.getLogger().info("??????????????????????????? App created " + packet.getServiceName()
                   + " in " + (System.currentTimeMillis() - info.getStartTime()) + "ms");
         }
         AddRecordPacket originalPacket = (AddRecordPacket) info.getUpdatePacket();
@@ -175,7 +175,7 @@ public class CCPProtocolTask<NodeIDType> implements
         UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
         if (info != null) {
           if (handler.getParameters().isDebugMode()) {
-            GNS.getLogger().info("App removed " + packet.getServiceName()
+            GNS.getLogger().info("??????????????????????????? App removed " + packet.getServiceName()
                     + "in " + (System.currentTimeMillis() - info.getStartTime()) + "ms");
           }
           RemoveRecordPacket originalPacket = (RemoveRecordPacket) info.getUpdatePacket();

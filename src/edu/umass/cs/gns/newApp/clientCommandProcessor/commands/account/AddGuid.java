@@ -13,9 +13,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountInfo
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.FieldMetaData;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
@@ -52,12 +50,8 @@ public class AddGuid extends GnsCommand {
   @Override
   public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
       String name = json.getString(NAME);
       String accountGuid = json.getString(ACCOUNT_GUID);
-      //String newGuid = json.getString(GUID);
       String publicKey = json.getString(PUBLICKEY);
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
@@ -69,7 +63,7 @@ public class AddGuid extends GnsCommand {
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
       }
-      if (AccessSupport.verifySignature(accountGuidInfo, signature, message)) {
+      if (AccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
         if (accountInfo == null) {
           return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);

@@ -49,7 +49,7 @@ public class LNSUpdateHandler {
    * @param lnsAddress
    * @return
    */
-  public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue, UpdateOperation operation, 
+  public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue, UpdateOperation operation,
           GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
     return sendUpdate(name, key, newValue, null, -1, operation, activeReplica, lnsAddress);
   }

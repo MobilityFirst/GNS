@@ -61,6 +61,7 @@ public class GnsProtocolDefs {
   public final static String WITHIN = "within";
   public final static String NEAR = "near";
   public final static String QUERY = "query";
+  // Arguments
   public final static String INTERVAL = "interval";
   public final static String MAXDISTANCE = "maxDistance";
   //
@@ -89,21 +90,22 @@ public class GnsProtocolDefs {
   public final static String PINGTABLE = "pingTable";
   public final static String PINGVALUE = "pingValue";
   public final static String CHANGELOGLEVEL = "changeLogLevel";
-  public final static String LEVEL = "level";
-  public final static String SETPARAMETER = "setParameter";
-  public final static String GETPARAMETER = "getParameter";
-  public final static String LISTPARAMETERS = "listParameters";
   public final static String DUMP = "dump";
   public final static String CONNECTIONCHECK = "connectionCheck";
   public final static String ADDTAG = "addTag";
   public final static String REMOVETAG = "removeTag";
   public final static String GETTAGGED = "getTagged";
   public final static String CLEARTAGGED = "clearTagged";
-  public final static String RTTTEST = "rttTest";
+   public final static String RTTTEST = "rttTest";
+  // Arguments for admin commands
+  public final static String LEVEL = "level";
+  public final static String SETPARAMETER = "setParameter";
+  public final static String GETPARAMETER = "getParameter";
+  public final static String LISTPARAMETERS = "listParameters";
   public final static String N = "n";
   public final static String N2 = "n2";
   public final static String GUIDCNT = "guidCnt";
-  //
+  // Responses
   public final static String OKRESPONSE = "+OK+";
   public final static String NULLRESPONSE = "+NULL+";
   public final static String BADRESPONSE = "+NO+";
@@ -134,7 +136,7 @@ public class GnsProtocolDefs {
   public final static String GENERICERROR = "+GENERICERROR+";
   public final static String FAIL_ACTIVE_NAMESERVER = "+FAIL_ACTIVE+";
   public final static String INVALID_ACTIVE_NAMESERVER = "+INVALID_ACTIVE+";
-  //
+  // Special values
   public final static String ALLFIELDS = "+ALL+";
   public final static String EVERYONE = "+ALL+";
   public final static String EMPTY = "+EMPTY+";
@@ -144,7 +146,7 @@ public class GnsProtocolDefs {
   public final static String NEWLINE = System.getProperty("line.separator");
   // This one is special, used for the action part of the command
   public final static String COMMANDNAME = "COMMANDNAME"; // aka "action"
-  // Fields for HTTP get queries
+  // Arguments 
   public final static String NAME = "name";
   public final static String GUID = "guid";
   public final static String GUID2 = "guid2";
@@ -180,6 +182,9 @@ public class GnsProtocolDefs {
   public static final String LOCATION_FIELD_NAME_2D_SPHERE = "geoLocationCurrent";
   public static final String IPADDRESS_FIELD_NAME = "netAddress";
   public static final String ACL_FIELD_NAME = "ACL";
+  // Used by CommandPacket to control the needsCoordination method
+  // Note: That any command that does updates to multiple records is handled
+  // by explicitly sending those updates to ARs
   public final static List<String> UPDATE_COMMANDS 
           = Arrays.asList(CREATE, APPENDORCREATE, REPLACE, REPLACEORCREATE, APPENDWITHDUPLICATION, 
                   APPEND, REMOVE, CREATELIST, APPENDORCREATELIST, REPLACEORCREATELIST, REPLACELIST,
@@ -194,6 +199,7 @@ public class GnsProtocolDefs {
                   //
                   ADDTAG, REMOVETAG
                   );
+  // Currently unused
   public final static List<String> READ_COMMANDS
           = Arrays.asList(READARRAY, NEWREAD, READARRAYONE);
   //

@@ -43,7 +43,7 @@ public class CreateDelete {
   public static void handleAddPacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       // do normal add which actually involves converting this into a CreateServiceName packet
-      AddRecordPacket addRecordPacket = CreateDelete.registerPacketAddRecord(json, handler);
+      AddRecordPacket addRecordPacket = registerPacketAddRecord(json, handler);
       handler.addCreateRequestNameToIDMapping(addRecordPacket.getName(), addRecordPacket.getCCPRequestID());
       ValuesMap valuesMap;
       if (addRecordPacket.getField() != null) {
@@ -75,7 +75,7 @@ public class CreateDelete {
 
   public static void handleRemovePacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
-      RemoveRecordPacket removeRecordPacket = CreateDelete.registerPacketRemoveRecord(json, handler);
+      RemoveRecordPacket removeRecordPacket = registerPacketRemoveRecord(json, handler);
       handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getCCPRequestID());
       sendPacketWithRetransmission(removeRecordPacket.getName(),
               new DeleteServiceName(null, removeRecordPacket.getName(), 0),

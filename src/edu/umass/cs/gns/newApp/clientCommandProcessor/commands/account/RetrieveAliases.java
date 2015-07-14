@@ -59,7 +59,7 @@ public class RetrieveAliases extends GnsCommand {
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
         return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
       }
-      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
+      if (AccessSupport.verifySignature(guidInfo.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
         ArrayList<String> aliases = accountInfo.getAliases();
         return new CommandResponse(new JSONArray(aliases).toString());

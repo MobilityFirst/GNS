@@ -64,7 +64,8 @@ public class RemoveGuid extends GnsCommand {
           return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
         }
       }
-      if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo : guidInfoToRemove, signature, message)) {
+      if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey() 
+              : guidInfoToRemove.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = null;
         if (accountGuid != null) {
           accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
