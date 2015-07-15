@@ -6,6 +6,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.json.JSONException;
@@ -108,9 +109,9 @@ public class JSONMessenger<NodeIDType> implements
 
 				// check success or failure and react accordingly
 				if (sent == length) {
-					log.fine("Node " + this.nioTransport.getMyID() + " sent "
-							+ " to node " + mtask.recipients[r] + ": "
-							+ jsonMsg);
+					log.log(Level.FINEST, "Node{0} sent to {1} ", new Object[] {
+							this.nioTransport.getMyID(), mtask.recipients[r],
+							jsonMsg });
 				} else if (sent==0) {
 					log.info("Node "
 							+ this.nioTransport.getMyID()

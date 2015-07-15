@@ -20,7 +20,7 @@ public class WaitforUtility {
 	private final boolean[] responded;
 	private int heardCount = 0;
 	private long initTime = System.currentTimeMillis(); // to calculate how long we have been waiting
-	private int retransmissionCount = -1;
+	private int retransmissionCount = 0;
 
 	public WaitforUtility(int[] m) {
 		this.members = m;
@@ -29,10 +29,6 @@ public class WaitforUtility {
 		for (int i = 0; i < m.length; i++) {
 			responded[i] = false;
 		}
-	}
-	public WaitforUtility(int[] m, int rtxCount) {
-		this(m);
-		this.retransmissionCount = rtxCount;
 	}
 
 	public boolean updateHeardFrom(int node) {

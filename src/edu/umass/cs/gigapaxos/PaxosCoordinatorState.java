@@ -19,6 +19,7 @@ import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gigapaxos.paxosutil.WaitforUtility;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.NullIfEmptyMap;
 
@@ -40,8 +41,8 @@ public class PaxosCoordinatorState {
 	private static final String STOP = "STOP";
 	private static final int PREPARE_TIMEOUT = 60000; // ms
 	private static final int ACCEPT_TIMEOUT = 60000; // ms
-	private static final double ACCEPT_RETRANSMISSION_BACKOFF_FACTOR = 2;
-	// private static final double PREPARE_RETRANSMISSION_BACKOFF_FACTOR = 2;
+	private static final double ACCEPT_RETRANSMISSION_BACKOFF_FACTOR = 1.5;
+	private static final double PREPARE_RETRANSMISSION_BACKOFF_FACTOR = 1.5;
 
 	private static final int RERUN_DELAY_THRESHOLD = 10000; // ms
 
@@ -193,7 +194,7 @@ public class PaxosCoordinatorState {
 		if (this.active == true)
 			return null; // I am already an active coordinator
 		if (this.waitforMyBallot == null)
-			this.waitforMyBallot = new WaitforUtility(members, 1);
+			this.waitforMyBallot = new WaitforUtility(members);
 		return new Ballot(this.myBallotNum, this.myBallotCoord);
 	}
 
@@ -681,23 +682,28 @@ public class PaxosCoordinatorState {
 	// checks and increments retransmission count
 	protected synchronized boolean testAndSetWaitingTooLong() {
 		if (!this.isActive() // periodic retransmission
-				&& this.waitforMyBallot.waitTime() > PREPARE_TIMEOUT) {
+				&& this.waitforMyBallot.waitTime() > PREPARE_TIMEOUT
+						* Math.pow(PREPARE_RETRANSMISSION_BACKOFF_FACTOR,
+								this.waitforMyBallot.getRetransmissionCount())) {
 			this.waitforMyBallot.incrRetransmissonCount(true);
+			if(Util.oneIn(10)) log.info(DelayProfiler.getStats());
 			return true;
 		}
 		return false;
 	}
 
 	// checks and returns just whether it's been waiting for too long
-	protected synchronized boolean waitingTooLong(int slot) {
+	protected synchronized boolean testAndSetWaitingTooLong(int slot) {
 		ProposalStateAtCoordinator psac = this.myProposals.get(slot);
 		if (this.isActive()
 				&& psac != null
 				// exponential backoff
 				&& psac.waitfor.totalWaitTime() > ACCEPT_TIMEOUT
 						* Math.pow(ACCEPT_RETRANSMISSION_BACKOFF_FACTOR,
-								psac.waitfor.getRetransmissionCount()))
+								psac.waitfor.getRetransmissionCount())) {
+			psac.waitfor.incrRetransmissonCount(true);
 			return true;
+		}
 		return false;
 	}
 
@@ -707,8 +713,8 @@ public class PaxosCoordinatorState {
 	}
 
 	protected synchronized AcceptPacket reInitCommander(int slot) {
-		return this.waitingTooLong(slot) ? this.initCommander(this.myProposals
-				.get(slot)) : null;
+		return this.testAndSetWaitingTooLong(slot) ? this
+				.initCommander(this.myProposals.get(slot)) : null;
 	}
 
 	protected boolean ranRecently() {
@@ -718,7 +724,8 @@ public class PaxosCoordinatorState {
 	}
 
 	protected synchronized boolean caughtUp() {
-		return this.isActive() && this.myProposals.isEmpty();
+		return //this.isActive() && 
+				this.myProposals.isEmpty();
 	}
 
 	/*
@@ -797,7 +804,7 @@ public class PaxosCoordinatorState {
 			ProposalStateAtCoordinator pstate) {
 		AcceptPacket acceptPacket = new AcceptPacket(this.myBallotCoord,
 				pstate.pValuePacket, getMajorityCommittedSlot());
-		pstate.waitfor.incrRetransmissonCount();
+		//pstate.waitfor.incrRetransmissonCount();
 		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}",
 				new Object[] { "Node ", this.myBallotCoord,
 						" initCommandering ", acceptPacket.getSummary(),

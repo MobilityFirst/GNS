@@ -32,6 +32,13 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
 	}
 
+	/**
+	 * Note: Any additions of fields to this class may need to update the value
+	 * below. Run this class' main method to ensure that no assertions are
+	 * triggered.
+	 */
+	private static final int SIZE_ESTIMATE = 360;
+
 	private static final long MAX_AGREEMENT_TIME = 30000;
 	private static final int MAX_FORWARD_COUNT = 3;
 	private static final Random random = new Random();
@@ -407,13 +414,9 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		for (RequestPacket req : reqs) {
 			RequestPacket[] reqArray = req.toArray();
 			totalSize += reqArray.length;
-			// if(reqArray.length > 1)
-			// PaxosManager.getLogger().info("##############" +
-			// print(reqArray));
 			reqArrayList.add(reqArray);
 		}
 		assert (totalSize == size(reqArrayList));
-		// : "totalSize = " + totalSize + " !~= " + print(reqArrayList);
 		RequestPacket[] allThreaded = new RequestPacket[totalSize];
 		int count = 0;
 		for (RequestPacket[] reqArray : reqArrayList) {
@@ -492,6 +495,14 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 				+ (isBatched() ? "+(" + batchSize() + " batched" + ")" : "");
 	}
 
+	/*
+	 * Need an upper bound here for limiting batch size. Currently all the
+	 * fields in RequestPacket other than requestValue add up to around 270.
+	 */
+	public int lengthEstimate() {
+		return this.requestValue.length() + SIZE_ESTIMATE;
+	}
+
 	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		int numReqs = 25;
@@ -499,6 +510,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		RequestPacket req = new RequestPacket(999, "asd" + 999, true);
 		for (int i = 0; i < numReqs; i++) {
 			reqs[i] = new RequestPacket(i, "asd" + i, true);
+			assert (reqs[i].toString().length() < SIZE_ESTIMATE);
 		}
 		req.latchToBatch(reqs);
 		String reqStr = req.toString();

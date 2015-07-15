@@ -2,22 +2,24 @@ package edu.umass.cs.utils;
 
 import java.util.HashMap;
 
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
  */
 public class DelayProfiler {
-	private static HashMap<String, Double> delays = new HashMap<String, Double>();
+	private static HashMap<String, Double> averages = new HashMap<String, Double>();
+	private static HashMap<String, Double> stdDevs = new HashMap<String, Double>();
 
 	/**
 	 * @param field
 	 * @return As specified by {@link HashMap#put(Object, Object)}/
 	 */
 	public synchronized static boolean register(String field) {
-		if (delays.containsKey(field))
+		if (averages.containsKey(field))
 			return false;
-		delays.put(field, 0.0);
+		averages.put(field, 0.0);
+		stdDevs.put(field, 0.0);
 		return true;
 	}
 
@@ -27,9 +29,14 @@ public class DelayProfiler {
 	 */
 	public synchronized static void updateDelay(String field, double time) {
 		register(field); // register if not registered
-		double delay = delays.get(field);
+		double delay = averages.get(field);
 		delay = Util.movingAverage(System.currentTimeMillis() - time, delay);
-		delays.put(field, delay);
+		averages.put(field, delay);
+		// update deviation
+		double dev = stdDevs.get(field);
+		dev = Util
+				.movingAverage(System.currentTimeMillis() - time - delay, dev);
+		stdDevs.put(field, dev);
 	}
 
 	/**
@@ -49,18 +56,23 @@ public class DelayProfiler {
 	 * @return The delay.
 	 */
 	public synchronized static double get(String field) {
-		return delays.containsKey(field) ? delays.get(field) : 0.0;
+		return averages.containsKey(field) ? averages.get(field) : 0.0;
 	}
-	
+
 	/**
 	 * @param field
 	 * @param sample
 	 */
 	public synchronized static void updateMovAvg(String field, int sample) {
 		register(field); // register if not registered
-		double value = delays.get(field);
+		// update value
+		double value = averages.get(field);
 		value = Util.movingAverage(sample, value);
-		delays.put(field, value);
+		averages.put(field, value);
+		// update deviation
+		double dev = stdDevs.get(field);
+		dev = Util.movingAverage(sample - value, dev);
+		stdDevs.put(field, dev);
 	}
 
 	/**
@@ -69,10 +81,12 @@ public class DelayProfiler {
 	public synchronized static String getStats() {
 		String s = "[ ";
 		int count = 0;
-		if (!delays.isEmpty())
-			for (String field : delays.keySet()) {
-				s += ((count++ > 0 ? " | " : "") + field + ":" + Util.mu(delays
-						.get(field)));
+		if (!averages.isEmpty())
+			for (String field : averages.keySet()) {
+				s += ((count++ > 0 ? " | " : "") + field + ":"
+						+ Util.df(averages.get(field) * 1000) + "/"
+						+ (stdDevs.get(field) > 0 ? "+" : "")
+						+ Util.df(stdDevs.get(field) * 1000) + "us");
 			}
 		return s + " ]";
 	}

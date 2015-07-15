@@ -71,7 +71,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * DB related parameters to be changed to use a different database service.
 	 * Refer also to constants in paxosutil.SQL to update any constants.
 	 */
-	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.MYSQL;
+	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY; // SQL.SQLType.MYSQL;
 	private static final String DATABASE = "paxos_logs";
 	/* ************ End of DB service related parameters ************** */
 
@@ -87,8 +87,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	private static final boolean DISABLE_LOGGING = TESTPaxosConfig.DISABLE_LOGGING; // false;
 	private static boolean disableLogging = DISABLE_LOGGING;
 
-	// maximum size of a log message; depends on RequestBatcher.MAX_BATCH_SIZE
-	private static final int MAX_LOG_MESSAGE_SIZE = 32672;
+	/**
+	 * Maximum size of a log message; depends on RequestBatcher.MAX_BATCH_SIZE
+	 */
+	public static final int MAX_LOG_MESSAGE_SIZE = 32672;
 	// maximum size of checkpoint state
 	private static final int MAX_CHECKPOINT_SIZE = 32672;
 
@@ -1287,8 +1289,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			try {
 				// the shutdown=true attribute shuts down Derby
 				if (!DONT_SHUTDOWN_EMBEDDED)
-					DriverManager.getConnection(SQL
-							.getProtocolOrURL(SQL_TYPE)
+					DriverManager.getConnection(SQL.getProtocolOrURL(SQL_TYPE)
 							+ ";shutdown=true");
 				// To shut down a specific database only, but keep the
 				// databases), specify a database in the connection URL:
@@ -1478,19 +1479,28 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		}
 		return dropped;
 	}
-	
-	private boolean dbDirectoryExists() {
-		File f = new File(this.logDirectory + DATABASE);
+
+	private static boolean dbDirectoryExists(String dbDirectory) {
+		File f = new File(dbDirectory);
 		return f.exists() && f.isDirectory();
 	}
-	/*
+
+	
+	/**
 	 * This method will connect to the DB while creating it if it did not
 	 * already exist. This method is not really needed but exists only because
 	 * otherwise c3p0 throws unsuppressable warnings about DB already existing
 	 * no matter how you use it. So we now create the DB separately and always
 	 * invoke c3p0 without the create flag (default false).
+	 * 
+	 * @param sqlType
+	 * @param logDir
+	 * @param database
+	 * @return True if database exists.
+	 * @throws SQLException
 	 */
-	private boolean existsDB(String dbCreation, Properties props)
+	@Deprecated
+	public static boolean existsDB(SQL.SQLType sqlType, String logDir, String database)
 			throws SQLException {
 		try {
 			Class.forName(SQL.getDriver(SQL_TYPE)).newInstance();
@@ -1499,30 +1509,43 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			e.printStackTrace();
 			return false;
 		}
-		Connection conn = DriverManager.getConnection(SQL.getProtocolOrURL(SQL_TYPE)
-				+ this.logDirectory + DATABASE
-				+ (!this.dbDirectoryExists() ? ";create=true" : ""));
-		cleanup(conn);
+		Connection conn=null;
+		try {
+			conn = DriverManager.getConnection(SQL
+				.getProtocolOrURL(sqlType)
+				+ logDir
+				+ database
+				+ (!dbDirectoryExists(logDir + database) ? ";create=true" : ""));
+		} catch(SQLException sqle) {
+			sqle.printStackTrace();
+		} finally {
+			if(conn!=null) conn.close();
+		}
 		return true;
 	}
-
 
 	private boolean connectDB() {
 		boolean connected = false;
 		int connAttempts = 0, maxAttempts = 1;
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
-		// providing a user name and PASSWORD is optional in embedded derby
-		props.put("user", SQL.getUser());
+		/*
+		 * Providing a user name and PASSWORD is optional in embedded derby.
+		 * But, for some inscrutable, undocumented reason, it is important for
+		 * derby (or maybe c3p0) to have different user names for different
+		 * nodes, otherwise the performance with concurrent inserts and updates
+		 * is terrible.
+		 */
+		props.put("user", SQL.getUser() + (isEmbeddedDB() ? this.myID : ""));
 		props.put("password", SQL.getPassword());
 		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
-				+ (isEmbeddedDB() ? this.logDirectory + DATABASE : DATABASE
+				+ (isEmbeddedDB() ? this.logDirectory + DATABASE
+						+ ";create=true" : DATABASE
 						+ "?createDatabaseIfNotExist=true");
 
 		try {
-			// mchange complains at unsuppressable INFO otherwise
-			if (isEmbeddedDB() && !this.existsDB(dbCreation, props))
-				dbCreation += ";create=true";
+			// if (isEmbeddedDB() && !this.existsDB(dbCreation, props));
+			// dbCreation += ";create=true";
 			dataSource = (ComboPooledDataSource) setupDataSourceC3P0(
 					dbCreation, props);
 		} catch (SQLException e) {
@@ -1797,9 +1820,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	private void fixURI() {
-		this.dataSource.setJdbcUrl(SQL
-				.getProtocolOrURL(SQL_TYPE) + this.logDirectory
-				+ DATABASE);
+		this.dataSource.setJdbcUrl(SQL.getProtocolOrURL(SQL_TYPE)
+				+ this.logDirectory + DATABASE);
 	}
 
 	/**

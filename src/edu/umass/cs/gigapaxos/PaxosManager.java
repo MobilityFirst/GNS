@@ -11,6 +11,7 @@ import edu.umass.cs.gigapaxos.paxosutil.IntegerMap;
 import edu.umass.cs.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.Messenger;
+import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
@@ -70,7 +71,7 @@ public class PaxosManager<NodeIDType> {
 	private static final long MORGUE_DELAY = 30000;
 	private static final boolean HIBERNATE_OPTION = false;
 	private static final boolean PAUSE_OPTION = true;
-	private static final long DEACTIVATION_PERIOD = 30000; // 30s default
+	private static final long DEACTIVATION_PERIOD = 60000; // 30s default
 
 	/**
 	 * Refer to documentation in AbstractReconfiguratorDB.
@@ -1570,6 +1571,7 @@ public class PaxosManager<NodeIDType> {
 			return;
 
 		long t0 = System.currentTimeMillis();
+		RateLimiter rateLimiter = new RateLimiter(100);
 		log.log(Level.FINE,
 				"{0} initiating deactivation attempt, |activePaxii| = {1}",
 				new Object[] { this, this.pinstances.size() });
@@ -1638,6 +1640,7 @@ public class PaxosManager<NodeIDType> {
 				 * number of paxos instances in the first place.
 				 */
 				this.syncPaxosInstance(pism, false);
+				rateLimiter.record();
 				if (pause(pism))
 					paused.add(paxosID);
 			}

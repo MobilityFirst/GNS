@@ -397,13 +397,16 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		 * if no new activity is happening.
 		 */
 		mtasks[0] = (!recovery ?
-		// check run for coordinator criterion
-		(!this.coordinator.isActive() && (!isPoke || SyncMode.SYNC_TO_PAUSE
-				.equals(SyncMode.valueOf(msg.getString(PaxosPacket.SYNC_MODE
-						.toString()))))) ? checkRunForCoordinator()
+		// check run for coordinator if not active
+		(!this.coordinator.isActive()
+		// ignore pokes unless not caught up
+		&& (!isPoke || !this.coordinator.caughtUp()
+		// &&
+		// SyncMode.SYNC_TO_PAUSE.equals(SyncMode.valueOf(msg.getString(PaxosPacket.SYNC_MODE.toString())))
+		)) ? checkRunForCoordinator()
 		// else reissue long waiting accepts
 				: this.pokeLocalCoordinator()
-		// neither during recovery
+				// neither during recovery
 				: null);
 
 		MessagingTask mtask = null;
@@ -742,6 +745,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			throws JSONException {
 		paxosManager.heardFrom(prepare.ballot.coordinatorID); // FD optimization
 
+		Ballot prevBallot = this.paxosState.getBallot();
 		PrepareReplyPacket prepareReply = this.paxosState.handlePrepare(
 				prepare, this.paxosManager.getMyID());
 		if (prepareReply == null)
@@ -753,7 +757,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		// may also need to look into disk if ACCEPTED_PROPOSALS_ON_DISK is true
 		if (PaxosAcceptor.GET_ACCEPTED_PVALUES_FROM_DISK
 		// no need to gather pvalues if NACKing anyway
-				&& prepareReply.ballot.compareTo(prepare.ballot) <= 0)
+				&& prepareReply.ballot.compareTo(prepare.ballot) == 0)
 			prepareReply.accepted.putAll(this.paxosManager.getPaxosLogger()
 					.getLoggedAccepts(this.getPaxosID(), this.getVersion(),
 							prepare.firstUndecidedSlot));
@@ -771,9 +775,12 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 								: "acking", prepare.ballot,
 						prepareReply.getSummary() });
 
-		LogMessagingTask mtask = new LogMessagingTask(
-				prepare.ballot.coordinatorID, prepareReply,
-				(PaxosPacket) prepare);
+		MessagingTask mtask = prevBallot.compareTo(prepareReply.ballot) < 0 ?
+		// log only if not already logged (if my ballot got upgraded)
+		new LogMessagingTask(prepare.ballot.coordinatorID, prepareReply,
+				prepare) :
+		// else just send preempting prepareReply
+				new MessagingTask(prepare.ballot.coordinatorID, prepareReply);
 		return mtask;
 	}
 
@@ -829,7 +836,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	private MessagingTask handleAccept(AcceptPacket accept)
 			throws JSONException {
 		this.paxosManager.heardFrom(accept.ballot.coordinatorID); // FD
-																	// optimization
 		RequestInstrumenter.received(accept, accept.sender, this.getMyID());
 		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept,
 				this.getMyID());
@@ -844,9 +850,12 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		AcceptReplyPacket acceptReply = new AcceptReplyPacket(this.getMyID(),
 				ballot, accept.slot,
 				lastCheckpointSlot(this.paxosState.getSlot() - 1), accept);
-		// FIXME: lower ballot => no logging, only accept reply
-		AcceptPacket toLog = (accept.ballot.compareTo(ballot) >= 0 ? accept
-				: /* null */accept);
+
+		// no logging if NACking anyway
+		AcceptPacket toLog = (accept.ballot.compareTo(ballot) >= 0
+		// no logging if already garbage collected
+		&& accept.slot - this.paxosState.getGCSlot() > 0) ? accept : null;
+
 		MessagingTask mtask = toLog != null ? new LogMessagingTask(
 				accept.sender, acceptReply, toLog) : new MessagingTask(
 				accept.sender, acceptReply);

@@ -18,7 +18,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -72,24 +71,24 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY;
 	private static final String DATABASE = "reconfiguration_DB";
 	/* ************ End of DB service related parameters ************** */
-	
-	// private static final boolean DISABLE_LOGGING = false;	
+
+	// private static final boolean DISABLE_LOGGING = false;
 	private static final String RECONFIGURATION_RECORD_TABLE = "checkpoint";
 	private static final String PENDING_TABLE = "messages";
 	private static final String DEMAND_PROFILE_TABLE = "demand";
 	private static final String NODE_CONFIG_TABLE = "nodeconfig";
-	
+
 	private static final boolean CONN_POOLING = true;
 	private static final int MAX_POOL_SIZE = 100;
 	private static final int MAX_NAME_SIZE = 40;
-	
+
 	private static final int MAX_RC_RECORD_SIZE = 4096;
 	private static final int MAX_DEMAND_PROFILE_SIZE = 4096;
 	private static final boolean RC_RECORD_CLOB_OPTION = MAX_RC_RECORD_SIZE > SQL
 			.getVarcharSize(SQL_TYPE);
 	private static final boolean DEMAND_PROFILE_CLOB_OPTION = MAX_DEMAND_PROFILE_SIZE > SQL
 			.getVarcharSize(SQL_TYPE);
-	
+
 	private static final boolean COMBINE_STATS = false;
 	private static final String CHECKPOINT_TRANSFER_DIR = "paxos_large_checkpoints";
 	private static final boolean LARGE_CHECKPOINTS_OPTION = true;
@@ -1038,8 +1037,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		}
 
 		@Override
-		public int compareTo(
-				SQLReconfiguratorDB<NodeIDType>.Filename o) {
+		public int compareTo(SQLReconfiguratorDB<NodeIDType>.Filename o) {
 			long t1 = file.lastModified();
 			long t2 = o.file.lastModified();
 			if (t1 < t2)
@@ -1126,8 +1124,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 				+ MAX_NAME_SIZE
 				+ ") not null,  "
 				+ Columns.STRINGIFIED_RECORD.toString()
-				+ (RC_RECORD_CLOB_OPTION ? SQL
-						.getClobString(MAX_RC_RECORD_SIZE, SQL_TYPE) : " varchar("
+				+ (RC_RECORD_CLOB_OPTION ? SQL.getClobString(
+						MAX_RC_RECORD_SIZE, SQL_TYPE) : " varchar("
 						+ MAX_RC_RECORD_SIZE + ")") + ", primary key ("
 				+ Columns.SERVICE_NAME + "))";
 		// index based on rc group name for optimizing checkpointing
@@ -1148,8 +1146,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 				+ MAX_NAME_SIZE
 				+ ") not null, "
 				+ Columns.DEMAND_PROFILE.toString()
-				+ (DEMAND_PROFILE_CLOB_OPTION ? SQL
-						.getClobString(MAX_DEMAND_PROFILE_SIZE, SQL_TYPE) : " varchar("
+				+ (DEMAND_PROFILE_CLOB_OPTION ? SQL.getClobString(
+						MAX_DEMAND_PROFILE_SIZE, SQL_TYPE) : " varchar("
 						+ MAX_DEMAND_PROFILE_SIZE + ")") + ", primary key("
 				+ Columns.SERVICE_NAME.toString() + "))";
 		// node config information, needs to be correct under faults
@@ -1212,37 +1210,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		return createTable(stmt, cmd, table);
 	}
 
-
-	
 	private static boolean isEmbeddedDB() {
 		return SQL_TYPE.equals(SQL.SQLType.EMBEDDED_DERBY);
-	}
-	
-	private boolean dbDirectoryExists() {
-		File f = new File(this.logDirectory + DATABASE);
-		return f.exists() && f.isDirectory();
-	}
-	/*
-	 * This method will connect to the DB while creating it if it did not
-	 * already exist. This method is not really needed but exists only because
-	 * otherwise c3p0 throws unsuppressable warnings about DB already existing
-	 * no matter how you use it. So we now create the DB separately and always
-	 * invoke c3p0 without the create flag (default false).
-	 */
-	private boolean existsDB(String dbCreation, Properties props)
-			throws SQLException {
-		try {
-			Class.forName(SQL.getDriver(SQL_TYPE)).newInstance();
-		} catch (InstantiationException | IllegalAccessException
-				| ClassNotFoundException e) {
-			e.printStackTrace();
-			return false;
-		}
-		Connection conn = DriverManager.getConnection(SQL.getProtocolOrURL(SQL_TYPE)
-				+ this.logDirectory + DATABASE
-				+ (!this.dbDirectoryExists() ? ";create=true" : ""));
-		cleanup(conn);
-		return true;
 	}
 
 	private boolean connectDB() {
@@ -1254,12 +1223,13 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		props.put("user", SQL.getUser());
 		props.put("password", SQL.getPassword());
 		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
-				+ (isEmbeddedDB() ? this.logDirectory + DATABASE : DATABASE
+				+ (isEmbeddedDB() ? this.logDirectory + DATABASE
+						+ ";create=true" : DATABASE
 						+ "?createDatabaseIfNotExist=true");
 
 		try {
-			if (!this.existsDB(dbCreation, props))
-				dbCreation += ";create=true";
+			// if (!SQLPaxosLogger.existsDB(SQL_TYPE, logDirectory, DATABASE))
+			// dbCreation += ";create=true";
 			dataSource = (ComboPooledDataSource) setupDataSourceC3P0(
 					dbCreation, props);
 		} catch (SQLException e) {
@@ -1568,7 +1538,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 			conn = this.getDefaultConn();
 			insertCP = conn.prepareStatement(cmd);
 			insertCP.setString(1, node.toString());
-			insertCP.setString(2, sockAddr.getAddress().getHostAddress());
+			insertCP.setString(2, sockAddr.toString());
 			insertCP.setInt(3, sockAddr.getPort());
 			insertCP.setInt(4, version);
 			insertCP.executeUpdate();

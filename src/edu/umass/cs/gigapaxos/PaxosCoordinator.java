@@ -238,7 +238,7 @@ public class PaxosCoordinator {
 
 	protected synchronized boolean waitingTooLong(int slot) {
 		return (this.exists() && this.isCommandering(slot) && this.pcs
-				.waitingTooLong(slot)) ? true : false;
+				.testAndSetWaitingTooLong(slot)) ? true : false;
 	}
 
 	protected synchronized boolean isCommandering(int slot) {
