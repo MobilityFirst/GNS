@@ -264,8 +264,9 @@ public class Util {
 	 * This is useful to optimize logging.
 	 */
 
-	public static Object truncate(String str, int size) {
+	public static Object truncate(final String str, final int size) {
 		return new Object() {
+                        @Override
 			public String toString() {
 				return str == null || str.length() < size ? str
 						: str != null ? str.substring(0, size) : null;
@@ -273,9 +274,10 @@ public class Util {
 		};
 	}
 
-	public static Object truncate(String str, int prefixSize, int suffixSize) {
-		int size = prefixSize + suffixSize;
+	public static Object truncate(final String str, final int prefixSize, final int suffixSize) {
+		final int size = prefixSize + suffixSize;
 		return new Object() {
+                        @Override
 			public String toString() {
 				return str == null || str.length() < size ? str
 						: str != null ? str.substring(0, prefixSize)
@@ -289,7 +291,7 @@ public class Util {
 	private static Collection<?> truncate(Collection<?> list, int size) {
 		if (list.size() <= size)
 			return list;
-		ArrayList<Object> truncated = new ArrayList<Object>();
+		ArrayList<Object> truncated = new ArrayList();
 		int i = 0;
 		for (Object o : list)
 			if (i++ < size)
@@ -299,7 +301,7 @@ public class Util {
 		return truncated;
 	}
 
-	public static Object truncatedLog(Collection<?> list, int size) {
+	public static Object truncatedLog(final Collection<?> list, final int size) {
 		return new Object() {
 			public String toString() {
 				return truncate(list, size).toString()
