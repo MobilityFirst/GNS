@@ -202,7 +202,16 @@ public class LNSNodeConfig implements
       return null;
     }
   }
-
+  
+  @Override
+  public InetAddress getBindAddress(InetSocketAddress address) {
+    if (address instanceof InetSocketAddress) {
+      return ((InetSocketAddress) address).getAddress();
+    } else {
+      return null;
+    }
+  }
+  
   @Override
   public int getNodePort(InetSocketAddress address) {
     if (address instanceof InetSocketAddress) {

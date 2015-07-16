@@ -61,6 +61,11 @@ public abstract class ConsistentNodeConfig<NodeIDType> implements
 	public InetAddress getNodeAddress(NodeIDType id) {
 		return this.nodeConfig.getNodeAddress(id);
 	}
+        
+        @Override
+	public InetAddress getBindAddress(NodeIDType id) {
+		return this.nodeConfig.getBindAddress(id);
+	}
 
 	@Override
 	public int getNodePort(NodeIDType id) {

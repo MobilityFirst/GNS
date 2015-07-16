@@ -70,6 +70,13 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 				: (this.nodeConfig.getActiveReplicas().contains(id) ? this.nodeConfig
 						.getNodeAddress(id) : null);
 	}
+        
+        @Override
+	public InetAddress getBindAddress(NodeIDType id) {
+		return this.rcMap.containsKey(id) ? this.rcMap.get(id).getAddress()
+				: (this.nodeConfig.getActiveReplicas().contains(id) ? this.nodeConfig
+						.getBindAddress(id) : null);
+	}
 
 	@Override
 	public int getNodePort(NodeIDType id) {

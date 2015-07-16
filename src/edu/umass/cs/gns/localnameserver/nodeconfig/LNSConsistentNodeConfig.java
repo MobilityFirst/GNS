@@ -13,7 +13,7 @@ import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 /* This class isn't really used for anything other than as 
- * a parent for ConsistentReconfigurableNodeConfig, so it
+ * a parent for LNSConsistentReconfigurableNodeConfig, so it
  * has been declared abstract (even though it has no 
  * abstract methods).
  */
@@ -53,7 +53,12 @@ public abstract class LNSConsistentNodeConfig implements
 	@Override
 	public InetAddress getNodeAddress(InetSocketAddress id) {
 		return this.nodeConfig.getNodeAddress(id);
-	}       
+	} 
+        
+        @Override
+	public InetAddress getBindAddress(InetSocketAddress id) {
+		return this.nodeConfig.getBindAddress(id);
+	} 
 
 	@Override
 	public int getNodePort(InetSocketAddress id) {

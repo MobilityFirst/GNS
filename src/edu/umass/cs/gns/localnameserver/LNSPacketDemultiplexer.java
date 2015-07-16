@@ -84,7 +84,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     return isPacketTypeFound;
   }
 
-  private static boolean disableRequestActives = true;
+  private static boolean disableRequestActives = false;
   protected static boolean useCommandRetransmitter = false;
 
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {

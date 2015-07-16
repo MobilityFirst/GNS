@@ -16,7 +16,6 @@ import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 
 import edu.umass.cs.gns.newApp.NewApp;
-import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -96,6 +95,8 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     this.nodeAddress = nodeAddress;
     this.nodeConfig = gnsNodeConfig;
 
+    System.out.println("BIND ADDRESS for " + replicaID + " is " + gnsNodeConfig.getBindAddress(replicaID));
+    System.out.println("NODE ADDRESS for " + replicaID + " is " + gnsNodeConfig.getNodeAddress(replicaID));
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(debug);
     try {

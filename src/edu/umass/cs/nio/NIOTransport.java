@@ -952,7 +952,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			isa = (InetSocketAddress) this.myID;
 		else
 			isa = new InetSocketAddress(
-					this.nodeConfig.getNodeAddress(this.myID),
+					this.nodeConfig.getBindAddress(this.myID),
 					this.nodeConfig.getNodePort(this.myID));
 		serverChannel.socket().bind(isa);
 		if (isSSL())

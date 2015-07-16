@@ -97,6 +97,12 @@ public class SampleNodeConfig<NodeIDType> implements
 		InetAddress addr = nmap.get(ID);
 		return addr != null ? addr : (local ? getLocalAddress() : null);
 	}
+        
+        @Override
+	public InetAddress getBindAddress(NodeIDType ID) {
+		InetAddress addr = nmap.get(ID);
+		return addr != null ? addr : (local ? getLocalAddress() : null);
+	}
 
 	/**
 	 * Maps each node ID to a port number. If ID is an integer, then the port

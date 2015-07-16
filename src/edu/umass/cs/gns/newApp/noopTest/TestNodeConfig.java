@@ -63,6 +63,11 @@ public class TestNodeConfig<NodeIDType> implements
   public InetAddress getNodeAddress(NodeIDType ID) {
     return nmap.get(ID);
   }
+  
+  @Override
+  public InetAddress getBindAddress(NodeIDType ID) {
+    return nmap.get(ID);
+  }
 
   /**
    * Maps each node ID to a port number.
