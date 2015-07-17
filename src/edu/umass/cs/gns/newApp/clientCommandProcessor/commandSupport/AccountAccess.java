@@ -519,9 +519,6 @@ public class AccountAccess {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
-//      if (!(returnCode = handler.getIntercessor().sendAddRecordWithSingleField(name, HRN_GUID, 
-//              new ResultValue(Arrays.asList(guid)))).isAnError()) {
-        // update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           JSONObject json = new JSONObject();
@@ -534,48 +531,7 @@ public class AccountAccess {
           JSONObject acl = createACL(ALLFIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
                   ALLFIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
           json.put("_GNS_ACL", acl);
-//          JSONArray readlist = new JSONArray(Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()));
-//          JSONArray writelist = new JSONArray(Arrays.asList(accountGuidInfo.getPublicKey()));
-//          JSONObject mdReadList = new JSONObject();
-//          mdReadList.put("MD", readlist);
-//          JSONObject mdWriteList = new JSONObject();
-//          mdWriteList.put("MD", writelist);
-//          JSONObject readWhiteList = new JSONObject();
-//          readWhiteList.put(ALLFIELDS, mdReadList);
-//          JSONObject writeWhiteList = new JSONObject();
-//          writeWhiteList.put(ALLFIELDS, mdWriteList);
-//          JSONObject acl = new JSONObject();
-//          acl.put("READ_WHITELIST", readWhiteList);
-//          acl.put("WRITE_WHITELIST", writeWhiteList);
-//          json.put("_GNS_ACL", acl);
-
-          // set up the default read access
-          //NEW - json.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), EVERYONE);
-          //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
-          // give account guid read and write access to all fields in the new guid
-          //NEW -  son.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), accountGuidInfo.getPublicKey());
-          //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
-          //NEW -  json.put(makeFieldMetaDataKey(MetaDataTypeName.READ_WHITELIST, ALLFIELDS), accountGuidInfo.getPublicKey());
-          //FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
           handler.getIntercessor().sendFullAddRecord(guid, json);
-
-//          // add the GUID_INFO link
-//          handler.getIntercessor().sendAddRecordWithSingleField(guid, GUID_INFO, guidInfoFormatted);
-//          // added this step to insure that the previous step happened.
-//          // probably should add a timeout here
-//          GuidInfo newGuidInfo = null;
-//          int cnt = 0;
-//          do {
-//            newGuidInfo = lookupGuidInfo(guid, handler);
-//            ThreadUtils.sleep(100); // relax a bit
-//          } while (newGuidInfo == null && ++cnt < 10);
-//          if (newGuidInfo == null) {
-//            throw new GnsRuntimeException("Unable to locate guid info structure.");
-//          }
-//          // add a link the new GUID to primary GUID
-//          handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, PRIMARY_GUID,
-//                  new ResultValue(Arrays.asList(accountInfo.getPrimaryGuid())),
-//                  null, UpdateOperation.SINGLE_FIELD_CREATE);
           return new CommandResponse(OKRESPONSE);
         }
       }
@@ -810,7 +766,7 @@ public class AccountAccess {
       }
       NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
               new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
-              writer, signature, message);
+              writer, signature, message, sendToReplica);
       if (sendToReplica) {
         handler.setReallySendUpdateToReplica(false);
       }

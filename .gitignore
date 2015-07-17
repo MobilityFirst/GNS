@@ -35,3 +35,4 @@ build.number
 /scripts/singlenodetests/NSlogfile.txt
 /scripts/singlenodetests/LNSlogfile
 /scripts/singlenodetests/LNSlogfile.txt
+/scripts/singlenodetests/derby.log

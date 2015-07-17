@@ -2,5 +2,5 @@ userName=ec2-user
 keyFile=aws.pem
 hostType=linux
 dataStoreName=MONGO
-installPath=gnsV1
+installPath=gns
 javaCommand=java -ea

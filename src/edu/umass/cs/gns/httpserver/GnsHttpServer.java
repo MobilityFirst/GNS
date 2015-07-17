@@ -200,11 +200,13 @@ public class GnsHttpServer {
         String requestsReceivedString = "Client requests received: " + GnsHttpServer.requestHandler.getReceivedRequests();
         String requestsRateString = "Client requests rate: " + GnsHttpServer.requestHandler.getRequestsPerSecond();
         StringBuilder resultString = new StringBuilder();
-        resultString.append("Nodes:");
+        resultString.append("Servers:");
         for (Object topLevelNode : GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeIDs()) {
           resultString.append("<br>&nbsp;&nbsp;");
           resultString.append((String) topLevelNode);
           resultString.append("&nbsp;=&gt;&nbsp;");
+          resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getBindAddress(topLevelNode));
+          resultString.append("&nbsp;&nbspPublic IP:&nbsp;");
           resultString.append(GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeAddress(topLevelNode));
         }
         String nodeAddressesString = resultString.toString();

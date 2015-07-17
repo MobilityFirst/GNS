@@ -305,7 +305,8 @@ public class FieldAccess {
    */
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
-    return handler.getIntercessor().sendUpdateRecord(guid, key, value, null, -1, UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
+    return handler.getIntercessor().sendUpdateRecord(guid, key, value, null, -1, 
+            UpdateOperation.SINGLE_FIELD_CREATE, writer, signature, message);
   }
 
   /**
