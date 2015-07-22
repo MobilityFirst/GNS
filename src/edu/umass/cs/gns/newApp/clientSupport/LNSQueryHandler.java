@@ -118,8 +118,9 @@ public class LNSQueryHandler {
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString() + " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(),
-                  activeReplica.getNodeID(),
-                  dnsResponsePacket.getLookupTime()));
+                  activeReplica.getNodeID()
+                  //,dnsResponsePacket.getLookupTime()
+          ));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later success response (" + id + "): "
@@ -133,8 +134,9 @@ public class LNSQueryHandler {
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(),
-                  activeReplica.getNodeID(),
-                  dnsResponsePacket.getLookupTime()));
+                  activeReplica.getNodeID()
+                  //,dnsResponsePacket.getLookupTime()
+          ));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later error response (" + id + "): "

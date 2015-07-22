@@ -260,7 +260,7 @@ public class AppLookup {
           dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
           dnsPacket.setTTL(nameRecord.getTimeToLive());
           // instrumentation
-          dnsPacket.setLookupTime(nameRecord.getLookupTime());
+          //dnsPacket.setLookupTime(nameRecord.getLookupTime());
           // Either returing one value or a bunch
           if (key != null && nameRecord.containsKey(key)) {
             // if it's a USER JSON (new return format) access just return the entire map

@@ -166,8 +166,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
               synchronized (monitor) {
                 queryResultMap.put(id,
                         new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(),
-                                dnsResponsePacket.getResponder(),
-                                dnsResponsePacket.getLookupTime()));
+                                dnsResponsePacket.getResponder()
+                                //,dnsResponsePacket.getLookupTime()
+                        ));
                 monitor.notifyAll();
               }
             } else {
@@ -179,8 +180,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
               synchronized (monitor) {
                 queryResultMap.put(id,
                         new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(),
-                                dnsResponsePacket.getResponder(),
-                                dnsResponsePacket.getLookupTime()));
+                                dnsResponsePacket.getResponder()
+                                //,dnsResponsePacket.getLookupTime()
+                        ));
                 monitor.notifyAll();
               }
             }

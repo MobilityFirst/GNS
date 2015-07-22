@@ -15,7 +15,6 @@ import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.Stringifiable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.json.JSONException;
@@ -43,7 +42,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   private final static String RESPONDER = "rspndr";
   private final static String RETURN_FORMAT = "format";
   // instrumentation
-  private final static String LOOKUP_TIME = "lookupTime";
+  //private final static String LOOKUP_TIME = "lookupTime";
   /*
    * The header, guid, key and lnsId are called the Question section because
    * they are all that is necessary for a query.
@@ -91,10 +90,10 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
    * For response packets this is the node that responded
    */
   private NodeIDType responder = null;
-  /**
-   * Database lookup time instrumentation
-   */
-  private int lookupTime = -1;
+//  /**
+//   * Database lookup time instrumentation
+//   */
+//  private int lookupTime = -1;
 
   /**
    * Constructs a packet for querying a name server for name information.
@@ -203,7 +202,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
         this.recordValue = new ValuesMap(json.getJSONObject(RECORD_VALUE));
       }
     }
-    this.lookupTime = json.optInt(LOOKUP_TIME, -1);
+    //this.lookupTime = json.optInt(LOOKUP_TIME, -1);
   }
 
   /**
@@ -285,9 +284,9 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
       if (recordValue != null) {
         json.put(RECORD_VALUE, recordValue);
       }
-      if (lookupTime != -1) {
-        json.put(LOOKUP_TIME, lookupTime);
-      }
+//      if (lookupTime != -1) {
+//        json.put(LOOKUP_TIME, lookupTime);
+//      }
     }
   }
 
@@ -458,12 +457,12 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
     return this.guid;
   }
 
-  public int getLookupTime() {
-    return lookupTime;
-  }
-
-  public void setLookupTime(int lookupTime) {
-    this.lookupTime = lookupTime;
-  }
-
+//  public int getLookupTime() {
+//    return lookupTime;
+//  }
+//
+//  public void setLookupTime(int lookupTime) {
+//    this.lookupTime = lookupTime;
+//  }
+//
 }

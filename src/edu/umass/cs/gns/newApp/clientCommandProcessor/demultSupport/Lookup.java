@@ -115,7 +115,7 @@ public class Lookup {
                 requestInfo.getIncomingPacket().getKey(), requestInfo.getIncomingPacket().getKeys(),
                 dnsPacket.getRecordValue(), dnsPacket.getTTL(), new HashSet<Integer>());
         outgoingPacket.setResponder(dnsPacket.getResponder());
-        outgoingPacket.setLookupTime(dnsPacket.getLookupTime());
+        //outgoingPacket.setLookupTime(dnsPacket.getLookupTime());
         sendDNSResponseBackToSource(outgoingPacket, handler);
       } catch (JSONException e) {
         GNS.getLogger().severe("Problem converting packet to JSON: " + e);

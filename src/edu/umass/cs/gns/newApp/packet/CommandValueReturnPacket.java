@@ -25,12 +25,13 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   private final static String SERVICENAME = "srvceName";
   private final static String RETURNVALUE = "returnValue";
   private final static String ERRORCODE = "errorCode";
+  // Instrumentation
   private final static String CCPROUNDTRIPTIME = "ccpRtt";
   private final static String CCPPROCESSINGTIME = "ccpTime";
   private final static String RESPONDER = "responder";
   private final static String REQUESTCNT = "requestCnt";
   private final static String REQUESTRATE = "requestRate";
-  private final static String LOOKUPTIME = "lookuptime";
+  //private final static String LOOKUPTIME = "lookuptime";
 
   /**
    * Identifier of the request.
@@ -53,29 +54,29 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
    */
   private final NSResponseCode errorCode;
   /**
-   * The RTT as measured from the LNS out and back.
+   * Instrumentation - The RTT as measured from the LNS out and back.
    */
   private final long CCPRoundTripTime; // how long this query took from the CCP out and back
   /**
-   * Total command processing time at the LNS.
+   * Instrumentation - Total command processing time at the LNS.
    */
   private final long CCPProcessingTime; // how long this query took inside the CCP
   /**
-   * Instrumentation - what nameserver responded to this query
+   * Instrumentation - what nameserver responded to this query.
    */
   private final String responder;
   /**
-   * Instrumentation - the request counter from the LNS)
+   * Instrumentation - the request counter from the LNS.
    */
   private final long requestCnt;
   /**
-   * Instrumentation - the current requests per second from the LNS (can be used to tell how busy LNS is)
+   * Instrumentation - the current requests per second from the LNS (can be used to tell how busy LNS is).
    */
   private final int requestRate;
-  /**
-   * Database lookup time instrumentation
-   */
-  private final int lookupTime;
+//  /**
+//   * Database lookup time instrumentation
+//   */
+//  private final int lookupTime;
 
   /**
    * Creates a CommandValueReturnPacket from a CommandResponse.
@@ -102,7 +103,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     this.responder = response.getResponder();
     this.requestCnt = requestCnt;
     this.requestRate = requestRate;
-    this.lookupTime = response.getLookupTime();
+    //this.lookupTime = response.getLookupTime();
   }
 
   /**
@@ -133,7 +134,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     this.CCPRoundTripTime = json.optLong(CCPROUNDTRIPTIME, -1);
     this.CCPProcessingTime = json.optLong(CCPPROCESSINGTIME, -1);
     this.responder = json.has(RESPONDER) ? json.getString(RESPONDER) : null;
-    this.lookupTime = json.optInt(LOOKUPTIME, -1);
+    //this.lookupTime = json.optInt(LOOKUPTIME, -1);
   }
 
   /**
@@ -168,9 +169,9 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     if (responder != null) {
       json.put(RESPONDER, responder);
     }
-    if (lookupTime != -1) {
-      json.put(LOOKUPTIME, lookupTime);
-    }
+//    if (lookupTime != -1) {
+//      json.put(LOOKUPTIME, lookupTime);
+//    }
     return json;
   }
 
@@ -215,8 +216,8 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     return requestRate;
   }
 
-  public int getLookupTime() {
-    return lookupTime;
-  }
+//  public int getLookupTime() {
+//    return lookupTime;
+//  }
 
 }
