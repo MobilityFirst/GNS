@@ -212,7 +212,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         DelayProfiler.updateDelay("lookupEntireRecord", startTime);
         // older style
         int lookupTime = (int) (System.currentTimeMillis() - startTime);
-        if (lookupTime > 20) {
+        if (debuggingEnabled && lookupTime > 20) {
           GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
         }
         // instrumentation
@@ -328,7 +328,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       DelayProfiler.updateDelay("lookupMSAUF", startTime);
       // older style
       int lookupTime = (int) (System.currentTimeMillis() - startTime);
-      if (lookupTime > 20) {
+      if (debuggingEnabled && lookupTime > 20) {
         GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
       }
       hashMap.put(NameRecord.LOOKUP_TIME, lookupTime);
@@ -494,7 +494,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       }
       DelayProfiler.updateDelay("updateJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
-      if (finishTime - startTime > 10) {
+      if (debuggingEnabled && finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
       }
     }
@@ -559,7 +559,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       actuallyUpdatedTheRecord = writeResult.isUpdateOfExisting();
       DelayProfiler.updateDelay("updateConditionalJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
-      if (finishTime - startTime > 10) {
+      if (debuggingEnabled && finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
       }
     }

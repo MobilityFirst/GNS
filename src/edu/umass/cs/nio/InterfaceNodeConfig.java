@@ -23,6 +23,12 @@ public interface InterfaceNodeConfig<NodeIDType> extends
 	 * @return InetAddress corresponding to {@code id}.
 	 */
 	public abstract InetAddress getNodeAddress(NodeIDType id);
+        
+        /**
+	 * @param id
+	 * @return Locally bindable InetAddress corresponding to {@code id}.
+	 */
+        public abstract InetAddress getBindAddress(NodeIDType id);
 
 	/**
 	 * @param id

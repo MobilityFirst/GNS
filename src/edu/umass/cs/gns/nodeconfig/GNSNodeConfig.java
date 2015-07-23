@@ -104,7 +104,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
               + (nameServerID == null ? "CCP" : nameServerID.toString())
               + " Id: " + hostInfoEntry.getValue().getId().toString()
               + " Host Name:" + hostInfoEntry.getValue().getIpAddress()
-              + " IP:" + hostInfoEntry.getValue().getExternalIP()
+              + " IP:" + hostInfoEntry.getValue().getExternalIPAddress()
               + " Start Port:" + hostInfoEntry.getValue().getStartingPortNumber());
     }
     startCheckingForUpdates();
@@ -195,8 +195,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 //                (hostInfo.getIpAddress().equals(host.getAddress())
 //                // Or the the IP address are the same (handles the case where the above is
 //                // is a LAN address)
-//                || (hostInfo.getExternalIP() != null
-//                && hostInfo.getExternalIP().equals(host.getAddress().getHostAddress())))
+//                || (hostInfo.getExternalIPString() != null
+//                && hostInfo.getExternalIPString().equals(host.getAddress().getHostAddress())))
 //                // and the ports are the same
 //                && (ignorePorts
 //                || hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort())) {
@@ -386,6 +386,26 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public InetAddress getNodeAddress(NodeIDType id) {
+    // handle special case for CCP node
+    if (id instanceof InetSocketAddress) {
+      return ((InetSocketAddress) id).getAddress();
+    }
+    NodeInfo<NodeIDType> nodeInfo = hostInfoMapping.get(id);
+    if (nodeInfo != null) {
+      return nodeInfo.getExternalIPAddress();
+      // Special case for ActiveReplica
+    } else if ((nodeInfo = getActiveReplicaInfo(id)) != null) {
+      return nodeInfo.getExternalIPAddress();
+      // Special case for Reconfigurator
+    } else if ((nodeInfo = getReconfiguratorInfo(id)) != null) {
+      return nodeInfo.getExternalIPAddress();
+    } else {
+      return null;
+    }
+  }
+  
+  @Override
+  public InetAddress getBindAddress(NodeIDType id) {
     // handle special case for CCP node
     if (id instanceof InetSocketAddress) {
       return ((InetSocketAddress) id).getAddress();

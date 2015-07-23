@@ -54,7 +54,7 @@ public abstract class AbstractUpdate extends GnsCommand {
     if (field == null) {
       // full JSON object update
       if (!(responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
-              getUpdateOperation(), writer, signature, message)).isAnError()) {
+              getUpdateOperation(), writer, signature, message, false)).isAnError()) {
          return new CommandResponse(OKRESPONSE);
       } else {
         return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());

@@ -73,7 +73,7 @@ public class AppUpdate {
       ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
       if (!doNotReplyToClient) {
         app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
-        //replica.getNioServer().sendToAddress(updatePacket.getCppAddress(), failConfirmPacket.toJSONObject());
+        //replica.getMessenger().sendToAddress(updatePacket.getCppAddress(), failConfirmPacket.toJSONObject());
 
       }
       return;
@@ -96,7 +96,7 @@ public class AppUpdate {
         ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         if (!doNotReplyToClient) {
           app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
-          //app.getNioServer().sendToAddress(updatePacket.getCppAddress(), failConfirmPacket.toJSONObject());
+          //app.getMessenger().sendToAddress(updatePacket.getCppAddress(), failConfirmPacket.toJSONObject());
 
         }
         return;
@@ -137,7 +137,7 @@ public class AppUpdate {
           }
           if (!doNotReplyToClient) {
             app.getClientCommandProcessor().injectPacketIntoCCPQueue(failPacket.toJSONObject());
-            //app.getNioServer().sendToAddress(updatePacket.getCppAddress(), failPacket.toJSONObject());
+            //app.getMessenger().sendToAddress(updatePacket.getCppAddress(), failPacket.toJSONObject());
           }
         }
 
@@ -154,7 +154,7 @@ public class AppUpdate {
 
           if (!doNotReplyToClient) {
             app.getClientCommandProcessor().injectPacketIntoCCPQueue(confirmPacket.toJSONObject());
-            //app.getNioServer().sendToAddress(updatePacket.getCppAddress(), confirmPacket.toJSONObject());
+            //app.getMessenger().sendToAddress(updatePacket.getCppAddress(), confirmPacket.toJSONObject());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS Sent confirmation to CCP. Sent packet: " + confirmPacket.toJSONObject());
             }

@@ -98,6 +98,12 @@ public class TestConfig {
 			return rcMap.containsKey(id) ? rcMap.get(id).getAddress() : arMap
 					.containsKey(id) ? arMap.get(id).getAddress() : null;
 		}
+                
+                @Override
+		public InetAddress getBindAddress(String id) {
+			return rcMap.containsKey(id) ? rcMap.get(id).getAddress() : arMap
+					.containsKey(id) ? arMap.get(id).getAddress() : null;
+		}
 
 		@Override
 		public int getNodePort(String id) {

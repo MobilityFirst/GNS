@@ -85,16 +85,17 @@ public class LNSQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key,
-          ColumnFieldType returnFormat, GnsApplicationInterface activeReplica) {
-    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, null,
+          ColumnFieldType returnFormat, GnsApplicationInterface app) {
+    DNSPacket queryrecord = new DNSPacket(app.getNodeID(), queryId, name, key, null,
             returnFormat,
             null, null, null);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + lnsAddress
+      GNS.getLogger().info("########## Node " + app.getNodeID() + "; Sending query " + queryId 
+              + " to " + lnsAddress
               + " for " + name + " / " + key + ": " + json);
-      activeReplica.getNioServer().sendToAddress(lnsAddress, json);
+      app.sendToClient(lnsAddress, json);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {
@@ -118,8 +119,9 @@ public class LNSQueryHandler {
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString() + " Successful Received");
 
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getRecordValue(),
-                  activeReplica.getNodeID(),
-                  dnsResponsePacket.getLookupTime()));
+                  activeReplica.getNodeID()
+                  //,dnsResponsePacket.getLookupTime()
+          ));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later success response (" + id + "): "
@@ -133,8 +135,9 @@ public class LNSQueryHandler {
                   + dnsResponsePacket.getGuid() + "/" + dnsResponsePacket.getKeyOrKeysString()
                   + " Error Received: " + dnsResponsePacket.getHeader().getResponseCode().name());
           queryResultMap.put(id, new QueryResult(dnsResponsePacket.getHeader().getResponseCode(),
-                  activeReplica.getNodeID(),
-                  dnsResponsePacket.getLookupTime()));
+                  activeReplica.getNodeID()
+                  //,dnsResponsePacket.getLookupTime()
+          ));
           monitor.notifyAll();
         } else {
           GNS.getLogger().fine("Later error response (" + id + "): "

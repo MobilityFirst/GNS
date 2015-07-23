@@ -26,7 +26,7 @@ import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
 import edu.umass.cs.nio.GenericMessagingTask;
-import edu.umass.cs.nio.InterfaceMessenger;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
@@ -93,9 +93,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
 
-  private final InterfaceMessenger<NodeIDType, JSONObject> tcpTransport;
-
-  private final JSONMessenger<NodeIDType> messenger;
+  private final InterfaceSSLMessenger<NodeIDType, JSONObject> messenger;
 
   private final Random random;
 
@@ -133,7 +131,6 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
-    this.tcpTransport = messenger;
     this.messenger = messenger;
     this.protocolExecutor = new ProtocolExecutor<>(messenger);
     this.protocolTask = new CCPProtocolTask<>(this);
@@ -577,15 +574,15 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * Send packet to NS
    *
    * @param json
-   * @param ns
+   * @param id
    */
   @Override
-  public void sendToNS(JSONObject json, NodeIDType ns) {
+  public void sendToNS(JSONObject json, NodeIDType id) {
     try {
       if (parameters.isDebugMode()) {
-        GNS.getLogger().info("Send to: " + ns + " json: " + json);
+        GNS.getLogger().info("Send to: " + id + " json: " + json);
       }
-      tcpTransport.sendToID(ns, json);
+      messenger.sendToID(id, json);
     } catch (IOException e) {
       e.printStackTrace();
     }
@@ -597,7 +594,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   @Override
   public void sendToAddress(JSONObject json, String address, int port) {
     try {
-      tcpTransport.sendToAddress(new InetSocketAddress(address, port), json);
+      messenger.sendToAddress(new InetSocketAddress(address, port), json);
     } catch (IOException e) {
       e.printStackTrace();
     }

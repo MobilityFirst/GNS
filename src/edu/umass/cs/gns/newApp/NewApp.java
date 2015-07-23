@@ -34,7 +34,6 @@ import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.NoopPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
-import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.newApp.packet.StopPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
@@ -43,12 +42,11 @@ import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceMessenger;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;
@@ -62,7 +60,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author Westy
  */
-public class NewApp implements GnsApplicationInterface, InterfaceReplicable, InterfaceReconfigurable {
+public class NewApp implements GnsApplicationInterface<String>, InterfaceReplicable, InterfaceReconfigurable {
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private final String nodeID;
@@ -75,43 +73,42 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   /**
    * The Nio server
    */
-  private final InterfaceMessenger<String, JSONObject> nioServer;
+  private final InterfaceSSLMessenger<String, JSONObject> messenger;
+  private final ClientCommandProcessor<String> clientCommandProcessor;
 
-  private boolean useLocalCCP = true;
-  private ClientCommandProcessor<String> localCCP = null;
-  
   // Keep track of commands that are coming in
-  public final ConcurrentMap<Integer, CommandHandler.CommandRequestInfo> outStandingQueries 
+  public final ConcurrentMap<Integer, CommandHandler.CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
-  
-  
 
-  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceMessenger<String, JSONObject> nioServer,
-          MongoRecords<String> mongoRecords) {
+  /**
+   * Creates the application.
+   *
+   * @param id
+   * @param nodeConfig
+   * @param messenger
+   * @param mongoRecords
+   */
+  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceSSLMessenger<String, JSONObject> messenger,
+          MongoRecords<String> mongoRecords) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
-    GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
-            + nodeConfig.getCcpPingPort(nodeID));
     // Start a ping server, but not a client.
     this.pingManager = new PingManager(nodeID, this.nodeConfig, true);
+    GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
+            + nodeConfig.getCcpPingPort(nodeID));
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
-    this.nioServer = nioServer;
-    try {
-      if (useLocalCCP) {
-        this.localCCP = new ClientCommandProcessor<>(
-                new InetSocketAddress(nodeConfig.getNodeAddress(id), nodeConfig.getCcpPort(id)),
-                (GNSNodeConfig) nodeConfig,
-                AppReconfigurableNodeOptions.debuggingEnabled,
-                this,
-                (String) id,
-                AppReconfigurableNodeOptions.dnsGnsOnly,
-                AppReconfigurableNodeOptions.dnsOnly,
-                AppReconfigurableNodeOptions.gnsServerIP);
-      }
-    } catch (IOException e) {
-      GNS.getLogger().info("App could not create CCP:" + e);
-    }
+    this.messenger = messenger;
+    this.clientCommandProcessor = new ClientCommandProcessor<>(
+            new InetSocketAddress(nodeConfig.getBindAddress(id), nodeConfig.getCcpPort(id)),
+            (GNSNodeConfig) nodeConfig,
+            AppReconfigurableNodeOptions.debuggingEnabled,
+            this,
+            (String) id,
+            AppReconfigurableNodeOptions.dnsGnsOnly,
+            AppReconfigurableNodeOptions.dnsOnly,
+            AppReconfigurableNodeOptions.gnsServerIP,
+            AppReconfigurableNodeOptions.disableSSL);
   }
 
   private static PacketType[] types = {
@@ -221,7 +218,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
       return port;
     }
   }
-  
+
   // For InterfaceApplication
   @Override
   public InterfaceRequest getRequest(String string)
@@ -368,149 +365,6 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
     throw new RuntimeException("This method should not have been called");
   }
 
-//  private final static ArrayList<ColumnField> valueRequestFields = new ArrayList<>();
-//
-//  static {
-//    valueRequestFields.add(NameRecord.ACTIVE_VERSION);
-//    valueRequestFields.add(NameRecord.VALUES_MAP);
-//    valueRequestFields.add(NameRecord.TIME_TO_LIVE);
-//  }
-//
-//  @Override
-//  public String getFinalState(String name, int epoch) {
-//    ValuesMap value = null;
-//    int ttl = -1;
-//    try {
-//      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, valueRequestFields);
-//      value = nameRecord.getValuesMap();
-//      int recordVersion = nameRecord.getActiveVersion();
-//      if (recordVersion != epoch) {
-//        if (AppReconfigurableNode.debuggingEnabled) {
-//          GNS.getLogger().warning("&&&&&&& APP " + nodeID + " for " + name + " ignoring epoch mismatch: epoch "
-//                  + epoch + " record version " + recordVersion);
-//        }
-//      }
-//      //NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, prevValueRequestFields);
-//      //value = nameRecord.getOldValuesOnVersionMatch(epoch);
-//      ttl = nameRecord.getTimeToLive();
-//    } catch (FieldNotFoundException e) {
-//      GNS.getLogger().severe("Field not found exception.");
-//    } catch (RecordNotFoundException e) {
-//      GNS.getLogger().severe("Record not found exception. name = " + name + " version = " + epoch);
-//    } catch (FailedDBOperationException e) {
-//      GNS.getLogger().severe("Failed DB Operation. Final state not read: name " + name + " version " + epoch);
-//      e.printStackTrace();
-//      return null;
-//    }
-//    if (value == null) {
-//      if (AppReconfigurableNode.debuggingEnabled) {
-//        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + " not found!");
-//      }
-//      return null;
-//    } else {
-//      if (AppReconfigurableNode.debuggingEnabled) {
-//        GNS.getLogger().warning("&&&&&&& APP " + nodeID + " final state for " + name + ": " + new NRState(value, ttl).toString());
-//      }
-//      return new NRState(value, ttl).toString();
-//    }
-//  }
-//
-//  @Override
-//  public void putInitialState(String name, int epoch, String state) {
-//    if (AppReconfigurableNode.debuggingEnabled) {
-//      GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& Initial state: name " + name + " version " + epoch + " state " + state);
-//    }
-//    NRState weirdState;
-//    try {
-//      weirdState = new NRState(state);
-//    } catch (JSONException e) {
-//      GNS.getLogger().severe("JSON Exception in transferred state: " + state + "name " + name + " version " + epoch);
-//      e.printStackTrace();
-//      return;
-//    }
-//    // Keep retrying until we can store the initial state for a name in DB. 
-//    // Unless this step completes, future operations
-//    // e.g., lookupMultipleSystemFields, update, cannot succeed anyway.
-//    while (true) {
-//      try {
-//        try {
-//          NameRecord nameRecord = new NameRecord(nameRecordDB, name, epoch, weirdState.valuesMap, weirdState.ttl,
-//                  nodeConfig.getReplicatedReconfigurators(name));
-//          NameRecord.addNameRecord(nameRecordDB, nameRecord);
-//          if (AppReconfigurableNode.debuggingEnabled) {
-//            GNS.getLogger().info("&&&&&&& APP " + nodeID + " &&&&&&& NAME RECORD ADDED AT ACTIVE NODE: " + "name record = " + name);
-//          }
-//        } catch (RecordExistsException e) {
-//          NameRecord nameRecord;
-//          try {
-//            nameRecord = NameRecord.getNameRecord(nameRecordDB, name);
-//            nameRecord.handleNewActiveStart(epoch, weirdState.valuesMap, weirdState.ttl);
-//
-//          } catch (FieldNotFoundException e1) {
-//            GNS.getLogger().severe("Field not found exception: " + e.getMessage());
-//            e1.printStackTrace();
-//          } catch (RecordNotFoundException e1) {
-//            GNS.getLogger().severe("Not possible because record just existed.");
-//            e1.printStackTrace();
-//          }
-//        }
-//      } catch (FailedDBOperationException e) {
-//        try {
-//          Thread.sleep(100);
-//        } catch (InterruptedException e1) {
-//          e1.printStackTrace();
-//        }
-//        GNS.getLogger().severe("Failed DB exception. Retry: " + e.getMessage());
-//        e.printStackTrace();
-//        continue;
-//      }
-//      break;
-//    }
-//  }
-//
-//  @Override
-//  public boolean deleteFinalState(String name, int epoch) {
-////    if (AppReconfigurableNode.debuggingEnabled) {
-////      GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Deleting name " + name + " version " + epoch);
-////    }
-//    Integer recordEpoch = getEpoch(name);
-//    //try {
-////      if (recordEpoch != null && recordEpoch == epoch) {
-////        NameRecord.removeNameRecord(nameRecordDB, name);
-////      } else {
-//    if (AppReconfigurableNode.debuggingEnabled) {
-//      GNS.getLogger().info("&&&&&&& APP " + nodeID + " for " + name + " ignoring delete. Epoch is "
-//              + epoch + " and record version is " + recordEpoch);
-//    }
-//    //}
-////    } catch (FailedDBOperationException e) {
-////      GNS.getLogger().severe("Failed to delete record for " + name + " :" + e.getMessage());
-////      return false;
-////    }
-//    return true;
-//  }
-//
-//  private final static ArrayList<ColumnField> readVersion = new ArrayList<>();
-//
-//  static {
-//    readVersion.add(NameRecord.ACTIVE_VERSION);
-//  }
-//
-//  @Override
-//  public Integer getEpoch(String name) {
-//    try {
-//      NameRecord nameRecord = NameRecord.getNameRecordMultiField(nameRecordDB, name, readVersion);
-//      return nameRecord.getActiveVersion();
-//    } catch (RecordNotFoundException e) {
-//      // normal result
-//    } catch (FieldNotFoundException e) {
-//      // normal result
-//    } catch (FailedDBOperationException e) {
-//      GNS.getLogger().severe("Database operation failed: " + e.getMessage());
-//      e.printStackTrace();
-//    }
-//    return null;
-//  }
   //
   // GnsApplicationInterface implementation
   //
@@ -530,8 +384,13 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
   }
 
   @Override
-  public InterfaceMessenger<String, JSONObject> getNioServer() {
-    return nioServer;
+  public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {
+    messenger.getClientMessenger().sendToAddress(isa, msg);
+  }
+
+  @Override
+  public void sendToID(String id, JSONObject msg) throws IOException {
+    messenger.sendToID(id, msg);
   }
 
   @Override
@@ -541,7 +400,7 @@ public class NewApp implements GnsApplicationInterface, InterfaceReplicable, Int
 
   @Override
   public ClientCommandProcessor<String> getClientCommandProcessor() {
-    return localCCP;
+    return clientCommandProcessor;
   }
 
 }

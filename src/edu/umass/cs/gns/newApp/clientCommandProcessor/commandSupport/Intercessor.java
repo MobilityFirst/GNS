@@ -85,17 +85,17 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
 
   {
     randomID = new Random();
-    queryResultMap = new ConcurrentHashMap<Integer, QueryResult>(10, 0.75f, 3);
-    queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
-    updateSuccessResult = new ConcurrentHashMap<Integer, NSResponseCode>(10, 0.75f, 3);
-    createSuccessResult = new ConcurrentHashMap<String, NSResponseCode>(10, 0.75f, 3);
-    deleteSuccessResult = new ConcurrentHashMap<String, NSResponseCode>(10, 0.75f, 3);
+    queryResultMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    queryTimeStamp = new ConcurrentHashMap<>(10, 0.75f, 3);
+    updateSuccessResult = new ConcurrentHashMap<>(10, 0.75f, 3);
+    createSuccessResult = new ConcurrentHashMap<>(10, 0.75f, 3);
+    deleteSuccessResult = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
 
-  private AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer;
+  private final AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer;
   //private ClientRequestHandlerInterface<NodeIDType> handler;
-  private GNSNodeConfig<NodeIDType> nodeConfig;
-  private InetSocketAddress nodeAddress;
+  private final GNSNodeConfig<NodeIDType> nodeConfig;
+  private final InetSocketAddress nodeAddress;
 
   public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> nodeConfig,
           AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer) {
@@ -166,8 +166,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
               synchronized (monitor) {
                 queryResultMap.put(id,
                         new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(),
-                                dnsResponsePacket.getResponder(),
-                                dnsResponsePacket.getLookupTime()));
+                                dnsResponsePacket.getResponder()
+                                //,dnsResponsePacket.getLookupTime()
+                        ));
                 monitor.notifyAll();
               }
             } else {
@@ -179,8 +180,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
               synchronized (monitor) {
                 queryResultMap.put(id,
                         new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(),
-                                dnsResponsePacket.getResponder(),
-                                dnsResponsePacket.getLookupTime()));
+                                dnsResponsePacket.getResponder()
+                                //,dnsResponsePacket.getLookupTime()
+                        ));
                 monitor.notifyAll();
               }
             }
@@ -301,55 +303,9 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   public QueryResult sendSingleFieldQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
-  
-   public QueryResult sendFullQueryBypassingAuthentication(String name, String field) {
+
+  public QueryResult sendFullQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, GnsProtocolDefs.ALLFIELDS, null, null, null, ColumnFieldType.USER_JSON);
-  }
-
-  public NSResponseCode sendCreateRecord(String name, ValuesMap value) {
-    if (debuggingEnabled) {
-      GNS.getLogger().info("Sending create: " + name + value);
-    }
-    CreateServiceName pkt = new CreateServiceName(null, name, 0, value.toString());
-    if (debuggingEnabled) {
-      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
-    }
-    try {
-      JSONObject json = pkt.toJSONObject();
-      injectPacketIntoCCPQueue(json);
-
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    waitForCreateConfirmationPacket(name);
-    NSResponseCode result = createSuccessResult.remove(name);
-    if (debuggingEnabled) {
-      GNS.getLogger().info("Create (" + name + "): " + name + "\n  Returning: " + result);
-    }
-    return result;
-  }
-
-  public NSResponseCode sendDeleteRecord(String name) {
-    if (debuggingEnabled) {
-      GNS.getLogger().info("Sending delete: " + name);
-    }
-    DeleteServiceName pkt = new DeleteServiceName(null, name, 0);
-    if (debuggingEnabled) {
-      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
-    }
-    try {
-      JSONObject json = pkt.toJSONObject();
-      injectPacketIntoCCPQueue(json);
-
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    waitForDeleteConfirmationPacket(name);
-    NSResponseCode result = deleteSuccessResult.remove(name);
-    if (debuggingEnabled) {
-      GNS.getLogger().info("Delete (" + name + "): " + name + "\n  Returning: " + result);
-    }
-    return result;
   }
 
   /**
@@ -376,6 +332,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     } catch (JSONException e) {
       e.printStackTrace();
     }
+    // need to wait for a confirmation packet because these requests will be sent out
+    // to a reconfigurator
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
@@ -384,7 +342,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     }
     return result;
   }
-  
+
   public NSResponseCode sendFullAddRecord(String name, JSONObject value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
@@ -401,6 +359,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     } catch (JSONException e) {
       e.printStackTrace();
     }
+    // need to wait for a confirmation packet because these requests will be sent out
+    // to a reconfigurator
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
@@ -429,6 +389,8 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet before injecting in CCP Queue: " + e);
     }
+    // need to wait for a confirmation packet because these requests will be sent out
+    // to a reconfigurator
     waitForUpdateConfirmationPacket(id);
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
@@ -480,10 +442,19 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message) {
+    return sendUpdateRecord(name, key, newValue, oldValue, argument, operation, writer, signature, message, true);
+  }
+
+  public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
+          int argument, UpdateOperation operation,
+          String writer, String signature, String message, boolean wait) {
     int id = nextUpdateRequestID();
     sendUpdateRecordHelper(id, name, key, newValue, oldValue, argument, null, operation, writer, signature, message);
-    // now we wait until the correct packet comes back
-    waitForUpdateConfirmationPacket(id);
+    // now we wait until the correct packet comes back, but only for
+    // updates that are sent out to ARs and not handled locally
+    if (wait) {
+      waitForUpdateConfirmationPacket(id);
+    }
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     if (debuggingEnabled) {
@@ -505,10 +476,18 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    */
   public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {
+    return sendUpdateUserJSON(name, userJSON, operation, writer, signature, message, true);
+  }
+
+  public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
+          String writer, String signature, String message, boolean wait) {
     int id = nextUpdateRequestID();
     sendUpdateRecordHelper(id, name, null, null, null, -1, userJSON, operation, writer, signature, message);
-    // now we wait until the correct packet comes back
-    waitForUpdateConfirmationPacket(id);
+    // now we wait until the correct packet comes back, but only for
+    // updates that are sent out to ARs and not handled locally
+    if (wait) {
+      waitForUpdateConfirmationPacket(id);
+    }
     NSResponseCode result = updateSuccessResult.get(id);
     updateSuccessResult.remove(id);
     if (debuggingEnabled) {
@@ -554,7 +533,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * an old-style single field update depending on the values of
    * newValue (old-style) and userJSON (new-style) one of which should be null
    * in normal use.
-   * 
+   *
    * @param id
    * @param name
    * @param key
@@ -565,7 +544,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param operation
    * @param writer
    * @param signature
-   * @param message 
+   * @param message
    */
   private void sendUpdateRecordHelper(int id, String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, ValuesMap userJSON, UpdateOperation operation,
@@ -625,30 +604,6 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
       }
     } catch (InterruptedException x) {
       GNS.getLogger().severe("Wait for update success confirmation packet was interrupted " + x);
-    }
-  }
-
-  private void waitForCreateConfirmationPacket(String name) {
-    try {
-      synchronized (monitorCreate) {
-        while (!createSuccessResult.containsKey(name)) {
-          monitorCreate.wait();
-        }
-      }
-    } catch (InterruptedException x) {
-      GNS.getLogger().severe("Wait for create success confirmation packet was interrupted " + x);
-    }
-  }
-
-  private void waitForDeleteConfirmationPacket(String name) {
-    try {
-      synchronized (monitorDelete) {
-        while (!deleteSuccessResult.containsKey(name)) {
-          monitorDelete.wait();
-        }
-      }
-    } catch (InterruptedException x) {
-      GNS.getLogger().severe("Wait for delete success confirmation packet was interrupted " + x);
     }
   }
 

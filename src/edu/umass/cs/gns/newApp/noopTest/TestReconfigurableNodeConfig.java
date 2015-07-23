@@ -79,6 +79,14 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
       return super.getNodeAddress(RCToActive(id));
     }
   }
+  
+  public InetAddress getBindAddress(String id) {
+    if (super.nodeExists(id)) {
+      return super.getBindAddress(id);
+    } else {
+      return super.getBindAddress(RCToActive(id));
+    }
+  }
 
   @Override
   public int getNodePort(String id) {

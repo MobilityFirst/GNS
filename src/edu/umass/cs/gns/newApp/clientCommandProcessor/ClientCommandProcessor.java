@@ -14,18 +14,16 @@ import edu.umass.cs.gns.gnamed.DnsTranslator;
 import edu.umass.cs.gns.gnamed.UdpDnsServer;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
-
 import edu.umass.cs.gns.newApp.NewApp;
-import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.util.logging.Logger;
-
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
+import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 
@@ -85,7 +83,8 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
           NodeIDType replicaID,
           boolean dnsGnsOnly,
           boolean dnsOnly,
-          String gnsServerIP) throws IOException {
+          String gnsServerIP,
+          boolean disableSSL) throws IOException {
 
     if (debug) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
@@ -96,12 +95,15 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     this.nodeAddress = nodeAddress;
     this.nodeConfig = gnsNodeConfig;
 
+    System.out.println("BIND ADDRESS for " + replicaID + " is " + gnsNodeConfig.getBindAddress(replicaID));
+    System.out.println("NODE ADDRESS for " + replicaID + " is " + gnsNodeConfig.getNodeAddress(replicaID));
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(debug);
     try {
       this.messenger = new JSONMessenger<NodeIDType>(
-              (new JSONNIOTransport(nodeAddress, gnsNodeConfig, new PacketDemultiplexerDefault(),
-                      true)));
+              new JSONNIOTransport(nodeAddress, gnsNodeConfig,
+                      new PacketDemultiplexerDefault(),
+                      disableSSL ? CLEAR : SERVER_AUTH));
       messenger.addPacketDemultiplexer(demultiplexer);
       this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
               replicaID,

@@ -782,7 +782,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		try {
 			this.serverSock = new ServerSocket();
 			this.serverSock.bind(new InetSocketAddress(
-					this.consistentNodeConfig.getNodeAddress(myID), 0));
+					this.consistentNodeConfig.getBindAddress(myID), 0));
 			;
 			(new Thread(new CheckpointServer())).start();
 			return true;

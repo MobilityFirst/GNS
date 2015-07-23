@@ -53,10 +53,51 @@ public class Update {
     UpdateInfo info = new UpdateInfo(ccpRequestID, updatePacket.getName(), null, updatePacket, handler);
     handler.addRequestInfo(ccpRequestID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
-    // For the new app we just send it to the colocated replica, but still with retransmission
-    SendUpdatesTask updateTask = new SendUpdatesTask(ccpRequestID, handler, updatePacket, 
-            handler.getActiveReplicaID(), handler.reallySendUpdateToReplica());
-    handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
+    if (!handler.reallySendUpdateToReplica()) {
+      handlePacketLocally(ccpRequestID, handler, updatePacket, handler.getActiveReplicaID());
+    } else {
+      // otherwise send it to the colocated replica, but still with retransmission
+      SendUpdatesTask updateTask = new SendUpdatesTask(ccpRequestID, handler, updatePacket,
+              handler.getActiveReplicaID(), handler.reallySendUpdateToReplica());
+      handler.getExecutorService().scheduleAtFixedRate(updateTask, 0, handler.getParameters().getQueryTimeout(), TimeUnit.MILLISECONDS);
+    }
+  }
+
+  private static void handlePacketLocally(int ccpReqID, EnhancedClientRequestHandlerInterface handler,
+          UpdatePacket updatePacket, Object nameServerID) {
+    handler.getApp().handleRequest(makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID));
+  }
+
+  /**
+   * Makes an update packet to send to an AR.
+   * Puts all the right stuff in the right places.
+   *
+   * @param ccpReqID
+   * @param handler
+   * @param updatePacket
+   * @param nameServerID
+   * @return
+   */
+  public static UpdatePacket makeNewUpdatePacket(int ccpReqID, EnhancedClientRequestHandlerInterface handler,
+          UpdatePacket updatePacket, Object nameServerID) {
+    UpdatePacket pkt = new UpdatePacket(
+            updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
+            updatePacket.getRequestID(),
+            ccpReqID, // the id used by the CCP (that would be us here)
+            updatePacket.getName(),
+            updatePacket.getRecordKey(),
+            updatePacket.getUpdateValue(),
+            updatePacket.getOldValue(),
+            updatePacket.getArgument(),
+            updatePacket.getUserJSON(),
+            updatePacket.getOperation(),
+            handler.getNodeAddress(),
+            nameServerID, updatePacket.getTTL(),
+            //signature info
+            updatePacket.getAccessor(),
+            updatePacket.getSignature(),
+            updatePacket.getMessage());
+    return pkt;
   }
 
   /**

@@ -116,7 +116,7 @@ public class AppLookup {
       }
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObjectForErrorResponse());
-        //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
       }
     } else {
         // All signature and ACL checks passed see if we can find the field to return;
@@ -148,7 +148,7 @@ public class AppLookup {
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-        //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       }
       DelayProfiler.updateDelay("totalLookup", receiptTime);
     }
@@ -183,7 +183,7 @@ public class AppLookup {
       dnsPacket.setRecordValue(valuesMap);
       // .. and send it
       gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-      //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+      //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       return true;
     }
     return false;
@@ -260,7 +260,7 @@ public class AppLookup {
           dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
           dnsPacket.setTTL(nameRecord.getTimeToLive());
           // instrumentation
-          dnsPacket.setLookupTime(nameRecord.getLookupTime());
+          //dnsPacket.setLookupTime(nameRecord.getLookupTime());
           // Either returing one value or a bunch
           if (key != null && nameRecord.containsKey(key)) {
             // if it's a USER JSON (new return format) access just return the entire map

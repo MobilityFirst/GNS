@@ -5,8 +5,8 @@ import java.net.UnknownHostException;
 
 /**
  * The NodeInfo class is used to represent nodes in a GNSNodeConfig.
- * 
- * @author  Westy
+ *
+ * @author Westy
  * @param <NodeIDType>
  */
 public class NodeInfo<NodeIDType> {
@@ -23,7 +23,7 @@ public class NodeInfo<NodeIDType> {
    * The id of the reconfigurator part of the name server.
    */
   private final NodeIDType reconfiguratorID;
-  
+
   /**
    * IP address of the name server
    */
@@ -33,11 +33,15 @@ public class NodeInfo<NodeIDType> {
    * IP address of the name server - should be a host name
    */
   private final String ipAddressString;
-  
+
+  /**
+   * External IP address of the name server
+   */
+  private InetAddress externalIPAddress = null;
   /**
    * External IP address of the name server - should be in dot format
    */
-  private final String externalIP;
+  private final String externalIPString;
 
   /**
    * Starting port number
@@ -74,14 +78,14 @@ public class NodeInfo<NodeIDType> {
    ***********************************************************
    */
   public NodeInfo(NodeIDType id, NodeIDType activeReplicaID, NodeIDType reconfiguratorID,
-          String ipAddressString, String externalIP, int startingPortNumber, 
+          String ipAddressString, String externalIP, int startingPortNumber,
           long pingLatency, double latitude, double longitude) {
 
     this.id = id;
     this.activeReplicaID = activeReplicaID;
     this.reconfiguratorID = reconfiguratorID;
     this.ipAddressString = ipAddressString;
-    this.externalIP = externalIP;
+    this.externalIPString = externalIP;
     this.startingPortNumber = startingPortNumber;
     this.pingLatency = pingLatency;
     this.latitude = latitude;
@@ -90,8 +94,8 @@ public class NodeInfo<NodeIDType> {
 
   /**
    * Returns the top-level node id of this node;
-   * 
-   * @return 
+   *
+   * @return
    */
   public NodeIDType getId() {
     return id;
@@ -99,8 +103,8 @@ public class NodeInfo<NodeIDType> {
 
   /**
    * Returns the ActiveReplica id for this node.
-   * 
-   * @return 
+   *
+   * @return
    */
   public NodeIDType getActiveReplicaID() {
     return activeReplicaID;
@@ -108,16 +112,14 @@ public class NodeInfo<NodeIDType> {
 
   /**
    * Returns the Reconfigurator id for this node.
-   * @return 
+   *
+   * @return
    */
   public NodeIDType getReconfiguratorID() {
     return reconfiguratorID;
   }
 
   public synchronized InetAddress getIpAddress() {
-    // Abhigyan: lookup IP address on first access.
-    // this is done to help experiments on PlanetLab with a few 100 nodes.
-    // A DNS lookup for few hundred names when starting a node takes a long time (1 sec/node) in some cases.
     if (ipAddress == null) {
       try {
         ipAddress = InetAddress.getByName(ipAddressString);
@@ -128,16 +130,29 @@ public class NodeInfo<NodeIDType> {
     return ipAddress;
   }
 
-  public String getExternalIP() {
-    return externalIP;
+  public synchronized InetAddress getExternalIPAddress() {
+    if (externalIPAddress == null) {
+      try {
+        if (externalIPString != null) {
+          externalIPAddress = InetAddress.getByName(externalIPString);
+        } else {
+          externalIPAddress = getIpAddress();
+        }
+      } catch (UnknownHostException e) {
+        e.printStackTrace();
+      }
+    }
+    return externalIPAddress;
   }
 
   public int getStartingPortNumber() {
     return startingPortNumber;
   }
+
   /**
    * Returns ping latency in milleseconds
    * Ping latency is a
+   *
    * @return pingLatency (ms)
    */
   public synchronized long getPingLatency() {
@@ -158,9 +173,7 @@ public class NodeInfo<NodeIDType> {
 
   @Override
   public String toString() {
-    return "NodeInfo{" + "id=" + id + ", activeReplicaID=" + activeReplicaID + ", reconfiguratorID=" + reconfiguratorID + ", ipAddress=" + ipAddress + ", ipAddressString=" + ipAddressString + ", externalIP=" + externalIP + ", startingPortNumber=" + startingPortNumber + ", pingLatency=" + pingLatency + '}';
+    return "NodeInfo{" + "id=" + id + ", activeReplicaID=" + activeReplicaID + ", reconfiguratorID=" + reconfiguratorID + ", ipAddress=" + ipAddress + ", ipAddressString=" + ipAddressString + ", externalIP=" + externalIPString + ", startingPortNumber=" + startingPortNumber + ", pingLatency=" + pingLatency + '}';
   }
 
-  
-  
 }

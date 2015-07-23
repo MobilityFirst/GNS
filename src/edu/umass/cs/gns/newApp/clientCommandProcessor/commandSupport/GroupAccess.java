@@ -78,7 +78,7 @@ public class GroupAccess {
           ClientRequestHandlerInterface handler) {
     handler.setReallySendUpdateToReplica(true);
     NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, writer, signature, message, true);
     handler.setReallySendUpdateToReplica(false);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't
@@ -134,7 +134,7 @@ public class GroupAccess {
           ClientRequestHandlerInterface handler) {
     handler.setReallySendUpdateToReplica(true);
     NSResponseCode groupResponse = handler.getIntercessor().sendUpdateRecord(guid, GROUP, members, null, 1,
-            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
+            UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message, true);
     handler.setReallySendUpdateToReplica(false);
     if (!groupResponse.isAnError()) {
       // We could fix the above operation if any one below gets an error, but we don't

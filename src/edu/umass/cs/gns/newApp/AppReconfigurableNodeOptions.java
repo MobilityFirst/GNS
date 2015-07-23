@@ -70,6 +70,11 @@ public class AppReconfigurableNodeOptions {
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
   public static boolean dnsOnly = false;
+  
+  /**
+   * Disables SSL authentication of client to server commands.
+   */
+  public static boolean disableSSL = false;
 
   public static boolean debuggingEnabled = false;
 
@@ -97,6 +102,7 @@ public class AppReconfigurableNodeOptions {
   public static final String DNS_GNS_ONLY = "dnsGnsOnly";
   public static final String DNS_ONLY = "dnsOnly";
   public static final String GNS_SERVER_IP = "gnsServerIP";
+  public static final String DISABLE_SSL = "disableSSL";
 
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
@@ -118,6 +124,8 @@ public class AppReconfigurableNodeOptions {
     Option dnsGnsOnly = new Option(DNS_GNS_ONLY, "With this option DNS server only does lookup in GNS server.");
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
+    Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
+
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -139,6 +147,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(dnsGnsOnly);
     commandLineOptions.addOption(dnsOnly);
     commandLineOptions.addOption(gnsServerIP);
+    commandLineOptions.addOption(disableSSL);
 
     return commandLineOptions;
 
@@ -241,6 +250,9 @@ public class AppReconfigurableNodeOptions {
     }
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
+    }
+     if (allValues.containsKey(DISABLE_SSL)) {
+      disableSSL = true;
     }
   }
 

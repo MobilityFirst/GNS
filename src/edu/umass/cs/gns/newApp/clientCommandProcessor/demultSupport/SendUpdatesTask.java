@@ -37,7 +37,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   private final String name;
   private UpdatePacket<NodeIDType> updatePacket;
-  private final int lnsReqID;
+  private final int ccpReqID;
 
   private HashSet<NodeIDType> activesQueried;
   private int timeoutCount = -1;
@@ -59,7 +59,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface<NodeIDType> handler,
           UpdatePacket<NodeIDType> updatePacket, NodeIDType nameServerID, boolean reallySendUpdatesToReplica) {
     // based on request info.
-    this.lnsReqID = lnsReqID;
+    this.ccpReqID = lnsReqID;
     this.handler = handler;
     this.name = updatePacket.getName();
     this.updatePacket = updatePacket;
@@ -106,18 +106,18 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   }
 
   private boolean isResponseReceived() {
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     if (info == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("UpdateInfo not found. Update complete. Cancel task. " + lnsReqID + "\t" + updatePacket);
+        GNS.getLogger().fine("UpdateInfo not found. Update complete. Cancel task. " + ccpReqID + "\t" + updatePacket);
       }
       return true;
     } else if (requestActivesCount == -1) {
       requestActivesCount = info.getNumLookupActives();
-    } else if (requestActivesCount != info.getNumLookupActives()) {  // set timer task ID to LNS
+    } else if (requestActivesCount != info.getNumLookupActives()) {  // set timer task ID to CCP
       // invalid active response received in this case
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Invalid active response received. Cancel task. " + lnsReqID + "\t" + updatePacket);
+        GNS.getLogger().fine("Invalid active response received. Cancel task. " + ccpReqID + "\t" + updatePacket);
       }
       return true;
     }
@@ -125,15 +125,15 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   }
 
   private boolean isMaxWaitTimeExceeded() {
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     if (info != null) {   // probably NS sent response
       // Too much time elapsed, send failed msg to user and log error
       if (System.currentTimeMillis() - info.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
-        // remove from request info as LNS must clear all state for this request
-        info = (UpdateInfo) handler.removeRequestInfo(lnsReqID);
+        // remove from request info as CCP must clear all state for this request
+        info = (UpdateInfo) handler.removeRequestInfo(ccpReqID);
         if (info != null) {
           if (handler.getParameters().isDebugMode()) {
-            GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + lnsReqID + " name = " + name);
+            GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + ccpReqID + " name = " + name);
           }
           // create a failure packet and send it back to client support
 
@@ -146,8 +146,6 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
           }
           info.setFinishTime();
           info.setSuccess(false);
-          //info.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
-          //GNS.getStatLogger().info(info.getLogString());
         }
         return true;
       }
@@ -157,10 +155,10 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
   }
 
   private void requestNewActives(EnhancedClientRequestHandlerInterface<NodeIDType> handler) {
-    // remove update info from LNS
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
+    // remove update info from CCP
+    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     if (info != null) {   // probably NS sent response
-      SendUpdatesTask<NodeIDType> newTask = new SendUpdatesTask<NodeIDType>(lnsReqID, handler, updatePacket, null);
+      SendUpdatesTask<NodeIDType> newTask = new SendUpdatesTask<NodeIDType>(ccpReqID, handler, updatePacket, null);
       PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
@@ -171,18 +169,8 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   private NodeIDType selectNS(CacheEntry<NodeIDType> cacheEntry) {
     NodeIDType nameServerID;
-    if (handler.getParameters().isLoadDependentRedirection()) {
-      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
+    return handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
-//    } else if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
-////      nameServerID = BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(),
-////              cacheEntry.getActiveNameServers(), activesQueried);
-//      throw new UnsupportedOperationException("Not supported yet.");
-    } else {
-      nameServerID = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
-              activesQueried);
-    }
-    return nameServerID;
   }
 
   private void sendToNS(NodeIDType nameServerID) {
@@ -193,28 +181,28 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       }
       return;
     }
-    UpdateInfo<NodeIDType> info = (UpdateInfo) handler.getRequestInfo(lnsReqID);
-    //if (info != null) info.addEventCode(LNSEventCode.CONTACT_ACTIVE);
+    UpdateInfo<NodeIDType> info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     activesQueried.add(nameServerID);
+    UpdatePacket<NodeIDType> pkt = Update.makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID);
     // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
     // create the packet that we'll send to the primary
-    UpdatePacket<NodeIDType> pkt = new UpdatePacket<NodeIDType>(
-            updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
-            updatePacket.getRequestID(),
-            lnsReqID, // the id use by the LNS (that would be us here)
-            name,
-            updatePacket.getRecordKey(),
-            updatePacket.getUpdateValue(),
-            updatePacket.getOldValue(),
-            updatePacket.getArgument(),
-            updatePacket.getUserJSON(),
-            updatePacket.getOperation(),
-            handler.getNodeAddress(),
-            nameServerID, updatePacket.getTTL(),
-            //signature info
-            updatePacket.getAccessor(),
-            updatePacket.getSignature(),
-            updatePacket.getMessage());
+//    UpdatePacket<NodeIDType> pkt = new UpdatePacket<NodeIDType>(
+//            updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
+//            updatePacket.getRequestID(),
+//            ccpReqID, // the id use by the CCP (that would be us here)
+//            name,
+//            updatePacket.getRecordKey(),
+//            updatePacket.getUpdateValue(),
+//            updatePacket.getOldValue(),
+//            updatePacket.getArgument(),
+//            updatePacket.getUserJSON(),
+//            updatePacket.getOperation(),
+//            handler.getNodeAddress(),
+//            nameServerID, updatePacket.getTTL(),
+//            //signature info
+//            updatePacket.getAccessor(),
+//            updatePacket.getSignature(),
+//            updatePacket.getMessage());
 
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Sending Update to Node: " + nameServerID.toString());
@@ -236,12 +224,12 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       }
     }
     // keep track of which NS we sent it to
-    UpdateInfo<NodeIDType> updateInfo = (UpdateInfo) handler.getRequestInfo(lnsReqID);
+    UpdateInfo<NodeIDType> updateInfo = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     if (updateInfo != null) {
       updateInfo.setNameserverID(nameServerID);
     }
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + lnsReqID
+      GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + ccpReqID
               + " Time:" + System.currentTimeMillis() + " --> " + pkt.toString());
     }
 //    } catch (JSONException e) {

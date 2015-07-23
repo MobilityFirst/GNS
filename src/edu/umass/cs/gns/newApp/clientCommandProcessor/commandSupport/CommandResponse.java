@@ -26,10 +26,10 @@ public class CommandResponse<NodeIDType> {
    * Instrumentation - what nameserver responded to this query
    */
   private NodeIDType responder;
-  /**
-   * Database lookup time instrumentation
-   */
-  private final int lookupTime;
+//  /**
+//   * Database lookup time instrumentation
+//   */
+//  private final int lookupTime;
 
   /**
    * Create a command response object from a return value with an error code.
@@ -40,12 +40,12 @@ public class CommandResponse<NodeIDType> {
    * @param responder
    */
   public CommandResponse(String returnValue, NSResponseCode errorCode, 
-          long CCPRoundTripTime, NodeIDType responder, int lookupTime) {
+          long CCPRoundTripTime, NodeIDType responder) {
     this.returnValue = returnValue;
     this.errorCode = errorCode;
     this.CCPRoundTripTime = CCPRoundTripTime;
     this.responder = responder;
-    this.lookupTime = lookupTime;
+    //this.lookupTime = lookupTime;
   }
 
   /**
@@ -54,7 +54,7 @@ public class CommandResponse<NodeIDType> {
    * @param returnValue
    */
   public CommandResponse(String returnValue) {
-    this(returnValue, NSResponseCode.NO_ERROR, -1, null, -1);
+    this(returnValue, NSResponseCode.NO_ERROR, -1, null);
   }
 
   /**
@@ -101,13 +101,13 @@ public class CommandResponse<NodeIDType> {
     return responder;
   }
 
-  /**
-   * Retrieves the database lookup time instrumentation from the command response.
-   * 
-   * @return 
-   */
-  public int getLookupTime() {
-    return lookupTime;
-  }
+//  /**
+//   * Retrieves the database lookup time instrumentation from the command response.
+//   * 
+//   * @return 
+//   */
+//  public int getLookupTime() {
+//    return lookupTime;
+//  }
 
 }

@@ -1,0 +1,34 @@
+configFile => ns_quiet.conf
+consoleOutputLevel => WARNING
+demandProfileClass => edu.umass.cs.gns.newApp.NullDemandProfile
+fileLoggingLevel => WARNING
+nsfile => ../../conf/single-server-info
+test => true
+Set demand profile: class edu.umass.cs.gns.newApp.NullDemandProfile
+Reconfigure in place is: false
+Setting Logger console level to WARNING and file level to WARNING
+########### Multi-node test #############
+###################################
+############# Setting up active replica frank_ActiveReplica
+BIND ADDRESS for frank_ActiveReplica is /10.0.1.50
+NODE ADDRESS for frank_ActiveReplica is /10.0.1.50
+Mon Jul 20 15:17:10 EDT 2015 WARNING ClientCommandProcessor.<init>: Not running DNS Service because it needs root permission! If you want DNS run the CCP using sudo.
+log4j:WARN No appenders could be found for logger (com.mchange.v2.log.MLog).
+log4j:WARN Please initialize the log4j system properly.
+log4j:WARN See http://logging.apache.org/log4j/1.2/faq.html#noconfig for more info.
+Jul 20, 2015 3:17:16 PM edu.umass.cs.gigapaxos.PaxosManager initiateRecovery
+WARNING: No checkpoint state found for node 2106156347. This can only happen if
+(1) the node is newly joining the system, or
+(2) the node previously crashed before completing even a single checkpoint, or
+(3) the node's checkpoint was manually deleted.
+$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+$$$$$$$$$$$$$$$$ Setting up reconfigurator frank_Reconfigurator
+Jul 20, 2015 3:17:16 PM edu.umass.cs.gigapaxos.PaxosManager initiateRecovery
+WARNING: No checkpoint state found for node 1569140565. This can only happen if
+(1) the node is newly joining the system, or
+(2) the node previously crashed before completing even a single checkpoint, or
+(3) the node's checkpoint was manually deleted.
+********* Nodes have started. Server is ready. *********
+8888888888888888888888888888>>>> [ stopServiceEpoch:95/+85.5us | deactivator:3503.6/+3145.3us | unpause:19.9/+1us | lookupMSAUFPostFind:0/0us | commandPreProc:0/0us | lookupMSAUF:97.5/+90.2us | serviceNameAdd:140148457086020/+129727161559218us | log:0/0us | runCommand:0/0us | handlePaxosMessage:1314.6/+638.3us | lookupMSAUFJustFind:223.7/+188.7us | executeCommand:6300/+5985us | appHandleIncoming@AR:200/+190us | lookupMSAUFPreFind:0/0us | DB.getReconfigurationRecord:414.4/+108.6us | EEC:1748.4/+1477.3us ]
+Mon Jul 20 15:21:13 EDT 2015 WARNING MongoRecords.lookupEntireRecord:  mongoLookup Long delay 25
+8888888888888888888888888888>>>> [ deactivator:11269.1/+9620.7us | unpause:0.1/-0.7us | totalLookup:2148/+483.7us | lookupMSAUF:749/+120.1us | serviceNameAdd:804773165756704.6/+506117527276464.1us | authACL:1150.8/+428.2us | runCommand:207.2/+16.6us | handlePacketCommandRequest:4596/-810.2us | handlePacketLookupRequest:2181.2/+482.3us | lookupMSAUFJustFind:535.9/+27.2us | handlePacketLookupRequestSetup:0/0us | appHandleIncoming@AR:774.5/+46.3us | executeCommand:4117.7/-853.7us | dnsRequest:2221.3/+475us | EEC:1217.6/-221.4us | DB.getReconfigurationRecord:504.8/+98.7us | stopServiceEpoch:139.1/+55.4us | lookupEntireRecord:838.9/-118.1us | commandPreProc:7.4/-2us | lookupMSAUFPostFind:127.2/+25.7us | totalLookupAuth:1278.6/+621.4us | updateJustThe$set:689.9/+127.5us | sendQueryInternal:2187.6/+471.2us | log:31.4/-14.4us | authSigCheck:268.6/+82.2us | handlePaxosMessage:234.2/-29.4us | totalUpdate:1044.3/+121.6us | totalUpdateAuth:166.1/-23.8us | authACLLookupPublicKey:220/+96.9us | lookupMSAUFPreFind:103.4/+32.9us ]

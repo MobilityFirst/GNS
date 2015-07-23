@@ -249,16 +249,7 @@ public class CommandHandler {
     app.outStandingQueries.put(packet.getClientRequestId(),
             new CommandRequestInfo(packet.getSenderAddress(), packet.getSenderPort(),
                     commandString, guid));
-    // Send it to the client command handler
-    if (app.getClientCommandProcessor() != null) { // new version with CPP running as part of app
-      handlePacketCommandRequest(json, app.getClientCommandProcessor().getRequestHandler(), app);
-    } else { // old code that will not be executed and will be going away soon
-      throw new RuntimeException("This should not have been called");
-      // remove these so the stamper will put new ones in so the packet will find it's way back here
-//      json.remove(JSONNIOTransport.DEFAULT_IP_FIELD);
-//      json.remove(JSONNIOTransport.DEFAULT_PORT_FIELD);
-//      app.getNioServer().sendToAddress(ccpAddress, json);
-    }
+    handlePacketCommandRequest(json, app.getClientCommandProcessor().getRequestHandler(), app);
   }
 
   private static long lastStatsTime = 0;
@@ -273,8 +264,7 @@ public class CommandHandler {
         GNS.getLogger().info("&&&&&&& For " + sentInfo.getCommand() + " | " + sentInfo.getGuid() + " APP IS SENDING VALUE BACK TO "
                 + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
       }
-      app.getNioServer().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
-              json);
+      app.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), json);
 
       // shows us stats every 100 commands, but not more than once every 5 seconds
       if (commandCount++ % 100 == 0) {
@@ -286,5 +276,8 @@ public class CommandHandler {
     } else {
       GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);
     }
+  }
+
+  public CommandHandler() {
   }
 }

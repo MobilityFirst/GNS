@@ -7,12 +7,9 @@ package edu.umass.cs.gns.newApp.clientSupport;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNode;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
-import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
@@ -84,17 +81,18 @@ public class LNSUpdateHandler {
   }
 
   private static void sendUpdateInternal(int updateId, InetSocketAddress lnsAddress, String name, String key, ResultValue newValue,
-          ResultValue oldValue, int argument, UpdateOperation operation, GnsApplicationInterface activeReplica) {
-    UpdatePacket packet = new UpdatePacket(activeReplica.getNodeID(), updateId,
+          ResultValue oldValue, int argument, UpdateOperation operation, GnsApplicationInterface app) {
+    UpdatePacket packet = new UpdatePacket(app.getNodeID(), updateId,
             name, key, newValue, oldValue, argument, operation,
             null, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
     try {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("########## Node " + activeReplica.getNodeID().toString() + "; Sending update " + updateId + " to LNS at" + lnsAddress
+        GNS.getLogger().info("########## Node " + app.getNodeID().toString() 
+                + "; Sending update " + updateId + " to LNS at" + lnsAddress
                 + " for " + name + " / " + key + ": " + packet.toJSONObject());
       }
-      activeReplica.getNioServer().sendToAddress(lnsAddress, packet.toJSONObject());
+      app.sendToClient(lnsAddress, packet.toJSONObject());
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {
@@ -102,47 +100,47 @@ public class LNSUpdateHandler {
     }
   }
 
-  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value, GnsApplicationInterface activeReplica,
-          InetSocketAddress lnsAddress) {
-    int id = nextRequestID();
-    outStandingUpdates.put(id, id);
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID().toString() + "; Sending add: " + name + " : " + key + "->" + value + " to LNS " + lnsAddress);
-    }
-    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null);
-    try {
-      activeReplica.getNioServer().sendToAddress(lnsAddress, packet.toJSONObject());
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
-    } catch (IOException e) {
-      GNS.getLogger().severe("Problem sending packet to NS " + lnsAddress + ": " + e);
-    }
-    waitForResponsePacket(id);
-    NSResponseCode result = updateResultMap.get(id);
-    updateResultMap.remove(id);
-    return result;
-  }
-
-  public static NSResponseCode sendRemoveRecord(String name, GnsApplicationInterface activeReplica,
-          InetSocketAddress lnsAddress) {
-    int id = nextRequestID();
-    outStandingUpdates.put(id, id);
-    if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID().toString() + "; Sending remove: " + name + " to LNS " + lnsAddress);
-    }
-    RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, null);
-    try {
-      activeReplica.getNioServer().sendToAddress(lnsAddress, packet.toJSONObject());
-    } catch (JSONException e) {
-      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
-    } catch (IOException e) {
-      GNS.getLogger().severe("Problem sending packet to NS " + lnsAddress + ": " + e);
-    }
-    waitForResponsePacket(id);
-    NSResponseCode result = updateResultMap.get(id);
-    updateResultMap.remove(id);
-    return result;
-  }
+//  public static NSResponseCode sendAddRecord(String name, String key, ResultValue value, GnsApplicationInterface activeReplica,
+//          InetSocketAddress lnsAddress) {
+//    int id = nextRequestID();
+//    outStandingUpdates.put(id, id);
+//    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//      GNS.getLogger().fine("++++++++++ Node " + activeReplica.getNodeID().toString() + "; Sending add: " + name + " : " + key + "->" + value + " to LNS " + lnsAddress);
+//    }
+//    AddRecordPacket packet = new AddRecordPacket(activeReplica.getNodeID(), id, name, key, value, null);
+//    try {
+//      activeReplica.getMessenger().sendToAddress(lnsAddress, packet.toJSONObject());
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
+//    } catch (IOException e) {
+//      GNS.getLogger().severe("Problem sending packet to NS " + lnsAddress + ": " + e);
+//    }
+//    waitForResponsePacket(id);
+//    NSResponseCode result = updateResultMap.get(id);
+//    updateResultMap.remove(id);
+//    return result;
+//  }
+//
+//  public static NSResponseCode sendRemoveRecord(String name, GnsApplicationInterface activeReplica,
+//          InetSocketAddress lnsAddress) {
+//    int id = nextRequestID();
+//    outStandingUpdates.put(id, id);
+//    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+//      GNS.getLogger().fine("----------- Node " + activeReplica.getNodeID().toString() + "; Sending remove: " + name + " to LNS " + lnsAddress);
+//    }
+//    RemoveRecordPacket packet = new RemoveRecordPacket(activeReplica.getNodeID(), id, name, null);
+//    try {
+//      activeReplica.getMessenger().sendToAddress(lnsAddress, packet.toJSONObject());
+//    } catch (JSONException e) {
+//      GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
+//    } catch (IOException e) {
+//      GNS.getLogger().severe("Problem sending packet to NS " + lnsAddress + ": " + e);
+//    }
+//    waitForResponsePacket(id);
+//    NSResponseCode result = updateResultMap.get(id);
+//    updateResultMap.remove(id);
+//    return result;
+//  }
 
   /**
    * Handles a ConfirmUpdatePacket coming back to this NameServer from a Local Name Server
@@ -197,5 +195,5 @@ public class LNSUpdateHandler {
     } while (updateResultMap.containsKey(id));
     return id;
   }
-  public static String Version = "$Revision: 481 $";
+ 
 }
