@@ -54,7 +54,7 @@
     
   <target name="nio_jarbuild" depends="compile" description="generate jar files">
     <mkdir dir="${build.jar}"/>
-    <jar destfile="${build.jar}/nio-1.0.jar" filesetmanifest="mergewithoutmain">
+    <jar destfile="${build.jar}/nio-1.1.jar" filesetmanifest="mergewithoutmain">
       <manifest>
         <attribute name="Built-By" value="${user.name}"/>
         <attribute name="Implementation-Vendor"
