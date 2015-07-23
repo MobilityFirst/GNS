@@ -116,7 +116,7 @@ public class AppLookup {
       }
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObjectForErrorResponse());
-        //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObjectForErrorResponse());
       }
     } else {
         // All signature and ACL checks passed see if we can find the field to return;
@@ -148,7 +148,7 @@ public class AppLookup {
       dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-        //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+        //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       }
       DelayProfiler.updateDelay("totalLookup", receiptTime);
     }
@@ -183,7 +183,7 @@ public class AppLookup {
       dnsPacket.setRecordValue(valuesMap);
       // .. and send it
       gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
-      //gnsApp.getNioServer().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
+      //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
       return true;
     }
     return false;

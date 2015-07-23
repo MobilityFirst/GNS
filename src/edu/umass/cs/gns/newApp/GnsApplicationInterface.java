@@ -12,6 +12,8 @@ import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import java.io.IOException;
+import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
 /**
@@ -28,8 +30,10 @@ public interface GnsApplicationInterface<NodeIDType> {
   BasicRecordMap getDB();
 
   InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
-
-  InterfaceMessenger<NodeIDType,JSONObject> getNioServer();
+  
+  void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException;
+  
+  void sendToID(NodeIDType id, JSONObject msg) throws IOException;
   
   PingManager getPingManager();
   

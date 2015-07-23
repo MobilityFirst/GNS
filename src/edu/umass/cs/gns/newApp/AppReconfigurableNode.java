@@ -32,16 +32,22 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     if (this.mongoRecords == null) {
       this.mongoRecords = new MongoRecords<>(this.myID, AppReconfigurableNodeOptions.mongoPort);
     }
-    NewApp app = new NewApp(this.myID, (GNSInterfaceNodeConfig<String>) this.nodeConfig, this.messenger, mongoRecords);
+    NewApp app = null;
+    try {
+      app = new NewApp(this.myID, (GNSInterfaceNodeConfig<String>) this.nodeConfig,
+              this.messenger, mongoRecords);
+    } catch (IOException e) {
+      GNS.getLogger().info("Unable to create app: " + e);
+      // not sure what to do here other than just return null
+      return null;
+    }
 
     NewAppCoordinator<String> appCoordinator = new NewAppCoordinator<String>(app, this.nodeConfig, this.messenger);
-
     // start the NSListenerAdmin thread
     new AppAdmin(app, (GNSNodeConfig) nodeConfig).start();
-
     GNS.getLogger().info(myID.toString() + " Admin thread initialized");
-
     return appCoordinator;
+
   }
 
   private static void startNodePair(String nodeID, String nodeConfigFilename) throws IOException {

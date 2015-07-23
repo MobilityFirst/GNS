@@ -85,16 +85,17 @@ public class LNSQueryHandler {
   }
 
   private static void sendQueryInternal(int queryId, InetSocketAddress lnsAddress, String name, String key,
-          ColumnFieldType returnFormat, GnsApplicationInterface activeReplica) {
-    DNSPacket queryrecord = new DNSPacket(activeReplica.getNodeID(), queryId, name, key, null,
+          ColumnFieldType returnFormat, GnsApplicationInterface app) {
+    DNSPacket queryrecord = new DNSPacket(app.getNodeID(), queryId, name, key, null,
             returnFormat,
             null, null, null);
     JSONObject json;
     try {
       json = queryrecord.toJSONObjectQuestion();
-      GNS.getLogger().info("########## Node " + activeReplica.getNodeID() + "; Sending query " + queryId + " to " + lnsAddress
+      GNS.getLogger().info("########## Node " + app.getNodeID() + "; Sending query " + queryId 
+              + " to " + lnsAddress
               + " for " + name + " / " + key + ": " + json);
-      activeReplica.getNioServer().sendToAddress(lnsAddress, json);
+      app.sendToClient(lnsAddress, json);
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON Object:" + e);
     } catch (IOException e) {

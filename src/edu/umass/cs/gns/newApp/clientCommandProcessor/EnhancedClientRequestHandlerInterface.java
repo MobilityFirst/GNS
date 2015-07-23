@@ -17,7 +17,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * Extensions of ClientRequestHandlerInterface for the new app.
+ * 
  * @author westy
  * @param <NodeIDType>
  */
