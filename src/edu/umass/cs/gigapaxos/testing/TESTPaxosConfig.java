@@ -191,7 +191,7 @@ public class TESTPaxosConfig {
 	private static boolean clean_db = !TEST_WITH_RECOVERY;
 
 	static {
-		assert (DEFAULT_NUM_CLIENTS <= PRE_CONFIGURED_GROUPS);
+		//assert (DEFAULT_NUM_CLIENTS <= PRE_CONFIGURED_GROUPS);
 	}
 
 	private static ArrayList<Object> failedNodes = new ArrayList<Object>();

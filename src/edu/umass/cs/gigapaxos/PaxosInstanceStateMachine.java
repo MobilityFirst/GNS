@@ -32,7 +32,6 @@ import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Keyable;
-import edu.umass.cs.utils.MyLogger;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -778,9 +777,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		MessagingTask mtask = prevBallot.compareTo(prepareReply.ballot) < 0 ?
 		// log only if not already logged (if my ballot got upgraded)
 		new LogMessagingTask(prepare.ballot.coordinatorID, prepareReply,
-				prepare) :
+				prepare)
 		// else just send preempting prepareReply
-				new MessagingTask(prepare.ballot.coordinatorID, prepareReply);
+				: new MessagingTask(prepare.ballot.coordinatorID, prepareReply);
 		return mtask;
 	}
 
@@ -1202,14 +1201,12 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 							this.paxosState.getGCSlot());
 					checkpointed = true;
 					log.log(Level.INFO,
-							MyLogger.FORMAT[7],
+							"{0} forcing checkpoint at slot {1}; garbage collected "
+									+ "accepts up to slot {2}; max_committed_slot = {3} {4}",
 							new Object[] {
 									this,
-									"forcing checkpoint at slot",
 									cpSlot,
-									"; garbage collected accepts upto slot",
 									this.paxosState.getGCSlot(),
-									"; max committed slot = ",
 									this.paxosState.getMaxCommittedSlot(),
 									(this.paxosState.getBallotCoordLog() == this
 											.getMyID() ? "; maxCommittedFrontier="
@@ -1543,8 +1540,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		AcceptPacket accept = this.coordinator
 				.reissueAcceptIfWaitingTooLong(this.paxosState.getSlot());
 		if (accept != null)
-			log.log(Level.INFO, MyLogger.FORMAT[2], new Object[] { this,
-					" resending timed out ACCEPT ", accept.getSummary() });
+			log.log(Level.INFO, "{0} resending timed out ACCEPT {1}",
+					new Object[] { this, accept.getSummary() });
 		else
 			log.log(Level.FINEST, "{0} coordinator {1} is good for now",
 					new Object[] { this, this.coordinator });
@@ -1638,8 +1635,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		SyncDecisionsPacket srp = new SyncDecisionsPacket(this.getMyID(), 1,
 				missingSlotNumbers, true);
 
-		log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] { this,
-				"requesting missing zeroth checkpoint." });
+		log.log(Level.INFO, "{0} requesting missing zeroth checkpoint",
+				new Object[] { this, });
 		// send sync request to coordinator or multicast to others if I am
 		// coordinator
 		MessagingTask mtask = this.paxosState.getBallotCoord() != this

@@ -100,7 +100,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	}
 
 	// invoke SSL wrap
-	protected void wrap(SocketChannel channel, ByteBuffer unencrypted) {
+	protected int wrap(SocketChannel channel, ByteBuffer unencrypted) {
 		AbstractNIOSSL nioSSL = this.sslMap.get(channel);
 		assert (nioSSL != null);
 		log.log(Level.FINEST,
@@ -108,7 +108,9 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 				new Object[] { this, unencrypted.remaining(),
 						channel.socket().getLocalSocketAddress(),
 						channel.socket().getRemoteSocketAddress() });
+		int originalSize = unencrypted.remaining();
 		nioSSL.nioSend(unencrypted);
+		return  originalSize - unencrypted.remaining();
 	}
 
 	protected boolean isHandshakeComplete(SocketChannel socketChannel) {
@@ -295,10 +297,10 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	}
 
 	@Override
-	public void processMessage(InetSocketAddress sockAddr, String jsonMsg) {
+	public void processMessage(InetSocketAddress sockAddr, String msg) {
 		if (this.decryptedWorker instanceof InterfaceMessageExtractor)
 			((InterfaceMessageExtractor) this.decryptedWorker).processMessage(
-					sockAddr, jsonMsg);
+					sockAddr, msg);
 
 	}
 }

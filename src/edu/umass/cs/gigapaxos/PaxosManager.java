@@ -903,7 +903,7 @@ public class PaxosManager<NodeIDType> {
 				return false;
 
 			PaxosInstanceStateMachine.execute(null, myApp, (new RequestPacket(
-					jsonMsg)).getRequestValues(), false);
+					jsonMsg).setEntryReplica(myID)).getRequestValues(), false);
 		} catch (JSONException e) {
 			log.severe(this + " unable to parse " + jsonMsg);
 			e.printStackTrace();

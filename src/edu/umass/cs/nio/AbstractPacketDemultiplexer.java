@@ -96,7 +96,10 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		this.myThreadPoolSize = threadPoolSize;
 	}
 
-	AbstractPacketDemultiplexer() {
+	/**
+	 * 
+	 */
+	public AbstractPacketDemultiplexer() {
 		this(getThreadPoolSize());
 	}
 

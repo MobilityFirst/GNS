@@ -161,15 +161,17 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		log.log(Level.FINE, "App {0} sending response to client {0}",
 				new Object[] { getMyID(), requestPacket.getSummary() });
 		RequestInstrumenter.remove(requestPacket.requestID);
+
 		/*
 		 * Entry replica check must be done here as requests with different
 		 * entry replicas can get batched when forwarded between replicas.
 		 */
-		if (requestPacket.getEntryReplica() == this.getMyID())
+		if (requestPacket.getEntryReplica() == this.getMyID()) {
 			niot.sendToAddress(
 					new InetSocketAddress(requestPacket.getClientAddress(),
 							requestPacket.getClientPort()), requestPacket
 							.toJSONObject());
+		}
 		// send responses for batched requests as well
 		if (requestPacket.getBatched() != null)
 			for (RequestPacket batchedReq : requestPacket.getBatched())

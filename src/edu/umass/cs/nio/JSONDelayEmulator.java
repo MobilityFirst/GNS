@@ -30,7 +30,7 @@ public class JSONDelayEmulator {
 	private static boolean USE_CONFIG_FILE_INFO = false;
 	private static long DEFAULT_DELAY = 100; // 100ms
 
-	private static Object gnsNodeConfig = null;
+	private static Object pingNodeConfig = null;
 
 	private static final Timer timer = new Timer(JSONDelayEmulator.class.getSimpleName());
 
@@ -42,15 +42,15 @@ public class JSONDelayEmulator {
 	}
 
 	/**
-	 * @param gnsNodeConfig
+	 * @param pingNodeConfig
 	 * @param variation
 	 */
 	public static void emulateConfigFileDelays(
-			InterfaceDelayEmulator<?> gnsNodeConfig, double variation) {
+			InterfaceDelayEmulator<?> pingNodeConfig, double variation) {
 		JSONDelayEmulator.EMULATE_RECEIVER_DELAYS = true;
 		JSONDelayEmulator.VARIATION = variation;
 		JSONDelayEmulator.USE_CONFIG_FILE_INFO = true;
-		JSONDelayEmulator.gnsNodeConfig = gnsNodeConfig;
+		JSONDelayEmulator.pingNodeConfig = pingNodeConfig;
 	}
 
 	/**
@@ -135,13 +135,13 @@ public class JSONDelayEmulator {
 				 */
 				if (id instanceof Integer)
 					// divide by 2 for one-way delay
-					delay = ((InterfaceDelayEmulator<Integer>) gnsNodeConfig)
+					delay = ((InterfaceDelayEmulator<Integer>) pingNodeConfig)
 							.getEmulatedDelay((Integer) id) / 2;
 				else if (id instanceof String)
-					delay = ((InterfaceDelayEmulator<String>) gnsNodeConfig)
+					delay = ((InterfaceDelayEmulator<String>) pingNodeConfig)
 							.getEmulatedDelay((String) id) / 2;
 				else if (id instanceof SocketAddress)
-					delay = ((InterfaceDelayEmulator<SocketAddress>) gnsNodeConfig)
+					delay = ((InterfaceDelayEmulator<SocketAddress>) pingNodeConfig)
 							.getEmulatedDelay((SocketAddress) id) / 2;
 
 			} else {

@@ -268,7 +268,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 		/**
 		 * Note: next() may return null immediately after hasNext() returns
 		 * true. This behavior is unlike a traditional iterator wherein, if
-		 * hasNExt() returns true, next() necessarily returns a non-null value
+		 * hasNext() returns true, next() necessarily returns a non-null value
 		 * or throws a {@code ConcurrentModificationException}
 		 */
 		@SuppressWarnings("unchecked")

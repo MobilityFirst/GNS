@@ -8,17 +8,21 @@ import edu.umass.cs.utils.Util;
  * @author V. Arun
  */
 public class DelayProfiler {
+	private static HashMap<String, Double> averageMillis = new HashMap<String, Double>();
+	private static HashMap<String, Double> averageNanos = new HashMap<String, Double>();
 	private static HashMap<String, Double> averages = new HashMap<String, Double>();
 	private static HashMap<String, Double> stdDevs = new HashMap<String, Double>();
 
 	/**
 	 * @param field
+	 * @param map
 	 * @return As specified by {@link HashMap#put(Object, Object)}/
 	 */
-	public synchronized static boolean register(String field) {
-		if (averages.containsKey(field))
+	public synchronized static boolean register(String field,
+			HashMap<String, Double> map) {
+		if (map.containsKey(field))
 			return false;
-		averages.put(field, 0.0);
+		map.put(field, 0.0);
 		stdDevs.put(field, 0.0);
 		return true;
 	}
@@ -28,14 +32,30 @@ public class DelayProfiler {
 	 * @param time
 	 */
 	public synchronized static void updateDelay(String field, double time) {
-		register(field); // register if not registered
-		double delay = averages.get(field);
-		delay = Util.movingAverage(System.currentTimeMillis() - time, delay);
-		averages.put(field, delay);
+		long endTime = System.currentTimeMillis();
+		register(field, averageMillis); // register if not registered
+		double delay = averageMillis.get(field);
+		delay = Util.movingAverage(endTime - time, delay);
+		averageMillis.put(field, delay);
 		// update deviation
 		double dev = stdDevs.get(field);
-		dev = Util
-				.movingAverage(System.currentTimeMillis() - time - delay, dev);
+		dev = Util.movingAverage(endTime - time - delay, dev);
+		stdDevs.put(field, dev);
+	}
+
+	/**
+	 * @param field
+	 * @param time
+	 */
+	public synchronized static void updateDelayNano(String field, double time) {
+		long endTime = System.nanoTime();
+		register(field, averageNanos); // register if not registered
+		double delay = averageNanos.get(field);
+		delay = Util.movingAverage(endTime - time, delay);
+		averageNanos.put(field, delay);
+		// update deviation
+		double dev = stdDevs.get(field);
+		dev = Util.movingAverage(endTime - time - delay, dev);
 		stdDevs.put(field, dev);
 	}
 
@@ -56,7 +76,8 @@ public class DelayProfiler {
 	 * @return The delay.
 	 */
 	public synchronized static double get(String field) {
-		return averages.containsKey(field) ? averages.get(field) : 0.0;
+		return averageMillis.containsKey(field) ? averageMillis.get(field)
+				: 0.0;
 	}
 
 	/**
@@ -64,7 +85,7 @@ public class DelayProfiler {
 	 * @param sample
 	 */
 	public synchronized static void updateMovAvg(String field, int sample) {
-		register(field); // register if not registered
+		register(field, averages); // register if not registered
 		// update value
 		double value = averages.get(field);
 		value = Util.movingAverage(sample, value);
@@ -80,14 +101,21 @@ public class DelayProfiler {
 	 */
 	public synchronized static String getStats() {
 		String s = "[ ";
-		int count = 0;
-		if (!averages.isEmpty())
-			for (String field : averages.keySet()) {
-				s += ((count++ > 0 ? " | " : "") + field + ":"
-						+ Util.df(averages.get(field) * 1000) + "/"
-						+ (stdDevs.get(field) > 0 ? "+" : "")
-						+ Util.df(stdDevs.get(field) * 1000) + "us");
-			}
+		s += statsHelper(averageMillis, "ms");
+		s += statsHelper(averageNanos, "ns");
+		s += statsHelper(averages, "");
 		return s + " ]";
+	}
+
+	private static String statsHelper(HashMap<String, Double> map, String units) {
+		int count = 0;
+		String s = "";
+		for (String field : map.keySet()) {
+			s += ((count++ > 0 ? " | " : "") + field + ":"
+					+ Util.df(map.get(field)) + "/"
+					+ (stdDevs.get(field) > 0 ? "+" : "")
+					+ Util.df(stdDevs.get(field)) + units);
+		}
+		return s;
 	}
 }

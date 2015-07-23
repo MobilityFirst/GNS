@@ -20,7 +20,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	 * Warning: setting this to a high value seems to cause problems with long
 	 * log messages in derby DB. Increase with care.
 	 */
-	private static final int MAX_BATCH_SIZE = 100;
+	private static final int MAX_BATCH_SIZE = 1000;
 
 	private final HashMap<String, ArrayList<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
@@ -47,12 +47,25 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	}
 
 	@Override
+	public void process(RequestPacket task) {
+		this.paxosManager.proposeBatched(task);
+	}
+
+	// just to name the thread, otherwise super suffices
+	public void start() {
+		Thread me = (new Thread(this));
+		me.setName(RequestBatcher.class.getSimpleName()
+				+ this.paxosManager.getMyID());
+		me.start();
+	}
+
+	@Override
 	public void enqueueImpl(RequestPacket task) {
 		ArrayList<RequestPacket> taskList = this.batched.get(task.getPaxosID());
 		if (taskList == null)
 			taskList = new ArrayList<RequestPacket>();
 		taskList.add(task);
-		this.batched.put(task.getPaxosID(), taskList); // unnecessary
+		this.batched.put(task.getPaxosID(), taskList); 
 	}
 
 	/*
@@ -75,11 +88,24 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		// first pluck the first request from the list
 		RequestPacket first = (reqPktIter.next());
 		reqPktIter.remove();
+
 		// then pluck the rest into a batch within the first request
 		Set<RequestPacket> batch = new HashSet<RequestPacket>();
 		int maxBatchSize = Math.min(MAX_BATCH_SIZE - 1, firstEntry.getValue()
 				.size());
-		// totalByteLength must be less than SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE
+		/*
+		 * totalByteLength must be less than SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE
+		 * that specifies the maximum length of a paxos log message. We use the
+		 * method lengthEstimate() below that is a loose upper bound on the
+		 * actual length. It is better to be conservative instead of computing
+		 * the exact length here for two reasons: (1) we need a
+		 * toJSON.toString() conversion just for computing the exact length; (2)
+		 * the size can grow because NIO or paxos components might sneak
+		 * additional fields as a request packet morphs into a logged accept or
+		 * decision. It is much cleaner to prevent exceptions in
+		 * AbstractPaxosLogger.logBatch(.) by being cautious here than trying to
+		 * salvage the batch or dropping the whole batch in the logger.
+		 */
 		int totalByteLength = first.lengthEstimate();
 		for (int i = 0; i < maxBatchSize; i++) {
 			assert (reqPktIter.hasNext());
@@ -92,25 +118,14 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 			reqPktIter.remove();
 		}
 
+		// latch plucked sub-list above to the first request
 		if (!batch.isEmpty())
 			first.latchToBatch(batch.toArray(new RequestPacket[0]));
 
 		// remove first list if all plucked
-		if (!reqPktIter.hasNext())
+		if (firstEntry.getValue().isEmpty())//!reqPktIter.hasNext())
 			mapEntryIter.remove();
+
 		return first;
-	}
-
-	@Override
-	public void process(RequestPacket task) {
-		this.paxosManager.proposeBatched(task);
-	}
-
-	// just to name the thread, otherwise super suffices
-	public void start() {
-		Thread me = (new Thread(this));
-		me.setName(RequestBatcher.class.getSimpleName()
-				+ this.paxosManager.getMyID());
-		me.start();
 	}
 }

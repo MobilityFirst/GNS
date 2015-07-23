@@ -16,6 +16,6 @@ public class DataProcessingWorkerDefault implements
 	public void processData(SocketChannel socket, ByteBuffer incoming) {
 		byte[] rcvd = new byte[incoming.remaining()];
 		incoming.get(rcvd);
-		System.out.println("Received: " + new String(rcvd));
+		//System.out.println("Received: " + new String(rcvd));
 	}
 }

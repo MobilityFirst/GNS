@@ -21,13 +21,13 @@ public class RecoveryInfo {
 	public RecoveryInfo(String id, int ver, String[] group) {
 		this.paxosID = id;
 		this.version = ver;
-		this.members = Util.arrayOfNodeIdsToStringSet(group);
+		this.members = Util.arrayOfObjectsToStringSet(group);
 	}
 
 	public RecoveryInfo(String id, int ver, String[] group, String state) {
 		this.paxosID = id;
 		this.version = ver;
-		this.members = Util.arrayOfNodeIdsToStringSet(group);
+		this.members = Util.arrayOfObjectsToStringSet(group);
 		this.state = state;
 	}
 

@@ -102,13 +102,13 @@ public class JSONMessenger<NodeIDType> implements
 					throw (je);
 				}
 
-				int length = jsonMsg.toString().length();
+				//int length = jsonMsg.toString().length();
 
 				// special case provision for InetSocketAddress
 				int sent = this.specialCaseSend(mtask.recipients[r], jsonMsg);
 
 				// check success or failure and react accordingly
-				if (sent == length) {
+				if (sent > 0) {
 					log.log(Level.FINEST, "Node{0} sent to {1} ", new Object[] {
 							this.nioTransport.getMyID(), mtask.recipients[r],
 							jsonMsg });

@@ -9,7 +9,7 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.utils.Util;
 import edu.umass.cs.reconfiguration.InterfaceModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.InterfaceModifiableRCConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;

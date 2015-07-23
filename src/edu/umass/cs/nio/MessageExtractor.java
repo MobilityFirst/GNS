@@ -1,6 +1,6 @@
 package edu.umass.cs.nio;
 
-import edu.umass.cs.nio.nioutils.NIOInstrumenter;
+import edu.umass.cs.gns.util.Util;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 
 import org.json.JSONException;
@@ -14,8 +14,10 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -29,9 +31,9 @@ import java.util.logging.Logger;
  *         result in double-writing bytes sometimes. And there is no way of
  *         knowing in this class that the byte stream on the new connection is
  *         related to a byte stream on a previous connection. So we have to
- *         accept that some messages might get lost because portions of the
- *         byte stream will fail format checks. We can live with this as
- *         connection failures are (hopefully) rare.
+ *         accept that some messages might get lost because portions of the byte
+ *         stream will fail format checks. We can live with this as connection
+ *         failures are (hopefully) rare.
  * 
  *         The more annoying problem that can happen even during graceful
  *         execution is that a socket read may return only part of the message
@@ -52,12 +54,12 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 * The pattern used in the header. The header is the String:
 	 * {@code HEADER_PATTERN} + {@code message_size} + {@code HEADER_PATTERN}.
 	 */
-	public static final String HEADER_PATTERN = "&"; // Could be an arbitrary
-														// string
+	public static final String HEADER_PATTERN = "&"; // could be any string
 	private final HashMap<SocketChannel, ByteArrayOutputStream> sockStreams;
 	private final ArrayList<AbstractPacketDemultiplexer<?>> packetDemuxes;
-	private Timer timer = new Timer(MessageExtractor.class.getSimpleName()); // timer object to schedule packets with
-										// delay if we are emulating delays
+	// timer object to schedule packets with delay if emulating delays
+	private ScheduledExecutorService executor = Executors
+			.newScheduledThreadPool(1);
 
 	private static final Logger log = NIOTransport.getLogger();
 
@@ -71,8 +73,6 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		this(new PacketDemultiplexerDefault());
 	}
 
-
-
 	/**
 	 * Note: Use with care. This will change demultiplexing behavior midway,
 	 * which is usually not what you want to do. This is typically useful to set
@@ -85,7 +85,6 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 			AbstractPacketDemultiplexer<?> pd) {
 		packetDemuxes.add(pd);
 	}
-
 
 	/**
 	 * Header is of the form pattern<size>pattern. The pattern is changeable
@@ -107,15 +106,26 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 */
 	@Override
 	public void processData(SocketChannel socket, ByteBuffer incoming) {
-		processData(socket, combineNewWithBuffered(socket, incoming));
+		byte[] buf = new byte[incoming.remaining()];
+		incoming.get(buf);
+		try {
+			this.processMessageInternal(
+					(InetSocketAddress) socket.getRemoteAddress(), buf);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
 	 * The above method returns void for backwards compatibility. It is
 	 * convenient to test this method if it returns an int.
+	 * 
+	 * @throws UnsupportedEncodingException
 	 */
 
-	private int processData(SocketChannel sock, String msg) {
+	@Deprecated
+	private int processData(SocketChannel sock, String msg)
+			throws UnsupportedEncodingException {
 		ArrayList<String> strArray = (this.parseAndSetSockStreams(sock, msg));
 		processMessages(getSenderSocketAddress(sock), strArray);
 		return strArray.size();
@@ -124,12 +134,26 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	public void stop() {
 		for (AbstractPacketDemultiplexer<?> pd : this.packetDemuxes)
 			pd.stop();
-		this.timer.cancel();
+		this.executor.shutdownNow();
 	}
 
-	public void processMessage(InetSocketAddress sockAddr,
-			final String jsonMsg) {
-		this.processMessageInternal(sockAddr, jsonMsg);
+	private void processMessage(InetSocketAddress sockAddr, final byte[] msg) {
+		try {
+			this.processMessageInternal(sockAddr, msg);
+		} catch (UnsupportedEncodingException e) {
+			fatalExit(e);
+		}
+	}
+
+	@Override
+	public void processMessage(InetSocketAddress sockAddr, String msg) {
+		try {
+			// FIXME: needless string->bytes->string conversion for local sends
+			this.processMessageInternal(sockAddr,
+					msg.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING));
+		} catch (UnsupportedEncodingException e) {
+			fatalExit(e);
+		}
 	}
 
 	/**
@@ -154,7 +178,11 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 
 	/* *************** Start of private methods **************************** */
 
-	private String combineNewWithBuffered(SocketChannel socket, ByteBuffer incoming) {
+	// FIXME: unused (like most of these methods below)
+	@SuppressWarnings("unused")
+	@Deprecated
+	private String combineNewWithBuffered(SocketChannel socket,
+			ByteBuffer incoming) {
 		byte[] data = new byte[incoming.remaining()];
 		incoming.get(data);
 		try {
@@ -172,7 +200,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		return null;
 	}
 
-	private static void fatalExit(UnsupportedEncodingException e) {
+	protected static void fatalExit(UnsupportedEncodingException e) {
 		e.printStackTrace();
 		System.err.println("NIO failed because the charset encoding "
 				+ JSONNIOTransport.NIO_CHARSET_ENCODING
@@ -184,73 +212,79 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 * Actual message processing is done by packetDemux. This class only
 	 * pre-processes a byte stream into individual messages.
 	 */
+	@Deprecated
 	private void processMessages(InetSocketAddress sender,
-			ArrayList<String> strArray) {
+			ArrayList<String> strArray) throws UnsupportedEncodingException {
 		if (strArray != null && !strArray.isEmpty()) {
 			for (String str : strArray) {
-				NIOInstrumenter.incrJSONRcvd(sender.getPort());
-				this.processMessage(sender, str);
+				this.processMessage(sender,
+						str.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING));
 			}
 		}
 	}
 
-	private void processMessageInternal(
-			InetSocketAddress sockAddr, String msg) {
-
-		MessageWorker worker = new MessageWorker(sockAddr, msg, packetDemuxes);
+	private void processMessageInternal(InetSocketAddress sockAddr, byte[] msg)
+			throws UnsupportedEncodingException {
 		long delay = -1;
 		if (JSONDelayEmulator.isDelayEmulated()
-				&& (delay = JSONDelayEmulator.getEmulatedDelay(msg)) >= 0)
+				&& (delay = JSONDelayEmulator.getEmulatedDelay(new String(msg,
+						MessageNIOTransport.NIO_CHARSET_ENCODING))) >= 0)
 			// run in a separate thread after scheduled delay
-			timer.schedule(worker, delay);
+			executor.schedule(new MessageWorker(sockAddr, msg, packetDemuxes),
+					delay, TimeUnit.MILLISECONDS);
 		else
 			// run it immediately
-			worker.run();
+			this.demultiplexMessage(sockAddr, msg);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected void demultiplexMessage(InetSocketAddress sockAddr, byte[] msg) throws UnsupportedEncodingException {
+		for (final AbstractPacketDemultiplexer<?> pd : this.packetDemuxes) {
+			try {
+				if (pd instanceof PacketDemultiplexerDefault)
+					continue;
+
+				Object message = pd.getMessage(new String(msg,
+						MessageNIOTransport.NIO_CHARSET_ENCODING));
+				if (message == null)
+					continue;
+				// the handler turns true if it handled the message
+				else if ((message instanceof JSONObject && (((AbstractPacketDemultiplexer<JSONObject>) pd)
+						.handleMessageSuper(stampAddressIntoJSONObject(
+								sockAddr, (JSONObject) message))))
+						//
+						|| ((message instanceof byte[] && (((AbstractPacketDemultiplexer<byte[]>) pd)
+								.handleMessageSuper((byte[]) message))))
+						//
+						|| ((message instanceof String && (((AbstractPacketDemultiplexer<String>) pd)
+								.handleMessageSuper((String) message))))
+				// return true if any of the handlers returned true
+				)
+					return;
+
+			} catch (JSONException je) {
+				je.printStackTrace();
+			}
+		}
 	}
 
 	private class MessageWorker extends TimerTask {
 
 		private final InetSocketAddress sockAddr;
-		private final String msg;
-		private final ArrayList<AbstractPacketDemultiplexer<?>> pdemuxes;
+		private final byte[] msg;
 
-		public MessageWorker(InetSocketAddress sockAddr, String msg,
+		public MessageWorker(InetSocketAddress sockAddr, byte[] msg,
 				ArrayList<AbstractPacketDemultiplexer<?>> pdemuxes) {
 			this.msg = msg;
 			this.sockAddr = sockAddr;
-			this.pdemuxes = pdemuxes;
 		}
 
-		@SuppressWarnings("unchecked")
 		@Override
 		public void run() {
-
-			for (final AbstractPacketDemultiplexer<?> pd : pdemuxes) {
-				try {
-					if (pd instanceof PacketDemultiplexerDefault)
-						continue;
-
-					Object message = pd.getMessage(msg);
-					if (message == null)
-						continue;
-					// the handler turns true if it handled the message
-					if (message instanceof JSONObject
-							&& (((AbstractPacketDemultiplexer<JSONObject>) pd)
-									.handleMessageSuper(stampAddressIntoJSONObject(
-											sockAddr, (JSONObject) message))))
-						return;
-					else if (message instanceof String
-							&& (((AbstractPacketDemultiplexer<String>) pd)
-									.handleMessageSuper((String) message)))
-						return;
-					else if (message instanceof byte[]
-							&& (((AbstractPacketDemultiplexer<byte[]>) pd)
-									.handleMessageSuper((byte[]) message)))
-						return;
-
-				} catch (JSONException je) {
-					je.printStackTrace();
-				}
+			try {
+				demultiplexMessage(sockAddr, msg);
+			} catch (UnsupportedEncodingException e) {
+				fatalExit(e);
 			}
 		}
 	}
@@ -273,6 +307,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 * the header will be removed. As a consequence, all bytes up to the next
 	 * correctly formatted message will be discarded.
 	 */
+	@Deprecated
 	private String extractMessage(String str, ArrayList<String> msgArray) {
 		String retval = str;
 		if (str.length() > 2 * MessageExtractor.HEADER_PATTERN.length()) {
@@ -310,7 +345,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	}
 
 	// Invokes extractMessage until it can keep extracting more messages.
-
+	@Deprecated
 	private String extractMultipleMessages(String str,
 			ArrayList<String> jsonArray) {
 		while (str.length() > 0) {
@@ -337,10 +372,10 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 * class thread-safe irrespective of whether it is used in conjunction with
 	 * NIO or not.
 	 */
-	private synchronized ArrayList<String> parseAndSetSockStreams(
-			SocketChannel sock, String data) {
+	@Deprecated
+	private ArrayList<String> parseAndSetSockStreams(SocketChannel sock,
+			String data) {
 		ArrayList<String> jsonArray = new ArrayList<String>();
-
 		String newStr = this.extractMultipleMessages(data, jsonArray);
 
 		this.bufferInSockStream(sock, newStr);
@@ -349,6 +384,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		return jsonArray;
 	}
 
+	@Deprecated
 	private void bufferInSockStream(SocketChannel sock, String str) {
 		byte[] bytes = null;
 		try {
@@ -362,6 +398,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		this.sockStreams.put(sock, byteArray);
 	}
 
+	@Deprecated
 	private static InetSocketAddress getSenderSocketAddress(SocketChannel sock) {
 		InetSocketAddress address = null;
 		try {
@@ -403,6 +440,8 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		Util.assertAssertionsEnabled();
+		assert (false) : "This test is not relevant anymore and needs to be updated.";
 		MessageExtractor jmw = new MessageExtractor(
 				new PacketDemultiplexerDefault());
 		String msg = "{\"msg\" : \"Hello  world\"}"; // JSON formatted
@@ -470,12 +509,12 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 					.println("Success: If this is printed, all tests are successful."
 							+ " Note that NumberFormatExceptions are expected above.");
 
+			Thread.sleep(1000);
+			jmw.stop();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-
 	}
-
 }

@@ -5,6 +5,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.RequestBatcher;
+import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
@@ -29,15 +31,12 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	 * have to worry about these.
 	 */
 	protected static enum Keys {
-		IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID, DEBUG_INFO, REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
+		IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID,
+		//
+		DEBUG_INFO,
+		//
+		REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
 	}
-
-	/**
-	 * Note: Any additions of fields to this class may need to update the value
-	 * below. Run this class' main method to ensure that no assertions are
-	 * triggered.
-	 */
-	private static final int SIZE_ESTIMATE = 360;
 
 	private static final long MAX_AGREEMENT_TIME = 30000;
 	private static final int MAX_FORWARD_COUNT = 3;
@@ -164,13 +163,13 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		return this.forwardCount;
 	}
 
-	public int setEntryReplica(int id) {
+	public RequestPacket setEntryReplica(int id) {
 		if (this.entryReplica == -1) // one-time
 			this.entryReplica = id;
 		if (this.isBatched())
 			for (RequestPacket req : this.batched)
 				req.setEntryReplica(id); // recursive
-		return this.entryReplica;
+		return this;
 	}
 
 	public int getEntryReplica() {
@@ -472,7 +471,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		return reqValues;
 	}
 
-	private int batchSize() {
+	public int batchSize() {
 		return this.batched != null ? this.batched.length : 0;
 	}
 
@@ -495,6 +494,26 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 				+ (isBatched() ? "+(" + batchSize() + " batched" + ")" : "");
 	}
 
+	/**
+	 * We need this estimate to use it in {@link RequestBatcher#dequeueImpl()}.
+	 * The value needs to be an upper bound on the sum total of all of the gunk
+	 * in PValuePacket other than the requestValue itself, i.e., the size of a
+	 * no-op decision.
+	 */
+	private static final int SIZE_ESTIMATE;
+	static {
+		int length = 0;
+		try {
+			length = new PValuePacket(new Ballot(23, 2178), new ProposalPacket(
+					3142, new RequestPacket(23, 43437, "hello world", false)))
+					.toJSONObject().toString().length();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		// 25% extra for other miscellaneous additions
+		SIZE_ESTIMATE = (int) (length * 1.25);
+	}
+
 	/*
 	 * Need an upper bound here for limiting batch size. Currently all the
 	 * fields in RequestPacket other than requestValue add up to around 270.
@@ -510,8 +529,10 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		RequestPacket req = new RequestPacket(999, "asd" + 999, true);
 		for (int i = 0; i < numReqs; i++) {
 			reqs[i] = new RequestPacket(i, "asd" + i, true);
-			assert (reqs[i].toString().length() < SIZE_ESTIMATE);
 		}
+
+		System.out.println("Decision size estimate = " + SIZE_ESTIMATE);
+
 		req.latchToBatch(reqs);
 		String reqStr = req.toString();
 		try {

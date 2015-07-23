@@ -23,8 +23,8 @@ public interface InterfaceMessageExtractor extends
 
 	/**
 	 * @param sockAddr
-	 * @param jsonMsg
+	 * @param msg
 	 */
-	public void processMessage(InetSocketAddress sockAddr, String jsonMsg);
+	public void processMessage(InetSocketAddress sockAddr, String msg);
 
 }

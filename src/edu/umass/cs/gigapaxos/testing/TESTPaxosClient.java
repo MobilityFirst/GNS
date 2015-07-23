@@ -255,7 +255,7 @@ public class TESTPaxosClient {
 		this.timer = new Timer(TESTPaxosClient.class.getSimpleName() + myID);
 	}
 
-	protected void sendRequest(RequestPacket req) throws IOException,
+	protected boolean sendRequest(RequestPacket req) throws IOException,
 			JSONException {
 		int[] group = TESTPaxosConfig.getGroup(req.getPaxosID());
 		int index = -1;
@@ -265,18 +265,21 @@ public class TESTPaxosClient {
 			if (index == group.length)
 				index--;
 		}
-		this.sendRequest(group[index], req);
+		return this.sendRequest(group[index], req);
 	}
 
-	protected void sendRequest(int id, RequestPacket req) throws IOException,
+	protected boolean sendRequest(int id, RequestPacket req) throws IOException,
 			JSONException {
 		log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] {
 				"Sending request to node ", id, ": ", req.getSummary() });
-		this.requests.put(req.requestID, req);
-		this.niot.sendToID(id, req.toJSONObject());
+		if(this.requests.put(req.requestID, req)!=null) 
+			return false; // collision in integer space
+		this.incrReqCount();
+		assert(this.niot.sendToID(id, req.toJSONObject()) > 0);
 		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
 			this.timer
 					.schedule(new Retransmitter(id, req), (long) getTimeout());
+		return true;
 	}
 
 	// to control request size, min request size is still > 350B
@@ -296,7 +299,7 @@ public class TESTPaxosClient {
 				this.myID,
 				reqID, // only place where req count is
 						// incremented
-				"[Sample request numbered " + incrReqCount() + "]" + GIBBERISH,
+				"[Sample request numbered " + getRequestCount() + "]" + GIBBERISH,
 				false);
 		req.putPaxosID(TESTPaxosConfig.TEST_GUID, 0);
 		return req;
@@ -308,11 +311,10 @@ public class TESTPaxosClient {
 		return req;
 	}
 
-	protected RequestPacket makeAndSendRequest(String paxosID)
+	protected boolean makeAndSendRequest(String paxosID)
 			throws JSONException, IOException {
 		RequestPacket req = this.makeRequest(paxosID);
-		this.sendRequest(req);
-		return req;
+		return this.sendRequest(req);
 	}
 
 	protected static TESTPaxosClient[] setupClients() {
@@ -344,9 +346,9 @@ public class TESTPaxosClient {
 		for (int i = 0; i < numReqsPerClient; i++) {
 			for (int j = 0; j < TESTPaxosConfig.getNumClients(); j++) {
 				int curTotalReqs = j + i * TESTPaxosConfig.getNumClients();
-				clients[j].makeAndSendRequest("paxos"
+				while(!clients[j].makeAndSendRequest("paxos"
 						+ ((RANDOM_REPLAY + curTotalReqs) % TESTPaxosConfig
-								.getNumGroups()));
+								.getNumGroups())));
 				long leadTime = (long) ((curTotalReqs)
 						/ TESTPaxosConfig.getTotalLoad() * 1000)
 						- (System.currentTimeMillis() - initTime);
@@ -375,7 +377,7 @@ public class TESTPaxosClient {
 									+ getRtxCount()
 									+ "; num_retransmitted_requests = "
 									+ getNumRtxReqs());
-							clients[i].wait();
+							clients[i].wait(4000);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}

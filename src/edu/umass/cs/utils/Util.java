@@ -17,7 +17,7 @@ import org.json.JSONException;
 /**
  * @author arun
  *
- *         Various generic static utility methods. FIXME: document.
+ *         Various generic static utility methods. 
  */
 @SuppressWarnings("javadoc")
 public class Util {
@@ -25,7 +25,7 @@ public class Util {
 	private static Logger log = Logger.getLogger(Util.class.getName());
 
 	public static final DecimalFormat decimalFormat = new DecimalFormat("#.#");
-	public static final double ALPHA = 0.05;
+	public static final double ALPHA = 0.05; // sample weight
 
 	public static final String df(double d) {
 		return decimalFormat.format(d);
@@ -193,7 +193,7 @@ public class Util {
 		return false;
 	}
 
-	public static Set<String> arrayOfNodeIdsToStringSet(Object[] array) {
+	public static Set<String> arrayOfObjectsToStringSet(Object[] array) {
 		Set<String> set = new HashSet<String>();
 		for (Object member : array) {
 			set.add(member.toString());
@@ -291,7 +291,7 @@ public class Util {
 	private static Collection<?> truncate(Collection<?> list, int size) {
 		if (list.size() <= size)
 			return list;
-		ArrayList<Object> truncated = new ArrayList();
+		ArrayList<Object> truncated = new ArrayList<Object>();
 		int i = 0;
 		for (Object o : list)
 			if (i++ < size)
@@ -310,7 +310,7 @@ public class Util {
 		};
 	}
 
-	public static String suicide(String error) {
+	public static Object suicide(String error) {
 		log.severe(error);
 		new RuntimeException(error).printStackTrace();
 		System.exit(1);

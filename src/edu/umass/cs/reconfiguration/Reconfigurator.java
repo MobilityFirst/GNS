@@ -574,8 +574,6 @@ public class Reconfigurator<NodeIDType> implements
 					&& rcRecReq.isNodeConfigChange()) {
 				// checkpoint and garbage collect
 				this.postCompleteNodeConfigChange(rcRecReq);
-				// if (rcRecReq.getInitiator().equals(getMyID()))
-				// this.sendRCReconfigurationConfirmationToInitiator(rcRecReq);
 			}
 
 			/*

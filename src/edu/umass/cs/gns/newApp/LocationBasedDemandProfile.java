@@ -357,8 +357,8 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
    * (1) if there are no lookups or updates for this name, it returns 0.
    * (2) if (numberReplicaControllers == 1), then the system is un-replicated, therefore it always returns 1;
    *
-   * Otherwise returns a value in the range {@link edu.umass.cs.gns.nsdesign.Config#minReplica} and
-   * {@link edu.umass.cs.gns.nsdesign.Config#maxReplica}.
+   * Otherwise returns a value in the range {@link edu.umass.cs.utils.Config.Config#minReplica} and
+   * {@link edu.umass.cs.utils.Config.Config#maxReplica}.
    */
   private int computeNumberOfReplicas(int lookupCount, int updateCount, int actualReplicasCount) {
 //    if (Config.singleNS) {

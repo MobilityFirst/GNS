@@ -221,8 +221,9 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	public int sendToAddress(InetSocketAddress isa, MessageType msg)
 			throws IOException {
 		if (msg instanceof byte[])
-			return this.stampHeaderAndSend(isa, (byte[]) msg);
-		return this.stampHeaderAndSend(isa, msg.toString());
+			return this.sendUnderlying(isa, (byte[]) msg);
+
+		return this.sendUnderlying(isa, msg.toString().getBytes(NIO_CHARSET_ENCODING));
 	}
 
 	/**
@@ -310,8 +311,9 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 			return sendLocal(msg);
 		// else
 		if (msg instanceof byte[])
-			return this.stampHeaderAndSend(destID, (byte[]) msg);
-		return this.stampHeaderAndSend(destID, msg.toString());
+			return this.sendUnderlying(destID, (byte[]) msg);
+
+		return this.sendUnderlying(destID, msg.toString().getBytes(NIO_CHARSET_ENCODING));
 	}
 
 	// bypass network send by directly passing to local worker
@@ -332,39 +334,6 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		return length;
 	}
 
-	// returns the number of characters written, not bytes written
-	private int stampHeaderAndSend(Object id, String msg) throws IOException {
-		int written = this.stampHeaderAndSendBytes(id, msg);
-		// "cheat" and return the original length as nio writes all or none
-		return written <= 0 ? written : msg.length();
-	}
-
-	/**
-	 * 
-	 * @param id
-	 * @param msg
-	 * @return Returns the number of bytes. The number of characters written is
-	 *         either -1 if there was an error or the length of the input
-	 *         string. It is not possible for this method to return any other
-	 *         value as NIO transport either accepts a complete message or none
-	 *         at all.
-	 * @throws IOException
-	 */
-	private int stampHeaderAndSendBytes(Object id, String msg)
-			throws IOException {
-		String header = MessageExtractor.getHeader(msg);
-		int headerByteLength = header.getBytes(NIO_CHARSET_ENCODING).length;
-		byte[] headeredMsgBytes = (header + msg).getBytes(NIO_CHARSET_ENCODING);
-		// caller only passed NodeIDType or InetSocketAddress
-		@SuppressWarnings("unchecked")
-		int written = (id instanceof InetSocketAddress ? this.sendUnderlying(
-				(InetSocketAddress) id, headeredMsgBytes) : this
-				.sendUnderlying((NodeIDType) id, headeredMsgBytes))
-				; 
-		assert (written <= 0 || written == (headeredMsgBytes.length));
-		// number of bytes written without counting the header
-		return written <= 0 ? written : written - headerByteLength; 
-	}
 
 	/**
 	 * We send even byte arrays encoded as strings because it is easier to do
@@ -381,20 +350,6 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * directly instead.
 	 */
 	protected static final String NIO_CHARSET_ENCODING = "ISO-8859-1";
-
-	/**
-	 * 
-	 * @param id
-	 * @param msgBytes
-	 * @return The number of bytes written.
-	 * @throws IOException
-	 */
-	private int stampHeaderAndSend(Object id, byte[] msgBytes)
-			throws IOException {
-		int written = this.stampHeaderAndSendBytes(id, new String(msgBytes,
-				MessageNIOTransport.NIO_CHARSET_ENCODING));
-		return written <= 0 ? written : msgBytes.length;
-	}
 
 	/**
 	 * These methods are really redundant wrappers around the corresponding
