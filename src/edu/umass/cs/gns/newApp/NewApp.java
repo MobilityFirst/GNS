@@ -41,7 +41,6 @@ import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;

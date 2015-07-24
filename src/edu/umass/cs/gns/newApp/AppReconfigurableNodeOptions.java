@@ -18,8 +18,10 @@ import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
+import java.util.logging.Logger;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
@@ -202,8 +204,13 @@ public class AppReconfigurableNodeOptions {
       System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
       System.out.println("******** DEBUGGING IS ENABLED IN THE ProtocolExecutor *********");
       // For backwards compatibility until Config goes away
+      ConsoleHandler handler = new ConsoleHandler();
+      handler.setLevel(Level.FINEST);
+      Logger log = NIOTransport.getLogger();
+      log.addHandler(handler);
+      log.setLevel(Level.FINEST);
       ProtocolExecutor.getLogger().setLevel(Level.INFO);
-      NIOTransport.getLogger().setLevel(Level.INFO);
+      //NIOTransport.getLogger().setLevel(Level.FINEST);
     } else {
       ProtocolExecutor.getLogger().setLevel(Level.WARNING);
       NIOTransport.getLogger().setLevel(Level.WARNING);
@@ -253,7 +260,7 @@ public class AppReconfigurableNodeOptions {
     }
      if (allValues.containsKey(DISABLE_SSL)) {
       disableSSL = true;
-    }
+    } 
   }
 
 }

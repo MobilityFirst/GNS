@@ -68,6 +68,11 @@
       <fileset dir="${build.classes}" includes="edu/umass/cs/nio/nioutils/*.class"/>
       <fileset dir="${build.classes}" includes="edu/umass/cs/utils/*.class"/>
       <fileset dir="${build.classes}" includes="org/json/*.class"/>
+      <!-- interesting special cases here added because of one use of ReconfigurableClient in NIOInstrumenter -->
+      <fileset dir="${build.classes}" includes="edu/umass/cs/reconfiguration/**/*.class"/>
+      <fileset dir="${build.classes}" includes="edu/umass/cs/gigapaxos/**/*.class"/>
+      <fileset dir="${build.classes}" includes="edu/umass/cs/protocoltask/**/*.class"/>
+      
       <fileset dir="${conf}" includes="trustStore/**, keystore/**" />
     </jar>
   </target>
