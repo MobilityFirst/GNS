@@ -21,6 +21,7 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
@@ -78,8 +79,9 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
 
   private final Logger log = Logger.getLogger(getClass().getName());
 
-  public ClientCommandProcessor(InetSocketAddress nodeAddress,
-          GNSNodeConfig<NodeIDType> gnsNodeConfig,
+  public ClientCommandProcessor(JSONMessenger<NodeIDType> messenger,
+          InetSocketAddress nodeAddress,
+          GNSNodeConfig<NodeIDType> nodeConfig,
           boolean debug,
           NewApp app,
           NodeIDType replicaID,
@@ -92,30 +94,32 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
     }
     this.demultiplexer = new CCPPacketDemultiplexer<NodeIDType>();
-    this.intercessor = new Intercessor<>(nodeAddress, gnsNodeConfig, demultiplexer);
+    this.intercessor = new Intercessor<>(nodeAddress, nodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor<>();
     this.nodeAddress = nodeAddress;
-    this.nodeConfig = gnsNodeConfig;
+    this.nodeConfig = nodeConfig;
 
-    System.out.println("BIND ADDRESS for " + replicaID + " is " + gnsNodeConfig.getBindAddress(replicaID));
-    System.out.println("NODE ADDRESS for " + replicaID + " is " + gnsNodeConfig.getNodeAddress(replicaID));
+    System.out.println("BIND ADDRESS for " + replicaID + " is " + nodeConfig.getBindAddress(replicaID));
+    System.out.println("NODE ADDRESS for " + replicaID + " is " + nodeConfig.getNodeAddress(replicaID));
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(debug);
-    SSL_MODES sslMode = disableSSL ? CLEAR : SERVER_AUTH;
-    System.out.println("SSL Mode is " + sslMode.name());
-    if (!sslMode.equals(CLEAR)) {
+    System.out.println("SSL is " + (disableSSL ? "disabled " : "enabled"));
+    if (!disableSSL) {
       ReconfigurationConfig.setClientPortOffset(100);
+      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
+      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
     }
     try {
-      this.messenger = new JSONMessenger<NodeIDType>(
-              new JSONNIOTransport(nodeAddress, gnsNodeConfig,
-                      new PacketDemultiplexerDefault(),
-                      sslMode));
+      this.messenger = messenger;
+//      this.messenger = new JSONMessenger<NodeIDType>(
+//              new JSONNIOTransport(nodeAddress, nodeConfig,
+//                      new PacketDemultiplexerDefault(),
+//                      sslMode));
       messenger.addPacketDemultiplexer(demultiplexer);
       this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
               replicaID,
               app,
-              gnsNodeConfig, messenger, parameters);
+              nodeConfig, messenger, parameters);
       ((CCPPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
       // Start HTTP server
       GnsHttpServer.runHttp(requestHandler);

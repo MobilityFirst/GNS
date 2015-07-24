@@ -93,6 +93,7 @@ public class AppReconfigurableNodeOptions {
   public static final String DEBUG_AR = "debugAR";
   public static final String DEBUG_RECON = "debugRecon";
   public static final String DEBUG_PAXOS = "debugPaxos";
+  public static final String DEBUG_NIO = "debugNio";
   public static final String DEBUG_MISC = "debugMisc";
   /**
    * This option is used to create multiple nodes on a single host
@@ -118,6 +119,7 @@ public class AppReconfigurableNodeOptions {
     Option debugAR = new Option(DEBUG_AR, "Enables debugging output for the Active Replica");
     Option debugRecon = new Option(DEBUG_RECON, "Enables debugging output for the Reconfigurator");
     Option debugPaxos = new Option(DEBUG_PAXOS, "Enables debugging output for Paxos");
+    Option debugNio = new Option(DEBUG_NIO, "Enables debugging output for Nio");
     Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for all miscellaneous utilities");
     Option test = new Option(TEST, "Runs multiple test nodes on one machine");
     Option standAlone = new Option(STANDALONE, "Runs the app as a standalone module");
@@ -141,6 +143,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(debugAR);
     commandLineOptions.addOption(debugRecon);
     commandLineOptions.addOption(debugPaxos);
+    commandLineOptions.addOption(debugNio);
     commandLineOptions.addOption(debugMisc);
     commandLineOptions.addOption(test);
     commandLineOptions.addOption(standAlone);
@@ -200,22 +203,28 @@ public class AppReconfigurableNodeOptions {
       PaxosManager.getLogger().setLevel(Level.WARNING);
     }
     
-    if (isOptionTrue(DEBUG_MISC, allValues)) {
+    if (isOptionTrue(DEBUG_NIO, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
+      // For backwards compatibility until Config goes away
+//      ConsoleHandler handler = new ConsoleHandler();
+//      handler.setLevel(Level.FINEST);
+      Logger log = NIOTransport.getLogger();
+      //log.addHandler(handler);
+      log.setLevel(Level.INFO);
+    } else {
+      NIOTransport.getLogger().setLevel(Level.WARNING);
+    }
+    
+    if (isOptionTrue(DEBUG_MISC, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE ProtocolExecutor *********");
       // For backwards compatibility until Config goes away
       ConsoleHandler handler = new ConsoleHandler();
       handler.setLevel(Level.FINEST);
-      Logger log = NIOTransport.getLogger();
+      Logger log = ProtocolExecutor.getLogger();
       log.addHandler(handler);
       log.setLevel(Level.INFO);
-      log = ProtocolExecutor.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.INFO);
-      //NIOTransport.getLogger().setLevel(Level.FINEST);
     } else {
       ProtocolExecutor.getLogger().setLevel(Level.WARNING);
-      NIOTransport.getLogger().setLevel(Level.WARNING);
     }
 
     if (allValues.containsKey(FILE_LOGGING_LEVEL)) {

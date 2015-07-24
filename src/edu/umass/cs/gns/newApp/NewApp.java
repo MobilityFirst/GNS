@@ -42,6 +42,7 @@ import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
+import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
@@ -87,7 +88,7 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
    * @param messenger
    * @param mongoRecords
    */
-  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, InterfaceSSLMessenger<String, JSONObject> messenger,
+  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, JSONMessenger<String> messenger,
           MongoRecords<String> mongoRecords) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
@@ -98,7 +99,7 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.messenger = messenger;
-    this.clientCommandProcessor = new ClientCommandProcessor<>(
+    this.clientCommandProcessor = new ClientCommandProcessor<>(messenger,
             new InetSocketAddress(nodeConfig.getBindAddress(id), nodeConfig.getCcpPort(id)),
             (GNSNodeConfig) nodeConfig,
             AppReconfigurableNodeOptions.debuggingEnabled,

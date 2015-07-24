@@ -50,6 +50,19 @@ public class CommandHandler {
   private static final ExecutorService execPool
           = USE_EXEC_POOL_TO_RUN_COMMANDS == true ? Executors.newFixedThreadPool(100) : null;
 
+//  /**
+//   * Handles command packets coming in from the client.
+//   *
+//   * @param incomingJSON
+//   * @param handler
+//   * @throws JSONException
+//   * @throws UnknownHostException
+//   */
+//  public static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler)
+//          throws JSONException, UnknownHostException {
+//    handlePacketCommandRequest(incomingJSON, handler, null);
+//  }
+
   /**
    * Handles command packets coming in from the client.
    *
@@ -58,11 +71,6 @@ public class CommandHandler {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  public static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler)
-          throws JSONException, UnknownHostException {
-    handlePacketCommandRequest(incomingJSON, handler, null);
-  }
-
   private static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler,
           NewApp app)
           throws JSONException, UnknownHostException {
@@ -101,7 +109,7 @@ public class CommandHandler {
               handler.getReceivedRequests(), handler.getRequestsPerSecond(),
               System.currentTimeMillis() - receiptTime);
 
-      if (app != null) {
+      //if (app != null) {
         // call back the app directly
         try {
           if (handler.getParameters().isDebugMode()) {
@@ -111,12 +119,12 @@ public class CommandHandler {
         } catch (IOException e) {
           GNS.getLogger().severe("Problem replying to command: " + e);
         }
-      } else {
-        if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
-        }
-        handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
-      }
+//      } else {
+//        if (handler.getParameters().isDebugMode()) {
+//          GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
+//        }
+//        handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
+//      }
 
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem  executing command: " + e);

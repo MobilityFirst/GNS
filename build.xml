@@ -47,6 +47,7 @@
         <attribute name="Build-Version" value="${version.code}" />
       </manifest>
       <fileset dir="${build.classes}" includes="**/*.class"/>
+      <fileset dir="${conf}" includes="trustStore/**, keystore/**" />
       <fileset dir="${conf}" includes="**" />
       <zipgroupfileset dir="${lib}" includes="**/*.jar" excludes="${junit}"/>
     </jar>
