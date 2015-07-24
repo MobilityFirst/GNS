@@ -208,8 +208,10 @@ public class AppReconfigurableNodeOptions {
       handler.setLevel(Level.FINEST);
       Logger log = NIOTransport.getLogger();
       log.addHandler(handler);
-      log.setLevel(Level.FINEST);
-      ProtocolExecutor.getLogger().setLevel(Level.INFO);
+      log.setLevel(Level.INFO);
+      log = ProtocolExecutor.getLogger();
+      log.addHandler(handler);
+      log.setLevel(Level.INFO);
       //NIOTransport.getLogger().setLevel(Level.FINEST);
     } else {
       ProtocolExecutor.getLogger().setLevel(Level.WARNING);
