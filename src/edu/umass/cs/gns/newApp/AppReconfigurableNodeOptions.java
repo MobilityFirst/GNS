@@ -16,6 +16,8 @@ import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
 
 import edu.umass.cs.nio.NIOTransport;
+import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH;
+import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import java.util.Map;
 import java.util.logging.ConsoleHandler;
@@ -72,11 +74,6 @@ public class AppReconfigurableNodeOptions {
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
   public static boolean dnsOnly = false;
-  
-  /**
-   * Disables SSL authentication of client to server commands.
-   */
-  public static boolean disableSSL = false;
 
   public static boolean debuggingEnabled = false;
 
@@ -129,7 +126,6 @@ public class AppReconfigurableNodeOptions {
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
-
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -202,27 +198,27 @@ public class AppReconfigurableNodeOptions {
     } else {
       PaxosManager.getLogger().setLevel(Level.WARNING);
     }
-    
+
     if (isOptionTrue(DEBUG_NIO, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
       // For backwards compatibility until Config goes away
 //      ConsoleHandler handler = new ConsoleHandler();
 //      handler.setLevel(Level.FINEST);
-      Logger log = NIOTransport.getLogger();
+      //Logger log = NIOTransport.getLogger();
       //log.addHandler(handler);
-      log.setLevel(Level.INFO);
+       NIOTransport.getLogger().setLevel(Level.INFO);
     } else {
       NIOTransport.getLogger().setLevel(Level.WARNING);
     }
-    
+
     if (isOptionTrue(DEBUG_MISC, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE ProtocolExecutor *********");
       // For backwards compatibility until Config goes away
-      ConsoleHandler handler = new ConsoleHandler();
-      handler.setLevel(Level.FINEST);
-      Logger log = ProtocolExecutor.getLogger();
-      log.addHandler(handler);
-      log.setLevel(Level.INFO);
+//      ConsoleHandler handler = new ConsoleHandler();
+//      handler.setLevel(Level.FINEST);
+//      Logger log = ProtocolExecutor.getLogger();
+//      log.addHandler(handler);
+      ProtocolExecutor.getLogger().setLevel(Level.INFO);
     } else {
       ProtocolExecutor.getLogger().setLevel(Level.WARNING);
     }
@@ -255,7 +251,7 @@ public class AppReconfigurableNodeOptions {
       ReconfigurationConfig.setDemandProfile(LocationBasedDemandProfile.class);
     }
     System.out.println("Set demand profile: " + ReconfigurationConfig.getDemandProfile());
-    
+
     ReconfigurationConfig.setReconfigureInPlace(false);
     System.out.println("Reconfigure in place is: " + ReconfigurationConfig.shouldReconfigureInPlace());
 
@@ -269,9 +265,14 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
     }
-     if (allValues.containsKey(DISABLE_SSL)) {
-      disableSSL = true;
-    } 
+    if (!allValues.containsKey(DISABLE_SSL)) {
+      ReconfigurationConfig.setClientPortOffset(100);
+      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
+      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
+      System.out.println("SSL is enabled");
+    } else {
+      System.out.println("SSL is disabled");
+    }
   }
 
 }

@@ -87,8 +87,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
           NodeIDType replicaID,
           boolean dnsGnsOnly,
           boolean dnsOnly,
-          String gnsServerIP,
-          boolean disableSSL) throws IOException {
+          String gnsServerIP) throws IOException {
 
     if (debug) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
@@ -103,12 +102,7 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     System.out.println("NODE ADDRESS for " + replicaID + " is " + nodeConfig.getNodeAddress(replicaID));
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(debug);
-    System.out.println("SSL is " + (disableSSL ? "disabled " : "enabled"));
-    if (!disableSSL) {
-      ReconfigurationConfig.setClientPortOffset(100);
-      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
-      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
-    }
+    
     try {
       this.messenger = messenger;
 //      this.messenger = new JSONMessenger<NodeIDType>(

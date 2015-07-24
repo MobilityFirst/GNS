@@ -89,16 +89,7 @@ public class GNS {
    * Console output level for main logger
    */
   public static String consoleOutputLevel = "INFO"; //should be INFO for production use
-  /**
-   * Logging level for stat logger
-   */
-//  public static String statFileLoggingLevel = "FINE"; // leave this at a more verbose level, but really should be INFO for production use
-//  /**
-//   * Console output level for stat logger
-//   */
-//  public static String statConsoleOutputLevel = "WARNING";  // don't send these to the console normally
-//  //
-//  //
+
   private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
   public static boolean initRun = false;
 
@@ -110,19 +101,6 @@ public class GNS {
     }
     return LOGGER;
   }
-//  private final static Logger STAT_LOGGER = Logger.getLogger("STAT_" + GNS.class.getName());
-//  public static boolean initStatRun = false;
-//
-//  public static Logger getStatLogger() {
-//
-//    if (!initStatRun) {
-//      // don't send these to the console normally
-//      System.out.println("Setting STAT Logger console level to " + statConsoleOutputLevel + " and file level to " + statFileLoggingLevel);
-//      Logging.setupLogger(STAT_LOGGER, statConsoleOutputLevel, statFileLoggingLevel, "log" + "/gns_stat.xml");
-//      initStatRun = true;
-//    }
-//    return STAT_LOGGER;
-//  }
 
   /**
    * Attempts to look for a MANIFEST file in that contains the Build-Version attribute.

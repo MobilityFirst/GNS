@@ -43,6 +43,7 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
@@ -107,8 +108,7 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
             (String) id,
             AppReconfigurableNodeOptions.dnsGnsOnly,
             AppReconfigurableNodeOptions.dnsOnly,
-            AppReconfigurableNodeOptions.gnsServerIP,
-            AppReconfigurableNodeOptions.disableSSL);
+            AppReconfigurableNodeOptions.gnsServerIP);
   }
 
   private static PacketType[] types = {
@@ -385,7 +385,11 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
 
   @Override
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {
-    messenger.getClientMessenger().sendToAddress(isa, msg);
+//    InetSocketAddress clientAddress = new InetSocketAddress(isa.getAddress(),
+//            ActiveReplica.getClientFacingPort(isa.getPort()));
+//    GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Sending to: " + clientAddress + " " + msg);
+//    messenger.getClientMessenger().sendToAddress(clientAddress, msg);
+    messenger.sendToAddress(isa, msg);
   }
 
   @Override
