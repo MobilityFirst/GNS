@@ -23,10 +23,12 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
@@ -99,11 +101,16 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     System.out.println("NODE ADDRESS for " + replicaID + " is " + gnsNodeConfig.getNodeAddress(replicaID));
     RequestHandlerParameters parameters = new RequestHandlerParameters();
     parameters.setDebugMode(debug);
+    SSL_MODES sslMode = disableSSL ? CLEAR : SERVER_AUTH;
+    System.out.println("SSL Mode is " + sslMode.name());
+    if (!sslMode.equals(CLEAR)) {
+      ReconfigurationConfig.setClientPortOffset(100);
+    }
     try {
       this.messenger = new JSONMessenger<NodeIDType>(
               new JSONNIOTransport(nodeAddress, gnsNodeConfig,
                       new PacketDemultiplexerDefault(),
-                      disableSSL ? CLEAR : SERVER_AUTH));
+                      sslMode));
       messenger.addPacketDemultiplexer(demultiplexer);
       this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
               replicaID,
