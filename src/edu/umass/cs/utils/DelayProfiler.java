@@ -101,20 +101,19 @@ public class DelayProfiler {
 	 */
 	public synchronized static String getStats() {
 		String s = "[ ";
-		s += statsHelper(averageMillis, "ms");
-		s += statsHelper(averageNanos, "ns");
+		s += statsHelper(averageMillis, "ms") ;
+		s += statsHelper(averageNanos, "ns") ;
 		s += statsHelper(averages, "");
-		return s + " ]";
+		return (s + "]").replace(" | ]", "]");
 	}
 
 	private static String statsHelper(HashMap<String, Double> map, String units) {
-		int count = 0;
 		String s = "";
 		for (String field : map.keySet()) {
-			s += ((count++ > 0 ? " | " : "") + field + ":"
+			s += (field + ":"
 					+ Util.df(map.get(field)) + "/"
 					+ (stdDevs.get(field) > 0 ? "+" : "")
-					+ Util.df(stdDevs.get(field)) + units);
+					+ Util.df(stdDevs.get(field)) + units+" | ");
 		}
 		return s;
 	}

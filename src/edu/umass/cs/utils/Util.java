@@ -2,6 +2,7 @@ package edu.umass.cs.utils;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -315,6 +316,15 @@ public class Util {
 		new RuntimeException(error).printStackTrace();
 		System.exit(1);
 		return null; // will never come here
+	}
+	
+	// transfer from one byte buffer to another without throwing exception
+	public static ByteBuffer put(ByteBuffer dst, ByteBuffer src) {
+		if (src.remaining() < dst.remaining())
+			return dst.put(src);
+		byte[] buf = new byte[dst.remaining()];
+		src.get(buf);
+		return dst.put(buf);
 	}
 
 	public static void main(String[] args) {

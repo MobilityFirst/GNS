@@ -140,7 +140,9 @@ public class PaxosManager<NodeIDType> {
 	 */
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName());
-
+	static {
+		PaxosConfig.load();
+	}
 	/**
 	 * @param id
 	 *            My node ID.

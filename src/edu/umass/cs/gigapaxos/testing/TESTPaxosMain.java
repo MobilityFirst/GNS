@@ -9,7 +9,9 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -72,13 +74,13 @@ public class TESTPaxosMain {
 			// no-op if recovery enabled coz we need consistent groups across
 			// runs
 			TESTPaxosConfig
-					.setRandomGroups(TESTPaxosConfig.PRE_CONFIGURED_GROUPS);
+					.setRandomGroups(Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS));
 
 			// creates paxos groups (may not create if recovering)
 			for (int id : tpMain.nodes.keySet()) {
 				tpMain.nodes.get(id).createDefaultGroupInstances();
 				tpMain.nodes.get(id).createNonDefaultGroupInstanes(
-						TESTPaxosConfig.getNumGroups());
+						Config.getGlobalInt(TC.NUM_GROUPS));
 			}
 
 			/*************** End of server setup ***************************/
@@ -87,7 +89,7 @@ public class TESTPaxosMain {
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
 			TESTPaxosShutdownThread.register(clients);
-			int numReqs = TESTPaxosConfig.getNumRequestsPerClient();
+			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS) / Config.getGlobalInt(TC.NUM_CLIENTS);
 
 			// begin first run
 			long t1 = System.currentTimeMillis();
@@ -139,6 +141,8 @@ public class TESTPaxosMain {
 		 PaxosManager.getLogger().addHandler(handler);
 		 PaxosManager.getLogger().setUseParentHandlers(false);
 
+		 TESTPaxosConfig.load();
+			
 		processArgs(args);
 
 		System.out

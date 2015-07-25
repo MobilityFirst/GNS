@@ -19,6 +19,7 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
 import javax.net.ssl.SSLException;
 
+import edu.umass.cs.utils.Util;
 
 /**
  * @author arun
@@ -37,6 +38,24 @@ import javax.net.ssl.SSLException;
  *         an InterfaceDataProcessingWorker.
  */
 public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
+	/**
+	 * SSL modes supported.
+	 */
+	public static enum SSL_MODES {
+		/**
+		 * clear text
+		 */
+		CLEAR,
+		/**
+		 * server only authentication (needs a trustStore at clients)
+		 */
+		SERVER_AUTH,
+		/**
+		 * server + client authentication
+		 */
+		MUTUAL_AUTH
+	}
+
 	private static final int DEFAULT_PER_CONNECTION_IO_BUFFER_SIZE = 64 * 1024;
 	// to handle incoming decrypted data
 	private final InterfaceDataProcessingWorker decryptedWorker;
@@ -48,7 +67,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	// to signal connection handshake completion to transport
 	private InterfaceHandshakeCallback callbackTransport = null;
 
-	private final SSLDataProcessingWorker.SSL_MODES mode;
+	private final SSLDataProcessingWorker.SSL_MODES sslMode;
 
 	private String myID = null;
 	private static final Logger log = NIOTransport.getLogger();
@@ -61,10 +80,10 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	 * @throws NoSuchAlgorithmException
 	 * @throws SSLException
 	 */
-	public SSLDataProcessingWorker(InterfaceDataProcessingWorker worker)
+	protected SSLDataProcessingWorker(InterfaceDataProcessingWorker worker)
 			throws NoSuchAlgorithmException, SSLException {
 		this.decryptedWorker = worker;
-		this.mode = NIOTransport.DEFAULT_SSL_MODE;
+		this.sslMode = NIOTransport.DEFAULT_SSL_MODE;
 	}
 
 	/**
@@ -73,11 +92,11 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	 * @throws NoSuchAlgorithmException
 	 * @throws SSLException
 	 */
-	public SSLDataProcessingWorker(InterfaceDataProcessingWorker worker,
+	protected SSLDataProcessingWorker(InterfaceDataProcessingWorker worker,
 			SSLDataProcessingWorker.SSL_MODES sslMode)
 			throws NoSuchAlgorithmException, SSLException {
 		this.decryptedWorker = worker;
-		this.mode = sslMode;
+		this.sslMode = sslMode;
 	}
 
 	protected SSLDataProcessingWorker setHandshakeCallback(
@@ -110,7 +129,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 						channel.socket().getRemoteSocketAddress() });
 		int originalSize = unencrypted.remaining();
 		nioSSL.nioSend(unencrypted);
-		return  originalSize - unencrypted.remaining();
+		return originalSize - unencrypted.remaining();
 	}
 
 	protected boolean isHandshakeComplete(SocketChannel socketChannel) {
@@ -130,7 +149,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 			throw new IOException(e.getMessage());
 		}
 		engine.setUseClientMode(isClient);
-		if (this.mode.equals(SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH))
+		if (this.sslMode.equals(SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH))
 			engine.setNeedClientAuth(true);
 		engine.beginHandshake();
 		log.log(Level.INFO,
@@ -169,9 +188,9 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 					"{0} received decrypted data of length {1} bytes on {2} from {3}",
 					new Object[] { this, decrypted.remaining(),
 							socket.getLocalSocketAddress(),
-							socket	.getRemoteSocketAddress() });
-			decryptedWorker.processData((SocketChannel) key.channel(),
-					decrypted);
+							socket.getRemoteSocketAddress() });
+			//decryptedWorker.processData((SocketChannel) key.channel(),decrypted);
+			SSLDataProcessingWorker.this.extractMessages(key, decrypted);
 		}
 
 		@Override
@@ -222,7 +241,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 
 				// not a showstopper if we don't absolutely complete the write
 				if (encrypted.hasRemaining())
-					log.log(Level.INFO,
+					log.log(Level.FINE,
 							"{0} failed to bulk-write {1} bytes despite multiple attempts ({2} bytes left unsent)",
 							new Object[] { this, totalLength,
 									encrypted.remaining(), });
@@ -248,24 +267,6 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 			this.handshakeComplete = true;
 			callbackTransport.handshakeComplete(this.key);
 		}
-	}
-
-	/**
-	 * SSL modes supported.
-	 */
-	public static enum SSL_MODES {
-		/**
-		 * clear text
-		 */
-		CLEAR,
-		/**
-		 * server only authentication (needs a trustStore at clients)
-		 */
-		SERVER_AUTH,
-		/**
-		 * server + client authentication
-		 */
-		MUTUAL_AUTH
 	}
 
 	public String toString() {
@@ -302,5 +303,41 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 			((InterfaceMessageExtractor) this.decryptedWorker).processMessage(
 					sockAddr, msg);
 
+	}
+	
+	private void extractMessages(SelectionKey key, ByteBuffer incoming) {
+		ByteBuffer bbuf = null;
+		try {
+			while ((bbuf = this.extractMessage(key, incoming)) != null) {
+				this.decryptedWorker.processData((SocketChannel)key.channel(), bbuf);
+			}
+		} catch (IOException e) {
+			log.severe(this + e.getMessage() + " on channel " + key.channel());
+			e.printStackTrace();
+			// incoming is emptied out; what else to do here?
+		}
+	}
+
+	// extracts a single message
+	private ByteBuffer extractMessage(SelectionKey key, ByteBuffer incoming)
+			throws IOException {
+		NIOTransport<?>.AlternatingByteBuffer abbuf = (NIOTransport<?>.AlternatingByteBuffer) key
+				.attachment();
+		assert (abbuf != null);
+		if (abbuf.headerBuf.remaining() > 0) {
+			Util.put(abbuf.headerBuf, incoming);
+			if (abbuf.headerBuf.remaining() == 0)
+				abbuf.bodyBuf = ByteBuffer.allocate(NIOTransport
+						.getPayloadLength((ByteBuffer) abbuf.headerBuf.flip()));
+		}
+		ByteBuffer retval = null;
+		if (abbuf.bodyBuf != null) {
+			Util.put(abbuf.bodyBuf, incoming);
+			if (abbuf.bodyBuf.remaining() == 0) {
+				retval = (ByteBuffer) abbuf.bodyBuf.flip();
+				abbuf.clear(); // prepare for next read
+			}
+		}
+		return retval;
 	}
 }

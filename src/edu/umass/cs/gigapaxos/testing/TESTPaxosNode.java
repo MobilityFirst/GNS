@@ -6,8 +6,10 @@ import java.util.Set;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.deprecated.Replicable;
+import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -93,13 +95,13 @@ public class TESTPaxosNode {
 	// Creates groups if needed more than MAX_CONFIG_GROUPS
 	protected void createNonDefaultGroupInstanes(int numGroups) {
 		int j = 1;
-		if (numGroups > TESTPaxosConfig.PRE_CONFIGURED_GROUPS)
+		if (numGroups > Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS))
 			System.out.println("\nNode " + this.myID
 					+ " initiating creation of non-default groups:");
 		// Creating groups beyond default configured groups (if numGroups >
 		// MAX_CONFIG_GROUPS)
-		for (int i = TESTPaxosConfig.PRE_CONFIGURED_GROUPS; i < numGroups; i++) {
-			String groupID = TESTPaxosConfig.TEST_GUID_PREFIX + i;
+		for (int i = Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS); i < numGroups; i++) {
+			String groupID = Config.getGlobalString(TC.TEST_GUID_PREFIX) + i;
 			for (int id : TESTPaxosConfig.getDefaultGroup()) {
 				Set<Integer> group = Util.arrayToIntSet(TESTPaxosConfig
 						.getGroup(groupID));
@@ -142,14 +144,14 @@ public class TESTPaxosNode {
 			TESTPaxosNode me = new TESTPaxosNode(myID);
 
 			// Creating default groups
-			int numGroups = TESTPaxosConfig.getNumGroups();
+			int numGroups = Config.getGlobalInt(TC.NUM_GROUPS);
 			System.out
 					.println("Creating "
-							+ TESTPaxosConfig.PRE_CONFIGURED_GROUPS
+							+ Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS)
 							+ " default groups");
 			me.createDefaultGroupInstances();
 			System.out.println("Creating "
-					+ (numGroups - TESTPaxosConfig.PRE_CONFIGURED_GROUPS)
+					+ (numGroups - Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS))
 					+ " additional non-default groups");
 			me.createNonDefaultGroupInstanes(numGroups);
 

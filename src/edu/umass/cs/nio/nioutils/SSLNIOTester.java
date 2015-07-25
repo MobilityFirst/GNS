@@ -1,7 +1,8 @@
 package edu.umass.cs.nio.nioutils;
 
 import edu.umass.cs.nio.NIOTransport;
-import edu.umass.cs.nio.SSLDataProcessingWorker;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author arun
@@ -18,8 +19,9 @@ public class SSLNIOTester {
 	 */
 	public static void main(String[] args) {
 		NIOTransport<Integer> niot = null;
+		Util.assertAssertionsEnabled();
 		Integer myID;
-		int numTestMessages = 1;
+		int numTestMessages = 10;
 
 		try {
 			myID = Integer.parseInt(args[0]);
@@ -34,8 +36,7 @@ public class SSLNIOTester {
 			snc.addLocal(101);
 
 			niot = new NIOTransport<Integer>(myID, snc,
-					new SSLDataProcessingWorker(
-							new DataProcessingWorkerDefault()));
+					(new DataProcessingWorkerDefault()), SSL_MODES.MUTUAL_AUTH);
 			(new Thread(niot)).start();
 
 			if (myID == 101) {

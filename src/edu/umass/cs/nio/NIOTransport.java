@@ -163,9 +163,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private Selector selector = null;
 
 	// The buffer into which we'll read data when it's available
-	private ByteBuffer readBuffer = null;
+	private final ByteBuffer readBuffer = ByteBuffer
+			.allocateDirect(READ_BUFFER_SIZE);
 	private final ByteBuffer writeBuffer = ByteBuffer
-			.allocate(WRITE_BUFFER_SIZE);
+			.allocateDirect(WRITE_BUFFER_SIZE);
 
 	// The channel on which we'll accept connections
 	private ServerSocketChannel serverChannel;
@@ -192,14 +193,11 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 	private boolean stopped = false;
 
-	private boolean useHeader = true;
-
-	private boolean useHeader() {
-		return useHeader;
-	}
-
 	/**
-	 * A flag to easily enable or disable SSL by default.
+	 * A flag to easily enable or disable SSL by default. CLEAR is not really a
+	 * legitimate SSL mode, i.e., it is not supported by
+	 * SSLDataProcessingWorker, but we have it here for ease of changing the
+	 * default.
 	 */
 	protected static final SSLDataProcessingWorker.SSL_MODES DEFAULT_SSL_MODE = SSLDataProcessingWorker.SSL_MODES.CLEAR;
 
@@ -226,7 +224,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 		// non-final fields, but they never change after constructor anyway
 		this.selector = this.initSelector(mySockAddr);
-		this.readBuffer = ByteBuffer.allocate(READ_BUFFER_SIZE);
 		this.pendingConnects = new LinkedList<ChangeRequest>();
 		this.sendQueues = new ConcurrentHashMap<InetSocketAddress, LinkedBlockingQueue<ByteBuffer>>();
 		this.sockAddrToSockChannel = new HashMap<InetSocketAddress, SocketChannel>();
@@ -263,6 +260,20 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 */
 	public NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
 			InterfaceDataProcessingWorker worker, boolean start,
+			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
+		this(id, nc, (id == null ? new InetSocketAddress(0) : null), worker,
+				true, sslMode);
+	}
+
+	/**
+	 * @param id
+	 * @param nc
+	 * @param worker
+	 * @param sslMode
+	 * @throws IOException
+	 */
+	public NIOTransport(NodeIDType id, InterfaceNodeConfig<NodeIDType> nc,
+			InterfaceDataProcessingWorker worker,
 			SSLDataProcessingWorker.SSL_MODES sslMode) throws IOException {
 		this(id, nc, (id == null ? new InetSocketAddress(0) : null), worker,
 				true, sslMode);
@@ -306,10 +317,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			if (sslMode.equals(SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH)
 					|| sslMode
 							.equals(SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH)) {
-				this.useHeader = false; // SSL needs its own headers
 				return (worker instanceof SSLDataProcessingWorker ? (SSLDataProcessingWorker) worker
-						: new SSLDataProcessingWorker((MessageExtractor) worker))
+						: new SSLDataProcessingWorker((worker)))
 						.setHandshakeCallback(this);
+				// CLEAR is not a legitimate SSLDataProcessingWorker type
 			}
 		} catch (NoSuchAlgorithmException e) {
 			throw new IOException(e.getMessage());
@@ -349,15 +360,15 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
 		testAndIntiateConnection(isa);
 		// NIOInstrumenter.incrSent(isa.getPort());
-		// we put length header in all messages except SSL
-		ByteBuffer bbuf = useHeader() ? this.getHeaderedByteBuffer(data)
-				: ByteBuffer.wrap(data);
+		// we put length header in *all* messages
+		ByteBuffer bbuf = getHeaderedByteBuffer(data);
 		int written = this.enqueueSend(isa, bbuf);
-		return useHeader() ? written - 4 : written;
+		return written - HEADER_SIZE;
 	}
 
 	/**
-	 * For performance testing.
+	 * For performance testing. Repeats {@code data} {@code batchSize} number of
+	 * times in order to simulate the performance of batched sends.
 	 * 
 	 * @param isa
 	 * @param data
@@ -368,22 +379,47 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	public int send(InetSocketAddress isa, byte[] data, int batchSize)
 			throws IOException {
 		testAndIntiateConnection(isa);
-		ByteBuffer bbuf = ByteBuffer.allocate((4 + data.length) * batchSize);
+		ByteBuffer bbuf = ByteBuffer.allocate((HEADER_SIZE + data.length)
+				* batchSize);
 		for (int i = 0; i < batchSize; i++)
-			bbuf.putInt(data.length).put(data);
+			putHeaderLength(bbuf, data.length).put(data);
 		bbuf.flip();
 		int written = this.enqueueSend(isa, bbuf);
-		return written - 4;
+		return written - batchSize * HEADER_SIZE;
 	}
 
-	private ByteBuffer getHeaderedByteBuffer(byte[] data) {
-		ByteBuffer bbuf = ByteBuffer.allocate(4 + data.length);
-		bbuf.putInt(data.length);
-		bbuf.put(data);
-		assert (!bbuf.hasRemaining() && bbuf.capacity() == (4 + data.length));
+	private static ByteBuffer getHeaderedByteBuffer(byte[] data) {
+		ByteBuffer bbuf = ByteBuffer.allocate(HEADER_SIZE + data.length);
+		putHeaderLength(bbuf, data.length).put(data);
+		assert (!bbuf.hasRemaining() && bbuf.capacity() == (HEADER_SIZE + data.length));
 		bbuf.flip();
 		return bbuf;
 	}
+
+	private static ByteBuffer putHeaderLength(ByteBuffer buf, int length) {
+		return (USE_PREAMBLE ? buf.putInt(PREAMBLE) : buf).putInt(length);
+	}
+
+	protected static int getPayloadLength(ByteBuffer buf) throws IOException {
+		assert (buf.capacity() == HEADER_SIZE);
+		int preamble = -1;
+		if (!USE_PREAMBLE || (preamble = buf.getInt()) == PREAMBLE) {
+			int length = buf.getInt();
+			if (outOfRange(length))
+				throw new IOException("Out-of-range payload length " + length);
+			return length;
+		}
+		// error: empty out buf
+		byte[] b = new byte[buf.remaining()];
+		buf.get(b);
+		throw new IOException("Parsed bad preamble " + preamble + " before: ["
+				+ new String(b) + "]");
+	}
+
+	private static int PREAMBLE = 723432553;
+	// not really needed; could be true or false
+	private static boolean USE_PREAMBLE = true;
+	protected static int HEADER_SIZE = USE_PREAMBLE ? 8 : 4;
 
 	private static final long SELECT_TIMEOUT = 1000;
 
@@ -394,8 +430,14 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		this.started = true;
 		while (!isStopped()) {
 			try {
-				// Set ops to WRITE for pending write requests.
-				// registerWriteInterests();
+				/*
+				 * Set ops to WRITE for pending write requests. We don't need to
+				 * do this every select iteration, just once in a few
+				 * iterations. We need to do it at all so that the selector
+				 * thread can retry connecting to not-yet-connected destinations
+				 * with pending writes.
+				 */
+				registerWriteInterests();
 				// Set ops to CONNECT for pending connect requests.
 				processPendingConnects();
 				// Wait for an event one of the registered channels.
@@ -530,7 +572,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// Try to reuse accepted connection for sending data
 		if (DUPLEX_CONNECTIONS)
 			this.reuseAcceptedConnectionForWrites(socketChannel);
-		socketChannelKey.attach(ByteBuffer.allocate(4)); // for length
+		socketChannelKey.attach(new AlternatingByteBuffer()); // for length
 		assert (socketChannelKey.attachment() != null);
 
 		registerSSL(socketChannelKey, false);
@@ -543,63 +585,77 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 */
 	private static final int MAX_PAYLOAD_SIZE = 1024 * 1024;
 
+	// used also by SSLDataProcessingWorker
+	protected class AlternatingByteBuffer {
+		final ByteBuffer headerBuf;
+		ByteBuffer bodyBuf = null;
+
+		AlternatingByteBuffer() {
+			headerBuf = ByteBuffer.allocate(HEADER_SIZE);
+			bodyBuf = null;
+		}
+
+		void clear() {
+			this.headerBuf.clear();
+			this.bodyBuf = null;
+		}
+	}
+
 	private void read(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
-		assert (socketChannel != null) : "Null socketChannel registered to key "
-				+ key;
-		// we use length header only for non-SSL
-		ByteBuffer bbuf = !this.useHeader() ? this.readBuffer
-				: (ByteBuffer) key.attachment();
-		assert (bbuf != null) : "No attachment for key " + key.channel();
-		// Attempt to read off the channel
-		int numRead = -1;
-		try {
-			numRead = socketChannel.read(bbuf);
-			// read length
-			if (numRead > 0 && bbuf.capacity() == 4 && !bbuf.hasRemaining()) {
-				assert (!isSSL()); // useHeader() => non-SSL
-				bbuf.flip();
-				int length = bbuf.getInt();
-				if (length < 0 || length > MAX_PAYLOAD_SIZE)
-					throw new IOException("Node" + myID
-							+ " parsed out-of-range payload length " + length
-							+ " on channel " + socketChannel);
-				// allocate and attach new buffer and read payload
-				bbuf = ByteBuffer.allocate(length);
-				key.attach(bbuf);
-				numRead = socketChannel.read(bbuf);
-			}
-		} finally {
-			// remote node forcibly or cleanly closed the connection.
-			if (numRead == -1)
-				cleanup(key, socketChannel);
-			// else NIOInstrumenter.incrRcvd();
-		}
-		if (numRead < 0)
-			return;
 
-		/*
-		 * Hand the data off to our worker thread. The worker is expected to
-		 * synchronously get() from readBuffer and return and can not continue
-		 * reading from readBuffer after returning as we compact it immediately
-		 * after, so there may be concurrency issues.
-		 */
-		if (useHeader()) {
-			if (!bbuf.hasRemaining()) {
+		// if SSL, simply pass any bytes to SSL worker
+		if (isSSL()) {
+			ByteBuffer bbuf = this.readBuffer;
+			int numRead = socketChannel.read(bbuf);
+			if (numRead > 0) {
 				bbuf.flip();
 				this.worker.processData(socketChannel, bbuf);
-				assert (bbuf.remaining() == 0); // worker must empty all
-				// coz we are going to prepare to read the next message
-				bbuf = ByteBuffer.allocate(4);
-				key.attach(bbuf);
+				bbuf.compact();
 			}
-			// else let it be attached
-		} else {
-			assert (!useHeader());
+			return;
+		}
+		// else first read payload length in header, then ready payload
+		NIOTransport<?>.AlternatingByteBuffer abbuf = (NIOTransport<?>.AlternatingByteBuffer) key
+				.attachment();
+		assert (abbuf != null) : this + ": no attachment for " + key.channel();
+
+		// read into body if header completely read, else read into header
+		ByteBuffer bbuf = (abbuf.headerBuf.remaining() == 0 ? abbuf.bodyBuf
+				: abbuf.headerBuf);
+		if (socketChannel.read(bbuf) < 0)
+			return;
+
+		// parse header for length if complete header read
+		if (bbuf == abbuf.headerBuf && !bbuf.hasRemaining()) {
+			bbuf.flip();
+			int length = -1;
+			try {
+				length = getPayloadLength(bbuf);
+			} catch (IOException ioe) {
+				throw new IOException("Node" + myID + ioe.getMessage()
+						+ " on channel " + socketChannel);
+			}
+			// allocate new buffer and read payload
+			bbuf = (abbuf.bodyBuf = ByteBuffer.allocate(length));
+			socketChannel.read(bbuf);
+		}
+
+		// if complete payload read, pass to worker
+		if (abbuf.bodyBuf != null && !abbuf.bodyBuf.hasRemaining()) {
 			bbuf.flip();
 			this.worker.processData(socketChannel, bbuf);
-			bbuf.compact();
+			// clear header to prepare to read the next message
+			abbuf.clear();
 		}
+
+		/*
+		 * When we hand the data off to our worker thread, the worker is
+		 * expected to synchronously get() from readBuffer and return and can
+		 * not continue reading from readBuffer after returning as we compact it
+		 * immediately after in the SSL case; in the non-SSL case, we discard
+		 * the buffer, so it doesn't matter one way or the other.
+		 */
 	}
 
 	/*
@@ -713,7 +769,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			removed++;
 			sendQueue.remove();
 		}
-		if(Util.oneIn(100)) DelayProfiler.updateMovAvg("batchedNIOWrite", removed);
+		if (Util.oneIn(100))
+			DelayProfiler.updateMovAvg(myID + "batchedNIOWrite", removed);
 	}
 
 	private void dequeueSendQueueIfEmpty(InetSocketAddress isa,
@@ -830,15 +887,20 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	}
 
 	/*
-	 * Invoked only by the selector thread. Register a write interest on all
-	 * sockets that have at least one pending write. Note that it is not enough
-	 * to register a write interest just once unless you can ensure that the
-	 * interest will be converted to a successful write; if not, writes can get
-	 * missed.
-	 * 
-	 * FIXME: unused
+	 * Registers a write interest on all sockets that have at least one pending
+	 * write. We only call this infrequently to push out writes to destinations
+	 * to which connection attempts have failed. If finishConnection fails,
+	 * there is no other mechanism to retry establishing a connection to such
+	 * destinations.
 	 */
-	protected void registerWriteInterests() {
+	private long lastRegisterWriteInterestsInvoked = 0;
+	private static long INTER_REGISTER_WRITE_INTERESTS_SPACING = 8000;
+
+	private void registerWriteInterests() {
+		if (System.currentTimeMillis() - this.lastRegisterWriteInterestsInvoked < (Math
+				.random() * INTER_REGISTER_WRITE_INTERESTS_SPACING))
+			return;
+		this.lastRegisterWriteInterestsInvoked = System.currentTimeMillis();
 		if (this.sendQueues.isEmpty())
 			return;
 		synchronized (this.sendQueues) {
@@ -854,27 +916,23 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					 * maps the isa to a socket channel. Hence, the assert.
 					 */
 					assert (sc != null) : isa;
-					/*
-					 * It is useful to register a write interest even if a
-					 * channel is not connected but can try reconnecting. In
-					 * this case, the write attempt will fail and force a
-					 * reconnect attempt.
-					 */
-					SelectionKey key = ((sc.isConnected() && this
-							.isHandshakeComplete(sc)) ? sc
-							.keyFor(this.selector) : null);
-					if (key != null && key.isValid()
-							&& (key.interestOps() & SelectionKey.OP_WRITE) == 0)
+
+					// connected and handshake complete => set op_write
+					SelectionKey key = null;
+					if (((sc.isConnected() && this.isHandshakeComplete(sc))
+							&& (key = sc.keyFor(this.selector)) != null && (key
+							.interestOps() & SelectionKey.OP_WRITE) == 0))
 						try {
 							key.interestOps(key.interestOps()
 									| SelectionKey.OP_WRITE);
 						} catch (CancelledKeyException cke) {
-							// Could have been cancelled upon a write attempt
+							// could have been cancelled upon a write attempt
 							cleanupRetry(key, sc, isa);
 						}
-					// if pending writes and socket closed, retry if possible
-					if (!sc.isOpen())
+					// if socket closed, retry (if allowed)
+					if (!sc.isOpen()) {
 						this.cleanupRetry(null, sc, isa);
+					}
 				}
 			}
 		}
@@ -917,6 +975,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			if (this.canReconnect(isa)) {
 				testAndIntiateConnection(isa);
 			} // FIXME: should give up eventually
+
 		} catch (IOException ioe) {
 			log.warning("IOException encountered while re-initiating connection to "
 					+ isa);
@@ -1006,12 +1065,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 						(InetSocketAddress) socketChannel.getRemoteAddress(),
 						socketChannel); // replace existing with newly accepted
 				socketChannel.register(this.selector, SelectionKey.OP_READ
-						| SelectionKey.OP_WRITE /*
-												 * | SelectionKey.OP_CONNECT
-												 */);
+						| SelectionKey.OP_WRITE);
 			} catch (ClosedChannelException e) {
 				log.warning("Node" + myID
-						+ " failed to set channel to OP_WRITE");
+						+ " failed to set OP_WRITE immediately after accept()");
 				// do nothing
 			} catch (IOException e) {
 				log.warning("Node" + myID + " failed to get remote address");
@@ -1186,6 +1243,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		socketChannel.connect(isa);
 		NIOInstrumenter.incrInitiated();
 		putSockAddrToSockChannel(isa, socketChannel); // synchronized
+		// should verify that there are no partial byte buffers
+		removePartialBuffers(isa);
 
 		// Queue a channel registration since the caller is not the
 		// selecting thread. As part of the registration we'll register
@@ -1194,6 +1253,53 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		addPendingConnect(socketChannel); // synchronized
 
 		return socketChannel;
+	}
+
+	/*
+	 * Will remove partial buffers at connection initiation time for the
+	 * following reason. The reader at a receiver attaches a byte buffer with a
+	 * socket channel, not an InetSocketAddress, and that is the way it must be
+	 * as the sender's socket address may change arbitrary when it reconnects
+	 * after a connection failure. In such failure cases, the buffer at the head
+	 * of the queue may have been sent partially on the previous (failed)
+	 * connection. If we don't remove the rest of this unsent head buffer, we
+	 * will continue to parse illegal payload lengths resulting in even more IO
+	 * exceptions.
+	 * 
+	 * Implication: Such removals means that we do not strictly maintain
+	 * reliable, byte stream semantics upon connection failures. What we do
+	 * maintain is an unreliable, ordered buffer stream, i.e., a stream of byte
+	 * buffers that are received in the same order as the order in which they
+	 * were sent with the caveat that some buffers may be missing from the
+	 * received stream if connection failures happen. Each received buffer is
+	 * nevertheless guaranteed to be reliable. The missing buffers correspond
+	 * exactly to the buffers (partially or wholly) written to the underlying
+	 * TCP socket but not yet sent to the other end.
+	 */
+	private void removePartialBuffers(InetSocketAddress isa) throws IOException {
+		LinkedBlockingQueue<ByteBuffer> sendQueue = this.sendQueues.get(isa);
+		if (sendQueue == null || sendQueue.isEmpty())
+			return;
+		synchronized (sendQueue) {
+			ByteBuffer bbuf = ByteBuffer.allocate(HEADER_SIZE);
+			Util.put(bbuf, sendQueue.peek());
+			sendQueue.peek().rewind();
+			bbuf.flip();
+			int length = -1;
+			try {
+				length = getPayloadLength(bbuf);
+			} finally {
+				if ((outOfRange(length) || (length != sendQueue.peek()
+						.capacity() - HEADER_SIZE))
+						&& sendQueue.remove() != null)
+					log.severe(this
+							+ " removed partial unsent packet in send queue");
+			}
+		}
+	}
+
+	protected static boolean outOfRange(int length) {
+		return length < 0 || length > MAX_PAYLOAD_SIZE;
 	}
 
 	/*
@@ -1209,26 +1315,27 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// Finish the connection. If the connection operation failed
 		// this will raise an IOException.
 		try {
-			connected = socketChannel.finishConnect() &&
-			// will register only if finishConnect() is true
-					this.registerSSL(key.interestOps(SelectionKey.OP_WRITE
-					/* | SelectionKey.OP_CONNECT */
-					| SelectionKey.OP_READ), true);
+			connected = socketChannel.finishConnect()
+					&&
+					// will register only if finishConnect() is true
+					this.registerSSL(
+							key.interestOps(
+							// writes allowed only after handshake complete
+							(this.isHandshakeComplete(socketChannel) ? SelectionKey.OP_WRITE
+									: 0)
+									// reads allowed and in fact needed right
+									// away
+									| SelectionKey.OP_READ), true);
 			// duplex connection => we may have to read replies
-			key.attach(ByteBuffer.allocate(4));
-			/*
-			 * No point registering a write interest until the socket is
-			 * connected as the write will block anyway. We register other
-			 * interests to support duplex communication.
-			 */
+			key.attach(new AlternatingByteBuffer());
 		} catch (IOException e) {
-			// Cancel the channel's registration with our selector
-			log.fine("Node "
+			// cancel the channel's registration with selector
+			log.info("Node "
 					+ this.myID
 					+ " failed to (re-)connect to "
 					+ new InetSocketAddress(socketChannel.socket()
 							.getInetAddress(), socketChannel.socket().getPort())
-					+ " probably because the remote end died or closed the connection");
+					+ e.getMessage());
 			// FIXME: Should probably also drop outstanding data here
 			cleanup(key, socketChannel);
 			connected = false;
@@ -1251,12 +1358,20 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 	/*
 	 * This method notifies the selector thread that a handshake is complete so
-	 * that in the next iteration, it can try to wrapSend queued (unencrypted)
+	 * that in the next iteration, it can try to wrapWrite queued (unencrypted)
 	 * outgoing data.
 	 */
 	@Override
 	public void handshakeComplete(SelectionKey key) {
-		this.selector.wakeup();
+		try {
+			this.wakeupSelector((InetSocketAddress) ((SocketChannel) key
+					.channel()).getRemoteAddress());
+		} catch (IOException e) {
+			log.severe(this
+					+ " encountered IOException upon handshake completion for "
+					+ key.channel());
+			cleanup(key);
+		}
 	}
 
 	// A utility container class.

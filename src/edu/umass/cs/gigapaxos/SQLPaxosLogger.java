@@ -17,7 +17,7 @@ import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.SQL;
 import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
-import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -84,7 +84,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	private static final String MESSAGES_TABLE = "messages";
 
 	// disable persistent logging altogether
-	private static final boolean DISABLE_LOGGING = TESTPaxosConfig.DISABLE_LOGGING; // false;
+	private static final boolean DISABLE_LOGGING = Config.getGlobalBoolean(PaxosConfig.PC.DISABLE_LOGGING); // false;
 	private static boolean disableLogging = DISABLE_LOGGING;
 
 	/**

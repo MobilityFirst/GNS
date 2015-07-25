@@ -18,7 +18,7 @@ import edu.umass.cs.utils.MyLogger;
  *
  */
 public abstract class AbstractNIOSSL implements Runnable {
-	private final static int MAX_BUFFER_SIZE = 512 * 1024;
+	private final static int MAX_BUFFER_SIZE = 2048 * 1024;
 	// final
 	ByteBuffer wrapSrc, unwrapSrc;
 	// final

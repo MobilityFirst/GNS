@@ -30,7 +30,9 @@ import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
+import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Keyable;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;
@@ -519,7 +521,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		// allow null state without null checkpoints just for memory testing
 		if (slotBallot == null && initialState == null
 				&& !this.paxosManager.isNullCheckpointStateEnabled()
-				&& !TESTPaxosConfig.isMemoryTesting())
+				&& !Config.getGlobalBoolean(TC.MEMORY_TESTING))
 			throw new PaxosInstanceCreationException(
 					"A paxos instance with null initial state can be"
 							+ " created only if null checkpoints are enabled");

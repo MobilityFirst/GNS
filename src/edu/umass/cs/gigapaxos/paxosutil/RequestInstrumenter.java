@@ -5,23 +5,25 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptReplyPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
-import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
+import edu.umass.cs.utils.Config;
 
 /**
  * @author V. Arun
  * 
  *         This is a utility class to instrument packet sends and receives to
- *         track problems with paxos requests.
+ *         track problems with paxos requests. This is useful only for
+ *         single-node gigapaxos testing.
  */
 @SuppressWarnings("javadoc")
 public class RequestInstrumenter {
 	/**
 	 * This class is a no-op unless DEBUG is turned on
 	 * */
-	public static final boolean DEBUG = TESTPaxosConfig.DEBUG;
+	public static final boolean DEBUG = Config.getGlobalBoolean(PC.DEBUG);
 
 	private static final HashMap<Integer, String> map = new HashMap<Integer, String>();
 
