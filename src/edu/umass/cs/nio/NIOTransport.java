@@ -358,7 +358,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @throws IOException
 	 */
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
-		log.log(Level.INFO,
+		log.log(Level.FINEST,
 				"{0} invoked send to ({1}: {2}), checking connection status..",
 				new Object[] { this, isa, new Stringer(data) });
 		testAndIntiateConnection(isa);
