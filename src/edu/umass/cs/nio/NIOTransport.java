@@ -358,9 +358,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @throws IOException
 	 */
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
-		log.log(Level.FINEST,
-				"{0} invoked send to ({1}: {2}), checking connection status..",
-				new Object[] { this, isa, new Stringer(data) });
 		testAndIntiateConnection(isa);
 		// NIOInstrumenter.incrSent(isa.getPort());
 		// we put length header in *all* messages
@@ -636,9 +633,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			try {
 				length = getPayloadLength(bbuf);
 			} catch (IOException ioe) {
-				ByteBuffer buf = ByteBuffer.allocate(1024);
-				socketChannel.read(buf);
-				throw new IOException("Node" + myID + ioe.getMessage() + new String(buf.array())
+				throw new IOException("Node" + myID + ioe.getMessage()
 						+ " on channel " + socketChannel);
 			}
 			// allocate new buffer and read payload
