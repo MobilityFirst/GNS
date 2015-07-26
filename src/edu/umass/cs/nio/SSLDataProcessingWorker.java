@@ -312,7 +312,13 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 				this.decryptedWorker.processData((SocketChannel)key.channel(), bbuf);
 			}
 		} catch (IOException e) {
-			log.severe(this + e.getMessage() + " on channel " + key.channel());
+			ByteBuffer buf = ByteBuffer.allocate(1024);
+			try {
+				((SocketChannel)key.channel()).read(buf);
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+			log.severe(this + e.getMessage() + new String(buf.array())+" on channel " + key.channel());
 			e.printStackTrace();
 			// incoming is emptied out; what else to do here?
 		}

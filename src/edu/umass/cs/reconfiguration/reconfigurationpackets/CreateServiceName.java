@@ -6,7 +6,6 @@ import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
 
@@ -55,7 +54,8 @@ public class CreateServiceName extends ClientReconfigurationPacket {
 	public CreateServiceName(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
 		super(json, CreateServiceName.unstringer); // ignores unstringer
-		this.setSender(JSONNIOTransport.getSenderAddress(json));
+		assert(this.getSender()!=null);
+		//this.setSender(JSONNIOTransport.getSenderAddress(json)); 
 		this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
 	}
 

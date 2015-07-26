@@ -227,10 +227,6 @@ public class PaxosCoordinator {
 				: null;
 	}
 
-	protected synchronized boolean isOverloaded(int acceptorSlot) {
-		return this.isActive() ? this.pcs.isOverloaded(acceptorSlot) : false;
-	}
-
 	protected synchronized boolean waitingTooLong() {
 		return this.exists() && this.pcs.testAndSetWaitingTooLong() ? true
 				: false;

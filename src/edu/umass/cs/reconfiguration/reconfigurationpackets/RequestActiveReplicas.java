@@ -59,7 +59,8 @@ public class RequestActiveReplicas extends ClientReconfigurationPacket {
 	public RequestActiveReplicas(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
 		super(json, RequestActiveReplicas.unstringer); // ignores arg unstringer
-		this.setSender(JSONNIOTransport.getSenderAddress(json));
+		assert(this.getSender()!=null);
+		//this.setSender(JSONNIOTransport.getSenderAddress(json));
 
 		JSONArray jsonArray = json.has(Keys.ACTIVE_REPLICAS.toString()) ? json
 				.getJSONArray(Keys.ACTIVE_REPLICAS.toString()) : null;
@@ -119,9 +120,9 @@ public class RequestActiveReplicas extends ClientReconfigurationPacket {
 			System.out.println(req1);
 			JSONObject json1;
 			json1 = req1.toJSONObject();
-			json1.put(JSONNIOTransport.DEFAULT_IP_FIELD, sender.getAddress()
+			json1.put(JSONNIOTransport.SNDR_IP_FIELD, sender.getAddress()
 					.getHostAddress());
-			json1.put(JSONNIOTransport.DEFAULT_PORT_FIELD, sender.getPort());
+			json1.put(JSONNIOTransport.SNDR_PORT_FIELD, sender.getPort());
 			RequestActiveReplicas req2 = new RequestActiveReplicas(json1, null);
 			System.out.println(req2);
 		} catch (UnknownHostException | JSONException e) {

@@ -74,8 +74,8 @@ public class CommandRetransmitter implements SchedulableProtocolTask<String, Pac
   public GenericMessagingTask[] start() {
     InetSocketAddress address = handler.getClosestServer(actives, activesAlreadyContacted);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
-    json.remove(MessageNIOTransport.DEFAULT_IP_FIELD);
-    json.remove(MessageNIOTransport.DEFAULT_PORT_FIELD);
+    json.remove(MessageNIOTransport.SNDR_IP_FIELD);
+    json.remove(MessageNIOTransport.SNDR_PORT_FIELD);
     if (handler.isDebugMode()) {
       GNS.getLogger().info(this.refreshKey()
               + " Sending to " + address

@@ -674,11 +674,6 @@ public class PaxosCoordinatorState {
 		return this.active;
 	}
 
-	protected synchronized boolean isOverloaded(int acceptorSlot) {
-		return this.myProposals.size() > PaxosInstanceStateMachine.MAX_OUTSTANDING_LOAD
-				|| this.nextProposalSlotNumber - acceptorSlot > PaxosInstanceStateMachine.MAX_OUTSTANDING_LOAD;
-	}
-
 	// checks and increments retransmission count
 	protected synchronized boolean testAndSetWaitingTooLong() {
 		if (!this.isActive() // periodic retransmission

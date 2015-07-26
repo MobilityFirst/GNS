@@ -130,7 +130,7 @@ public class TESTPaxosNode {
 				.copyOfRange(args, 1, args.length)));
 
 		// if -c is in args
-		TESTPaxosConfig.setCleanDB(args);
+		PaxosManager.startWithCleanDB(TESTPaxosConfig.shouldCleanDB(args));
 
 		return myID;
 	}

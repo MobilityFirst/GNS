@@ -54,13 +54,25 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 * JSON key corresponding to sender IP address. Relevant only if
 	 * {@code MessageType} is JSONObject.
 	 */
-	public static final String DEFAULT_IP_FIELD = "_IP_ADDRESS";
+	public static final String SNDR_IP_FIELD = "_SNDR_IP_ADDRESS";
 	/**
 	 * JSON key corresponding to sender port number. Relevant only if
 	 * {@code MessageType} is JSONObject.
 	 */
 
-	public static final String DEFAULT_PORT_FIELD = "_TCP_PORT";
+	public static final String SNDR_PORT_FIELD = "_SNDR_TCP_PORT";
+
+	/**
+	 * JSON key corresponding to receiver IP address. Relevant only if
+	 * {@code MessageType} is JSONObject.
+	 */
+	public static final String RCVR_IP_FIELD = "_RCVR_IP_ADDRESS";
+
+	/**
+	 * JSON key corresponding to receiver port number. Relevant only if
+	 * {@code MessageType} is JSONObject.
+	 */	
+	public static final String RCVR_PORT_FIELD = "_RCVR_TCP_PORT";
 
 	/**
 	 * Initiates transporter with id and nodeConfig.
@@ -223,7 +235,8 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		if (msg instanceof byte[])
 			return this.sendUnderlying(isa, (byte[]) msg);
 
-		return this.sendUnderlying(isa, msg.toString().getBytes(NIO_CHARSET_ENCODING));
+		return this.sendUnderlying(isa,
+				msg.toString().getBytes(NIO_CHARSET_ENCODING));
 	}
 
 	/**
@@ -234,12 +247,37 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	public static InetSocketAddress getSenderAddress(JSONObject json) {
 		try {
 			InetAddress address = (json
-					.has(MessageNIOTransport.DEFAULT_IP_FIELD) ? InetAddress
+					.has(MessageNIOTransport.SNDR_IP_FIELD) ? InetAddress
 					.getByName(json.getString(
-							MessageNIOTransport.DEFAULT_IP_FIELD).replaceAll(
+							MessageNIOTransport.SNDR_IP_FIELD).replaceAll(
 							"[^0-9.]*", "")) : null);
-			int port = (json.has(MessageNIOTransport.DEFAULT_PORT_FIELD) ? json
-					.getInt(MessageNIOTransport.DEFAULT_PORT_FIELD) : -1);
+			int port = (json.has(MessageNIOTransport.SNDR_PORT_FIELD) ? json
+					.getInt(MessageNIOTransport.SNDR_PORT_FIELD) : -1);
+			if (address != null && port > 0) {
+				return new InetSocketAddress(address, port);
+			}
+		} catch (UnknownHostException | JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * @param json
+	 * @return Socket address of the recorded recorded in this JSON message at
+	 *         receipt time. Sometimes a sender needs to know on which of its
+	 *         possibly multiple listening sockets this message was received,
+	 *         so we insert it into the packet at receipt time. 
+	 */
+	public static InetSocketAddress getReceiverAddress(JSONObject json) {
+		try {
+			InetAddress address = (json
+					.has(MessageNIOTransport.RCVR_IP_FIELD) ? InetAddress
+					.getByName(json.getString(
+							MessageNIOTransport.RCVR_IP_FIELD).replaceAll(
+							"[^0-9.]*", "")) : null);
+			int port = (json.has(MessageNIOTransport.RCVR_PORT_FIELD) ? json
+					.getInt(MessageNIOTransport.RCVR_PORT_FIELD) : -1);
 			if (address != null && port > 0) {
 				return new InetSocketAddress(address, port);
 			}
@@ -256,10 +294,10 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 */
 	public static final InetAddress getSenderInetAddress(JSONObject json)
 			throws JSONException {
-		if (json.has(JSONNIOTransport.DEFAULT_IP_FIELD)) {
+		if (json.has(JSONNIOTransport.SNDR_IP_FIELD)) {
 			try {
 				return InetAddress.getByName(json.getString(
-						JSONNIOTransport.DEFAULT_IP_FIELD).replaceAll(
+						JSONNIOTransport.SNDR_IP_FIELD).replaceAll(
 						"[^0-9.]*", ""));
 			} catch (UnknownHostException uhe) {
 				uhe.printStackTrace();
@@ -274,9 +312,9 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 */
 	public static String getSenderInetAddressAsString(JSONObject json) {
 		try {
-			String address = (json.has(MessageNIOTransport.DEFAULT_IP_FIELD) ? (json
-					.getString(MessageNIOTransport.DEFAULT_IP_FIELD)
-					.replaceAll("[^0-9.]*", "")) : null);
+			String address = (json.has(MessageNIOTransport.SNDR_IP_FIELD) ? (json
+					.getString(MessageNIOTransport.SNDR_IP_FIELD).replaceAll(
+					"[^0-9.]*", "")) : null);
 			return address;
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -290,8 +328,8 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	 */
 	public static int getSenderPort(JSONObject json) {
 		try {
-			int port = (json.has(MessageNIOTransport.DEFAULT_PORT_FIELD) ? (json
-					.getInt(MessageNIOTransport.DEFAULT_PORT_FIELD)) : -1);
+			int port = (json.has(MessageNIOTransport.SNDR_PORT_FIELD) ? (json
+					.getInt(MessageNIOTransport.SNDR_PORT_FIELD)) : -1);
 			return port;
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -313,7 +351,8 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		if (msg instanceof byte[])
 			return this.sendUnderlying(destID, (byte[]) msg);
 
-		return this.sendUnderlying(destID, msg.toString().getBytes(NIO_CHARSET_ENCODING));
+		return this.sendUnderlying(destID,
+				msg.toString().getBytes(NIO_CHARSET_ENCODING));
 	}
 
 	// bypass network send by directly passing to local worker
@@ -333,7 +372,6 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 						this.getNodePort()), msg);
 		return length;
 	}
-
 
 	/**
 	 * We send even byte arrays encoded as strings because it is easier to do

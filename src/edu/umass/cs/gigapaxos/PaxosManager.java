@@ -1,5 +1,6 @@
 package edu.umass.cs.gigapaxos;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.FailureDetectionPacket;
 import edu.umass.cs.gigapaxos.paxospackets.FindReplicaGroupPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
@@ -23,6 +24,7 @@ import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.MultiArrayMap;
@@ -67,39 +69,6 @@ import java.util.logging.Logger;
  */
 public class PaxosManager<NodeIDType> {
 
-	private static final int PINSTANCES_CAPACITY = 2000000; // 2M
-	private static final long MORGUE_DELAY = 30000;
-	private static final boolean HIBERNATE_OPTION = false;
-	private static final boolean PAUSE_OPTION = true;
-	private static final long DEACTIVATION_PERIOD = 60000; // 30s default
-
-	/**
-	 * Refer to documentation in AbstractReconfiguratorDB.
-	 */
-	public static final long MAX_FINAL_STATE_AGE = 3600 * 1000;
-	/**
-	 * Whether request batching is enabled.
-	 */
-	protected static final boolean BATCHING_ENABLED = true;
-
-	/*
-	 * FIXME: Unclear what a good default is for good liveness. It doesn't
-	 * really matter for safety of reconfiguration.
-	 */
-	protected static final long CAN_CREATE_TIMEOUT = 5000;
-	private static final long WAIT_TO_GET_CREATED_TIMEOUT = 2000; // needed?
-
-	private static final boolean EMULATE_UNREPLICATED = false;
-
-	/*
-	 * ONE_PASS_RECOVERY should just be true. False will try to individually
-	 * roll forward each paxos instance during recovery and will be slow because
-	 * it has to pull each instances log messages from the DB individually. The
-	 * option exists only for historical reasons and is deprecated.
-	 */
-	@Deprecated
-	private static final boolean ONE_PASS_RECOVERY = true;
-
 	// final
 	private final AbstractPaxosLogger paxosLogger; // logging
 	private final FailureDetection<NodeIDType> FD; // failure detection
@@ -117,9 +86,10 @@ public class PaxosManager<NodeIDType> {
 	private final Stringifiable<NodeIDType> unstringer;
 	private final RequestBatcher batched;
 
-	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD; // default
+	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD;
 	private int interCheckpointInterval = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
-	private int maxSyncDecisionsGap = PaxosInstanceStateMachine.MAX_SYNC_DECISIONS_GAP;
+	private int checkpointTransferTrigger = PaxosInstanceStateMachine.MAX_SYNC_DECISIONS_GAP;
+	private long minResyncDelay = PaxosInstanceStateMachine.MIN_RESYNC_DELAY;
 	private final boolean nullCheckpointsEnabled;
 
 	// non-final
@@ -140,9 +110,7 @@ public class PaxosManager<NodeIDType> {
 	 */
 
 	private static Logger log = Logger.getLogger(PaxosManager.class.getName());
-	static {
-		PaxosConfig.load();
-	}
+
 	/**
 	 * @param id
 	 *            My node ID.
@@ -191,7 +159,7 @@ public class PaxosManager<NodeIDType> {
 		this.myApp = pi;
 		this.FD = new FailureDetection<NodeIDType>(id, niot, paxosLogFolder);
 		this.pinstances = new MultiArrayMap<String, PaxosInstanceStateMachine>(
-				PINSTANCES_CAPACITY);
+				Config.getGlobalInt(PC.PINSTANCES_CAPACITY));
 		this.corpses = new HashMap<String, PaxosInstanceStateMachine>();
 		// this.activePaxii = new HashMap<String, ActivePaxosState>();
 		this.messenger = new Messenger<NodeIDType>(niot, this.integerMap);
@@ -200,7 +168,8 @@ public class PaxosManager<NodeIDType> {
 		this.nullCheckpointsEnabled = enableNullCheckpoints;
 		// periodically remove active state for idle paxii
 		executor.scheduleWithFixedDelay(new Deactivator(), 0,
-				DEACTIVATION_PERIOD, TimeUnit.MILLISECONDS);
+				Config.getGlobalInt(PC.DEACTIVATION_PERIOD),
+				TimeUnit.MILLISECONDS);
 		(this.batched = new RequestBatcher(this)).start();
 		testingInitialization();
 		// needed to unclose when testing multiple runs of open and close
@@ -503,7 +472,7 @@ public class PaxosManager<NodeIDType> {
 	// Called by external entities, so we need to fix node IDs
 	private void handleIncomingPacket(JSONObject jsonMsg) {
 		try {
-			if (BATCHING_ENABLED)
+			if (Config.getGlobalBoolean(PC.BATCHING_ENABLED))
 				this.enqueueRequest(fixNodeStringToInt(jsonMsg));
 			else
 				this.handlePaxosPacket(fixNodeStringToInt(jsonMsg));
@@ -807,7 +776,25 @@ public class PaxosManager<NodeIDType> {
 	 * @param maxGap
 	 */
 	public void setMaxSyncDecisionsGap(int maxGap) {
-		this.maxSyncDecisionsGap = maxGap;
+		this.checkpointTransferTrigger = maxGap;
+	}
+
+	/**
+	 * @return Minimum delay between successive sync decisions for the same
+	 *         paxos instance. This rate limit prevents unnecessary sync'ing
+	 *         under high load when a nontrivial extent of out-of-order-ness is
+	 *         expected.
+	 */
+
+	public long getMinResyncDelay() {
+		return this.minResyncDelay;
+	}
+
+	/**
+	 * @param minDelay
+	 */
+	public void setMinResyncDelay(long minDelay) {
+		this.minResyncDelay = minDelay;
 	}
 
 	/**
@@ -816,7 +803,7 @@ public class PaxosManager<NodeIDType> {
 	 *         operation.
 	 */
 	public int getMaxSyncDecisionsGap() {
-		return this.maxSyncDecisionsGap;
+		return this.checkpointTransferTrigger;
 	}
 
 	/**
@@ -890,14 +877,14 @@ public class PaxosManager<NodeIDType> {
 	/**
 	 * @return Idle period after which paxos instances are paused.
 	 */
-	public static long getDeactivationPeriod() {
-		return DEACTIVATION_PERIOD;
+	protected static long getDeactivationPeriod() {
+		return Config.getGlobalInt(PC.DEACTIVATION_PERIOD);
 	}
 
 	/********************* End of public methods ***********************/
 
 	private final boolean emulateUnreplicated(JSONObject jsonMsg) {
-		if (!EMULATE_UNREPLICATED)
+		if (!Config.getGlobalBoolean(PC.EMULATE_UNREPLICATED))
 			return false;
 		try {
 			if (!PaxosPacket.getPaxosPacketType(jsonMsg).equals(
@@ -939,11 +926,11 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	private boolean isPauseEnabled() {
-		return PAUSE_OPTION;
+		return Config.getGlobalBoolean(PC.PAUSE_OPTION);
 	}
 
 	private boolean isHibernateable() {
-		return HIBERNATE_OPTION;
+		return Config.getGlobalBoolean(PC.HIBERNATE_OPTION);
 	}
 
 	/*
@@ -988,7 +975,8 @@ public class PaxosManager<NodeIDType> {
 		int logCount = 0;
 		freq = 1;
 		// roll forward all logged messages in a single pass
-		if (ONE_PASS_RECOVERY) {
+		// if (ONE_PASS_RECOVERY)
+		{
 			log.log(Level.INFO,
 					"{0} beginning to roll forward logged messages",
 					new Object[] { this });
@@ -1015,6 +1003,18 @@ public class PaxosManager<NodeIDType> {
 					new Object[] { this, logCount, groupCount });
 		}
 
+		// need to make another pass to mark all instances as active
+		while (this.paxosLogger.initiateReadCheckpoints(true))
+			; // acquires lock
+		while ((pri = this.paxosLogger.readNextCheckpoint(true)) != null) {
+			found = true;
+			assert (pri.getPaxosID() != null);
+			PaxosInstanceStateMachine pism = getInstance(pri.getPaxosID());
+			if (pism != null)
+				pism.setActive();
+		}
+		this.paxosLogger.closeReadAll(); // releases lock
+
 		this.hasRecovered = true;
 		this.notifyRecovered();
 		log.log(Level.INFO,
@@ -1027,11 +1027,12 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	protected boolean hasRecovered(PaxosInstanceStateMachine pism) {
-		if (ONE_PASS_RECOVERY)
-			return this.hasRecovered();
-		else
-			// !ONE_PASS_RECOVERY
-			return (pism != null && pism.isActive());
+		// if (ONE_PASS_RECOVERY)
+		return this.hasRecovered()
+		// else
+		// !ONE_PASS_RECOVERY
+		// return
+				&& (pism != null && pism.isActive());
 	}
 
 	/*
@@ -1093,7 +1094,7 @@ public class PaxosManager<NodeIDType> {
 		this.softCrash(pism);
 		this.corpses.put(pism.getPaxosID(), pism);
 		executor.schedule(new Cremator(pism.getPaxosID(), this.corpses),
-				MORGUE_DELAY, TimeUnit.MILLISECONDS);
+				Config.getGlobalInt(PC.MORGUE_DELAY), TimeUnit.MILLISECONDS);
 		this.notifyUponKill();
 	}
 
@@ -1265,7 +1266,7 @@ public class PaxosManager<NodeIDType> {
 	 * the receipt of any external packet.
 	 */
 	private void rollForward(String paxosID) {
-		if (!ONE_PASS_RECOVERY || this.hasRecovered()) {
+		if (/* !ONE_PASS_RECOVERY || */this.hasRecovered()) {
 			log.log(Level.FINE, "{0} {1} about to roll forward", new Object[] {
 					this, paxosID });
 			AbstractPaxosLogger.rollForward(paxosLogger, paxosID, messenger);
@@ -1325,7 +1326,7 @@ public class PaxosManager<NodeIDType> {
 		return (FD != null ? FD.getDeadTime(this.integerMap.get(id)) : System
 				.currentTimeMillis());
 	}
-	
+
 	protected AbstractPaxosLogger getPaxosLogger() {
 		return paxosLogger;
 	}
@@ -1433,8 +1434,8 @@ public class PaxosManager<NodeIDType> {
 	public boolean createPaxosInstanceForcibly(String paxosID, int version,
 			Set<NodeIDType> gms, InterfaceReplicable app, String state,
 			long timeout) {
-		if (timeout < CAN_CREATE_TIMEOUT)
-			timeout = CAN_CREATE_TIMEOUT;
+		if (timeout < Config.getGlobalInt(PC.CAN_CREATE_TIMEOUT))
+			timeout = Config.getGlobalInt(PC.CAN_CREATE_TIMEOUT);
 		// still do a timed wait
 		this.timedWaitCanCreateOrExistsOrHigher(paxosID, version, timeout);
 		if (this.instanceExistsOrHigher(paxosID, version))
@@ -1534,7 +1535,8 @@ public class PaxosManager<NodeIDType> {
 					|| (pism.getVersion() - findGroup.getVersion()) < 0) {
 				// wait to see if it gets created anyway; FIXME: needed?
 				this.timedWaitForExistence(findGroup.getPaxosID(),
-						findGroup.getVersion(), WAIT_TO_GET_CREATED_TIMEOUT);
+						findGroup.getVersion(),
+						Config.getGlobalInt(PC.WAIT_TO_GET_CREATED_TIMEOUT));
 
 				// wait and kill lower versions if any
 				if (pism != null
@@ -1542,7 +1544,7 @@ public class PaxosManager<NodeIDType> {
 					// wait to see if lower versions go away anyway
 					this.timedWaitCanCreateOrExistsOrHigher(
 							findGroup.getPaxosID(), findGroup.getVersion(),
-							CAN_CREATE_TIMEOUT);
+							Config.getGlobalInt(PC.CAN_CREATE_TIMEOUT));
 					this.kill(pism);
 				}
 
@@ -1781,9 +1783,27 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	private void testingInitialization() {
-		if (TESTPaxosConfig.getCleanDB())
+		/*
+		 * if (TESTPaxosConfig.getCleanDB()) while
+		 * (!this.paxosLogger.removeAll()) ;
+		 */
+		if (cleanDB)
 			while (!this.paxosLogger.removeAll())
 				;
+
+	}
+
+	private static boolean cleanDB = false;
+
+	/**
+	 * If set to true, {@link PaxosManager} will clear the DB upon creation.
+	 * This static flag applies only to PaxosManager instances created after
+	 * this flag has been set to true.
+	 * 
+	 * @param clean
+	 */
+	public static void startWithCleanDB(boolean clean) {
+		cleanDB = clean;
 	}
 
 	/**

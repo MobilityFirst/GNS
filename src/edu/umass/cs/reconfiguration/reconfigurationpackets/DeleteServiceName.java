@@ -6,7 +6,6 @@ import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
 
@@ -45,7 +44,8 @@ public class DeleteServiceName extends ClientReconfigurationPacket {
 	public DeleteServiceName(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
 		super(json, DeleteServiceName.unstringer); // ignores unstringer
-		this.setSender(JSONNIOTransport.getSenderAddress(json));
+		assert(this.getSender()!=null);
+		//this.setSender(JSONNIOTransport.getSenderAddress(json));
 	}
 
 	/**

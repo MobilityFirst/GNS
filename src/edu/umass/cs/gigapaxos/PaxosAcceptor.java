@@ -474,9 +474,9 @@ public class PaxosAcceptor {
 		return millisSince(t0) > t1 || millisSince(t0) < 0;
 	}
 
-	protected boolean canSync() {
+	protected boolean canSync(long minResyncDelay) {
 		return isOlderThan(this.lastSyncdTime,
-				PaxosInstanceStateMachine.MIN_RESYNC_DELAY);
+				minResyncDelay);
 	}
 
 	protected boolean isLongIdle() {

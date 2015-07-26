@@ -87,16 +87,15 @@ public class Config extends Properties {
 	 */
 	public static Config register(Class<?> type, String configFile)
 			throws IOException {
-		Config prev = null;
 		try {
 			return configMap.put(type, new Config(configFile));
 		} catch (IOException ioe) {
 			// we still use defaults
-			prev = configMap.put(type, new Config());
+			configMap.put(type, new Config());
 			log.warning(Config.class.getSimpleName() + " unable to find file "
-					+ configFile + "; using default value for type " + type);
+					+ configFile + "; using default values for type " + type);
+			throw ioe;
 		}
-		return prev;
 	}
 
 	/**
@@ -111,7 +110,6 @@ public class Config extends Properties {
 	 */
 	public static Config register(Class<?> type, String systemPropertyKey,
 			String defaultConfigFile) throws IOException {
-		Config prev = null;
 		try {
 			return (System.getProperty(systemPropertyKey) != null) ? configMap
 					.put(type,
@@ -119,12 +117,12 @@ public class Config extends Properties {
 					: configMap.put(type, new Config(defaultConfigFile));
 		} catch (IOException ioe) {
 			// we still use defaults
-			prev = configMap.put(type, new Config());
+			configMap.put(type, new Config());
 			log.warning(Config.class.getSimpleName() + " unable to find file "
-					+ defaultConfigFile + "; using default value for type "
+					+ defaultConfigFile + "; using default values for type "
 					+ type);
+			throw ioe;
 		}
-		return prev;
 	}
 
 	/**

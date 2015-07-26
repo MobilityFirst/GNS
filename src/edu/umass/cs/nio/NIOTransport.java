@@ -358,6 +358,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @throws IOException
 	 */
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
+		log.log(Level.INFO,
+				"{0} invoked send to ({1}: {2}), checking connection status..",
+				new Object[] { this, isa, new Stringer(data) });
 		testAndIntiateConnection(isa);
 		// NIOInstrumenter.incrSent(isa.getPort());
 		// we put length header in *all* messages
@@ -412,7 +415,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// error: empty out buf
 		byte[] b = new byte[buf.remaining()];
 		buf.get(b);
-		throw new IOException("Parsed bad preamble " + preamble + " before: ["
+		throw new IOException(" Parsed bad preamble " + preamble + " before: ["
 				+ new String(b) + "]");
 	}
 
@@ -633,7 +636,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			try {
 				length = getPayloadLength(bbuf);
 			} catch (IOException ioe) {
-				throw new IOException("Node" + myID + ioe.getMessage()
+				ByteBuffer buf = ByteBuffer.allocate(1024);
+				socketChannel.read(buf);
+				throw new IOException("Node" + myID + ioe.getMessage() + new String(buf.array())
 						+ " on channel " + socketChannel);
 			}
 			// allocate new buffer and read payload

@@ -35,12 +35,12 @@ public class TESTPaxosConfig {
 		try {
 			Config.register(TC.class, TC.CONFIG_DIR.getDefaultValue()
 					.toString()
-					+ TC.PROPERTIES_FILENAME.getDefaultValue()
-							.toString());
+					+ TC.PROPERTIES_FILENAME.getDefaultValue().toString());
 		} catch (IOException e) {
-			e.printStackTrace();
+			// ignore as defaults will be used
 		}
 	}
+
 	static {
 		load();
 	}
@@ -160,8 +160,7 @@ public class TESTPaxosConfig {
 			loadServersFromFile(configDir
 					+ Config.getGlobalString(TC.SERVERS_FILENAME));
 		loadPropertiesFromFile(
-				configDir
-						+ Config.getGlobalString(TC.PROPERTIES_FILENAME),
+				configDir + Config.getGlobalString(TC.PROPERTIES_FILENAME),
 				distributed);
 	}
 
@@ -198,28 +197,22 @@ public class TESTPaxosConfig {
 	/**
 	 * 
 	 */
-	public static final int DEFAULT_INIT_PORT = SampleNodeConfig.DEFAULT_START_PORT;
 
 	private static final SampleNodeConfig<Integer> nodeConfig = new SampleNodeConfig<Integer>(
-			DEFAULT_INIT_PORT);
-	static {
-		for (int i = Config.getGlobalInt(TC.TEST_START_NODE_ID); i < Config
-				.getGlobalInt(TC.TEST_START_NODE_ID)
-				+ Config.getGlobalInt(TC.NUM_NODES); i++)
-			nodeConfig.addLocal(i);
-	}
-
+			SampleNodeConfig.DEFAULT_START_PORT);
 	private static final HashMap<String, int[]> groups = new HashMap<String, int[]>();
-	static {
-		setDefaultGroups(Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS));
-	}
-
 	private static final int[] defaultGroup = {
 			Config.getGlobalInt(TC.TEST_START_NODE_ID),
 			Config.getGlobalInt(TC.TEST_START_NODE_ID) + 1,
 			Config.getGlobalInt(TC.TEST_START_NODE_ID) + 2 };
 	private static final Set<Integer> defaultGroupSet;
+
 	static {
+		for (int i = Config.getGlobalInt(TC.TEST_START_NODE_ID); i < Config
+				.getGlobalInt(TC.TEST_START_NODE_ID)
+				+ Config.getGlobalInt(TC.NUM_NODES); i++)
+			nodeConfig.addLocal(i);
+		setDefaultGroups(Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS));
 		defaultGroupSet = Util.arrayToIntSet(defaultGroup);
 	}
 
@@ -326,11 +319,13 @@ public class TESTPaxosConfig {
 	 * Cleans DB if -c command line arg is specified.
 	 * 
 	 * @param args
+	 * @return True if -c flag is present.
 	 */
-	public static final void setCleanDB(String[] args) {
+	public static final boolean shouldCleanDB(String[] args) {
 		for (String arg : args)
 			if (arg.trim().equals("-c"))
-				TESTPaxosConfig.setCleanDB(true);
+				return true;
+		return false;
 	}
 
 	/**

@@ -102,12 +102,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	// max decisions gap when reached will prompt checkpoint transfer
 	protected static final int MAX_SYNC_DECISIONS_GAP = INTER_CHECKPOINT_INTERVAL;
 
-	// used by PaxosCoordinatorState to determine if overloaded
-	protected static final int MAX_OUTSTANDING_LOAD = 100 * INTER_CHECKPOINT_INTERVAL;
-
-	// poke instance in the beginning to prompt coordinator election
-	protected static final boolean POKE_ENABLED = true;
-
 	// minimum interval before another sync decisions request can be issued
 	protected static final long MIN_RESYNC_DELAY = 1000;
 
@@ -640,21 +634,19 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 	// will send a noop message to self to force event-driven actions
 	protected void poke(boolean forceSync) {
-		if (POKE_ENABLED) {
-			try {
-				JSONObject msg = new JSONObject();
-				msg.put(PaxosPacket.PAXOS_ID, this.getPaxosID());
-				msg.put(PaxosPacket.PAXOS_VERSION, this.getVersion());
-				msg.put(PaxosPacket.PAXOS_PACKET_TYPE,
-						PaxosPacketType.NO_TYPE.getInt());
-				msg.put(PaxosPacket.SYNC_MODE,
-						forceSync ? SyncMode.FORCE_SYNC.toString()
-								: SyncMode.SYNC_TO_PAUSE.toString());
-				log.log(Level.FINE, "{0} being poked", new Object[] { this });
-				this.handlePaxosMessage(msg);
-			} catch (JSONException je) {
-				je.printStackTrace();
-			}
+		try {
+			JSONObject msg = new JSONObject();
+			msg.put(PaxosPacket.PAXOS_ID, this.getPaxosID());
+			msg.put(PaxosPacket.PAXOS_VERSION, this.getVersion());
+			msg.put(PaxosPacket.PAXOS_PACKET_TYPE,
+					PaxosPacketType.NO_TYPE.getInt());
+			msg.put(PaxosPacket.SYNC_MODE,
+					forceSync ? SyncMode.FORCE_SYNC.toString()
+							: SyncMode.SYNC_TO_PAUSE.toString());
+			log.log(Level.FINE, "{0} being poked", new Object[] { this });
+			this.handlePaxosMessage(msg);
+		} catch (JSONException je) {
+			je.printStackTrace();
 		}
 	}
 
@@ -1002,7 +994,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			SyncMode syncMode) {
 
 		MessagingTask fixGapsRequest = null;
-		if (this.paxosState.canSync()
+		if (this.paxosState.canSync(this.paxosManager.getMinResyncDelay())
 				&& (this.shouldSync((committed != null ? committed.slot
 						: this.paxosState.getMaxCommittedSlot()), this
 						.getPaxosManager().getOutOfOrderLimit(), syncMode))) {

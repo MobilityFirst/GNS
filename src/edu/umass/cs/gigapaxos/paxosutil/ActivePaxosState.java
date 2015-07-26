@@ -1,6 +1,5 @@
 package edu.umass.cs.gigapaxos.paxosutil;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
 
 /**
  * @author V. Arun
@@ -22,8 +21,7 @@ public class ActivePaxosState {
 	 * Minimum delay between successive sync decisions requests.
 	 */
 	public static final long MIN_RESYNC_DELAY = 1000; // ms
-	private static final long MAX_IDLE_PERIOD = PaxosManager
-			.getDeactivationPeriod(); // ms
+	private static final long MAX_IDLE_PERIOD = 30000;//PaxosManager.getDeactivationPeriod(); // ms
 
 	/**
 	 * ID of paxos group.

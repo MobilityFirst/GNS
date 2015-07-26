@@ -18,8 +18,8 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
 
   private final static String CLIENTREQUESTID = "reqID";
   private final static String LNSREQUESTID = "LNSreqID";
-  private final static String SENDERADDRESS = MessageNIOTransport.DEFAULT_IP_FIELD;
-  private final static String SENDERPORT = MessageNIOTransport.DEFAULT_PORT_FIELD;
+  private final static String SENDERADDRESS = MessageNIOTransport.SNDR_IP_FIELD;
+  private final static String SENDERPORT = MessageNIOTransport.SNDR_PORT_FIELD;
   private final static String COMMAND = "command";
 
   public final static String BOGUS_SERVICE_NAME = "unknown";

@@ -115,10 +115,9 @@ public class Reconfigurator<NodeIDType> implements
 		this.consistentNodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(
 				nc);
 		this.DB = new RepliconfigurableReconfiguratorDB<NodeIDType>(
-				new SQLReconfiguratorDB<NodeIDType>(
-						this.messenger.getMyID(), this.consistentNodeConfig),
-				getMyID(), this.consistentNodeConfig, this.messenger,
-				startCleanSlate);
+				new SQLReconfiguratorDB<NodeIDType>(this.messenger.getMyID(),
+						this.consistentNodeConfig), getMyID(),
+				this.consistentNodeConfig, this.messenger, startCleanSlate);
 		// recovery complete at this point
 		this.DB.setCallback(this); // no callbacks will happen during recovery
 
@@ -273,7 +272,8 @@ public class Reconfigurator<NodeIDType> implements
 			this.initiateReconfiguration(create.getServiceName(),
 					this.consistentNodeConfig.getReplicatedActives(create
 							.getServiceName()), create.getCreator(), create
-							.getForwader(), create.getInitialState(), null);
+							.getMyReceiver(), create.getForwader(), create
+							.getInitialState(), null);
 
 		// record already exists, so return error message
 		else
@@ -358,7 +358,8 @@ public class Reconfigurator<NodeIDType> implements
 				this, delete.getSummary() });
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 				this.getMyID(), this.formStartEpoch(delete.getServiceName(),
-						null, delete.getSender(), delete.getForwader(), null),
+						null, delete.getSender(), delete.getMyReceiver(),
+						delete.getForwader(), null),
 				RequestTypes.RECONFIGURATION_INTENT);
 		// coordinate delete intent, response will be sent in callback
 		if (this.isReadyForReconfiguration(rcRecReq)
@@ -403,7 +404,7 @@ public class Reconfigurator<NodeIDType> implements
 
 		if (this.processRedirection(request))
 			return null;
-		
+
 		NIOInstrumenter.addExcludePort(request.getCreator().getPort());
 
 		ReconfigurationRecord<NodeIDType> record = this.DB
@@ -497,7 +498,7 @@ public class Reconfigurator<NodeIDType> implements
 			this.initiateReconfiguration(
 					AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString(),
 					newRCs, // this.consistentNodeConfig.getNodeSocketAddress
-					(changeRC.getIssuer()), null, null,
+					(changeRC.getIssuer()), null, null, null,
 					changeRC.newlyAddedNodes);
 		return null;
 	}
@@ -767,12 +768,7 @@ public class Reconfigurator<NodeIDType> implements
 					new Object[] { this, clientRCPacket.getSummary() });
 			// just relay response to the client
 			return this.sendClientReconfigurationPacket(clientRCPacket);
-		} /*
-		 * else if (clientRCPacket.isForwarded()) { assert
-		 * (this.consistentNodeConfig
-		 * .getReplicatedReconfigurators(clientRCPacket.getServiceName())
-		 * .contains(getMyID())); return false; }
-		 */
+		}
 		// forward if I am not responsible
 		else
 			return (this.redirectableRequest(clientRCPacket));
@@ -938,20 +934,22 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	private void initiateReconfiguration(String name, Set<NodeIDType> newActives) {
-		this.initiateReconfiguration(name, newActives, null, null, null, null);
+		this.initiateReconfiguration(name, newActives, null, null, null, null,
+				null);
 	}
 
 	// coordinate reconfiguration intent
 	private boolean initiateReconfiguration(String name,
 			Set<NodeIDType> newActives, InetSocketAddress sender,
-			InetSocketAddress forwarder, String initialState,
+			InetSocketAddress receiver, InetSocketAddress forwarder,
+			String initialState,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		if (newActives == null)
 			return false;
 		// request to persistently log the intent to reconfigure
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 				this.getMyID(), formStartEpoch(name, newActives, sender,
-						forwarder, initialState, newlyAddedNodes),
+						receiver, forwarder, initialState, newlyAddedNodes),
 				RequestTypes.RECONFIGURATION_INTENT);
 		// coordinate intent with replicas
 		if (this.isReadyForReconfiguration(rcRecReq))
@@ -1013,24 +1011,27 @@ public class Reconfigurator<NodeIDType> implements
 
 	private StartEpoch<NodeIDType> formStartEpoch(String name,
 			Set<NodeIDType> newActives, InetSocketAddress sender,
-			InetSocketAddress forwarder, String initialState,
+			InetSocketAddress receiver, InetSocketAddress forwarder,
+			String initialState,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(name);
 		StartEpoch<NodeIDType> startEpoch = (record != null) ? new StartEpoch<NodeIDType>(
 				getMyID(), name, record.getEpoch() + 1, newActives,
 				record.getActiveReplicas(record.getName(), record.getEpoch()),
-				sender, forwarder, initialState, newlyAddedNodes)
+				sender, receiver, forwarder, initialState, newlyAddedNodes)
 				: new StartEpoch<NodeIDType>(getMyID(), name, 0, newActives,
-						null, sender, forwarder, initialState, newlyAddedNodes);
+						null, sender, receiver, forwarder, initialState,
+						newlyAddedNodes);
 		return startEpoch;
 	}
 
 	private StartEpoch<NodeIDType> formStartEpoch(String name,
 			Set<NodeIDType> newActives, InetSocketAddress sender,
-			InetSocketAddress forwarder, String initialState) {
-		return this.formStartEpoch(name, newActives, sender, forwarder,
-				initialState, null);
+			InetSocketAddress receiver, InetSocketAddress forwarder,
+			String initialState) {
+		return this.formStartEpoch(name, newActives, sender, receiver,
+				forwarder, initialState, null);
 	}
 
 	/************ Start of key construction utility methods *************/
@@ -1172,7 +1173,7 @@ public class Reconfigurator<NodeIDType> implements
 			 */
 			RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 					this.getMyID(), this.formStartEpoch(name,
-							record.getNewActives(), null, null, null),
+							record.getNewActives(), null, null, null, null),
 					RCRecordRequest.RequestTypes.RECONFIGURATION_INTENT);
 			/*
 			 * We spawn primary even though that may be unnecessary because we
@@ -1224,8 +1225,8 @@ public class Reconfigurator<NodeIDType> implements
 						"{0} sending client response {1}:{2} to client {3}",
 						new Object[] { this, response.getSummary(),
 								response.getResponseMessage(), querier });
-				this.getClientMessenger().sendToAddress(querier,
-						response.toJSONObject());
+				(this.getMessenger(response.getMyReceiver())).sendToAddress(
+						querier, response.toJSONObject());
 			} else {
 				// may be a request or response
 				log.log(Level.INFO,
@@ -1243,6 +1244,19 @@ public class Reconfigurator<NodeIDType> implements
 			e.printStackTrace();
 		}
 		return true;
+	}
+
+	/*
+	 * There are only two messengers in all, so if it is not my node config
+	 * socket address, it must be client messenger.
+	 */
+	private InterfaceAddressMessenger<JSONObject> getMessenger(
+			InetSocketAddress receiver) {
+		if (receiver.equals(this.consistentNodeConfig.getNodeSocketAddress(this
+				.getMyID())))
+			return this.messenger;
+		else
+			return this.getClientMessenger();
 	}
 
 	/*

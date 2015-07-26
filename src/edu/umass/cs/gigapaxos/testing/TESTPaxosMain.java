@@ -127,7 +127,7 @@ public class TESTPaxosMain {
 	private static void processArgs(String[] args) {
 		// Only useful for local testing
 		TESTPaxosConfig.setSingleNodeTest(TESTPaxosConfig.getConfDirArg(args));
-		TESTPaxosConfig.setCleanDB(args);
+		PaxosManager.startWithCleanDB(TESTPaxosConfig.shouldCleanDB(args));
 	}
 
 	/**
@@ -141,7 +141,7 @@ public class TESTPaxosMain {
 		 PaxosManager.getLogger().addHandler(handler);
 		 PaxosManager.getLogger().setUseParentHandlers(false);
 
-		 TESTPaxosConfig.load();
+		// TESTPaxosConfig.load();
 			
 		processArgs(args);
 
@@ -157,6 +157,7 @@ public class TESTPaxosMain {
 		System.out
 				.println("\n############### Testing with recovery ################\n");
 		TESTPaxosConfig.setCleanDB(false);
+		PaxosManager.startWithCleanDB(false);
 		testPaxos();
 	}
 }

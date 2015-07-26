@@ -32,7 +32,7 @@ public abstract class ClientReconfigurationPacket extends
 		BasicReconfigurationPacket<InetSocketAddress> {
 
 	private static enum Keys {
-		INITIAL_STATE, RECONFIGURATORS, RESPONSE_MESSAGE, FAILED, RECURSIVE_REDIRECT, CREATOR, FORWARDER, IS_REQUEST
+		INITIAL_STATE, RECONFIGURATORS, RESPONSE_MESSAGE, FAILED, RECURSIVE_REDIRECT, CREATOR, FORWARDER, MY_RECEIVER, IS_REQUEST
 	};
 
 	/**
@@ -54,6 +54,8 @@ public abstract class ClientReconfigurationPacket extends
 	private InetSocketAddress creator = null;
 	// intermediate reconfigurator if any that forwarded this request
 	private InetSocketAddress forwarder = null;
+	// need this to keep track of my address on which received
+	private InetSocketAddress myReceiver = null;
 	// whether this is a request as opposed to a respose
 	private boolean isRequest = true;
 
@@ -76,9 +78,11 @@ public abstract class ClientReconfigurationPacket extends
 	 */
 	public ClientReconfigurationPacket(JSONObject json,
 			Stringifiable<?> unstringer) throws JSONException {
-		super(json, ClientReconfigurationPacket.unstringer); // ignores argument
-		// unstringer
+		// ignores argument unstringer
+		super(json, ClientReconfigurationPacket.unstringer); 
 		this.setSender(JSONNIOTransport.getSenderAddress(json));
+		this.myReceiver = (JSONNIOTransport.getReceiverAddress(json));
+		
 		this.failed = json.optBoolean(Keys.FAILED.toString());
 		this.recursiveRedirect = json.optBoolean(Keys.RECURSIVE_REDIRECT
 				.toString());
@@ -96,6 +100,7 @@ public abstract class ClientReconfigurationPacket extends
 		this.forwarder = json.has(Keys.FORWARDER.toString()) ? Util
 				.getInetSocketAddressFromString(json.getString(Keys.FORWARDER
 						.toString())) : null;
+
 		this.creator = json.has(Keys.CREATOR.toString()) ? Util
 				.getInetSocketAddressFromString(json.getString(Keys.CREATOR
 						.toString())) : null;
@@ -136,6 +141,8 @@ public abstract class ClientReconfigurationPacket extends
 		json.put(Keys.RESPONSE_MESSAGE.toString(), this.responseMessage);
 		if (this.forwarder != null)
 			json.put(Keys.FORWARDER.toString(), this.forwarder.toString());
+		if (this.myReceiver != null)
+			json.put(Keys.MY_RECEIVER.toString(), this.myReceiver.toString());
 		if (this.creator != null)
 			json.put(Keys.CREATOR.toString(), this.creator.toString());
 		json.put(Keys.IS_REQUEST.toString(), this.isRequest);
@@ -236,6 +243,12 @@ public abstract class ClientReconfigurationPacket extends
 	public InetSocketAddress getForwader() {
 		return this.forwarder;
 	}
+	/**
+	 * @return The socket address of the forwarding node.
+	 */
+	public InetSocketAddress getMyReceiver() {
+		return this.myReceiver;
+	}
 
 	/**
 	 * @return The socket address of the forwarding node.
@@ -278,7 +291,6 @@ public abstract class ClientReconfigurationPacket extends
 	 *         client request.
 	 */
 	public boolean isRedirectedResponse() {
-		return this.forwarder != null
-				&& !this.isRequest();
+		return this.forwarder != null && !this.isRequest();
 	}
 }

@@ -5,8 +5,7 @@ Start the noop nodes as follows:
 
 $ java -ea -Xms4096M -cp path/to/GNS.jar edu.umass.cs.reconfiguration.examples.noop.NoopReconfigurableNode
 
-You can also use dist/GNS.jar from a GNS build to not have to specify
-the jar paths as above.
+By default, a GNS build keeps the jar in dist/GNS.jar in the top-level GNS directory.
 
 Start the reconfigurable app client as follows:
 

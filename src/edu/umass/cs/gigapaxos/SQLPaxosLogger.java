@@ -2,6 +2,7 @@ package edu.umass.cs.gigapaxos;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PValuePacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
@@ -67,6 +68,10 @@ import java.util.logging.Logger;
  */
 public class SQLPaxosLogger extends AbstractPaxosLogger {
 
+	static {
+		PaxosConfig.load();
+	}
+
 	/* ****************************************************************
 	 * DB related parameters to be changed to use a different database service.
 	 * Refer also to constants in paxosutil.SQL to update any constants.
@@ -113,7 +118,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 	private static boolean getLogMessageClobOption() {
 		return (maxLogMessageSize > SQL.getVarcharSize(SQL_TYPE))
-				|| PaxosManager.BATCHING_ENABLED;
+				|| Config
+				.getGlobalBoolean(PC.BATCHING_ENABLED);
 	}
 
 	private static int maxCheckpointSize = MAX_CHECKPOINT_SIZE;
@@ -298,7 +304,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * stuck because of the failure of even a single active replica, which is
 	 * even more undesirable. So we go with a finite MAX_FINAL_STATE_AGE.
 	 */
-	public static final long MAX_FINAL_STATE_AGE = PaxosManager.MAX_FINAL_STATE_AGE;
+	public static final long MAX_FINAL_STATE_AGE = Config
+			.getGlobalInt(PC.MAX_FINAL_STATE_AGE);
 
 	@Override
 	public StringContainer getEpochFinalCheckpointState(String paxosID,

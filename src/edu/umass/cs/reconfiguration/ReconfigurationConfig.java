@@ -1,8 +1,10 @@
 package edu.umass.cs.reconfiguration;
 
-import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
+import edu.umass.cs.utils.Config;
 
 /**
  * @author arun
@@ -14,11 +16,16 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
  *         Reconfiguration parameters that can be dynamically changed after
  *         initiation are generally supported using get/set methods in their
  *         respective classes.
- * 
- *         FIXME: Woefully incomplete. Many parameters that are static final
- *         constants in various classes should be maintained here.
  */
 public class ReconfigurationConfig {
+	static {
+		/*
+		 * Both gigapaxos and reconfiguration take parameters from the same
+		 * properties file (default "gigapaxos.properties").
+		 */
+		PaxosConfig.load();
+		PaxosConfig.load(ReconfigurationConfig.RC.class);
+	}
 	/**
 	 * The default demand profile type. This will reconfigure once per request,
 	 * so you really want to use something else.
@@ -27,62 +34,85 @@ public class ReconfigurationConfig {
 	private static Class<?> demandProfileType = DEFAULT_DEMAND_PROFILE_TYPE;
 
 	/**
-	 * Whether reconfigurations should be performed even though
-	 * AbstractDemandProfile returned a set of active replicas that are
-	 * identical to the current one. Useful for testing, but should be false in
-	 * production.
+	 * Reconfiguration config parameters.
 	 */
-	public static final boolean RECONFIGURE_IN_PLACE = true;// false;
-	private static boolean reconfigureInPlace = RECONFIGURE_IN_PLACE;
+	public static enum RC implements Config.DefaultValueEnum {
+		/**
+		 * Whether reconfigurations should be performed even though
+		 * AbstractDemandProfile returned a set of active replicas that are
+		 * identical to the current one. Useful for testing, but should be false
+		 * in production.
+		 */
+		RECONFIGURE_IN_PLACE(true),
+		/**
+		 * Default TLS authentication mode for client-server communication.
+		 * Here, "client" means an end-client, not the (more general) initiator
+		 * of communication. An end-client generally also is the initiator of
+		 * communication, but the converse is not true. We generally want this
+		 * to either be CLEAR or SERVER_AUTH, not MUTUAL_AUTH, as it is not
+		 * generally meaningful for a server to authenticate an end-client for
+		 * TLS purposes (as opposed to application-level authentication).
+		 */
+		CLIENT_SSL_MODE(SSLDataProcessingWorker.SSL_MODES.CLEAR),
+		/**
+		 * Default TLD authentication mode for server-server communication. We
+		 * generally want this to be MUTUAL_AUTH as both parties need to
+		 * authenticate each other.
+		 */
+		SERVER_SSL_MODE(SSLDataProcessingWorker.SSL_MODES.CLEAR),
+		/**
+		 * The default offset added to the active replica or reconfigurator port
+		 * number in order to get the client-facing port for client-facing
+		 * request types (CREATE_SERVICE_NAME, DELETE_SERVICE_NAME,
+		 * REQUEST_ACTIVE_REPLICAS at reconfigurators) and all app request types
+		 * at active replicas. In general, we need the port for client-facing
+		 * requests to be different because the TLS authentication mode for
+		 * client-server and server-server communication may be different.
+		 */
+		CLIENT_PORT_OFFSET(100),
+		/**
+		 * True if deletes are completed based on probing all actives.
+		 * 
+		 * Assumption for safety: Safe only if the set of actives does not
+		 * change or is consistent across reconfigurators (not true by default).
+		 * This option should only be false in production runs.
+		 */
+		AGGRESSIVE_DELETIONS(true),
+		/**
+		 * True if further reconfigurations can progress without waiting for the
+		 * previous epoch final state to be dropped cleanly.
+		 */
+		AGGRESSIVE_RECONFIGURATIONS(true), ;
 
-	/**
-	 * Default TLS authentication mode for client-server communication. Here,
-	 * "client" means an end-client, not the (more general) initiator of
-	 * communication. An end-client generally also is the initiator of
-	 * communication, but the converse is not true. We generally want this to
-	 * either be CLEAR or SERVER_AUTH, not MUTUAL_AUTH, as it is not generally
-	 * meaningful for a server to authenticate an end-client for TLS purposes
-	 * (as opposed to application-level authentication).
-	 */
-	public static final SSLDataProcessingWorker.SSL_MODES DEFAULT_CLIENT_SSL_MODE = SSLDataProcessingWorker.SSL_MODES.CLEAR;
-	private static SSLDataProcessingWorker.SSL_MODES clientSSLMode = DEFAULT_CLIENT_SSL_MODE;
+		final Object defaultValue;
 
-	/**
-	 * Default TLD authentication mode for server-server communication. We
-	 * generally want this to be MUTUAL_AUTH as both parties need to
-	 * authenticate each other.
-	 */
-	public static final SSLDataProcessingWorker.SSL_MODES DEFAULT_SERVER_SSL_MODE = SSLDataProcessingWorker.SSL_MODES.CLEAR;
-	private static SSLDataProcessingWorker.SSL_MODES serverSSLMode = DEFAULT_SERVER_SSL_MODE;
+		RC(Object defaultValue) {
+			this.defaultValue = defaultValue;
+		}
 
-	/**
-	 * The default offset added to the active replica or reconfigurator port
-	 * number in order to get the client-facing port for client-facing request
-	 * types (CREATE_SERVICE_NAME, DELETE_SERVICE_NAME, REQUEST_ACTIVE_REPLICAS
-	 * at reconfigurators) and all app request types at active replicas. In
-	 * general, we need the port for client-facing requests to be different
-	 * because the TLS authentication mode for client-server and server-server
-	 * communication may be different.
-	 */
-	public static final int DEFAULT_CLIENT_PORT_OFFSET = 00;// default 100
-	private static int clientPortOffset = DEFAULT_CLIENT_PORT_OFFSET;
+		@Override
+		public Object getDefaultValue() {
+			return this.defaultValue;
+		}
+	}
 
-	/**
-	 * True if deletes are completed based on probing all actives.
-	 * 
-	 * Assumption for safety: Safe only if the set of actives does not change or
-	 * is consistent across reconfigurators (not true by default). This option
-	 * should only be false in production runs.
-	 */
-	public static final boolean DEFAULT_AGGRESSIVE_DELETIONS = true;
-	private static boolean aggressiveDeletions = DEFAULT_AGGRESSIVE_DELETIONS;
+	private static boolean reconfigureInPlace = Config
+			.getGlobalBoolean(RC.RECONFIGURE_IN_PLACE);
 
-	/**
-	 * True if further reconfigurations can progress without waiting for the
-	 * previous epoch final state to be dropped cleanly.
-	 */
-	public static final boolean DEFAULT_AGGRESSIVE_RECONFIGURATIONS = true;
-	private static boolean aggressiveReconfigurations = DEFAULT_AGGRESSIVE_RECONFIGURATIONS;
+	private static SSLDataProcessingWorker.SSL_MODES clientSSLMode = (SSLDataProcessingWorker.SSL_MODES) Config
+			.getGlobal(RC.CLIENT_SSL_MODE);
+
+	private static SSLDataProcessingWorker.SSL_MODES serverSSLMode = (SSLDataProcessingWorker.SSL_MODES) Config
+			.getGlobal(RC.SERVER_SSL_MODE);
+
+	private static int clientPortOffset = Config
+			.getGlobalInt(RC.CLIENT_PORT_OFFSET);
+
+	private static boolean aggressiveDeletions = Config
+			.getGlobalBoolean(RC.AGGRESSIVE_DELETIONS);
+
+	private static boolean aggressiveReconfigurations = Config
+			.getGlobalBoolean(RC.AGGRESSIVE_RECONFIGURATIONS);
 
 	/**
 	 * Necessary to ensure safety under name re-creations (see
@@ -94,7 +124,7 @@ public class ReconfigurationConfig {
 	 *         after which paxos' epoch final state can be safely deleted.
 	 */
 	public static final long getMaxFinalStateAge() {
-		return PaxosManager.MAX_FINAL_STATE_AGE;
+		return Config.getGlobalInt(PC.MAX_FINAL_STATE_AGE);
 	}
 
 	/**

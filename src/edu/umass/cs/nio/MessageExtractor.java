@@ -67,8 +67,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		byte[] buf = new byte[incoming.remaining()];
 		incoming.get(buf);
 		try {
-			this.processMessageInternal(
-					(InetSocketAddress) socket.getRemoteAddress(), buf);
+			this.processMessageInternal(socket, buf);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -83,11 +82,12 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	@Override
 	public void processMessage(InetSocketAddress sockAddr, String msg) {
 		try {
-			// FIXME: needless string->bytes->string conversion for local sends
-			this.processMessageInternal(sockAddr,
+			this.demultiplexMessage(sockAddr, sockAddr,
 					msg.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING));
 		} catch (UnsupportedEncodingException e) {
 			fatalExit(e);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -120,25 +120,24 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		System.exit(1);
 	}
 
-	private void processMessageInternal(InetSocketAddress sockAddr, byte[] msg)
-			throws UnsupportedEncodingException {
+	private void processMessageInternal(SocketChannel socket, byte[] msg)
+			throws IOException {
 		long delay = -1;
 		if (JSONDelayEmulator.isDelayEmulated()
 				&& (delay = JSONDelayEmulator.getEmulatedDelay(new String(msg,
 						MessageNIOTransport.NIO_CHARSET_ENCODING))) >= 0)
 			// run in a separate thread after scheduled delay
-			executor.schedule(new MessageWorker(sockAddr, msg, packetDemuxes),
+			executor.schedule(new MessageWorker(socket, msg, packetDemuxes),
 					delay, TimeUnit.MILLISECONDS);
 		else
 			// run it immediately
-			this.demultiplexMessage(sockAddr, msg);
+			this.demultiplexMessage(socket, msg);
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void demultiplexMessage(InetSocketAddress sockAddr, byte[] msg)
-			throws UnsupportedEncodingException {
-		synchronized (this.packetDemuxes) 
-		{
+	protected void demultiplexMessage(InetSocketAddress sender,
+			InetSocketAddress receiver, byte[] msg) throws IOException {
+		synchronized (this.packetDemuxes) {
 			for (final AbstractPacketDemultiplexer<?> pd : this.packetDemuxes) {
 				try {
 					if (pd instanceof PacketDemultiplexerDefault)
@@ -151,7 +150,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 					// the handler turns true if it handled the message
 					else if ((message instanceof JSONObject && (((AbstractPacketDemultiplexer<JSONObject>) pd)
 							.handleMessageSuper(stampAddressIntoJSONObject(
-									sockAddr, (JSONObject) message))))
+									sender, receiver, (JSONObject) message))))
 							//
 							|| ((message instanceof byte[] && (((AbstractPacketDemultiplexer<byte[]>) pd)
 									.handleMessageSuper((byte[]) message))))
@@ -169,36 +168,56 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		}
 	}
 
+	protected void demultiplexMessage(SocketChannel socket, byte[] msg)
+			throws IOException {
+		this.demultiplexMessage((InetSocketAddress) socket.getRemoteAddress(),
+				(InetSocketAddress) socket.getLocalAddress(), msg);
+		;
+	}
+
 	private class MessageWorker extends TimerTask {
 
-		private final InetSocketAddress sockAddr;
+		private final SocketChannel socket;
 		private final byte[] msg;
 
-		public MessageWorker(InetSocketAddress sockAddr, byte[] msg,
+		public MessageWorker(SocketChannel socket, byte[] msg,
 				ArrayList<AbstractPacketDemultiplexer<?>> pdemuxes) {
 			this.msg = msg;
-			this.sockAddr = sockAddr;
+			this.socket = socket;
 		}
 
 		@Override
 		public void run() {
 			try {
-				demultiplexMessage(sockAddr, msg);
+				demultiplexMessage(socket, msg);
 			} catch (UnsupportedEncodingException e) {
 				fatalExit(e);
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 		}
 	}
 
 	private static JSONObject stampAddressIntoJSONObject(
-			InetSocketAddress address, JSONObject json) {
+			InetSocketAddress sndrAddress, InetSocketAddress rcvrAddress,
+			JSONObject json) {
 		// only put the IP field in if it doesn't exist already
 		try {
-			if (!json.has(JSONNIOTransport.DEFAULT_IP_FIELD))
-				json.put(JSONNIOTransport.DEFAULT_IP_FIELD, address
+			// put sender address
+			if (!json.has(JSONNIOTransport.SNDR_IP_FIELD))
+				json.put(JSONNIOTransport.SNDR_IP_FIELD, sndrAddress
 						.getAddress().getHostAddress());
-			if (!json.has(JSONNIOTransport.DEFAULT_PORT_FIELD))
-				json.put(JSONNIOTransport.DEFAULT_PORT_FIELD, address.getPort());
+			if (!json.has(JSONNIOTransport.SNDR_PORT_FIELD))
+				json.put(JSONNIOTransport.SNDR_PORT_FIELD,
+						sndrAddress.getPort());
+
+			// put receiver address
+			if (!json.has(JSONNIOTransport.RCVR_IP_FIELD))
+				json.put(JSONNIOTransport.RCVR_IP_FIELD, rcvrAddress
+						.getAddress().getHostAddress());
+			if (!json.has(JSONNIOTransport.RCVR_PORT_FIELD))
+				json.put(JSONNIOTransport.RCVR_PORT_FIELD,
+						rcvrAddress.getPort());
 
 		} catch (JSONException e) {
 			log.severe("Encountered JSONException while stamping sender address and port at receiver: ");
