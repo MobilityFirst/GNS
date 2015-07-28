@@ -73,16 +73,6 @@ public class LNSConsistentReconfigurableNodeConfig extends
     return this.nodeConfig.getReconfigurators();
   }
 
-  // consistent coz it always consults nodeConfig
-  public ArrayList<InetAddress> getNodeIPs(Set<InetSocketAddress> nodeIDs) {
-    ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
-    for (InetSocketAddress id : nodeIDs) {
-      addresses.add(this.nodeConfig.getNodeAddress(id));
-    }
-    assert (addresses != null);
-    return addresses;
-  }
-
   // refresh before returning
   public Set<InetSocketAddress> getReplicatedReconfigurators(String name) {
     this.refreshReconfigurators();
@@ -94,10 +84,6 @@ public class LNSConsistentReconfigurableNodeConfig extends
     this.refreshActives();
     return this.CH_AR.getReplicatedServers(name);
   }
-//
-//  public ArrayList<InetAddress> getReplicatedActivesIPs(String name) {
-//    return this.getNodeIPs(this.getReplicatedActives(name));
-//  }
 
   public InterfaceReconfigurableNodeConfig<InetSocketAddress> getUnderlyingNodeConfig() {
     return this.nodeConfig;
@@ -153,11 +139,6 @@ public class LNSConsistentReconfigurableNodeConfig extends
   @Override
   public InetSocketAddress removeReconfigurator(InetSocketAddress id) {
     throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  public InetSocketAddress slateForRemovalReconfigurator(InetSocketAddress id) {
-    this.reconfiguratorsSlatedForRemoval.add(id);
-    return this.getNodeSocketAddress(id);
   }
 
   @Override

@@ -18,7 +18,9 @@ import edu.umass.cs.nio.NIOTransport;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import java.util.Map;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
@@ -73,7 +75,7 @@ public class AppReconfigurableNodeOptions {
   public static boolean debuggingEnabled = false;
 
   public static boolean standAloneApp = false;
-  
+
   public static boolean disableSSL = false;
 
   // Command line and config file options
@@ -182,7 +184,7 @@ public class AppReconfigurableNodeOptions {
       ReconfigurationConfig.setServerSSLMode(CLEAR);
       System.out.println("NS: SSL is disabled");
     }
-    
+
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       debuggingEnabled = true;
       System.out.println("******** DEBUGGING IS ENABLED IN THE APP *********");
@@ -212,12 +214,12 @@ public class AppReconfigurableNodeOptions {
 
     if (isOptionTrue(DEBUG_NIO, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
-      // For backwards compatibility until Config goes away
-//      ConsoleHandler handler = new ConsoleHandler();
-//      handler.setLevel(Level.FINEST);
-      //Logger log = NIOTransport.getLogger();
-      //log.addHandler(handler);
-       NIOTransport.getLogger().setLevel(Level.INFO);
+      //For backwards compatibility until Config goes away
+      ConsoleHandler handler = new ConsoleHandler();
+      handler.setLevel(Level.FINEST);
+      Logger log = NIOTransport.getLogger();
+      log.addHandler(handler);
+      NIOTransport.getLogger().setLevel(Level.INFO);
     } else {
       NIOTransport.getLogger().setLevel(Level.WARNING);
     }
@@ -276,7 +278,7 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
     }
-    
+
   }
 
 }

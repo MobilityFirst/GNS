@@ -1,3 +1,3 @@
 #
-java -ea -cp ../../dist/GNS.jar edu.umass.cs.gns.newApp.AppReconfigurableNode -test -nsfile servers.txt -configFile ns.conf &
-java -ea -cp ../../dist/GNS.jar edu.umass.cs.gns.localnameserver.LocalNameServer -nsfile servers.txt -configFile lns.conf &
+java -ea -cp ../../dist/GNS.jar -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=../../conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=../../conf/keyStore/node100.jks edu.umass.cs.gns.newApp.AppReconfigurableNode -test -configFile ns.conf &
+java -ea -cp ../../dist/GNS.jar -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=../../conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=../../conf/keyStore/node100.jks edu.umass.cs.gns.localnameserver.LocalNameServer -configFile lns.conf &

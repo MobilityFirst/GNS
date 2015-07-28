@@ -65,12 +65,6 @@ public abstract class LNSConsistentNodeConfig implements
 		return this.nodeConfig.getNodePort(id);
 	}
 	
-	public InetSocketAddress getNodeSocketAddress(InetSocketAddress id) {
-		InetAddress ip = this.getNodeAddress(id);
-		return (ip!=null ? new InetSocketAddress(ip, this.getNodePort(id)) : null);
-	}
-
-	// FIXME: disallow the use of this method
 	@Override
 	public Set<InetSocketAddress> getNodeIDs() {
 		throw new RuntimeException("The use of this method is not permitted");
