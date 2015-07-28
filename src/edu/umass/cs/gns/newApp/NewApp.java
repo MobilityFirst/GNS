@@ -15,6 +15,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
+import static edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions.disableSSL;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
 
 import java.util.Arrays;
@@ -387,9 +388,12 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException {
 //    InetSocketAddress clientAddress = new InetSocketAddress(isa.getAddress(),
 //            ActiveReplica.getClientFacingPort(isa.getPort()));
-//    GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Sending to: " + clientAddress + " " + msg);
-//    messenger.getClientMessenger().sendToAddress(clientAddress, msg);
-    messenger.sendToAddress(isa, msg);
+    //GNS.getLogger().info("&&&&&&& APP " + nodeID + "&&&&&&& Sending to: " + isa + " " + msg);
+    if (!disableSSL) {
+      messenger.getClientMessenger().sendToAddress(isa, msg);
+    } else {
+      messenger.sendToAddress(isa, msg);
+    }
   }
 
   @Override

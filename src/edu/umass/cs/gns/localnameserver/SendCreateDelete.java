@@ -52,7 +52,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<String, PacketT
 //                lnsRequestInfo.getCommandPacket().toJSONObject(),
 //                handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
 //                handler));
-//       handler.sendToClosestServer(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+//       handler.sendToClosestReplica(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
 //                lnsRequestInfo.getCommandPacket().toJSONObject());
 //      } catch (JSONException e) {
 //        log.severe(this.refreshKey() + " unable to send command packet " + e);

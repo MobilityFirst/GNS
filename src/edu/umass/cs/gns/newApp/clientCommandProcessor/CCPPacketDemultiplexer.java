@@ -51,7 +51,6 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     register(Packet.PacketType.ADD_CONFIRM);
     register(Packet.PacketType.REMOVE_CONFIRM);
     register(Packet.PacketType.UPDATE_CONFIRM);
-    //register(Packet.PacketType.COMMAND);
     register(Packet.PacketType.REQUEST_ACTIVES);
     register(Packet.PacketType.SELECT_REQUEST);
     register(Packet.PacketType.SELECT_RESPONSE);
@@ -125,9 +124,6 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
           case SELECT_RESPONSE:
             Select.handlePacketSelectResponse(json, handler);
             return true;
-//          case COMMAND:
-//            CommandHandler.handlePacketCommandRequest(json, handler);
-//            return true;
           default:
             GNS.getLogger().warning("************************* CCP IGNORING: " + json);
             return false;

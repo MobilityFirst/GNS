@@ -15,6 +15,7 @@ import static edu.umass.cs.gns.util.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -33,6 +34,7 @@ public class LocalNameServerOptions {
   public static final String DEBUG = "debug";
   public static final String DEBUG_PING = "debugPing";
   public static final String DEBUG_MISC = "debugMisc";
+  public static final String DISABLE_SSL = "disableSSL";
 
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
@@ -44,6 +46,7 @@ public class LocalNameServerOptions {
     Option debug = new Option(DEBUG, "Enables debugging output");
     Option debugPing = new Option(DEBUG_PING, "Enables debugging output for PingManager");
     Option debugMisc = new Option(DEBUG_MISC, "Enables debugging output for miscellaneous subsystems");
+    Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of LNS to server commands");
     
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -55,11 +58,14 @@ public class LocalNameServerOptions {
     commandLineOptions.addOption(debugMisc);
     commandLineOptions.addOption(fileLoggingLevel);
     commandLineOptions.addOption(consoleOutputLevel);
+    commandLineOptions.addOption(disableSSL);
 
     return commandLineOptions;
   }
 
   private static boolean initialized = false;
+  
+  public static boolean disableSSL = false;
 
   /**
    * Initializes global parameter options from command line and config file options
@@ -75,6 +81,15 @@ public class LocalNameServerOptions {
     initialized = true;
     if (allValues == null) {
       return;
+    }
+    
+    if (!allValues.containsKey(DISABLE_SSL)) {
+      disableSSL = false;
+      ReconfigurationConfig.setClientPortOffset(100);
+      System.out.println("LNS: SSL is enabled");
+    } else {
+      disableSSL = true;
+      System.out.println("LNS: SSL is disabled");
     }
 
     if (isOptionTrue(DEBUG, allValues)) {

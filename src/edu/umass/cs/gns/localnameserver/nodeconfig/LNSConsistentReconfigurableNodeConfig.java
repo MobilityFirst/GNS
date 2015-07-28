@@ -94,10 +94,10 @@ public class LNSConsistentReconfigurableNodeConfig extends
     this.refreshActives();
     return this.CH_AR.getReplicatedServers(name);
   }
-
-  public ArrayList<InetAddress> getReplicatedActivesIPs(String name) {
-    return this.getNodeIPs(this.getReplicatedActives(name));
-  }
+//
+//  public ArrayList<InetAddress> getReplicatedActivesIPs(String name) {
+//    return this.getNodeIPs(this.getReplicatedActives(name));
+//  }
 
   public InterfaceReconfigurableNodeConfig<InetSocketAddress> getUnderlyingNodeConfig() {
     return this.nodeConfig;

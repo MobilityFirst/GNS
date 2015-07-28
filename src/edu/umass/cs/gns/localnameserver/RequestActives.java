@@ -10,6 +10,7 @@ import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
+import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
@@ -49,14 +50,14 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
     if (this.amObviated()) {
       try {
         // got our actives and they're in the cache so now send out the command
-        if (LNSPacketDemultiplexer.useCommandRetransmitter) {
+        if (LNSPacketDemultiplexer.disableCommandRetransmitter) {
+          handler.sendToClosestReplica(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
+                  lnsRequestInfo.getCommandPacket().toJSONObject());
+        } else {
           handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
                   lnsRequestInfo.getCommandPacket().toJSONObject(),
                   handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
                   handler));
-        } else {
-          handler.sendToClosestServer(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-                  lnsRequestInfo.getCommandPacket().toJSONObject());
         }
       } catch (JSONException | IOException e) {
         log.severe(this.refreshKey() + " unable to send command packet " + e);
@@ -78,7 +79,7 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
       }
       // no answer so we stuff in the default choices and return
       handler.updateCacheEntry(lnsRequestInfo.getServiceName(),
-              handler.getNodeConfig().getReplicatedActives(lnsRequestInfo.getServiceName()));
+              handler.getReplicatedActives(lnsRequestInfo.getServiceName()));
       return true;
     } else {
       return false;
@@ -96,7 +97,13 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
               + " Sending to " + reconfigurators.get(reconfigIndex)
               + " " + packet);
     }
-    GenericMessagingTask mtasks[] = new GenericMessagingTask(reconfigurators.get(reconfigIndex), packet).toArray();
+    InetSocketAddress reconfiguratorAddress = reconfigurators.get(reconfigIndex);
+    if (!LocalNameServerOptions.disableSSL) {
+      // Use the client facing port for Server Auth
+      reconfiguratorAddress = new InetSocketAddress(reconfiguratorAddress.getAddress(),
+              ActiveReplica.getClientFacingPort(reconfiguratorAddress.getPort()));
+    }
+    GenericMessagingTask mtasks[] = new GenericMessagingTask(reconfiguratorAddress, packet).toArray();
     requestCount++;
     return mtasks;
   }

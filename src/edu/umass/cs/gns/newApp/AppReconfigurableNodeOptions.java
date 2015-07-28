@@ -14,16 +14,11 @@ import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
 import static edu.umass.cs.gns.util.ParametersAndOptions.isOptionTrue;
-
 import edu.umass.cs.nio.NIOTransport;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.MUTUAL_AUTH;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.SERVER_AUTH;
+import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import java.util.Map;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
-
-import java.util.logging.Logger;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
@@ -78,6 +73,8 @@ public class AppReconfigurableNodeOptions {
   public static boolean debuggingEnabled = false;
 
   public static boolean standAloneApp = false;
+  
+  public static boolean disableSSL = false;
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -172,6 +169,20 @@ public class AppReconfigurableNodeOptions {
       return;
     }
 
+    if (!allValues.containsKey(DISABLE_SSL)) {
+      disableSSL = false;
+      ReconfigurationConfig.setClientPortOffset(100);
+      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
+      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
+      System.out.println("NS: SSL is enabled");
+    } else {
+      disableSSL = true;
+      ReconfigurationConfig.setClientPortOffset(0);
+      ReconfigurationConfig.setClientSSLMode(CLEAR);
+      ReconfigurationConfig.setServerSSLMode(CLEAR);
+      System.out.println("NS: SSL is disabled");
+    }
+    
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       debuggingEnabled = true;
       System.out.println("******** DEBUGGING IS ENABLED IN THE APP *********");
@@ -265,14 +276,7 @@ public class AppReconfigurableNodeOptions {
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
     }
-    if (!allValues.containsKey(DISABLE_SSL)) {
-      ReconfigurationConfig.setClientPortOffset(100);
-      ReconfigurationConfig.setClientSSLMode(SERVER_AUTH);
-      ReconfigurationConfig.setServerSSLMode(MUTUAL_AUTH);
-      System.out.println("SSL is enabled");
-    } else {
-      System.out.println("SSL is disabled");
-    }
+    
   }
 
 }

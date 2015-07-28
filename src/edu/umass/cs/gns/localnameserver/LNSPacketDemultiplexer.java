@@ -85,7 +85,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   }
 
   private static boolean disableRequestActives = false;
-  protected static boolean useCommandRetransmitter = false;
+  protected static boolean disableCommandRetransmitter = true;
 
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
 
@@ -101,7 +101,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     if (!disableRequestActives) {
       actives = handler.getActivesIfValid(packet.getServiceName());
     } else {
-      actives = handler.getNodeConfig().getReplicatedActives(packet.getServiceName());
+      actives = handler.getReplicatedActives(packet.getServiceName());
     }
     if (actives != null) {
       if (handler.isDebugMode()) {
@@ -111,8 +111,8 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
           GNS.getLogger().info("** USING DEFAULT ACTIVES for " + packet.getServiceName() + ": " + actives);
         }
       }
-      if (!useCommandRetransmitter) {
-        handler.sendToClosestServer(actives, packet.toJSONObject());
+      if (disableCommandRetransmitter) {
+        handler.sendToClosestReplica(actives, packet.toJSONObject());
       } else {
         handler.getProtocolExecutor().schedule(new CommandRetransmitter(requestId, packet.toJSONObject(),
                 actives, handler));
@@ -144,8 +144,7 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
           GNS.getLogger().info("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< LNS IS SENDING VALUE BACK TO "
                   + sentInfo.getHost() + "/" + sentInfo.getPort() + ": " + returnPacket.toString());
         }
-        handler.getTcpTransport().sendToAddress(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()),
-                json);
+        handler.sendToClient(new InetSocketAddress(sentInfo.getHost(), sentInfo.getPort()), json);
       } else {
         GNS.getLogger().severe("Command response packet mismatch: " + sentInfo.getServiceName()
                 + " vs. " + returnPacket.getServiceName());

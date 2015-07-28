@@ -72,7 +72,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<String, Pac
 
   @Override
   public GenericMessagingTask[] start() {
-    InetSocketAddress address = handler.getClosestServer(actives, activesAlreadyContacted);
+    InetSocketAddress address = handler.getClosestReplica(actives, activesAlreadyContacted);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
     json.remove(MessageNIOTransport.SNDR_IP_FIELD);
     json.remove(MessageNIOTransport.SNDR_PORT_FIELD);

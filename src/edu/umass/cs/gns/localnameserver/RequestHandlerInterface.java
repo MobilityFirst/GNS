@@ -28,8 +28,6 @@ import org.json.JSONObject;
  */
 public interface RequestHandlerInterface {
   
-  public InterfaceNIOTransport<String, JSONObject> getTcpTransport();
-
   public LNSConsistentReconfigurableNodeConfig getNodeConfig();
 
   public InetSocketAddress getNodeAddress();
@@ -46,9 +44,9 @@ public interface RequestHandlerInterface {
   
   public boolean isDebugMode();
   
-  public InetSocketAddress getClosestServer(Set<InetSocketAddress> servers);
+  public InetSocketAddress getClosestReplica(Set<InetSocketAddress> servers);
   
-  public InetSocketAddress getClosestServer(Set<InetSocketAddress> serverIds, Set<InetSocketAddress> excludeServers);
+  public InetSocketAddress getClosestReplica(Set<InetSocketAddress> serverIds, Set<InetSocketAddress> excludeServers);
   
   public void invalidateCache();
   
@@ -66,8 +64,12 @@ public interface RequestHandlerInterface {
   
   public boolean handleEvent(JSONObject json) throws JSONException;
   
-  public void sendToClosestServer(Set<InetSocketAddress> actives, JSONObject packet) throws IOException;
+  public void sendToClosestReplica(Set<InetSocketAddress> actives, JSONObject packet) throws IOException;
+  
+  public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException;
   
   public PingManager getPingManager();
+  
+  public Set<InetSocketAddress> getReplicatedActives(String name);
  
 }

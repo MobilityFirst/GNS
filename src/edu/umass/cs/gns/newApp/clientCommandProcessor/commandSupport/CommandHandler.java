@@ -50,19 +50,6 @@ public class CommandHandler {
   private static final ExecutorService execPool
           = USE_EXEC_POOL_TO_RUN_COMMANDS == true ? Executors.newFixedThreadPool(100) : null;
 
-//  /**
-//   * Handles command packets coming in from the client.
-//   *
-//   * @param incomingJSON
-//   * @param handler
-//   * @throws JSONException
-//   * @throws UnknownHostException
-//   */
-//  public static void handlePacketCommandRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler)
-//          throws JSONException, UnknownHostException {
-//    handlePacketCommandRequest(incomingJSON, handler, null);
-//  }
-
   /**
    * Handles command packets coming in from the client.
    *
@@ -109,22 +96,14 @@ public class CommandHandler {
               handler.getReceivedRequests(), handler.getRequestsPerSecond(),
               System.currentTimeMillis() - receiptTime);
 
-      //if (app != null) {
-        // call back the app directly
-        try {
-          if (handler.getParameters().isDebugMode()) {
-            GNS.getLogger().info("HANDLING COMMAND REPLY : " + returnPacket.toString());
-          }
-          handleCommandReturnValuePacketForApp(returnPacket.toJSONObject(), app);
-        } catch (IOException e) {
-          GNS.getLogger().severe("Problem replying to command: " + e);
+      try {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().info("HANDLING COMMAND REPLY : " + returnPacket.toString());
         }
-//      } else {
-//        if (handler.getParameters().isDebugMode()) {
-//          GNS.getLogger().info("SENDING VALUE BACK TO " + packet.getSenderAddress() + "/" + packet.getSenderPort() + ": " + returnPacket.toString());
-//        }
-//        handler.sendToAddress(returnPacket.toJSONObject(), packet.getSenderAddress(), packet.getSenderPort());
-//      }
+        handleCommandReturnValuePacketForApp(returnPacket.toJSONObject(), app);
+      } catch (IOException e) {
+        GNS.getLogger().severe("Problem replying to command: " + e);
+      }
 
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem  executing command: " + e);
