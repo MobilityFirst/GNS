@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.nio;
 
 import java.nio.BufferOverflowException;
@@ -19,6 +36,8 @@ import edu.umass.cs.utils.MyLogger;
  */
 public abstract class AbstractNIOSSL implements Runnable {
 	private final static int MAX_BUFFER_SIZE = 2048 * 1024;
+	private final static int MAX_DST_BUFFER_SIZE = 2*MAX_BUFFER_SIZE;
+
 	// final
 	ByteBuffer wrapSrc, unwrapSrc;
 	// final
@@ -85,7 +104,7 @@ public abstract class AbstractNIOSSL implements Runnable {
 			wrapSrc.put(unencrypted);
 		} catch (BufferOverflowException boe) {
 			wrapSrc = getBiggerBuffer(wrapSrc, unencrypted);
-			log.log(Level.FINE, MyLogger.FORMAT[1], new Object[] {
+			log.log(Level.INFO, MyLogger.FORMAT[1], new Object[] {
 					"Increased wrapSrc buffer size to ", wrapSrc.capacity() });
 		}
 		run();
@@ -162,16 +181,20 @@ public abstract class AbstractNIOSSL implements Runnable {
 			Runnable wrappedTask = new Runnable() {
 				@Override
 				public void run() {
-					log.log(Level.FINE, MyLogger.FORMAT[1], new Object[] {
-							"async SSL task: ", sslTask });
-					long t0 = System.nanoTime();
-					sslTask.run();
-					log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] {
-							"async SSL task took: ",
-							(System.nanoTime() - t0) / 1000000, "ms" });
+					try {
+						log.log(Level.FINE, MyLogger.FORMAT[1], new Object[] {
+								"async SSL task: ", sslTask });
+						long t0 = System.nanoTime();
+						sslTask.run();
+						log.log(Level.FINE, MyLogger.FORMAT[2], new Object[] {
+								"async SSL task took: ",
+								(System.nanoTime() - t0) / 1000000, "ms" });
 
-					// continue handling I/O
-					AbstractNIOSSL.this.run();
+						// continue handling I/O
+						AbstractNIOSSL.this.run();
+					} catch(Exception e) {
+						e.printStackTrace();
+					}
 				}
 			};
 			taskWorkers.execute(wrappedTask);
@@ -221,7 +244,7 @@ public abstract class AbstractNIOSSL implements Runnable {
 			// data, but we'll just increase it to the size needed.
 			int biggerSize = engine.getSession().getApplicationBufferSize()
 					+ wrapDst.capacity();
-			if (biggerSize > MAX_BUFFER_SIZE)
+			if (biggerSize > MAX_DST_BUFFER_SIZE)
 				throw new IllegalStateException("failed to wrap");
 			ByteBuffer b = ByteBuffer.allocate(biggerSize);
 			wrapDst.flip();
@@ -281,7 +304,7 @@ public abstract class AbstractNIOSSL implements Runnable {
 			int biggerSize = engine.getSession().getApplicationBufferSize()
 					+ unwrapDst.capacity();
 			if (biggerSize > MAX_BUFFER_SIZE)
-				throw new IllegalStateException("failed to wrap");
+				throw new IllegalStateException("failed to unwrap");
 			ByteBuffer b = ByteBuffer.allocate(biggerSize);
 			unwrapDst.flip();
 			b.put(unwrapDst);
@@ -306,5 +329,12 @@ public abstract class AbstractNIOSSL implements Runnable {
 		}
 
 		return true;
+	}
+
+	/**
+	 * To flush stuck data if any.
+	 */
+	public void poke() {
+		run();
 	}
 }

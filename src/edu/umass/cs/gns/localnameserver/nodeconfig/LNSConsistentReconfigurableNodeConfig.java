@@ -9,9 +9,9 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.reconfiguration.InterfaceModifiableActiveConfig;
-import edu.umass.cs.reconfiguration.InterfaceModifiableRCConfig;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableActiveConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableRCConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.reconfiguration.reconfigurationutils.SimpleReconfiguratorNodeConfig;
 

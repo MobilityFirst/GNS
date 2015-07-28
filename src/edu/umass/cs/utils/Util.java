@@ -177,12 +177,12 @@ public class Util {
 	}
 
 	public static String arrayOfIntToString(int[] array) {
-		String s = "[";
+		String s = "";
 		for (int i = 0; i < array.length; i++) {
 			s += array[i];
-			s += (i < array.length - 1 ? "," : "]");
+			s += (i < array.length - 1 ? "," : "");
 		}
-		return s;
+		return "[" + s + "]";
 	}
 
 	public static boolean contains(int member, int[] array) {

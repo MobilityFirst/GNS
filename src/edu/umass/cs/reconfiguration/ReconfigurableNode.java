@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
@@ -5,6 +22,7 @@ import java.io.IOException;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 
 /**
@@ -37,7 +55,8 @@ public abstract class ReconfigurableNode<NodeIDType> {
 	 * @param nodeConfig
 	 *            Maps node IDs of active replicas and reconfigurators to their
 	 *            socket addresses.
-	 * @param startCleanSlate Used to join newly added nodes.
+	 * @param startCleanSlate
+	 *            Used to join newly added nodes.
 	 * 
 	 * @throws IOException
 	 *             Thrown if networking functions can not be successfully
@@ -61,9 +80,10 @@ public abstract class ReconfigurableNode<NodeIDType> {
 					"Node " + id + " not present in NodeConfig argument \n  "
 							+ nodeConfig.getActiveReplicas() + "\n  "
 							+ nodeConfig.getReconfigurators());
-
-		this.messenger = (new JSONMessenger<NodeIDType>(
-				(new JSONNIOTransport<NodeIDType>(this.myID, nodeConfig,
+		// else we have something to start
+		messenger = (new JSONMessenger<NodeIDType>(
+				(new JSONNIOTransport<NodeIDType>(ReconfigurableNode.this.myID,
+						nodeConfig,
 						(pd = new ReconfigurationPacketDemultiplexer()),
 						ReconfigurationConfig.getServerSSLMode()))));
 
@@ -80,10 +100,11 @@ public abstract class ReconfigurableNode<NodeIDType> {
 			pd.register(reconfigurator.getPacketTypes().toArray(),
 					reconfigurator);
 
-			// wrap reconfigurator in ActiveReplica to make it reconfigurable
-			this.activeReplica = reconfigurator
+			// wrap reconfigurator in active to make it reconfigurable
+			ReconfigurableNode.this.activeReplica = reconfigurator
 					.getReconfigurableReconfiguratorAsActiveReplica();
-			pd.register(activeReplica.getPacketTypes(), this.activeReplica);
+			pd.register(activeReplica.getPacketTypes(),
+					ReconfigurableNode.this.activeReplica);
 		}
 	}
 

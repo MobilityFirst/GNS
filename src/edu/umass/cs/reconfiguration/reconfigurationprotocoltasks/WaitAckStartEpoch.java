@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.reconfiguration.reconfigurationprotocoltasks;
 
 import java.util.Arrays;
@@ -170,10 +187,11 @@ public class WaitAckStartEpoch<NodeIDType>
 
 		this.setDone(true);
 		// multicast start epoch confirmation message
-		GenericMessagingTask<NodeIDType, ?> epochStartCommit = new GenericMessagingTask(
+		GenericMessagingTask<NodeIDType, ?> epochStartCommit =  new GenericMessagingTask(
 				this.DB.getMyID(), new RCRecordRequest<NodeIDType>(
 						this.DB.getMyID(), this.startEpoch,
-						RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE));
+						RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE))
+				;
 
 		/*
 		 * Reconfiguration split operations can not just drop previous epoch
@@ -205,8 +223,12 @@ public class WaitAckStartEpoch<NodeIDType>
 		} else
 			assert (false);
 
-		// propagate start epoch confirmation to all
-		return epochStartCommit.toArray();
+		/* Propagate start epoch confirmation to all. But if RC group name, do so only
+		 * if I am a reconfigurator present in the new group.
+		 */
+		return (!this.DB.isRCGroupName(this.startEpoch.getServiceName()) || this.startEpoch
+				.getCurEpochGroup().contains(this.DB.getMyID())) ? epochStartCommit
+				.toArray() : null;
 		// default action will do timed cancel
 	}
 

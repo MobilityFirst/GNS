@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.gigapaxos;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
@@ -184,21 +201,21 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return (this.cursorConn = this.dataSource.getConnection());
 	}
 
-	@Override
-	public void putCheckpointState(String paxosID, int version, int[] group,
-			int slot, Ballot ballot, String state, int acceptedGCSlot,
-			long createTime) {
-		this.putCheckpointState(paxosID, version,
-				Util.arrayOfIntToStringSet(group), slot, ballot, state,
-				acceptedGCSlot, createTime);
-	}
-
-	@Override
-	public void putCheckpointState(String paxosID, int version, int[] group,
+	// testing
+	private void putCheckpointState(String paxosID, int version, int[] group,
 			int slot, Ballot ballot, String state, int acceptedGCSlot) {
 		this.putCheckpointState(paxosID, version,
 				Util.arrayOfIntToStringSet(group), slot, ballot, state,
 				acceptedGCSlot, System.currentTimeMillis());
+	}
+	
+	@Override
+	public void putCheckpointState(String paxosID, int version, Set<String> group,
+			int slot, Ballot ballot, String state, int acceptedGCSlot) {
+		this.putCheckpointState(paxosID, version,
+				(group), slot, ballot, state,
+				acceptedGCSlot, System.currentTimeMillis());
+		
 	}
 
 	public boolean copyEpochFinalCheckpointState(String paxosID, int version) {
@@ -429,7 +446,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * could of course be the stringified form of the actual state if the state
 	 * is at most MAX_STATE_SIZE.
 	 */
-	private void putCheckpointState(String paxosID, int version,
+	public void putCheckpointState(String paxosID, int version,
 			Set<String> group, int slot, Ballot ballot, String state,
 			int acceptedGCSlot, long createTime) {
 		if (isClosed() || !isLoggingEnabled())
@@ -1413,7 +1430,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				+ PAXOS_ID_SIZE + ") not null, serialized varchar("
 				+ PAUSE_STATE_SIZE + ") not null, primary key (paxos_id))";
 
-		this.dropTable(getPTable()); // pause table is unnecessary
+//		this.dropTable(getPTable()); // pause table is unnecessary
+		this.clearTable(getPTable()); // pause table is unnecessary
 
 		Statement stmt = null;
 		Connection conn = null;
@@ -1465,6 +1483,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return createTable(stmt, cmd, table);
 	}
 
+	// used only to drop the pause table
 	private boolean dropTable(String table) {
 		String cmd = "drop table " + getPTable();
 		PreparedStatement pstmt = null;
@@ -1480,6 +1499,27 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		} catch (SQLException sqle) {
 			if (!SQL.NONEXISTENT_TABLE.contains(sqle.getSQLState())) {
 				log.severe(this + " could not drop table " + table + ":"
+						+ sqle.getSQLState() + ":" + sqle.getErrorCode());
+				sqle.printStackTrace();
+			}
+		}
+		return dropped;
+	}
+	private boolean clearTable(String table) {
+		String cmd = "delete from " + getPTable() + " where true";
+		PreparedStatement pstmt = null;
+		boolean dropped = false;
+		try {
+			Connection conn = this.getDefaultConn();
+			pstmt = conn.prepareStatement(cmd);
+			pstmt.execute();
+			// conn.commit();
+			dropped = true;
+			log.log(Level.FINE, "{0}{1}{2}", new Object[] { this,
+					" dropped pause table ", table });
+		} catch (SQLException sqle) {
+			if (!SQL.NONEXISTENT_TABLE.contains(sqle.getSQLState())) {
+				log.severe(this + " could not clear table " + table + ":"
 						+ sqle.getSQLState() + ":" + sqle.getErrorCode());
 				sqle.printStackTrace();
 			}

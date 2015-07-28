@@ -11,7 +11,7 @@ import edu.umass.cs.gns.util.JSONUtils;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 
 import java.net.InetSocketAddress;
 

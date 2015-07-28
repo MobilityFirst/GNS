@@ -7,13 +7,17 @@ package edu.umass.cs.gns.newApp.noopTest;
 
 import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
+
 import java.util.HashSet;
 import java.util.Set;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.List;
 import java.util.logging.Logger;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 

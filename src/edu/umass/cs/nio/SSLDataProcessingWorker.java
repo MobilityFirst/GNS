@@ -1,8 +1,26 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.nio;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SelectionKey;
@@ -116,6 +134,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 						channel.socket().getRemoteSocketAddress() });
 		// unwrap SSL
 		nioSSL.notifyReceived(encrypted);
+		assert (encrypted.remaining() == 0); // else buffer overflow exception
 	}
 
 	// invoke SSL wrap
@@ -128,13 +147,17 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 						channel.socket().getLocalSocketAddress(),
 						channel.socket().getRemoteSocketAddress() });
 		int originalSize = unencrypted.remaining();
-		nioSSL.nioSend(unencrypted);
+		try {
+			nioSSL.nioSend(unencrypted);
+		} catch (BufferOverflowException | IllegalStateException e) {
+			// do nothing, sender will automatically slow down
+		}
 		return originalSize - unencrypted.remaining();
 	}
 
 	protected boolean isHandshakeComplete(SocketChannel socketChannel) {
 		AbstractNIOSSL nioSSL = this.sslMap.get(socketChannel);
-		// socketChannel may be unmapped under exceptions
+		// socketChannel may be unmapped yet or under exception
 		return nioSSL != null ? ((NonBlockingSSLImpl) nioSSL)
 				.isHandshakeComplete() : false;
 	}
@@ -159,6 +182,12 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 		this.sslMap.put(key.channel(), new NonBlockingSSLImpl(key, engine,
 				DEFAULT_PER_CONNECTION_IO_BUFFER_SIZE, this.taskWorkers));
 		return true;
+	}
+	
+	protected void poke() {
+		for(AbstractNIOSSL nioSSL : this.sslMap.values()) {
+			nioSSL.poke();
+		}
 	}
 
 	// remove entry from sslMap, no need to check containsKey
@@ -189,7 +218,8 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 					new Object[] { this, decrypted.remaining(),
 							socket.getLocalSocketAddress(),
 							socket.getRemoteSocketAddress() });
-			//decryptedWorker.processData((SocketChannel) key.channel(),decrypted);
+			// SSLDataProcessingWorker.this.decryptedWorker.processData((SocketChannel)key.channel(),
+			// decrypted);
 			SSLDataProcessingWorker.this.extractMessages(key, decrypted);
 		}
 
@@ -304,21 +334,17 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 					sockAddr, msg);
 
 	}
-	
+
 	private void extractMessages(SelectionKey key, ByteBuffer incoming) {
 		ByteBuffer bbuf = null;
 		try {
-			while ((bbuf = this.extractMessage(key, incoming)) != null) {
-				this.decryptedWorker.processData((SocketChannel)key.channel(), bbuf);
+			while (incoming.hasRemaining()
+					&& (bbuf = this.extractMessage(key, incoming)) != null) {
+				this.decryptedWorker.processData((SocketChannel) key.channel(),
+						bbuf);
 			}
 		} catch (IOException e) {
-			ByteBuffer buf = ByteBuffer.allocate(1024);
-			try {
-				((SocketChannel)key.channel()).read(buf);
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-			log.severe(this + e.getMessage() + new String(buf.array())+" on channel " + key.channel());
+			log.severe(this + e.getMessage() + " on channel " + key.channel());
 			e.printStackTrace();
 			// incoming is emptied out; what else to do here?
 		}
@@ -332,9 +358,11 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 		assert (abbuf != null);
 		if (abbuf.headerBuf.remaining() > 0) {
 			Util.put(abbuf.headerBuf, incoming);
-			if (abbuf.headerBuf.remaining() == 0)
+			if (abbuf.headerBuf.remaining() == 0) {
 				abbuf.bodyBuf = ByteBuffer.allocate(NIOTransport
 						.getPayloadLength((ByteBuffer) abbuf.headerBuf.flip()));
+				assert (abbuf.bodyBuf != null && abbuf.bodyBuf.capacity() > 0);
+			}
 		}
 		ByteBuffer retval = null;
 		if (abbuf.bodyBuf != null) {

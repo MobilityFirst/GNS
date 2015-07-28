@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.nio;
 
 import edu.umass.cs.nio.nioutils.DataProcessingWorkerDefault;
@@ -10,6 +27,7 @@ import edu.umass.cs.utils.Util;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.CancelledKeyException;
 import java.nio.channels.ClosedChannelException;
@@ -163,8 +181,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private Selector selector = null;
 
 	// The buffer into which we'll read data when it's available
-	private final ByteBuffer readBuffer = ByteBuffer
-			.allocateDirect(READ_BUFFER_SIZE);
+	// private final ByteBuffer readBuffer =
+	// ByteBuffer.allocateDirect(READ_BUFFER_SIZE);
 	private final ByteBuffer writeBuffer = ByteBuffer
 			.allocateDirect(WRITE_BUFFER_SIZE);
 
@@ -358,6 +376,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @throws IOException
 	 */
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
+		if(isa==null) return -1;
 		testAndIntiateConnection(isa);
 		// NIOInstrumenter.incrSent(isa.getPort());
 		// we put length header in *all* messages
@@ -601,16 +620,25 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		}
 	}
 
+	private final ConcurrentHashMap<SelectionKey, ByteBuffer> readBuffers = new ConcurrentHashMap<SelectionKey, ByteBuffer>();
+
 	private void read(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
 
 		// if SSL, simply pass any bytes to SSL worker
 		if (isSSL()) {
-			ByteBuffer bbuf = this.readBuffer;
+			this.readBuffers.putIfAbsent(key,
+					ByteBuffer.allocateDirect(READ_BUFFER_SIZE));
+			ByteBuffer bbuf = this.readBuffers.get(key); // this.readBuffer;
 			int numRead = socketChannel.read(bbuf);
 			if (numRead > 0) {
 				bbuf.flip();
-				this.worker.processData(socketChannel, bbuf);
+				try {
+					this.worker.processData(socketChannel, bbuf);
+					assert (bbuf.remaining() == 0);
+				} catch (BufferOverflowException boe) {
+					// do nothing, bbuf will read more later
+				}
 				bbuf.compact();
 			}
 			return;
@@ -653,8 +681,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		 * When we hand the data off to our worker thread, the worker is
 		 * expected to synchronously get() from readBuffer and return and can
 		 * not continue reading from readBuffer after returning as we compact it
-		 * immediately after in the SSL case; in the non-SSL case, we discard
-		 * the buffer, so it doesn't matter one way or the other.
+		 * immediately after.
 		 */
 	}
 
@@ -711,7 +738,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		return (sendQueue.isEmpty());
 	}
 
-	private static boolean SEND_BATCHED = true; // default true
+	private static boolean SEND_BATCHED = false;// true; // default true
 
 	// dequeue and send one message at a time
 	private void sendUnbatched(LinkedBlockingQueue<ByteBuffer> sendQueue,
@@ -752,7 +779,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 		// flip and send out
 		this.writeBuffer.flip();
+		this.writeBuffer.remaining();
 		int written = this.wrapWrite(socketChannel, this.writeBuffer);
+		// assert(this.writeBuffer.remaining()==0);
+		log.log(Level.FINEST,
+				"{0} wrote {1} batched bytes to {2}; total sentByteCount = {3}",
+				new Object[] { this, written, socketChannel.getRemoteAddress() });
 
 		// remove exactly what got sent above
 		int removed = 0;
@@ -785,6 +817,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	// invokes wrap before nio write if SSL enabled
 	private int wrapWrite(SocketChannel socketChannel, ByteBuffer unencrypted)
 			throws IOException {
+		assert (this.isHandshakeComplete(socketChannel));
 		if (this.isSSL())
 			return ((SSLDataProcessingWorker) this.worker).wrap(socketChannel,
 					unencrypted);
@@ -807,7 +840,11 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			 */
 			SelectionKey key = socketChannel.keyFor(this.selector);
 			if (key != null && key.isValid())
-				key.interestOps(SelectionKey.OP_READ);
+				key.interestOps(key.interestOps() & (~SelectionKey.OP_WRITE)/*
+																			 * SelectionKey
+																			 * .
+																			 * OP_READ
+																			 */);
 		}
 		return isComplete;
 	}
@@ -849,11 +886,13 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private void wakeupSelector(InetSocketAddress isa) {
 		SocketChannel sc = this.getSockAddrToSockChannel(isa);
 		SelectionKey key = null;
-		if (sc.isConnected() && this.isHandshakeComplete(sc)
-				&& (key = sc.keyFor(this.selector)) != null && key.isValid()
-				&& (key.interestOps() & SelectionKey.OP_WRITE) == 0)
+		// no point waking up the selector unless connected and handshaken
+		if (sc.isConnected() && this.isHandshakeComplete(sc))
 			try {
-				key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
+				// set op to write if not already set
+				if ((key = sc.keyFor(this.selector)) != null && key.isValid()
+						&& (key.interestOps() & SelectionKey.OP_WRITE) == 0)
+					key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
 				this.selector.wakeup();
 			} catch (CancelledKeyException cke) {
 				// could have been cancelled upon a write attempt
@@ -875,7 +914,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		if (!SNEAK_DIRECT_WRITE)
 			return false;
 		SocketChannel channel = this.getSockAddrToSockChannel(isa);
-		if (channel != null && channel.isConnected()) {
+		if (channel != null && channel.isConnected()
+				&& this.isHandshakeComplete(channel)) {
 			try {
 				this.wrapWrite(channel, data);
 				return true;
@@ -1065,10 +1105,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 						(InetSocketAddress) socketChannel.getRemoteAddress(),
 						socketChannel); // replace existing with newly accepted
 				socketChannel.register(this.selector, SelectionKey.OP_READ
-						| SelectionKey.OP_WRITE);
+				// wait till handshake complete for SSL writes
+						| (isSSL() ? 0 : SelectionKey.OP_WRITE));
 			} catch (ClosedChannelException e) {
-				log.warning("Node" + myID
-						+ " failed to set OP_WRITE immediately after accept()");
+				log.warning("Node"
+						+ myID
+						+ " failed to set interest ops immediately after accept()");
 				// do nothing
 			} catch (IOException e) {
 				log.warning("Node" + myID + " failed to get remote address");

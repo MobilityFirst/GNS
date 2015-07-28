@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.gigapaxos;
 
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
@@ -712,7 +729,6 @@ public class PaxosManager<NodeIDType> {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version)
 			this.kill(pism);
-
 		return this.paxosLogger.deleteEpochFinalCheckpointState(paxosID,
 				version);
 	}
@@ -904,6 +920,13 @@ public class PaxosManager<NodeIDType> {
 		Set<NodeIDType> nodes = new HashSet<NodeIDType>();
 		for (String strNode : strNodes) {
 			nodes.add(this.unstringer.valueOf(strNode));
+		}
+		return nodes;
+	}
+	protected Set<String> getStringNodesFromIntArray(int[] members) {
+		Set<String> nodes = new HashSet<String>();
+		for (int member : members) {
+			nodes.add(this.integerMap.get(member).toString());
 		}
 		return nodes;
 	}
@@ -1310,7 +1333,13 @@ public class PaxosManager<NodeIDType> {
 	 * NodeIDType is already inserted in the map.
 	 */
 	protected void heardFrom(int id) {
-		this.FD.heardFrom(this.integerMap.get(id));
+		try {
+			this.FD.heardFrom(this.integerMap.get(id));
+		} catch (RuntimeException re) {
+			// do nothing, can happen during recovery
+			log.log(Level.INFO, "{0} has no NodeIDType entry for integer {1}",
+					new Object[] { this, id });
+		}
 	}
 
 	protected boolean isNodeUp(int id) {

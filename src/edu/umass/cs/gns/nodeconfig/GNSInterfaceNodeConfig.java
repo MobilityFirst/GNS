@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.nodeconfig;
 
 import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 
 import java.util.Set;
 

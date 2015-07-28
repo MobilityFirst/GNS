@@ -6,6 +6,8 @@
 package edu.umass.cs.gns.newApp.noopTest;
 
 import edu.umass.cs.reconfiguration.examples.*;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -26,7 +28,6 @@ import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.ActiveReplica;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;

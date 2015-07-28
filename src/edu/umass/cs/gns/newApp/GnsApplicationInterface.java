@@ -11,9 +11,11 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.InterfaceMessenger;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
+
 import org.json.JSONObject;
 
 /**

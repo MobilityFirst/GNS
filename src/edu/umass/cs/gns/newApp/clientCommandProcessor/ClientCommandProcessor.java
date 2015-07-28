@@ -15,8 +15,10 @@ import edu.umass.cs.gns.gnamed.UdpDnsServer;
 import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.NewApp;
+
 import java.io.IOException;
 import java.util.logging.Logger;
+
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
@@ -27,12 +29,13 @@ import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
-
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+
 import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.InetSocketAddress;
+
 import org.json.JSONObject;
 
 /**

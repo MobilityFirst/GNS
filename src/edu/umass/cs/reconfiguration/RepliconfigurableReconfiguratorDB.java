@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
@@ -12,8 +29,10 @@ import java.util.logging.Level;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.paxosutil.PaxosInstanceCreationException;
 import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB.RecordNames;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
@@ -38,7 +57,7 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	protected final AbstractReconfiguratorDB<NodeIDType> app;
 	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
-	private HashMap<NodeIDType, Long> pendingReconfiguratorDeletions = new HashMap<NodeIDType, Long>();
+	private final HashMap<NodeIDType, Long> pendingReconfiguratorDeletions = new HashMap<NodeIDType, Long>();
 
 	/**
 	 * @param app
@@ -148,16 +167,23 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 						"{0} creating reconfigurator group {1} with members {2}",
 						new Object[] { this, this.app.getRCGroupName(node),
 								group });
+				try {
 				this.createReplicaGroup(
 						this.app.getRCGroupName(node),
 						0,
 						this.getInitialRCGroupRecord(
 								this.app.getRCGroupName(node), group)
 								.toString(), group);
+				} catch(PaxosInstanceCreationException pice) {
+					// can happen during recovery
+					log.info(this
+							+ " encountered paxos instance creation exception (not unusual during recovery): "
+							+ pice.getMessage());
+				}
 			}
 		}
 		/*
-		 * create NODE_CONFIG record, the master copy of the set of all
+		 * Create NODE_CONFIG record, the master copy of the set of all
 		 * reconfigurators.
 		 */
 		this.createReplicaGroup(

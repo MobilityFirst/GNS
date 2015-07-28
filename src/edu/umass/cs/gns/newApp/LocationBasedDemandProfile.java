@@ -17,7 +17,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.util.Util;
-import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.InterfaceGetActiveIPs;
 

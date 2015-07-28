@@ -19,10 +19,10 @@ import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**

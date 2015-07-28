@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.reconfiguration;
 
 import java.beans.PropertyVetoException;
@@ -45,6 +62,7 @@ import edu.umass.cs.gigapaxos.paxosutil.SQL;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
 import edu.umass.cs.reconfiguration.examples.ReconfigurableSampleNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
@@ -263,7 +281,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 			 * complete. So if the node crashes after an intent but before the
 			 * corresponding complete, the app has to redo just that last step.
 			 */
-			this.setPending(name, false);
+			if(record.isReconfigurationReady())
+				this.setPending(name, false);
 			/*
 			 * Trimming RC epochs is needed only for the NODE_CONFIG record. It
 			 * removes entries for deleted RC nodes. The entries maintain the
@@ -1729,6 +1748,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 					} else
 						log.warning(this + " attempt to merge " + mergee + ":"
 								+ mergeeEpoch + " failed.");
+				if (record.isReconfigurationReady())
+					this.setPending(rcGroupName, false, true);
 				// paxos will still always see a true return value
 				return record.hasBeenMerged(mergee);
 			}

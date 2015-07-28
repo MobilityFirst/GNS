@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.reconfiguration;
 
 import java.lang.reflect.InvocationTargetException;
@@ -14,6 +31,10 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorDB;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceRepliconfigurable;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
@@ -91,7 +112,6 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	}
 
 	/***************** Paxos related methods below ***********/
-	@SuppressWarnings("unchecked")
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
 			boolean doNotReplyToClient) {
@@ -100,10 +120,15 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 				&& request.toString().equals(InterfaceRequest.NO_OP))
 			return true;
 		assert (request instanceof BasicReconfigurationPacket<?>) : request;
+		boolean handled = false;
 		// cast checked by assert above
+		@SuppressWarnings("unchecked")
 		BasicReconfigurationPacket<NodeIDType> rcPacket = (BasicReconfigurationPacket<NodeIDType>) request;
-		boolean handled = (Boolean) autoInvokeMethod(this, rcPacket,
-				this.consistentNodeConfig);
+		if (this.uglyRecoveryHack(rcPacket, doNotReplyToClient))
+			handled = true;
+		else
+			handled = (Boolean) AbstractReconfiguratorDB.autoInvokeMethod(this,
+					rcPacket, this.consistentNodeConfig);
 		return handled;
 	}
 
@@ -126,6 +151,27 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			iae.printStackTrace();
 		}
 		return null;
+	}
+
+	/*
+	 * We want NC complete RCRecordRequest to be non-blocking during recovery.
+	 * Otherwise, we may not even get started with finishPendingReconfigurations
+	 * that in turn may be required for unblocking the NC complete.
+	 */
+	private boolean uglyRecoveryHack(
+			BasicReconfigurationPacket<NodeIDType> rcPacket, boolean recovering) {
+		if (recovering
+				&& rcPacket.getServiceName().equals(
+						RecordNames.NODE_CONFIG.toString())) {
+			(new Thread(new Runnable() {
+				public void run() {
+					autoInvokeMethod(AbstractReconfiguratorDB.this, rcPacket,
+							consistentNodeConfig);
+				}
+			})).start();
+			return true;
+		}
+		return false;
 	}
 
 	/**

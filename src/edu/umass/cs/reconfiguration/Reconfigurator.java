@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
@@ -27,6 +44,8 @@ import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorCallback;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -135,6 +154,10 @@ public class Reconfigurator<NodeIDType> implements
 		assert (this.getClientMessenger() != null || this
 				.clientFacingPortIsMyPort());
 		this.recovering = false; // if here, recovery must be complete
+		log.log(Level.INFO,
+				"{0} finished recovery with NodeConfig = {1}",
+				new Object[] { this,
+						this.consistentNodeConfig.getReconfigurators() });
 	}
 
 	/**
@@ -1171,6 +1194,9 @@ public class Reconfigurator<NodeIDType> implements
 			 * WaitAckStopEpoch task, i.e., the intent itself will not be
 			 * committed again (and indeed can not be by design).
 			 */
+			log.log(Level.INFO,
+					"{0} initiating pending reconfiguration for {1}",
+					new Object[] { this, name });
 			RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 					this.getMyID(), this.formStartEpoch(name,
 							record.getNewActives(), null, null, null, null),

@@ -45,10 +45,11 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.reconfiguration.ActiveReplica;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurable;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.security.InvalidKeyException;

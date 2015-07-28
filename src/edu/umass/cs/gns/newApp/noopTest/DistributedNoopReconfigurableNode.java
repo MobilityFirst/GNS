@@ -6,9 +6,10 @@
 package edu.umass.cs.gns.newApp.noopTest;
 
 import java.io.IOException;
+
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 
 /**
  * @author Westy adapted from code originally by V. Arun

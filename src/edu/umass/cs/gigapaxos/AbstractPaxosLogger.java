@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.gigapaxos;
 
 import java.io.IOException;
@@ -5,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -119,8 +137,12 @@ public abstract class AbstractPaxosLogger {
 		logger.batchLogger.enqueue(new LogMessagingTask(decision));
 	}
 
-	// Designed to offload checkpointing to its own task so that the paxos
-	// instance can move on.
+	/*
+	 * FIXME: This method is unused. It was designed to offload checkpointing to
+	 * its own task so that the paxos instance could move on. But it is actually
+	 * unsafe for the instance to move on unless the checkpoint is complete, so
+	 * we can not offload checkpoints to a worker.
+	 */
 	protected static final void checkpoint(AbstractPaxosLogger logger,
 			String paxosID, int version, int[] members, int slot,
 			Ballot ballot, String state, int gcSlot) {
@@ -276,7 +298,7 @@ public abstract class AbstractPaxosLogger {
 	 * @param gcSlot
 	 */
 	public abstract void putCheckpointState(String paxosID, int version,
-			int[] group, int slot, Ballot ballot, String state, int gcSlot);
+			Set<String> group, int slot, Ballot ballot, String state, int gcSlot);
 
 	/**
 	 * 
@@ -290,7 +312,7 @@ public abstract class AbstractPaxosLogger {
 	 * @param createTime
 	 */
 	public abstract void putCheckpointState(String paxosID, int version,
-			int[] group, int slot, Ballot ballot, String state, int gcSlot,
+			Set<String> group, int slot, Ballot ballot, String state, int gcSlot,
 			long createTime);
 
 	/**
@@ -559,7 +581,8 @@ public abstract class AbstractPaxosLogger {
 		}
 	}
 
-	// Just a convenience container for a single checkpoint task
+	// FIXME: Unused convenience container for a single checkpoint task.
+	@Deprecated
 	private class CheckpointTask {
 		final AbstractPaxosLogger logger;
 		final String paxosID;
@@ -583,8 +606,13 @@ public abstract class AbstractPaxosLogger {
 		}
 
 		public void checkpoint() {
-			logger.putCheckpointState(paxosID, version, members, slot, ballot,
+			logger.putCheckpointState(paxosID, version, this.getDeprecatedGarbage(members), slot, ballot,
 					state, gcSlot);
+		}
+		
+		@Deprecated
+		private Set<String> getDeprecatedGarbage(int[] members) {
+			throw new RuntimeException("This method should never have been invoked");
 		}
 	}
 

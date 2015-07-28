@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.nodeconfig;
 
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.*;
 
 import java.net.InetAddress;
@@ -10,7 +11,6 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
 /*

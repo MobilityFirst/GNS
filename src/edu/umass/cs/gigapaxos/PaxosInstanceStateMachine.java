@@ -1,3 +1,20 @@
+/*
+ * Copyright (c) 2015 University of Massachusetts
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you
+ * may not use this file except in compliance with the License. You
+ * may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied. See the License for the specific language governing
+ * permissions and limitations under the License.
+ * 
+ * Initial developer(s): V. Arun
+ */
 package edu.umass.cs.gigapaxos;
 
 import java.io.IOException;
@@ -479,6 +496,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 */
 	private boolean initiateRecovery(String initialState, boolean missedBirthing) {
 		String pid = this.getPaxosID();
+		// FIXME: check membership consistency here
 		// only place where version is checked
 		SlotBallotState slotBallot = this.paxosManager.getPaxosLogger()
 				.getSlotBallotState(pid, this.getVersion());
@@ -1079,7 +1097,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			if (shouldCheckpoint(inorderDecision)
 					&& !inorderDecision.isRecovery()) {
 				this.paxosManager.getPaxosLogger().putCheckpointState(pid,
-						this.version, this.groupMembers, inorderDecision.slot,
+						this.version, this.paxosManager.getStringNodesFromIntArray(this.groupMembers), inorderDecision.slot,
 						this.paxosState.getBallot(),
 						this.clientRequestHandler.getState(pid),
 						this.paxosState.getGCSlot(),
@@ -1159,7 +1177,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			this.paxosState.jumpSlot(statePacket.slotNumber + 1);
 			// put checkpoint in logger (like checkpoint)
 			this.paxosManager.getPaxosLogger().putCheckpointState(
-					this.getPaxosID(), this.version, groupMembers,
+					this.getPaxosID(), this.version, this.paxosManager.getStringNodesFromIntArray(groupMembers),
 					statePacket.slotNumber, statePacket.ballot,
 					this.clientRequestHandler.getState(getPaxosID()),
 					this.paxosState.getGCSlot());
@@ -1189,7 +1207,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				if (this.paxosState.caughtUp() && this.coordinator.caughtUp()) {
 					String pid = this.getPaxosID();
 					this.paxosManager.getPaxosLogger().putCheckpointState(pid,
-							this.getVersion(), this.groupMembers, cpSlot,
+							this.getVersion(), this.paxosManager.getStringNodesFromIntArray(this.groupMembers), cpSlot,
 							this.paxosState.getBallot(),
 							this.clientRequestHandler.getState(pid),
 							this.paxosState.getGCSlot());
@@ -1222,7 +1240,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		String pid = this.getPaxosID();
 		int cpSlot = this.paxosState.getSlot() - 1;
 		this.paxosManager.getPaxosLogger().putCheckpointState(pid,
-				this.getVersion(), this.groupMembers, cpSlot,
+				this.getVersion(), this.paxosManager.getStringNodesFromIntArray(this.groupMembers), cpSlot,
 				this.paxosState.getBallot(),
 				this.clientRequestHandler.getState(pid),
 				this.paxosState.getGCSlot());

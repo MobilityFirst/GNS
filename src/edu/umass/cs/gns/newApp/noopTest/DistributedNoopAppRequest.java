@@ -7,10 +7,11 @@ package edu.umass.cs.gns.newApp.noopTest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import edu.umass.cs.nio.IntegerPacketType;
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 
 /**
  * @author Westy adapted from code originally by V. Arun

@@ -1,7 +1,7 @@
 package edu.umass.cs.gns.newApp.packet;
 
-import edu.umass.cs.reconfiguration.InterfaceReconfigurableRequest;
-import edu.umass.cs.reconfiguration.InterfaceReplicableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
