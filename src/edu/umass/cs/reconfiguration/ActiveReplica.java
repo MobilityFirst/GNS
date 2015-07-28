@@ -638,9 +638,13 @@ public class ActiveReplica<NodeIDType> implements
 		try {
 			int myPort = (this.nodeConfig.getNodePort(getMyID()));
 			if (getClientFacingPort(myPort) != myPort) {
+                          log.log(Level.INFO, "Creating client messenger at {0}:{1}", 
+                                  new Object[] { this.nodeConfig.getBindAddress(getMyID()), 
+                                                 getClientFacingPort(myPort)});
+				
 				cMsgr = new JSONMessenger<InetSocketAddress>(
 						new MessageNIOTransport<InetSocketAddress, JSONObject>(
-								this.nodeConfig.getNodeAddress(getMyID()),
+								this.nodeConfig.getBindAddress(getMyID()),
 								getClientFacingPort(myPort),
 								(pd = new ReconfigurationPacketDemultiplexer()),
 								ReconfigurationConfig.getClientSSLMode()));

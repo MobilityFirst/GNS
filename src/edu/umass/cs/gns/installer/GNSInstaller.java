@@ -57,6 +57,8 @@ public class GNSInstaller {
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
   private static final String DEFAULT_JAVA_COMMAND = "java -ea -Xms1024M";
+  private static final String TRUST_STORE_OPTION = "-Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=conf/trustStore/node100.jks";
+  private static final String KEY_STORE_OPTION = "-Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=conf/keyStore/node100.jks";
   // should make this a config parameter
   //private static final String JAVA_COMMAND = "java -ea";
 
@@ -259,6 +261,7 @@ public class GNSInstaller {
         case UPDATE:
           copyJarAndConfFiles(hostname, createLNS, noopTest);
           copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
+          copySSLFiles(hostname);
           break;
         case RESTART:
           break;
@@ -300,9 +303,10 @@ public class GNSInstaller {
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
               //+ ((runAsRoot) ? "sudo " : "")
-              + "nohup " + javaCommand + " -cp " + gnsJarFileName + " " + StartLNSClass + " "
-              //+ hostname + " "
-              //+ LocalNameServer.DEFAULT_LNS_TCP_PORT + " "
+              + "nohup " + javaCommand + " -cp " + gnsJarFileName
+              + " " + TRUST_STORE_OPTION 
+              + " " + KEY_STORE_OPTION 
+              + " " + StartLNSClass + " "
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
               + "-nsfile "
               + NS_HOSTS_FILENAME + " "
@@ -319,7 +323,10 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + ((runAsRoot) ? "sudo " : "")
-              + "nohup " + javaCommand + " -cp " + gnsJarFileName + " " + StartNSClass + " "
+              + "nohup " + javaCommand + " -cp " + gnsJarFileName 
+              + " " + TRUST_STORE_OPTION 
+              + " " + KEY_STORE_OPTION
+              + " " + StartNSClass + " "
               + "-id "
               + nsId.toString() + " "
               + "-nsfile "
@@ -478,6 +485,29 @@ public class GNSInstaller {
     }
   }
 
+  private static void copySSLFiles(String hostname) {
+    System.out.println("Creating conf, keystore and truststore directories");
+    if (installPath != null) {
+      SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER);
+      SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER + FILESEPARATOR + "keystore");
+      SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER + FILESEPARATOR + "truststore");
+    }
+    File keyFileName = getKeyFile();
+    System.out.println("Copying SSL files");
+    RSync.upload(userName, hostname, keyFileName,
+            confFolderPath + FILESEPARATOR + "keystore" + FILESEPARATOR + "node100.jks",
+            buildInstallFilePath("conf" + FILESEPARATOR + "keystore" + FILESEPARATOR + "node100.jks"));
+    RSync.upload(userName, hostname, keyFileName,
+            confFolderPath + FILESEPARATOR + "keystore" + FILESEPARATOR + "node100.cer",
+            buildInstallFilePath("conf" + FILESEPARATOR + "keystore" + FILESEPARATOR + "node100.cer"));
+    RSync.upload(userName, hostname, keyFileName,
+            confFolderPath + FILESEPARATOR + "truststore" + FILESEPARATOR + "node100.jks",
+            buildInstallFilePath("conf" + FILESEPARATOR + "truststore" + FILESEPARATOR + "node100.jks"));
+    RSync.upload(userName, hostname, keyFileName,
+            confFolderPath + FILESEPARATOR + "truststore" + FILESEPARATOR + "node100.cer",
+            buildInstallFilePath("conf" + FILESEPARATOR + "truststore" + FILESEPARATOR + "node100.cer"));
+  }
+
   /**
    * Figures out the locations of the JAR and conf files.
    *
@@ -540,6 +570,7 @@ public class GNSInstaller {
     nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath).toString();
     lnsConfFileName = new File(lnsConfFileLocation).getName();
     nsConfFileName = new File(nsConfFileLocation).getName();
+
     return true;
   }
 

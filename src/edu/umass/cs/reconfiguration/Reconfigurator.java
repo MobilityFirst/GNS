@@ -850,7 +850,7 @@ public class Reconfigurator<NodeIDType> implements
 				cMsgr = new JSONMessenger<InetSocketAddress>(
 						new MessageNIOTransport<InetSocketAddress, JSONObject>(
 								this.consistentNodeConfig
-										.getNodeAddress(getMyID()),
+										.getBindAddress(getMyID()),
 								getClientFacingPort(myPort),
 								(pd = new ReconfigurationPacketDemultiplexer()),
 								ReconfigurationConfig.getClientSSLMode()));
