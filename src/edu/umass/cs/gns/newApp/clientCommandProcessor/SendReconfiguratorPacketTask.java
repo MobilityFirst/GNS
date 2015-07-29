@@ -28,7 +28,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
   private final HashSet<NodeIDType> reconfiguratorsQueried;
   private int sendCount = -1;
   private int retries = 0;
-  private static final int MAX_RETRIES = 10;
+  private static final int MAX_RETRIES = 3;
   private final long startTime;
   private final EnhancedClientRequestHandlerInterface<NodeIDType> handler;
 

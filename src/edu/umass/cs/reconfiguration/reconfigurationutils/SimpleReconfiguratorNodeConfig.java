@@ -52,6 +52,8 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 	private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
 	private int version = 0;
 	private final HashMap<NodeIDType, InetSocketAddress> rcMap = new HashMap<NodeIDType, InetSocketAddress>();
+        // Just for getBindAddress below
+        private final HashMap<NodeIDType, InetAddress> rcBindMap = new HashMap<NodeIDType, InetAddress>();
 
 	/**
 	 * @param nc
@@ -62,6 +64,7 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 		for (NodeIDType node : nc.getReconfigurators()) {
 			this.rcMap.put(node, new InetSocketAddress(nc.getNodeAddress(node),
 					nc.getNodePort(node)));
+                        this.rcBindMap.put(node, nc.getBindAddress(node));
 		}
 	}
 
@@ -90,7 +93,7 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
         
         @Override
 	public InetAddress getBindAddress(NodeIDType id) {
-		return this.rcMap.containsKey(id) ? this.rcMap.get(id).getAddress()
+		return this.rcMap.containsKey(id) ? this.rcBindMap.get(id)
 				: (this.nodeConfig.getActiveReplicas().contains(id) ? this.nodeConfig
 						.getBindAddress(id) : null);
 	}
@@ -135,15 +138,18 @@ public class SimpleReconfiguratorNodeConfig<NodeIDType> implements
 		if (this.nodeConfig instanceof InterfaceModifiableRCConfig)
 			((InterfaceModifiableRCConfig<NodeIDType>) this.nodeConfig)
 					.addReconfigurator(id, sockAddr);
+                // FIXME - need to add an entry in rcBindMap as well
 		return prevSockAddr;
 	}
 
 	@Override
 	public synchronized InetSocketAddress removeReconfigurator(NodeIDType id) {
 		InetSocketAddress removed = this.rcMap.remove(id);
+                this.rcBindMap.remove(id);
 		if (this.nodeConfig instanceof InterfaceModifiableRCConfig)
 			((InterfaceModifiableRCConfig<NodeIDType>) this.nodeConfig)
 					.removeReconfigurator(id);
+                
 		return removed;
 	}
 

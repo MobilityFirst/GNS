@@ -9,7 +9,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.AddRemove;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Lookup;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.PendingTasks;
+//import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.PendingTasks;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Select;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update;
 import edu.umass.cs.gns.main.GNS;
@@ -42,7 +42,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     // probably should get these from the event handler
     register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);
     register(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME);
-    register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
+    //register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
     // From current LNS
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);
@@ -51,7 +51,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     register(Packet.PacketType.ADD_CONFIRM);
     register(Packet.PacketType.REMOVE_CONFIRM);
     register(Packet.PacketType.UPDATE_CONFIRM);
-    register(Packet.PacketType.REQUEST_ACTIVES);
+    //register(Packet.PacketType.REQUEST_ACTIVES);
     register(Packet.PacketType.SELECT_REQUEST);
     register(Packet.PacketType.SELECT_RESPONSE);
   }
@@ -115,9 +115,9 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
             AddRemove.handlePacketConfirmRemove(json, handler);
             return true;
           // Others
-          case REQUEST_ACTIVES:
-            PendingTasks.handleActivesRequestReply(json, handler);
-            return true;
+//          case REQUEST_ACTIVES:
+//            PendingTasks.handleActivesRequestReply(json, handler);
+//            return true;
           case SELECT_REQUEST:
             Select.handlePacketSelectRequest(json, handler);
             return true;
