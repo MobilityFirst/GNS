@@ -262,7 +262,7 @@ public class GNSInstaller {
       }
       switch (action) {
         case UPDATE:
-          copyJarAndConfFiles(hostname, createLNS, noopTest);
+          makeConfAndcopyJarAndConfFiles(hostname, createLNS, noopTest);
           copyHostsFiles(hostname, createLNS ? lnsHostsFile : null, nsHostsFile);
           copySSLFiles(hostname);
           break;
@@ -308,14 +308,14 @@ public class GNSInstaller {
               //+ ((runAsRoot) ? "sudo " : "")
               + "nohup " + javaCommand + " -cp " + gnsJarFileName
               //+ " " + SSL_DEBUG
-              + " " + TRUST_STORE_OPTION 
-              + " " + KEY_STORE_OPTION 
+              + " " + TRUST_STORE_OPTION
+              + " " + KEY_STORE_OPTION
               + " " + StartLNSClass + " "
               // YES, THIS SHOULD BE NS_HOSTS_FILENAME, the LNS needs this
               + "-nsfile "
-              + NS_HOSTS_FILENAME + " "
+              + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
               + "-configFile "
-              + LNS_CONF_FILENAME + " "
+              + "conf" + FILESEPARATOR + LNS_CONF_FILENAME + " "
               + " > LNSlogfile 2>&1 &");
     }
     if (nsId != null) {
@@ -327,17 +327,17 @@ public class GNSInstaller {
               + "mv --backup=numbered NSlogfile NSlogfile.save\n"
               + "fi\n"
               + ((runAsRoot) ? "sudo " : "")
-              + "nohup " + javaCommand + " -cp " + gnsJarFileName 
+              + "nohup " + javaCommand + " -cp " + gnsJarFileName
               //+ " " + SSL_DEBUG
-              + " " + TRUST_STORE_OPTION 
+              + " " + TRUST_STORE_OPTION
               + " " + KEY_STORE_OPTION
               + " " + StartNSClass + " "
               + "-id "
               + nsId.toString() + " "
               + "-nsfile "
-              + NS_HOSTS_FILENAME + " "
+              + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
               + "-configFile "
-              + NS_CONF_FILENAME + " "
+              + "conf" + FILESEPARATOR + NS_CONF_FILENAME + " "
               //+ " -demandProfileClass edu.umass.cs.gns.newApp.NullDemandProfile "
               + " > NSlogfile 2>&1 &");
     }
@@ -368,25 +368,6 @@ public class GNSInstaller {
               + " > Nooplogfile 2>&1 &");
     }
     System.out.println("Noop server started");
-  }
-
-  /**
-   * Copies the JAR and configuration files to the remote host.
-   *
-   * @param id
-   * @param hostname
-   */
-  private static void copyJarAndConfFiles(String hostname, boolean createLNS, boolean noopTest) {
-    File keyFileName = getKeyFile();
-    System.out.println("Copying jar and conf files");
-    RSync.upload(userName, hostname, keyFileName, gnsJarFileLocation, buildInstallFilePath(gnsJarFileName));
-    if (createLNS && !noopTest) {
-      RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation, buildInstallFilePath(lnsConfFileName));
-    }
-    //RSync.upload(userName, hostname, keyFileName, ccpConfFileLocation, buildInstallFilePath(ccpConfFileName));
-    if (!noopTest) {
-      RSync.upload(userName, hostname, keyFileName, nsConfFileLocation, buildInstallFilePath(nsConfFileName));
-    }
   }
 
   /**
@@ -484,20 +465,47 @@ public class GNSInstaller {
   private static void copyHostsFiles(String hostname, String lnsHostsFile, String nsHostsFile) {
     File keyFileName = getKeyFile();
     System.out.println("Copying hosts files");
-    RSync.upload(userName, hostname, keyFileName, nsHostsFile, buildInstallFilePath(NS_HOSTS_FILENAME));
+    RSync.upload(userName, hostname, keyFileName, nsHostsFile,
+            buildInstallFilePath("conf" + FILESEPARATOR + NS_HOSTS_FILENAME));
     if (lnsHostsFile != null) {
-      RSync.upload(userName, hostname, keyFileName, lnsHostsFile, buildInstallFilePath(LNS_HOSTS_FILENAME));
+      RSync.upload(userName, hostname, keyFileName, lnsHostsFile,
+              buildInstallFilePath("conf" + FILESEPARATOR + LNS_HOSTS_FILENAME));
     }
   }
-  
-  private static void copySSLFiles(String hostname) {
-    System.out.println("Creating conf, keystore and truststore directories");
+
+  /**
+   * Copies the JAR and configuration files to the remote host.
+   *
+   * @param id
+   * @param hostname
+   */
+  private static void makeConfAndcopyJarAndConfFiles(String hostname, boolean createLNS, boolean noopTest) {
     if (installPath != null) {
+      System.out.println("Creating conf, keystore and truststore directories");
       SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER);
-      //SSHClient.exec(userName, hostname, getKeyFile(), "rm -rf " + installPath + CONF_FOLDER + FILESEPARATOR + "*store*");
+      
       SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER + FILESEPARATOR + KEYSTORE_FOLDER_NAME);
       SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER + FILESEPARATOR + TRUSTSTORE_FOLDER_NAME);
+
+//      SSHClient.exec(userName, hostname, getKeyFile(), "rm " + installPath + FILESEPARATOR + "*.txt");
+//      SSHClient.exec(userName, hostname, getKeyFile(), "rm " + installPath + FILESEPARATOR + "*.conf");
+      
+      File keyFileName = getKeyFile();
+      System.out.println("Copying jar and conf files");
+      RSync.upload(userName, hostname, keyFileName, gnsJarFileLocation, buildInstallFilePath(gnsJarFileName));
+      if (createLNS && !noopTest) {
+        RSync.upload(userName, hostname, keyFileName, lnsConfFileLocation,
+                buildInstallFilePath("conf" + FILESEPARATOR + lnsConfFileName));
+      }
+      //RSync.upload(userName, hostname, keyFileName, ccpConfFileLocation, buildInstallFilePath(ccpConfFileName));
+      if (!noopTest) {
+        RSync.upload(userName, hostname, keyFileName, nsConfFileLocation,
+                buildInstallFilePath("conf" + FILESEPARATOR + nsConfFileName));
+      }
     }
+  }
+
+  private static void copySSLFiles(String hostname) {
     File keyFileName = getKeyFile();
     System.out.println("Copying SSL files");
     RSync.upload(userName, hostname, keyFileName,
