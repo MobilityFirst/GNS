@@ -324,6 +324,7 @@ public class StartEpoch<NodeIDType> extends
 			json.put(Keys.INITIAL_STATE.toString(), initialState);
 
 		json.put(Keys.CREATOR.toString(), this.creator);
+		json.put(Keys.RECEIVER.toString(), this.receiver);
 		json.put(Keys.FORWARDER.toString(), this.forwarder);
 
 		json.put(Keys.INIT_TIME.toString(), this.initTime);

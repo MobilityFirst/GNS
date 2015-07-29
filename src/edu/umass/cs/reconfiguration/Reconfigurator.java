@@ -1318,7 +1318,7 @@ public class Reconfigurator<NodeIDType> implements
 						response.toJSONObject());
 			} else {
 				log.log(Level.INFO,
-						"{0} sending creation confirmation {1} to reconfigurator {2}",
+						"{0} sending creation confirmation {1} to forwarding reconfigurator {2}",
 						new Object[] { this, response.getSummary(), querier });
 				this.messenger.sendToAddress(querier, response.toJSONObject());
 			}
