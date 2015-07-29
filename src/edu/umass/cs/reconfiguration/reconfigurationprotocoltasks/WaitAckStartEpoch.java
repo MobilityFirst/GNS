@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -60,12 +60,15 @@ public class WaitAckStartEpoch<NodeIDType>
 	 * needed.
 	 */
 	private static final long RESTART_PERIOD = 8 * WaitAckStopEpoch.RESTART_PERIOD;
+	private static final int MAX_NUM_RESTARTS_AFTER_MAJORITY = 5;
 
 	private final StartEpoch<NodeIDType> startEpoch;
 	private final RepliconfigurableReconfiguratorDB<NodeIDType> DB;
 
-	private boolean done = false;
+	private final Set<NodeIDType> ackers = new HashSet<NodeIDType>();
 	private final String key;
+	private boolean majority = false;
+	private int numRestarts = 0;
 
 	private static final Logger log = Reconfigurator.getLogger();
 
@@ -78,7 +81,7 @@ public class WaitAckStartEpoch<NodeIDType>
 		super(
 				startEpoch.getCurEpochGroup(),
 				(!startEpoch.isMerge() ? startEpoch.getCurEpochGroup().size() / 2 + 1
-						: 1));
+						: 1), !startEpoch.isMerge() ? false : true);
 		// need to recreate start epoch just to set initiator to self
 		this.startEpoch = new StartEpoch<NodeIDType>(DB.getMyID(), startEpoch);
 		this.DB = DB;
@@ -90,7 +93,9 @@ public class WaitAckStartEpoch<NodeIDType>
 		log.log(Level.WARNING, MyLogger.FORMAT[2],
 				new Object[] { this.refreshKey(), " re-starting ",
 						this.startEpoch.getSummary() });
-		if (!this.amObviated())
+		// restart if not obviated; but quite after a threshold if majority
+		if (!this.amObviated()
+				&& (!this.haveMajority() || ++numRestarts < MAX_NUM_RESTARTS_AFTER_MAJORITY))
 			return start();
 		// else
 		ProtocolExecutor.cancel(this);
@@ -163,7 +168,21 @@ public class WaitAckStartEpoch<NodeIDType>
 		log.log(Level.FINE, "{0} received {1} from {2}", new Object[] { this,
 				ackStart.getSummary(), ackStart.getSender() });
 
-		return !isDone();
+		/*
+		 * It is important to try to start all replicas on a best effort basis
+		 * even if we have received a majority, especially for RC group names.
+		 * Otherwise, some replicas can get left behind and cause NC changes
+		 * to get stuck for long periods of time.
+		 */
+		this.ackers.add(ackStart.getSender());
+		if (this.haveMajority() && this.startEpoch.hasCurEpochGroup()
+				&& this.ackers.size() == this.startEpoch.getCurEpochGroup()
+						.size()) {
+			log.log(Level.INFO, "{0} received ALL ACKS for {1}", new Object[] { this,
+					startEpoch.getSummary() });
+			ProtocolExecutor.cancel(this); // all done
+		}
+		return true;
 	}
 
 	/*
@@ -175,9 +194,10 @@ public class WaitAckStartEpoch<NodeIDType>
 	// Send dropEpoch when startEpoch is acked by majority
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
-	public GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
+	public synchronized GenericMessagingTask<NodeIDType, ?>[] handleThresholdEvent(
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
 
+		this.setMajority(true);
 		log.log(Level.INFO, MyLogger.FORMAT[3], new Object[] {
 				this,
 				" received MAJORITY ACKs for ",
@@ -185,13 +205,11 @@ public class WaitAckStartEpoch<NodeIDType>
 				(this.startEpoch.creator != null ? "; sending ack to client "
 						+ this.startEpoch.creator : "") });
 
-		this.setDone(true);
 		// multicast start epoch confirmation message
-		GenericMessagingTask<NodeIDType, ?> epochStartCommit =  new GenericMessagingTask(
+		GenericMessagingTask<NodeIDType, ?> epochStartCommit = new GenericMessagingTask(
 				this.DB.getMyID(), new RCRecordRequest<NodeIDType>(
 						this.DB.getMyID(), this.startEpoch,
-						RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE))
-				;
+						RCRecordRequest.RequestTypes.RECONFIGURATION_COMPLETE));
 
 		/*
 		 * Reconfiguration split operations can not just drop previous epoch
@@ -207,9 +225,10 @@ public class WaitAckStartEpoch<NodeIDType>
 		if (this.startEpoch.hasPrevEpochGroup()) {
 			// previous state is never dropped for RC group names
 			if (!this.DB.isRCGroupName(this.startEpoch.getServiceName())
-					/*&& !this.startEpoch.getServiceName().equals(
-							AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
-									.toString())*/)
+			/*
+			 * && !this.startEpoch.getServiceName().equals(
+			 * AbstractReconfiguratorDB.RecordNames.NODE_CONFIG .toString())
+			 */)
 				// drop previous epoch final state
 				ptasks[0] = new WaitAckDropEpoch<NodeIDType>(this.startEpoch,
 						this.DB);
@@ -223,21 +242,14 @@ public class WaitAckStartEpoch<NodeIDType>
 		} else
 			assert (false);
 
-		/* Propagate start epoch confirmation to all. But if RC group name, do so only
-		 * if I am a reconfigurator present in the new group.
+		/*
+		 * Propagate start epoch confirmation to all. But if RC group name, do
+		 * so only if I am a reconfigurator present in the new group.
 		 */
 		return (!this.DB.isRCGroupName(this.startEpoch.getServiceName()) || this.startEpoch
 				.getCurEpochGroup().contains(this.DB.getMyID())) ? epochStartCommit
 				.toArray() : null;
 		// default action will do timed cancel
-	}
-
-	private synchronized boolean isDone() {
-		return done;
-	}
-
-	private void setDone(boolean b) {
-		this.done = b;
 	}
 
 	public String toString() {
@@ -246,5 +258,13 @@ public class WaitAckStartEpoch<NodeIDType>
 
 	public long getPeriod() {
 		return RESTART_PERIOD;
+	}
+
+	private void setMajority(boolean b) {
+		this.majority = b;
+	}
+
+	private synchronized boolean haveMajority() {
+		return this.majority;
 	}
 }

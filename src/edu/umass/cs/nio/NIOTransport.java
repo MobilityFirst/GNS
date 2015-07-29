@@ -1372,12 +1372,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			key.attach(new AlternatingByteBuffer());
 		} catch (IOException e) {
 			// cancel the channel's registration with selector
-			log.info("Node "
-					+ this.myID
-					+ " failed to (re-)connect to "
-					+ new InetSocketAddress(socketChannel.socket()
-							.getInetAddress(), socketChannel.socket().getPort())
-					+ e.getMessage());
+			log.log(Level.INFO, "Node {0} failed to (re-)connect to {1}:{2}",
+					new Object[] {
+							this.myID,
+							new InetSocketAddress(socketChannel.socket()
+									.getInetAddress(), socketChannel.socket()
+									.getPort()), e.getMessage() });
 			// FIXME: Should probably also drop outstanding data here
 			cleanup(key, socketChannel);
 			connected = false;

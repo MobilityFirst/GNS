@@ -1430,7 +1430,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				+ PAXOS_ID_SIZE + ") not null, serialized varchar("
 				+ PAUSE_STATE_SIZE + ") not null, primary key (paxos_id))";
 
-//		this.dropTable(getPTable()); // pause table is unnecessary
+		//this.dropTable(getPTable()); // pause table is unnecessary
 		this.clearTable(getPTable()); // pause table is unnecessary
 
 		Statement stmt = null;
@@ -1484,7 +1484,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	// used only to drop the pause table
-	private boolean dropTable(String table) {
+	protected boolean dropTable(String table) {
 		String cmd = "drop table " + getPTable();
 		PreparedStatement pstmt = null;
 		boolean dropped = false;

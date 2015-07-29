@@ -385,7 +385,7 @@ public class ActiveReplica<NodeIDType> implements
 		GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>> mtask = new GenericMessagingTask<NodeIDType, AckDropEpochFinalState<NodeIDType>>(
 				dropEpoch.getInitiator(), ackDrop);
 		assert (ackDrop.getInitiator().equals(dropEpoch.getInitiator()));
-		log.log(deleted ? Level.INFO : Level.INFO,
+		log.log(deleted ? Level.FINE : Level.FINE,
 				"{0} {1} sending {2} to {3}",
 				new Object[] { this, deleted ? "" : "*NOT*",
 						ackDrop.getSummary(), ackDrop.getInitiator() });

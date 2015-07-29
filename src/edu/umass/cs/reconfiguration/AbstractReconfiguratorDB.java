@@ -727,7 +727,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	private synchronized void selfWait() {
 		try {
 			while (!this.isNodeConfigChangeComplete()) {
-				this.wait();
+				this.wait(5000);
 				;
 			}
 		} catch (InterruptedException e) {

@@ -41,11 +41,11 @@ public class TestConfig {
 		FIRST, RANDOM
 	};
 
-	public static final ServerSelectionPolicy serverSelectionPolicy = ServerSelectionPolicy.FIRST;
+	public static final ServerSelectionPolicy serverSelectionPolicy = ServerSelectionPolicy.RANDOM;
 
 	public static final String[] DEFAULT_RECONFIGURATORS = { "127.0.0.1:3100",
-			"127.0.0.1:3101", "127.0.0.1:3102" };// , "127.0.0.1:3103",
-													// "127.0.0.1:3104" };
+			"127.0.0.1:3101", "127.0.0.1:3102" 
+	 , "127.0.0.1:3103",	"127.0.0.1:3104" };
 
 	public static final String[] DEFAULT_ACTIVES = { "127.0.0.1:2100",
 			"127.0.0.1:2101", "127.0.0.1:2102" }; // , "127.0.0.1:2103",

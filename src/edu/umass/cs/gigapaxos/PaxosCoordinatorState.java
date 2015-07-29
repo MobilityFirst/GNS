@@ -725,8 +725,9 @@ public class PaxosCoordinatorState {
 	}
 
 	protected synchronized AcceptPacket reInitCommander(int slot) {
-		return this.testAndSetWaitingTooLong(slot) ? this
-				.initCommander(this.myProposals.get(slot)) : null;
+		return // this.testAndSetWaitingTooLong(slot) ?
+		this.initCommander(this.myProposals.get(slot));
+		// : null;
 	}
 
 	protected boolean ranRecently() {

@@ -599,4 +599,11 @@ public class StartEpoch<NodeIDType> extends
 	public InetSocketAddress getForwarder() {
 		return this.forwarder;
 	}
+	
+	/**
+	 * @return The socket address on which the initiating request was received.
+	 */
+	public InetSocketAddress getMyReceiver() {
+		return this.receiver;
+	}
 }

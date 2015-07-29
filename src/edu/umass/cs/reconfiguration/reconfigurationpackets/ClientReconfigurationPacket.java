@@ -310,4 +310,8 @@ public abstract class ClientReconfigurationPacket extends
 	public boolean isRedirectedResponse() {
 		return this.forwarder != null && !this.isRequest();
 	}
+	
+	public String getSummary() {
+		return super.getSummary() + ":" + (this.isRequest() ? "Q":"R")+":"+this.getCreator() + ":"+this.getForwader();
+	}
 }

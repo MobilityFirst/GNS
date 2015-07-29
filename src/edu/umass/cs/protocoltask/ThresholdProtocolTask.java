@@ -46,6 +46,7 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType>
 		implements SchedulableProtocolTask<NodeIDType, EventType, KeyType> {
 	private final Waitfor<NodeIDType> waitfor;
 	private final int threshold;
+	private final boolean autoCancel;
 	private boolean thresholdHandlerInvoked = false;
 	private long restartPeriod = ProtocolExecutor.DEFAULT_RESTART_PERIOD;
 
@@ -55,8 +56,7 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType>
 	 * @param nodes
 	 */
 	public ThresholdProtocolTask(Set<NodeIDType> nodes) { // default all
-		this.waitfor = new Waitfor<NodeIDType>(nodes);
-		this.threshold = nodes.size();
+		this(nodes, nodes.size());
 	}
 
 	/**
@@ -67,8 +67,21 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType>
 	 * @param threshold
 	 */
 	public ThresholdProtocolTask(Set<NodeIDType> nodes, int threshold) {
+		this(nodes, threshold, true);
+	}
+
+	/**
+	 * Set of nodes out of which we expect to hear back from {@code threshold}
+	 * number of nodes.
+	 * 
+	 * @param nodes
+	 * @param threshold
+	 * @param autoCancel 
+	 */
+	public ThresholdProtocolTask(Set<NodeIDType> nodes, int threshold, boolean autoCancel) {
 		this.waitfor = new Waitfor<NodeIDType>(nodes);
 		this.threshold = threshold;
+		this.autoCancel = autoCancel;
 	}
 
 	/**
@@ -115,10 +128,12 @@ public abstract class ThresholdProtocolTask<NodeIDType, EventType, KeyType>
 				&& testAndInvokeThresholdHandler()) {
 			// got valid responses from threshold nodes
 			mtasks = this.handleThresholdEvent(ptasks);
-			if (GenericMessagingTask.isEmpty(mtasks) && ptasks[0] == null)
-				ProtocolExecutor.cancel(this);
-			else
-				ProtocolExecutor.enqueueCancel(this.getKey());
+			if(autoCancel) {
+				if (GenericMessagingTask.isEmpty(mtasks) && ptasks[0] == null)
+					ProtocolExecutor.cancel(this);
+				else
+					ProtocolExecutor.enqueueCancel(this.getKey());
+			}
 		}
 		return mtasks;
 	}

@@ -60,7 +60,7 @@ public class WaitAckDropEpoch<NodeIDType>
 	 * consuming memory.
 	 */
 	private static final long RESTART_PERIOD_SERVICE_NAMES = 4 * WaitAckStopEpoch.RESTART_PERIOD;
-	private static final long RESTART_PERIOD_RC_GROUP_NAMES = 32 * WaitAckStopEpoch.RESTART_PERIOD;
+	private static final long RESTART_PERIOD_RC_GROUP_NAMES = 16 * WaitAckStopEpoch.RESTART_PERIOD;
 	private static final long RESTART_PERIOD_NC_CHANGE = WaitAckStopEpoch.RESTART_PERIOD;
 
 	private static final int MAX_RESTARTS = 5;

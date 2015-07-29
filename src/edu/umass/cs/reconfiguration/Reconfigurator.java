@@ -346,10 +346,10 @@ public class Reconfigurator<NodeIDType> implements
 			this.repeatUntilObviated(rcRecReq);
 
 		// clean up as needed
-		if (rcRecReq.isReconfigurationComplete())
+		//if (rcRecReq.isReconfigurationComplete())
 			// remove stop and start tasks known to be obviated
-			garbageCollectStopAndStartTasks(rcRecReq);
-		else if (rcRecReq.isReconfigurationMerge())
+			//garbageCollectStopAndStartTasks(rcRecReq);
+		if (rcRecReq.isReconfigurationMerge())
 			// stop mergee task obviated when reconfiguration merge proposed
 			this.protocolExecutor.remove(getTaskKey(WaitAckStopEpoch.class,
 					getMyID().toString(),
@@ -609,6 +609,7 @@ public class Reconfigurator<NodeIDType> implements
 			 * remove all tasks corresponding to the previous epoch at this
 			 * point.
 			 */
+			this.garbageCollectStopAndStartTasks(rcRecReq);
 			this.garbageCollectPendingTasks(rcRecReq);
 		} else if (handled && rcRecReq.isNodeConfigChange()) {
 			if (rcRecReq.isReconfigurationIntent())
@@ -1312,7 +1313,8 @@ public class Reconfigurator<NodeIDType> implements
 				log.log(Level.INFO,
 						"{0} sending creation confirmation {1} to client {2}",
 						new Object[] { this, response.getSummary(), querier });
-				this.getClientMessenger().sendToAddress(querier,
+				//this.getClientMessenger()
+				(this.getMessenger(rcRecReq.startEpoch.getMyReceiver())).sendToAddress(querier,
 						response.toJSONObject());
 			} else {
 				log.log(Level.INFO,
@@ -1357,11 +1359,12 @@ public class Reconfigurator<NodeIDType> implements
 				log.log(Level.INFO,
 						"{0} sending deletion confirmation {1} to client {2}",
 						new Object[] { this, response.getSummary(), querier });
-				this.getClientMessenger().sendToAddress(
+				//this.getClientMessenger()
+				(this.getMessenger(rcRecReq.startEpoch.getMyReceiver())).sendToAddress(
 						this.getQuerier(rcRecReq), response.toJSONObject());
 			} else {
 				log.log(Level.INFO,
-						"{0} sending deletion confirmation {1} to reconfigurator {2}",
+						"{0} sending deletion confirmation {1} to forwarding reconfigurator {2}",
 						new Object[] { this, response.getSummary(), querier });
 				this.messenger.sendToAddress(querier, response.toJSONObject());
 			}

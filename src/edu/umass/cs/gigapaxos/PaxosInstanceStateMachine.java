@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -413,8 +413,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		(!this.coordinator.isActive()
 		// ignore pokes unless not caught up
 		&& (!isPoke || !this.coordinator.caughtUp()
-		// &&
-		// SyncMode.SYNC_TO_PAUSE.equals(SyncMode.valueOf(msg.getString(PaxosPacket.SYNC_MODE.toString())))
 		)) ? checkRunForCoordinator()
 		// else reissue long waiting accepts
 				: this.pokeLocalCoordinator()
@@ -1096,9 +1094,12 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			// checkpoint if needed, must be atomic with the execution
 			if (shouldCheckpoint(inorderDecision)
 					&& !inorderDecision.isRecovery()) {
-				this.paxosManager.getPaxosLogger().putCheckpointState(pid,
-						this.version, this.paxosManager.getStringNodesFromIntArray(this.groupMembers), inorderDecision.slot,
-						this.paxosState.getBallot(),
+				this.paxosManager.getPaxosLogger().putCheckpointState(
+						pid,
+						this.version,
+						this.paxosManager
+								.getStringNodesFromIntArray(this.groupMembers),
+						inorderDecision.slot, this.paxosState.getBallot(),
 						this.clientRequestHandler.getState(pid),
 						this.paxosState.getGCSlot(),
 						inorderDecision.getCreateTime());
@@ -1138,9 +1139,17 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			int retries = 0;
 			do {
 				try {
+					InterfaceRequest decision = getInterfaceRequest(app,
+							requestValue);
+					if (decision instanceof InterfaceSummarizableRequest)
+						log.log(Level.FINE,
+								"{0} executing (in-order) decision {1}",
+								new Object[] { pism,
+										(InterfaceSummarizableRequest) decision });
 					executed = app.handleRequest(
 							getInterfaceRequest(app, requestValue),
 							doNotReplyToClient);
+					// don't try any more if stopped
 					if (pism != null && pism.isStopped())
 						return true;
 				} catch (Exception e) {
@@ -1177,7 +1186,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			this.paxosState.jumpSlot(statePacket.slotNumber + 1);
 			// put checkpoint in logger (like checkpoint)
 			this.paxosManager.getPaxosLogger().putCheckpointState(
-					this.getPaxosID(), this.version, this.paxosManager.getStringNodesFromIntArray(groupMembers),
+					this.getPaxosID(), this.version,
+					this.paxosManager.getStringNodesFromIntArray(groupMembers),
 					statePacket.slotNumber, statePacket.ballot,
 					this.clientRequestHandler.getState(getPaxosID()),
 					this.paxosState.getGCSlot());
@@ -1206,11 +1216,16 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				int cpSlot = this.paxosState.getSlot() - 1;
 				if (this.paxosState.caughtUp() && this.coordinator.caughtUp()) {
 					String pid = this.getPaxosID();
-					this.paxosManager.getPaxosLogger().putCheckpointState(pid,
-							this.getVersion(), this.paxosManager.getStringNodesFromIntArray(this.groupMembers), cpSlot,
-							this.paxosState.getBallot(),
-							this.clientRequestHandler.getState(pid),
-							this.paxosState.getGCSlot());
+					this.paxosManager
+							.getPaxosLogger()
+							.putCheckpointState(
+									pid,
+									this.getVersion(),
+									this.paxosManager
+											.getStringNodesFromIntArray(this.groupMembers),
+									cpSlot, this.paxosState.getBallot(),
+									this.clientRequestHandler.getState(pid),
+									this.paxosState.getGCSlot());
 					checkpointed = true;
 					log.log(Level.INFO,
 							"{0} forcing checkpoint at slot {1}; garbage collected "
@@ -1239,11 +1254,15 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	protected synchronized boolean forceCheckpoint() {
 		String pid = this.getPaxosID();
 		int cpSlot = this.paxosState.getSlot() - 1;
-		this.paxosManager.getPaxosLogger().putCheckpointState(pid,
-				this.getVersion(), this.paxosManager.getStringNodesFromIntArray(this.groupMembers), cpSlot,
-				this.paxosState.getBallot(),
-				this.clientRequestHandler.getState(pid),
-				this.paxosState.getGCSlot());
+		this.paxosManager.getPaxosLogger()
+				.putCheckpointState(
+						pid,
+						this.getVersion(),
+						this.paxosManager
+								.getStringNodesFromIntArray(this.groupMembers),
+						cpSlot, this.paxosState.getBallot(),
+						this.clientRequestHandler.getState(pid),
+						this.paxosState.getGCSlot());
 		// need to acquire these without locking
 		int gcSlot = this.paxosState.getGCSlot();
 		int maxCommittedSlot = this.paxosState.getMaxCommittedSlot();

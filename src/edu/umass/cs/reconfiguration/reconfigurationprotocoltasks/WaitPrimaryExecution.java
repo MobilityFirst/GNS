@@ -96,6 +96,10 @@ public class WaitPrimaryExecution<NodeIDType> extends
 	public GenericMessagingTask<NodeIDType, ?>[] restart() {
 		if (this.amObviated())
 			ProtocolExecutor.cancel(this);
+		log.log(Level.WARNING,
+				"{0} starting up SECONDARY task for {1}; this is needed only under failures, "
+						+ "high congestion, or node config changes",
+				new Object[] { this, this.startEpoch.getSummary() });
 		return super.restart();
 	}
 

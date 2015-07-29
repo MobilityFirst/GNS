@@ -20,6 +20,7 @@ package edu.umass.cs.reconfiguration.reconfigurationpackets;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.InterfaceSummarizableRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
@@ -38,7 +39,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 @SuppressWarnings("javadoc")
 public class RCRecordRequest<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> implements
-		InterfaceReplicableRequest, InterfaceReconfigurableRequest {
+		InterfaceReplicableRequest, InterfaceReconfigurableRequest, InterfaceSummarizableRequest {
 
 	private static enum Keys {
 		REQUEST_TYPE, START_EPOCH
@@ -193,6 +194,7 @@ public class RCRecordRequest<NodeIDType> extends
 		return rType.toString().replaceAll("RECONFIGURATION_", "");
 	}
 
+	@Override
 	public String getSummary() {
 		return this.getServiceName()
 				+ ":"
