@@ -73,7 +73,7 @@ public class Select {
     if (packet.getNsQueryId() != -1) { // this is how we tell if it has been processed by the NS
       handleSelectRequestFromNS(incomingJSON, replica);
     } else {
-      handleSelectRequestFromLNS(incomingJSON, replica);
+      handleSelectRequestFromCCP(incomingJSON, replica);
     }
   }
 
@@ -87,7 +87,7 @@ public class Select {
    * @throws UnknownHostException
    * @throws FailedDBOperationException
    */
-  private static void handleSelectRequestFromLNS(JSONObject incomingJSON, GnsApplicationInterface app) throws JSONException, UnknownHostException, FailedDBOperationException {
+  private static void handleSelectRequestFromCCP(JSONObject incomingJSON, GnsApplicationInterface app) throws JSONException, UnknownHostException, FailedDBOperationException {
     SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
     // special case handling of the GROUP_LOOK operation
     // If sufficient time hasn't passed we just send the current value back
@@ -105,7 +105,7 @@ public class Select {
             GNS.getLogger().info("GROUP_LOOKUP Request: Time has not elapsed. Returning current group value for " + packet.getGuid());
           }
           ResultValue result = NSGroupAccess.lookupMembers(packet.getGuid(), true, app, packet.getCppAddress());
-          sendReponsePacketToLNS(packet.getId(), packet.getCcpQueryId(), packet.getCppAddress(), result.toStringSet(), app);
+          sendReponsePacketToCCP(packet.getId(), packet.getCcpQueryId(), packet.getCppAddress(), result.toStringSet(), app);
           return;
         }
       } else {
@@ -116,7 +116,8 @@ public class Select {
     // only if enough time has elapsed since last lookup (see above)
     // OR in the anamolous situation where the update info could not be found
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().info(packet.getSelectOperation().toString() + " Request: Forwarding request for " + packet.getGuid());
+      GNS.getLogger().info(packet.getSelectOperation().toString() + 
+              " Request: Forwarding request for " + packet.getGuid() != null ? packet.getGuid() : "non-guid select");
     }
     // If it's not a group lookup or is but enough time has passed we do the usual thing
     // and send the request out to all the servers. We'll receive a response sent on the flipside.
@@ -132,7 +133,7 @@ public class Select {
     packet.setNsQueryId(queryId); // Note: this also tells handleSelectRequest that it should go to NS now
     JSONObject outgoingJSON = packet.toJSONObject();
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("NS" + app.getNodeID().toString() + " sending select " 
+      GNS.getLogger().info("NS" + app.getNodeID().toString() + " sending select " 
               + outgoingJSON + " to " + Util.setOfNodeIdToString(serverIds));
     }
     try {
@@ -156,7 +157,7 @@ public class Select {
    */
   private static void handleSelectRequestFromNS(JSONObject incomingJSON, GnsApplicationInterface app) throws JSONException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("NS " + app.getNodeID().toString() + " recvd QueryRequest: " + incomingJSON);
+      GNS.getLogger().info("NS " + app.getNodeID().toString() + " recvd QueryRequest: " + incomingJSON);
     }
     SelectRequestPacket request = new SelectRequestPacket<String>(incomingJSON, app.getGNSNodeConfig());
     try {
@@ -165,7 +166,7 @@ public class Select {
       SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForRecordsOnly(request.getId(), request.getCppAddress(),
               request.getCcpQueryId(), request.getNsQueryId(), app.getNodeID(), jsonRecords);
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().fine("NS " + app.getNodeID().toString() + " sending back " 
+        GNS.getLogger().info("NS " + app.getNodeID().toString() + " sending back " 
                 + jsonRecords.length() + " records");
       }
       // and send them back to the originating NS
@@ -220,22 +221,23 @@ public class Select {
     }
   }
 
-  private static void sendReponsePacketToLNS(int id, int lnsQueryId, InetSocketAddress address, Set<String> guids,
+  private static void sendReponsePacketToCCP(int id, int lnsQueryId, InetSocketAddress address, Set<String> guids,
           GnsApplicationInterface app) throws JSONException {
     SelectResponsePacket response = SelectResponsePacket.makeSuccessPacketForGuidsOnly(id, null, lnsQueryId,
             -1, null, new JSONArray(guids));
-    try {
-      app.sendToClient(address, response.toJSONObject());
-    } catch (IOException f) {
-      GNS.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
-    }
+    //try {
+      app.getClientCommandProcessor().injectPacketIntoCCPQueue(response.toJSONObject());
+      //app.sendToClient(address, response.toJSONObject());
+//    } catch (IOException f) {
+//      GNS.getLogger().severe("Unable to send success SelectResponsePacket: " + f);
+//    }
   }
 
   private static void handledAllServersResponded(SelectResponsePacket packet, NSSelectInfo info, GnsApplicationInterface replica) throws JSONException {
     // If all the servers have sent us a response we're done.
     Set<String> guids = extractGuidsFromRecords(info.getResponsesAsSet());
     // Pull the records out of the info structure and send a response back to the LNS
-    sendReponsePacketToLNS(packet.getId(), packet.getLnsQueryId(), packet.getCppAddress(), guids, replica);
+    sendReponsePacketToCCP(packet.getId(), packet.getLnsQueryId(), packet.getCppAddress(), guids, replica);
     // we're done processing this select query
     queriesInProgress.remove(packet.getNsQueryId());
     // Now we update any group guid stuff
