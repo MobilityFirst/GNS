@@ -34,8 +34,8 @@ public class SQL {
 	 * reconfiguration. Embedded derby can take any user name and password, so
 	 * the values here should be for mysql or other DBs supported here.
 	 */
-	private static final String USER = "user";
-	private static final String PASSWORD = "password";
+	private static final String USER = "root";
+	private static final String PASSWORD = "gnsRoot";
 
 	/**
 	 *
@@ -127,7 +127,7 @@ public class SQL {
 		case EMBEDDED_DERBY:
 			return "jdbc:derby:";
 		case MYSQL:
-			return "jdbc:mysql://date.cs.umass.edu/";
+			return "jdbc:mysql://localhost/";
 		}
 		Util.suicide("SQL type not recognized");
 		return null;

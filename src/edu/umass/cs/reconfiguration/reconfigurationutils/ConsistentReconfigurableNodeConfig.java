@@ -294,11 +294,25 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		return isa;
 	}
 	/**
+         * Returns the socket address of the public host corresponding to this id.
+         * 
 	 * @param id
 	 * @return Socket address corresponding to node {@code id}.
 	 */
 	public InetSocketAddress getNodeSocketAddress(NodeIDType id) {
 		InetAddress ip = this.nodeConfig.getNodeAddress(id);
+		return (ip!=null ? new InetSocketAddress(ip, this.nodeConfig.getNodePort(id)) : null);
+	}
+        
+        /**
+         * Returns the bindable socket address of the public host corresponding to this id.
+         * This code be a private address in the case of where we are inside a NAT.
+         * 
+         * @param id
+         * @return 
+         */
+        public InetSocketAddress getBindSocketAddress(NodeIDType id) {
+		InetAddress ip = this.nodeConfig.getBindAddress(id);
 		return (ip!=null ? new InetSocketAddress(ip, this.nodeConfig.getNodePort(id)) : null);
 	}
 

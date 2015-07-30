@@ -11,7 +11,6 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientReques
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.NRState;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.AddRemove;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
@@ -112,7 +111,10 @@ public class CreateDelete {
 
   public static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, EnhancedClientRequestHandlerInterface handler) {
     SendReconfiguratorPacketTask task = new SendReconfiguratorPacketTask(name, packet, handler);
-    handler.getExecutorService().scheduleAtFixedRate(task, 0, AppReconfigurableNodeOptions.queryTimeout, TimeUnit.MILLISECONDS);
+    handler.getExecutorService().scheduleAtFixedRate(task, 0, 
+            //AppReconfigurableNodeOptions.queryTimeout,
+            5000,
+            TimeUnit.MILLISECONDS);
   }
 
 }

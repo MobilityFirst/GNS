@@ -84,6 +84,7 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
     }
   }
   
+  @Override
   public InetAddress getBindAddress(String id) {
     if (super.nodeExists(id)) {
       return super.getBindAddress(id);

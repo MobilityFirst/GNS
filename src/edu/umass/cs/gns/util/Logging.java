@@ -20,6 +20,12 @@ public class Logging {
   public static Level DEFAULTCONSOLELEVEL = Level.INFO;
   public static Level DEFAULTFILELEVEL = Level.FINE;
   public static String DEFAULTLOGFILENAME = "log" + System.getProperty("file.separator") + "gnrs_log.xml";
+  
+  private static ConsoleHandler consoleHandler;
+
+  public static ConsoleHandler getConsoleHandler() {
+    return consoleHandler;
+  }
 
   /**
    * Sets up the logger using default values.
@@ -67,11 +73,11 @@ public class Logging {
     logger.setUseParentHandlers(false);
     
     try {
-      Handler ch = new ConsoleHandler();
+      consoleHandler = new ConsoleHandler();
       // Use our one-line formatter
-      ch.setFormatter(new LogFormatter());
-      ch.setLevel(consoleLevel);
-      logger.addHandler(ch);
+      consoleHandler.setFormatter(new LogFormatter());
+      consoleHandler.setLevel(consoleLevel);
+      logger.addHandler(consoleHandler);
     } catch (Exception e) {
       logger.warning("Unable to attach ConsoleHandler to logger!");
       e.printStackTrace();

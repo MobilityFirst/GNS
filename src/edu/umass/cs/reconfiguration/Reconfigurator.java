@@ -1247,7 +1247,7 @@ public class Reconfigurator<NodeIDType> implements
 			NodeIDType randomResponsibleRC = (NodeIDType) (responsibleRCs
 					.toArray()[(int) (Math.random() * responsibleRCs.size())]);
 			request = request.setForwader(this.consistentNodeConfig
-					.getNodeSocketAddress(getMyID()));
+					.getBindSocketAddress(getMyID()));
 			log.log(Level.INFO,
 					"{0} forwarding client request {1} to reconfigurator {2}",
 					new Object[] { this, request.getSummary(),
@@ -1305,11 +1305,18 @@ public class Reconfigurator<NodeIDType> implements
 	 */
 	private InterfaceAddressMessenger<JSONObject> getMessenger(
 			InetSocketAddress receiver) {
-		if (receiver.equals(this.consistentNodeConfig.getNodeSocketAddress(this
-				.getMyID())))
+		if (receiver.equals(this.consistentNodeConfig.getBindSocketAddress(this
+				.getMyID()))) {
+                  log.log(Level.FINE, "{0} using messenger for {1}; bindAddress is {2}", 
+                          new Object[] {this, receiver, this.consistentNodeConfig.getBindSocketAddress(this
+				.getMyID())});
 			return this.messenger;
-		else
+                } else {
+                  log.log(Level.FINE, "{0} using clientMessenger for {1}; bindAddress is {2}", 
+                          new Object[] {this, receiver, this.consistentNodeConfig.getBindSocketAddress(this
+				.getMyID())});
 			return this.getClientMessenger();
+                }
 	}
 
 	/*
@@ -1405,7 +1412,7 @@ public class Reconfigurator<NodeIDType> implements
 	private InetSocketAddress getQuerier(RCRecordRequest<NodeIDType> rcRecReq) {
 		InetSocketAddress forwarder = rcRecReq.startEpoch.getForwarder();
 		InetSocketAddress me = this.consistentNodeConfig
-				.getNodeSocketAddress(getMyID());
+				.getBindSocketAddress(getMyID());
 		// if there is a forwarder that is not me, relay back
 		if (forwarder != null && !forwarder.equals(me))
 			return forwarder;
@@ -1417,7 +1424,7 @@ public class Reconfigurator<NodeIDType> implements
 	private InetSocketAddress getQuerier(ClientReconfigurationPacket response) {
 		InetSocketAddress forwarder = response.getForwader();
 		InetSocketAddress me = this.consistentNodeConfig
-				.getNodeSocketAddress(getMyID());
+				.getBindSocketAddress(getMyID());
 		// if there is a forwarder that is not me, relay back
 		if (forwarder != null && !forwarder.equals(me)) {
 			return forwarder;

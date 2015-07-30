@@ -10,6 +10,7 @@ package edu.umass.cs.gns.newApp;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.util.Logging;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
@@ -170,6 +171,9 @@ public class AppReconfigurableNodeOptions {
     if (allValues == null) {
       return;
     }
+    
+    // make sure this has been initialized
+    GNS.getLogger();
 
     if (!allValues.containsKey(DISABLE_SSL)) {
       disableSSL = false;
@@ -199,9 +203,14 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG_RECON, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********");
       // For backwards compatibility until Config goes away
-      Reconfigurator.getLogger().setLevel(Level.INFO);
+      
+      ConsoleHandler handler = Logging.getConsoleHandler();
+      handler.setLevel(Level.FINEST);
+      Logger log = Reconfigurator.getLogger();
+      log.addHandler(handler);
+      log.setLevel(Level.FINER);
     } else {
-      Reconfigurator.getLogger().setLevel(Level.WARNING);
+      Reconfigurator.getLogger().setLevel(Level.INFO);
     }
 
     if (isOptionTrue(DEBUG_PAXOS, allValues)) {
@@ -215,11 +224,11 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG_NIO, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE NIOTransport *********");
       //For backwards compatibility until Config goes away
-      ConsoleHandler handler = new ConsoleHandler();
+      ConsoleHandler handler = Logging.getConsoleHandler();
       handler.setLevel(Level.FINEST);
       Logger log = NIOTransport.getLogger();
       log.addHandler(handler);
-      NIOTransport.getLogger().setLevel(Level.INFO);
+      log.setLevel(Level.INFO);
     } else {
       NIOTransport.getLogger().setLevel(Level.WARNING);
     }
