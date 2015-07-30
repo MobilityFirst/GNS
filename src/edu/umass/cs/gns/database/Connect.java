@@ -17,8 +17,8 @@ public class Connect {
   private static final String local_db_pass = "toorbar";
   // move these into properties
   private static final String remote_db_ip = "mysql.westy.org";
-  private static final String remote_db_user = "mfroot";
-  private static final String remote_db_pass = "toorbar";
+  private static final String remote_db_user = "******";
+  private static final String remote_db_pass = "******";
   // the name of the database.
   private static final String local_db_name = "gnrs";
   private static final String remote_db_name = "gnrs";

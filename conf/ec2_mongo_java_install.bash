@@ -19,3 +19,7 @@ service mongod start
 # fix the sudoers so ssh sudo works all the time
 chmod ug+rw /etc/sudoers
 sed -i 's/requiretty/!requiretty/' /etc/sudoers
+# install and start mysql
+yum --quiet --assumeyes install mysql-server
+service mysqld start
+mysqladmin -u root password 'gnsRoot'
