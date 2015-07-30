@@ -93,8 +93,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * DB related parameters to be changed to use a different database service.
 	 * Refer also to constants in paxosutil.SQL to update any constants.
 	 */
-	//private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY; // SQL.SQLType.MYSQL;
-        private static final SQL.SQLType SQL_TYPE = SQL.SQLType.MYSQL;
+	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY; // SQL.SQLType.MYSQL;
+        //private static final SQL.SQLType SQL_TYPE = SQL.SQLType.MYSQL;
 	private static final String DATABASE = "paxos_logs";
 	/* ************ End of DB service related parameters ************** */
 
