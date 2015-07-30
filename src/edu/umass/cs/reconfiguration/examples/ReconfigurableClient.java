@@ -216,7 +216,7 @@ public class ReconfigurableClient {
 						log.log(Level.INFO,
 								"Received node config change {0} {1}{2}",
 								new Object[] {
-										rcnc.isFailed() ? "ERROR"
+										rcnc.isFailed() ? "ERROR: " + rcnc.getMessage()
 												: "confirmation",
 										(rcnc.newlyAddedNodes != null ? "; added"
 												+ rcnc.newlyAddedNodes

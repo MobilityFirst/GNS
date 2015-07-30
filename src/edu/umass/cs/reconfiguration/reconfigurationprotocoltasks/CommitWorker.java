@@ -26,10 +26,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -301,7 +303,8 @@ public class CommitWorker<NodeIDType> implements Runnable {
 
 	// ///////////////////////////////////////////////////////////////
 
-	private final long RESTART_PERIOD = 2000;
+	private final long RESTART_PERIOD = Config
+			.getGlobalLong(ReconfigurationConfig.RC.COMMIT_WORKER_RESTART_PERIOD);
 
 	private final AbstractReplicaCoordinator<?> coordinator;
 

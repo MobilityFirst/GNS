@@ -99,7 +99,12 @@ public class ReconfigurationConfig {
 		 * True if further reconfigurations can progress without waiting for the
 		 * previous epoch final state to be dropped cleanly.
 		 */
-		AGGRESSIVE_RECONFIGURATIONS(true), ;
+		AGGRESSIVE_RECONFIGURATIONS(true), 
+		
+		/**
+		 * Default retransmission timeout for coordinated requests in the reconfiguration protocol.
+		 */
+		COMMIT_WORKER_RESTART_PERIOD(2000*20);
 
 		final Object defaultValue;
 

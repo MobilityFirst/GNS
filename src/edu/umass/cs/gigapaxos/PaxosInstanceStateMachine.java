@@ -1139,13 +1139,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			int retries = 0;
 			do {
 				try {
-					InterfaceRequest decision = getInterfaceRequest(app,
+					InterfaceRequest request = getInterfaceRequest(app,
 							requestValue);
-					if (decision instanceof InterfaceSummarizableRequest)
+					if (request instanceof InterfaceSummarizableRequest)
 						log.log(Level.FINE,
 								"{0} executing (in-order) decision {1}",
 								new Object[] { pism,
-										(InterfaceSummarizableRequest) decision });
+										((InterfaceSummarizableRequest) request).getSummary() });
 					executed = app.handleRequest(
 							getInterfaceRequest(app, requestValue),
 							doNotReplyToClient);
@@ -1191,7 +1191,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					statePacket.slotNumber, statePacket.ballot,
 					this.clientRequestHandler.getState(getPaxosID()),
 					this.paxosState.getGCSlot());
-			log.log(Level.FINE,
+			log.log(statePacket.slotNumber > 0 ? Level.INFO : Level.FINE,
 					"{0} inserted {1} checkpoint through handleCheckpoint; next slot = {2}",
 					new Object[] { this,
 							statePacket.slotNumber == 0 ? "initial state" : "",
@@ -1700,7 +1700,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	private MessagingTask handleSyncDecisionsPacket(
 			SyncDecisionsPacket syncReply) throws JSONException {
 		int minMissingSlot = syncReply.missingSlotNumbers.get(0);
-		log.log(Level.INFO, "{0} handling sync decisions request {1}",
+		log.log(Level.FINE, "{0} handling sync decisions request {1}",
 				new Object[] { this, syncReply.getSummary() });
 
 		// try to get checkpoint
@@ -1749,12 +1749,12 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 								.toArray()));
 		if (unicasts != null)
 			log.log(Level.INFO,
-					"{0} sending {1} missing decisions to node {2}",
-					new Object[] { this, unicasts.msgs.length, syncReply.nodeID });
+					"{0} sending {1} missing decision(s) to node {2} in response to {3}",
+					new Object[] { this, unicasts.msgs.length, syncReply.nodeID, syncReply.getSummary() });
 		if (checkpoint != null)
 			log.log(Level.INFO,
-					"{0} sending checkpoint for slot {1} to node {2}",
-					new Object[] { this, minMissingSlot - 1, syncReply.nodeID });
+					"{0} sending checkpoint for slot {1} to node {2} in response to {3}",
+					new Object[] { this, minMissingSlot - 1, syncReply.nodeID, syncReply.getSummary() });
 
 		// combine checkpoint and missing decisions in unicasts
 		MessagingTask mtask =
@@ -1767,7 +1767,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				(checkpoint != null && !checkpoint.isEmpty()) ? checkpoint :
 				// unicasts (possibly also empty or null)
 						unicasts;
-		log.info(this + " sending mtask " + mtask);
+		log.log(Level.FINE, "{0} sending mtask: ", new Object[] { this, mtask });
 		return mtask;
 	}
 

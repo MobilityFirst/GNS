@@ -89,7 +89,7 @@ public class WaitPrimaryExecution<NodeIDType> extends
 		log.log(Level.INFO,
 				"{0} starting to wait for primary to complete reconfiguration",
 				new Object[] { this.refreshKey() });
-		return null;
+		return this.restartCount > 0 ? super.start() : null;
 	}
 
 	@Override

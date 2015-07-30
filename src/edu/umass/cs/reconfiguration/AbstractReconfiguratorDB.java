@@ -158,8 +158,9 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	 * Otherwise, we may not even get started with finishPendingReconfigurations
 	 * that in turn may be required for unblocking the NC complete.
 	 */
-	private boolean uglyRecoveryHack(final 
-			BasicReconfigurationPacket<NodeIDType> rcPacket, boolean recovering) {
+	private boolean uglyRecoveryHack(
+			final BasicReconfigurationPacket<NodeIDType> rcPacket,
+			boolean recovering) {
 		if (recovering
 				&& rcPacket.getServiceName().equals(
 						RecordNames.NODE_CONFIG.toString())) {
