@@ -20,8 +20,8 @@ import org.json.JSONObject;
  */
 public class CommandValueReturnPacket extends BasicPacket implements InterfaceRequest {
 
-  private final static String CLIENTREQUESTID = "reqID";
-  private final static String CCPREQUESTID = "CCPreqID";
+  private final static String CLIENTREQUESTID = "clientreqID";
+  private final static String LNSREQUESTID = "LNSreqID";
   private final static String SERVICENAME = "srvceName";
   private final static String RETURNVALUE = "returnValue";
   private final static String ERRORCODE = "errorCode";
@@ -44,7 +44,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   /**
    * LNS identifier used by the LNS.
    */
-  private final int CCPRequestId;
+  private final int LNSRequestId;
   /**
    * The returned value.
    */
@@ -94,7 +94,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
           int requestRate, long cppProccessingTime) {
     this.setType(PacketType.COMMAND_RETURN_VALUE);
     this.clientRequestId = requestId;
-    this.CCPRequestId = CCPRequestId;
+    this.LNSRequestId = CCPRequestId;
     this.serviceName = serviceName;
     this.returnValue = response.getReturnValue();
     this.errorCode = response.getErrorCode();
@@ -115,10 +115,10 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   public CommandValueReturnPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.clientRequestId = json.getInt(CLIENTREQUESTID);
-    if (json.has(CCPREQUESTID)) {
-      this.CCPRequestId = json.getInt(CCPREQUESTID);
+    if (json.has(LNSREQUESTID)) {
+      this.LNSRequestId = json.getInt(LNSREQUESTID);
     } else {
-      this.CCPRequestId = -1;
+      this.LNSRequestId = -1;
     }
     this.serviceName = json.getString(SERVICENAME);
     this.returnValue = json.getString(RETURNVALUE);
@@ -148,8 +148,8 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     JSONObject json = new JSONObject();
     Packet.putPacketType(json, getType());
     json.put(CLIENTREQUESTID, this.clientRequestId);
-    if (this.CCPRequestId != -1) {
-      json.put(CCPREQUESTID, this.CCPRequestId);
+    if (this.LNSRequestId != -1) {
+      json.put(LNSREQUESTID, this.LNSRequestId);
     }
     json.put(SERVICENAME, this.serviceName);
     json.put(RETURNVALUE, returnValue);
@@ -185,7 +185,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   }
 
   public int getLNSRequestId() {
-    return CCPRequestId;
+    return LNSRequestId;
   }
 
   public String getReturnValue() {

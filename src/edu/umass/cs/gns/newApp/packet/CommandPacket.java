@@ -1,9 +1,7 @@
 package edu.umass.cs.gns.newApp.packet;
 
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
 import edu.umass.cs.gns.newApp.packet.Packet.PacketType;
-import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 
@@ -16,7 +14,7 @@ import org.json.JSONObject;
  */
 public class CommandPacket extends BasicPacket implements InterfaceReplicableRequest {
 
-  private final static String CLIENTREQUESTID = "reqID";
+  private final static String CLIENTREQUESTID = "clientreqID";
   private final static String LNSREQUESTID = "LNSreqID";
   private final static String SENDERADDRESS = MessageNIOTransport.SNDR_IP_FIELD;
   private final static String SENDERPORT = MessageNIOTransport.SNDR_PORT_FIELD;
