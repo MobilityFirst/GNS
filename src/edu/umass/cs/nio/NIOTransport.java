@@ -25,6 +25,7 @@ import edu.umass.cs.utils.Stringer;
 import edu.umass.cs.utils.Util;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.BufferOverflowException;
@@ -440,7 +441,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private static boolean USE_PREAMBLE = true;
 	protected static int HEADER_SIZE = USE_PREAMBLE ? 8 : 4;
 
-	private static final long SELECT_TIMEOUT = 1000;
+	private static final long SELECT_TIMEOUT = 2000;
 
 	public void run() {
 		// to not double-start, but check not thread-safe
@@ -537,9 +538,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					this.accept(key);
 				if (key.isValid() && key.isConnectable())
 					this.finishConnection(key);
-				if (key.isValid() && key.isWritable())
+				if (key.isValid() && key.isWritable()) 
 					this.write(key);
-				if (key.isValid() && key.isReadable())
+				if (key.isValid() && key.isReadable()) 
 					this.read(key);
 			} catch (IOException | CancelledKeyException e) {
 				log.warning("Node"
@@ -602,7 +603,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * read whatever is available and send it off to DataProcessingWorker (that
 	 * has to deal with the complexity of parsing a byte stream).
 	 */
-	private static final int MAX_PAYLOAD_SIZE = 1024 * 1024;
+	private static final int MAX_PAYLOAD_SIZE = 4 * 1024 * 1024;
 
 	// used also by SSLDataProcessingWorker
 	protected class AlternatingByteBuffer {
@@ -651,8 +652,11 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// read into body if header completely read, else read into header
 		ByteBuffer bbuf = (abbuf.headerBuf.remaining() == 0 ? abbuf.bodyBuf
 				: abbuf.headerBuf);
-		if (socketChannel.read(bbuf) < 0)
+		// end-of-stream => cleanup
+		if (socketChannel.read(bbuf) < 0) {
+			cleanup(key);
 			return;
+		}
 
 		// parse header for length if complete header read
 		if (bbuf == abbuf.headerBuf && !bbuf.hasRemaining()) {
@@ -1220,15 +1224,25 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 		InetSocketAddress isa;
 
+		// use sockAddr if null ID
 		if (this.myID == null)
 			isa = mySockAddr;
+		// else if ID is socket address, just use it
 		else if (this.myID instanceof InetSocketAddress)
 			isa = (InetSocketAddress) this.myID;
+		// else get bind address from nodeConfig
 		else
 			isa = new InetSocketAddress(
 					this.nodeConfig.getBindAddress(this.myID),
 					this.nodeConfig.getNodePort(this.myID));
-		serverChannel.socket().bind(isa);
+		
+		try {
+			serverChannel.socket().bind(isa);
+		} catch (BindException be) {
+			// try wildcard IP
+			serverChannel.socket().bind(new InetSocketAddress(isa.getPort()));
+		}
+		
 		if (isSSL())
 			// only for logging purposes
 			((SSLDataProcessingWorker) this.worker).setMyID(myID != null ? myID

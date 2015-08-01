@@ -26,10 +26,6 @@ import org.json.JSONObject;
  */
 @SuppressWarnings("javadoc")
 public final class AcceptPacket extends PValuePacket {
-	protected static enum Keys {
-		SENDER_NODE, MAJORITY_EXECUTED_SLOT
-	};
-
 	/**
 	 * Sender node ID. FIXME: should just be the same as the ballot coordinator.
 	 */
@@ -46,14 +42,14 @@ public final class AcceptPacket extends PValuePacket {
 		super(json);
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.ACCEPT); 
 		this.packetType = PaxosPacketType.ACCEPT;
-		this.sender = json.getInt(Keys.SENDER_NODE.toString());
-		this.paxosID = json.getString(PaxosPacket.PAXOS_ID);
+		this.sender = json.getInt(PaxosPacket.NodeIDKeys.SNDR.toString());
+		this.paxosID = json.getString(PaxosPacket.Keys.PID.toString());
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		json.put(Keys.SENDER_NODE.toString(), sender);
+		json.put(PaxosPacket.NodeIDKeys.SNDR.toString(), sender);
 		return json;
 	}
 

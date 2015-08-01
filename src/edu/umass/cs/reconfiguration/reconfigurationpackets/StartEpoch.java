@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -35,6 +35,13 @@ import edu.umass.cs.utils.Util;
 /**
  * @author V. Arun
  * @param <NodeIDType>
+ * 
+ *            FIXME: This class is increasingly under risk of becoming the
+ *            kitchen sink for every piece of information needed anywhere in the
+ *            reconfiguration protocol sequence. A better design may be to carry
+ *            the causal reconfiguration packet (create, delete, reconfigureRC,
+ *            etc.) here instead of carrying all fields in all startEpoch
+ *            packets.
  */
 public class StartEpoch<NodeIDType> extends
 		BasicReconfigurationPacket<NodeIDType> {
@@ -44,7 +51,7 @@ public class StartEpoch<NodeIDType> extends
 		//
 		PREV_GROUP_NAME, NEWLY_ADDED_NODES, NODE_ID, SOCKET_ADDRESS, PREV_EPOCH,
 		//
-		IS_MERGE, INIT_TIME, MERGEES, FIRST_PREV_EPOCH_CANDIDATE
+		IS_MERGE, INIT_TIME, MERGEES, FIRST_PREV_EPOCH_CANDIDATE, NAME_STATE_ARRAY
 	};
 
 	/**
@@ -108,6 +115,8 @@ public class StartEpoch<NodeIDType> extends
 
 	private NodeIDType firstPrevEpochCandidate = null;
 
+	private final Map<String, String> nameStates;
+
 	/**
 	 * @param initiator
 	 * @param serviceName
@@ -120,7 +129,7 @@ public class StartEpoch<NodeIDType> extends
 			int epochNumber, Set<NodeIDType> curNodes,
 			Set<NodeIDType> prevNodes, Set<String> mergees) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
-				false, -1, null, null, null, null, null, mergees);
+				false, -1, null, null, null, null, null, null, mergees);
 	}
 
 	/**
@@ -138,7 +147,8 @@ public class StartEpoch<NodeIDType> extends
 			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
 			int prevEpoch) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
-				prevGroupName, isMerge, prevEpoch, null, null, null, null, null);
+				prevGroupName, isMerge, prevEpoch, null, null, null, null,
+				null, null);
 	}
 
 	/**
@@ -148,18 +158,21 @@ public class StartEpoch<NodeIDType> extends
 	 * @param curNodes
 	 * @param prevNodes
 	 * @param creator
-	 * @param receiver 
+	 * @param receiver
 	 * @param forwarder
 	 * @param initialState
+	 * @param nameStates
 	 * @param newlyAddedNodes
 	 */
 	public StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
-			Set<NodeIDType> prevNodes, InetSocketAddress creator, InetSocketAddress receiver, 
-			InetSocketAddress forwarder, String initialState,
+			Set<NodeIDType> prevNodes, InetSocketAddress creator,
+			InetSocketAddress receiver, InetSocketAddress forwarder,
+			String initialState, Map<String, String> nameStates,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes, null,
-				false, -1, creator, receiver, forwarder, initialState, newlyAddedNodes);
+				false, -1, creator, receiver, forwarder, initialState,
+				nameStates, newlyAddedNodes);
 	}
 
 	/**
@@ -172,8 +185,9 @@ public class StartEpoch<NodeIDType> extends
 		this(startEpoch.getInitiator(), startEpoch.getServiceName(), startEpoch
 				.getEpochNumber(), startEpoch.curEpochGroup,
 				startEpoch.prevEpochGroup, startEpoch.prevGroupName,
-				startEpoch.isMerge, startEpoch.prevEpoch, startEpoch.creator, startEpoch.receiver,
-				startEpoch.forwarder, initialState, startEpoch.newlyAddedNodes,
+				startEpoch.isMerge, startEpoch.prevEpoch, startEpoch.creator,
+				startEpoch.receiver, startEpoch.forwarder, initialState,
+				startEpoch.nameStates, startEpoch.newlyAddedNodes,
 				startEpoch.mergees, startEpoch.initTime);
 		this.firstPrevEpochCandidate = startEpoch.firstPrevEpochCandidate;
 	}
@@ -188,8 +202,9 @@ public class StartEpoch<NodeIDType> extends
 		this(initiator, startEpoch.getServiceName(), startEpoch
 				.getEpochNumber(), startEpoch.curEpochGroup,
 				startEpoch.prevEpochGroup, startEpoch.prevGroupName,
-				startEpoch.isMerge, startEpoch.prevEpoch, startEpoch.creator, startEpoch.receiver,
-				startEpoch.forwarder, startEpoch.initialState,
+				startEpoch.isMerge, startEpoch.prevEpoch, startEpoch.creator,
+				startEpoch.receiver, startEpoch.forwarder,
+				startEpoch.initialState, startEpoch.nameStates,
 				startEpoch.newlyAddedNodes, startEpoch.mergees,
 				startEpoch.initTime);
 		this.firstPrevEpochCandidate = startEpoch.firstPrevEpochCandidate;
@@ -198,12 +213,13 @@ public class StartEpoch<NodeIDType> extends
 	private StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
 			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
-			int prevEpoch, InetSocketAddress creator, InetSocketAddress receiver,
-			InetSocketAddress forwarder, String initialState,
+			int prevEpoch, InetSocketAddress creator,
+			InetSocketAddress receiver, InetSocketAddress forwarder,
+			String initialState, Map<String, String> nameStates,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
-				prevGroupName, isMerge, prevEpoch, creator, receiver, forwarder,
-				initialState, newlyAddedNodes, null);
+				prevGroupName, isMerge, prevEpoch, creator, receiver,
+				forwarder, initialState, nameStates, newlyAddedNodes, null);
 
 	}
 
@@ -223,21 +239,23 @@ public class StartEpoch<NodeIDType> extends
 	private StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
 			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
-			int prevEpoch, InetSocketAddress creator, InetSocketAddress receiver,
-			InetSocketAddress forwarder, String initialState,
+			int prevEpoch, InetSocketAddress creator,
+			InetSocketAddress receiver, InetSocketAddress forwarder,
+			String initialState, Map<String, String> nameStates,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes,
 			Set<String> mergees) {
 		this(initiator, serviceName, epochNumber, curNodes, prevNodes,
-				prevGroupName, isMerge, prevEpoch, creator, receiver, forwarder,
-				initialState, newlyAddedNodes, mergees, System
-						.currentTimeMillis());
+				prevGroupName, isMerge, prevEpoch, creator, receiver,
+				forwarder, initialState, nameStates, newlyAddedNodes, mergees,
+				System.currentTimeMillis());
 	}
 
 	private StartEpoch(NodeIDType initiator, String serviceName,
 			int epochNumber, Set<NodeIDType> curNodes,
 			Set<NodeIDType> prevNodes, String prevGroupName, boolean isMerge,
-			int prevEpoch, InetSocketAddress creator, InetSocketAddress receiver,
-			InetSocketAddress forwarder, String initialState,
+			int prevEpoch, InetSocketAddress creator,
+			InetSocketAddress receiver, InetSocketAddress forwarder,
+			String initialState, Map<String, String> nameStates,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes,
 			Set<String> mergees, long initTime) {
 		super(initiator, ReconfigurationPacket.PacketType.START_EPOCH,
@@ -254,6 +272,7 @@ public class StartEpoch<NodeIDType> extends
 		this.mergees = mergees;
 		this.forwarder = forwarder;
 		this.initTime = initTime;
+		this.nameStates = nameStates;
 	}
 
 	/**
@@ -298,12 +317,16 @@ public class StartEpoch<NodeIDType> extends
 		this.prevGroupName = (json.has(Keys.PREV_GROUP_NAME.toString()) ? json
 				.getString(Keys.PREV_GROUP_NAME.toString()) : null);
 		this.isMerge = json.optBoolean(Keys.IS_MERGE.toString());
+
+		// initialState and possibly nameStates if batched create
 		this.initialState = json.optString(Keys.INITIAL_STATE.toString(), null);
+		this.nameStates = CreateServiceName.getNameStateMap(json);
 
 		this.newlyAddedNodes = (json.has(Keys.NEWLY_ADDED_NODES.toString()) ? this
 				.arrayToMap(
 						json.getJSONArray(Keys.NEWLY_ADDED_NODES.toString()),
 						unstringer) : null);
+
 		this.prevEpoch = json.optInt(Keys.PREV_EPOCH.toString(), -1);
 		this.initTime = json.getLong(Keys.INIT_TIME.toString());
 		this.firstPrevEpochCandidate = json.has(Keys.FIRST_PREV_EPOCH_CANDIDATE
@@ -320,8 +343,9 @@ public class StartEpoch<NodeIDType> extends
 				this.toJSONArray(curEpochGroup));
 		json.put(Keys.MERGEES.toString(), new JSONArray(this.mergees));
 
-		if (initialState != null)
-			json.put(Keys.INITIAL_STATE.toString(), initialState);
+		json.putOpt(Keys.INITIAL_STATE.toString(), initialState);
+		json.putOpt(CreateServiceName.Keys.NAME_STATE_ARRAY.toString(),
+				CreateServiceName.getNameStateJSONArray(this.nameStates));
 
 		json.put(Keys.CREATOR.toString(), this.creator);
 		json.put(Keys.RECEIVER.toString(), this.receiver);
@@ -409,6 +433,13 @@ public class StartEpoch<NodeIDType> extends
 						.equals(this.getServiceName()) || (this
 						.getEpochNumber() == this.getPrevEpochNumber() + 1)));
 	}
+	
+	/**
+	 * @return True if this is a batched create request.
+	 */
+	public boolean isBatchedCreate() {
+		return this.isInitEpoch() && this.nameStates!=null && !this.nameStates.isEmpty();
+	}
 
 	/**
 	 * @return True if current epoch group is empty.
@@ -459,6 +490,13 @@ public class StartEpoch<NodeIDType> extends
 	 */
 	public String getInitialState() {
 		return initialState;
+	}
+	
+	/**
+	 * @return Name,state map for batched creates.
+	 */
+	public Map<String,String> getNameStates() {
+		return this.nameStates;
 	}
 
 	/**
@@ -600,7 +638,7 @@ public class StartEpoch<NodeIDType> extends
 	public InetSocketAddress getForwarder() {
 		return this.forwarder;
 	}
-	
+
 	/**
 	 * @return The socket address on which the initiating request was received.
 	 */

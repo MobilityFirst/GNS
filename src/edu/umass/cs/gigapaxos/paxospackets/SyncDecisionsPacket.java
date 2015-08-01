@@ -73,33 +73,30 @@ public final class SyncDecisionsPacket extends PaxosPacket {
 	public SyncDecisionsPacket(JSONObject json) throws JSONException {
 		super(json);
 		this.nodeID = json
-				.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
+				.getInt(PaxosPacket.NodeIDKeys.SNDR.toString());
 		this.maxDecisionSlot = json
-				.getInt(PaxosPacket.Keys.MAX_SLOT.toString());
-		if (json.has(PaxosPacket.Keys.MISSING.toString()))
+				.getInt(PaxosPacket.Keys.MAX_S.toString());
+		if (json.has(PaxosPacket.Keys.MISSS.toString()))
 			missingSlotNumbers = Util.JSONArrayToArrayListInteger(json
-					.getJSONArray(PaxosPacket.Keys.MISSING.toString()));
+					.getJSONArray(PaxosPacket.Keys.MISSS.toString()));
 		else
 			missingSlotNumbers = null;
 		this.missingTooMuch = json
-				.getBoolean(PaxosPacket.Keys.IS_MISSING_TOO_MUCH.toString());
+				.getBoolean(PaxosPacket.Keys.CP_TX.toString());
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.SYNC_DECISIONS || PaxosPacket
-				.getPaxosPacketType(json) == PaxosPacketType.CHECKPOINT_REQUEST); // coz
-																					// class
-																					// is
-																					// final
+				.getPaxosPacketType(json) == PaxosPacketType.CHECKPOINT_REQUEST); 
 		this.packetType = PaxosPacketType.SYNC_DECISIONS;
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(PaxosPacket.NodeIDKeys.SENDER_NODE.toString(), nodeID);
-		json.put(PaxosPacket.Keys.MAX_SLOT.toString(), maxDecisionSlot);
-		json.put(PaxosPacket.Keys.IS_MISSING_TOO_MUCH.toString(),
+		json.put(PaxosPacket.NodeIDKeys.SNDR.toString(), nodeID);
+		json.put(PaxosPacket.Keys.MAX_S.toString(), maxDecisionSlot);
+		json.put(PaxosPacket.Keys.CP_TX.toString(),
 				missingTooMuch);
 		if (missingSlotNumbers != null && missingSlotNumbers.size() > 0)
-			json.put(PaxosPacket.Keys.MISSING.toString(), new JSONArray(
+			json.put(PaxosPacket.Keys.MISSS.toString(), new JSONArray(
 					missingSlotNumbers));
 		return json;
 	}

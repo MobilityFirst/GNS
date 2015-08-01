@@ -82,7 +82,7 @@ public abstract class AbstractPaxosLogger {
 
 	protected AbstractPaxosLogger(int id, String logDir, Messenger<?> msgr) {
 		this.myID = id;
-		logDirectory = (logDir == null ? "." : logDir) + "/";
+		logDirectory = (logDir == null ? SQLPaxosLogger.LOG_DIRECTORY : logDir) + "/";
 		this.messenger = msgr;
 		(this.batchLogger = new BatchedLogger(
 				new ArrayList<LogMessagingTask>(), this, this.messenger))

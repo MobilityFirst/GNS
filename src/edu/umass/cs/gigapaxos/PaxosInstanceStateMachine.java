@@ -373,7 +373,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		if (this.paxosState.isStopped())
 			return;
 		// every packet here must have a version, so we don't check has()
-		if ((msg.getInt(PaxosPacket.PAXOS_VERSION)) != this.getVersion())
+		if ((msg.getInt(PaxosPacket.Keys.PV.toString())) != this.getVersion())
 			return;
 		if (TESTPaxosConfig.isCrashed(this.getMyID()))
 			return; // Tester says I have crashed
@@ -399,7 +399,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			log.log(Level.FINER,
 					"{0} received a no_type poke {1};",
 					new Object[] { this,
-							msg.getString(PaxosPacket.SYNC_MODE.toString()) });
+							msg.getString(PaxosPacket.Keys.SYNCM.toString()) });
 
 		MessagingTask[] mtasks = new MessagingTask[2];
 		/*
@@ -467,7 +467,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			// sync if needed on poke
 			mtasks[0] = (mtasks[0] != null) ? mtasks[0] : this
 					.fixLongDecisionGaps(null, SyncMode.valueOf(msg
-							.getString(PaxosPacket.SYNC_MODE)));
+							.getString(PaxosPacket.Keys.SYNCM.toString())));
 
 			break;
 		default:
@@ -652,11 +652,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	protected void poke(boolean forceSync) {
 		try {
 			JSONObject msg = new JSONObject();
-			msg.put(PaxosPacket.PAXOS_ID, this.getPaxosID());
-			msg.put(PaxosPacket.PAXOS_VERSION, this.getVersion());
-			msg.put(PaxosPacket.PAXOS_PACKET_TYPE,
+			msg.put(PaxosPacket.Keys.PID.toString(), this.getPaxosID());
+			msg.put(PaxosPacket.Keys.PV.toString(), this.getVersion());
+			msg.put(PaxosPacket.Keys.PPT.toString(),
 					PaxosPacketType.NO_TYPE.getInt());
-			msg.put(PaxosPacket.SYNC_MODE,
+			msg.put(PaxosPacket.Keys.SYNCM.toString(),
 					forceSync ? SyncMode.FORCE_SYNC.toString()
 							: SyncMode.SYNC_TO_PAUSE.toString());
 			log.log(Level.FINE, "{0} being poked", new Object[] { this });
@@ -693,14 +693,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 */
 	private MessagingTask handleProposal(ProposalPacket proposal)
 			throws JSONException {
-		MessagingTask mtask = null; // could be multicast or unicast to
-									// coordinator.
+		// could be multicast to all or unicast to coordinator
+		MessagingTask mtask = null; 
 		assert (proposal.getEntryReplica() != -1);
-		if (proposal.getForwardCount() == 0)
-			proposal.setReceiptTime(); // first receipt into the system
-		else
-			RequestInstrumenter.received(proposal, proposal.getForwarderID(),
-					this.getMyID());
+		RequestInstrumenter.received(proposal, proposal.getForwarderID(),
+				this.getMyID());
 		if (this.coordinator.exists(this.paxosState.getBallot())) {
 			// multicast ACCEPT to all
 			AcceptPacket multicastAccept = null;
@@ -933,10 +930,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			 * slot numbers and will not violate paxos safety, this is extremely
 			 * undesirable for most applications.
 			 */
-			assert (committedPValue.ballot.compareTo(acceptReply.ballot) < 0 || committedPValue
-					.hasTakenTooLong()) : (committedPValue + " >= "
-					+ acceptReply + ", hasTakenTooLong=" + committedPValue
-						.hasTakenTooLong());
+			assert (committedPValue.ballot.compareTo(acceptReply.ballot) < 0) : (committedPValue
+					+ " >= " + acceptReply);
 			if (!committedPValue.isNoop() || shouldForwardNoops()) {
 				// forward only if not already a no-op
 				unicastPreempted = new MessagingTask(
@@ -1839,7 +1834,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				null);
 	}
 
-	private static int CREATION_LOG_THRESHOLD = 100000;
+	private static int CREATION_LOG_THRESHOLD = 10000;
 	private static int creationCount = 0;
 
 	private static void incrInstanceCount() {

@@ -18,7 +18,6 @@
 package edu.umass.cs.gigapaxos.testing;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -185,8 +184,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		 */
 		if (requestPacket.getEntryReplica() == this.getMyID()) {
 			niot.sendToAddress(
-					new InetSocketAddress(requestPacket.getClientAddress(),
-							requestPacket.getClientPort()), requestPacket
+					(requestPacket.getClientAddress()), requestPacket
 							.toJSONObject());
 		}
 		// send responses for batched requests as well

@@ -71,11 +71,11 @@ public class PValuePacket extends ProposalPacket {
 
 	public PValuePacket(JSONObject json) throws JSONException {
 		super(json);
-		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BLLT
 				.toString()));
 		this.medianCheckpointedSlot = json
-				.getInt(PaxosPacket.Keys.MEDIAN_CHECKPOINTED_SLOT.toString());
-		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
+				.getInt(PaxosPacket.Keys.MED_CP_S.toString());
+		this.recovery = json.optBoolean(PaxosPacket.Keys.RCVRY.toString());
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
 	}
 
@@ -120,10 +120,10 @@ public class PValuePacket extends ProposalPacket {
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
-		json.put(PaxosPacket.Keys.MEDIAN_CHECKPOINTED_SLOT.toString(),
+		json.put(PaxosPacket.NodeIDKeys.BLLT.toString(), ballot.toString());
+		json.put(PaxosPacket.Keys.MED_CP_S.toString(),
 				this.medianCheckpointedSlot);
-		json.put(PaxosPacket.Keys.RECOVERY.toString(), this.recovery);
+		if(this.recovery) json.put(PaxosPacket.Keys.RCVRY.toString(), this.recovery);
 		return json;
 	}
 }

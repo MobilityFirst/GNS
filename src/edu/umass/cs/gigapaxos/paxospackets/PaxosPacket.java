@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -32,11 +32,76 @@ import edu.umass.cs.nio.JSONPacket;
  *         The parent class for all paxos packet types. Every paxos packet has a
  *         minimum of three fields: packet type, paxos group ID, version.
  */
-@SuppressWarnings("javadoc")
 public abstract class PaxosPacket extends JSONPacket {
 
-	protected static enum Keys {
-		PAXOS_PACKET_TYPE, PAXOS_ID, PAXOS_VERSION, SLOT, MEDIAN_CHECKPOINTED_SLOT, ACCEPTED_MAP, PREPARE_REPLY_FIRST_SLOT, RECOVERY, MAX_CHECKPOINTED_SLOT, STATE, MAX_SLOT, MISSING, IS_MISSING_TOO_MUCH, FIRST_UNDECIDED_SLOT, IS_LARGE_CHECKPOINT
+	/**
+	 * Keys used in json packets.
+	 */
+	public static enum Keys {
+		/**
+		 * JSON key for packet type field in JSON representation.
+		 */
+		PPT,
+		/**
+		 * JSON key for paxosID field.
+		 */
+		PID,
+		/**
+		 * JSON key for paxos version (or epoch number) field.
+		 */
+		PV,
+		/**
+		 * slot
+		 */
+		S,
+		/**
+		 * median checkpointed slot; used for GC
+		 */
+		MED_CP_S,
+		/**
+		 * accepted pvalues from lower ballots
+		 */
+		ACC_MAP,
+		/**
+		 * min slot in prepare reply
+		 */
+		PREPLY_MIN,
+		/**
+		 * whether recovery mode packet
+		 */
+		RCVRY,
+		/**
+		 * max checkpointed slot; used for GC
+		 */
+		MAX_CP_S,
+		/**
+		 * checkpoint state
+		 */
+		STATE,
+		/**
+		 * max decision slot; used to sync missing decisions
+		 */
+		MAX_S,
+		/**
+		 * missing decisions
+		 */
+		MISSS,
+		/**
+		 * should checkpoint transfer?; used while sync'ing decisions
+		 */
+		CP_TX,
+		/**
+		 * first slot being prepared
+		 */
+		PREP_MIN,
+		/**
+		 * large checkpoint option?
+		 */
+		BIG_CP,
+		/**
+		 * sync mode; used by pause deactivator
+		 */
+		SYNCM
 	}
 
 	/**
@@ -48,23 +113,32 @@ public abstract class PaxosPacket extends JSONPacket {
 	 * Stringifiable<NodeIDTpe>.
 	 */
 	public static enum NodeIDKeys {
-		SENDER_NODE, BALLOT, COORDINATOR, ACCEPTOR, GROUP, DECISION_ISSUER, ENTRY_REPLICA
+		/**
+		 * 
+		 */
+		SNDR, 
+		/**
+		 * 
+		 */
+		BLLT, 
+		/**
+		 * 
+		 */
+		COORD, 
+		/**
+		 * 
+		 */
+		ACCPTR, 
+		/**
+		 * 
+		 */
+		GROUP, 
+		/**
+		 * 
+		 */
+		ENTRY
 	}
 
-	/**
-	 * JSON key for packet type field in JSON representation.
-	 */
-	public static final String PAXOS_PACKET_TYPE = "PAXOS_PACKET_TYPE";
-	/**
-	 * JSON key for paxosID field.
-	 */
-	public static final String PAXOS_ID = "PAXOS_ID";
-	/**
-	 * JSON key for paxos version (or epoch number) field.
-	 */
-	public static final String PAXOS_VERSION = "PAXOS_VERSION";
-
-	public static final String SYNC_MODE = "SYNC_MODE";
 	/*
 	 * Every PaxosPacket has a minimum of the following three fields. The fields
 	 * paxosID and version are preserved across inheritances, e.g.,
@@ -79,15 +153,78 @@ public abstract class PaxosPacket extends JSONPacket {
 	 * The paxos packet type class.
 	 */
 	public enum PaxosPacketType implements IntegerPacketType {
-		RESPONSE("RESPONSE", 0), REQUEST("REQUEST", 1), PREPARE("PREPARE", 2), ACCEPT(
-				"ACCEPT", 3), RESEND_ACCEPT("RESEND_ACCEPT", 4), PROPOSAL(
-				"PROPOSAL", 5), DECISION("DECISION", 6), PREPARE_REPLY(
-				"PREPARE_REPLY", 7), ACCEPT_REPLY("ACCEPT_REPLY", 8), FAILURE_DETECT(
-				"FAILURE_DETECT", 9), PREEMPTED("PREEMPTED", 13), CHECKPOINT_STATE(
-				"CHECKPOINT_STATE", 21), CHECKPOINT_REQUEST(
-				"CHECKPOINT_REQUEST", 23), SYNC_REQUEST("SYNC_REQUEST", 31), SYNC_DECISIONS(
-				"SYNC_DECISIONS", 32), FIND_REPLICA_GROUP("FIND_REPLICA_GROUP",
-				33), PAXOS_PACKET("PAXOS_PACKET", 90), NO_TYPE("NO_TYPE", 9999);
+		/**
+		 * 
+		 */
+		RESPONSE("RESPONSE", 0), 
+		/**
+		 * 
+		 */
+		REQUEST("REQUEST", 1), 
+		/**
+		 * 
+		 */
+		PREPARE("PREPARE", 2), 
+		/**
+		 * 
+		 */
+		ACCEPT("ACCEPT", 3), 
+		/**
+		 * 
+		 */
+		RESEND_ACCEPT("RESEND_ACCEPT", 4), 
+		/**
+		 * 
+		 */
+		PROPOSAL("PROPOSAL", 5), 
+		/**
+		 * 
+		 */
+		DECISION("DECISION", 6), 
+		/**
+		 * 
+		 */
+		PREPARE_REPLY("PREPARE_REPLY", 7), 
+		/**
+		 * 
+		 */
+		ACCEPT_REPLY("ACCEPT_REPLY", 8), 
+		/**
+		 * 
+		 */
+		FAILURE_DETECT("FAILURE_DETECT", 9), 
+		/**
+		 * 
+		 */
+		PREEMPTED("PREEMPTED", 13), 
+		/**
+		 * 
+		 */
+		CHECKPOINT_STATE("CHECKPOINT_STATE", 21), 
+		/**
+		 * 
+		 */
+		CHECKPOINT_REQUEST(	"CHECKPOINT_REQUEST", 23), 
+		/**
+		 * 
+		 */
+		SYNC_REQUEST("SYNC_REQUEST", 31), 
+		/**
+		 * 
+		 */
+		SYNC_DECISIONS("SYNC_DECISIONS", 32), 
+		/**
+		 * 
+		 */
+		FIND_REPLICA_GROUP("FIND_REPLICA_GROUP",33), 
+		/**
+		 * 
+		 */
+		PAXOS_PACKET("PAXOS_PACKET", 90), 
+		/**
+		 * 
+		 */
+		NO_TYPE("NO_TYPE", 9999);
 
 		private static HashMap<String, PaxosPacketType> labels = new HashMap<String, PaxosPacketType>();
 		private static HashMap<Integer, PaxosPacketType> numbers = new HashMap<Integer, PaxosPacketType>();
@@ -121,6 +258,9 @@ public abstract class PaxosPacket extends JSONPacket {
 			return number;
 		}
 
+		/**
+		 * @return String label
+		 */
 		public String getLabel() {
 			return label;
 		}
@@ -129,19 +269,32 @@ public abstract class PaxosPacket extends JSONPacket {
 			return getLabel();
 		}
 
+		/**
+		 * @param type
+		 * @return Integer type
+		 */
 		public static PaxosPacketType getPaxosPacketType(int type) {
 			return PaxosPacketType.numbers.get(type);
 		}
 
+		/**
+		 * @param type
+		 * @return PaxosPacketType type
+		 */
 		public static PaxosPacketType getPaxosPacketType(String type) {
 			return PaxosPacketType.labels.get(type);
 		}
 	}
 
+	/**
+	 * @param json
+	 * @return PaxosPacketType type
+	 * @throws JSONException
+	 */
 	public static PaxosPacketType getPaxosPacketType(JSONObject json)
 			throws JSONException {
 		return PaxosPacketType.getPaxosPacketType(json
-				.getInt(PaxosPacket.PAXOS_PACKET_TYPE));
+				.getInt(PaxosPacket.Keys.PPT.toString()));
 	}
 
 	protected abstract JSONObject toJSONObjectImpl() throws JSONException;
@@ -171,10 +324,10 @@ public abstract class PaxosPacket extends JSONPacket {
 	protected PaxosPacket(JSONObject json) throws JSONException {
 		super(json);
 		if (json != null) {
-			if (json.has(PaxosPacket.PAXOS_ID))
-				this.paxosID = json.getString(PaxosPacket.PAXOS_ID);
-			if (json.has(PaxosPacket.PAXOS_VERSION))
-				this.version = json.getInt(PaxosPacket.PAXOS_VERSION);
+			if (json.has(PaxosPacket.Keys.PID.toString()))
+				this.paxosID = json.getString(PaxosPacket.Keys.PID.toString());
+			if (json.has(PaxosPacket.Keys.PV.toString()))
+				this.version = json.getInt(PaxosPacket.Keys.PV.toString());
 		}
 	}
 
@@ -184,9 +337,9 @@ public abstract class PaxosPacket extends JSONPacket {
 		JSONPacket.putPacketType(json,
 				PaxosPacket.PaxosPacketType.PAXOS_PACKET.getInt());
 		// the specific type of PaxosPacket
-		json.put(PaxosPacket.PAXOS_PACKET_TYPE, this.packetType.getInt());
-		json.put(PaxosPacket.PAXOS_ID, this.paxosID);
-		json.put(PaxosPacket.PAXOS_VERSION, this.version);
+		json.put(PaxosPacket.Keys.PPT.toString(), this.packetType.getInt());
+		json.put(PaxosPacket.Keys.PID.toString(), this.paxosID);
+		json.put(PaxosPacket.Keys.PV.toString(), this.version);
 
 		// copy over child fields
 		JSONObject child = toJSONObjectImpl();
@@ -196,26 +349,43 @@ public abstract class PaxosPacket extends JSONPacket {
 		return json;
 	}
 
+	/**
+	 * @return Type
+	 */
 	public PaxosPacketType getType() {
 		return this.packetType;
 	}
 
+	/**
+	 * @param pid
+	 * @param v
+	 */
 	public void putPaxosID(String pid, int v) {
 		this.paxosID = pid;
 		this.version = v;
 	}
 
+	/**
+	 * @return Paxos ID
+	 */
 	public String getPaxosID() {
 		return this.paxosID;
 	}
 
+	/**
+	 * @return Integer version (or epoch number)
+	 */
 	public int getVersion() {
 		return this.version;
 	}
 
+	/**
+	 * @param json
+	 * @return True if packet generated during recovery mode.
+	 * @throws JSONException
+	 */
 	public static boolean isRecovery(JSONObject json) throws JSONException {
-		return json.has(PaxosPacket.Keys.RECOVERY.toString()) ? json
-				.getBoolean(PaxosPacket.Keys.RECOVERY.toString()) : false;
+		return json.optBoolean(PaxosPacket.Keys.RCVRY.toString());
 	}
 
 	@Override
@@ -230,16 +400,23 @@ public abstract class PaxosPacket extends JSONPacket {
 
 	protected abstract String getSummaryString();
 
+	/**
+	 * @return For pretty printing.
+	 */
 	public Object getSummary() {
 		return new Object() {
 			public String toString() {
-				return getPaxosID() + ":" + getVersion() +  ":"+getType() + ":[" 
-						+ getSummaryString() + "]";
+				return getPaxosID() + ":" + getVersion() + ":" + getType()
+						+ ":[" + getSummaryString() + "]";
 			}
 		};
 	}
 
 	/************* Type-specific methods below *******************/
+	/**
+	 * @param packet
+	 * @return PaxosPacket marked as recovery mode.
+	 */
 	public static PaxosPacket markRecovered(PaxosPacket packet) {
 		PaxosPacket.PaxosPacketType type = packet.getType();
 		switch (type) {
@@ -260,6 +437,8 @@ public abstract class PaxosPacket extends JSONPacket {
 
 	/**
 	 * Returns a PaxosPacket if parseable from a string.
+	 * @param msg 
+	 * @return Paxos packet from string.
 	 * 
 	 * @throws JSONException
 	 */

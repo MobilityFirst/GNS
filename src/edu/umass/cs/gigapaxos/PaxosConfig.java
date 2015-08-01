@@ -129,6 +129,27 @@ public class PaxosConfig {
 		 * creation to see if the instance gets normally created anyway.
 		 */
 		WAIT_TO_GET_CREATED_TIMEOUT(2000),
+		
+		/**
+		 * The maximum log message size. The higher the batching, the higher this value needs to be.
+		 * The default below is the maximum size of varchar in embedded derby, which is probably
+		 * somewhat faster than clobs, which would be automatically used with bigger log message
+		 * sizes.
+		 */
+		MAX_LOG_MESSAGE_SIZE (32672),
+		
+		/**
+		 * The maximum checkpoint size. The default below is the maximum size of
+		 * varchar in embedded derby, which is probably somewhat faster than
+		 * clobs, which would be automatically used with bigger log message
+		 * sizes.
+		 */
+		MAX_CHECKPOINT_SIZE (32672),
+		
+		/**
+		 * Only for testing.
+		 */
+		BATCH_SLEEP_DURATION (0),
 
 		/**
 		 * The replica receiving the request will simply send the request to the

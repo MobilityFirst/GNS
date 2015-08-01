@@ -93,11 +93,11 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * DB related parameters to be changed to use a different database service.
 	 * Refer also to constants in paxosutil.SQL to update any constants.
 	 */
-	//private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY; // SQL.SQLType.MYSQL;
-        private static final SQL.SQLType SQL_TYPE = SQL.SQLType.MYSQL;
+	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY; // SQL.SQLType.MYSQL;
 	private static final String DATABASE = "paxos_logs";
 	/* ************ End of DB service related parameters ************** */
 
+	protected static final String LOG_DIRECTORY="paxos_logs";
 	private static final boolean CONN_POOLING = true;
 	private static final int MAX_POOL_SIZE = 100;
 
@@ -113,9 +113,9 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	/**
 	 * Maximum size of a log message; depends on RequestBatcher.MAX_BATCH_SIZE
 	 */
-	public static final int MAX_LOG_MESSAGE_SIZE = 32672;
+	public static final int MAX_LOG_MESSAGE_SIZE = Config.getGlobalInt(PaxosConfig.PC.MAX_LOG_MESSAGE_SIZE); //32672;
 	// maximum size of checkpoint state
-	private static final int MAX_CHECKPOINT_SIZE = 32672;
+	private static final int MAX_CHECKPOINT_SIZE = Config.getGlobalInt(PaxosConfig.PC.MAX_LOG_MESSAGE_SIZE);// 32672;
 
 	// maximum size of a paxos group name
 	private static final int PAXOS_ID_SIZE = 40;
@@ -484,6 +484,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			// conn.commit();
 			t2 = System.currentTimeMillis();
 			DelayProfiler.updateDelay("checkpoint", t1);
+			incrTotalCheckpoints();
 		} catch (SQLException sqle) {
 			log.log(Level.SEVERE,
 					"{0} SQLException while checkpointing using command {1} with values "
@@ -508,7 +509,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				ballot.coordinatorID, acceptedGCSlot);
 		DelayProfiler.updateDelay("GC", t2);
 		// why can't insertCP.toString() return the query string? :/
-		log.log(Level.INFO,
+		log.log(shouldLogCheckpoint() ? Level.INFO : Level.FINE,
 				"{0} checkpointed ({1}:{2}, {3}{4}, {5}, ({6}) [{7}]) in {8} ms; GC took {9} ms",
 				new Object[] {
 						this,
@@ -521,6 +522,15 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 						Util.truncate(state, TRUNCATED_STATE_SIZE,
 								TRUNCATED_STATE_SIZE), (t2 - t1),
 						(System.currentTimeMillis() - t2) });
+	}
+	
+	private static int CHECKPOINT_LOG_THRESHOLD = 10000;
+	private static int totalCheckpoints = 0;
+	private synchronized static void incrTotalCheckpoints() {
+		totalCheckpoints++;
+	}
+	private boolean shouldLogCheckpoint() {
+		return totalCheckpoints < CHECKPOINT_LOG_THRESHOLD ? true : Util.oneIn(1000) ? true : false;
 	}
 
 	/*
@@ -1572,6 +1582,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return true;
 	}
 
+	private void ensureLogDirectoryExists(String logDir) {
+		File f = new File(logDir);
+		if(!f.exists()) f.mkdirs();
+	}
 	private boolean connectDB() {
 		boolean connected = false;
 		int connAttempts = 0, maxAttempts = 1;
@@ -1586,9 +1600,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		 */
 		props.put("user", SQL.getUser() + (isEmbeddedDB() ? this.myID : ""));
 		props.put("password", SQL.getPassword());
+		ensureLogDirectoryExists(this.logDirectory);
 		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
-				+ (isEmbeddedDB() ? this.logDirectory + DATABASE
-						+ ";create=true" : DATABASE
+				+ (isEmbeddedDB() ? this.logDirectory + DATABASE+this.myID
+						+ ";create=true" : DATABASE+this.myID
 						+ "?createDatabaseIfNotExist=true");
 
 		try {
@@ -1610,7 +1625,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				if (getCursorConn() == null)
 					// test opening a connection
 					this.cursorConn = dataSource.getConnection();
-				log.info("Connected to and created database " + DATABASE);
+				log.info("Connected to and created database " + DATABASE+this.myID);
 				connected = true;
 				// mchange complains at unsuppressable INFO otherwise
 				if (isEmbeddedDB())
@@ -1869,7 +1884,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 	private void fixURI() {
 		this.dataSource.setJdbcUrl(SQL.getProtocolOrURL(SQL_TYPE)
-				+ this.logDirectory + DATABASE);
+				+ this.logDirectory + DATABASE+this.myID);
 	}
 
 	/**

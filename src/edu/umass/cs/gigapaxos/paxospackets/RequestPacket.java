@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -32,6 +32,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -53,14 +54,13 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	 * have to worry about these.
 	 */
 	protected static enum Keys {
-		IS_STOP, CREATE_TIME, RECEIPT_TIME, REPLY_TO_CLIENT, FORWARD_COUNT, FORWARDER_ID,
+		STOP, CTIME, RTIME, NFWDS, FWDR,
 		//
-		DEBUG_INFO,
+		DBG,
 		//
-		REQUEST_ID, REQUEST_VALUE, CLIENT_ID, CLIENT_ADDR, CLIENT_PORT, RETURN_VALUE, BATCHED
+		QID, QVAL, CID, CADDR, RETVAL, BATCH
 	}
 
-	private static final long MAX_AGREEMENT_TIME = 30000;
 	private static final int MAX_FORWARD_COUNT = 3;
 	private static final Random random = new Random();
 
@@ -90,10 +90,8 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 
 	// the replica that first received this request
 	private int entryReplica = -1;
-	// the client IP address in string form
-	private String clientAddress = null;
-	// the client port
-	private int clientPort = -1;
+	// the client address in string form
+	private InetSocketAddress clientAddress = null;
 	// whether to return requestValue or this.toString() back to client
 	private boolean shouldReturnRequestValue = false;
 
@@ -108,8 +106,9 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	 * These fields are for testing and debugging. They are preserved across
 	 * forwarding by nodes, so they are not final
 	 */
+	// included always
 	private long createTime = System.currentTimeMillis();
-	private long receiptTime = System.currentTimeMillis();
+	// included only in DEBUG mode
 	private String debugInfo = null;
 
 	// let a random request ID be picked
@@ -145,12 +144,10 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		// non-final fields
 		this.entryReplica = req.entryReplica;
 		this.clientAddress = req.clientAddress;
-		this.clientPort = req.clientPort;
 		this.shouldReturnRequestValue = req.shouldReturnRequestValue;
 
 		// debug/testing fields
 		this.createTime = req.createTime;
-		this.receiptTime = req.receiptTime;
 		this.forwardCount = req.forwardCount;
 		this.forwarderID = req.forwarderID;
 		this.debugInfo = req.debugInfo;
@@ -221,13 +218,11 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 			throws JSONException {
 		String debug = "";
 		boolean added = false;
-		if (msg.has(Keys.DEBUG_INFO.toString())
-				&& msg.has(Keys.CREATE_TIME.toString())) {
-			debug = msg.getString(Keys.DEBUG_INFO.toString())
-					+ makeDebugInfo(str,
-							msg.getLong(Keys.CREATE_TIME.toString()));
+		if (msg.has(Keys.DBG.toString()) && msg.has(Keys.CTIME.toString())) {
+			debug = msg.getString(Keys.DBG.toString())
+					+ makeDebugInfo(str, msg.getLong(Keys.CTIME.toString()));
 			added = true;
-			msg.put(Keys.DEBUG_INFO.toString(), debug);
+			msg.put(Keys.DBG.toString(), debug);
 		}
 		return added;
 	}
@@ -238,8 +233,8 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 
 	public static boolean isPingPonging(JSONObject msg) {
 		try {
-			if (msg.has(Keys.FORWARD_COUNT.toString())
-					&& msg.getInt(Keys.FORWARD_COUNT.toString()) > MAX_FORWARD_COUNT) {
+			if (msg.has(Keys.NFWDS.toString())
+					&& msg.getInt(Keys.NFWDS.toString()) > MAX_FORWARD_COUNT) {
 				return true;
 			}
 		} catch (JSONException je) {
@@ -255,34 +250,28 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	public RequestPacket(JSONObject json) throws JSONException {
 		super(json);
 		this.packetType = PaxosPacketType.REQUEST;
-		this.stop = json.optBoolean(Keys.IS_STOP.toString());
-		this.requestID = json.getInt(Keys.REQUEST_ID.toString());
-		this.clientID = (json.has(Keys.CLIENT_ID.toString()) ? json
-				.getInt(Keys.CLIENT_ID.toString()) : -1);
-		this.requestValue = json.getString(Keys.REQUEST_VALUE.toString());
-		this.createTime = json.getLong(Keys.CREATE_TIME.toString());
-		this.receiptTime = json.getLong(Keys.RECEIPT_TIME.toString());
-		this.forwardCount = (json.has(Keys.FORWARD_COUNT.toString()) ? json
-				.getInt(Keys.FORWARD_COUNT.toString()) : 0);
-		this.forwarderID = (json
-				.has(RequestPacket.Keys.FORWARDER_ID.toString()) ? json
-				.getInt(RequestPacket.Keys.FORWARDER_ID.toString()) : -1);
-		this.debugInfo = (json.has(Keys.DEBUG_INFO.toString()) ? json
-				.getString(Keys.DEBUG_INFO.toString()) : "");
+		this.stop = json.optBoolean(Keys.STOP.toString());
+		this.requestID = json.getInt(Keys.QID.toString());
+		this.clientID = (json.has(Keys.CID.toString()) ? json.getInt(Keys.CID
+				.toString()) : -1);
+		this.requestValue = json.getString(Keys.QVAL.toString());
+		this.createTime = json.getLong(Keys.CTIME.toString());
+		this.forwardCount = (json.has(Keys.NFWDS.toString()) ? json
+				.getInt(Keys.NFWDS.toString()) : 0);
+		this.forwarderID = (json.has(RequestPacket.Keys.FWDR.toString()) ? json
+				.getInt(RequestPacket.Keys.FWDR.toString()) : -1);
+		this.debugInfo = (json.has(Keys.DBG.toString()) ? json
+				.getString(Keys.DBG.toString()) : "");
 
-		this.clientAddress = (json.has(Keys.CLIENT_ADDR.toString()) ? json
-				.getString(Keys.CLIENT_ADDR.toString()) : JSONNIOTransport
-				.getSenderInetAddressAsString(json));
-		this.clientPort = (json.has(Keys.CLIENT_PORT.toString()) ? json
-				.getInt(Keys.CLIENT_PORT.toString()) : JSONNIOTransport
-				.getSenderPort(json));
-		this.entryReplica = json.getInt(PaxosPacket.NodeIDKeys.ENTRY_REPLICA
+		this.clientAddress = (json.has(Keys.CADDR.toString()) ? Util
+				.getInetSocketAddressFromString(json.getString(Keys.CADDR
+						.toString())) : JSONNIOTransport.getSenderAddress(json));
+		this.entryReplica = json.getInt(PaxosPacket.NodeIDKeys.ENTRY
 				.toString());
-		this.shouldReturnRequestValue = json.getBoolean(Keys.RETURN_VALUE
-				.toString());
+		this.shouldReturnRequestValue = json.optBoolean(Keys.RETVAL.toString());
 		// unwrap latched along batch
-		JSONArray batchedJSON = json.has(Keys.BATCHED.toString()) ? json
-				.getJSONArray(Keys.BATCHED.toString()) : null;
+		JSONArray batchedJSON = json.has(Keys.BATCH.toString()) ? json
+				.getJSONArray(Keys.BATCH.toString()) : null;
 		if (batchedJSON != null && batchedJSON.length() > 0) {
 			this.batched = new RequestPacket[batchedJSON.length()];
 			for (int i = 0; i < batchedJSON.length(); i++) {
@@ -295,40 +284,34 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(Keys.CLIENT_ID.toString(), clientID);
-		json.put(Keys.REQUEST_ID.toString(), this.requestID);
-		json.put(Keys.REQUEST_VALUE.toString(), this.requestValue);
-		json.put(Keys.CREATE_TIME.toString(), this.createTime);
-		json.put(Keys.RECEIPT_TIME.toString(), this.receiptTime);
-		json.put(Keys.FORWARD_COUNT.toString(), this.forwardCount);
-		json.put(RequestPacket.Keys.FORWARDER_ID.toString(), this.forwarderID);
-		json.put(Keys.IS_STOP.toString(), this.stop);
+		json.put(Keys.CID.toString(), clientID);
+		json.put(Keys.QID.toString(), this.requestID);
+		json.put(Keys.QVAL.toString(), this.requestValue);
+		json.put(Keys.CTIME.toString(), this.createTime);
+		json.put(Keys.NFWDS.toString(), this.forwardCount);
+		json.put(RequestPacket.Keys.FWDR.toString(), this.forwarderID);
+		if(this.stop) json.put(Keys.STOP.toString(), this.stop);
 		if (DEBUG)
-			json.putOpt(Keys.DEBUG_INFO.toString(), this.debugInfo);
-		json.put(PaxosPacket.NodeIDKeys.ENTRY_REPLICA.toString(),
+			json.putOpt(Keys.DBG.toString(), this.debugInfo);
+		json.put(PaxosPacket.NodeIDKeys.ENTRY.toString(),
 				this.entryReplica);
 		if (this.clientAddress != null)
-			json.put(Keys.CLIENT_ADDR.toString(), this.clientAddress);
-		if (this.clientPort >= 0)
-			json.put(Keys.CLIENT_PORT.toString(), this.clientPort);
-		json.put(Keys.RETURN_VALUE.toString(), this.shouldReturnRequestValue);
+			json.put(Keys.CADDR.toString(), this.clientAddress);
+		if (this.shouldReturnRequestValue)
+			json.put(Keys.RETVAL.toString(), this.shouldReturnRequestValue);
 		// convert latched along batch to json array
 		if (this.batched != null && this.batched.length > 0) {
 			JSONArray batchedJSON = new JSONArray();
 			for (int i = 0; i < this.batched.length; i++) {
 				batchedJSON.put(this.batched[i].toJSONObject());
 			}
-			json.put(Keys.BATCHED.toString(), batchedJSON);
+			json.put(Keys.BATCH.toString(), batchedJSON);
 		}
 		return json;
 	}
 
-	public String getClientAddress() {
+	public InetSocketAddress getClientAddress() {
 		return this.clientAddress;
-	}
-
-	public int getClientPort() {
-		return this.clientPort;
 	}
 
 	public boolean isStopRequest() {
@@ -342,10 +325,6 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 			if (req.isStopRequest())
 				return true;
 		return false;
-	}
-
-	public boolean hasTakenTooLong() {
-		return System.currentTimeMillis() - this.receiptTime > MAX_AGREEMENT_TIME;
 	}
 
 	/* For testing */
@@ -366,18 +345,6 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 
 	public long getCreateTime() {
 		return this.createTime;
-	}
-
-	public void setReceiptTime(long t) {
-		this.receiptTime = t;
-	}
-
-	public void setReceiptTime() {
-		this.setReceiptTime(System.currentTimeMillis());
-	}
-
-	public long getReceiptTime() {
-		return this.receiptTime;
 	}
 
 	private boolean isBatched() {
@@ -527,7 +494,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		int length = 0;
 		try {
 			length = new PValuePacket(new Ballot(23, 2178), new ProposalPacket(
-					3142, new RequestPacket(23, 43437, "hello world", false)))
+					3142, new RequestPacket(23, 43437, "hello world", true)))
 					.toJSONObject().toString().length();
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -562,8 +529,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 			String reqoveredStr = reqovered.toString();
 			assert (reqStr.equals(reqoveredStr));
 			System.out.println(reqovered.batched.length);
-			System.out.println(reqovered.batched[3]);
-
+			//System.out.println(reqovered.batched[3]);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}

@@ -42,6 +42,9 @@ import edu.umass.cs.utils.Util;
  * @author V. Arun
  */
 public class TESTPaxosClient {
+	static {
+		TESTPaxosConfig.load();
+	}
 	private static long minSleepInterval = 10;
 
 	private static final long createTime = System.currentTimeMillis();
@@ -293,6 +296,7 @@ public class TESTPaxosClient {
 		if(this.requests.put(req.requestID, req)!=null) 
 			return false; // collision in integer space
 		this.incrReqCount();
+		// no retransmission send
 		assert(this.niot.sendToID(id, req.toJSONObject()) > 0);
 		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
 			this.timer
@@ -355,14 +359,14 @@ public class TESTPaxosClient {
 	protected static void sendTestRequests(int numReqsPerClient,
 			TESTPaxosClient[] clients) throws JSONException, IOException {
 		System.out.print("\nInitiating test sending " + numReqsPerClient
-				* Config.getGlobalInt(TC.NUM_CLIENTS) + " requests using "
-				+ Config.getGlobalInt(TC.NUM_CLIENTS)
+				* clients.length + " requests using "
+				+ clients.length
 				+ " clients at an aggregate load of "
 				+ Config.getGlobalDouble(TC.TOTAL_LOAD) + " reqs/sec...");
 		long initTime = System.currentTimeMillis();
 		for (int i = 0; i < numReqsPerClient; i++) {
-			for (int j = 0; j < Config.getGlobalInt(TC.NUM_CLIENTS); j++) {
-				int curTotalReqs = j + i * Config.getGlobalInt(TC.NUM_CLIENTS);
+			for (int j = 0; j < clients.length; j++) {
+				int curTotalReqs = j + i * clients.length;
 				while(!clients[j].makeAndSendRequest("paxos"
 						+ ((RANDOM_REPLAY + curTotalReqs) % Config.getGlobalInt(TC.NUM_GROUPS))));
 				long leadTime = (long) ((curTotalReqs)

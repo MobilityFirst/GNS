@@ -89,7 +89,7 @@ public class TestConfig {
 	}
 
 	// hacks up a simple node config with the above addresses
-	public static InterfaceReconfigurableNodeConfig<String> getTestNodeConfig() {
+	public static TestNodeConfig getTestNodeConfig() {
 		return new TestNodeConfig(reconfigurators, actives);
 	}
 
@@ -105,6 +105,10 @@ public class TestConfig {
 				rcMap.put(RC_PREFIX + i, rcs[i]);
 			for (int i = 0; i < ars.length; i++)
 				arMap.put(AR_PREFIX + i, ars[i]);
+		}
+		
+		public Set<String> getReconfiguratorIDs() {
+			return this.rcMap.keySet();
 		}
 
 		@Override

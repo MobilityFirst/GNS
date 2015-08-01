@@ -61,6 +61,14 @@ public class SampleNodeConfig<NodeIDType> implements
 	public SampleNodeConfig(int defaultPort) {
 		this.defaultPort = defaultPort;
 	}
+	/**
+	 * @param defaultPort
+	 * @param numLocalNodes
+	 */
+	public SampleNodeConfig(int defaultPort, int numLocalNodes) {
+		this.defaultPort = defaultPort;
+		this.localSetup(numLocalNodes);
+	}
 
 	/**
 	 * 
@@ -222,6 +230,13 @@ public class SampleNodeConfig<NodeIDType> implements
 			e.printStackTrace();
 		}
 		return localAddr;
+	}
+	
+	/**
+	 * 
+	 */
+	public void clear() {
+		this.nmap.clear();
 	}
 
 	static class Main {

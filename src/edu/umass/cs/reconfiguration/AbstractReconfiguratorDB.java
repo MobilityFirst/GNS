@@ -195,12 +195,16 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 		// create RC record upon a name creation request
 		if (rcRecReq.startEpoch.isInitEpoch()
+				// don't create if delete is being re-executed
 				&& !rcRecReq.isDeleteIntentOrComplete()
 				&& this.getReconfigurationRecord(rcRecReq.getServiceName()) == null)
-			this.createReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
-					rcRecReq.getServiceName(), rcRecReq.startEpoch
-							.getEpochNumber() - 1,
-					rcRecReq.startEpoch.curEpochGroup));
+			if(!rcRecReq.startEpoch.isBatchedCreate())
+				this.createReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
+						rcRecReq.getServiceName(), rcRecReq.startEpoch
+						.getEpochNumber() - 1,
+						rcRecReq.startEpoch.curEpochGroup));
+			else this.createReconfigurationRecords(rcRecReq.startEpoch.getNameStates(), rcRecReq.startEpoch.getCurEpochGroup()); 
+		
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(rcRecReq.getServiceName());
 		assert (record != null || rcRecReq.isReconfigurationPrevDropComplete()) : rcRecReq;
@@ -252,12 +256,19 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							rcRecReq.getServiceName(), record.getEpoch(),
 							record.getState(), rcRecReq.getEpochNumber() - 1,
 							ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
-							rcRecReq.startEpoch.getCurEpochGroup() });
-			handled = this.setStateInitReconfiguration(
+							rcRecReq.startEpoch.getCurEpochGroup() });			
+			
+			handled = rcRecReq.startEpoch.isBatchedCreate() ? 
+					this.setStateInitReconfiguration(
+					rcRecReq.startEpoch.getNameStates(), rcRecReq.getEpochNumber() - 1,
+					ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
+					rcRecReq.startEpoch.getCurEpochGroup())
+					:
+						// typical unbatched create
+					this.setStateInitReconfiguration(
 					rcRecReq.getServiceName(), rcRecReq.getEpochNumber() - 1,
 					ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
-					rcRecReq.startEpoch.getCurEpochGroup(),
-					rcRecReq.getInitiator());
+					rcRecReq.startEpoch.getCurEpochGroup());
 		} else if (rcRecReq.isReconfigurationComplete()) {
 			// WAIT_ACK_START -> READY
 			log.log(Level.FINE,
@@ -266,7 +277,14 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							rcRecReq.getServiceName(), record.getEpoch(),
 							record.getState(), rcRecReq.getEpochNumber(),
 							ReconfigurationRecord.RCStates.READY });
-			handled = this
+			handled = rcRecReq.startEpoch.isBatchedCreate() ? 
+					this.setStateMerge(
+							rcRecReq.startEpoch.getNameStates(),
+							rcRecReq.getEpochNumber(),
+							ReconfigurationRecord.RCStates.READY_READY,
+							rcRecReq.startEpoch.getCurEpochGroup())
+					:
+					this
 					.setStateMerge(
 							rcRecReq.getServiceName(),
 							rcRecReq.getEpochNumber(),
@@ -520,7 +538,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					.isReconfigurationIntent())
 			// waitAckStop and reconfiguration/delete complete or delete intent
 					|| (record.getState().equals(RCStates.WAIT_ACK_STOP) && (rcRecReq
-							.isReconfigurationComplete()));
+							.isReconfigurationComplete() || rcRecReq.startEpoch.isBatchedCreate()));
 			/*
 			 * If a reconfiguration intent is allowed only from READY, we have a
 			 * problem during recovery when reconfiguration completion is not

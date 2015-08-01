@@ -74,11 +74,11 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 
 	// convert int to NodeIDType to String
 	private JSONObject fixNodeIntToString(JSONObject json) throws JSONException {
-		if (json.has(PaxosPacket.NodeIDKeys.BALLOT.toString())) {
+		if (json.has(PaxosPacket.NodeIDKeys.BLLT.toString())) {
 			// fix ballot string
 			Ballot ballot = new Ballot(
-					json.getString(PaxosPacket.NodeIDKeys.BALLOT.toString()));
-			json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), Ballot
+					json.getString(PaxosPacket.NodeIDKeys.BLLT.toString()));
+			json.put(PaxosPacket.NodeIDKeys.BLLT.toString(), Ballot
 					.getBallotString(ballot.ballotNumber,
 							intToString(ballot.coordinatorID)));
 		} else if (json.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {

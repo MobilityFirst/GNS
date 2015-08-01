@@ -24,8 +24,11 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.ConsumerTask;
+import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author arun
@@ -38,6 +41,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	 * log messages in derby DB. Increase with care.
 	 */
 	private static final int MAX_BATCH_SIZE = 1000;
+	private static final long SLEEP_DURATION = Config.getGlobalLong(PC.BATCH_SLEEP_DURATION);
 
 	private final HashMap<String, ArrayList<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
@@ -54,6 +58,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		super(lock);
 		this.batched = lock;
 		this.paxosManager = paxosManager;
+		this.setSleepDuration(SLEEP_DURATION);
 	}
 
 	/**
@@ -143,6 +148,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		if (firstEntry.getValue().isEmpty())//!reqPktIter.hasNext())
 			mapEntryIter.remove();
 
+		DelayProfiler.updateMovAvg("batchSize", first.batchSize() + 1);
 		return first;
 	}
 }

@@ -47,6 +47,14 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 			ReconfigurationRecord<NodeIDType> record);
 
 	/**
+	 * @param newActives
+	 * @param nameStates
+	 * @return True if created successfully.
+	 */
+	public boolean createReconfigurationRecords(
+			Map<String,String> nameStates, Set<NodeIDType> newActives);
+
+	/**
 	 * @param name
 	 * @param epoch
 	 * @return True if record existed and was successfully deleted.
@@ -94,13 +102,22 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	 * @param epoch
 	 * @param state
 	 * @param newActives
-	 * @param primary
 	 * @return True if successfully set; false if the state transition is not
 	 *         legitimate.
 	 */
 	public boolean setStateInitReconfiguration(String name, int epoch,
-			ReconfigurationRecord.RCStates state, Set<NodeIDType> newActives,
-			NodeIDType primary);
+			ReconfigurationRecord.RCStates state, Set<NodeIDType> newActives);
+	
+	/**
+	 * @param nameStates
+	 * @param epoch
+	 * @param state
+	 * @param newActives
+	 * @return True if successfully set; false if any of the constituent state
+	 *         transitions are not legitimate.
+	 */
+	public boolean setStateInitReconfiguration(Map<String,String> nameStates, int epoch,
+			ReconfigurationRecord.RCStates state, Set<NodeIDType> newActives);
 
 	/**
 	 * Names for which reconfiguration is incomplete, needed for recovery
@@ -175,6 +192,15 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	 */
 	public boolean setStateMerge(String name, int epoch, ReconfigurationRecord.RCStates state, Set<String> mergee);
 
+	/**
+	 * @param nameStates
+	 * @param epoch
+	 * @param state
+	 * @param newActives
+	 * @return True is state set successfully.
+	 */
+	public boolean setStateMerge(Map<String,String> nameStates, int epoch, ReconfigurationRecord.RCStates state, Set<NodeIDType> newActives);
+	
 	/**
 	 * 
 	 */

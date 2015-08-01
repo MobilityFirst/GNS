@@ -544,8 +544,8 @@ public class PaxosManager<NodeIDType> {
 				processFindReplicaGroup(new FindReplicaGroupPacket(jsonMsg));
 				break;
 			default: // paxos protocol messages
-				assert (jsonMsg.has(PaxosPacket.PAXOS_ID)) : jsonMsg;
-				String paxosID = jsonMsg.getString(PaxosPacket.PAXOS_ID);
+				assert (jsonMsg.has(PaxosPacket.Keys.PID.toString())) : jsonMsg;
+				String paxosID = jsonMsg.getString(PaxosPacket.Keys.PID.toString());
 				PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 				log.log(Level.FINEST,
 						"{0} received paxos message for retrieved instance {1} : {2}",
@@ -1320,8 +1320,8 @@ public class PaxosManager<NodeIDType> {
 		if (!this.isNullCheckpointStateEnabled())
 			return;
 		PaxosInstanceStateMachine zombie = this.corpses.get(paxosID);
-		if (jsonMsg.has(PaxosPacket.PAXOS_VERSION)) {
-			int version = jsonMsg.getInt(PaxosPacket.PAXOS_VERSION);
+		if (jsonMsg.has(PaxosPacket.Keys.PV.toString())) {
+			int version = jsonMsg.getInt(PaxosPacket.Keys.PV.toString());
 			if (zombie == null || (zombie.getVersion() - version) < 0)
 				findReplicaGroup(jsonMsg, paxosID, version);
 		}
@@ -1748,16 +1748,16 @@ public class PaxosManager<NodeIDType> {
 		if (PaxosPacket.getPaxosPacketType(json) == PaxosPacket.PaxosPacketType.FAILURE_DETECT)
 			return json;
 
-		if (json.has(PaxosPacket.NodeIDKeys.BALLOT.toString())) {
+		if (json.has(PaxosPacket.NodeIDKeys.BLLT.toString())) {
 			// fix ballot string
-			String ballotString = json.getString(PaxosPacket.NodeIDKeys.BALLOT
+			String ballotString = json.getString(PaxosPacket.NodeIDKeys.BLLT
 					.toString());
 			Integer coordInt = this.integerMap.put(this.unstringer
 					.valueOf(Ballot.getBallotCoordString(ballotString)));
 			assert (coordInt != null);
 			Ballot ballot = new Ballot(Ballot.getBallotNumString(ballotString),
 					coordInt);
-			json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(),
+			json.put(PaxosPacket.NodeIDKeys.BLLT.toString(),
 					ballot.toString());
 		} else if (json.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {
 			// fix group string (JSONArray)

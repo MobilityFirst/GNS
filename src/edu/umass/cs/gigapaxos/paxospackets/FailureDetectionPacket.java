@@ -35,7 +35,7 @@ import org.json.JSONObject;
 public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 
 	private static enum Keys {
-		SENDER, RESPONDER, STATUS
+		SNDR, RCVR, MODE
 	};
 
 	/**
@@ -63,21 +63,21 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 	public FailureDetectionPacket(JSONObject json,
 			Stringifiable<NodeIDType> unstringer) throws JSONException {
 		super(json);
-		this.senderNodeID = unstringer.valueOf(json.getString(Keys.SENDER
+		this.senderNodeID = unstringer.valueOf(json.getString(Keys.SNDR
 				.toString()));
-		this.responderNodeID = unstringer.valueOf(json.getString(Keys.RESPONDER
+		this.responderNodeID = unstringer.valueOf(json.getString(Keys.RCVR
 				.toString()));
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.FAILURE_DETECT);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.status = json.getBoolean(Keys.STATUS.toString());
+		this.status = json.getBoolean(Keys.MODE.toString());
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(Keys.STATUS.toString(), status);
-		json.put(Keys.SENDER.toString(), senderNodeID);
-		json.put(Keys.RESPONDER.toString(), responderNodeID);
+		json.put(Keys.MODE.toString(), status);
+		json.put(Keys.SNDR.toString(), senderNodeID);
+		json.put(Keys.RCVR.toString(), responderNodeID);
 		return json;
 	}
 

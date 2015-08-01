@@ -47,13 +47,13 @@ public class ProposalPacket extends RequestPacket {
 	public ProposalPacket(JSONObject json) throws JSONException {
 		super(json);
 		this.packetType = PaxosPacketType.PROPOSAL;
-		this.slot = json.getInt(PaxosPacket.Keys.SLOT.toString());
+		this.slot = json.getInt(PaxosPacket.Keys.S.toString());
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		json.put(PaxosPacket.Keys.SLOT.toString(), slot);
+		json.put(PaxosPacket.Keys.S.toString(), slot);
 		return json;
 	}
 
