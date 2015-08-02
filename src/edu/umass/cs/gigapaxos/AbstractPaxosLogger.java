@@ -88,8 +88,9 @@ public abstract class AbstractPaxosLogger {
 				new ArrayList<LogMessagingTask>(), this, this.messenger))
 				.start(AbstractPaxosLogger.class.getSimpleName()+myID);
 		;
-		(this.collapsingCheckpointer = new Checkpointer(
-				new HashMap<String, CheckpointTask>())).start(AbstractPaxosLogger.class.getSimpleName()+myID);
+		// checkpoint thread is not used and Checkpointer is deprecated
+		this.collapsingCheckpointer = new Checkpointer(
+				new HashMap<String, CheckpointTask>());//.start(AbstractPaxosLogger.class.getSimpleName()+myID);
 		addLogger(this);
 	}
 
@@ -139,9 +140,9 @@ public abstract class AbstractPaxosLogger {
 
 	/*
 	 * FIXME: This method is unused. It was designed to offload checkpointing to
-	 * its own task so that the paxos instance could move on. But it is actually
-	 * unsafe for the instance to move on unless the checkpoint is complete, so
-	 * we can not offload checkpoints to a worker.
+	 * its own task so that the paxos instance could move on. But there is no
+	 * safe and efficient way for the instance to move on unless the checkpoint
+	 * is complete, so we can not offload checkpoints to a worker after all.
 	 */
 	protected static final void checkpoint(AbstractPaxosLogger logger,
 			String paxosID, int version, int[] members, int slot,

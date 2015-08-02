@@ -459,6 +459,7 @@ public class PaxosManager<NodeIDType> {
 		private final PaxosManager<NodeIDType> paxosManager;
 
 		public PaxosPacketDemultiplexer(PaxosManager<NodeIDType> pm) {
+			super(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS)); 
 			paxosManager = pm;
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
 			this.setThreadName("" + myID);

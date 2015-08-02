@@ -111,7 +111,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	private static final boolean PAXOS_ID_AS_STRING = false;
 
 	// must be >= 1, does not depend on anything else
-	protected static final int INTER_CHECKPOINT_INTERVAL = 100;
+	protected static final int INTER_CHECKPOINT_INTERVAL = Config.getGlobalInt(PaxosConfig.PC.CHECKPOINT_INTERVAL);//100;
 
 	// out-of-order-ness prompting synchronization, must be >=1
 	protected static final int SYNC_THRESHOLD = 4 * INTER_CHECKPOINT_INTERVAL;

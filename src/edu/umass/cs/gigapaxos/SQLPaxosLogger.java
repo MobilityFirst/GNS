@@ -369,6 +369,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return null;
 	}
 
+	private static final int MAX_BATCH_SIZE = 10000;
 	@Override
 	public synchronized boolean logBatch(PaxosPacket[] packets) {
 		if (isClosed())
@@ -404,7 +405,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 					pstmt.setString(7, packetString);
 
 				pstmt.addBatch();
-				if ((i + 1) % 1000 == 0 || (i + 1) == packets.length) {
+				if ((i + 1) % MAX_BATCH_SIZE == 0 || (i + 1) == packets.length) {
 					int[] executed = pstmt.executeBatch();
 					// conn.commit();
 					pstmt.clearBatch();
