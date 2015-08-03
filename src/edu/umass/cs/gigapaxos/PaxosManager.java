@@ -462,6 +462,7 @@ public class PaxosManager<NodeIDType> {
 			super(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS)); 
 			paxosManager = pm;
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
+			this.registerOrderPreserving(PaxosPacket.PaxosPacketType.REQUEST);
 			this.setThreadName("" + myID);
 		}
 

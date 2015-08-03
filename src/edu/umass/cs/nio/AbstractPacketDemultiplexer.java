@@ -83,6 +83,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 
 	private final ScheduledExecutorService executor;
 	private final HashMap<Integer, InterfacePacketDemultiplexer<MessageType>> demuxMap = new HashMap<Integer, InterfacePacketDemultiplexer<MessageType>>();
+	private final Set<Integer> orderPreservingTypes = new HashSet<Integer>();
 	protected static final Logger log = NIOTransport.getLogger();
 
 	abstract protected Integer getPacketType(MessageType message);
@@ -137,7 +138,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 			return false;
 		}
 		Tasker tasker = new Tasker(message, this.demuxMap.get(type));
-		if (this.myThreadPoolSize == 0)
+		if (this.myThreadPoolSize == 0 || this.orderPreservingTypes.contains(type))
 			// task better be lightning quick
 			tasker.run();
 		else
@@ -209,6 +210,15 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		for (Object type : types)
 			register((IntegerPacketType) type, pd);
 	}
+	
+	/**
+	 * @param type
+	 */
+	public void registerOrderPreserving(IntegerPacketType type) {
+		register(type);
+		this.orderPreservingTypes.add(type.getInt());
+	}
+
 
 	/**
 	 * Any created instance of AbstractPacketDemultiplexer or its inheritors

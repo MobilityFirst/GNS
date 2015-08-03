@@ -1086,6 +1086,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			else
 				this.paxosManager.kill(this, false);
 
+			if (inorderDecision.getEntryReplica() == getMyID())
+				RequestBatcher.updateSleepDuration(System.currentTimeMillis()
+						- inorderDecision.getCreateTime());
+
 			// checkpoint if needed, must be atomic with the execution
 			if (shouldCheckpoint(inorderDecision)
 					&& !inorderDecision.isRecovery()) {
@@ -1098,7 +1102,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						this.clientRequestHandler.getState(pid),
 						this.paxosState.getGCSlot(),
 						inorderDecision.getCreateTime());
-				if (Util.oneIn(10))
+				if (Util.oneIn(5))
 					log.log(Level.INFO, "{0}",
 							new Object[] { DelayProfiler.getStats() });
 			}

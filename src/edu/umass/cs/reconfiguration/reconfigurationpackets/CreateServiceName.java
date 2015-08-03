@@ -146,11 +146,8 @@ public class CreateServiceName extends ClientReconfigurationPacket {
 			JSONArray jsonArray = new JSONArray();
 			for (String name : nameStates.keySet()) {
 				JSONObject nameState = new JSONObject();
-				nameState
-						.put(Keys.NAME
-								.toString(), name);
-				nameState.put(Keys.STATE.toString(),
-						nameStates.get(name));
+				nameState.put(Keys.NAME.toString(), name);
+				nameState.put(Keys.STATE.toString(), nameStates.get(name));
 				jsonArray.put(nameState);
 			}
 			return jsonArray;
@@ -167,9 +164,7 @@ public class CreateServiceName extends ClientReconfigurationPacket {
 		Map<String, String> nameStates = new HashMap<String, String>();
 		for (int i = 0; i < nameStateArray.length(); i++) {
 			JSONObject nameState = nameStateArray.getJSONObject(i);
-			String name = nameState
-					.getString(Keys.NAME
-							.toString());
+			String name = nameState.getString(Keys.NAME.toString());
 			String state = nameState.has(Keys.STATE.toString()) ? nameState
 					.getString(Keys.STATE.toString()) : null;
 			if (name == null)
@@ -185,11 +180,11 @@ public class CreateServiceName extends ClientReconfigurationPacket {
 	public String getInitialState() {
 		return initialState;
 	}
-	
+
 	/**
 	 * @return Name, state tuple map.
 	 */
-	public Map<String,String> getNameStates() {
+	public Map<String, String> getNameStates() {
 		return this.nameStates;
 	}
 
@@ -221,10 +216,13 @@ public class CreateServiceName extends ClientReconfigurationPacket {
 				names[i] = namePrefix + i;
 				states[i] = defaultState + i;
 			}
-			CreateServiceName bcreate1 = new BatchedCreateServiceName(isa,
-					"random0", 0, "hello");
-			CreateServiceName bcreate2 = new BatchedCreateServiceName(isa,
-					names, 0, states);
+			CreateServiceName bcreate1 = new CreateServiceName(isa, "random0",
+					0, "hello");
+			HashMap<String, String> nameStates = new HashMap<String, String>();
+			for (int i = 0; i < names.length; i++)
+				nameStates.put(names[i], states[i]);
+			CreateServiceName bcreate2 = new CreateServiceName(isa, names[0],
+					0, states[0], nameStates);
 			System.out.println(bcreate1.toString());
 			System.out.println(bcreate2.toString());
 

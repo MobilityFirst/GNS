@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -97,7 +98,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	private static final String DATABASE = "paxos_logs";
 	/* ************ End of DB service related parameters ************** */
 
-	protected static final String LOG_DIRECTORY="paxos_logs";
+	protected static final String LOG_DIRECTORY = "paxos_logs";
 	private static final boolean CONN_POOLING = true;
 	private static final int MAX_POOL_SIZE = 100;
 
@@ -107,15 +108,18 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	private static final String MESSAGES_TABLE = "messages";
 
 	// disable persistent logging altogether
-	private static final boolean DISABLE_LOGGING = Config.getGlobalBoolean(PaxosConfig.PC.DISABLE_LOGGING); // false;
+	private static final boolean DISABLE_LOGGING = Config
+			.getGlobalBoolean(PaxosConfig.PC.DISABLE_LOGGING); // false;
 	private static boolean disableLogging = DISABLE_LOGGING;
 
 	/**
 	 * Maximum size of a log message; depends on RequestBatcher.MAX_BATCH_SIZE
 	 */
-	public static final int MAX_LOG_MESSAGE_SIZE = Config.getGlobalInt(PaxosConfig.PC.MAX_LOG_MESSAGE_SIZE); //32672;
+	public static final int MAX_LOG_MESSAGE_SIZE = Config
+			.getGlobalInt(PaxosConfig.PC.MAX_LOG_MESSAGE_SIZE); // 32672;
 	// maximum size of checkpoint state
-	private static final int MAX_CHECKPOINT_SIZE = Config.getGlobalInt(PaxosConfig.PC.MAX_LOG_MESSAGE_SIZE);// 32672;
+	private static final int MAX_CHECKPOINT_SIZE = Config
+			.getGlobalInt(PaxosConfig.PC.MAX_CHECKPOINT_SIZE);// 32672;
 
 	// maximum size of a paxos group name
 	private static final int PAXOS_ID_SIZE = 40;
@@ -136,8 +140,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 	private static boolean getLogMessageClobOption() {
 		return (maxLogMessageSize > SQL.getVarcharSize(SQL_TYPE))
-				|| Config
-				.getGlobalBoolean(PC.BATCHING_ENABLED);
+				|| Config.getGlobalBoolean(PC.BATCHING_ENABLED);
 	}
 
 	private static int maxCheckpointSize = MAX_CHECKPOINT_SIZE;
@@ -209,14 +212,14 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				Util.arrayOfIntToStringSet(group), slot, ballot, state,
 				acceptedGCSlot, System.currentTimeMillis());
 	}
-	
+
 	@Override
-	public void putCheckpointState(String paxosID, int version, Set<String> group,
-			int slot, Ballot ballot, String state, int acceptedGCSlot) {
-		this.putCheckpointState(paxosID, version,
-				(group), slot, ballot, state,
+	public void putCheckpointState(String paxosID, int version,
+			Set<String> group, int slot, Ballot ballot, String state,
+			int acceptedGCSlot) {
+		this.putCheckpointState(paxosID, version, (group), slot, ballot, state,
 				acceptedGCSlot, System.currentTimeMillis());
-		
+
 	}
 
 	public boolean copyEpochFinalCheckpointState(String paxosID, int version) {
@@ -370,6 +373,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	private static final int MAX_BATCH_SIZE = 10000;
+
 	@Override
 	public synchronized boolean logBatch(PaxosPacket[] packets) {
 		if (isClosed())
@@ -382,8 +386,9 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		String cmd = "insert into " + getMTable()
 				+ " values (?, ?, ?, ?, ?, ?, ?)";
 		long t1 = System.currentTimeMillis();
+		int i = 0;
 		try {
-			for (int i = 0; i < packets.length; i++) {
+			for (i = 0; i < packets.length; i++) {
 				if (conn == null) {
 					conn = this.getDefaultConn();
 					// conn.setAutoCommit(false);
@@ -399,6 +404,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				pstmt.setInt(4, sb[1]);
 				pstmt.setInt(5, sb[2]);
 				pstmt.setInt(6, packet.getType().getInt());
+				assert (getLogMessageClobOption());
 				if (getLogMessageClobOption())
 					pstmt.setClob(7, new StringReader(packetString));
 				else
@@ -430,7 +436,9 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			 */
 			sqle.printStackTrace();
 			log.severe(this + " incurred " + sqle
-					+ " while logging batch of size:" + packets.length + ": ");
+					+ " while logging batch of size:" + packets.length
+					+ "; packet_length = " + packets[i].toString().length());
+			assert (packets[i].toString().length() < MAX_LOG_MESSAGE_SIZE);
 			logged = false;
 		} finally {
 			cleanup(pstmt);
@@ -524,14 +532,17 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 								TRUNCATED_STATE_SIZE), (t2 - t1),
 						(System.currentTimeMillis() - t2) });
 	}
-	
+
 	private static int CHECKPOINT_LOG_THRESHOLD = 10000;
 	private static int totalCheckpoints = 0;
+
 	private synchronized static void incrTotalCheckpoints() {
 		totalCheckpoints++;
 	}
+
 	private boolean shouldLogCheckpoint() {
-		return totalCheckpoints < CHECKPOINT_LOG_THRESHOLD ? true : Util.oneIn(1000) ? true : false;
+		return totalCheckpoints < CHECKPOINT_LOG_THRESHOLD ? true : Util
+				.oneIn(1000) ? true : false;
 	}
 
 	/*
@@ -804,8 +815,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			stateRS = pstmt.executeQuery();
 			while (stateRS.next()) {
 				assert (state == null); // single result
-				state = (!getCheckpointClobOption() ? stateRS.getString(1)
-						: clobToString(stateRS.getClob(1)));
+				state = (!getCheckpointClobOption() || !column.equals("state") ? stateRS
+						.getString(1) : clobToString(stateRS.getClob(1)));
 			}
 		} catch (IOException e) {
 			log.severe("IOException while getting state " + " : " + e);
@@ -1469,7 +1480,88 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			cleanup(stmt);
 			cleanup(conn);
 		}
+		this.sanityCheckTables(cmdC, cmdMI, cmdPC);
 		return createdCheckpoint && createdMessages && createdPTable;
+	}
+
+	private void sanityCheckTables(String cmdC, String cmdM, String cmdPC) {
+		Statement stmt = null;
+		ResultSet rset = null;
+		Connection conn = null;
+		try {
+			conn = this.getDefaultConn();
+			stmt = conn.createStatement();
+			DatabaseMetaData meta = conn.getMetaData();
+			rset = meta.getColumns(null, null, null, null);
+			if (!rset.next()) {
+				log.severe(this + ": metadata query returned null; exiting");
+				System.exit(1);
+			}
+			while (rset.next()) {
+				if (rset.getString("TABLE_NAME").equals(
+						getCTable().toUpperCase())
+						&& rset.getString("COLUMN_NAME").equals("STATE")) {
+					log.info(this
+							+ " : "
+							+ rset.getString("TABLE_NAME")
+							+ " : "
+							+ rset.getString("COLUMN_NAME")
+							+ " : "
+							+ rset.getInt("COLUMN_SIZE")
+							+ (MAX_CHECKPOINT_SIZE > rset.getInt("COLUMN_SIZE") ? " -> "
+									+ MAX_CHECKPOINT_SIZE
+									: ""));
+					if (MAX_CHECKPOINT_SIZE > rset.getInt("COLUMN_SIZE")) {
+						stmt.execute("alter table "
+								+ getCTable()
+								+ " alter column state set data type "
+								+ (getCheckpointClobOption() ? SQL
+										.getClobString(maxCheckpointSize,
+												SQL_TYPE) : " varchar("
+										+ maxCheckpointSize + ")"));
+						stmt.execute("alter table "
+								+ getPCTable()
+								+ " alter column state set data type "
+								+ (getCheckpointClobOption() ? SQL
+										.getClobString(maxCheckpointSize,
+												SQL_TYPE) : " varchar("
+										+ maxCheckpointSize + ")"));
+
+					}
+				}
+				if (rset.getString("TABLE_NAME").equals(
+						getMTable().toUpperCase())
+						&& rset.getString("COLUMN_NAME").equals("MESSAGE")) {
+					log.info(this
+							+ " : "
+							+ rset.getString("TABLE_NAME")
+							+ " : "
+							+ rset.getString("COLUMN_NAME")
+							+ " : "
+							+ rset.getInt("COLUMN_SIZE")
+							+ (MAX_LOG_MESSAGE_SIZE > rset
+									.getInt("COLUMN_SIZE") ? " -> "
+									+ MAX_LOG_MESSAGE_SIZE : ""));
+					if (MAX_LOG_MESSAGE_SIZE > rset.getInt("COLUMN_SIZE"))
+						stmt.execute("alter table "
+								+ getMTable()
+								+ " alter column state set data type "
+								+ (getLogMessageClobOption() ? SQL
+										.getClobString(maxLogMessageSize,
+												SQL_TYPE) : " varchar("
+										+ maxLogMessageSize + ")"));
+				}
+			}
+
+		} catch (Exception sqle) {
+			log.severe("SQLException while sanity checking table schema");
+			sqle.printStackTrace();
+			System.exit(1);
+		} finally {
+			cleanup(stmt);
+			cleanup(rset);
+			cleanup(conn);
+		}
 	}
 
 	private boolean createTable(Statement stmt, String cmd, String table) {
@@ -1517,6 +1609,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		}
 		return dropped;
 	}
+
 	private boolean clearTable(String table) {
 		String cmd = "delete from " + getPTable() + " where true";
 		PreparedStatement pstmt = null;
@@ -1544,7 +1637,6 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return f.exists() && f.isDirectory();
 	}
 
-	
 	/**
 	 * This method will connect to the DB while creating it if it did not
 	 * already exist. This method is not really needed but exists only because
@@ -1559,8 +1651,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * @throws SQLException
 	 */
 	@Deprecated
-	public static boolean existsDB(SQL.SQLType sqlType, String logDir, String database)
-			throws SQLException {
+	public static boolean existsDB(SQL.SQLType sqlType, String logDir,
+			String database) throws SQLException {
 		try {
 			Class.forName(SQL.getDriver(SQL_TYPE)).newInstance();
 		} catch (InstantiationException | IllegalAccessException
@@ -1568,25 +1660,28 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			e.printStackTrace();
 			return false;
 		}
-		Connection conn=null;
+		Connection conn = null;
 		try {
-			conn = DriverManager.getConnection(SQL
-				.getProtocolOrURL(sqlType)
-				+ logDir
-				+ database
-				+ (!dbDirectoryExists(logDir + database) ? ";create=true" : ""));
-		} catch(SQLException sqle) {
+			conn = DriverManager.getConnection(SQL.getProtocolOrURL(sqlType)
+					+ logDir
+					+ database
+					+ (!dbDirectoryExists(logDir + database) ? ";create=true"
+							: ""));
+		} catch (SQLException sqle) {
 			sqle.printStackTrace();
 		} finally {
-			if(conn!=null) conn.close();
+			if (conn != null)
+				conn.close();
 		}
 		return true;
 	}
 
 	private void ensureLogDirectoryExists(String logDir) {
 		File f = new File(logDir);
-		if(!f.exists()) f.mkdirs();
+		if (!f.exists())
+			f.mkdirs();
 	}
+
 	private boolean connectDB() {
 		boolean connected = false;
 		int connAttempts = 0, maxAttempts = 1;
@@ -1603,8 +1698,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		props.put("password", SQL.getPassword());
 		ensureLogDirectoryExists(this.logDirectory);
 		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
-				+ (isEmbeddedDB() ? this.logDirectory + DATABASE+this.myID
-						+ ";create=true" : DATABASE+this.myID
+				+ (isEmbeddedDB() ? this.logDirectory + DATABASE + this.myID
+						+ ";create=true" : DATABASE + this.myID
 						+ "?createDatabaseIfNotExist=true");
 
 		try {
@@ -1626,7 +1721,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				if (getCursorConn() == null)
 					// test opening a connection
 					this.cursorConn = dataSource.getConnection();
-				log.info("Connected to and created database " + DATABASE+this.myID);
+				log.info("Connected to and created database " + DATABASE
+						+ this.myID);
 				connected = true;
 				// mchange complains at unsuppressable INFO otherwise
 				if (isEmbeddedDB())
@@ -1885,7 +1981,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 	private void fixURI() {
 		this.dataSource.setJdbcUrl(SQL.getProtocolOrURL(SQL_TYPE)
-				+ this.logDirectory + DATABASE+this.myID);
+				+ this.logDirectory + DATABASE + this.myID);
 	}
 
 	/**

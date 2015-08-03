@@ -152,6 +152,12 @@ public class PaxosConfig {
 		BATCH_SLEEP_DURATION (0),
 		
 		/**
+		 * Inverse of the percentage overhead of agreement latency added to the
+		 * sleep duration used for increasing batching gains.
+		 */
+		BATCH_OVERHEAD(0.02),
+		
+		/**
 		 * Checkpoint interval. A larger value means slower recovery, slower
 		 * coordinator changes, and less frequent garbage collection, but it
 		 * also means less frequent IO or higher request throughput.

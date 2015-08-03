@@ -266,8 +266,8 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		this.clientAddress = (json.has(Keys.CADDR.toString()) ? Util
 				.getInetSocketAddressFromString(json.getString(Keys.CADDR
 						.toString())) : JSONNIOTransport.getSenderAddress(json));
-		this.entryReplica = json.getInt(PaxosPacket.NodeIDKeys.ENTRY
-				.toString());
+		this.entryReplica = json
+				.getInt(PaxosPacket.NodeIDKeys.ENTRY.toString());
 		this.shouldReturnRequestValue = json.optBoolean(Keys.RETVAL.toString());
 		// unwrap latched along batch
 		JSONArray batchedJSON = json.has(Keys.BATCH.toString()) ? json
@@ -290,11 +290,11 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 		json.put(Keys.CTIME.toString(), this.createTime);
 		json.put(Keys.NFWDS.toString(), this.forwardCount);
 		json.put(RequestPacket.Keys.FWDR.toString(), this.forwarderID);
-		if(this.stop) json.put(Keys.STOP.toString(), this.stop);
+		if (this.stop)
+			json.put(Keys.STOP.toString(), this.stop);
 		if (DEBUG)
 			json.putOpt(Keys.DBG.toString(), this.debugInfo);
-		json.put(PaxosPacket.NodeIDKeys.ENTRY.toString(),
-				this.entryReplica);
+		json.put(PaxosPacket.NodeIDKeys.ENTRY.toString(), this.entryReplica);
 		if (this.clientAddress != null)
 			json.put(Keys.CADDR.toString(), this.clientAddress);
 		if (this.shouldReturnRequestValue)
@@ -338,9 +338,16 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 	 * Used only for testing database logging to check that the logged packet is
 	 * indeed logged across crashes. If this timestamp is different each time,
 	 * the test would needlessly fail.
+	 * 
+	 * FIXME: Used now also for auto-adapting sleep duration for optimizing
+	 * batching gains.
 	 */
-	public void setCreateTime(long t) {
+	public RequestPacket setCreateTime(long t) {
 		this.createTime = t;
+		if (this.isBatched())
+			for (RequestPacket req : this.batched)
+				req.setCreateTime(t);
+		return this;
 	}
 
 	public long getCreateTime() {
@@ -529,7 +536,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest {
 			String reqoveredStr = reqovered.toString();
 			assert (reqStr.equals(reqoveredStr));
 			System.out.println(reqovered.batched.length);
-			//System.out.println(reqovered.batched[3]);
+			// System.out.println(reqovered.batched[3]);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
