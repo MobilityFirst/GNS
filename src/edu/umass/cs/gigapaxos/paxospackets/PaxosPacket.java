@@ -41,15 +41,15 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * JSON key for packet type field in JSON representation.
 		 */
-		PPT,
+		PT,
 		/**
 		 * JSON key for paxosID field.
 		 */
-		PID,
+		ID,
 		/**
 		 * JSON key for paxos version (or epoch number) field.
 		 */
-		PV,
+		V,
 		/**
 		 * slot
 		 */
@@ -57,7 +57,7 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * median checkpointed slot; used for GC
 		 */
-		MED_CP_S,
+		GC_S,
 		/**
 		 * accepted pvalues from lower ballots
 		 */
@@ -71,9 +71,9 @@ public abstract class PaxosPacket extends JSONPacket {
 		 */
 		RCVRY,
 		/**
-		 * max checkpointed slot; used for GC
+		 * last checkpointed slot; used for GC
 		 */
-		MAX_CP_S,
+		CP_S,
 		/**
 		 * checkpoint state
 		 */
@@ -85,11 +85,7 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * missing decisions
 		 */
-		MISSS,
-		/**
-		 * should checkpoint transfer?; used while sync'ing decisions
-		 */
-		CP_TX,
+		MISS,
 		/**
 		 * first slot being prepared
 		 */
@@ -101,7 +97,17 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * sync mode; used by pause deactivator
 		 */
-		SYNCM
+		SYNCM,
+		
+		/**
+		 * 
+		 */
+		SLOTS,
+		
+		/**
+		 * 
+		 */
+		NO_COALESCE,
 	}
 
 	/**
@@ -118,9 +124,9 @@ public abstract class PaxosPacket extends JSONPacket {
 		 */
 		SNDR, 
 		/**
-		 * 
+		 * Ballot.
 		 */
-		BLLT, 
+		B, 
 		/**
 		 * 
 		 */
@@ -134,9 +140,9 @@ public abstract class PaxosPacket extends JSONPacket {
 		 */
 		GROUP, 
 		/**
-		 * 
+		 * Entry replica integer ID. 
 		 */
-		ENTRY
+		E
 	}
 
 	/*
@@ -216,7 +222,18 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * 
 		 */
-		FIND_REPLICA_GROUP("FIND_REPLICA_GROUP",33), 
+		FIND_REPLICA_GROUP("FIND_REPLICA_GROUP",33),
+		
+		/**
+		 * 
+		 */
+		BATCHED_ACCEPT_REPLY("BATCHED_ACCEPT_REPLY", 34),
+
+		/**
+		 * 
+		 */
+		BATCHED_COMMIT("BATCHED_COMMIT", 35),
+
 		/**
 		 * 
 		 */
@@ -294,7 +311,7 @@ public abstract class PaxosPacket extends JSONPacket {
 	public static PaxosPacketType getPaxosPacketType(JSONObject json)
 			throws JSONException {
 		return PaxosPacketType.getPaxosPacketType(json
-				.getInt(PaxosPacket.Keys.PPT.toString()));
+				.getInt(PaxosPacket.Keys.PT.toString()));
 	}
 
 	protected abstract JSONObject toJSONObjectImpl() throws JSONException;
@@ -324,10 +341,10 @@ public abstract class PaxosPacket extends JSONPacket {
 	protected PaxosPacket(JSONObject json) throws JSONException {
 		super(json);
 		if (json != null) {
-			if (json.has(PaxosPacket.Keys.PID.toString()))
-				this.paxosID = json.getString(PaxosPacket.Keys.PID.toString());
-			if (json.has(PaxosPacket.Keys.PV.toString()))
-				this.version = json.getInt(PaxosPacket.Keys.PV.toString());
+			if (json.has(PaxosPacket.Keys.ID.toString()))
+				this.paxosID = json.getString(PaxosPacket.Keys.ID.toString());
+			if (json.has(PaxosPacket.Keys.V.toString()))
+				this.version = json.getInt(PaxosPacket.Keys.V.toString());
 		}
 	}
 
@@ -337,9 +354,9 @@ public abstract class PaxosPacket extends JSONPacket {
 		JSONPacket.putPacketType(json,
 				PaxosPacket.PaxosPacketType.PAXOS_PACKET.getInt());
 		// the specific type of PaxosPacket
-		json.put(PaxosPacket.Keys.PPT.toString(), this.packetType.getInt());
-		json.put(PaxosPacket.Keys.PID.toString(), this.paxosID);
-		json.put(PaxosPacket.Keys.PV.toString(), this.version);
+		json.put(PaxosPacket.Keys.PT.toString(), this.packetType.getInt());
+		json.put(PaxosPacket.Keys.ID.toString(), this.paxosID);
+		json.put(PaxosPacket.Keys.V.toString(), this.version);
 
 		// copy over child fields
 		JSONObject child = toJSONObjectImpl();
@@ -359,10 +376,12 @@ public abstract class PaxosPacket extends JSONPacket {
 	/**
 	 * @param pid
 	 * @param v
+	 * @return {@code this}.
 	 */
-	public void putPaxosID(String pid, int v) {
+	public PaxosPacket putPaxosID(String pid, int v) {
 		this.paxosID = pid;
 		this.version = v;
+		return this;
 	}
 
 	/**
@@ -396,6 +415,14 @@ public abstract class PaxosPacket extends JSONPacket {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	/**
+	 * @return {@code this} as a singleton array.
+	 */
+	public PaxosPacket[] toSingletonArray() {
+		PaxosPacket[] ppArray = {this};
+		return ppArray;
 	}
 
 	protected abstract String getSummaryString();

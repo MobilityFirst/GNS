@@ -27,7 +27,7 @@ import edu.umass.cs.gigapaxos.paxosutil.Ballot;
  *
  */
 @SuppressWarnings("javadoc")
-public final class AcceptReplyPacket extends PaxosPacket {
+public class AcceptReplyPacket extends PaxosPacket {
 	/**
 	 * Sender node ID.
 	 */
@@ -49,19 +49,25 @@ public final class AcceptReplyPacket extends PaxosPacket {
 	private int requestID = 0; // used only for debugging
 
 	public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber,
-			int maxCheckpointedSlot) {
-		super((PaxosPacket) null);
+			int maxCheckpointedSlot, AcceptReplyPacket ar) {
+		super(ar);
 		this.packetType = PaxosPacketType.ACCEPT_REPLY;
 		this.acceptor = nodeID;
 		this.ballot = ballot;
 		this.slotNumber = slotNumber;
 		this.maxCheckpointedSlot = maxCheckpointedSlot;
+		
+	}
+	public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber,
+			int maxCheckpointedSlot) {
+		this(nodeID, ballot, slotNumber, maxCheckpointedSlot, null);
 	}
 
+	// used only for instrumentation
 	public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber,
-			int maxCheckpointedSlot, AcceptPacket accept) {
+			int maxCheckpointedSlot, int requestID) {
 		this(nodeID, ballot, slotNumber, maxCheckpointedSlot);
-		this.setRequestID(accept.requestID);
+		this.setRequestID(requestID);
 	}
 
 	public AcceptReplyPacket(JSONObject jsonObject) throws JSONException {
@@ -70,10 +76,10 @@ public final class AcceptReplyPacket extends PaxosPacket {
 		this.acceptor = jsonObject.getInt(PaxosPacket.NodeIDKeys.SNDR
 				.toString());
 		this.ballot = new Ballot(
-				jsonObject.getString(PaxosPacket.NodeIDKeys.BLLT.toString()));
+				jsonObject.getString(PaxosPacket.NodeIDKeys.B.toString()));
 		this.slotNumber = jsonObject.getInt(PaxosPacket.Keys.S.toString());
 		this.maxCheckpointedSlot = jsonObject
-				.getInt(PaxosPacket.Keys.MAX_CP_S.toString());
+				.getInt(PaxosPacket.Keys.CP_S.toString());
 		this.requestID = jsonObject.getInt(RequestPacket.Keys.QID
 				.toString());
 	}
@@ -96,9 +102,9 @@ public final class AcceptReplyPacket extends PaxosPacket {
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
 		json.put(PaxosPacket.NodeIDKeys.SNDR.toString(), acceptor);
-		json.put(PaxosPacket.NodeIDKeys.BLLT.toString(), ballot.toString());
+		json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
 		json.put(PaxosPacket.Keys.S.toString(), slotNumber);
-		json.put(PaxosPacket.Keys.MAX_CP_S.toString(),
+		json.put(PaxosPacket.Keys.CP_S.toString(),
 				this.maxCheckpointedSlot);
 		json.put(RequestPacket.Keys.QID.toString(), this.requestID);
 		return json;

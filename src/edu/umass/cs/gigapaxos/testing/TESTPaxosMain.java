@@ -27,7 +27,6 @@ import java.util.logging.Level;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
-import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
@@ -71,9 +70,10 @@ public class TESTPaxosMain {
 
 	private static String getAggregateOutput(int numReqs, long t1, long t2) {
 		return TESTPaxosClient.getAggregateOutput(numReqs, t2 - t1) + "\n  "
-				+ DelayProfiler.getStats() + "\n  "
-				+ NIOInstrumenter.getJSONStats();
+				+ DelayProfiler.getStats() + "\n  ";
 	}
+	
+	static long t = System.currentTimeMillis();
 
 	/*
 	 * This method tests single-node paxos and exits gracefully at the end by
@@ -107,6 +107,8 @@ public class TESTPaxosMain {
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
 			TESTPaxosShutdownThread.register(clients);
 			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS) / Config.getGlobalInt(TC.NUM_CLIENTS);
+
+			Thread.sleep(2000);
 
 			// begin first run
 			long t1 = System.currentTimeMillis();

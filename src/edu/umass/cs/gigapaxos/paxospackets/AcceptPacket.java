@@ -43,7 +43,7 @@ public final class AcceptPacket extends PValuePacket {
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.ACCEPT); 
 		this.packetType = PaxosPacketType.ACCEPT;
 		this.sender = json.getInt(PaxosPacket.NodeIDKeys.SNDR.toString());
-		this.paxosID = json.getString(PaxosPacket.Keys.PID.toString());
+		this.paxosID = json.getString(PaxosPacket.Keys.ID.toString());
 	}
 
 	@Override

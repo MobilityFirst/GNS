@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -61,7 +61,7 @@ public class PaxosConfig {
 	public static void load() {
 		load(PC.class);
 	}
-	
+
 	static {
 		load();
 	}
@@ -129,53 +129,74 @@ public class PaxosConfig {
 		 * creation to see if the instance gets normally created anyway.
 		 */
 		WAIT_TO_GET_CREATED_TIMEOUT(2000),
-		
+
 		/**
-		 * The maximum log message size. The higher the batching, the higher this value needs to be.
-		 * The default below is the maximum size of varchar in embedded derby, which is probably
-		 * somewhat faster than clobs, which would be automatically used with bigger log message
+		 * The maximum log message size. The higher the batching, the higher
+		 * this value needs to be. The default below is the maximum size of
+		 * varchar in embedded derby, which is probably somewhat faster than
+		 * clobs, which would be automatically used with bigger log message
 		 * sizes.
 		 */
-		MAX_LOG_MESSAGE_SIZE (32672),
-		
+		MAX_LOG_MESSAGE_SIZE(32672),
+
 		/**
 		 * The maximum checkpoint size. The default below is the maximum size of
 		 * varchar in embedded derby, which is probably somewhat faster than
 		 * clobs, which would be automatically used with bigger log message
 		 * sizes.
 		 */
-		MAX_CHECKPOINT_SIZE (32672),
-		
+		MAX_CHECKPOINT_SIZE(32672),
+
 		/**
 		 * Only for testing.
 		 */
-		BATCH_SLEEP_DURATION (0),
-		
+		BATCH_SLEEP_DURATION(0),
+
 		/**
 		 * Inverse of the percentage overhead of agreement latency added to the
 		 * sleep duration used for increasing batching gains.
 		 */
-		BATCH_OVERHEAD(0.02),
-		
+		BATCH_OVERHEAD(0.01),
+
 		/**
 		 * Checkpoint interval. A larger value means slower recovery, slower
 		 * coordinator changes, and less frequent garbage collection, but it
 		 * also means less frequent IO or higher request throughput.
 		 */
-		CHECKPOINT_INTERVAL (100),
-		
+		CHECKPOINT_INTERVAL(100),
+
 		/**
 		 * Number of threads in packet demultiplexer. More than 0 means that we
 		 * may not preserve the order of client requests while processing them.
 		 */
-		PACKET_DEMULTIPLEXER_THREADS (5),
+		PACKET_DEMULTIPLEXER_THREADS(5),
 
 		/**
 		 * The replica receiving the request will simply send the request to the
 		 * local application replica, i.e., this essentially disables all paxos
 		 * coordination. This is used only for testing.
 		 */
-		EMULATE_UNREPLICATED(false), ;
+		EMULATE_UNREPLICATED(false),
+
+		/**
+		 * Also used for testing. Lazily propagates requests to other replicas
+		 * when emulating unreplicated execution mode.
+		 */
+		LAZY_PROPAGATION(false), 
+		
+		/**
+		 * Enables coalescing of accept replies. 
+		 */
+		BATCHED_ACCEPT_REPLIES (true),
+
+		/**
+		 * Enables coalescing of commits. For coalesced commits, a replica must
+		 * have the corresponding accept logged, otherwise it will end up
+		 * sync'ing and increasing overhead. Enabling this option but not
+		 * persistent logging can cause liveness problems.
+		 */
+		BATCHED_COMMITS (true),	
+		;
 
 		final Object defaultValue;
 

@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -50,10 +50,22 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 		this.nodeMap = nodeMap;
 	}
 
+	public Messenger(Messenger<NodeIDType> msgr) {
+		this(msgr.getNIOTransport(), msgr.nodeMap);
+	}
+
 	public void send(MessagingTask mtask) throws JSONException, IOException {
+		if(mtask==null || mtask.isEmptyMessaging()) return;
 		// need to convert integers to NodeIDType.toString before sending
 		super.send(toGeneric(mtask));
 	}
+	
+	public void send(MessagingTask[] mtasks) throws JSONException, IOException {
+		if(mtasks==null) return;
+		for(MessagingTask mtask : mtasks)
+			send(mtask);
+	}
+
 
 	private JSONObject[] toJSONObjects(PaxosPacket[] msgs) throws JSONException {
 		JSONObject[] jsonArray = new JSONObject[msgs.length];
@@ -67,18 +79,17 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 			MessagingTask mtask) throws JSONException {
 		Set<NodeIDType> nodes = this.nodeMap
 				.getIntArrayAsNodeSet(mtask.recipients);
-		//PaxosManager.getLogger().info("***********" + Util.arrayOfIntToString(mtask.recipients) + " => " + nodes);
 		return new GenericMessagingTask<NodeIDType, JSONObject>(
 				nodes.toArray(), toJSONObjects(mtask.msgs));
 	}
 
 	// convert int to NodeIDType to String
 	private JSONObject fixNodeIntToString(JSONObject json) throws JSONException {
-		if (json.has(PaxosPacket.NodeIDKeys.BLLT.toString())) {
+		if (json.has(PaxosPacket.NodeIDKeys.B.toString())) {
 			// fix ballot string
-			Ballot ballot = new Ballot(
-					json.getString(PaxosPacket.NodeIDKeys.BLLT.toString()));
-			json.put(PaxosPacket.NodeIDKeys.BLLT.toString(), Ballot
+			Ballot ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.B
+					.toString()));
+			json.put(PaxosPacket.NodeIDKeys.B.toString(), Ballot
 					.getBallotString(ballot.ballotNumber,
 							intToString(ballot.coordinatorID)));
 		} else if (json.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {

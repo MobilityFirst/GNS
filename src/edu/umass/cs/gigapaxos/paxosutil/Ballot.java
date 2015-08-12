@@ -72,8 +72,9 @@ public class Ballot implements Comparable<Ballot> {
 			return coordinatorID - coord;
 	}
 
-	public boolean equals(Ballot b) {
-		return compareTo(b) == 0;
+	@Override
+	public boolean equals(Object b) {
+		return b instanceof Ballot ? (compareTo((Ballot)b) == 0) : false;
 	}
 
 	/*

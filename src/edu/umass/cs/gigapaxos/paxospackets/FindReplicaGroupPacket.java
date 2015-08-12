@@ -92,9 +92,9 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 
 	public static int getNodeID(JSONObject msg) throws JSONException {
 		int id = -1;
-		if (msg.has(PaxosPacket.Keys.PPT.toString())) {
+		if (msg.has(PaxosPacket.Keys.PT.toString())) {
 			PaxosPacketType msgType = PaxosPacketType.getPaxosPacketType(msg
-					.getInt(PaxosPacket.Keys.PPT.toString()));
+					.getInt(PaxosPacket.Keys.PT.toString()));
 			switch (msgType) {
 			case ACCEPT:
 				id = msg.getInt(PaxosPacket.NodeIDKeys.SNDR.toString());
@@ -103,12 +103,12 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 				id = msg.getInt(PaxosPacket.NodeIDKeys.SNDR.toString());
 				break;
 			case PREPARE:
-				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.BLLT
+				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.B
 						.toString()))).coordinatorID;
 				//msg.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
 				break;
 			case DECISION:
-				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.BLLT
+				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.B
 						.toString()))).coordinatorID;
 				break;
 			default:
@@ -121,8 +121,8 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 	public static void main(String[] args) {
 		try {
 			JSONObject msg = new JSONObject();
-			msg.put(PaxosPacket.Keys.PID.toString(), "paxos0");
-			msg.put(PaxosPacket.Keys.PV.toString(), 3);
+			msg.put(PaxosPacket.Keys.ID.toString(), "paxos0");
+			msg.put(PaxosPacket.Keys.V.toString(), 3);
 			FindReplicaGroupPacket frg = new FindReplicaGroupPacket(23, msg);
 			System.out.println(frg);
 

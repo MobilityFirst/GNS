@@ -141,7 +141,11 @@ public class Config extends Properties {
 	 */
 	public static Object getGlobal(Enum<?> field) {
 		assert (configMap.get(field.getDeclaringClass()).get(field) != null) : field
-				+ " : " + configMap.get(field.getDeclaringClass()).get(field);
+				+ " : "
+				+ configMap.get(field.getDeclaringClass())
+				+ " : "
+				+ configMap.get(field.getDeclaringClass())
+						.get(field);
 		if (configMap.containsKey(field.getDeclaringClass()))
 			return configMap.get(field.getDeclaringClass()).get(field);
 		throw new RuntimeException("No matching "

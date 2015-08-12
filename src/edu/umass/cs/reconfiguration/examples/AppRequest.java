@@ -95,7 +95,7 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 	/**
 	 *  These app keys by design need not be the same as those in BasicReconfigurationPacket
 	 */
-	public enum Keys {SERVICE_NAME, EPOCH, REQUEST_ID, REQUEST_VALUE, IS_STOP, IS_COORDINATION, CLIENT_IP, CLIENT_PORT};
+	public enum Keys {SERVICE_NAME, EPOCH, REQUEST_ID, REQUEST_VALUE, STOP, IS_COORDINATION, CLIENT_IP, CLIENT_PORT};
 
 	private final String name;
 	private final int epoch;
@@ -139,7 +139,7 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		this.name = json.getString(Keys.SERVICE_NAME.toString());
 		this.epoch = json.getInt(Keys.EPOCH.toString());
 		this.id = json.getInt(Keys.REQUEST_ID.toString());
-		this.stop = json.getBoolean(Keys.IS_STOP.toString());
+		this.stop = json.getBoolean(Keys.STOP.toString());
 		this.value = json.getString(Keys.REQUEST_VALUE.toString());
 		this.coordType = (json.has(Keys.IS_COORDINATION.toString()) ? json.getBoolean(Keys.IS_COORDINATION.toString()) : false);
 		/* We read from json using JSONNIOTransport convention, but there is no 
@@ -180,7 +180,7 @@ public class AppRequest extends JSONPacket implements InterfaceReconfigurableReq
 		json.put(Keys.SERVICE_NAME.toString(), this.name);
 		json.put(Keys.EPOCH.toString(), this.epoch);
 		json.put(Keys.REQUEST_ID.toString(), this.id);
-		json.put(Keys.IS_STOP.toString(), this.stop);
+		json.put(Keys.STOP.toString(), this.stop);
 		json.put(Keys.REQUEST_VALUE.toString(), this.value);
 		json.put(Keys.IS_COORDINATION.toString(), this.coordType);
 		if(this.clientIP!=null) json.put(Keys.CLIENT_IP.toString(), this.clientIP.toString());

@@ -181,9 +181,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	// selector we'll be monitoring
 	private Selector selector = null;
 
-	// The buffer into which we'll read data when it's available
-	// private final ByteBuffer readBuffer =
-	// ByteBuffer.allocateDirect(READ_BUFFER_SIZE);
 	private final ByteBuffer writeBuffer = ByteBuffer
 			.allocateDirect(WRITE_BUFFER_SIZE);
 
@@ -379,10 +376,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
 		if(isa==null) return -1;
 		testAndIntiateConnection(isa);
-		// NIOInstrumenter.incrSent(isa.getPort());
 		// we put length header in *all* messages
 		ByteBuffer bbuf = getHeaderedByteBuffer(data);
 		int written = this.enqueueSend(isa, bbuf);
+		DelayProfiler.updateCount("totalBytesSent", written);
 		return written - HEADER_SIZE;
 	}
 
@@ -469,6 +466,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				 * Can do little else here. Hopefully, the exceptions inside the
 				 * individual methods above have already been contained.
 				 */
+				log.severe(this + " incurred IOException " + e.getMessage());
 				e.printStackTrace();
 			}
 		}
@@ -629,7 +627,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// if SSL, simply pass any bytes to SSL worker
 		if (isSSL()) {
 			this.readBuffers.putIfAbsent(key,
-					ByteBuffer.allocateDirect(READ_BUFFER_SIZE));
+					ByteBuffer.allocate(READ_BUFFER_SIZE));
 			ByteBuffer bbuf = this.readBuffers.get(key); // this.readBuffer;
 			int numRead = socketChannel.read(bbuf);
 			if (numRead > 0) {
@@ -665,7 +663,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			try {
 				length = getPayloadLength(bbuf);
 			} catch (IOException ioe) {
-				throw new IOException("Node" + myID + ioe.getMessage()
+				throw new IOException("Node" + myID + ":"+ioe.getMessage()
 						+ " on channel " + socketChannel);
 			}
 			// allocate new buffer and read payload
@@ -676,6 +674,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// if complete payload read, pass to worker
 		if (abbuf.bodyBuf != null && !abbuf.bodyBuf.hasRemaining()) {
 			bbuf.flip();
+			DelayProfiler.updateCount("totalBytesRcvd", HEADER_SIZE + bbuf.capacity());
 			this.worker.processData(socketChannel, bbuf);
 			// clear header to prepare to read the next message
 			abbuf.clear();
@@ -709,8 +708,24 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			}
 		} catch (IOException e) {
 			// close socket channel and retry (but may still fail)
-			this.cleanupRetry(key, socketChannel,
+			if(!Util.oneIn(8))
+				this.cleanupRetry(key, socketChannel,
 					this.getSockAddrFromSockChannel(socketChannel));
+			else // clear pending writes
+				this.clearPending(socketChannel);
+		}
+	}
+	
+	// will clear both pending writes and
+	private void clearPending(SocketChannel socketChannel) {
+		InetSocketAddress sockAddr = this
+				.getSockAddrFromSockChannel(socketChannel);
+		synchronized (this.sendQueues) {
+			this.sendQueues.remove(sockAddr);
+		}
+		synchronized (this.sockAddrToSockChannel) {
+			cleanup(socketChannel.keyFor(this.selector));
+			this.sockAddrToSockChannel.remove(sockAddr);
 		}
 	}
 
@@ -844,11 +859,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			 */
 			SelectionKey key = socketChannel.keyFor(this.selector);
 			if (key != null && key.isValid())
-				key.interestOps(key.interestOps() & (~SelectionKey.OP_WRITE)/*
-																			 * SelectionKey
-																			 * .
-																			 * OP_READ
-																			 */);
+				key.interestOps(key.interestOps() & (~SelectionKey.OP_WRITE));
 		}
 		return isComplete;
 	}
@@ -890,18 +901,21 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private void wakeupSelector(InetSocketAddress isa) {
 		SocketChannel sc = this.getSockAddrToSockChannel(isa);
 		SelectionKey key = null;
-		// no point waking up the selector unless connected and handshaken
+		/* No point setting op write unless connected and handshaken. If not yet
+		 * connected, the selector thread will set op to write when it finishes
+		 * connecting.
+		 */
 		if (sc.isConnected() && this.isHandshakeComplete(sc))
 			try {
 				// set op to write if not already set
 				if ((key = sc.keyFor(this.selector)) != null && key.isValid()
 						&& (key.interestOps() & SelectionKey.OP_WRITE) == 0)
 					key.interestOps(key.interestOps() | SelectionKey.OP_WRITE);
-				this.selector.wakeup();
 			} catch (CancelledKeyException cke) {
 				// could have been cancelled upon a write attempt
 				cleanupRetry(key, sc, isa);
 			}
+		this.selector.wakeup();
 		// if pending writes and socket closed, retry if possible
 		if (!sc.isOpen())
 			this.cleanupRetry(null, sc, isa);
@@ -954,12 +968,23 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				if (queue != null && !queue.isEmpty()) {
 					// Nested locking: pendingWrites -> SockAddrToSockChannel
 					SocketChannel sc = getSockAddrToSockChannel(isa); // synchronized
+					
 					/*
 					 * We can be here only if an entry was made in queuePending,
 					 * which can happen only after initiateConnection, which
 					 * maps the isa to a socket channel. Hence, the assert.
+					 * 
+					 * FIXME: 
 					 */
-					assert (sc != null) : isa;
+					//assert (sc != null) : isa;
+					if (sc == null) {
+						try {
+							this.testAndIntiateConnection(isa);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						return;
+					}
 
 					// connected and handshake complete => set op_write
 					SelectionKey key = null;
@@ -1331,8 +1356,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * nevertheless guaranteed to be reliable. The missing buffers correspond
 	 * exactly to the buffers (partially or wholly) written to the underlying
 	 * TCP socket but not yet sent to the other end.
+	 * 
 	 */
-	private void removePartialBuffers(InetSocketAddress isa) throws IOException {
+	private void removePartialBuffers(InetSocketAddress isa) {
 		LinkedBlockingQueue<ByteBuffer> sendQueue = this.sendQueues.get(isa);
 		if (sendQueue == null || sendQueue.isEmpty())
 			return;
@@ -1344,12 +1370,13 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			int length = -1;
 			try {
 				length = getPayloadLength(bbuf);
-			} finally {
-				if ((outOfRange(length) || (length != sendQueue.peek()
-						.capacity() - HEADER_SIZE))
-						&& sendQueue.remove() != null)
+			} catch(IOException ioe) {
+				assert (outOfRange(length) || (length != sendQueue.peek()
+						.capacity() - HEADER_SIZE));
+				if (sendQueue.remove() != null)
 					log.severe(this
-							+ " removed partial unsent packet in send queue");
+							+ " initiated connection and removed partial unsent packet in send queue to "
+							+ isa);
 			}
 		}
 	}
@@ -1392,8 +1419,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 							new InetSocketAddress(socketChannel.socket()
 									.getInetAddress(), socketChannel.socket()
 									.getPort()), e.getMessage() });
-			// FIXME: Should probably also drop outstanding data here
 			cleanup(key, socketChannel);
+			// FIXME: Should probably also drop outstanding data here			
+			if(Util.oneIn(8)) this.clearPending(socketChannel);
 			connected = false;
 		}
 		if (connected)

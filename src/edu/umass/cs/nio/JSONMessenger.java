@@ -264,6 +264,10 @@ public class JSONMessenger<NodeIDType> implements
 	public void addPacketDemultiplexer(AbstractPacketDemultiplexer<?> pd) {
 		this.nioTransport.addPacketDemultiplexer(pd);
 	}
+	
+	protected InterfaceNIOTransport<NodeIDType, JSONObject> getNIOTransport() {
+		return this.nioTransport;
+	}
 
 	@Override
 	public InterfaceAddressMessenger<JSONObject> getClientMessenger() {

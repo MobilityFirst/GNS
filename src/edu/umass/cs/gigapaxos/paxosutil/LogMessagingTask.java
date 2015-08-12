@@ -56,7 +56,7 @@ public class LogMessagingTask extends MessagingTask {
 	}
 
 	public String toString() {
-		return "toLog = " + (logMsg.getType()) + ": " + logMsg + "; toMsg = "
+		return "toLog = " + (logMsg.getType()) + ": " + logMsg.getSummary() + "; toMsg = "
 				+ super.toString();
 	}
 }

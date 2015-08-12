@@ -38,6 +38,9 @@ import edu.umass.cs.utils.Util;
 public class NIOInstrumenter {
 	private static int totalSent = 0; // Sent by NIOTransport
 	private static int totalRcvd = 0; // Received by NIOTransport
+	
+	private static int totalBytesSent = 0;
+	private static int totalBytesRcvd = 0;
 
 	private static int totalConnAccepted = 0; // NIOTransport
 	private static int totalConnInitiated = 0; // NIOTransport
@@ -57,6 +60,14 @@ public class NIOInstrumenter {
 
 	public static synchronized void incrRcvd() {
 		totalRcvd++;
+	}
+	
+	public static synchronized int incrBytesSent(int sent) {
+		return (totalBytesSent+=sent);
+	}
+
+	public static synchronized int incrBytesRcvd(int rcvd) {
+		return (totalBytesRcvd+=rcvd);
 	}
 
 	public static synchronized void incrAccepted() {

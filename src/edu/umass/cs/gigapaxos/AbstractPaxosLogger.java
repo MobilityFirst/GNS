@@ -109,7 +109,8 @@ public abstract class AbstractPaxosLogger {
 	 * @throws IOException
 	 */
 	protected static final void logAndMessage(AbstractPaxosLogger logger,
-			LogMessagingTask logMTask, Messenger<?> messenger)
+			LogMessagingTask logMTask//, Messenger<?> messenger
+			)
 			throws JSONException, IOException {
 		// don't accept new work if about to close
 		if (logger.isAboutToClose())
@@ -117,7 +118,7 @@ public abstract class AbstractPaxosLogger {
 		assert (logMTask != null);
 		// if no log message, just send right away
 		if (logMTask.logMsg == null) {
-			messenger.send(logMTask);
+			logger.messenger.send(logMTask);
 			return;
 		}
 		// else spawn a log-and-message task
@@ -570,12 +571,12 @@ public abstract class AbstractPaxosLogger {
 			DelayProfiler.updateDelay("log", t1, packets.length);
 
 			// then message if successfully logged
-			for (LogMessagingTask lmTask : lmTasks) {
+			{
 				try {
-					this.messenger.send(lmTask);
+					this.messenger.send(lmTasks);
 				} catch (JSONException | IOException e) {
 					log.severe("Logged message but could not send response: "
-							+ lmTask);
+							+ lmTasks);
 					e.printStackTrace();
 				}
 			}

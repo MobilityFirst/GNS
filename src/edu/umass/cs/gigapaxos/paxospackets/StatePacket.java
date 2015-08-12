@@ -67,7 +67,7 @@ public final class StatePacket extends PaxosPacket{
 		assert(PaxosPacket.getPaxosPacketType(json)==PaxosPacketType.CHECKPOINT_STATE); 
 		this.packetType = PaxosPacketType.CHECKPOINT_STATE;
 		this.slotNumber = json.getInt(PaxosPacket.Keys.S.toString());
-		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BLLT.toString()));
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.B.toString()));
 		this.state = json.getString(PaxosPacket.Keys.STATE.toString());
 		this.isLargeCheckpoint = json.optBoolean(PaxosPacket.Keys.BIG_CP.toString());
 	}
@@ -76,7 +76,7 @@ public final class StatePacket extends PaxosPacket{
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
 		json.put(PaxosPacket.Keys.S.toString(), this.slotNumber);
-		json.put(PaxosPacket.NodeIDKeys.BLLT.toString(), this.ballot.ballotNumber+":"+this.ballot.coordinatorID);
+		json.put(PaxosPacket.NodeIDKeys.B.toString(), this.ballot.ballotNumber+":"+this.ballot.coordinatorID);
 		json.put(PaxosPacket.Keys.STATE.toString(), this.state);
 		json.put(PaxosPacket.Keys.BIG_CP.toString(), this.isLargeCheckpoint);
 		return json;

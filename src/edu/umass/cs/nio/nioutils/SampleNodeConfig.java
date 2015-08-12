@@ -63,11 +63,12 @@ public class SampleNodeConfig<NodeIDType> implements
 	}
 	/**
 	 * @param defaultPort
+	 * @param startNodeID 
 	 * @param numLocalNodes
 	 */
-	public SampleNodeConfig(int defaultPort, int numLocalNodes) {
+	public SampleNodeConfig(int defaultPort, int startNodeID, int numLocalNodes) {
 		this.defaultPort = defaultPort;
-		this.localSetup(numLocalNodes);
+		this.localSetup(startNodeID, numLocalNodes);
 	}
 
 	/**
@@ -94,16 +95,23 @@ public class SampleNodeConfig<NodeIDType> implements
 	 * set of integer node IDs explicitly. In the former case, nNodes from 0 to
 	 * nNodes-1 will the node IDs. In the latter case, the explicit set of node
 	 * IDs will be used.
+	 * @param startNodeID 
 	 * 
 	 * @param nNodes
 	 *            Number of nodes created.
 	 */
 	@SuppressWarnings("unchecked")
-	public void localSetup(int nNodes) {
+	public void localSetup(int startNodeID, int nNodes) {
 		local = true;
-		for (Integer i = 0; i < nNodes; i++) {
+		for (Integer i = startNodeID; i < nNodes+startNodeID; i++) {
 			this.add((NodeIDType) i, getLocalAddress());
 		}
+	}
+	/**
+	 * @param nNodes
+	 */
+	public void localSetup(int nNodes) {
+		localSetup(0, nNodes);
 	}
 
 	@Override

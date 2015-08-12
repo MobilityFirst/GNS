@@ -131,6 +131,16 @@ public class TESTPaxosConfig {
 		TOTAL_LOAD(1000), // across all clients
 
 		/**
+		 * Payload size in test requests.
+		 */
+		REQUEST_BAGGAGE_SIZE (10),
+		
+		/**
+		 * 
+		 */
+		OVERHEAD_TESTING (false),
+		
+		/**
 		 * to disable some exceptions/logging while testing
 		 */
 		MEMORY_TESTING(true);
@@ -176,6 +186,8 @@ public class TESTPaxosConfig {
 		if (distributed)
 			loadServersFromFile(configDir
 					+ Config.getGlobalString(TC.SERVERS_FILENAME));
+		else setupGroups();
+		
 		loadPropertiesFromFile(
 				configDir + Config.getGlobalString(TC.PROPERTIES_FILENAME),
 				distributed);
@@ -216,7 +228,7 @@ public class TESTPaxosConfig {
 	 */
 
 	private static final SampleNodeConfig<Integer> nodeConfig = new SampleNodeConfig<Integer>(
-			SampleNodeConfig.DEFAULT_START_PORT, Config.getGlobalInt(TC.NUM_NODES));
+			SampleNodeConfig.DEFAULT_START_PORT, Config.getGlobalInt(TC.TEST_START_NODE_ID), Config.getGlobalInt(TC.NUM_NODES));
 	private static final HashMap<String, int[]> groups = new HashMap<String, int[]>();
 	private static int[] defaultGroup = new int[Config
 			.getGlobalInt(TC.NUM_NODES)];
@@ -292,6 +304,7 @@ public class TESTPaxosConfig {
 	 * @param numGroups
 	 */
 	public static void setDefaultGroups(int numGroups) {
+
 		groups.clear();
 		for (int i = 0; i < Math.min(
 				Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS), numGroups); i++) {

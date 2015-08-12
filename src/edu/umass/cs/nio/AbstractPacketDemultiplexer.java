@@ -138,7 +138,7 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 			return false;
 		}
 		Tasker tasker = new Tasker(message, this.demuxMap.get(type));
-		if (this.myThreadPoolSize == 0 || this.orderPreservingTypes.contains(type))
+		if (this.myThreadPoolSize == 0 || isOrderPreserving(message))
 			// task better be lightning quick
 			tasker.run();
 		else
@@ -150,6 +150,14 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		 * garbage collection or heap optimization issues.
 		 */
 		return true;
+	}
+	
+	/**
+	 * @param msg
+	 * @return True if message order is preserved.
+	 */
+	public boolean isOrderPreserving(MessageType msg) {
+		return false;
 	}
 
 	/**

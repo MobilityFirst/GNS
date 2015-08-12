@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -47,75 +47,101 @@ public class RequestInstrumenter {
 	private static Logger log = Logger.getLogger(RequestInstrumenter.class
 			.getName());
 
-	public synchronized static void received(RequestPacket request, int sender,
+	public static void received(RequestPacket request, int sender, int receiver) {
+		if (DEBUG)
+			synchronized (RequestInstrumenter.class) {
+				map.put(request.requestID,
+						(map.containsKey(request.requestID) ? map
+								.get(request.requestID) : "")
+								+ rcvformat(request.requestID, request, sender,
+										receiver));
+			}
+	}
+
+	public static void received(AcceptReplyPacket request, int sender,
 			int receiver) {
 		if (DEBUG)
-			map.put(request.requestID,
-					(map.containsKey(request.requestID) ? map
-							.get(request.requestID) : "")
-							+ rcvformat(request.requestID, request, sender,
-									receiver));
+			synchronized (RequestInstrumenter.class) {
+				map.put(request.getRequestID(),
+						(map.containsKey(request.getRequestID()) ? map
+								.get(request.getRequestID()) : "")
+								+ rcvformat(request.getRequestID(), request,
+										sender, receiver));
+			}
 	}
 
-	public synchronized static void received(AcceptReplyPacket request,
-			int sender, int receiver) {
+	public static void sent(AcceptReplyPacket request, int sender, int receiver) {
 		if (DEBUG)
-			map.put(request.getRequestID(),
-					(map.containsKey(request.getRequestID()) ? map.get(request
-							.getRequestID()) : "")
-							+ rcvformat(request.getRequestID(), request,
-									sender, receiver));
+			synchronized (RequestInstrumenter.class) {
+				map.put(request.getRequestID(),
+						(map.containsKey(request.getRequestID()) ? map
+								.get(request.getRequestID()) : "")
+								+ sndformat(request.getRequestID(), request,
+										sender, receiver));
+			}
 	}
 
-	public synchronized static void sent(AcceptReplyPacket request, int sender,
-			int receiver) {
+	public static void sent(RequestPacket request, int sender, int receiver) {
 		if (DEBUG)
-			map.put(request.getRequestID(),
-					(map.containsKey(request.getRequestID()) ? map.get(request
-							.getRequestID()) : "")
-							+ sndformat(request.getRequestID(), request,
-									sender, receiver));
+			synchronized (RequestInstrumenter.class) {
+				map.put(request.requestID,
+						(map.containsKey(request.requestID) ? map
+								.get(request.requestID) : "")
+								+ sndformat(request.requestID, request, sender,
+										receiver));
+			}
 	}
 
-	public synchronized static void sent(RequestPacket request, int sender,
-			int receiver) {
+	public static String remove(int requestID) {
+		String retval = null;
 		if (DEBUG)
-			map.put(request.requestID,
-					(map.containsKey(request.requestID) ? map
-							.get(request.requestID) : "")
-							+ sndformat(request.requestID, request, sender,
-									receiver));
-	}
-
-	public synchronized static String remove(int requestID) {
-		String retval = map.remove(requestID);
+			synchronized (RequestInstrumenter.class) {
+				retval = map.remove(requestID);
+			}
 		if (retval != null)
 			log.log(Level.FINE, "{0}\n{2}", new Object[] { requestID, retval });
 		return retval;
 	}
 
-	public synchronized static void removeAll() {
+	public static void removeAll() {
 		if (DEBUG)
-			for (Iterator<Integer> iter = map.keySet().iterator(); iter
-					.hasNext();) {
-				remove(iter.next());
+			synchronized (RequestInstrumenter.class) {
+				for (Iterator<Integer> iter = map.keySet().iterator(); iter
+						.hasNext();) {
+					remove(iter.next());
+				}
 			}
 	}
 
-	public synchronized static String getLog(int requestID) {
-		return map.containsKey(requestID) ? map.get(requestID)
-				: "-----------------[" + requestID + ":null]-------";
+	public static String getLog(int requestID) {
+		if (DEBUG)
+			synchronized (RequestInstrumenter.class) {
+				return map.containsKey(requestID) ? map.get(requestID)
+						: "-----------------[" + requestID + ":null]-------";
+			}
+		return "";
 	}
 
-	private synchronized static String rcvformat(int requestID,
-			PaxosPacket packet, int sender, int receiver) {
-		return requestID + " " + packet.getType().toString() + " (" + sender
-				+ ")   ->" + receiver + " : " + packet.toString() + "\n";
+	private static String rcvformat(int requestID, PaxosPacket packet,
+			int sender, int receiver) {
+		if (DEBUG)
+			synchronized (RequestInstrumenter.class) {
+
+				return requestID + " " + packet.getType().toString() + " ("
+						+ sender + ")   ->" + receiver + " : "
+						+ packet.toString() + "\n";
+			}
+		return "";
 	}
 
-	private synchronized static String sndformat(int requestID,
-			PaxosPacket packet, int sender, int receiver) {
-		return requestID + " " + packet.getType().toString() + " " + sender
-				+ "->   (" + receiver + ") : " + packet.toString() + "\n";
+	private static String sndformat(int requestID, PaxosPacket packet,
+			int sender, int receiver) {
+		if (DEBUG)
+			synchronized (RequestInstrumenter.class) {
+				return requestID + " " + packet.getType().toString() + " "
+						+ sender + "->   (" + receiver + ") : "
+						+ packet.toString() + "\n";
+			}
+		return "";
 	}
 }

@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -38,6 +38,7 @@ import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.reconfiguration.examples.AppRequest.Keys;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
@@ -119,7 +120,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 					"Node{0} executing {1}; seqnum={2}, prev_state={3}",
 					new Object[] { (this.niot != null ? getMyID() : "[?]"),
 							requestPacket.getSummary(), state.seqnum,
-							Util.truncate(state.value, 16, 16)});
+							Util.truncate(state.value, 16, 16) });
 
 			/*
 			 * Set state to current request value concatenated with the hash of
@@ -174,18 +175,26 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 
 	private void sendResponseToClient(ProposalPacket requestPacket)
 			throws JSONException, IOException {
-		log.log(Level.FINE, "App {0} sending response to client {0}",
-				new Object[] { getMyID(), requestPacket.getSummary() });
 		RequestInstrumenter.remove(requestPacket.requestID);
 
 		/*
 		 * Entry replica check must be done here as requests with different
 		 * entry replicas can get batched when forwarded between replicas.
 		 */
+		assert(requestPacket.getEntryReplica()!=-1);
 		if (requestPacket.getEntryReplica() == this.getMyID()) {
+			log.log(Level.FINE, "App {0} sending response to client {1}",
+					new Object[] { getMyID(), requestPacket.getSummary() });
 			niot.sendToAddress(
-					(requestPacket.getClientAddress()), requestPacket
-							.toJSONObject());
+					(requestPacket.getClientAddress()),
+					new ProposalPacket(0, requestPacket.getFirstOnly())
+							.toJSONObject()
+							// just keep a small prefix of the request value
+							.put(Keys.REQUEST_VALUE.toString(),
+									requestPacket.requestValue.substring(0,
+											Math.min(16,
+													requestPacket.requestValue
+															.length()))));
 		}
 		// send responses for batched requests as well
 		if (requestPacket.getBatched() != null)

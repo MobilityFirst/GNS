@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -20,7 +20,9 @@ package edu.umass.cs.gigapaxos;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -186,6 +188,22 @@ public class PaxosAcceptor {
 		this.acceptedGCSlot = 0;
 	}
 
+	protected PValuePacket getAccept(int slot) {
+		return this.acceptedProposals.get(slot);
+	}
+
+	protected PValuePacket getCommitted(int slot) {
+		return this.committedRequests.get(slot);
+	}
+
+	protected Set<PValuePacket> getCommitted(Collection<Integer> slots) {
+		Set<PValuePacket> decisions = new HashSet<PValuePacket>();
+		for (Integer slot : slots)
+			if (this.committedRequests.containsKey(slot))
+				decisions.add(this.committedRequests.get(slot));
+		return decisions;
+	}
+
 	// there must be no putSlot and putBallot methods
 
 	/*
@@ -264,7 +282,7 @@ public class PaxosAcceptor {
 			// no-op if the two are equal anyway
 			this.ballotNum = accept.ballot.ballotNumber;
 			this.ballotCoord = accept.ballot.coordinatorID;
-			if (accept.slot - this.acceptedGCSlot > 0)
+			if (accept.slot - this.acceptedGCSlot > 0) 
 				this.acceptedProposals.put(accept.slot, accept); // wraparound
 			log.log(Level.FINE, "Node{0} acceptor accepting {1}", new Object[] {
 					myID, accept.getSummary() });
@@ -285,25 +303,55 @@ public class PaxosAcceptor {
 		assert (isNonConflictingDecision(decision));
 
 		this.garbageCollectAccepted(decision.getMedianCheckpointedSlot());
-		// corresponding accept must be disk-logged at a majority
-		if (GET_ACCEPTED_PVALUES_FROM_DISK)
-			this.acceptedProposals.remove(decision.slot);
 
-		// wraparound-aware arithmetic
-		if (decision.slot - this.getSlot() >= 0)
-			this.committedRequests.put(decision.slot, decision);
+		// put all decisions including meta-decisions
+		if (decision.slot - this.getSlot() >= 0) {
+			// don't overwrite existing decision value
+			if (!this.committedRequests.containsKey(decision.slot)
+					|| !this.committedRequests.get(decision.slot)
+							.hasRequestValue())
+				this.committedRequests.put(decision.slot, decision);
+		}
 		PValuePacket nextExecutable = null;
 		// might be removing what just got inserted above
 		if (this.committedRequests.containsKey(this.getSlot())) {
-			nextExecutable = this.committedRequests.remove(this.getSlot());
-			this.executed(nextExecutable.slot, nextExecutable.isStopRequest());
+			nextExecutable = this.reconstructDecision(this.getSlot());
+			if (nextExecutable != null && nextExecutable.hasRequestValue()) {
+				this.committedRequests.remove(this.getSlot());
+				this.executed(nextExecutable.slot,
+						nextExecutable.isStopRequest());
+			}
 		}
+
+		// corresponding accept must be disk-logged at a majority
+		if (nextExecutable != null && GET_ACCEPTED_PVALUES_FROM_DISK)
+			this.acceptedProposals.remove(nextExecutable.slot)
+			;
+
 		// Note: by design, assertSlotInvariant() may not hold right here.
 		return nextExecutable;
 	}
 
+	// tries to reconstruct decision from corresponding accept
+	protected synchronized PValuePacket reconstructDecision(int slot) {
+		PValuePacket reconstructedDecision = null;
+		if ((reconstructedDecision = this.committedRequests.get(slot)) != null) {
+			if (reconstructedDecision.hasRequestValue()) {
+				return reconstructedDecision;
+			} else if (this.acceptedProposals.containsKey(slot)) {
+				if (this.acceptedProposals.get(slot).ballot
+						.equals(reconstructedDecision.ballot))
+					return new PValuePacket(this.acceptedProposals.get(slot))
+							.makeDecision(this.committedRequests.get(slot)
+									.getMedianCheckpointedSlot());
+			}
+		}
+		return null;
+	}
+
 	protected synchronized void assertSlotInvariant() {
-		assert (!this.committedRequests.containsKey(this.getSlot()));
+		assert (!this.committedRequests.containsKey(this.getSlot()) || !this.committedRequests
+				.get(this.getSlot()).hasRequestValue());
 	}
 
 	/*
@@ -370,6 +418,13 @@ public class PaxosAcceptor {
 	}
 
 	private synchronized void garbageCollectAccepted(int gcSlot) {
+		/*
+		 * Can only GC executed accepts coz we might need them to reconstruct
+		 * batched decisions.
+		 */
+		if (this.getSlot() - gcSlot <= 0)
+			gcSlot = this.getSlot() - 1;
+
 		if (gcSlot - this.acceptedGCSlot > 0) { // wraparound-aware arithmetic
 			this.acceptedGCSlot = gcSlot;
 			Iterator<Integer> slotIterator = this.acceptedProposals.keySet()
@@ -378,6 +433,19 @@ public class PaxosAcceptor {
 				if ((Integer) slotIterator.next() - gcSlot <= 0)
 					slotIterator.remove();
 			}
+		}
+		this.garbageCollectDecisions(gcSlot);
+	}
+
+	protected synchronized void garbageCollectDecisions(int slot) {
+		// can only GC executed decisions
+		if (slot - this.getSlot() >= 0)
+			return;
+
+		for (Iterator<Integer> slotIter = this.committedRequests.keySet()
+				.iterator(); slotIter.hasNext();) {
+			if (slot - slotIter.next() > 0)
+				slotIter.remove();
 		}
 	}
 
@@ -430,8 +498,8 @@ public class PaxosAcceptor {
 		for (int i = 0; i < load; i++) {
 			this.acceptedProposals.put(25 + i, new PValuePacket(new Ballot(
 					ballotNum, ballotCoord), new ProposalPacket(45 + i,
-					new RequestPacket(34 + i, "hello39" + i, false))));
-			RequestPacket req = new RequestPacket(71 + i, "hello41" + i, false);
+					new RequestPacket("hello39" + i, false))));
+			RequestPacket req = new RequestPacket("hello41" + i, false);
 			this.committedRequests.put(43 + i, new PValuePacket(
 					new Ballot(0, 0), new ProposalPacket(43 + i, req)));
 		}
@@ -445,8 +513,10 @@ public class PaxosAcceptor {
 			this.executed(i, false);
 			this.committedRequests.remove(i);
 			// have to be logged on disk for correctness
-			if (GET_ACCEPTED_PVALUES_FROM_DISK)
+			if (GET_ACCEPTED_PVALUES_FROM_DISK) {
 				this.acceptedProposals.remove(i);
+				assert(this.acceptedProposals.get(i)==null);
+			}
 		}
 		assert (slotNumber == getSlot());
 	}
@@ -463,8 +533,9 @@ public class PaxosAcceptor {
 	private boolean isNonConflictingDecision(PValuePacket decision) {
 		PValuePacket existing = this.committedRequests.get(decision.slot);
 		if (existing != null && decision.ballot.compareTo(existing.ballot) == 0) {
-			return (existing.requestID == decision.requestID && existing.requestValue
-					.equals(decision.requestValue));
+			if (existing.requestValue != null) // for meta commits
+				return (existing.requestID == decision.requestID && existing.requestValue
+						.equals(decision.requestValue));
 		}
 		return true;
 	}
@@ -492,8 +563,7 @@ public class PaxosAcceptor {
 	}
 
 	protected boolean canSync(long minResyncDelay) {
-		return isOlderThan(this.lastSyncdTime,
-				minResyncDelay);
+		return isOlderThan(this.lastSyncdTime, minResyncDelay);
 	}
 
 	protected boolean isLongIdle() {
@@ -603,9 +673,9 @@ public class PaxosAcceptor {
 		int slot = (int) (Math.random() * Integer.MAX_VALUE);
 		int reqID = (int) (Math.random() * Integer.MAX_VALUE);
 		Ballot testBallot = new Ballot(bnum, coord);
-		PValuePacket pvalue = new PValuePacket(testBallot, new ProposalPacket(
-				slot, new RequestPacket(0, reqID, "request_value:" + reqID,
-						false)));
+		PValuePacket pvalue = new PValuePacket(testBallot,
+				new ProposalPacket(slot, new RequestPacket(reqID,
+						"request_value:" + reqID, false)));
 		AcceptPacket accept = new AcceptPacket(coord, pvalue, -1);
 		return accept;
 	}
@@ -656,4 +726,5 @@ public class PaxosAcceptor {
 		testAcceptor();
 		System.out.println("SUCCESS!");
 	}
+
 }

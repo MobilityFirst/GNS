@@ -37,10 +37,7 @@ import edu.umass.cs.utils.Util;
  *         A utility class to consume batched requests.
  */
 public class RequestBatcher extends ConsumerTask<RequestPacket> {
-	/*
-	 * Warning: setting this to a high value seems to cause problems with long
-	 * log messages in derby DB. Increase with care.
-	 */
+	
 	private static final int MAX_BATCH_SIZE = 1000;
 	private static final long SLEEP_DURATION = Config
 			.getGlobalLong(PC.BATCH_SLEEP_DURATION);
@@ -56,7 +53,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	 *            Needed to consume requests by invoking
 	 *            {@code paxosManager.handleIncomingPacketInternal}.
 	 */
-	public RequestBatcher(HashMap<String, LinkedBlockingQueue<RequestPacket>> lock,
+	private RequestBatcher(HashMap<String, LinkedBlockingQueue<RequestPacket>> lock,
 			PaxosManager<?> paxosManager) {
 		super(lock);
 		this.batched = lock;
@@ -73,7 +70,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 	@Override
 	public void process(RequestPacket task) {
-		this.paxosManager.proposeBatched(task.setCreateTime(System
+		this.paxosManager.proposeBatched(task.setEntryTime(System
 				.currentTimeMillis()));
 	}
 
@@ -147,7 +144,8 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 			assert (reqPktIter.hasNext());
 			RequestPacket next = reqPktIter.next();
 			// break if not within size limit
-			if ((totalByteLength += next.lengthEstimate()) > SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE)
+			if (SQLPaxosLogger.isLoggingEnabled()
+					&& (totalByteLength += next.lengthEstimate()) > SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE)
 				break;
 			// else add to batch and remove
 			batch.add(next);

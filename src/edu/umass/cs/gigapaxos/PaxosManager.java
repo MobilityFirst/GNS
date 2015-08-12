@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -55,6 +55,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -102,6 +103,7 @@ public class PaxosManager<NodeIDType> {
 	private final IntegerMap<NodeIDType> integerMap = new IntegerMap<NodeIDType>();
 	private final Stringifiable<NodeIDType> unstringer;
 	private final RequestBatcher batched;
+	private final PaxosPacketBatcher ppBatcher;
 
 	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD;
 	private int interCheckpointInterval = PaxosInstanceStateMachine.INTER_CHECKPOINT_INTERVAL;
@@ -179,15 +181,16 @@ public class PaxosManager<NodeIDType> {
 				Config.getGlobalInt(PC.PINSTANCES_CAPACITY));
 		this.corpses = new HashMap<String, PaxosInstanceStateMachine>();
 		// this.activePaxii = new HashMap<String, ActivePaxosState>();
-		this.messenger = new Messenger<NodeIDType>(niot, this.integerMap);
+		this.messenger = (new Messenger<NodeIDType>(niot, this.integerMap));
 		this.paxosLogger = new SQLPaxosLogger(this.myID, id.toString(),
-				paxosLogFolder, this.messenger);
+				paxosLogFolder, this.wrapMessenger(this.messenger));
 		this.nullCheckpointsEnabled = enableNullCheckpoints;
 		// periodically remove active state for idle paxii
 		executor.scheduleWithFixedDelay(new Deactivator(), 0,
 				Config.getGlobalInt(PC.DEACTIVATION_PERIOD),
 				TimeUnit.MILLISECONDS);
 		(this.batched = new RequestBatcher(this)).start();
+		(this.ppBatcher = new PaxosPacketBatcher(this)).start();
 		testingInitialization();
 		// needed to unclose when testing multiple runs of open and close
 		open();
@@ -459,7 +462,7 @@ public class PaxosManager<NodeIDType> {
 		private final PaxosManager<NodeIDType> paxosManager;
 
 		public PaxosPacketDemultiplexer(PaxosManager<NodeIDType> pm) {
-			super(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS)); 
+			super(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS));
 			paxosManager = pm;
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
 			this.registerOrderPreserving(PaxosPacket.PaxosPacketType.REQUEST);
@@ -485,6 +488,21 @@ public class PaxosManager<NodeIDType> {
 				e.printStackTrace();
 			}
 			return isPacketTypeFound;
+		}
+
+		@Override
+		public boolean isOrderPreserving(JSONObject msg) {
+			try {
+				// we only preserve order or REQUEST packets
+				PaxosPacketType type = PaxosPacket.getPaxosPacketType(msg);
+				return type.equals(PaxosPacket.PaxosPacketType.REQUEST)
+						|| type.equals(PaxosPacket.PaxosPacketType.PROPOSAL);
+			} catch (JSONException e) {
+				log.severe(this + " incurred JSONException while parsing "
+						+ msg);
+				e.printStackTrace();
+			}
+			return false;
 		}
 	}
 
@@ -527,8 +545,9 @@ public class PaxosManager<NodeIDType> {
 	protected void handlePaxosPacket(JSONObject jsonMsg) {
 		if (this.isClosed())
 			return;
-		else if (emulateUnreplicated(jsonMsg)) // testing
-			return;
+		else if (this.emulateLazyPropagation(jsonMsg)
+				|| emulateUnreplicated(jsonMsg))
+			return; // testing
 		else
 			setProcessing(true);
 
@@ -546,8 +565,9 @@ public class PaxosManager<NodeIDType> {
 				processFindReplicaGroup(new FindReplicaGroupPacket(jsonMsg));
 				break;
 			default: // paxos protocol messages
-				assert (jsonMsg.has(PaxosPacket.Keys.PID.toString())) : jsonMsg;
-				String paxosID = jsonMsg.getString(PaxosPacket.Keys.PID.toString());
+				assert (jsonMsg.has(PaxosPacket.Keys.ID.toString())) : jsonMsg;
+				String paxosID = jsonMsg.getString(PaxosPacket.Keys.ID
+						.toString());
 				PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 				log.log(Level.FINEST,
 						"{0} received paxos message for retrieved instance {1} : {2}",
@@ -564,8 +584,25 @@ public class PaxosManager<NodeIDType> {
 			log.severe("Node" + this.myID + " received bad JSON message: "
 					+ jsonMsg);
 			je.printStackTrace();
+		} finally {
+			setProcessing(false);
 		}
-		setProcessing(false);
+	}
+	
+	private void handlePaxosPacket(RequestPacket request) {
+		setProcessing(true);
+		try {
+			PaxosInstanceStateMachine pism = this.getInstance(request
+					.getPaxosID());
+			log.log(Level.FINEST,
+					"{0} received paxos message for retrieved instance {1} : {2}",
+					new Object[] { this, pism, request.getSummary() });
+			if (pism != null)
+				// version checked internally
+				pism.handlePaxosMessage(request);
+		} finally {
+			setProcessing(false);
+		}
 	}
 
 	private String propose(String paxosID, RequestPacket requestPacket)
@@ -595,12 +632,7 @@ public class PaxosManager<NodeIDType> {
 
 	// used (only) by RequestBatcher for already batched RequestPackets
 	protected void proposeBatched(RequestPacket requestPacket) {
-		try {
-			this.handlePaxosPacket(requestPacket.toJSONObject());
-		} catch (JSONException e) {
-			log.severe(this + " " + e.getMessage());
-			e.printStackTrace();
-		}
+		this.handlePaxosPacket(requestPacket);
 	}
 
 	/**
@@ -613,7 +645,7 @@ public class PaxosManager<NodeIDType> {
 	 *         locally.
 	 */
 	public String propose(String paxosID, String requestPacket) {
-		RequestPacket request = (new RequestPacket(-1, requestPacket, false))
+		RequestPacket request = (new RequestPacket(requestPacket, false))
 				.setReturnRequestValue();
 		String retval = null;
 		try {
@@ -640,7 +672,7 @@ public class PaxosManager<NodeIDType> {
 	public String proposeStop(String paxosID, String value, int version) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version) {
-			RequestPacket request = (new RequestPacket(-1, value, true))
+			RequestPacket request = (new RequestPacket(value, true))
 					.setReturnRequestValue();
 			request.putPaxosID(paxosID, version);
 			try {
@@ -889,6 +921,7 @@ public class PaxosManager<NodeIDType> {
 		this.FD.close();
 		this.messenger.stop();
 		this.batched.stop();
+		this.ppBatcher.stop();
 		this.executor.shutdownNow();
 	}
 
@@ -901,18 +934,65 @@ public class PaxosManager<NodeIDType> {
 
 	/********************* End of public methods ***********************/
 
+	int totalRcvd = 0;
+
+	synchronized void incrTotalRcvd(int n) {
+		totalRcvd += n;
+	}
+
+	synchronized int getTotalRcvd(int n) {
+		return totalRcvd;
+	}
+
 	private final boolean emulateUnreplicated(JSONObject jsonMsg) {
 		if (!Config.getGlobalBoolean(PC.EMULATE_UNREPLICATED))
 			return false;
+		// else will finally return true
 		try {
 			if (!PaxosPacket.getPaxosPacketType(jsonMsg).equals(
 					PaxosPacket.PaxosPacketType.REQUEST))
 				return false;
 
-			PaxosInstanceStateMachine.execute(null, myApp, (new RequestPacket(
-					jsonMsg).setEntryReplica(myID)).getRequestValues(), false);
+			RequestPacket request = (new RequestPacket(jsonMsg));
+			// pretend-execute new requests
+			PaxosInstanceStateMachine.execute(null, myApp, request
+					.setEntryReplica(getMyID()).getRequestValues(), false);
 		} catch (JSONException e) {
 			log.severe(this + " unable to parse " + jsonMsg);
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	private final boolean emulateLazyPropagation(JSONObject jsonMsg) {
+		if (!Config.getGlobalBoolean(PC.LAZY_PROPAGATION))
+			return false;
+		// else will finally return true
+		try {
+			if (!PaxosPacket.getPaxosPacketType(jsonMsg).equals(
+					PaxosPacket.PaxosPacketType.REQUEST))
+				return false;
+
+			RequestPacket request = (new RequestPacket(jsonMsg));
+			// extract newly received requests
+			request = request.getNoEntryReplicaRequestsAsBatch()[1];
+			if (request != null) {
+				// pretend-execute newly received requests
+				PaxosInstanceStateMachine.execute(null, myApp, request
+						.setEntryReplica(getMyID()).getRequestValues(), false);
+				// broadcast newly received requests to others
+				PaxosInstanceStateMachine pism = this.getInstance(request
+						.getPaxosID());
+				MessagingTask mtask = pism != null ? new MessagingTask(
+						pism.otherGroupMembers(), request) : null;
+
+				this.send(mtask);
+			}
+		} catch (JSONException e) {
+			log.severe(this + " unable to parse " + jsonMsg);
+			e.printStackTrace();
+		} catch (IOException e) {
+			log.severe(this + " IOException while lazy-propagating " + jsonMsg);
 			e.printStackTrace();
 		}
 		return true;
@@ -925,6 +1005,7 @@ public class PaxosManager<NodeIDType> {
 		}
 		return nodes;
 	}
+
 	protected Set<String> getStringNodesFromIntArray(int[] members) {
 		Set<String> nodes = new HashSet<String>();
 		for (int member : members) {
@@ -1060,18 +1141,49 @@ public class PaxosManager<NodeIDType> {
 				&& (pism != null && pism.isActive());
 	}
 
+	private Messenger<NodeIDType> wrapMessenger(Messenger<NodeIDType> msgr) {
+		return new Messenger<NodeIDType>(PaxosManager.this.messenger) {
+			public void send(MessagingTask mtask) throws JSONException,
+					IOException {
+				PaxosManager.this.send(mtask,
+						Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES), false);
+			}
+
+			public void send(MessagingTask[] mtasks) throws JSONException,
+					IOException {
+				PaxosManager.this.notifyLoggedDecisions(mtasks);
+				super.send(mtasks);
+			}
+		};
+	}
+
+	private void notifyLoggedDecisions(MessagingTask[] mtasks) {
+		PaxosInstanceStateMachine pism = null;
+		for (Map.Entry<String, Integer> entry : PaxosPacketBatcher
+				.getMaxLoggedDecisionMap(mtasks).entrySet())
+			if ((pism = PaxosManager.this.getInstance(entry.getKey())) != null)
+				pism.garbageCollectDecisions(entry.getValue());
+	}
+
 	/*
 	 * All messaging is done using PaxosMessenger and MessagingTask. This method
 	 */
-	protected void send(MessagingTask mtask) throws JSONException, IOException {
+	protected void send(MessagingTask mtask, boolean coalesce, boolean logMsg)
+			throws JSONException, IOException {
 		if (mtask == null)
 			return;
-		if (mtask instanceof LogMessagingTask) {
+
+		if (logMsg && mtask instanceof LogMessagingTask) {
 			AbstractPaxosLogger.logAndMessage(this.paxosLogger,
-					(LogMessagingTask) mtask, this.messenger);
+					(LogMessagingTask) mtask);// , this.messenger);
 		} else {
-			messenger.send(mtask);
+			this.messenger.send(coalesce ? PaxosManager.this.ppBatcher
+					.coalesce(mtask) : mtask);
 		}
+	}
+
+	protected void send(MessagingTask mtask) throws JSONException, IOException {
+		this.send(mtask, Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES), true);
 	}
 
 	/*
@@ -1322,8 +1434,8 @@ public class PaxosManager<NodeIDType> {
 		if (!this.isNullCheckpointStateEnabled())
 			return;
 		PaxosInstanceStateMachine zombie = this.corpses.get(paxosID);
-		if (jsonMsg.has(PaxosPacket.Keys.PV.toString())) {
-			int version = jsonMsg.getInt(PaxosPacket.Keys.PV.toString());
+		if (jsonMsg.has(PaxosPacket.Keys.V.toString())) {
+			int version = jsonMsg.getInt(PaxosPacket.Keys.V.toString());
 			if (zombie == null || (zombie.getVersion() - version) < 0)
 				findReplicaGroup(jsonMsg, paxosID, version);
 		}
@@ -1750,17 +1862,16 @@ public class PaxosManager<NodeIDType> {
 		if (PaxosPacket.getPaxosPacketType(json) == PaxosPacket.PaxosPacketType.FAILURE_DETECT)
 			return json;
 
-		if (json.has(PaxosPacket.NodeIDKeys.BLLT.toString())) {
+		if (json.has(PaxosPacket.NodeIDKeys.B.toString())) {
 			// fix ballot string
-			String ballotString = json.getString(PaxosPacket.NodeIDKeys.BLLT
+			String ballotString = json.getString(PaxosPacket.NodeIDKeys.B
 					.toString());
 			Integer coordInt = this.integerMap.put(this.unstringer
 					.valueOf(Ballot.getBallotCoordString(ballotString)));
 			assert (coordInt != null);
 			Ballot ballot = new Ballot(Ballot.getBallotNumString(ballotString),
 					coordInt);
-			json.put(PaxosPacket.NodeIDKeys.BLLT.toString(),
-					ballot.toString());
+			json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
 		} else if (json.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {
 			// fix group string (JSONArray)
 			JSONArray jsonArray = json
@@ -1985,8 +2096,8 @@ public class PaxosManager<NodeIDType> {
 		int numExceptions = 0;
 		double scheduledDelay = 0;
 		for (int i = 0; i < numRequests; i++) {
-			reqs[i] = new RequestPacket(0, i,
-					"[ Sample write request numbered " + i + " ]", false);
+			reqs[i] = new RequestPacket(i, "[ Sample write request numbered "
+					+ i + " ]", false);
 			reqs[i].putPaxosID(names[0], 0);
 			JSONObject reqJson = reqs[i].toJSONObject();
 			JSONPacket.putPacketType(reqJson,

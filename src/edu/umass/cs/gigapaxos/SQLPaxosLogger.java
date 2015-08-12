@@ -899,7 +899,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			assert (conn != null);
 
 			cpStmt = this.getPreparedStatement(conn, table, paxosID,
-					"slot, ballotnum, coordinator, state, version, createTime");
+					"slot, ballotnum, coordinator, state, version, createTime, members");
 
 			cpStmt.setString(1, paxosID);
 			stateRS = cpStmt.executeQuery();
@@ -917,11 +917,12 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 							stateRS.getInt(2), stateRS.getInt(3),
 							(!getCheckpointClobOption() ? stateRS.getString(4)
 									: clobToString(stateRS.getClob(4))),
-							stateRS.getInt(5), stateRS.getLong(6));
+							stateRS.getInt(5), stateRS.getLong(6),
+							Util.stringToStringSet(stateRS.getString(7)));
 			}
-		} catch (SQLException | IOException e) {
-			log.severe((e instanceof SQLException ? "SQL" : "IO")
-					+ "Exception while getting slot " + " : " + e);
+		} catch (SQLException | IOException | JSONException e) {
+			log.severe(e.getClass().getSimpleName()
+					+ " while getting slot " + " : " + e);
 			e.printStackTrace();
 		} finally {
 			cleanup(stateRS);
@@ -1545,7 +1546,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 					if (MAX_LOG_MESSAGE_SIZE > rset.getInt("COLUMN_SIZE"))
 						stmt.execute("alter table "
 								+ getMTable()
-								+ " alter column state set data type "
+								+ " alter column message set data type "
 								+ (getLogMessageClobOption() ? SQL
 										.getClobString(maxLogMessageSize,
 												SQL_TYPE) : " varchar("
@@ -2097,12 +2098,11 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			PaxosPacket[] packets = new PaxosPacket[numPackets];
 			long time = 0;
 			int i = 0;
-			int reqClientID = 25;
 			String reqValue = "26";
 			int nodeID = coordinator;
 			int k = 1;
 			for (int j = 0; j < packets.length; j++) {
-				RequestPacket req = new RequestPacket(reqClientID, 0, reqValue,
+				RequestPacket req = new RequestPacket( 0, reqValue,
 						false);
 				ProposalPacket prop = new ProposalPacket(i, req);
 				PValuePacket pvalue = new PValuePacket(ballot, prop);
@@ -2113,10 +2113,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				if (j % 3 == 0) { // prepare
 					packets[j] = prepare;
 				} else if (j % 3 == 1) { // accept
-					accept.setCreateTime(0);
+					//accept.setCreateTime(0);
 					packets[j] = accept;
 				} else if (j % 3 == 2) { // decision
-					pvalue.setCreateTime(0);
+					//pvalue.setCreateTime(0);
 					packets[j] = pvalue;
 				}
 				if (j % 3 == 2)

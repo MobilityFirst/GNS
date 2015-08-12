@@ -67,7 +67,7 @@ public final class PreparePacket extends PaxosPacket {
 		super(json);
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.PREPARE);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BLLT
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.B
 				.toString()));
 		this.firstUndecidedSlot = json
 				.getInt(PaxosPacket.Keys.PREP_MIN.toString());
@@ -77,7 +77,7 @@ public final class PreparePacket extends PaxosPacket {
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(PaxosPacket.NodeIDKeys.BLLT.toString(), ballot.toString());
+		json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
 		json.put(PaxosPacket.Keys.PREP_MIN.toString(),
 				firstUndecidedSlot);
 		if(this.recovery) json.put(PaxosPacket.Keys.RCVRY.toString(), recovery);
