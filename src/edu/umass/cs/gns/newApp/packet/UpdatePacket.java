@@ -437,7 +437,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     ResultValue x = new ResultValue();
     x.add("12345678");
     //
-    UpdatePacket up = new UpdatePacket(null, 32234234, 123, "12322323",
+    UpdatePacket<String> up = new UpdatePacket(null, 32234234, 123, "12322323",
             "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
 

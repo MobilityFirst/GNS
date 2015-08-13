@@ -106,10 +106,11 @@ public class SendUpdatesTask extends TimerTask {
   }
 
   private boolean isResponseReceived() {
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);
     if (info == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("UpdateInfo not found. Update complete. Cancel task. " + ccpReqID + "\t" + updatePacket);
+        GNS.getLogger().fine("UpdateInfo<String> not found. Update complete. Cancel task. " + ccpReqID + "\t" + updatePacket);
       }
       return true;
     } else if (requestActivesCount == -1) {
@@ -124,13 +125,14 @@ public class SendUpdatesTask extends TimerTask {
     return false;
   }
 
+  @SuppressWarnings("unchecked")
   private boolean isMaxWaitTimeExceeded() {
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
+    UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);
     if (info != null) {   // probably NS sent response
       // Too much time elapsed, send failed msg to user and log error
       if (System.currentTimeMillis() - info.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
         // remove from request info as CCP must clear all state for this request
-        info = (UpdateInfo) handler.removeRequestInfo(ccpReqID);
+        info = (UpdateInfo<String>) handler.removeRequestInfo(ccpReqID);
         if (info != null) {
           if (handler.getParameters().isDebugMode()) {
             GNS.getLogger().fine("UPDATE FAILED no response until MAX-wait time: request ID = " + ccpReqID + " name = " + name);
@@ -156,7 +158,8 @@ public class SendUpdatesTask extends TimerTask {
 
   private void requestNewActives(EnhancedClientRequestHandlerInterface handler) {
     // remove update info from CCP
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);
     if (info != null) {   // probably NS sent response
       SendUpdatesTask newTask = new SendUpdatesTask(ccpReqID, handler, updatePacket, null);
       PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
@@ -181,7 +184,8 @@ public class SendUpdatesTask extends TimerTask {
       }
       return;
     }
-    UpdateInfo<String> info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);
     activesQueried.add(nameServerID);
     UpdatePacket<String> pkt = Update.makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID);
     // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
@@ -224,7 +228,8 @@ public class SendUpdatesTask extends TimerTask {
       }
     }
     // keep track of which NS we sent it to
-    UpdateInfo<String> updateInfo = (UpdateInfo) handler.getRequestInfo(ccpReqID);
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);
     if (updateInfo != null) {
       updateInfo.setNameserverID(nameServerID);
     }

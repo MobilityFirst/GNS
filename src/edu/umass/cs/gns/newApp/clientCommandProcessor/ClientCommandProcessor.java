@@ -50,7 +50,7 @@ public class ClientCommandProcessor implements Shutdownable {
   /**
    * Handles the client support processing for the local name server.
    */
-  private Intercessor<String> intercessor;
+  private Intercessor intercessor;
 
   /**
    * Handles administrative client support for the local name server.
@@ -95,7 +95,7 @@ public class ClientCommandProcessor implements Shutdownable {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
     }
     this.demultiplexer = new CCPPacketDemultiplexer<>();
-    this.intercessor = new Intercessor<>(nodeAddress, nodeConfig, demultiplexer);
+    this.intercessor = new Intercessor(nodeAddress, nodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor();
     this.nodeAddress = nodeAddress;
     this.nodeConfig = nodeConfig;

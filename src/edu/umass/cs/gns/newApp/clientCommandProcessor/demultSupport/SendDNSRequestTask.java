@@ -101,7 +101,8 @@ public class SendDNSRequestTask extends TimerTask {
   }
 
   private boolean isResponseReceived(ClientRequestHandlerInterface handler) {
-    DNSRequestInfo<String> info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
+    @SuppressWarnings("unchecked")
+    DNSRequestInfo<String> info = (DNSRequestInfo<String>) handler.getRequestInfo(lnsReqID);
     if (info == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Query ID. Response recvd "
@@ -121,12 +122,13 @@ public class SendDNSRequestTask extends TimerTask {
     return false;
   }
 
+  @SuppressWarnings("unchecked")
   private boolean isMaxWaitTimeExceeded(ClientRequestHandlerInterface handler) throws JSONException {
-    DNSRequestInfo<String> requestInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
+    DNSRequestInfo<String> requestInfo = (DNSRequestInfo<String>) handler.getRequestInfo(lnsReqID);
     if (requestInfo != null) {
       if (System.currentTimeMillis() - requestInfo.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
         // remove from request info as LNS must clear all state for this request
-        requestInfo = (DNSRequestInfo) handler.removeRequestInfo(lnsReqID);
+        requestInfo = (DNSRequestInfo<String>) handler.removeRequestInfo(lnsReqID);
         if (requestInfo != null) {
           // send error response to user and log error
           if (handler.getParameters().isDebugMode()) {
@@ -150,7 +152,8 @@ public class SendDNSRequestTask extends TimerTask {
     if (cacheEntry != null && incomingPacket.getKey() != null) { // key can be null if request is multi-field
       ResultValue value = cacheEntry.getValueAsArray(incomingPacket.getKey());
       if (value != null) {
-        DNSRequestInfo info = (DNSRequestInfo) handler.removeRequestInfo(lnsReqID);
+        @SuppressWarnings("unchecked")
+        DNSRequestInfo<String> info = (DNSRequestInfo<String>) handler.removeRequestInfo(lnsReqID);
         if (info != null) {
           loggingForAddressInCache(info);
           GNS.getLogger().info("Replying from cache " + incomingPacket.getGuid() + "/" + incomingPacket.getKey());
@@ -166,7 +169,7 @@ public class SendDNSRequestTask extends TimerTask {
   /**
    * Log data for entries already in cache.
    */
-  private void loggingForAddressInCache(DNSRequestInfo info) {
+  private void loggingForAddressInCache(DNSRequestInfo<String> info) {
     String nameRecordKey = incomingPacket.getKey();
     String name = incomingPacket.getGuid();
     if (handler.getParameters().isDebugMode()) {
@@ -227,8 +230,8 @@ public class SendDNSRequestTask extends TimerTask {
   private void sendLookupToNS(String ns) {
     if (ns != null) {
       nameserversQueried.add(ns);
-
-      DNSRequestInfo reqInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
+      @SuppressWarnings("unchecked")
+      DNSRequestInfo<String> reqInfo = (DNSRequestInfo<String>) handler.getRequestInfo(lnsReqID);
 //      if (reqInfo != null) {
 //        reqInfo.addEventCode(LNSEventCode.CONTACT_ACTIVE);
 //      }

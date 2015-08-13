@@ -75,7 +75,7 @@ public class CCPProtocolTask<NodeIDType> implements
 
     ReconfigurationPacket.PacketType type = event.getType();
     ReconfigurationPacket packet = (ReconfigurationPacket) event.getMessage();
-    GenericMessagingTask mtask = null;
+    GenericMessagingTask<NodeIDType, ?> mtask = null;
     switch (type) {
       case CREATE_SERVICE_NAME:
         mtask = handleCreate((CreateServiceName) packet);
@@ -89,20 +89,22 @@ public class CCPProtocolTask<NodeIDType> implements
     return mtask != null ? mtask.toArray() : null;
   }
 
-  private GenericMessagingTask handleCreate(CreateServiceName packet) {
+  private GenericMessagingTask<NodeIDType, ?> handleCreate(CreateServiceName packet) {
     Integer lnsRequestID = handler.removeCreateRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
 
       // Basically we gin up a confirmation packet for the original AddRecord packet and
       // send it back to the originator of the request.
-      UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(lnsRequestID);
       if (info != null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().info("??????????????????????????? App created " + packet.getServiceName()
                   + " in " + (System.currentTimeMillis() - info.getStartTime()) + "ms");
         }
-        AddRecordPacket originalPacket = (AddRecordPacket) info.getUpdatePacket();
-        ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
+        @SuppressWarnings("unchecked")
+        AddRecordPacket<String> originalPacket = (AddRecordPacket<String>) info.getUpdatePacket();
+        ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, originalPacket);
 
         try {
           AddRemove.handlePacketConfirmAdd(confirmPacket.toJSONObject(), handler);
@@ -120,20 +122,22 @@ public class CCPProtocolTask<NodeIDType> implements
     return null;
   }
 
-  private GenericMessagingTask handleDelete(DeleteServiceName packet) {
+  private GenericMessagingTask<NodeIDType, ?> handleDelete(DeleteServiceName packet) {
     if (!packet.isFailed()) { // it appears that these requests can fail now
       Integer lnsRequestID = handler.removeDeleteRequestNameToIDMapping(packet.getServiceName());
       if (lnsRequestID != null) {
         // Basically we gin up a confirmation packet for the original AddRecord packet and
         // send it back to the originator of the request.
-        UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+        @SuppressWarnings("unchecked")
+        UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(lnsRequestID);
         if (info != null) {
           if (handler.getParameters().isDebugMode()) {
             GNS.getLogger().info("??????????????????????????? App removed " + packet.getServiceName()
                     + "in " + (System.currentTimeMillis() - info.getStartTime()) + "ms");
           }
-          RemoveRecordPacket originalPacket = (RemoveRecordPacket) info.getUpdatePacket();
-          ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, originalPacket);
+          @SuppressWarnings("unchecked")
+          RemoveRecordPacket<String> originalPacket = (RemoveRecordPacket<String>) info.getUpdatePacket();
+          ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, originalPacket);
 
           try {
             AddRemove.handlePacketConfirmRemove(confirmPacket.toJSONObject(), handler);

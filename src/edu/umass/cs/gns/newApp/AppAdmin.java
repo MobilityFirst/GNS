@@ -38,9 +38,9 @@ public class AppAdmin extends Thread implements Shutdownable{
    */
   private ServerSocket serverSocket;
 
-  private final GnsApplicationInterface app;
+  private final GnsApplicationInterface<String> app;
 
-  private final GNSNodeConfig gnsNodeConfig;
+  private final GNSNodeConfig<String> gnsNodeConfig;
 
   /**
    * Creates a new listener thread for handling response packet
@@ -48,7 +48,7 @@ public class AppAdmin extends Thread implements Shutdownable{
    * @throws IOException
    */
   
-  public AppAdmin(GnsApplicationInterface app, GNSNodeConfig gnsNodeConfig) {
+  public AppAdmin(GnsApplicationInterface<String> app, GNSNodeConfig gnsNodeConfig) {
     super("NSListenerAdmin");
     this.app = app;
     this.gnsNodeConfig = gnsNodeConfig;

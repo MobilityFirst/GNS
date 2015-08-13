@@ -56,7 +56,7 @@ public class CreateDelete {
               handler);
     } else {
       // If we're running standalone just add the record.
-      AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
+      AddRecordPacket<String> addRecordPacket = new AddRecordPacket<>(json, handler.getGnsNodeConfig());
       ValuesMap valuesMap;
       if (addRecordPacket.getField() != null) {
         valuesMap = new ValuesMap();
@@ -67,7 +67,7 @@ public class CreateDelete {
       NRState newState = new NRState(valuesMap, 0);
       handler.getApp().updateState(addRecordPacket.getName(), newState.toString());
       // and send a confirmation back
-      ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, addRecordPacket);
+      ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<>(NSResponseCode.NO_ERROR, addRecordPacket);
       Update.sendConfirmUpdatePacketBackToSource(confirmPacket, handler);
     }
   }
@@ -81,28 +81,28 @@ public class CreateDelete {
               handler);
     } else {
       // If we're running standalone just delete the record.
-      RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
+      RemoveRecordPacket<String> removeRecordPacket = new RemoveRecordPacket<>(json, handler.getGnsNodeConfig());
       handler.getApp().updateState(removeRecordPacket.getName(), null);
       // and send a confirmation back
-      ConfirmUpdatePacket confirmPacket = new ConfirmUpdatePacket(NSResponseCode.NO_ERROR, removeRecordPacket);
+      ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, removeRecordPacket);
       Update.sendConfirmUpdatePacketBackToSource(confirmPacket, handler);
     }
   }
 
-  public static AddRecordPacket registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
+  public static AddRecordPacket<String> registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    AddRecordPacket<String> addRecordPacket = new AddRecordPacket<>(json, handler.getGnsNodeConfig());
     int ccpReqId = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(ccpReqId, addRecordPacket.getName(), null, addRecordPacket, handler);
+    UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, addRecordPacket.getName(), null, addRecordPacket, handler);
     handler.addRequestInfo(ccpReqId, info);
     // not sure why this isn't done like this above
     addRecordPacket.setCCPRequestID(ccpReqId);
     return addRecordPacket;
   }
 
-  public static RemoveRecordPacket registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    RemoveRecordPacket removeRecordPacket = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
+  public static RemoveRecordPacket<String> registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    RemoveRecordPacket<String> removeRecordPacket = new RemoveRecordPacket<String>(json, handler.getGnsNodeConfig());
     int ccpReqId = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(ccpReqId, removeRecordPacket.getName(), null, removeRecordPacket, handler);
+    UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, removeRecordPacket.getName(), null, removeRecordPacket, handler);
     handler.addRequestInfo(ccpReqId, info);
     // not sure why this isn't done like this above
     removeRecordPacket.setCCPRequestID(ccpReqId);

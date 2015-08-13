@@ -64,7 +64,7 @@ public interface ClientRequestHandlerInterface {
 
   public String getActiveReplicaID();
 
-  public Intercessor<String> getIntercessor();
+  public Intercessor getIntercessor();
 
   public Admintercessor getAdmintercessor();
 

@@ -45,7 +45,8 @@ public class AppUpdate {
    * @throws IOException
    * @throws FailedDBOperationException
    */
-  public static void executeUpdateLocal(UpdatePacket<String> updatePacket, GnsApplicationInterface app,
+  public static void executeUpdateLocal(UpdatePacket<String> updatePacket, 
+          GnsApplicationInterface<String> app,
           boolean doNotReplyToClient)
           throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException, SignatureException, JSONException, IOException, FailedDBOperationException {
     Long receiptTime = System.currentTimeMillis();
@@ -70,6 +71,7 @@ public class AppUpdate {
     DelayProfiler.updateDelay("totalUpdateAuth", receiptTime);
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
+      @SuppressWarnings("unchecked")
       ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, errorCode);
       if (!doNotReplyToClient) {
         app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());
@@ -93,6 +95,7 @@ public class AppUpdate {
       } catch (RecordNotFoundException e) {
         GNS.getLogger().severe(" Error: name record not found before update. Return. Name = " + guid + " Packet = " + updatePacket.toString());
         e.printStackTrace();
+        @SuppressWarnings("unchecked")
         ConfirmUpdatePacket<String> failConfirmPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
         if (!doNotReplyToClient) {
           app.getClientCommandProcessor().injectPacketIntoCCPQueue(failConfirmPacket.toJSONObject());

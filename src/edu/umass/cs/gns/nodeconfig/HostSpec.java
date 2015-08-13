@@ -13,16 +13,15 @@ import java.net.UnknownHostException;
 /**
  * A tuple of NodeId and hostname.
  *
- * @param <NodeIDType>
  */
-public class HostSpec<NodeIDType> {
+public class HostSpec {
 
-  private final NodeIDType id;
+  private final String id;
   private final String name;
   private final String externalIP;
   private final Integer startPort;
 
-  public HostSpec(NodeIDType id, String name, String externalIP, Integer startPort) {
+  public HostSpec(String id, String name, String externalIP, Integer startPort) {
     if ("127.0.0.1".equals(name) || "localhost".equals(name)) {
       try {
         name = NetworkUtils.getLocalHostLANAddress().getHostAddress();
@@ -37,7 +36,7 @@ public class HostSpec<NodeIDType> {
     this.startPort = startPort;
   }
 
-  public NodeIDType getId() {
+  public String getId() {
     return id;
   }
 

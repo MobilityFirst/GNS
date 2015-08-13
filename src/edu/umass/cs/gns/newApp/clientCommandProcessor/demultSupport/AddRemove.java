@@ -44,9 +44,9 @@ public class AddRemove {
   @Deprecated
   public static void handlePacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
-    AddRecordPacket addRecordPacket = new AddRecordPacket(json, handler.getGnsNodeConfig());
+    AddRecordPacket<String> addRecordPacket = new AddRecordPacket<String>(json, handler.getGnsNodeConfig());
     int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
+    UpdateInfo<String> info = new UpdateInfo<String>(lnsReqID, addRecordPacket.getName(), null, addRecordPacket, handler);
     handler.addRequestInfo(lnsReqID, info);
     //
     SendAddRemoveTask addTask = new SendAddRemoveTask(lnsReqID, handler, addRecordPacket, addRecordPacket.getName(),
@@ -68,9 +68,9 @@ public class AddRemove {
   public static void handlePacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, NoSuchAlgorithmException, UnsupportedEncodingException, UnknownHostException {
 
-    RemoveRecordPacket removeRecord = new RemoveRecordPacket(json, handler.getGnsNodeConfig());
+    RemoveRecordPacket<String> removeRecord = new RemoveRecordPacket<String>(json, handler.getGnsNodeConfig());
     int lnsReqID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(lnsReqID, removeRecord.getName(), null, removeRecord, handler);
+    UpdateInfo<String> info = new UpdateInfo<String>(lnsReqID, removeRecord.getName(), null, removeRecord, handler);
     handler.addRequestInfo(lnsReqID, info);
 
     SendAddRemoveTask task = new SendAddRemoveTask(lnsReqID, handler, removeRecord, removeRecord.getName(),
@@ -87,8 +87,9 @@ public class AddRemove {
    * Handles confirmation of add request from NS
    */
   public static void handlePacketConfirmAdd(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
-    ConfirmUpdatePacket confirmAddPacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
-    UpdateInfo addInfo = (UpdateInfo) handler.removeRequestInfo(confirmAddPacket.getCCPRequestID());
+    ConfirmUpdatePacket<String> confirmAddPacket = new ConfirmUpdatePacket<String>(json, handler.getGnsNodeConfig());
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> addInfo = (UpdateInfo<String>) handler.removeRequestInfo(confirmAddPacket.getCCPRequestID());
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Confirm add packet for " + addInfo.getName() + ": " + confirmAddPacket.toString());
     }
@@ -111,8 +112,9 @@ public class AddRemove {
    * Handles confirmation of add request from NS
    */
   public static void handlePacketConfirmRemove(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
-    ConfirmUpdatePacket confirmRemovePacket = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
-    UpdateInfo removeInfo = (UpdateInfo) handler.removeRequestInfo(confirmRemovePacket.getCCPRequestID());
+    ConfirmUpdatePacket<String> confirmRemovePacket = new ConfirmUpdatePacket<String>(json, handler.getGnsNodeConfig());
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> removeInfo = (UpdateInfo<String>) handler.removeRequestInfo(confirmRemovePacket.getCCPRequestID());
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Confirm remove packet for " + removeInfo.getName() + ": " + confirmRemovePacket.toString() + " remove info " + removeInfo);
     }

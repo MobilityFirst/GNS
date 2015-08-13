@@ -122,12 +122,12 @@ public class HostFileLoader {
         }
         hostFileHasNodeIds = true;
         // Parse as an Integer if we can otherwise a String.
-        Object nodeID = -1;
-        try {
-          nodeID = Integer.parseInt(idString);
-        } catch (NumberFormatException e) {
-          nodeID = idString;
-        }
+//        Object nodeID = -1;
+//        try {
+//          nodeID = Integer.parseInt(idString);
+//        } catch (NumberFormatException e) {
+          String nodeID = idString;
+        //}
         if (debuggingEnabled) {
           GNS.getLogger().info("Read ID: " + nodeID);
         }

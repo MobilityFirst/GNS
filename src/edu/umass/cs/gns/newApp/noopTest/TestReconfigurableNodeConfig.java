@@ -140,7 +140,7 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
       e.printStackTrace();
       throw new IOException("Problem loading hosts file: " + e);
     }
-    for (HostSpec<String> spec : hosts) {
+    for (HostSpec spec : hosts) {
       System.out.println("For node " + spec.getId()
               + ":  public name => " + spec.getName()
               + " public ip => " + spec.getExternalIP());

@@ -83,7 +83,7 @@ public class SendAddRemoveTask extends TimerTask {
   private boolean isResponseReceived() {
     if (handler.getRequestInfo(getLnsRequestID()) == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+        GNS.getLogger().info("UpdateInfo<String> not found. Either update complete or invalid actives. Cancel task.");
       }
       return true;
     }
@@ -92,7 +92,8 @@ public class SendAddRemoveTask extends TimerTask {
 
   private boolean isMaxWaitTimeExceeded() {
     if (getTimeoutCount() > 0 && System.currentTimeMillis() - getRequestRecvdTime() > handler.getParameters().getMaxQueryWaitTime()) {
-      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(getLnsRequestID());
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.removeRequestInfo(getLnsRequestID());
 
       if (updateInfo == null) {
         GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
@@ -133,8 +134,8 @@ public class SendAddRemoveTask extends TimerTask {
       }
       return;
     }
-
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(lnsRequestID);
 //    if (info != null) {
 //      info.addEventCode(LNSEventCode.CONTACT_RC);
 //    }

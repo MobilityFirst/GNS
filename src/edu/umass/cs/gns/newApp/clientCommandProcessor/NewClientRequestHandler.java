@@ -64,7 +64,7 @@ import org.json.JSONException;
  */
 public class NewClientRequestHandler implements EnhancedClientRequestHandlerInterface {
 
-  private final Intercessor<String> intercessor;
+  private final Intercessor intercessor;
   private final Admintercessor admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
@@ -109,7 +109,7 @@ public class NewClientRequestHandler implements EnhancedClientRequestHandlerInte
 
   private long receivedRequests = 0;
 
-  public NewClientRequestHandler(Intercessor<String> intercessor, Admintercessor admintercessor,
+  public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress,
           String activeReplicaID,
           NewApp app,
@@ -141,6 +141,7 @@ public class NewClientRequestHandler implements EnhancedClientRequestHandlerInte
 
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
+    @SuppressWarnings("unchecked")
     BasicReconfigurationPacket<String> rcEvent
             = (BasicReconfigurationPacket<String>) ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
     return this.protocolExecutor.handleEvent(rcEvent);
@@ -175,7 +176,7 @@ public class NewClientRequestHandler implements EnhancedClientRequestHandlerInte
   }
 
   @Override
-  public Intercessor<String> getIntercessor() {
+  public Intercessor getIntercessor() {
     return intercessor;
   }
 

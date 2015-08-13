@@ -26,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.clientSupport.LNSQueryHandler;
 import edu.umass.cs.gns.newApp.clientSupport.LNSUpdateHandler;

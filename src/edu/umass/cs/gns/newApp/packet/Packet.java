@@ -155,7 +155,7 @@ public class Packet {
     }
   }
 
-  public static PacketType getDNSPacketSubType(DNSPacket dnsPacket) throws JSONException {
+  public static PacketType getDNSPacketSubType(DNSPacket<String> dnsPacket) throws JSONException {
 
     if (dnsPacket.isQuery()) { // Query
       return PacketType.DNS_SUBTYPE_QUERY;
@@ -608,7 +608,7 @@ public class Packet {
     // createInstance testing
     ResultValue x = new ResultValue();
     x.add("12345678");
-    UpdatePacket up = new UpdatePacket<String>(null, 32234234, 123, "12322323",
+    UpdatePacket<String> up = new UpdatePacket<String>(null, 32234234, 123, "12322323",
             "EdgeRecord", x, null, -1, null, UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION, null, "123",
             GNS.DEFAULT_TTL_SECONDS, null, null, null);
     System.out.println(up.toString());

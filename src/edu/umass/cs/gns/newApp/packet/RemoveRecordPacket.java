@@ -27,7 +27,7 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP implements InterfaceRequest {
+public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
   private final static String REQUESTID = "reqID";
   private final static String CCPREQID = "ccpreqID";

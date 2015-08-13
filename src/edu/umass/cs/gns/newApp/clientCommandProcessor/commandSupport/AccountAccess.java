@@ -94,8 +94,8 @@ public class AccountAccess {
   public static AccountInfo lookupAccountInfoFromGuid(String guid,
           //boolean allowSubGuids, 
           ClientRequestHandlerInterface handler) {
-    QueryResult accountResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-    //QueryResult accountResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+    QueryResult<String> accountResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, ACCOUNT_INFO);
+    //QueryResult<String> accountResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, ACCOUNT_INFO);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
     }
@@ -133,8 +133,8 @@ public class AccountAccess {
    */
   public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler) {
 
-    QueryResult guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, PRIMARY_GUID);
-    //QueryResult guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, PRIMARY_GUID);
+    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, PRIMARY_GUID);
+    //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, PRIMARY_GUID);
     try {
       if (!guidResult.isError()) {
         return guidResult.getValuesMap().getString(PRIMARY_GUID);
@@ -157,8 +157,8 @@ public class AccountAccess {
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
 
     try {
-      QueryResult guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(name, HRN_GUID);
-      //QueryResult guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(name, HRN_GUID);
+      QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(name, HRN_GUID);
+      //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(name, HRN_GUID);
       if (!guidResult.isError()) {
         return guidResult.getValuesMap().getString(HRN_GUID);
         //return (String) guidResult.getArray(HRN_GUID).get(0);
@@ -178,8 +178,8 @@ public class AccountAccess {
    */
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler) {
 
-    QueryResult guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, GUID_INFO);
-    //QueryResult guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, GUID_INFO);
+    QueryResult<String> guidResult = handler.getIntercessor().sendFullQueryBypassingAuthentication(guid, GUID_INFO);
+    //QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, GUID_INFO);
     if (!guidResult.isError()) {
       try {
         return new GuidInfo(guidResult.getValuesMap().getJSONObject(GUID_INFO));

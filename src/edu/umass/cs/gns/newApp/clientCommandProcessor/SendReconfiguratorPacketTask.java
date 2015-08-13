@@ -76,10 +76,11 @@ public class SendReconfiguratorPacketTask extends TimerTask {
       }
       return true;
     } else {
-      UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.getRequestInfo(lnsRequestID);
       if (updateInfo == null) {
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " UpdateInfo not found. Operation complete. Cancel task.");
+          GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " UpdateInfo<String> not found. Operation complete. Cancel task.");
         }
         return true;
       }
@@ -96,7 +97,8 @@ public class SendReconfiguratorPacketTask extends TimerTask {
     if (sendCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
       Integer ccpRequestID = removeRequestNameToIDMapping(name);
       if (ccpRequestID != null) {
-        UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(ccpRequestID);
+        @SuppressWarnings("unchecked")
+        UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.getRequestInfo(ccpRequestID);
         if (updateInfo == null) {
           GNS.getLogger().warning("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
           return true;

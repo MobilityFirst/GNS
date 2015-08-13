@@ -47,7 +47,7 @@ public class LNSUpdateHandler {
    * @return
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue, UpdateOperation operation,
-          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
+          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
     return sendUpdate(name, key, newValue, null, -1, operation, activeReplica, lnsAddress);
   }
 
@@ -65,7 +65,8 @@ public class LNSUpdateHandler {
    * @return
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue,
-          ResultValue oldValue, int argument, UpdateOperation operation, GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
+          ResultValue oldValue, int argument, UpdateOperation operation, 
+          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
     GNS.getLogger().fine("Node " + activeReplica.getNodeID().toString() + "; Sending update: " + name + " : " + key + "->" + newValue.toString());
     int id = nextRequestID();
     // use this to filter out everything but the first responder
@@ -81,8 +82,9 @@ public class LNSUpdateHandler {
   }
 
   private static void sendUpdateInternal(int updateId, InetSocketAddress lnsAddress, String name, String key, ResultValue newValue,
-          ResultValue oldValue, int argument, UpdateOperation operation, GnsApplicationInterface app) {
-    UpdatePacket packet = new UpdatePacket(app.getNodeID(), updateId,
+          ResultValue oldValue, int argument, UpdateOperation operation, 
+          GnsApplicationInterface<String> app) {
+    UpdatePacket<String> packet = new UpdatePacket<String>(app.getNodeID(), updateId,
             name, key, newValue, oldValue, argument, operation,
             null, GNS.DEFAULT_TTL_SECONDS,
             null, null, null);
@@ -143,12 +145,13 @@ public class LNSUpdateHandler {
 //  }
 
   /**
-   * Handles a ConfirmUpdatePacket coming back to this NameServer from a Local Name Server
+   * Handles a ConfirmUpdatePacket<String>coming back to this NameServer from a Local Name Server
    *
    * @param packet
    * @param activeReplica
    */
-  public static void handleConfirmUpdatePacket(ConfirmUpdatePacket packet, GnsApplicationInterface activeReplica) {
+  public static void handleConfirmUpdatePacket(ConfirmUpdatePacket<String> packet, 
+          GnsApplicationInterface<String> activeReplica) {
     int id = packet.getRequestID();
     if (packet.isSuccess()) {
       //Packet is a response and does not have a response error

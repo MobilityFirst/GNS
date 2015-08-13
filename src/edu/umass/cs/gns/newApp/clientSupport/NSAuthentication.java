@@ -36,7 +36,8 @@ public class NSAuthentication {
   private static final Cache<String, String> publicKeyCache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
 
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String accessorGuid, String signature,
-          String message, MetaDataTypeName access, GnsApplicationInterface gnsApp, InetSocketAddress lnsAddress)
+          String message, MetaDataTypeName access, 
+          GnsApplicationInterface<String> gnsApp, InetSocketAddress lnsAddress)
           throws InvalidKeyException, InvalidKeySpecException, SignatureException, NoSuchAlgorithmException,
           FailedDBOperationException, UnsupportedEncodingException {
     final long aclStartTime = System.currentTimeMillis();
@@ -127,7 +128,7 @@ public class NSAuthentication {
    * @throws FailedDBOperationException
    */
   private static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,
-          MetaDataTypeName access, GnsApplicationInterface gnsApp, InetSocketAddress lnsAddress)
+          MetaDataTypeName access, GnsApplicationInterface<String> gnsApp, InetSocketAddress lnsAddress)
           throws FailedDBOperationException {
     String publicKey;
     Set<String> publicKeys = NSAccessSupport.lookupPublicKeysFromAcl(access, guid, field, gnsApp);
@@ -163,7 +164,7 @@ public class NSAuthentication {
     return publicKey;
   }
 
-  private static String lookupPublicKeyFromGuid(String guid, GnsApplicationInterface gnsApp)
+  private static String lookupPublicKeyFromGuid(String guid, GnsApplicationInterface<String> gnsApp)
           throws FailedDBOperationException {
     String result;
     if ((result = publicKeyCache.getIfPresent(guid)) != null) {

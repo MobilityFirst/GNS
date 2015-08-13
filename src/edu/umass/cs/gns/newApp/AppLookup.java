@@ -56,7 +56,7 @@ public class AppLookup {
    * @throws java.security.SignatureException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static void executeLookupLocal(DNSPacket dnsPacket, GnsApplicationInterface gnsApp,
+  public static void executeLookupLocal(DNSPacket<String> dnsPacket, GnsApplicationInterface<String> gnsApp,
           boolean doNotReplyToClient)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
@@ -172,8 +172,8 @@ public class AppLookup {
    * @throws IOException
    * @throws JSONException
    */
-  private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket dnsPacket, String guid, String field, NameRecord nameRecord,
-          GnsApplicationInterface gnsApp) throws FailedDBOperationException, IOException, JSONException {
+  private static boolean handlePossibleGroupGuidIndirectionLookup(DNSPacket<String> dnsPacket, String guid, String field, NameRecord nameRecord,
+          GnsApplicationInterface<String> gnsApp) throws FailedDBOperationException, IOException, JSONException {
     if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
       ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getCCPAddress());
       // Set up the response packet
@@ -200,7 +200,7 @@ public class AppLookup {
    * @return
    * @throws FailedDBOperationException
    */
-  private static NameRecord lookupNameRecordLocally(DNSPacket dnsPacket, String guid, String field, List<String> fields,
+  private static NameRecord lookupNameRecordLocally(DNSPacket<String> dnsPacket, String guid, String field, List<String> fields,
           BasicRecordMap database) throws FailedDBOperationException {
     NameRecord nameRecord = null;
     // Try to look up the value in the database
@@ -243,7 +243,8 @@ public class AppLookup {
    * @param nameRecord
    * @return
    */
-  private static DNSPacket checkAndMakeResponsePacket(DNSPacket dnsPacket, NameRecord nameRecord, GnsApplicationInterface gnsApp) {
+  private static DNSPacket<String> checkAndMakeResponsePacket(DNSPacket<String> dnsPacket, NameRecord nameRecord,
+          GnsApplicationInterface<String> gnsApp) {
     // change it to a response packet
     dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
     dnsPacket.setResponder(gnsApp.getNodeID());

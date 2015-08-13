@@ -39,7 +39,7 @@ public class NSFieldMetaData {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, GuidInfo guidInfo, String key,
-          GnsApplicationInterface activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     return lookupOnThisNameServer(type, guidInfo.getGuid(), key, activeReplica);
   }
 
@@ -56,7 +56,7 @@ public class NSFieldMetaData {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<Object> lookupOnThisNameServer(MetaDataTypeName type, String guid, String key,
-          GnsApplicationInterface activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica) throws RecordNotFoundException, FieldNotFoundException, FailedDBOperationException {
     ResultValue result = NSFieldAccess.lookupListFieldOnThisServer(guid, FieldMetaData.makeFieldMetaDataKey(type, key), activeReplica);
     if (result != null) {
       return new HashSet<Object>(result);
@@ -66,14 +66,14 @@ public class NSFieldMetaData {
   }
 
   public static void add(MetaDataTypeName type, String guid, String key, String value, 
-          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
+          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
 
     LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
             UpdateOperation.SINGLE_FIELD_APPEND_OR_CREATE, activeReplica, lnsAddress);
   }
 
   public static void remove(MetaDataTypeName type, String guid, String key, String value, 
-          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) {
+          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
 
     LNSUpdateHandler.sendUpdate(guid, FieldMetaData.makeFieldMetaDataKey(type, key), new ResultValue(Arrays.asList(value)), 
             UpdateOperation.SINGLE_FIELD_REMOVE, activeReplica, lnsAddress);
