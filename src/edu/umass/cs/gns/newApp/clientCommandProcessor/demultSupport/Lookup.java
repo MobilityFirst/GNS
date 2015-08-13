@@ -197,7 +197,7 @@ public class Lookup {
    *
    * @throws JSONException
    */
-  public static void sendDNSResponseBackToSource(DNSPacket packet, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void sendDNSResponseBackToSource(DNSPacket<String> packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());

@@ -38,7 +38,7 @@ public abstract class AbstractUpdate extends GnsCommand {
   public abstract UpdateOperation getUpdateOperation();
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.optString(FIELD, null);
@@ -55,9 +55,9 @@ public abstract class AbstractUpdate extends GnsCommand {
       // full JSON object update
       if (!(responseCode = handler.getIntercessor().sendUpdateUserJSON(guid, new ValuesMap(userJSON), 
               getUpdateOperation(), writer, signature, message, false)).isAnError()) {
-         return new CommandResponse(OKRESPONSE);
+         return new CommandResponse<String>(OKRESPONSE);
       } else {
-        return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
       }
     } else {
       // single field update 
@@ -68,9 +68,9 @@ public abstract class AbstractUpdate extends GnsCommand {
               index,
               getUpdateOperation(),
               writer, signature, message, handler)).isAnError()) {
-        return new CommandResponse(OKRESPONSE);
+        return new CommandResponse<String>(OKRESPONSE);
       } else {
-        return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+        return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
       }
     }
   }

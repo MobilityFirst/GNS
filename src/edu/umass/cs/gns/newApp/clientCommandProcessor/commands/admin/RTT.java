@@ -37,15 +37,15 @@ public class RTT extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
       String sizeString = json.getString(N);
       int size = Integer.parseInt(sizeString);
       String guidCntString = json.getString(GUIDCNT);
       int guidCnt = Integer.parseInt(guidCntString);
-      return new CommandResponse(PerformanceTests.runRttPerformanceTest(size, guidCnt, true, handler));
+      return new CommandResponse<String>(PerformanceTests.runRttPerformanceTest(size, guidCnt, true, handler));
     } else {
-      return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
+      return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
     }
 
   }

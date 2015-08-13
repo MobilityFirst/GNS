@@ -41,7 +41,7 @@ public class CCPProtocolTask<NodeIDType> implements
   private final String key;
   private final EnhancedClientRequestHandlerInterface handler;
 
-  public CCPProtocolTask(EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler) {
+  public CCPProtocolTask(EnhancedClientRequestHandlerInterface requestHandler) {
     this.handler = requestHandler;
     this.key = refreshKey();
   }

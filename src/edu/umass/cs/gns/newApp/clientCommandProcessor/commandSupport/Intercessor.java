@@ -27,6 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
@@ -93,11 +94,11 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   }
 
   private final AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer;
-  //private ClientRequestHandlerInterface<NodeIDType> handler;
-  private final GNSNodeConfig<NodeIDType> nodeConfig;
+  //private ClientRequestHandlerInterface handler;
+  private final GNSInterfaceNodeConfig<NodeIDType> nodeConfig;
   private final InetSocketAddress nodeAddress;
 
-  public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> nodeConfig,
+  public Intercessor(InetSocketAddress nodeAddress, GNSInterfaceNodeConfig<NodeIDType> nodeConfig,
           AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer) {
     //this.handler = handler;
     this.nodeConfig = nodeConfig;

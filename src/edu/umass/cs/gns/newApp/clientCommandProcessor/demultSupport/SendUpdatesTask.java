@@ -33,31 +33,31 @@ import java.util.TimerTask;
  *
  * @author abhigyan
  */
-public class SendUpdatesTask<NodeIDType> extends TimerTask {
+public class SendUpdatesTask extends TimerTask {
 
   private final String name;
-  private UpdatePacket<NodeIDType> updatePacket;
+  private UpdatePacket<String> updatePacket;
   private final int ccpReqID;
 
-  private HashSet<NodeIDType> activesQueried;
+  private HashSet<String> activesQueried;
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
-  private final EnhancedClientRequestHandlerInterface<NodeIDType> handler;
+  private final EnhancedClientRequestHandlerInterface handler;
 
-  private NodeIDType nameServerID; // just send it to this one
+  private String nameServerID; // just send it to this one
   // If this is true we send the update over the network to the AR
   // This is not normally going to be false except in the case of updates happening during
   // creation of guids which need to be explicitly coordinated by ARs 
   final boolean reallySendUpdatesToReplica;
 
-  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface<NodeIDType> handler,
-          UpdatePacket<NodeIDType> updatePacket, NodeIDType nameServerID) {
+  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface handler,
+          UpdatePacket<String> updatePacket, String nameServerID) {
     this(lnsReqID, handler, updatePacket, nameServerID, false);
   }
 
-  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface<NodeIDType> handler,
-          UpdatePacket<NodeIDType> updatePacket, NodeIDType nameServerID, boolean reallySendUpdatesToReplica) {
+  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface handler,
+          UpdatePacket<String> updatePacket, String nameServerID, boolean reallySendUpdatesToReplica) {
     // based on request info.
     this.ccpReqID = lnsReqID;
     this.handler = handler;
@@ -81,7 +81,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
         throw new CancelExecutorTaskException();
       }
       if (nameServerID == null) { // new code to not request actives and only send to one server
-        CacheEntry<NodeIDType> cacheEntry = handler.getCacheEntry(name);
+        CacheEntry<String> cacheEntry = handler.getCacheEntry(name);
         // IF we don't have one or more valid active replicas in the cache entry
         // we need to request a new set for this name.
         if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
@@ -138,7 +138,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
           // create a failure packet and send it back to client support
 
           try {
-            ConfirmUpdatePacket<NodeIDType> confirmPkt = new ConfirmUpdatePacket<NodeIDType>(info.getErrorMessage(NSResponseCode.UPDATE_TIMEOUT), handler.getGnsNodeConfig());
+            ConfirmUpdatePacket<String> confirmPkt = new ConfirmUpdatePacket<String>(info.getErrorMessage(NSResponseCode.UPDATE_TIMEOUT), handler.getGnsNodeConfig());
             Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
           } catch (JSONException e) {
             e.printStackTrace();
@@ -154,11 +154,11 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
 
   }
 
-  private void requestNewActives(EnhancedClientRequestHandlerInterface<NodeIDType> handler) {
+  private void requestNewActives(EnhancedClientRequestHandlerInterface handler) {
     // remove update info from CCP
     UpdateInfo info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     if (info != null) {   // probably NS sent response
-      SendUpdatesTask<NodeIDType> newTask = new SendUpdatesTask<NodeIDType>(ccpReqID, handler, updatePacket, null);
+      SendUpdatesTask newTask = new SendUpdatesTask(ccpReqID, handler, updatePacket, null);
       PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
@@ -167,13 +167,13 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
     }
   }
 
-  private NodeIDType selectNS(CacheEntry<NodeIDType> cacheEntry) {
-    NodeIDType nameServerID;
+  private String selectNS(CacheEntry<String> cacheEntry) {
+    String nameServerID;
     return handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
               activesQueried);
   }
 
-  private void sendToNS(NodeIDType nameServerID) {
+  private void sendToNS(String nameServerID) {
 
     if (nameServerID == null) {
       if (handler.getParameters().isDebugMode()) {
@@ -181,9 +181,9 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       }
       return;
     }
-    UpdateInfo<NodeIDType> info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
+    UpdateInfo<String> info = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     activesQueried.add(nameServerID);
-    UpdatePacket<NodeIDType> pkt = Update.makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID);
+    UpdatePacket<String> pkt = Update.makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID);
     // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
     // create the packet that we'll send to the primary
 //    UpdatePacket<NodeIDType> pkt = new UpdatePacket<NodeIDType>(
@@ -224,7 +224,7 @@ public class SendUpdatesTask<NodeIDType> extends TimerTask {
       }
     }
     // keep track of which NS we sent it to
-    UpdateInfo<NodeIDType> updateInfo = (UpdateInfo) handler.getRequestInfo(ccpReqID);
+    UpdateInfo<String> updateInfo = (UpdateInfo) handler.getRequestInfo(ccpReqID);
     if (updateInfo != null) {
       updateInfo.setNameserverID(nameServerID);
     }

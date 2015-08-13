@@ -46,7 +46,7 @@ public class RegisterAccount extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     String name = json.getString(NAME);
     String publicKey = json.getString(PUBLICKEY);
@@ -58,17 +58,17 @@ public class RegisterAccount extends GnsCommand {
 
     if (signature != null && message != null) { //FIXME: this is for temporary backward compatability... remove it. 
       if (!AccessSupport.verifySignature(publicKey, signature, message)) {
-        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
 //      } else {
 //        GNS.getLogger().info("########SIGNATURE VERIFIED FOR CREATE " + name);
       }
     }
-    CommandResponse result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
+    CommandResponse<String> result = AccountAccess.addAccountWithVerification(module.getHTTPHost(), name, guid, publicKey,
             password, handler);
     if (result.getReturnValue().equals(OKRESPONSE)) {
       // set up the default read access
       //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, guid, ALLFIELDS, EVERYONE, handler);
-      return new CommandResponse(guid);
+      return new CommandResponse<String>(guid);
     } else {
       return result;
     }

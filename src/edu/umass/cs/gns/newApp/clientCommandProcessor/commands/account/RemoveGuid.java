@@ -45,7 +45,7 @@ public class RemoveGuid extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
@@ -57,11 +57,11 @@ public class RemoveGuid extends GnsCommand {
       GuidInfo accountGuidInfo = null;
       GuidInfo guidInfoToRemove;
       if ((guidInfoToRemove = AccountAccess.lookupGuidInfo(guidToRemove, handler)) == null) {
-        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guidToRemove);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guidToRemove);
       }
       if (accountGuid != null) {
         if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-          return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
+          return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accountGuid);
         }
       }
       if (AccessSupport.verifySignature(accountGuidInfo != null ? accountGuidInfo.getPublicKey() 
@@ -70,12 +70,12 @@ public class RemoveGuid extends GnsCommand {
         if (accountGuid != null) {
           accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
           if (accountInfo == null) {
-            return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
+            return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
           }
         }
         return AccountAccess.removeGuid(guidInfoToRemove, accountInfo, handler);
       } else {
-        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
       }
     //}
   }

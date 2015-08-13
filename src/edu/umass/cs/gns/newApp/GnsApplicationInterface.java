@@ -10,7 +10,6 @@ package edu.umass.cs.gns.newApp;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.ClientCommandProcessor;
 import edu.umass.cs.gns.newApp.recordmap.BasicRecordMap;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 
 import java.io.IOException;
@@ -37,7 +36,7 @@ public interface GnsApplicationInterface<NodeIDType> {
   
   void sendToID(NodeIDType id, JSONObject msg) throws IOException;
   
-  PingManager getPingManager();
+  PingManager<NodeIDType> getPingManager();
   
   ClientCommandProcessor getClientCommandProcessor();
   

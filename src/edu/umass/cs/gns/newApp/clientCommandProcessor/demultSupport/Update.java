@@ -203,7 +203,7 @@ public class Update {
    * @param handler
    * @throws JSONException
    */
-  public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket<String> packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getReturnTo() == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());

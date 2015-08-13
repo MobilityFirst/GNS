@@ -36,8 +36,8 @@ public class ConnectionCheck extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    return new CommandResponse(OKRESPONSE);
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    return new CommandResponse<String>(OKRESPONSE);
   }
 
   @Override

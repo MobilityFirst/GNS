@@ -26,22 +26,22 @@ import java.util.TimerTask;
  *
  * @author abhigyan
  */
-public class RequestActivesTask<NodeIDType> extends TimerTask {
+public class RequestActivesTask extends TimerTask {
 
   /**
    * number of messages sent to replica controllers
    */
   private int numAttempts = 0;
   private String name;
-  private HashSet<NodeIDType> nameServersQueried;
+  private HashSet<String> nameServersQueried;
   private int requestID;
-  ClientRequestHandlerInterface<NodeIDType> handler;
+  ClientRequestHandlerInterface handler;
 
   private long startTime;
 
-  public RequestActivesTask(String name, int requestID, ClientRequestHandlerInterface<NodeIDType> handler) {
+  public RequestActivesTask(String name, int requestID, ClientRequestHandlerInterface handler) {
     this.name = name;
-    this.nameServersQueried = new HashSet<NodeIDType>();
+    this.nameServersQueried = new HashSet<String>();
     this.requestID = requestID;
     this.startTime = System.currentTimeMillis();
     this.handler = handler;
@@ -75,7 +75,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
       }
 
       // next primary to be queried
-      NodeIDType primaryID = handler.getClosestReplicaController(name, nameServersQueried);
+      String primaryID = handler.getClosestReplicaController(name, nameServersQueried);
       if (primaryID == null) {
         // we clear this set to resend requests to the same set of name servers
         nameServersQueried.clear();
@@ -106,7 +106,7 @@ public class RequestActivesTask<NodeIDType> extends TimerTask {
    * @param primaryID ID of name server
    * @param requestID requestID for <code>RequestActivesPacket</code>
    */
-  private void sendActivesRequestPacketToPrimary(String name, NodeIDType primaryID, int requestID) {
+  private void sendActivesRequestPacketToPrimary(String name, String primaryID, int requestID) {
     JSONObject sendJson;
     try {
       //if (handler.isNewApp()) {

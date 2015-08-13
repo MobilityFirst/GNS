@@ -45,7 +45,7 @@ public class RevokeMembership extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String member = json.getString(MEMBER);
@@ -54,9 +54,9 @@ public class RevokeMembership extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     if (GroupAccess.revokeMembership(guid, new ResultValue(new ArrayList<Object>(Arrays.asList(member))), guid, signature, 
             message, handler)) {
-      return new CommandResponse(OKRESPONSE);
+      return new CommandResponse<String>(OKRESPONSE);
     } else {
-      return new CommandResponse(BADRESPONSE + " " + GENERICERROR);
+      return new CommandResponse<String>(BADRESPONSE + " " + GENERICERROR);
     }
   }
 

@@ -39,7 +39,7 @@ public class SelectGroupSetupQuery extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String accountGuid = json.getString(ACCOUNT_GUID);
     String query = json.getString(QUERY);
     String publicKey = json.getString(PUBLICKEY);

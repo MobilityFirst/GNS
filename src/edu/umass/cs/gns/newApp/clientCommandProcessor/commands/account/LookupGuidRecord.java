@@ -38,23 +38,23 @@ public class LookupGuidRecord extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
 //    } else {
       String guid = json.getString(GUID);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
       }
       if (guidInfo != null) {
         try {
-          return new CommandResponse(guidInfo.toJSONObject().toString());
+          return new CommandResponse<String>(guidInfo.toJSONObject().toString());
         } catch (JSONException e) {
-          return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR);
+          return new CommandResponse<String>(BADRESPONSE + " " + JSONPARSEERROR);
         }
       } else {
-        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
       }
    // }
   }

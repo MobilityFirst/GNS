@@ -31,6 +31,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandHand
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.Format;
 import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.util.Date;
 import java.util.Map;
 import org.apache.commons.lang.time.DurationFormatUtils;
@@ -194,6 +195,8 @@ public class GnsHttpServer {
         String responsePostamble = "</p></body></html>";
         String serverStartDateString = "Server start time: " + Format.formatDualDate(serverStartDate);
         String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationHMS(new Date().getTime() - serverStartDate.getTime());
+        String serverSSLMode = "Server SSL mode: " + ReconfigurationConfig.getServerSSLMode().toString();
+        String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
         String serverLocalNameServerID = "Local CCP address: " + GnsHttpServer.requestHandler.getNodeAddress();
         String numberOfNameServers = "Server count: " + GnsHttpServer.requestHandler.getGnsNodeConfig().getNumberOfNodes() + "\n";
         //String backingStoreClass = "Backing Store Class: " + Config.dataStore.getClassName() + "\n\n";
@@ -201,7 +204,7 @@ public class GnsHttpServer {
         String requestsRateString = "Client requests rate: " + GnsHttpServer.requestHandler.getRequestsPerSecond();
         StringBuilder resultString = new StringBuilder();
         resultString.append("Servers:");
-        for (Object topLevelNode : GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeIDs()) {
+        for (String topLevelNode : GnsHttpServer.requestHandler.getGnsNodeConfig().getNodeIDs()) {
           resultString.append("<br>&nbsp;&nbsp;");
           resultString.append((String) topLevelNode);
           resultString.append("&nbsp;=&gt;&nbsp;");
@@ -237,6 +240,10 @@ public class GnsHttpServer {
         responseBody.write(serverUpTimeString.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(serverLocalNameServerID.getBytes());
+        responseBody.write("<br>".getBytes());
+        responseBody.write(serverSSLMode.getBytes());
+        responseBody.write("<br>".getBytes());
+        responseBody.write(clientSSLMode.getBytes());
         responseBody.write("<br>".getBytes());
         responseBody.write(numberOfNameServers.getBytes());
         responseBody.write("<br>".getBytes());

@@ -20,21 +20,20 @@ import org.json.JSONObject;
  * Extensions of ClientRequestHandlerInterface for the new app.
  * 
  * @author westy
- * @param <NodeIDType>
  */
-public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends ClientRequestHandlerInterface<NodeIDType> {
+public interface EnhancedClientRequestHandlerInterface extends ClientRequestHandlerInterface {
 
-  public NodeIDType getRandomReplica();
+  public String getRandomReplica();
 
-  public NodeIDType getRandomRCReplica();
+  public String getRandomRCReplica();
 
-  public NodeIDType getFirstReplica();
+  public String getFirstReplica();
 
-  public NodeIDType getFirstRCReplica();
+  public String getFirstRCReplica();
 
   public void sendRequestToRandomReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException;
 
-  public void sendRequestToReconfigurator(BasicReconfigurationPacket req, NodeIDType id) throws JSONException, IOException;
+  public void sendRequestToReconfigurator(BasicReconfigurationPacket req, String id) throws JSONException, IOException;
 
   public boolean handleEvent(JSONObject json) throws JSONException;
 
@@ -120,7 +119,7 @@ public interface EnhancedClientRequestHandlerInterface<NodeIDType> extends Clien
   public Integer removeActivesRequestNameToIDMapping(String name);
 
   @Override
-  public NodeIDType getActiveReplicaID();
+  public String getActiveReplicaID();
 
   public NewApp getApp();
   

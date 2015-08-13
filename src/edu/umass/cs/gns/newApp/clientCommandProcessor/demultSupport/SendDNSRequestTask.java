@@ -36,20 +36,20 @@ import java.util.logging.Level;
  * Date: 8/30/13
  * Time: 3:33 PM
  */
-public class SendDNSRequestTask<NodeIDType> extends TimerTask {
+public class SendDNSRequestTask extends TimerTask {
 
-  private final ClientRequestHandlerInterface<NodeIDType> handler;
-  private final DNSPacket<NodeIDType> incomingPacket;
+  private final ClientRequestHandlerInterface handler;
+  private final DNSPacket<String> incomingPacket;
   private final int lnsReqID;
 
-  private final HashSet<NodeIDType> nameserversQueried = new HashSet<>();
+  private final HashSet<String> nameserversQueried = new HashSet<>();
 
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
 
-  public SendDNSRequestTask(int lnsReqID, ClientRequestHandlerInterface<NodeIDType> handler,
-          DNSPacket<NodeIDType> incomingPacket) {
+  public SendDNSRequestTask(int lnsReqID, ClientRequestHandlerInterface handler,
+          DNSPacket<String> incomingPacket) {
     this.lnsReqID = lnsReqID;
     this.handler = handler;
     this.incomingPacket = incomingPacket;
@@ -68,7 +68,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-      CacheEntry<NodeIDType> cacheEntry = handler.getCacheEntry(incomingPacket.getGuid());
+      CacheEntry<String> cacheEntry = handler.getCacheEntry(incomingPacket.getGuid());
       // if a non-expired value exists in the cache send that and we are done
       if (maybeSendReplyFromCache(cacheEntry, handler)) {
         throw new CancelExecutorTaskException();
@@ -87,7 +87,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
       }
 
       // the cache contains a set of valid active replicas
-      NodeIDType ns = selectNS(cacheEntry.getActiveNameServers());
+      String ns = selectNS(cacheEntry.getActiveNameServers());
 
       sendLookupToNS(ns);
 
@@ -100,8 +100,8 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     }
   }
 
-  private boolean isResponseReceived(ClientRequestHandlerInterface<NodeIDType> handler) {
-    DNSRequestInfo<NodeIDType> info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
+  private boolean isResponseReceived(ClientRequestHandlerInterface handler) {
+    DNSRequestInfo<String> info = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (info == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().fine("Query ID. Response recvd "
@@ -121,8 +121,8 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     return false;
   }
 
-  private boolean isMaxWaitTimeExceeded(ClientRequestHandlerInterface<NodeIDType> handler) throws JSONException {
-    DNSRequestInfo<NodeIDType> requestInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
+  private boolean isMaxWaitTimeExceeded(ClientRequestHandlerInterface handler) throws JSONException {
+    DNSRequestInfo<String> requestInfo = (DNSRequestInfo) handler.getRequestInfo(lnsReqID);
     if (requestInfo != null) {
       if (System.currentTimeMillis() - requestInfo.getStartTime() > handler.getParameters().getMaxQueryWaitTime()) {
         // remove from request info as LNS must clear all state for this request
@@ -134,7 +134,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
                     + "Wait time: " + (System.currentTimeMillis() - requestInfo.getStartTime())
                     + " Max wait: " + handler.getParameters().getMaxQueryWaitTime());
           }
-          Lookup.sendDNSResponseBackToSource(new DNSPacket<NodeIDType>(requestInfo.getErrorMessage(), handler.getGnsNodeConfig()), handler);
+          Lookup.sendDNSResponseBackToSource(new DNSPacket<String>(requestInfo.getErrorMessage(), handler.getGnsNodeConfig()), handler);
           requestInfo.setSuccess(false);
           requestInfo.setFinishTime();
           //requestInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
@@ -146,7 +146,7 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     return false;
   }
 
-  private boolean maybeSendReplyFromCache(CacheEntry cacheEntry, ClientRequestHandlerInterface<NodeIDType> handler) {
+  private boolean maybeSendReplyFromCache(CacheEntry cacheEntry, ClientRequestHandlerInterface handler) {
     if (cacheEntry != null && incomingPacket.getKey() != null) { // key can be null if request is multi-field
       ResultValue value = cacheEntry.getValueAsArray(incomingPacket.getKey());
       if (value != null) {
@@ -191,11 +191,11 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
   /**
    * Send DNS Query reply that we found in the cache back to the User
    */
-  private void sendCachedReplyToUser(ResultValue value, int TTL, ClientRequestHandlerInterface<NodeIDType> handler) {
+  private void sendCachedReplyToUser(ResultValue value, int TTL, ClientRequestHandlerInterface handler) {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Send response from cache: " + incomingPacket.getGuid());
     }
-    DNSPacket<NodeIDType> outgoingPacket = new DNSPacket<NodeIDType>(incomingPacket.getSourceId(), incomingPacket.getHeader().getId(),
+    DNSPacket<String> outgoingPacket = new DNSPacket<String>(incomingPacket.getSourceId(), incomingPacket.getHeader().getId(),
             incomingPacket.getGuid(), incomingPacket.getKey(), value, TTL, new HashSet<Integer>());
     try {
       Lookup.sendDNSResponseBackToSource(outgoingPacket, handler);
@@ -204,27 +204,27 @@ public class SendDNSRequestTask<NodeIDType> extends TimerTask {
     }
   }
 
-  private void requestNewActives(ClientRequestHandlerInterface<NodeIDType> handler) {
+  private void requestNewActives(ClientRequestHandlerInterface handler) {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Invalid name server for " + incomingPacket.getGuid());
     }
-    SendDNSRequestTask queryTaskObject = new SendDNSRequestTask<NodeIDType>(lnsReqID, handler, incomingPacket);
+    SendDNSRequestTask queryTaskObject = new SendDNSRequestTask(lnsReqID, handler, incomingPacket);
     PendingTasks.addToPendingRequests(handler.getRequestInfo(lnsReqID), queryTaskObject,
             handler.getParameters().getQueryTimeout(), handler);
   }
 
-  private NodeIDType selectNS(Set<NodeIDType> replicas) {
-    NodeIDType ns;
+  private String selectNS(Set<String> replicas) {
+    String ns;
 //    if (handler.getParameters().getReplicationFramework() == ReplicationFrameworkType.BEEHIVE) {
 //      ns = (NodeIDType) BeehiveReplication.getBeehiveNameServer(handler.getGnsNodeConfig(), (Set) replicas,
 //              nameserversQueried);
 //    } else {
-      ns = (NodeIDType) handler.getGnsNodeConfig().getClosestServer(replicas, nameserversQueried);
+      ns = (String) handler.getGnsNodeConfig().getClosestServer(replicas, nameserversQueried);
     //}
     return ns;
   }
 
-  private void sendLookupToNS(NodeIDType ns) {
+  private void sendLookupToNS(String ns) {
     if (ns != null) {
       nameserversQueried.add(ns);
 

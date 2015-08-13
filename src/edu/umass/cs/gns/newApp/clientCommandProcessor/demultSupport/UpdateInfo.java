@@ -29,9 +29,9 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
 
   private final BasicPacket basicPacket;
   
-  private final ClientRequestHandlerInterface<NodeIDType> handler;
+  private final ClientRequestHandlerInterface handler;
 
-  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface<NodeIDType> handler) {
+  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface handler) {
     this.ccpReqID = lnsRequestID;
     this.name = name;
     this.startTime = System.currentTimeMillis();

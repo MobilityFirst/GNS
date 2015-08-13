@@ -34,7 +34,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     }
     NewApp app = null;
     try {
-      app = new NewApp(this.myID, (GNSInterfaceNodeConfig<String>) this.nodeConfig,
+      app = new NewApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
               this.messenger, mongoRecords);
     } catch (IOException e) {
       GNS.getLogger().info("Unable to create app: " + e);
@@ -44,7 +44,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
     NewAppCoordinator<String> appCoordinator = new NewAppCoordinator<String>(app, this.nodeConfig, this.messenger);
     // start the NSListenerAdmin thread
-    new AppAdmin(app, (GNSNodeConfig) nodeConfig).start();
+    new AppAdmin(app, (GNSNodeConfig<String>) nodeConfig).start();
     GNS.getLogger().info(myID.toString() + " Admin thread initialized");
     return appCoordinator;
 

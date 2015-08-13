@@ -42,7 +42,7 @@ public class GetGroupMembers extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     // reader might be same as guid
@@ -50,7 +50,7 @@ public class GetGroupMembers extends GnsCommand {
     // signature and message can be empty for unsigned cases
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
-    return new CommandResponse(new JSONArray(GroupAccess.lookup(guid, reader, signature, message, handler)).toString());
+    return new CommandResponse<String>(new JSONArray(GroupAccess.lookup(guid, reader, signature, message, handler)).toString());
   }
 
   @Override

@@ -28,9 +28,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
  * ClientCommandProcessor (CCP) (formerly the LocalNameServer).
  * This class makes the code that uses it not depend statically on the CCP.
  *
- * @param <NodeIDType>
  */
-public interface ClientRequestHandlerInterface<NodeIDType> {
+public interface ClientRequestHandlerInterface {
 
   /**
    * The executor that runs tasks.
@@ -44,10 +43,10 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    *
    * @return
    */
-  public GNSNodeConfig<NodeIDType> getGnsNodeConfig();
+  public GNSNodeConfig<String> getGnsNodeConfig();
 
   // FIXME: During transition we have both this and the above.
-  public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig();
+  public ConsistentReconfigurableNodeConfig<String> getNodeConfig();
 
   /**
    * Returns that set of parameters used to control the handlers behavior.
@@ -63,11 +62,11 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    */
   public InetSocketAddress getNodeAddress();
 
-  public NodeIDType getActiveReplicaID();
+  public String getActiveReplicaID();
 
-  public Intercessor<NodeIDType> getIntercessor();
+  public Intercessor<String> getIntercessor();
 
-  public Admintercessor<NodeIDType> getAdmintercessor();
+  public Admintercessor getAdmintercessor();
 
   // REQUEST INFO METHODS
   public int getUniqueRequestID();
@@ -98,7 +97,7 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @param incomingPacket
    * @return
    */
-  public int addSelectInfo(String recordKey, SelectRequestPacket<NodeIDType> incomingPacket);
+  public int addSelectInfo(String recordKey, SelectRequestPacket<String> incomingPacket);
 
   /**
    * @param id
@@ -137,14 +136,14 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @param packet DNS packet containing record
    * @return
    */
-  public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet);
+  public CacheEntry<String> addCacheEntry(DNSPacket<String> packet);
 
   /**
    *
    * @param packet
    * @return
    */
-  public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet);
+  public CacheEntry<String> addCacheEntry(RequestActivesPacket<String> packet);
 
   /**
    * Updates an existing cache entry with new information from a DNS packet.
@@ -152,13 +151,13 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @param packet DNS packet containing record
    * @return
    */
-  public CacheEntry<NodeIDType> updateCacheEntry(DNSPacket<NodeIDType> packet);
+  public CacheEntry<String> updateCacheEntry(DNSPacket<String> packet);
 
   /**
    *
    * @param packet
    */
-  public void updateCacheEntry(RequestActivesPacket<NodeIDType> packet);
+  public void updateCacheEntry(RequestActivesPacket<String> packet);
 
   /**
    *
@@ -166,7 +165,7 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @param name
    * @param key
    */
-  public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key);
+  public void updateCacheEntry(ConfirmUpdatePacket<String> packet, String name, String key);
 
   /**
    * Returns a cache entry for the specified name. Returns null if the cache does not have the key mapped to an entry
@@ -174,7 +173,7 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @param name Host/Domain name
    * @return
    */
-  public CacheEntry<NodeIDType> getCacheEntry(String name);
+  public CacheEntry<String> getCacheEntry(String name);
 
   /**
    * Checks the validity of active nameserver set in cache.
@@ -215,7 +214,7 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @param name
    * @return
    */
-  public Set<NodeIDType> getReplicaControllers(String name);
+  public Set<String> getReplicaControllers(String name);
 
   /**
    **
@@ -226,7 +225,7 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @return Closest primary name server for <i>name</i>, or -1 if no such name server is present.
    *
    */
-  public NodeIDType getClosestReplicaController(String name, Set<NodeIDType> nameServersQueried);
+  public String getClosestReplicaController(String name, Set<String> nameServersQueried);
 
   /**
    * Send packet to NS
@@ -234,7 +233,7 @@ public interface ClientRequestHandlerInterface<NodeIDType> {
    * @param json
    * @param ns
    */
-  public void sendToNS(JSONObject json, NodeIDType ns);
+  public void sendToNS(JSONObject json, String ns);
 
   /**
    * Send a JSON packet to an IP address / port.

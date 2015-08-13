@@ -44,7 +44,7 @@ public class AddAlias extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
 //    if (CommandDefs.handleAcccountCommandsAtNameServer) {
 //      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
@@ -55,38 +55,38 @@ public class AddAlias extends GnsCommand {
       String message = json.getString(SIGNATUREFULLMESSAGE);
       GuidInfo guidInfo;
       if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler);
         if (accountInfo == null) {
-          return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+          return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
         }
         if (!accountInfo.isVerified()) {
-          return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+          return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
         } else if (accountInfo.getAliases().size() > Defs.MAXALIASES) {
-          return new CommandResponse(BADRESPONSE + " " + TOMANYALIASES);
+          return new CommandResponse<String>(BADRESPONSE + " " + TOMANYALIASES);
         } else {
           return AccountAccess.addAlias(accountInfo, name, guid, signature, message, handler);
         }
     
 //      GuidInfo guidInfo;
 //      if ((guidInfo = AccountAccess.lookupGuidInfo(guid)) == null) {
-//        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+//        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
 //      }
 //      if (AccessSupport.verifySignature(guidInfo, signature, message)) {
 //        AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(guid);
 //        if (accountInfo == null) {
-//          return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+//          return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
 //        }
 //        if (!accountInfo.isVerified()) {
-//          return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+//          return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
 //        } else if (accountInfo.getAliases().size() > GnsProtocolDefs.MAXALIASES) {
-//          return new CommandResponse(BADRESPONSE + " " + TOMANYALIASES);
+//          return new CommandResponse<String>(BADRESPONSE + " " + TOMANYALIASES);
 //        } else {
 //          return AccountAccess.addAlias(accountInfo, name);
 //        }
 //      } else {
-//        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+//        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
 //      }
    // }
   }

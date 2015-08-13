@@ -213,7 +213,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   @Override
-  public PingManager getPingManager() {
+  public PingManager<InetSocketAddress> getPingManager() {
     return pingManager;
   }
 

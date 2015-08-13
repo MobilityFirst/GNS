@@ -48,7 +48,7 @@ public class AddGuid extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
       String name = json.getString(NAME);
       String accountGuid = json.getString(ACCOUNT_GUID);
@@ -61,19 +61,19 @@ public class AddGuid extends GnsCommand {
       
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accountGuid);
       }
       if (AccessSupport.verifySignature(accountGuidInfo.getPublicKey(), signature, message)) {
         AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
         if (accountInfo == null) {
-          return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
+          return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
         }
         if (!accountInfo.isVerified()) {
-          return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+          return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
         } else if (accountInfo.getGuids().size() > Defs.MAXGUIDS) {
-          return new CommandResponse(BADRESPONSE + " " + TOMANYGUIDS);
+          return new CommandResponse<String>(BADRESPONSE + " " + TOMANYGUIDS);
         } else {
-          CommandResponse result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
+          CommandResponse<String> result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
           if (result.getReturnValue().equals(OKRESPONSE)) {
 //            // set up the default read access
 //           FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
@@ -82,13 +82,13 @@ public class AddGuid extends GnsCommand {
 //            //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);
 //            FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
 //            //FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);            
-            return new CommandResponse(newGuid);
+            return new CommandResponse<String>(newGuid);
           } else {
             return result;
           }
         }
       } else {
-        return new CommandResponse(BADRESPONSE + " " + BADSIGNATURE);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADSIGNATURE);
       }
     //}
   }
