@@ -265,7 +265,7 @@ public class FailureDetection<NodeIDType> {
 		return (System.currentTimeMillis() - lastHeardTime(id));
 	}
 
-	private long lastHeardTime(NodeIDType id) {
+	private synchronized long lastHeardTime(NodeIDType id) {
 		Long lastHeard = this.lastHeardFrom.get(id);
 		if (lastHeard == null)
 			lastHeard = initTime;

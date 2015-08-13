@@ -17,6 +17,8 @@
  */
 package edu.umass.cs.gigapaxos.paxosutil;
 
+import java.util.Set;
+
 /**
  * @author V. Arun
  * 
@@ -33,25 +35,18 @@ public class SlotBallotState {
 	 */
 	public final String state;
 	
-	final int version;
-	final long createTime;
+	public final int version;
+	public final long createTime;
+	public final Set<String> members;
 
-	public SlotBallotState(int s, int bn, int c, int version, long createTime) {
-		this.slot = s;
-		this.ballotnum = bn;
-		this.coordinator = c;
-		this.state = null;
-		this.version = version;
-		this.createTime = createTime;
-	}
-
-	public SlotBallotState(int s, int bn, int c, String st, int version, long createTime) {
+	public SlotBallotState(int s, int bn, int c, String st, int version, long createTime, Set<String> members) {
 		this.slot = s;
 		this.ballotnum = bn;
 		this.coordinator = c;
 		this.state = st;
 		this.version = version;
 		this.createTime = createTime;
+		this.members = members;
 	}
 
 	public int getSlot() {

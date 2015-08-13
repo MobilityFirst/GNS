@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -281,7 +281,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 			 * complete. So if the node crashes after an intent but before the
 			 * corresponding complete, the app has to redo just that last step.
 			 */
-			if(record.isReconfigurationReady())
+			if (record.isReconfigurationReady())
 				this.setPending(name, false);
 			/*
 			 * Trimming RC epochs is needed only for the NODE_CONFIG record. It
@@ -328,8 +328,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	 */
 	@Override
 	public synchronized boolean setStateInitReconfiguration(String name,
-			int epoch, RCStates state, Set<NodeIDType> newActives,
-			NodeIDType primary) {
+			int epoch, RCStates state, Set<NodeIDType> newActives) {
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(name);
 		assert (record != null && (epoch - record.getEpoch() == 0)) : epoch
@@ -1769,7 +1768,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		 * recreated before MAX_FINAL_STATE_AGE.
 		 */
 		this.setStateInitReconfiguration(mergee, mergeEpoch,
-				RCStates.WAIT_ACK_STOP, new HashSet<NodeIDType>(), null);
+				RCStates.WAIT_ACK_STOP, new HashSet<NodeIDType>());
 		this.setState(mergee, mergeEpoch + 1, RCStates.WAIT_DELETE);
 		return true;
 	}
@@ -1839,5 +1838,129 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public boolean createReconfigurationRecords(Map<String, String> nameStates,
+			Set<NodeIDType> newActives) {
+		String insertCmd = "insert into " + getRCRecordTable() + " ("
+				+ Columns.RC_GROUP_NAME.toString() + ", "
+				+ Columns.STRINGIFIED_RECORD.toString() + ", "
+				+ Columns.SERVICE_NAME.toString() + " ) values (?,?,?)";
+
+		PreparedStatement insertRC = null;
+		Connection conn = null;
+		boolean insertedAll = true;
+		try {
+			conn = this.getDefaultConn();
+			insertRC = conn.prepareStatement(insertCmd);
+			assert (nameStates != null && !nameStates.isEmpty());
+			String rcGroupName = this.getRCGroupName(nameStates.keySet()
+					.iterator().next());
+			int i = 0;
+			long t1 = System.currentTimeMillis();
+			for (String name : nameStates.keySet()) {
+				ReconfigurationRecord<NodeIDType> record = new ReconfigurationRecord<NodeIDType>(
+						name, -1, newActives);
+				/*
+				 * We just directly initialize with WAIT_ACK_STOP:-1 instead of
+				 * starting with READY:-1 and pretending to go through the whole
+				 * reconfiguration protocol sequence.
+				 */
+				record.setState(name, -1, RCStates.WAIT_ACK_STOP);
+				insertRC.setString(1, rcGroupName);
+				if (RC_RECORD_CLOB_OPTION)
+					insertRC.setClob(2, new StringReader(record.toString()));
+				else
+					insertRC.setString(2, record.toString());
+				insertRC.setString(3, name);
+				insertRC.addBatch();
+				i++;
+				if ((i + 1) % 1000 == 0 || (i + 1) == nameStates.size()) {
+					int[] executed = insertRC.executeBatch();
+					// conn.commit();
+					insertRC.clearBatch();
+					for (int j : executed)
+						insertedAll = insertedAll && (j > 0);
+					if (insertedAll)
+						log.log(Level.FINE,
+								"{0} successfully logged the last {1} messages in {2} ms",
+								new Object[] { this, (i + 1),
+										(System.currentTimeMillis() - t1) });
+					t1 = System.currentTimeMillis();
+				}
+			}
+		} catch (SQLException sqle) {
+			log.severe("SQLException while inserting batched RC records using "
+					+ insertCmd);
+			sqle.printStackTrace();
+		} finally {
+			cleanup(insertRC);
+			cleanup(conn);
+		}
+		return insertedAll;
+	}
+
+	@Override
+	public boolean setStateInitReconfiguration(Map<String, String> nameStates,
+			int epoch, RCStates state, Set<NodeIDType> newActives) {
+		// do nothing coz we alread initialized batch with WAIT_ACK_STOP:-1
+		return true;
+	}
+
+	@Override
+	public boolean setStateMerge(Map<String, String> nameStates, int epoch,
+			RCStates state, Set<NodeIDType> newActives) {
+		String updateCmd = "update " + getRCRecordTable() + " set "
+				+ Columns.RC_GROUP_NAME.toString() + "=?, "
+				+ Columns.STRINGIFIED_RECORD.toString() + "=? where "
+				+ Columns.SERVICE_NAME.toString() + "=?";
+
+		PreparedStatement updateRC = null;
+		Connection conn = null;
+		boolean updatedAll = true;
+		try {
+			conn = this.getDefaultConn();
+			updateRC = conn.prepareStatement(updateCmd);
+			assert (nameStates != null && !nameStates.isEmpty());
+			String rcGroupName = this.getRCGroupName(nameStates.keySet()
+					.iterator().next());
+			int i = 0;
+			long t1 = System.currentTimeMillis();
+			for (String name : nameStates.keySet()) {
+				ReconfigurationRecord<NodeIDType> record = new ReconfigurationRecord<NodeIDType>(
+						name, 0, newActives);
+				record.setState(name, 0, RCStates.READY_READY);
+				updateRC.setString(1, rcGroupName);
+				if (RC_RECORD_CLOB_OPTION)
+					updateRC.setClob(2, new StringReader(record.toString()));
+				else
+					updateRC.setString(2, record.toString());
+				updateRC.setString(3, name);
+				updateRC.addBatch();
+				i++;
+				if ((i + 1) % 1000 == 0 || (i + 1) == nameStates.size()) {
+					int[] executed = updateRC.executeBatch();
+					// conn.commit();
+					updateRC.clearBatch();
+					for (int j : executed)
+						updatedAll = updatedAll && (j > 0);
+					if (updatedAll)
+						log.log(Level.FINE,
+								"{0} successfully logged the last {1} messages in {2} ms",
+								new Object[] { this, (i + 1),
+										(System.currentTimeMillis() - t1) });
+					t1 = System.currentTimeMillis();
+				}
+			}
+		} catch (SQLException sqle) {
+			log.severe("SQLException while inserting batched RC records using "
+					+ updateCmd);
+			sqle.printStackTrace();
+		} finally {
+			cleanup(updateRC);
+			cleanup(conn);
+		}
+		return updatedAll;
 	}
 }

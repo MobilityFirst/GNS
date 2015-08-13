@@ -297,6 +297,7 @@ public class PaxosCoordinator {
 		return coordState != null ? coordState.getBallot() : null;
 	}
 
+	// FIXME: needs to be synchronized 
 	protected boolean isActive() {
 		return this.pcs != null && this.pcs.isActive();
 	}

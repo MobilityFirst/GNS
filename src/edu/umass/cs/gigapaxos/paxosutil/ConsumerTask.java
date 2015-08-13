@@ -44,6 +44,12 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 	public abstract void process(TaskType task);
 
 	private TaskType dequeue() {
+		if(this.sleepDuration>0)
+			try {
+				Thread.sleep(sleepDuration);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		synchronized (lock) {
 			return this.dequeueImpl();
 		}
@@ -145,5 +151,11 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 		synchronized (this.lock) {
 			return this.stopped;
 		}
+	}
+
+	// nonzero only for testing
+	private long sleepDuration = 0;
+	protected void setSleepDuration(long sleep) {
+		this.sleepDuration = sleep;
 	}
 }

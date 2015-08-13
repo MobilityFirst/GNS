@@ -19,6 +19,7 @@ package edu.umass.cs.reconfiguration.examples;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -44,8 +45,8 @@ public class TestConfig {
 	public static final ServerSelectionPolicy serverSelectionPolicy = ServerSelectionPolicy.RANDOM;
 
 	public static final String[] DEFAULT_RECONFIGURATORS = { "127.0.0.1:3100",
-			"127.0.0.1:3101", "127.0.0.1:3102" 
-	 , "127.0.0.1:3103",	"127.0.0.1:3104" };
+			"127.0.0.1:3101", "127.0.0.1:3102"}; 
+	// , "127.0.0.1:3103",	"127.0.0.1:3104" };
 
 	public static final String[] DEFAULT_ACTIVES = { "127.0.0.1:2100",
 			"127.0.0.1:2101", "127.0.0.1:2102" }; // , "127.0.0.1:2103",
@@ -53,20 +54,23 @@ public class TestConfig {
 													// "127.0.0.1:2105",
 													// "127.0.0.1:2106" };
 
-	private final static Set<InetSocketAddress> reconfigurators = new HashSet<InetSocketAddress>();
-	private final static Set<InetSocketAddress> actives = new HashSet<InetSocketAddress>();
+	private final static InetSocketAddress[] reconfigurators;// = new HashSet<InetSocketAddress>();
+	private final static InetSocketAddress[] actives;// = new HashSet<InetSocketAddress>();
 
 	static {
-		for (String sockAddrStr : DEFAULT_RECONFIGURATORS)
-			reconfigurators.add(Util
-					.getInetSocketAddressFromString(sockAddrStr));
+		reconfigurators = new InetSocketAddress[DEFAULT_RECONFIGURATORS.length];
+		actives = new InetSocketAddress[DEFAULT_ACTIVES.length];
+		for (int i=0; i< reconfigurators.length; i++)
+			reconfigurators[i] = (Util
+					.getInetSocketAddressFromString(DEFAULT_RECONFIGURATORS[i]));
 
-		for (String sockAddrStr : DEFAULT_ACTIVES)
-			actives.add(Util.getInetSocketAddressFromString(sockAddrStr));
+		for (int i=0; i< actives.length; i++)
+			actives[i] = (Util
+					.getInetSocketAddressFromString(DEFAULT_ACTIVES[i]));
 	}
 
 	public static Set<InetSocketAddress> getReconfigurators() {
-		return reconfigurators;
+		return new HashSet<InetSocketAddress>(Arrays.asList(reconfigurators));
 	}
 
 	public static final String AR_PREFIX = "AR";
@@ -85,7 +89,7 @@ public class TestConfig {
 	}
 
 	// hacks up a simple node config with the above addresses
-	public static InterfaceReconfigurableNodeConfig<String> getTestNodeConfig() {
+	public static TestNodeConfig getTestNodeConfig() {
 		return new TestNodeConfig(reconfigurators, actives);
 	}
 
@@ -96,13 +100,15 @@ public class TestConfig {
 		HashMap<String, InetSocketAddress> rcMap = new HashMap<String, InetSocketAddress>();
 		HashMap<String, InetSocketAddress> arMap = new HashMap<String, InetSocketAddress>();
 
-		TestNodeConfig(Set<InetSocketAddress> rcs, Set<InetSocketAddress> ars) {
-			int i = 0;
-			for (InetSocketAddress sockAddr : rcs)
-				rcMap.put(RC_PREFIX + (i++), sockAddr);
-			i = 0;
-			for (InetSocketAddress sockAddr : ars)
-				arMap.put(AR_PREFIX + (i++), sockAddr);
+		TestNodeConfig(InetSocketAddress[] rcs, InetSocketAddress[] ars) {
+			for (int i = 0; i < rcs.length; i++)
+				rcMap.put(RC_PREFIX + i, rcs[i]);
+			for (int i = 0; i < ars.length; i++)
+				arMap.put(AR_PREFIX + i, ars[i]);
+		}
+		
+		public Set<String> getReconfiguratorIDs() {
+			return this.rcMap.keySet();
 		}
 
 		@Override

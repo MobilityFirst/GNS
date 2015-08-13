@@ -52,6 +52,8 @@ public class PValuePacket extends ProposalPacket {
 	 * paxos replica group are ordered by their macCheckpointedSlot.
 	 */
 	private int medianCheckpointedSlot;
+	
+	private boolean noCoalesce = false;
 
 	public PValuePacket(Ballot b, ProposalPacket p) {
 		super(p);
@@ -60,8 +62,8 @@ public class PValuePacket extends ProposalPacket {
 		this.recovery = false; // true only when created from json
 	}
 
-	// Meant for super calling by inheritors
-	protected PValuePacket(PValuePacket pvalue) {
+	// Super-called by inheritors and by PaxosInstanceStateMachine
+	public PValuePacket(PValuePacket pvalue) {
 		super(pvalue);
 		this.ballot = pvalue.ballot;
 		this.medianCheckpointedSlot = pvalue.medianCheckpointedSlot;
@@ -71,12 +73,13 @@ public class PValuePacket extends ProposalPacket {
 
 	public PValuePacket(JSONObject json) throws JSONException {
 		super(json);
-		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.B
 				.toString()));
 		this.medianCheckpointedSlot = json
-				.getInt(PaxosPacket.Keys.MEDIAN_CHECKPOINTED_SLOT.toString());
-		this.recovery = json.getBoolean(PaxosPacket.Keys.RECOVERY.toString());
+				.getInt(PaxosPacket.Keys.GC_S.toString());
+		this.recovery = json.optBoolean(PaxosPacket.Keys.RCVRY.toString());
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
+		this.noCoalesce = json.optBoolean(PaxosPacket.Keys.NO_COALESCE.toString());
 	}
 
 	public PValuePacket makeDecision(int mcSlot) {
@@ -94,6 +97,11 @@ public class PValuePacket extends ProposalPacket {
 		// Note: preemption does not change final fields
 		this.packetType = PaxosPacketType.PREEMPTED;
 		return this;
+	}
+	
+	public boolean isCoalescable() {
+		return !this.noCoalesce
+				&& this.getType().equals(PaxosPacket.PaxosPacketType.DECISION);
 	}
 
 	public int getMedianCheckpointedSlot() {
@@ -120,10 +128,16 @@ public class PValuePacket extends ProposalPacket {
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
-		json.put(PaxosPacket.Keys.MEDIAN_CHECKPOINTED_SLOT.toString(),
+		json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
+		json.put(PaxosPacket.Keys.GC_S.toString(),
 				this.medianCheckpointedSlot);
-		json.put(PaxosPacket.Keys.RECOVERY.toString(), this.recovery);
+		if(this.recovery) json.put(PaxosPacket.Keys.RCVRY.toString(), this.recovery);
+		if(this.noCoalesce) json.put(PaxosPacket.Keys.NO_COALESCE.toString(), this.noCoalesce);
 		return json;
+	}
+
+	public PValuePacket setNoCoalesce() {
+		this.noCoalesce = true;
+		return this;
 	}
 }

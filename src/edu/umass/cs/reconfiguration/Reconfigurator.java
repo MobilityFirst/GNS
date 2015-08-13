@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -69,6 +69,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurabl
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.MyLogger;
 
 /**
@@ -251,20 +252,33 @@ public class Reconfigurator<NodeIDType> implements
 		return null; // never any messaging or ptasks
 	}
 
+	private boolean isLegitimateCreateRequest(CreateServiceName create) {
+		if (!create.isBatched())
+			return true;
+		return this.consistentNodeConfig.checkSameGroup(create.nameStates
+				.keySet());
+	}
+
 	/**
 	 * Create service name is a special case of reconfiguration where the
 	 * previous group is non-existent.
 	 * 
-	 * @param event
+	 * @param create
 	 * @param ptasks
 	 * @return Messaging task, typically null. No protocol tasks spawned.
 	 */
 	public GenericMessagingTask<NodeIDType, ?>[] handleCreateServiceName(
-			CreateServiceName event,
+			CreateServiceName create,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
-		CreateServiceName create = (CreateServiceName) event;
-		log.log(Level.FINER, "{0} received {1} from {2}", new Object[] { this,
+		log.log(Level.FINE, "{0} received {1} from {2}", new Object[] { this,
 				create.getSummary(), create.getCreator() });
+
+		// quick reject for bad batched create
+		if (!this.isLegitimateCreateRequest(create))
+			this.sendClientReconfigurationPacket(create
+					.setFailed()
+					.setResponseMessage(
+							"The names in this create request do not all map to the same reconfigurator group"));
 
 		if (this.processRedirection(create))
 			return null;
@@ -286,17 +300,27 @@ public class Reconfigurator<NodeIDType> implements
 		 * nodeConfig is outdated at some node, that only affects the choice of
 		 * active replicas below, not their consistency.
 		 */
-		log.log(Level.INFO, "{0} processing {1} from {2}", new Object[] { this,
-				create.getSummary(), create.getCreator() });
+		log.log(Level.INFO, "{0} processing {1} from creator {2} {3}",
+				new Object[] {
+						this,
+						create.getSummary(),
+						create.getCreator(),
+						create.getForwader() != null ? " forwarded by "
+								+ create.getForwader() : "" });
 
 		ReconfigurationRecord<NodeIDType> record = null;
-		// record doesn't already exist
+		/*
+		 * Check if record doesn't already exist. This check is meaningful only
+		 * for unbatched create requests. For batched creates, we optimistically
+		 * assume that none of the batched names already exist and let the
+		 * create fail later if that is not the case.
+		 */
 		if ((record = this.DB.getReconfigurationRecord(create.getServiceName())) == null)
-			this.initiateReconfiguration(create.getServiceName(),
+			this.initiateReconfiguration(create.getServiceName(), record,
 					this.consistentNodeConfig.getReplicatedActives(create
 							.getServiceName()), create.getCreator(), create
 							.getMyReceiver(), create.getForwader(), create
-							.getInitialState(), null);
+							.getInitialState(), create.getNameStates(), null);
 
 		// record already exists, so return error message
 		else
@@ -346,9 +370,9 @@ public class Reconfigurator<NodeIDType> implements
 			this.repeatUntilObviated(rcRecReq);
 
 		// clean up as needed
-		//if (rcRecReq.isReconfigurationComplete())
-			// remove stop and start tasks known to be obviated
-			//garbageCollectStopAndStartTasks(rcRecReq);
+		// if (rcRecReq.isReconfigurationComplete())
+		// remove stop and start tasks known to be obviated
+		// garbageCollectStopAndStartTasks(rcRecReq);
 		if (rcRecReq.isReconfigurationMerge())
 			// stop mergee task obviated when reconfiguration merge proposed
 			this.protocolExecutor.remove(getTaskKey(WaitAckStopEpoch.class,
@@ -374,19 +398,28 @@ public class Reconfigurator<NodeIDType> implements
 	public GenericMessagingTask<NodeIDType, ?>[] handleDeleteServiceName(
 			DeleteServiceName delete,
 			ProtocolTask<NodeIDType, ReconfigurationPacket.PacketType, String>[] ptasks) {
+		log.log(Level.FINE, "{0} received {1} from creator {2}", new Object[] {
+				this, delete.getSummary(), delete.getCreator() });
 
 		if (this.processRedirection(delete))
 			return null;
-		log.log(Level.INFO, "{0} processing delete request {1}", new Object[] {
-				this, delete.getSummary() });
+		log.log(Level.INFO,
+				"{0} processing delete request {1} from creator {2} {3}",
+				new Object[] {
+						this,
+						delete.getSummary(),
+						delete.getCreator(),
+						delete.getForwader() != null ? " forwarded by "
+								+ delete.getForwader() : "" });
+		ReconfigurationRecord<NodeIDType> record = this.DB
+				.getReconfigurationRecord(delete.getServiceName());
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 				this.getMyID(), this.formStartEpoch(delete.getServiceName(),
-						null, delete.getSender(), delete.getMyReceiver(),
-						delete.getForwader(), null),
+						record, null, delete.getCreator(),
+						delete.getMyReceiver(), delete.getForwader(), null),
 				RequestTypes.RECONFIGURATION_INTENT);
 		// coordinate delete intent, response will be sent in callback
-		if (this.isReadyForReconfiguration(rcRecReq)
-				&& this.DB.getReconfigurationRecord(delete.getServiceName()) != null)
+		if (record != null && this.isReadyForReconfiguration(rcRecReq, record))
 			return this.DB.handleIncoming(rcRecReq) ? null : null;
 		// WAIT_DELETE state also means success
 		else if (this.isWaitingDelete(delete)) {
@@ -488,8 +521,10 @@ public class Reconfigurator<NodeIDType> implements
 		assert (changeRC.getServiceName()
 				.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString()));
-		log.log(Level.INFO, "{0} received node config change request {1}",
-				new Object[] { this, changeRC.getSummary() });
+		log.log(Level.INFO,
+				"{0} received node config change request {1} from initiator {2}",
+				new Object[] { this, changeRC.getSummary(),
+						changeRC.getIssuer() });
 		if (!this.isPermitted(changeRC)) {
 			String errorMessage = " Impermissible node config change request";
 			log.severe(this + errorMessage + ": " + changeRC);
@@ -520,8 +555,9 @@ public class Reconfigurator<NodeIDType> implements
 		if (changeRC.newlyAddedNodes != null || changeRC.deletedNodes != null)
 			this.initiateReconfiguration(
 					AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString(),
+					ncRecord,
 					newRCs, // this.consistentNodeConfig.getNodeSocketAddress
-					(changeRC.getIssuer()), null, null, null,
+					(changeRC.getIssuer()), null, null, null, null,
 					changeRC.newlyAddedNodes);
 		return null;
 	}
@@ -788,7 +824,7 @@ public class Reconfigurator<NodeIDType> implements
 		 */
 		if (clientRCPacket.isRedirectedResponse()) {
 			log.log(Level.INFO,
-					"{0} relaying response for forwarded request {1} back to client",
+					"{0} relaying response for forwarded request {1}",
 					new Object[] { this, clientRCPacket.getSummary() });
 			// just relay response to the client
 			return this.sendClientReconfigurationPacket(clientRCPacket);
@@ -957,26 +993,32 @@ public class Reconfigurator<NodeIDType> implements
 		}
 	}
 
-	private void initiateReconfiguration(String name, Set<NodeIDType> newActives) {
-		this.initiateReconfiguration(name, newActives, null, null, null, null,
-				null);
+	private boolean initiateReconfiguration(String name,
+			Set<NodeIDType> newActives) {
+		ReconfigurationRecord<NodeIDType> record = this.DB
+				.getReconfigurationRecord(name);
+		if (record == null)
+			return false;
+		return this.initiateReconfiguration(name, record, newActives, null,
+				null, null, null, null, null);
 	}
 
 	// coordinate reconfiguration intent
 	private boolean initiateReconfiguration(String name,
+			ReconfigurationRecord<NodeIDType> record,
 			Set<NodeIDType> newActives, InetSocketAddress sender,
 			InetSocketAddress receiver, InetSocketAddress forwarder,
-			String initialState,
+			String initialState, Map<String, String> nameStates,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
 		if (newActives == null)
 			return false;
 		// request to persistently log the intent to reconfigure
 		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
-				this.getMyID(), formStartEpoch(name, newActives, sender,
-						receiver, forwarder, initialState, newlyAddedNodes),
-				RequestTypes.RECONFIGURATION_INTENT);
+				this.getMyID(), formStartEpoch(name, record, newActives,
+						sender, receiver, forwarder, initialState, nameStates,
+						newlyAddedNodes), RequestTypes.RECONFIGURATION_INTENT);
 		// coordinate intent with replicas
-		if (this.isReadyForReconfiguration(rcRecReq))
+		if (this.isReadyForReconfiguration(rcRecReq, record))
 			return this.DB.handleIncoming(rcRecReq);
 		return false;
 	}
@@ -999,9 +1041,8 @@ public class Reconfigurator<NodeIDType> implements
 	 * called will either not get committed or be rendered a no-op.
 	 */
 	private boolean isReadyForReconfiguration(
-			BasicReconfigurationPacket<NodeIDType> rcPacket) {
-		ReconfigurationRecord<NodeIDType> recordServiceName = this.DB
-				.getReconfigurationRecord(rcPacket.getServiceName());
+			BasicReconfigurationPacket<NodeIDType> rcPacket,
+			ReconfigurationRecord<NodeIDType> recordServiceName) {
 		ReconfigurationRecord<NodeIDType> recordGroupName = this.DB
 				.getReconfigurationRecord(this.DB.getRCGroupName(rcPacket
 						.getServiceName()));
@@ -1034,28 +1075,31 @@ public class Reconfigurator<NodeIDType> implements
 	}
 
 	private StartEpoch<NodeIDType> formStartEpoch(String name,
+			ReconfigurationRecord<NodeIDType> record,
 			Set<NodeIDType> newActives, InetSocketAddress sender,
 			InetSocketAddress receiver, InetSocketAddress forwarder,
-			String initialState,
+			String initialState, Map<String, String> nameStates,
 			Map<NodeIDType, InetSocketAddress> newlyAddedNodes) {
-		ReconfigurationRecord<NodeIDType> record = this.DB
-				.getReconfigurationRecord(name);
-		StartEpoch<NodeIDType> startEpoch = (record != null) ? new StartEpoch<NodeIDType>(
-				getMyID(), name, record.getEpoch() + 1, newActives,
-				record.getActiveReplicas(record.getName(), record.getEpoch()),
-				sender, receiver, forwarder, initialState, newlyAddedNodes)
+		StartEpoch<NodeIDType> startEpoch = (record != null) ?
+		// typical reconfiguration
+		new StartEpoch<NodeIDType>(getMyID(), name, record.getEpoch() + 1,
+				newActives, record.getActiveReplicas(record.getName(),
+						record.getEpoch()), sender, receiver, forwarder,
+				initialState, nameStates, newlyAddedNodes)
+		// creation reconfiguration
 				: new StartEpoch<NodeIDType>(getMyID(), name, 0, newActives,
 						null, sender, receiver, forwarder, initialState,
-						newlyAddedNodes);
+						nameStates, newlyAddedNodes);
 		return startEpoch;
 	}
 
 	private StartEpoch<NodeIDType> formStartEpoch(String name,
+			ReconfigurationRecord<NodeIDType> record,
 			Set<NodeIDType> newActives, InetSocketAddress sender,
 			InetSocketAddress receiver, InetSocketAddress forwarder,
 			String initialState) {
-		return this.formStartEpoch(name, newActives, sender, receiver,
-				forwarder, initialState, null);
+		return this.formStartEpoch(name, record, newActives, sender, receiver,
+				forwarder, initialState, null, null);
 	}
 
 	/************ Start of key construction utility methods *************/
@@ -1199,7 +1243,7 @@ public class Reconfigurator<NodeIDType> implements
 					"{0} initiating pending reconfiguration for {1}",
 					new Object[] { this, name });
 			RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
-					this.getMyID(), this.formStartEpoch(name,
+					this.getMyID(), this.formStartEpoch(name, record,
 							record.getNewActives(), null, null, null, null),
 					RCRecordRequest.RequestTypes.RECONFIGURATION_INTENT);
 			/*
@@ -1225,7 +1269,8 @@ public class Reconfigurator<NodeIDType> implements
 					.getBindSocketAddress(getMyID()));
 			log.log(Level.INFO,
 					"{0} forwarding client request {1} to reconfigurator {2}",
-					new Object[] { this, request, randomResponsibleRC });
+					new Object[] { this, request.getSummary(),
+							randomResponsibleRC });
 			this.messenger.sendToAddress(
 					this.consistentNodeConfig
 							.getNodeSocketAddress(randomResponsibleRC),
@@ -1250,7 +1295,7 @@ public class Reconfigurator<NodeIDType> implements
 				// only response can go back to client
 				log.log(Level.INFO,
 						"{0} sending client response {1}:{2} to client {3}",
-						new Object[] { this, response.getSummary(),
+						new Object[] { this, response,
 								response.getResponseMessage(), querier });
 				(this.getMessenger(response.getMyReceiver())).sendToAddress(
 						querier, response.toJSONObject());
@@ -1281,16 +1326,24 @@ public class Reconfigurator<NodeIDType> implements
 			InetSocketAddress receiver) {
 		if (receiver.equals(this.consistentNodeConfig.getBindSocketAddress(this
 				.getMyID()))) {
-                  log.log(Level.FINE, "{0} using messenger for {1}; bindAddress is {2}", 
-                          new Object[] {this, receiver, this.consistentNodeConfig.getBindSocketAddress(this
-				.getMyID())});
+			log.log(Level.FINE,
+					"{0} using messenger for {1}; bindAddress is {2}",
+					new Object[] {
+							this,
+							receiver,
+							this.consistentNodeConfig.getBindSocketAddress(this
+									.getMyID()) });
 			return this.messenger;
-                } else {
-                  log.log(Level.FINE, "{0} using clientMessenger for {1}; bindAddress is {2}", 
-                          new Object[] {this, receiver, this.consistentNodeConfig.getBindSocketAddress(this
-				.getMyID())});
+		} else {
+			log.log(Level.FINE,
+					"{0} using clientMessenger for {1}; bindAddress is {2}",
+					new Object[] {
+							this,
+							receiver,
+							this.consistentNodeConfig.getBindSocketAddress(this
+									.getMyID()) });
 			return this.getClientMessenger();
-                }
+		}
 	}
 
 	/*
@@ -1309,6 +1362,8 @@ public class Reconfigurator<NodeIDType> implements
 				|| !rcRecReq.getInitiator().equals(getMyID()))
 			return;
 
+		DelayProfiler.updateDelay("createServiceName",
+				rcRecReq.startEpoch.getInitTime());
 		try {
 			InetSocketAddress querier = this.getQuerier(rcRecReq);
 			CreateServiceName response = (CreateServiceName) (new CreateServiceName(
@@ -1320,9 +1375,9 @@ public class Reconfigurator<NodeIDType> implements
 				log.log(Level.INFO,
 						"{0} sending creation confirmation {1} to client {2}",
 						new Object[] { this, response.getSummary(), querier });
-				//this.getClientMessenger()
-				(this.getMessenger(rcRecReq.startEpoch.getMyReceiver())).sendToAddress(querier,
-						response.toJSONObject());
+				// this.getClientMessenger()
+				(this.getMessenger(rcRecReq.startEpoch.getMyReceiver()))
+						.sendToAddress(querier, response.toJSONObject());
 			} else {
 				log.log(Level.INFO,
 						"{0} sending creation confirmation {1} to forwarding reconfigurator {2}",
@@ -1366,9 +1421,10 @@ public class Reconfigurator<NodeIDType> implements
 				log.log(Level.INFO,
 						"{0} sending deletion confirmation {1} to client {2}",
 						new Object[] { this, response.getSummary(), querier });
-				//this.getClientMessenger()
-				(this.getMessenger(rcRecReq.startEpoch.getMyReceiver())).sendToAddress(
-						this.getQuerier(rcRecReq), response.toJSONObject());
+				// this.getClientMessenger()
+				(this.getMessenger(rcRecReq.startEpoch.getMyReceiver()))
+						.sendToAddress(this.getQuerier(rcRecReq),
+								response.toJSONObject());
 			} else {
 				log.log(Level.INFO,
 						"{0} sending deletion confirmation {1} to forwarding reconfigurator {2}",
@@ -1399,11 +1455,12 @@ public class Reconfigurator<NodeIDType> implements
 		InetSocketAddress me = this.consistentNodeConfig
 				.getBindSocketAddress(getMyID());
 		// if there is a forwarder that is not me, relay back
-		if (forwarder != null && !forwarder.equals(me))
+		if (forwarder != null && !forwarder.equals(me)) {
 			return forwarder;
-		else
+		} else {
 			// return directly to creator
 			return response.getCreator();
+		}
 	}
 
 	// true only for easy testing
@@ -1421,8 +1478,10 @@ public class Reconfigurator<NodeIDType> implements
 					"{0} sending ReconfigureRCNodeConfig confirmation to {1}: {2}",
 					new Object[] { this, rcRecReq.startEpoch.creator,
 							response.getSummary() });
-			(enableRCReconfigurationFromClient ? this.getClientMessenger()
-					: this.messenger).sendToAddress(
+			// FIXME: use right socket address for self
+			(this.consistentNodeConfig.getNodeSocketAddress(getMyID()).equals(
+					rcRecReq.startEpoch.getMyReceiver()) ? this.messenger
+					: this.getClientMessenger()).sendToAddress(
 					rcRecReq.startEpoch.creator, response.toJSONObject());
 		} catch (IOException | JSONException e) {
 			log.severe(this + " incurred " + e.getClass().getSimpleName()

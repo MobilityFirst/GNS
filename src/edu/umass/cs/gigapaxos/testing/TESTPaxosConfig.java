@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -131,6 +131,16 @@ public class TESTPaxosConfig {
 		TOTAL_LOAD(1000), // across all clients
 
 		/**
+		 * Payload size in test requests.
+		 */
+		REQUEST_BAGGAGE_SIZE (10),
+		
+		/**
+		 * 
+		 */
+		OVERHEAD_TESTING (false),
+		
+		/**
 		 * to disable some exceptions/logging while testing
 		 */
 		MEMORY_TESTING(true);
@@ -176,6 +186,8 @@ public class TESTPaxosConfig {
 		if (distributed)
 			loadServersFromFile(configDir
 					+ Config.getGlobalString(TC.SERVERS_FILENAME));
+		else setupGroups();
+		
 		loadPropertiesFromFile(
 				configDir + Config.getGlobalString(TC.PROPERTIES_FILENAME),
 				distributed);
@@ -216,21 +228,28 @@ public class TESTPaxosConfig {
 	 */
 
 	private static final SampleNodeConfig<Integer> nodeConfig = new SampleNodeConfig<Integer>(
-			SampleNodeConfig.DEFAULT_START_PORT);
+			SampleNodeConfig.DEFAULT_START_PORT, Config.getGlobalInt(TC.TEST_START_NODE_ID), Config.getGlobalInt(TC.NUM_NODES));
 	private static final HashMap<String, int[]> groups = new HashMap<String, int[]>();
-	private static final int[] defaultGroup = {
-			Config.getGlobalInt(TC.TEST_START_NODE_ID),
-			Config.getGlobalInt(TC.TEST_START_NODE_ID) + 1,
-			Config.getGlobalInt(TC.TEST_START_NODE_ID) + 2 };
-	private static final Set<Integer> defaultGroupSet;
+	private static int[] defaultGroup = new int[Config
+			.getGlobalInt(TC.NUM_NODES)];
 
-	static {
+	private static void setupGroups() {
+		defaultGroup = new int[Math.min(3,  Config.getGlobalInt(TC.NUM_NODES))];
+		for (int i = 0; i < defaultGroup.length; i++)
+			defaultGroup[i] = Config.getGlobalInt(TC.TEST_START_NODE_ID) + i;
+		
+		/*
+		nodeConfig.clear();
 		for (int i = Config.getGlobalInt(TC.TEST_START_NODE_ID); i < Config
 				.getGlobalInt(TC.TEST_START_NODE_ID)
 				+ Config.getGlobalInt(TC.NUM_NODES); i++)
 			nodeConfig.addLocal(i);
+			*/
 		setDefaultGroups(Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS));
-		defaultGroupSet = Util.arrayToIntSet(defaultGroup);
+	}
+
+	static { // is this needed?
+		//setupGroups();
 	}
 
 	private static boolean reply_to_client = true;
@@ -281,25 +300,12 @@ public class TESTPaxosConfig {
 
 	/******************** End of distributed settings **************************/
 
-	public static void setLocalServers() {
-		for (int i = 0; i < Config.getGlobalInt(TC.NUM_NODES); i++)
-			TESTPaxosConfig.getNodeConfig().addLocal(
-					Config.getGlobalInt(TC.TEST_START_NODE_ID) + i);
-	}
-
-	/**
-	 * 
-	 */
-	public static void setLocalClients() {
-		for (int i = 0; i < Config.getGlobalInt(TC.NUM_CLIENTS); i++)
-			TESTPaxosConfig.getNodeConfig().addLocal(
-					Config.getGlobalInt(TC.TEST_CLIENT_ID) + i);
-	}
-
 	/**
 	 * @param numGroups
 	 */
 	public static void setDefaultGroups(int numGroups) {
+
+		groups.clear();
 		for (int i = 0; i < Math.min(
 				Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS), numGroups); i++) {
 			groups.put(Config.getGlobalString(TC.TEST_GUID_PREFIX) + i,
@@ -388,7 +394,7 @@ public class TESTPaxosConfig {
 	 * @return Default group members as set.
 	 */
 	public static Set<Integer> getDefaultGroupSet() {
-		return defaultGroupSet;
+		return Util.arrayToIntSet(defaultGroup);
 	}
 
 	/**
@@ -567,6 +573,9 @@ public class TESTPaxosConfig {
 			reader = new BufferedReader(new FileReader(filename));
 			String line = null;
 			int count = 0;
+
+			TESTPaxosConfig.getNodeConfig().clear();
+
 			while ((line = reader.readLine()) != null) {
 				if (line.contains("#"))
 					continue;
@@ -581,6 +590,10 @@ public class TESTPaxosConfig {
 				TESTPaxosConfig.getNodeConfig().add(id,
 						InetAddress.getByName(tokens[1].trim()));
 			}
+			// re-make default groups
+			Config.getConfig(TC.class).put(TC.NUM_NODES.toString(),
+					TESTPaxosConfig.getNodeConfig().getNodeIDs().size());
+			setupGroups();
 			reader.close();
 		} catch (IOException e) {
 			System.err

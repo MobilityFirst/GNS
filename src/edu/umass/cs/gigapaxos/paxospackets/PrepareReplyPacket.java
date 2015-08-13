@@ -66,20 +66,20 @@ public class PrepareReplyPacket extends PaxosPacket {
 		super(json);
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.PREPARE_REPLY);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
-		this.acceptor = json.getInt(PaxosPacket.NodeIDKeys.ACCEPTOR.toString());
-		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.BALLOT
+		this.acceptor = json.getInt(PaxosPacket.NodeIDKeys.ACCPTR.toString());
+		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.B
 				.toString()));
 		this.accepted = parseJsonForAccepted(json);
-		this.firstSlot = json.getInt(PaxosPacket.Keys.PREPARE_REPLY_FIRST_SLOT
+		this.firstSlot = json.getInt(PaxosPacket.Keys.PREPLY_MIN
 				.toString());
 	}
 
 	private HashMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json)
 			throws JSONException {
 		HashMap<Integer, PValuePacket> accepted = new HashMap<Integer, PValuePacket>();
-		if (json.has(PaxosPacket.Keys.ACCEPTED_MAP.toString())) {
+		if (json.has(PaxosPacket.Keys.ACC_MAP.toString())) {
 			JSONArray jsonArray = json
-					.getJSONArray(PaxosPacket.Keys.ACCEPTED_MAP.toString());
+					.getJSONArray(PaxosPacket.Keys.ACC_MAP.toString());
 			for (int i = 0; i < jsonArray.length(); i++) {
 				JSONObject element = jsonArray.getJSONObject(i);
 				PValuePacket pval = new PValuePacket(element);
@@ -92,11 +92,11 @@ public class PrepareReplyPacket extends PaxosPacket {
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(PaxosPacket.NodeIDKeys.ACCEPTOR.toString(), acceptor);
-		json.put(PaxosPacket.NodeIDKeys.BALLOT.toString(), ballot.toString());
+		json.put(PaxosPacket.NodeIDKeys.ACCPTR.toString(), acceptor);
+		json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
 		assert (this.packetType == PaxosPacketType.PREPARE_REPLY);
 		addAcceptedToJSON(json);
-		json.put(PaxosPacket.Keys.PREPARE_REPLY_FIRST_SLOT.toString(),
+		json.put(PaxosPacket.Keys.PREPLY_MIN.toString(),
 				this.firstSlot);
 		return json;
 	}
@@ -113,7 +113,6 @@ public class PrepareReplyPacket extends PaxosPacket {
 		return getMinSlot(this.accepted);
 	}
 
-	// FIXME: wraparound
 	private int getMinSlot(Map<Integer, PValuePacket> acceptedMap) {
 		Integer minSlot = null;
 		if (acceptedMap != null && !acceptedMap.isEmpty()) {
@@ -149,7 +148,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 			for (PValuePacket pValue : accepted.values()) {
 				jsonArray.put(pValue.toJSONObject());
 			}
-			json.put(PaxosPacket.Keys.ACCEPTED_MAP.toString(), jsonArray);
+			json.put(PaxosPacket.Keys.ACC_MAP.toString(), jsonArray);
 		}
 	}
 

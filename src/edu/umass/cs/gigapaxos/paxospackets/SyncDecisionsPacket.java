@@ -49,57 +49,39 @@ public final class SyncDecisionsPacket extends PaxosPacket {
 	 * maxDecisionSlot}.
 	 */
 	public final ArrayList<Integer> missingSlotNumbers;
-	/**
-	 * Whether we are missing too much, thereby prompting a checkpoint transfer
-	 * instead of sending a large number of decisions. This flag is determined
-	 * by default based on the number of missing decisions and the
-	 * inter-checkpoint interval, but can also be explicitly specified by the
-	 * sender.
-	 */
-	public final boolean missingTooMuch;
 
 	public SyncDecisionsPacket(int nodeID, int maxDecisionSlot,
 			ArrayList<Integer> missingSlotNumbers, boolean flag) {
 		super((PaxosPacket) null);
-		this.missingTooMuch = flag;
-		this.packetType = (missingTooMuch ? PaxosPacketType.SYNC_DECISIONS
-				: PaxosPacketType.SYNC_DECISIONS); // missingTooMuch =>
-													// checkpoint transfer
 		this.nodeID = nodeID;
 		this.maxDecisionSlot = maxDecisionSlot;
 		this.missingSlotNumbers = missingSlotNumbers;
+		this.packetType = PaxosPacket.PaxosPacketType.SYNC_DECISIONS;
 	}
 
 	public SyncDecisionsPacket(JSONObject json) throws JSONException {
 		super(json);
 		this.nodeID = json
-				.getInt(PaxosPacket.NodeIDKeys.SENDER_NODE.toString());
+				.getInt(PaxosPacket.NodeIDKeys.SNDR.toString());
 		this.maxDecisionSlot = json
-				.getInt(PaxosPacket.Keys.MAX_SLOT.toString());
-		if (json.has(PaxosPacket.Keys.MISSING.toString()))
+				.getInt(PaxosPacket.Keys.MAX_S.toString());
+		if (json.has(PaxosPacket.Keys.MISS.toString()))
 			missingSlotNumbers = Util.JSONArrayToArrayListInteger(json
-					.getJSONArray(PaxosPacket.Keys.MISSING.toString()));
+					.getJSONArray(PaxosPacket.Keys.MISS.toString()));
 		else
 			missingSlotNumbers = null;
-		this.missingTooMuch = json
-				.getBoolean(PaxosPacket.Keys.IS_MISSING_TOO_MUCH.toString());
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.SYNC_DECISIONS || PaxosPacket
-				.getPaxosPacketType(json) == PaxosPacketType.CHECKPOINT_REQUEST); // coz
-																					// class
-																					// is
-																					// final
+				.getPaxosPacketType(json) == PaxosPacketType.CHECKPOINT_REQUEST); 
 		this.packetType = PaxosPacketType.SYNC_DECISIONS;
 	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
-		json.put(PaxosPacket.NodeIDKeys.SENDER_NODE.toString(), nodeID);
-		json.put(PaxosPacket.Keys.MAX_SLOT.toString(), maxDecisionSlot);
-		json.put(PaxosPacket.Keys.IS_MISSING_TOO_MUCH.toString(),
-				missingTooMuch);
+		json.put(PaxosPacket.NodeIDKeys.SNDR.toString(), nodeID);
+		json.put(PaxosPacket.Keys.MAX_S.toString(), maxDecisionSlot);
 		if (missingSlotNumbers != null && missingSlotNumbers.size() > 0)
-			json.put(PaxosPacket.Keys.MISSING.toString(), new JSONArray(
+			json.put(PaxosPacket.Keys.MISS.toString(), new JSONArray(
 					missingSlotNumbers));
 		return json;
 	}

@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -42,10 +42,14 @@ import edu.umass.cs.utils.Util;
  * @author V. Arun
  */
 public class TESTPaxosClient {
+	static {
+		TESTPaxosConfig.load();
+	}
 	private static long minSleepInterval = 10;
 
 	private static final long createTime = System.currentTimeMillis();
-	private static final int RANDOM_REPLAY = (int) (Math.random() * Config.getGlobalInt(TC.NUM_GROUPS));
+	private static final int RANDOM_REPLAY = (int) (Math.random() * Config
+			.getGlobalInt(TC.NUM_GROUPS));
 
 	private static int totalNoopCount = 0;
 
@@ -110,6 +114,7 @@ public class TESTPaxosClient {
 	private int preRecoveryExecutedCount = 0;
 
 	private final ConcurrentHashMap<Integer, RequestPacket> requests = new ConcurrentHashMap<Integer, RequestPacket>();
+	private final ConcurrentHashMap<Integer, Long> requestCreateTimes = new ConcurrentHashMap<Integer, Long>();
 	private final Timer timer; // for retransmission
 
 	private static Logger log = Logger.getLogger(TESTPaxosClient.class
@@ -185,40 +190,43 @@ public class TESTPaxosClient {
 		private ClientPacketDemultiplexer(TESTPaxosClient tpc) {
 			this.client = tpc;
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
-			this.setThreadName(""+tpc.myID);
+			this.setThreadName("" + tpc.myID);
 		}
 
 		public synchronized boolean handleMessage(JSONObject msg) {
 			try {
 				ProposalPacket proposal = new ProposalPacket(msg);
-				long latency = System.currentTimeMillis()
-						- proposal.getCreateTime();
+				//long latency = System.currentTimeMillis() - proposal.getCreateTime();
 				if (requests.containsKey(proposal.requestID)) {
 					client.incrReplyCount();
+					assert(requestCreateTimes.containsKey(proposal.requestID));
+					long latency = System.currentTimeMillis() - requestCreateTimes.get(proposal.requestID);
 					log.log(Level.FINE,
 							"{0}{1}{2}{3}{4}{5}{6}{7}{8}",
 							new Object[] { "Client ", client.myID,
 									" received response #",
 									client.getReplyCount(), " with latency ",
 									latency, proposal.getDebugInfo(), " : ",
-									msg });
+									proposal.getSummary() });
 					updateLatency(latency);
 					synchronized (client) {
 						client.notify();
 					}
 				} else {
 					log.log(Level.FINE,
-							"Client {0} received PHANTOM response #{1} with latency {2} [{3}] for request {4} : {5}",
+							"Client {0} received PHANTOM response #{1} [{2}] for request {3} : {4}",
 							new Object[] { client.myID, client.getReplyCount(),
-									latency, proposal.getDebugInfo(),
-									proposal.requestID, msg });
+									proposal.getDebugInfo(),
+									proposal.requestID, proposal.getSummary() });
 				}
 				if (proposal.isNoop())
 					client.incrNoopCount();
 				client.setPreRecoveryCount(proposal.slot);
 				client.setExecutedCount(proposal.slot + 1);
 				requests.remove(proposal.requestID);
+				requestCreateTimes.remove(proposal.requestID);
 			} catch (JSONException je) {
+				log.severe(this + " incurred JSONException while processing " + msg);
 				je.printStackTrace();
 			}
 			return true;
@@ -286,62 +294,83 @@ public class TESTPaxosClient {
 		return this.sendRequest(group[index], req);
 	}
 
-	protected boolean sendRequest(int id, RequestPacket req) throws IOException,
-			JSONException {
+	protected boolean sendRequest(int id, RequestPacket req)
+			throws IOException, JSONException {
 		log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] {
 				"Sending request to node ", id, ": ", req.getSummary() });
-		if(this.requests.put(req.requestID, req)!=null) 
+		if (this.requests.put(req.requestID, req) != null
+				|| this.requestCreateTimes.put(req.requestID,
+						System.currentTimeMillis()) != null)
 			return false; // collision in integer space
 		this.incrReqCount();
-		assert(this.niot.sendToID(id, req.toJSONObject()) > 0);
+		// no retransmission send
+		assert (this.niot.sendToID(id, req.toJSONObject()) > 0);
 		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
 			this.timer
 					.schedule(new Retransmitter(id, req), (long) getTimeout());
 		return true;
 	}
 
-	// to control request size, min request size is still > 350B
-	static String GIBBERISH = "01234567890123456789012345678901";
-	static int REQ_BAGGAGE_SIZE = 0;
+	/**
+	 * to control request size; min request size is still at least ~350B
+	 */
+	public static final String GIBBERISH = "47343289u230798sd7f69sf79s8fs9fys9nlk,.nesd5623mfds87wekldsoi;,DS"
+			+ "NFSDHGFBLLLAS7238485734934MNFD Z|47343289u23094322|94322"
+			+ "FHKSDF74JKFHDSOLRW0-3NCML,VFDYUP9045YMRJBJ;ASSKJBKNL7R3498 lc"
+			+ "fdslfmsf90sdjwe;dj8934r436854398uewnljscnzxjkcfairw"
+			+ "6943rhewldscnsodfuyoilkndsyrupornwekitcew9or;nwcigblw819ei23-t05860";;
+	static String gibberish = GIBBERISH;
 	static {
-		if (GIBBERISH.length() < REQ_BAGGAGE_SIZE)
-			GIBBERISH = GIBBERISH.substring(0, REQ_BAGGAGE_SIZE);
+		int baggageSize = Config.getGlobalInt(TC.REQUEST_BAGGAGE_SIZE);
+		if (gibberish.length() > baggageSize)
+			gibberish = gibberish.substring(0, baggageSize);
 		else
-			while (GIBBERISH.length() < REQ_BAGGAGE_SIZE)
-				GIBBERISH += GIBBERISH;
+			while (gibberish.length() < baggageSize)
+				gibberish += (baggageSize > 2 * gibberish.length() ? gibberish
+						: gibberish.substring(0,
+								baggageSize - gibberish.length()));
+		Util.assertAssertionsEnabled();
+		assert (gibberish.length() == baggageSize);
+	}
+	
+	/**
+	 * @return Literally gibberish.
+	 */
+	public static String getGibberish() {
+		return gibberish;
 	}
 
 	protected RequestPacket makeRequest() {
 		int reqID = ((int) (Math.random() * Integer.MAX_VALUE));
-		RequestPacket req = new RequestPacket(
-				this.myID,
-				reqID, // only place where req count is
-						// incremented
-				"[Sample request numbered " + getRequestCount() + "]" + GIBBERISH,
-				false);
+		RequestPacket req = new RequestPacket(reqID,
+				"[Sample request numbered " + getRequestCount() + "]"
+						+ gibberish, false);
 		req.putPaxosID(Config.getGlobalString(TC.TEST_GUID), 0);
 		return req;
 	}
 
 	protected RequestPacket makeRequest(String paxosID) {
 		RequestPacket req = this.makeRequest();
-		req.putPaxosID(paxosID != null ? paxosID : Config.getGlobalString(TC.TEST_GUID), 0);
+		req.putPaxosID(
+				paxosID != null ? paxosID : Config
+						.getGlobalString(TC.TEST_GUID), 0);
 		return req;
 	}
 
-	protected boolean makeAndSendRequest(String paxosID)
-			throws JSONException, IOException {
+	protected boolean makeAndSendRequest(String paxosID) throws JSONException,
+			IOException {
 		RequestPacket req = this.makeRequest(paxosID);
 		return this.sendRequest(req);
 	}
 
 	protected static TESTPaxosClient[] setupClients() {
 		System.out.println("\n\nInitiating paxos clients setup");
-		TESTPaxosClient[] clients = new TESTPaxosClient[Config.getGlobalInt(TC.NUM_CLIENTS)];
+		TESTPaxosClient[] clients = new TESTPaxosClient[Config
+				.getGlobalInt(TC.NUM_CLIENTS)];
 		for (int i = 0; i < Config.getGlobalInt(TC.NUM_CLIENTS); i++) {
 			try {
-				clients[i] = new TESTPaxosClient(Config.getGlobalInt(TC.TEST_CLIENT_ID)
-						+ i);
+				clients[i] = new TESTPaxosClient(
+						Config.getGlobalInt(TC.TEST_CLIENT_ID) + i);
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(1);
@@ -355,16 +384,17 @@ public class TESTPaxosClient {
 	protected static void sendTestRequests(int numReqsPerClient,
 			TESTPaxosClient[] clients) throws JSONException, IOException {
 		System.out.print("\nInitiating test sending " + numReqsPerClient
-				* Config.getGlobalInt(TC.NUM_CLIENTS) + " requests using "
-				+ Config.getGlobalInt(TC.NUM_CLIENTS)
+				* clients.length + " requests using " + clients.length
 				+ " clients at an aggregate load of "
 				+ Config.getGlobalDouble(TC.TOTAL_LOAD) + " reqs/sec...");
 		long initTime = System.currentTimeMillis();
 		for (int i = 0; i < numReqsPerClient; i++) {
-			for (int j = 0; j < Config.getGlobalInt(TC.NUM_CLIENTS); j++) {
-				int curTotalReqs = j + i * Config.getGlobalInt(TC.NUM_CLIENTS);
-				while(!clients[j].makeAndSendRequest("paxos"
-						+ ((RANDOM_REPLAY + curTotalReqs) % Config.getGlobalInt(TC.NUM_GROUPS))));
+			for (int j = 0; j < clients.length; j++) {
+				int curTotalReqs = j + i * clients.length;
+				while (!clients[j].makeAndSendRequest("paxos"
+						+ ((RANDOM_REPLAY + curTotalReqs) % Config
+								.getGlobalInt(TC.NUM_GROUPS))))
+					;
 				long leadTime = (long) ((curTotalReqs)
 						/ Config.getGlobalDouble(TC.TOTAL_LOAD) * 1000)
 						- (System.currentTimeMillis() - initTime);
@@ -386,7 +416,7 @@ public class TESTPaxosClient {
 		for (int i = 0; i < Config.getGlobalInt(TC.NUM_CLIENTS); i++) {
 			while (clients[i].requests.size() > 0) {
 				synchronized (clients[i]) {
-					if(clients[i].requests.size() > 0)
+					if (clients[i].requests.size() > 0)
 						try {
 							System.out.println(getWaiting(clients)
 									+ "; #num_total_retransmissions = "
@@ -400,6 +430,7 @@ public class TESTPaxosClient {
 				}
 				System.out.println("Cumulative response rate = "
 						+ Util.df(getTotalThroughput(clients)) + " reqs/sec");
+				
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException e) {
@@ -466,8 +497,8 @@ public class TESTPaxosClient {
 
 	protected static String getAggregateOutput(int numReqs, long delay) {
 		return "\n  average_throughput = "
-				+ Util.df(numReqs * Config.getGlobalInt(TC.NUM_CLIENTS) * 1000.0
-						/ delay) + "/s" + "\n  noop_count = "
+				+ Util.df(numReqs * Config.getGlobalInt(TC.NUM_CLIENTS)
+						* 1000.0 / delay) + "/s" + "\n  noop_count = "
 				+ TESTPaxosClient.getTotalNoopCount()
 				+ "\n  average_response_time = "
 				+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms";
@@ -481,7 +512,8 @@ public class TESTPaxosClient {
 			TESTPaxosConfig.setDistribtedTest(args.length > 0 ? args[0] : null);
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
-			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS) / Config.getGlobalInt(TC.NUM_CLIENTS);
+			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS)
+					/ Config.getGlobalInt(TC.NUM_CLIENTS);
 
 			// begin first run
 			long t1 = System.currentTimeMillis();

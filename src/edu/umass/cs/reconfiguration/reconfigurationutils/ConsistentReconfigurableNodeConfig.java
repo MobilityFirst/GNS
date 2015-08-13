@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -20,7 +20,10 @@ package edu.umass.cs.reconfiguration.reconfigurationutils;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -140,7 +143,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 		this.refreshReconfigurators();
 		return this.CH_RC.getReplicatedServers(name);
 	}
-	
+
 	/**
 	 * @param name
 	 * @return Reconfigurator addresses responsible for name.
@@ -148,7 +151,7 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	public Set<InetSocketAddress> getReconfiguratorsAsAddresses(String name) {
 		Set<NodeIDType> nodes = getReplicatedReconfigurators(name);
 		Set<InetSocketAddress> addrs = new HashSet<InetSocketAddress>();
-		for(NodeIDType node : nodes)
+		for (NodeIDType node : nodes)
 			addrs.add(this.getNodeSocketAddress(node));
 		return addrs;
 	}
@@ -290,35 +293,81 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	public InetSocketAddress addReconfigurator(NodeIDType id,
 			InetSocketAddress sockAddr) {
 		InetSocketAddress isa = this.nodeConfig.addReconfigurator(id, sockAddr);
-		assert(this.nodeConfig.getNodeAddress(id)!=null);
+		assert (this.nodeConfig.getNodeAddress(id) != null);
 		return isa;
 	}
+
 	/**
-         * Returns the socket address of the public host corresponding to this id.
-         * 
+	 * Returns the socket address of the public host corresponding to this id.
+	 * 
 	 * @param id
 	 * @return Socket address corresponding to node {@code id}.
 	 */
 	public InetSocketAddress getNodeSocketAddress(NodeIDType id) {
 		InetAddress ip = this.nodeConfig.getNodeAddress(id);
-		return (ip!=null ? new InetSocketAddress(ip, this.nodeConfig.getNodePort(id)) : null);
+		return (ip != null ? new InetSocketAddress(ip,
+				this.nodeConfig.getNodePort(id)) : null);
 	}
-        
-        /**
-         * Returns the bindable socket address of the public host corresponding to this id.
-         * This code be a private address in the case of where we are inside a NAT.
-         * 
-         * @param id
-         * @return 
-         */
-        public InetSocketAddress getBindSocketAddress(NodeIDType id) {
+
+	/**
+	 * Returns the bindable socket address of the public host corresponding to
+	 * this id. This code be a private address in the case of where we are
+	 * inside a NAT.
+	 * 
+	 * @param id
+	 * @return Bind socket address.
+	 */
+	public InetSocketAddress getBindSocketAddress(NodeIDType id) {
 		InetAddress ip = this.nodeConfig.getBindAddress(id);
-		return (ip!=null ? new InetSocketAddress(ip, this.nodeConfig.getNodePort(id)) : null);
+		return (ip != null ? new InetSocketAddress(ip,
+				this.nodeConfig.getNodePort(id)) : null);
 	}
 
 	@Override
 	public InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.nodeConfig.removeReconfigurator(id);
+	}
+
+	/**
+	 * A utility method to split a collection of names into batches wherein
+	 * names in each batch map to the same reconfigurator group. The set of
+	 * reconfigurators can be specified either as a NodeIDType or a String set
+	 * but not as an InetSocketAddress set (unless NodeIDType is
+	 * InetSocketAddress).
+	 * 
+	 * @param names
+	 * @param reconfigurators
+	 * @return A set of batches of names wherein names in each batch map to the
+	 *         same reconfigurator group.
+	 */
+	public static Collection<Set<String>> splitIntoRCGroups(Set<String> names,
+			Set<?> reconfigurators) {
+		if (reconfigurators.isEmpty())
+			throw new RuntimeException(
+					"A nonempty set of reconfigurators must be specified.");
+		ConsistentHashing<?> ch = new ConsistentHashing<>(reconfigurators);
+		Map<String, Set<String>> batches = new HashMap<String, Set<String>>();
+		for (String name : names) {
+			String rc = ch.getNode(name).toString();
+			if (!batches.containsKey(rc))
+				batches.put(rc, new HashSet<String>());
+			batches.get(rc).add(name); // no need to put again
+		}
+		return batches.values();
+	}
+	
+	/**
+	 * @param names
+	 * @return True if all names map to the same reconfigurator group.
+	 */
+	public boolean checkSameGroup(Set<String> names) {
+		NodeIDType rc = null;
+		for (String name : names)
+			if (rc == null)
+				rc = this.getFirstReconfigurator(name);
+			else if (!rc.equals(this.getFirstReconfigurator(name)))
+				return false;
+		return true;
 	}
 
 	/**
@@ -357,11 +406,11 @@ public class ConsistentReconfigurableNodeConfig<NodeIDType> extends
 	public long getVersion() {
 		return this.nodeConfig.getVersion();
 	}
-	
+
 	public String toString() {
-		String s="";
-		for(NodeIDType id : this.nodeConfig.getNodeIDs()) {
-			s += id+":"+this.getNodeSocketAddress(id)+" ";
+		String s = "";
+		for (NodeIDType id : this.nodeConfig.getNodeIDs()) {
+			s += id + ":" + this.getNodeSocketAddress(id) + " ";
 		}
 		return s;
 	}

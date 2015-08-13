@@ -1,26 +1,28 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
 package edu.umass.cs.reconfiguration.examples;
 
 import java.io.IOException;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -35,7 +37,6 @@ import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
@@ -45,7 +46,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigureRCNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.MyLogger;
 
@@ -61,7 +62,7 @@ import edu.umass.cs.utils.MyLogger;
  *         add and remove reconfigurator nodes, but these latter operations are
  *         normally for use only by administrators, not clients.
  */
-public class ReconfigurableClient {
+public class ReconfigurableClientCreateTester {
 
 	private final Set<InetSocketAddress> reconfigurators;
 	private final JSONMessenger<?> messenger;
@@ -71,35 +72,41 @@ public class ReconfigurableClient {
 
 	private Logger log = Logger.getLogger(getClass().getName());
 
-	ReconfigurableClient(Set<InetSocketAddress> reconfigurators,
+	ReconfigurableClientCreateTester(Set<InetSocketAddress> reconfigurators,
 			JSONMessenger<?> messenger) {
 		this.reconfigurators = reconfigurators;
 		this.messenger = messenger;
 		messenger.addPacketDemultiplexer(new ClientPacketDemultiplexer());
 	}
 
-	private AppRequest makeRequest(String name, String value) {
-		return new AppRequest(name, value,
-				AppRequest.PacketType.DEFAULT_APP_REQUEST, false);
-	}
+	/*
+	 * This method makes a batched create request. The main piece of additional
+	 * information needed here compared to a typical single create request is
+	 * the set of reconfigurator node IDs as opposed to just their socket
+	 * addresses. We need this because we need to ensure that all creates in a
+	 * batch map to the same RC group. For this, we need RC IDs because IDs, not
+	 * socket addresses, are used for consistent-hashing RCs on to the ring.
+	 */
+	private CreateServiceName[] makeCreateNameRequest(String name,
+			String state, int batchSize) {
+		Set<String> names = new HashSet<String>();
+		for (int i = 0; i < batchSize; i++)
+			names.add(name + i);
+		Collection<Set<String>> batches = ConsistentReconfigurableNodeConfig
+				.splitIntoRCGroups(names, TestConfig.getTestNodeConfig()
+						.getReconfiguratorIDs());
 
-	private CreateServiceName makeCreateNameRequest(String name, String state) {
-		return new CreateServiceName(null, name, 0, state);
-	}
-
-	private DeleteServiceName makeDeleteNameRequest(String name) {
-		return new DeleteServiceName(null, name, 0);
-	}
-
-	private RequestActiveReplicas makeRequestActiveReplicas(String name) {
-		return new RequestActiveReplicas(null, name, 0);
-	}
-
-	// active replicas should not be hard-coded
-	private InetSocketAddress getRandomActiveReplica() {
-		int index = (int) (this.getActiveReplicas().size() * Math.random());
-		return (InetSocketAddress) (this.getActiveReplicas().toArray()[index]);
-
+		Set<CreateServiceName> creates = new HashSet<CreateServiceName>();
+		// each batched create corresponds to a different RC group
+		for (Set<String> batch : batches) {
+			Map<String, String> nameStates = new HashMap<String, String>();
+			for (String bname : batch) {
+				nameStates.put(bname, state);
+			}
+			// a single batched create
+			creates.add(new CreateServiceName(null, nameStates));
+		}
+		return creates.toArray(new CreateServiceName[0]);
 	}
 
 	private Set<InetSocketAddress> getReconfigurators() {
@@ -114,28 +121,13 @@ public class ReconfigurableClient {
 				ActiveReplica.getClientFacingPort(address.getPort()));
 	}
 
-	private InetSocketAddress getFirstActiveReplica() {
-		return this.getActiveReplicas().iterator().next();
-	}
-
 	private InetSocketAddress getFirstRCReplica() {
 		InetSocketAddress address = this.getReconfigurators().iterator().next();
 		return new InetSocketAddress(address.getAddress(),
 				ActiveReplica.getClientFacingPort(address.getPort()));
 	}
 
-	private void sendRequest(AppRequest req) throws JSONException, IOException,
-			RequestParseException {
-		InetSocketAddress sockAddr = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
-				.getFirstActiveReplica() : this.getRandomActiveReplica());
-		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[] {
-				"Sending ", req.getRequestType(), " to ", sockAddr, ":",
-				(sockAddr), ": ", req });
-		this.sentRequests.put(req.getServiceName(), System.currentTimeMillis());
-		this.sendRequest(sockAddr, req.toJSONObject());
-	}
-
-	private void sendRequest(BasicReconfigurationPacket<?> req)
+	private String sendRequest(BasicReconfigurationPacket<?> req)
 			throws JSONException, IOException {
 		InetSocketAddress sockAddr = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
 				.getFirstRCReplica() : this.getRandomRCReplica());
@@ -144,6 +136,7 @@ public class ReconfigurableClient {
 				(sockAddr), ": ", req });
 		this.sentRequests.put(req.getServiceName(), System.currentTimeMillis());
 		this.sendRequest(sockAddr, req.toJSONObject());
+		return req.getServiceName();
 	}
 
 	private void sendRequest(InetSocketAddress id, JSONObject json)
@@ -216,7 +209,8 @@ public class ReconfigurableClient {
 						log.log(Level.INFO,
 								"Received node config change {0} {1}{2}",
 								new Object[] {
-										rcnc.isFailed() ? "ERROR: " + rcnc.getMessage()
+										rcnc.isFailed() ? "ERROR: "
+												+ rcnc.getMessage()
 												: "confirmation",
 										(rcnc.newlyAddedNodes != null ? "; added"
 												+ rcnc.newlyAddedNodes
@@ -279,9 +273,11 @@ public class ReconfigurableClient {
 	private static final long REQUEST_TIMEOUT = 2000;
 	private static final long RC_RECONFIGURE_TIMEOUT = 4000;
 
-	synchronized BasicReconfigurationPacket<?> waitForReply(String name, long timeout) {
+	synchronized BasicReconfigurationPacket<?> waitForReply(String name,
+			long timeout) {
 		while (sentRequests.containsKey(name)
-				&& System.currentTimeMillis() - sentRequests.get(name) < timeout)
+		// || System.currentTimeMillis() - sentRequests.get(name) < timeout
+		)
 			try {
 				wait(timeout);
 			} catch (InterruptedException e) {
@@ -289,6 +285,7 @@ public class ReconfigurableClient {
 			}
 		return rcvdResponses.remove(name);
 	}
+
 	synchronized BasicReconfigurationPacket<?> waitForReply(String name) {
 		return this.waitForReply(name, REQUEST_TIMEOUT);
 	}
@@ -297,6 +294,8 @@ public class ReconfigurableClient {
 	synchronized boolean waitForSuccess(String name) {
 		ClientReconfigurationPacket reply = (ClientReconfigurationPacket) this
 				.waitForReply(name);
+		System.out.println("unblocked from wait; reply = "
+				+ (reply != null ? reply.getSummary() : "null"));
 		return reply != null && !reply.isFailed();
 	}
 
@@ -308,7 +307,8 @@ public class ReconfigurableClient {
 	}
 
 	synchronized boolean waitForReconfigureRCSuccess(String name) {
-		BasicReconfigurationPacket<?> reply = this.waitForReply(name, RC_RECONFIGURE_TIMEOUT);
+		BasicReconfigurationPacket<?> reply = this.waitForReply(name,
+				RC_RECONFIGURE_TIMEOUT);
 		return reply != null && reply instanceof ReconfigureRCNodeConfig<?>
 				&& !((ReconfigureRCNodeConfig<?>) reply).isFailed();
 	}
@@ -366,168 +366,57 @@ public class ReconfigurableClient {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		ReconfigurableClient client = null;
 		try {
 			/*
 			 * Client can only send/receive clear text or do server-only
 			 * authentication
 			 */
 			JSONMessenger<?> messenger = new JSONMessenger<String>(
-					(new MessageNIOTransport<String, JSONObject>(null, null, 
+					(new MessageNIOTransport<String, JSONObject>(null, null,
 							new PacketDemultiplexerDefault(), true,
 							ReconfigurationConfig.getClientSSLMode())));
-			client = new ReconfigurableClient(TestConfig.getReconfigurators(),
-					messenger);
-			int numRequests = 2;
-			String requestValuePrefix = "request_value";
-			long nameReqInterArrivalTime = 200;
-			long NCReqInterArrivalTime = 1000;
-			String initValue = "initial_value";
-			int numIterations = 10000;
-			boolean testReconfigureRC = true;
+			final ReconfigurableClientCreateTester client = new ReconfigurableClientCreateTester(
+					TestConfig.getReconfigurators(), messenger);
+			String initValue = "initVal";
+			int numIterations = 1;
 
 			for (int j = 0; j < numIterations; j++) {
 				String namePrefix = "name"
 						+ (int) (Math.random() * Integer.MAX_VALUE);
-				String reconfiguratorID = "RC"+ (int) (Math.random() * 64000);
 				long t0 = System.currentTimeMillis();
 
-				// /////////////request active replicas////////////////////
+				// ///////////////// batched create name//////////////////////
 				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(client
-							.makeRequestActiveReplicas(namePrefix));
-				while (!client.waitForFailure(namePrefix));
-				DelayProfiler.updateDelay("requestActives", t0);
-
-				// active replicas for name initially don't exist
-				assert (client.getActiveReplicas() == null || client
-						.getActiveReplicas().isEmpty());
-				// ////////////////////////////////////////////////////////
-
-				// ////////////////////create name/////////////////////////
-				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(client.makeCreateNameRequest(namePrefix,
-							initValue));
-				while (!client.waitForSuccess(namePrefix));
-				DelayProfiler.updateDelay("createName", t0);
-				// ////////////////////////////////////////////////////////
-
-				/*
-				 * Verify that active replicas for name now exist. The only
-				 * reason the query is repeated is because it is possible to
-				 * find the name non-existent briefly if the query is sent to a
-				 * different reconfigurator that hasn't yet caught up with the
-				 * creation (but will eventually do so).
-				 */
-				// ////////////////////////////////////////////////////////
-				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(client
-							.makeRequestActiveReplicas(namePrefix));
-				while (!client.waitForSuccess(namePrefix));
-				DelayProfiler.updateDelay("requestActives", t0);
-
-				assert (client.getActiveReplicas() != null && !client
-						.getActiveReplicas().isEmpty());
-				// ////////////////////////////////////////////////////////
-
-				// ///////send a stream of app requests sequentially///////
-				for (int i = 0; i < numRequests; i++) {
-					t0 = System.currentTimeMillis();
-					do
-						client.sendRequest(client.makeRequest(namePrefix,
-								requestValuePrefix + i));
-					while (!client.rcvdAppReply(namePrefix));
-					DelayProfiler.updateDelay("appPaxosRequest", t0);
-					Thread.sleep(nameReqInterArrivalTime);
+				// do
+				int numCreates = 1;
+				int batchSize = 50000;
+				for (int i = 0; i < numCreates; i++) {
+					final int k = i;
+					try {
+						// batch size is being specified here
+						CreateServiceName[] creates = client
+								.makeCreateNameRequest(namePrefix + k,
+										initValue, batchSize);
+						for (CreateServiceName create : creates) {
+							client.sendRequest(create);
+							System.out.println("Sent batched request of size "
+									+ create.getNameStates().size());
+							while (!client.waitForSuccess(create
+									.getServiceName()))
+								;
+						}
+					} catch (JSONException | IOException e) {
+						e.printStackTrace();
+					}
+					System.out.println("SUCCESS " + k);
 				}
-				// ////////////////////////////////////////////////////////
-
-				// ////////////////////////////////////////////////////////
-				// request current active replicas (possibly reconfigured)
-				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(client
-							.makeRequestActiveReplicas(namePrefix));
-				while (!client.waitForSuccess(namePrefix));
-				DelayProfiler.updateDelay("requestActives", t0);
-				// ////////////////////////////////////////////////////////
-
-				// ///////////////delete name, retransmit if error////////////
-				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(client.makeDeleteNameRequest(namePrefix));
-				while (!client.waitForSuccess(namePrefix));
-				DelayProfiler.updateDelay("deleteName", t0);
-
-				Thread.sleep(nameReqInterArrivalTime);
-				// ////////////////////////////////////////////////////////
-
-				// ////////////////////////////////////////////////////////
-				// verify that active replicas for name now don't exist. The
-				t0 = System.currentTimeMillis();
-				do
-					client.sendRequest(client
-							.makeRequestActiveReplicas(namePrefix));
-				while (!client.waitForFailure(namePrefix));
-				DelayProfiler.updateDelay("requestActives", t0);
-
-				assert (client.getActiveReplicas() == null || client
-						.getActiveReplicas().isEmpty());
-				// ////////////////////////////////////////////////////////
-
-				if (!testReconfigureRC)
-					continue;
-
-				// ////////////////////////////////////////////////////////
-				// add RC node; the port below does not matter in this test
-				t0 = System.currentTimeMillis();
-				//do
-					client.sendRequest(new ReconfigureRCNodeConfig<String>(
-							null, reconfiguratorID, new InetSocketAddress(
-									InetAddress.getByName("localhost"), TEST_PORT)));
-				while (!client
-						.waitForReconfigureRCSuccess(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
-								.toString()));
-				DelayProfiler.updateDelay("addReconfigurator", t0);
-				// ////////////////////////////////////////////////////////
-
-				Thread.sleep(NCReqInterArrivalTime);
-
-				// //////////////// delete just added RC node//////////////////
-				HashSet<String> deleted = new HashSet<String>();
-				deleted.add(reconfiguratorID);
-				t0 = System.currentTimeMillis();
-				//do
-					client.sendRequest(new ReconfigureRCNodeConfig<String>(
-							null, null, deleted));
-				while (!client
-						.waitForReconfigureRCSuccess(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
-								.toString()));
-				DelayProfiler.updateDelay("removeReconfigurator", t0);
-				// ////////////////////////////////////////////////////////
-
-				Thread.sleep(NCReqInterArrivalTime);
-
-				client.log
-						.info("\n\n\n\n==================Successfully completed iteration "
-								+ j
-								+ ":\n"
-								+ DelayProfiler.getStats()
-								+ "\n\n\n\n");
+				DelayProfiler.updateDelay("createName", t0);
+				System.out.println(System.currentTimeMillis() - t0);
+				System.exit(1);
 			}
 
-			// client.messenger.stop();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
-		} catch (JSONException je) {
-			je.printStackTrace();
-		} catch (InterruptedException ie) {
-			ie.printStackTrace();
-		} catch (RequestParseException e) {
-			e.printStackTrace();
 		}
 	}
 }

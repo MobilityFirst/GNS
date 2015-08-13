@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+
 /**
  * @author arun
  *
@@ -138,6 +139,15 @@ public class Util {
 			array[i] = Integer.parseInt(tokens[i]);
 		}
 		return array;
+	}
+
+	public static Set<String> stringToStringSet(String string)
+			throws JSONException {
+		JSONArray jsonArray = new JSONArray(string);
+		Set<String> set = new HashSet<String>();
+		for (int i = 0; i < jsonArray.length(); i++)
+			set.add(jsonArray.getString(i));
+		return set;
 	}
 
 	public static Integer[] intToIntegerArray(int[] array) {

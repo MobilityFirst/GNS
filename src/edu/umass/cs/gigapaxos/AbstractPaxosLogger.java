@@ -82,14 +82,15 @@ public abstract class AbstractPaxosLogger {
 
 	protected AbstractPaxosLogger(int id, String logDir, Messenger<?> msgr) {
 		this.myID = id;
-		logDirectory = (logDir == null ? "." : logDir) + "/";
+		logDirectory = (logDir == null ? SQLPaxosLogger.LOG_DIRECTORY : logDir) + "/";
 		this.messenger = msgr;
 		(this.batchLogger = new BatchedLogger(
 				new ArrayList<LogMessagingTask>(), this, this.messenger))
 				.start(AbstractPaxosLogger.class.getSimpleName()+myID);
 		;
-		(this.collapsingCheckpointer = new Checkpointer(
-				new HashMap<String, CheckpointTask>())).start(AbstractPaxosLogger.class.getSimpleName()+myID);
+		// checkpoint thread is not used and Checkpointer is deprecated
+		this.collapsingCheckpointer = new Checkpointer(
+				new HashMap<String, CheckpointTask>());//.start(AbstractPaxosLogger.class.getSimpleName()+myID);
 		addLogger(this);
 	}
 
@@ -108,7 +109,8 @@ public abstract class AbstractPaxosLogger {
 	 * @throws IOException
 	 */
 	protected static final void logAndMessage(AbstractPaxosLogger logger,
-			LogMessagingTask logMTask, Messenger<?> messenger)
+			LogMessagingTask logMTask//, Messenger<?> messenger
+			)
 			throws JSONException, IOException {
 		// don't accept new work if about to close
 		if (logger.isAboutToClose())
@@ -116,7 +118,7 @@ public abstract class AbstractPaxosLogger {
 		assert (logMTask != null);
 		// if no log message, just send right away
 		if (logMTask.logMsg == null) {
-			messenger.send(logMTask);
+			logger.messenger.send(logMTask);
 			return;
 		}
 		// else spawn a log-and-message task
@@ -139,9 +141,9 @@ public abstract class AbstractPaxosLogger {
 
 	/*
 	 * FIXME: This method is unused. It was designed to offload checkpointing to
-	 * its own task so that the paxos instance could move on. But it is actually
-	 * unsafe for the instance to move on unless the checkpoint is complete, so
-	 * we can not offload checkpoints to a worker.
+	 * its own task so that the paxos instance could move on. But there is no
+	 * safe and efficient way for the instance to move on unless the checkpoint
+	 * is complete, so we can not offload checkpoints to a worker after all.
 	 */
 	protected static final void checkpoint(AbstractPaxosLogger logger,
 			String paxosID, int version, int[] members, int slot,
@@ -569,12 +571,12 @@ public abstract class AbstractPaxosLogger {
 			DelayProfiler.updateDelay("log", t1, packets.length);
 
 			// then message if successfully logged
-			for (LogMessagingTask lmTask : lmTasks) {
+			{
 				try {
-					this.messenger.send(lmTask);
+					this.messenger.send(lmTasks);
 				} catch (JSONException | IOException e) {
 					log.severe("Logged message but could not send response: "
-							+ lmTask);
+							+ lmTasks);
 					e.printStackTrace();
 				}
 			}

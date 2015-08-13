@@ -69,7 +69,7 @@ public class WaitAckStopEpoch<NodeIDType>
 	private Iterator<NodeIDType> nodeIterator = null;
 
 	private String finalState = null;
-	private int restartCount = 0;
+	protected int restartCount = 0;
 	private final long initTime = System.currentTimeMillis();
 
 	protected static final Logger log = Reconfigurator.getLogger();

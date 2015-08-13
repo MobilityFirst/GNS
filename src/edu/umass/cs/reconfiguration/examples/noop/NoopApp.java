@@ -193,8 +193,8 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 
 		if (data == null && state != null) {
 			data = new AppData(name, state);
-			System.out.println(">>>App-" + myID + " creating " + name
-					+ " with state " + state);
+//			System.out.println(">>>App-" + myID + " creating " + name
+	//				+ " with state " + state);
 		} else if (state == null) {
 			if(data!=null) System.out.println("App-" + myID + " deleting " + name
 					+ " with state " + data.state);

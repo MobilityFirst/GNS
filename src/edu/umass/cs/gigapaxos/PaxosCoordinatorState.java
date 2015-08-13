@@ -522,7 +522,7 @@ public class PaxosCoordinatorState {
 		if (stopExists
 				&& !this.myProposals.get(this.nextProposalSlotNumber - 1).pValuePacket
 						.isStopRequest()) {
-			this.propose(members, new RequestPacket(0, 0, STOP, true));
+			this.propose(members, new RequestPacket(0, STOP, true));
 		}
 	}
 
@@ -770,7 +770,7 @@ public class PaxosCoordinatorState {
 		boolean updated = false;
 		for (int i = 0; i < members.length; i++) {
 			if (members[i] == preply.acceptor) {
-				if (this.nodeSlotNumbers[i] < preply.getMinSlot()) {
+				if (this.nodeSlotNumbers[i] - preply.getMinSlot() < 0) {
 					this.nodeSlotNumbers[i] = preply.getMinSlot();
 					updated = true;
 				}
@@ -864,7 +864,7 @@ public class PaxosCoordinatorState {
 			proposalPacket = new ProposalPacket(curSlot, pvalue.makeNoop());
 		else
 			// actual noop (as opposed to RequestPacket converted noop)
-			proposalPacket = new ProposalPacket(curSlot, new RequestPacket(0,
+			proposalPacket = new ProposalPacket(curSlot, new RequestPacket(
 					0, NO_OP, false));
 		PValuePacket noop = new PValuePacket(new Ballot(this.myBallotNum,
 				this.myBallotCoord), proposalPacket);
@@ -876,12 +876,15 @@ public class PaxosCoordinatorState {
 	}
 
 	private int getMaxPValueSlot(NullIfEmptyMap<Integer, PValuePacket> pvalues) {
-		int maxSlot = -1; // this is maximum slot for which some adtoped
-							// (=in-progress) request has been found
+		Integer maxSlot = null; // this is maximum slot for which some adopted
+		// (=in-progress) request has been found
 		for (int cur : pvalues.keySet()) {
-			if (cur - maxSlot > 0)
-				maxSlot = cur; // wraparound-arithmetic
+			if (maxSlot == null)
+				maxSlot = cur;
+			if (cur - maxSlot > 0) // wraparound-arithmetic
+				maxSlot = cur;
 		}
+		assert(maxSlot != null);
 		return maxSlot;
 	}
 
@@ -891,11 +894,14 @@ public class PaxosCoordinatorState {
 	 * carryover proposals.
 	 */
 	private int getMaxMinCarryoverSlot() {
-		int maxSlot = Integer.MIN_VALUE;
+		Integer maxSlot = null;// Integer.MIN_VALUE;
 		for (int i = 0; i < this.nodeSlotNumbers.length; i++) {
-			if (this.nodeSlotNumbers[i] - maxSlot > 0)
-				maxSlot = this.nodeSlotNumbers[i]; // wraparound-arithmetic
+			if (maxSlot == null)
+				maxSlot = this.nodeSlotNumbers[i];
+			if (this.nodeSlotNumbers[i] - maxSlot > 0) // wraparound-arithmetic
+				maxSlot = this.nodeSlotNumbers[i];
 		}
+		assert (maxSlot != null);
 		return maxSlot;
 	}
 
@@ -914,7 +920,7 @@ public class PaxosCoordinatorState {
 				+ (this.active ? "active" : "inactive")
 				+ (this.carryoverProposals != null
 						&& !this.carryoverProposals.isEmpty() ? ", |adopted|="
-						+ this.carryoverProposals.size() : 0)
+						+ this.carryoverProposals.size() : "")
 				+ (!this.myProposals.isEmpty() ? ", |myProposals|="
 						+ this.myProposals.size() : "")
 				+ (!this.active
@@ -959,7 +965,7 @@ public class PaxosCoordinatorState {
 			this.myProposals.put(25 + i, new ProposalStateAtCoordinator(group,
 					new PValuePacket(new Ballot(this.myBallotNum,
 							this.myBallotCoord), new ProposalPacket(45 + i,
-							new RequestPacket(34 + i, "hello39" + i, false)))));
+							new RequestPacket("hello39" + i, false)))));
 		}
 	}
 
@@ -994,9 +1000,9 @@ public class PaxosCoordinatorState {
 		RequestPacket[] reqs = new RequestPacket[numReqs];
 
 		for (int i = 0; i < numReqs; i++) {
-			reqs[i] = new RequestPacket(23 + i, "req" + i, false);
+			reqs[i] = new RequestPacket("req" + i, false);
 		}
-		RequestPacket stop = new RequestPacket(1234, "STOP_REQUEST", true);
+		RequestPacket stop = new RequestPacket("STOP_REQUEST", true);
 
 		// Test preactive propose() returns null, and pcs is not active and not
 		// empty
@@ -1092,7 +1098,7 @@ public class PaxosCoordinatorState {
 															// duplicate
 
 		// prepare by members[4] including stop
-		reqs[3] = new RequestPacket(reqs[3].clientID, reqs[3].requestValue,
+		reqs[3] = new RequestPacket(reqs[3].requestValue,
 				false);
 		pvalues[3] = pcs.createCarryover(reqs[3], 7, ballot.ballotNumber - 1,
 				ballot.coordinatorID);

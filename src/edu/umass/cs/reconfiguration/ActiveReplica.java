@@ -302,7 +302,11 @@ public class ActiveReplica<NodeIDType> implements
 		// if no previous group, create replica group with empty state
 		if (startEpoch.noPrevEpochGroup()) {
 			// createReplicaGroup is a local operation (but may fail)
-			boolean created = this.appCoordinator
+			boolean created = 
+					startEpoch.isBatchedCreate() ?
+							this.batchedCreate(startEpoch)
+							:
+							this.appCoordinator
 					.createReplicaGroup(startEpoch.getServiceName(),
 							startEpoch.getEpochNumber(),
 							startEpoch.getInitialState(),
@@ -324,6 +328,20 @@ public class ActiveReplica<NodeIDType> implements
 		 */
 		this.spawnWaitEpochFinalState(startEpoch);
 		return null; // no messaging if asynchronously fetching state
+	}
+	
+	private boolean batchedCreate(StartEpoch<NodeIDType> startEpoch) {
+		boolean created = true;
+		for (String name : startEpoch.getNameStates().keySet()) {
+			assert (startEpoch.getEpochNumber() == 0);
+			created = created
+					&& this.appCoordinator.createReplicaGroup(
+							name,
+							startEpoch.getEpochNumber(), // 0
+							startEpoch.getNameStates().get(name),
+							startEpoch.getCurEpochGroup());
+		}
+		return created;
 	}
 
 	// synchronized to ensure atomic testAndStart property
