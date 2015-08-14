@@ -75,7 +75,8 @@ public class SQL {
 	public static String getClobString(int size, SQLType type) {
 		switch (type) {
 		case EMBEDDED_DERBY:
-			return " clob(" + size + ")";
+			//return " clob(" + size + ")";
+			return " blob(" + size + ")";
 		case MYSQL:
 			if (size < 65536)
 				return " TEXT ";

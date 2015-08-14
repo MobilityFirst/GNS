@@ -37,14 +37,16 @@ import edu.umass.cs.utils.Util;
  *         A utility class to consume batched requests.
  */
 public class RequestBatcher extends ConsumerTask<RequestPacket> {
-	
+
 	private static final int MAX_BATCH_SIZE = 1000;
-	private static final long SLEEP_DURATION = Config
+	private static final long BATCH_SLEEP_DURATION = Config
 			.getGlobalLong(PC.BATCH_SLEEP_DURATION);
+	private static final double BATCH_OVERHEAD = Config
+			.getGlobalDouble(PC.BATCH_OVERHEAD);
 
 	private final HashMap<String, LinkedBlockingQueue<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
-	private static double adaptiveSleepDuration = SLEEP_DURATION;
+	private static double adaptiveSleepDuration = BATCH_SLEEP_DURATION;
 
 	/**
 	 * @param lock
@@ -53,19 +55,21 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	 *            Needed to consume requests by invoking
 	 *            {@code paxosManager.handleIncomingPacketInternal}.
 	 */
-	private RequestBatcher(HashMap<String, LinkedBlockingQueue<RequestPacket>> lock,
+	private RequestBatcher(
+			HashMap<String, LinkedBlockingQueue<RequestPacket>> lock,
 			PaxosManager<?> paxosManager) {
 		super(lock);
 		this.batched = lock;
 		this.paxosManager = paxosManager;
-		this.setSleepDuration(SLEEP_DURATION);
+		this.setSleepDuration(BATCH_SLEEP_DURATION);
 	}
 
 	/**
 	 * @param paxosManager
 	 */
 	public RequestBatcher(PaxosManager<?> paxosManager) {
-		this(new HashMap<String, LinkedBlockingQueue<RequestPacket>>(), paxosManager);
+		this(new HashMap<String, LinkedBlockingQueue<RequestPacket>>(),
+				paxosManager);
 	}
 
 	@Override
@@ -75,9 +79,8 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	}
 
 	protected synchronized static void updateSleepDuration(long sample) {
-		adaptiveSleepDuration = Util.movingAverage(adaptiveSleepDuration,
-				((double) sample) * Config
-				.getGlobalDouble(PC.BATCH_OVERHEAD));
+		adaptiveSleepDuration = Util.movingAverage(((double) sample)
+				* BATCH_OVERHEAD, adaptiveSleepDuration);
 		if (Util.oneIn(10))
 			DelayProfiler.updateMovAvg("sleepDuration",
 					(int) adaptiveSleepDuration);
@@ -93,8 +96,10 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 	@Override
 	public void enqueueImpl(RequestPacket task) {
-		this.setSleepDuration(SLEEP_DURATION + (long) adaptiveSleepDuration);
-		LinkedBlockingQueue<RequestPacket> taskList = this.batched.get(task.getPaxosID());
+		this.setSleepDuration(BATCH_SLEEP_DURATION
+				+ (long) adaptiveSleepDuration);
+		LinkedBlockingQueue<RequestPacket> taskList = this.batched.get(task
+				.getPaxosID());
 		if (taskList == null)
 			taskList = new LinkedBlockingQueue<RequestPacket>();
 		taskList.add(task);

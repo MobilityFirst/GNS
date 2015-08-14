@@ -158,7 +158,7 @@ public class Config extends Properties {
 	 * @return Boolean config parameter.
 	 */
 	public static boolean getGlobalBoolean(Enum<?> field) {
-		return Boolean.valueOf(getGlobal(field).toString());
+		return Boolean.valueOf(getGlobal(field).toString().trim());
 	}
 
 	/**
@@ -166,7 +166,7 @@ public class Config extends Properties {
 	 * @return Integer config parameter.
 	 */
 	public static int getGlobalInt(Enum<?> field) {
-		return Integer.valueOf(getGlobal(field).toString());
+		return Integer.valueOf(getGlobal(field).toString().trim());
 	}
 
 	/**
@@ -174,7 +174,7 @@ public class Config extends Properties {
 	 * @return Long config parameter.
 	 */
 	public static long getGlobalLong(Enum<?> field) {
-		return Long.valueOf(getGlobal(field).toString());
+		return Long.valueOf(getGlobal(field).toString().trim());
 	}
 
 	/**
@@ -182,7 +182,7 @@ public class Config extends Properties {
 	 * @return Double config parameter.
 	 */
 	public static double getGlobalDouble(Enum<?> field) {
-		return Double.valueOf(getGlobal(field).toString());
+		return Double.valueOf(getGlobal(field).toString().trim());
 	}
 
 	/**
@@ -190,7 +190,7 @@ public class Config extends Properties {
 	 * @return Short config parameter.
 	 */
 	public static short getGlobalShort(Enum<?> field) {
-		return Short.valueOf(getGlobal(field).toString());
+		return Short.valueOf(getGlobal(field).toString().trim());
 	}
 
 	/**

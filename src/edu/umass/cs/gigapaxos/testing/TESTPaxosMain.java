@@ -154,6 +154,8 @@ public class TESTPaxosMain {
 	 * @throws InterruptedException
 	 */
 	public static void main(String[] args) throws InterruptedException {
+		TESTPaxosConfig.load();
+		
 		 ConsoleHandler handler = new ConsoleHandler();
 		 handler.setLevel(Level.INFO);
 		 PaxosManager.getLogger().setLevel(Level.INFO);

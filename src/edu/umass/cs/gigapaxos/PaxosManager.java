@@ -588,9 +588,15 @@ public class PaxosManager<NodeIDType> {
 			setProcessing(false);
 		}
 	}
-	
+
 	private void handlePaxosPacket(RequestPacket request) {
-		setProcessing(true);
+		if (this.isClosed())
+			return;
+		else if (this.emulateLazyPropagation(request)
+				|| emulateUnreplicated(request))
+			return;
+		else
+			setProcessing(true);
 		try {
 			PaxosInstanceStateMachine pism = this.getInstance(request
 					.getPaxosID());
@@ -944,8 +950,21 @@ public class PaxosManager<NodeIDType> {
 		return totalRcvd;
 	}
 
+	private static final boolean EMULATE_UNREPLICATED = Config
+			.getGlobalBoolean(PC.EMULATE_UNREPLICATED);
+
+	private final boolean emulateUnreplicated(RequestPacket request) {
+		if (!EMULATE_UNREPLICATED)
+			return false;
+		// else will finally return true
+		// pretend-execute new requests
+		PaxosInstanceStateMachine.execute(null, myApp,
+				request.setEntryReplica(getMyID()).getRequestValues(), false);
+		return true;
+	}
+
 	private final boolean emulateUnreplicated(JSONObject jsonMsg) {
-		if (!Config.getGlobalBoolean(PC.EMULATE_UNREPLICATED))
+		if (!EMULATE_UNREPLICATED)
 			return false;
 		// else will finally return true
 		try {
@@ -953,10 +972,7 @@ public class PaxosManager<NodeIDType> {
 					PaxosPacket.PaxosPacketType.REQUEST))
 				return false;
 
-			RequestPacket request = (new RequestPacket(jsonMsg));
-			// pretend-execute new requests
-			PaxosInstanceStateMachine.execute(null, myApp, request
-					.setEntryReplica(getMyID()).getRequestValues(), false);
+			emulateUnreplicated(new RequestPacket(jsonMsg));
 		} catch (JSONException e) {
 			log.severe(this + " unable to parse " + jsonMsg);
 			e.printStackTrace();
@@ -964,16 +980,14 @@ public class PaxosManager<NodeIDType> {
 		return true;
 	}
 
-	private final boolean emulateLazyPropagation(JSONObject jsonMsg) {
-		if (!Config.getGlobalBoolean(PC.LAZY_PROPAGATION))
+	private static final boolean LAZY_PROPAGATION = Config
+			.getGlobalBoolean(PC.LAZY_PROPAGATION);
+
+	private final boolean emulateLazyPropagation(RequestPacket request) {
+		if (!LAZY_PROPAGATION)
 			return false;
 		// else will finally return true
 		try {
-			if (!PaxosPacket.getPaxosPacketType(jsonMsg).equals(
-					PaxosPacket.PaxosPacketType.REQUEST))
-				return false;
-
-			RequestPacket request = (new RequestPacket(jsonMsg));
 			// extract newly received requests
 			request = request.getNoEntryReplicaRequestsAsBatch()[1];
 			if (request != null) {
@@ -989,10 +1003,28 @@ public class PaxosManager<NodeIDType> {
 				this.send(mtask);
 			}
 		} catch (JSONException e) {
-			log.severe(this + " unable to parse " + jsonMsg);
+			log.severe(this + " unable to parse " + request.getSummary());
 			e.printStackTrace();
 		} catch (IOException e) {
-			log.severe(this + " IOException while lazy-propagating " + jsonMsg);
+			log.severe(this + " IOException while lazy-propagating "
+					+ request.getSummary());
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	private final boolean emulateLazyPropagation(JSONObject jsonMsg) {
+		if (!LAZY_PROPAGATION)
+			return false;
+		// else will finally return true
+		try {
+			if (!PaxosPacket.getPaxosPacketType(jsonMsg).equals(
+					PaxosPacket.PaxosPacketType.REQUEST))
+				return false;
+
+			emulateLazyPropagation(new RequestPacket(jsonMsg));
+		} catch (JSONException e) {
+			log.severe(this + " unable to parse " + jsonMsg);
 			e.printStackTrace();
 		}
 		return true;
@@ -1146,7 +1178,8 @@ public class PaxosManager<NodeIDType> {
 			public void send(MessagingTask mtask) throws JSONException,
 					IOException {
 				PaxosManager.this.send(mtask,
-						Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES), false);
+						Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES),
+						false);
 			}
 
 			public void send(MessagingTask[] mtasks) throws JSONException,
@@ -1183,7 +1216,8 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	protected void send(MessagingTask mtask) throws JSONException, IOException {
-		this.send(mtask, Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES), true);
+		this.send(mtask, Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES),
+				true);
 	}
 
 	/*

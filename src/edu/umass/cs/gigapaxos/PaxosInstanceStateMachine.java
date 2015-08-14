@@ -126,6 +126,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 	// minimum interval before another sync decisions request can be issued
 	protected static final long MIN_RESYNC_DELAY = 1000;
+	
+	private static final boolean ENABLE_INSTRUMENTATION = Config.getGlobalBoolean(PC.ENABLE_INSTRUMENTATION);
+	private static final boolean instrument() {return ENABLE_INSTRUMENTATION;}
+	private static final boolean instrument(int n) {return ENABLE_INSTRUMENTATION && Util.oneIn(n);}
 
 	private static enum SyncMode {
 		DEFAULT_SYNC, FORCE_SYNC, SYNC_TO_PAUSE
@@ -495,7 +499,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			mtasks[2] = batchedTasks[1];
 		}
 
-		DelayProfiler.updateDelay("handlePaxosMessage", methodEntryTime);
+		if (instrument(100))
+			DelayProfiler.updateDelay("handlePaxosMessage", methodEntryTime);
 
 		this.checkIfTrapped(msg, mtasks[1]); // just to print a warning
 		if (!recovery) {
@@ -869,8 +874,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	private MessagingTask[] handleAccept(AcceptPacket accept) {
 		this.paxosManager.heardFrom(accept.ballot.coordinatorID); // FD
 		RequestInstrumenter.received(accept, accept.sender, this.getMyID());
-		if (accept.ballot.coordinatorID != getMyID())
-			DelayProfiler.updateCount("ACCEPTS", 1);
 
 		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept,
 				this.getMyID());
@@ -934,7 +937,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		this.paxosManager.heardFrom(acceptReply.acceptor); // FD optimization
 		RequestInstrumenter.received(acceptReply, acceptReply.acceptor,
 				this.getMyID());
-		// DelayProfiler.updateCount("ACCEPT_REPLIES", 1);
 
 		PValuePacket committedPValue = this.coordinator.handleAcceptReply(
 				this.groupMembers, acceptReply);
@@ -952,9 +954,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					committedPValue); // inform everyone of the decision
 			log.log(Level.FINE, "{0} announcing decision {1}", new Object[] {
 					this, committedPValue.getSummary() });
-			DelayProfiler.updateCount("PAXOS_DECISIONS", 1);
-			DelayProfiler.updateCount("COMMITTED_CLIENT_REQUESTS",
-					committedPValue.batchSize() + 1);
+			if (instrument()) {
+				DelayProfiler.updateCount("PAXOS_DECISIONS", 1);
+				DelayProfiler.updateCount("CLIENT_COMMITS",
+						committedPValue.batchSize() + 1);
+			}
 		} else if (committedPValue.getType() == PaxosPacket.PaxosPacketType.PREEMPTED) {
 			/*
 			 * Could drop the request, but we forward the preempted proposal as
@@ -1007,7 +1011,6 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		ArrayList<MessagingTask> decisions = new ArrayList<MessagingTask>();
 
 		Integer[] acceptedSlots = batchedAR.getAcceptedSlots();
-		// DelayProfiler.updateMovAvg("batchedARSize", acceptedSlots.length);
 		//DelayProfiler.updateCount("BATCHED_ACCEPT_REPLIES", 1);
 
 		// sort out decisions from preempted proposals
@@ -1065,7 +1068,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		assert (committed.getPaxosID() != null);
 		RequestInstrumenter.received(committed, committed.ballot.coordinatorID,
 				this.getMyID());
-		if (!BATCHED_COMMITS
+		if (instrument() && !BATCHED_COMMITS
 				&& committed.ballot.coordinatorID != this.getMyID())
 			DelayProfiler.updateCount("COMMITS", 1);
 
@@ -1093,7 +1096,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		this.paxosManager.heardFrom(batchedCommit.ballot.coordinatorID); // FD
 		MessagingTask mtask = null;
 
-		DelayProfiler.updateCount("BATCHED_COMMITS", 1);
+		if(instrument()) DelayProfiler.updateCount("META_COMMITS", 1);
 
 		// no need to process batchedCommit from self as we must get full commit
 		if (batchedCommit.ballot.coordinatorID == this.getMyID())
@@ -1229,6 +1232,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			else
 				this.paxosManager.kill(this, false);
 
+			/* Use entry time only if I am entry replica so that we 
+			 * don't have to worry about clock synchronization.
+			 */
 			if (inorderDecision.getEntryReplica() == getMyID())
 				RequestBatcher.updateSleepDuration(System.currentTimeMillis()
 						- inorderDecision.getEntryTime());
@@ -1244,7 +1250,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						inorderDecision.slot, this.paxosState.getBallot(),
 						this.clientRequestHandler.getState(pid),
 						this.paxosState.getGCSlot());
-				if (Util.oneIn(1))
+				if (Util.oneIn(5))
 					log.log(Level.INFO, "{0}",
 							new Object[] { DelayProfiler.getStats() });
 			}
@@ -1262,7 +1268,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		}
 		this.paxosState.assertSlotInvariant();
 		if (loggedDecision != null && !loggedDecision.isRecovery())
-			DelayProfiler.updateDelay("EEC", methodEntryTime, execCount);
+			if (instrument(10))
+				DelayProfiler.updateDelay("EEC", methodEntryTime, execCount);
 		return this.fixLongDecisionGaps(loggedDecision);
 	}
 
@@ -1724,7 +1731,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 
 	private boolean logStop(long createTime) {
-		DelayProfiler.updateDelay("stopRequestCoordinationTime", createTime);
+		if(instrument()) DelayProfiler.updateDelay("stopCoordinationTime", createTime);
 		log.log(Level.INFO, "{0} >>>>STOPPED||||||||||", new Object[] { this });
 		return true;
 	}

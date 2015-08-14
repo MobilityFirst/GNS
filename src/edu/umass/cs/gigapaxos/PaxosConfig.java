@@ -19,6 +19,7 @@ package edu.umass.cs.gigapaxos;
 
 import java.io.IOException;
 
+import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.MultiArrayMap;
@@ -64,6 +65,8 @@ public class PaxosConfig {
 
 	static {
 		load();
+		NIOTransport.setCompressionThreshold(Config
+				.getGlobalInt(PC.COMPRESSION_THRESHOLD));
 	}
 
 	/**
@@ -79,6 +82,16 @@ public class PaxosConfig {
 		 * True means no persistent logging
 		 */
 		DISABLE_LOGGING(false),
+
+		/**
+		 * 
+		 */
+		ENABLE_COMPRESSION(true),
+		
+		/**
+		 * 
+		 */
+		COMPRESSION_THRESHOLD(4*1024*1024),
 
 		/**
 		 * The default size of the {@link MultiArrayMap} used to store paxos
@@ -182,12 +195,12 @@ public class PaxosConfig {
 		 * Also used for testing. Lazily propagates requests to other replicas
 		 * when emulating unreplicated execution mode.
 		 */
-		LAZY_PROPAGATION(false), 
-		
+		LAZY_PROPAGATION(false),
+
 		/**
-		 * Enables coalescing of accept replies. 
+		 * Enables coalescing of accept replies.
 		 */
-		BATCHED_ACCEPT_REPLIES (true),
+		BATCHED_ACCEPT_REPLIES(true),
 
 		/**
 		 * Enables coalescing of commits. For coalesced commits, a replica must
@@ -195,7 +208,14 @@ public class PaxosConfig {
 		 * sync'ing and increasing overhead. Enabling this option but not
 		 * persistent logging can cause liveness problems.
 		 */
-		BATCHED_COMMITS (true),	
+		BATCHED_COMMITS(true),
+		
+		/**
+		 * Instrumentation at various places. Should be enabled only during
+		 * testing and disabled during production use.
+		 */
+		ENABLE_INSTRUMENTATION (false);
+
 		;
 
 		final Object defaultValue;
@@ -208,5 +228,12 @@ public class PaxosConfig {
 		public Object getDefaultValue() {
 			return this.defaultValue;
 		}
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+
 	}
 }

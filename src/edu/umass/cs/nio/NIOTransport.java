@@ -24,6 +24,7 @@ import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Stringer;
 import edu.umass.cs.utils.Util;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.InetAddress;
@@ -54,6 +55,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 /**
  * @author V. Arun
@@ -375,13 +379,35 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 */
 	public int send(InetSocketAddress isa, byte[] data) throws IOException {
 		if(isa==null) return -1;
+		if (data.length > MAX_PAYLOAD_SIZE)
+			throw new IOException("Packet size of " + data.length
+					+ " exceeds maximum allowed payload size of "
+					+ MAX_PAYLOAD_SIZE);
 		testAndIntiateConnection(isa);
 		// we put length header in *all* messages
-		ByteBuffer bbuf = getHeaderedByteBuffer(data);
+		ByteBuffer bbuf = getHeaderedByteBuffer(data=this.deflate(data));
 		int written = this.enqueueSend(isa, bbuf);
 		DelayProfiler.updateCount("totalBytesSent", written);
 		return written - HEADER_SIZE;
 	}
+
+	private byte[] deflate(byte[] data) {
+		if(isSSL() || !getCompression() || data.length < getCompressionThreshold()) return data;
+
+		long t = System.currentTimeMillis();
+		Deflater deflator = new Deflater();
+		byte[] compressed = new byte[data.length];
+		int compressedLength = data.length;
+		deflator.setInput(data);
+		deflator.finish();
+		compressedLength = deflator.deflate(compressed);
+		deflator.end();
+		data = new byte[compressedLength];
+		for(int i=0; i<data.length; i++) data[i] = compressed[i];
+		DelayProfiler.updateDelay("deflate", t);
+		return data;
+	}
+	
 
 	/**
 	 * For performance testing. Repeats {@code data} {@code batchSize} number of
@@ -596,12 +622,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		registerSSL(socketChannelKey, false);
 	}
 
-	/*
+	/**
 	 * Invoked only by the selector thread. read() is easy as it just needs to
 	 * read whatever is available and send it off to DataProcessingWorker (that
 	 * has to deal with the complexity of parsing a byte stream).
 	 */
-	private static final int MAX_PAYLOAD_SIZE = 4 * 1024 * 1024;
+	public static final int MAX_PAYLOAD_SIZE = 4 * 1024 * 1024;
 
 	// used also by SSLDataProcessingWorker
 	protected class AlternatingByteBuffer {
@@ -674,8 +700,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// if complete payload read, pass to worker
 		if (abbuf.bodyBuf != null && !abbuf.bodyBuf.hasRemaining()) {
 			bbuf.flip();
-			DelayProfiler.updateCount("totalBytesRcvd", HEADER_SIZE + bbuf.capacity());
-			this.worker.processData(socketChannel, bbuf);
+			// DelayProfiler.updateCount("totalBytesRcvd", HEADER_SIZE +
+			// bbuf.capacity());
+			this.worker.processData(socketChannel, this.inflate(bbuf));
 			// clear header to prepare to read the next message
 			abbuf.clear();
 		}
@@ -686,6 +713,67 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		 * not continue reading from readBuffer after returning as we compact it
 		 * immediately after.
 		 */
+	}
+	
+	private static boolean enableCompression = true;
+	/**
+	 * @param b
+	 */
+	public static void setCompression(boolean b) {
+		enableCompression = b;
+	}
+	/**
+	 * @return True if compression enabled.
+	 */
+	public static boolean getCompression() {
+		return enableCompression && compressionThreshold < MAX_PAYLOAD_SIZE;
+	}
+	
+	// default effectively disables compression
+	private static int compressionThreshold = MAX_PAYLOAD_SIZE;
+
+	/**
+	 * @param t
+	 */
+	public static void setCompressionThreshold(int t) {
+		compressionThreshold = t;
+	}
+
+	/**
+	 * @return Compression threshold
+	 */
+	public static int getCompressionThreshold() {
+		return compressionThreshold;
+	}
+	
+	private ByteBuffer inflate(ByteBuffer bbuf) throws IOException {
+		if(isSSL() || !getCompression()) return bbuf;
+		
+		long t = System.currentTimeMillis();
+		Inflater inflator = new Inflater();
+		inflator.setInput(bbuf.array(), 0, bbuf.capacity());
+		byte[] decompressed = new byte[bbuf.capacity()];
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(bbuf.capacity());
+		try {
+			while (!inflator.finished()) {
+				int count = inflator.inflate(decompressed);
+				if (count == 0)
+					break;
+				baos.write(decompressed, 0, count);
+			}
+			baos.close();
+			inflator.end();
+		} catch (DataFormatException e) {
+			// possible for exception to be legitimate even if below threshold
+			if(bbuf.capacity() > getCompressionThreshold()) {
+				log.severe(this + " incurred DataFormatException ");
+				e.printStackTrace();
+			} 
+			return bbuf;
+		}
+		bbuf = ByteBuffer.wrap(baos.toByteArray());
+		DelayProfiler.updateDelay("inflate", t);
+		return bbuf;
 	}
 
 	/*
@@ -904,8 +992,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		/* No point setting op write unless connected and handshaken. If not yet
 		 * connected, the selector thread will set op to write when it finishes
 		 * connecting.
+		 * 
+		 * sc can be null here because of clearPending().
 		 */
-		if (sc.isConnected() && this.isHandshakeComplete(sc))
+		if (sc!=null && sc.isConnected() && this.isHandshakeComplete(sc))
 			try {
 				// set op to write if not already set
 				if ((key = sc.keyFor(this.selector)) != null && key.isValid()
@@ -917,7 +1007,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			}
 		this.selector.wakeup();
 		// if pending writes and socket closed, retry if possible
-		if (!sc.isOpen())
+		if (sc!=null && !sc.isOpen())
 			this.cleanupRetry(null, sc, isa);
 	}
 
@@ -974,14 +1064,15 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					 * which can happen only after initiateConnection, which
 					 * maps the isa to a socket channel. Hence, the assert.
 					 * 
-					 * FIXME: 
+					 * FIXME: this invariant is no longer true because of the 
+					 * clearPending method that eventually gives up.
 					 */
 					//assert (sc != null) : isa;
 					if (sc == null) {
 						try {
 							this.testAndIntiateConnection(isa);
 						} catch (IOException e) {
-							e.printStackTrace();
+							log.info(this + " failed to reconnect to " + isa);
 						}
 						return;
 					}
@@ -1421,7 +1512,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 									.getPort()), e.getMessage() });
 			cleanup(key, socketChannel);
 			// FIXME: Should probably also drop outstanding data here			
-			if(Util.oneIn(8)) this.clearPending(socketChannel);
+			//if(Util.oneIn(8)) this.clearPending(socketChannel);
 			connected = false;
 		}
 		if (connected)

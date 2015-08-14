@@ -45,9 +45,11 @@ import javax.sql.DataSource;
 
 import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.UnsupportedEncodingException;
+import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -64,6 +66,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.DataFormatException;
+import java.util.zip.Deflater;
+import java.util.zip.Inflater;
 
 /**
  * @author V. Arun
@@ -259,9 +264,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				insertCP.setInt(3, cpRecord.getInt("slot"));
 				insertCP.setInt(4, cpRecord.getInt("ballotnum"));
 				insertCP.setInt(5, cpRecord.getInt("coordinator"));
-				if (getCheckpointClobOption())
-					insertCP.setClob(6,
-							new StringReader(cpRecord.getString("state")));
+				if (getCheckpointClobOption()) {
+					//insertCP.setClob(6, new StringReader(cpRecord.getString("state")));
+					insertCP.setBlob(7, cpRecord.getBlob("state"));
+				}
 				else
 					insertCP.setString(6, cpRecord.getString("state"));
 				insertCP.setLong(7, cpRecord.getLong("createtime"));
@@ -274,10 +280,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 								this,
 								paxosID,
 								version,
-								Util.truncate(cpRecord.getString("state"), 32,
+								Util.truncate(new String(cpRecord.getBytes("state"),CHARSET), 32,
 										32) });
 			}
-		} catch (SQLException sqle) {
+		} catch (SQLException | UnsupportedEncodingException sqle) {
 			log.severe("SQLException while copying epoch final state for "
 					+ paxosID
 					+ ":"
@@ -404,9 +410,14 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				pstmt.setInt(4, sb[1]);
 				pstmt.setInt(5, sb[2]);
 				pstmt.setInt(6, packet.getType().getInt());
-				assert (getLogMessageClobOption());
-				if (getLogMessageClobOption())
-					pstmt.setClob(7, new StringReader(packetString));
+				assert(packetString!=null);
+				if (getLogMessageClobOption()) {
+					// pstmt.setBlob(7, new StringReader(compressed));
+					byte[] compressed = deflate(packetString.getBytes(CHARSET));
+					Blob blob = conn.createBlob();
+					blob.setBytes(1, compressed);
+					pstmt.setBlob(7, blob);
+				}
 				else
 					pstmt.setString(7, packetString);
 
@@ -447,6 +458,45 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 		return logged;
 	}
+	
+	private static final String CHARSET="ISO-8859-1";
+
+	private static byte[] deflate(byte[] data) throws IOException {
+		Deflater deflator = new Deflater();
+		byte[] compressed = new byte[data.length];
+		int compressedLength = data.length;
+		deflator.setInput(data);
+		deflator.finish();
+		compressedLength = deflator.deflate(compressed);
+		assert(compressedLength <= data.length);
+		deflator.end();
+		byte[] compressedBytes = new byte[compressedLength];
+		for(int i=0; i<compressedLength; i++) compressedBytes[i] = compressed[i];
+		return compressedBytes;
+	}
+	private static byte[] inflate(byte[] buf) throws IOException {
+		Inflater inflator = new Inflater();
+		inflator.setInput(buf);
+		byte[] decompressed = new byte[buf.length];
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(buf.length);
+		try {
+			while (!inflator.finished()) {
+				int count = inflator.inflate(decompressed);
+				if (count == 0)
+					break;
+				baos.write(decompressed, 0, count);
+			}
+			baos.close();
+			inflator.end();
+		} catch (DataFormatException e) {
+			PaxosManager.getLogger().severe("DataFormatException while decompressing buffer of length " + buf.length);
+			e.printStackTrace();
+			return buf;
+		}
+		return baos.toByteArray();
+	}
+
+
 
 	/*
 	 * The entry point for checkpointing. Puts given checkpoint state for
@@ -482,9 +532,12 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			insertCP.setInt(3, slot);
 			insertCP.setInt(4, ballot.ballotNumber);
 			insertCP.setInt(5, ballot.coordinatorID);
-			if (getCheckpointClobOption())
-				insertCP.setClob(6, state != null ? new StringReader(state)
-						: null);
+			if (getCheckpointClobOption()) {
+				//insertCP.setClob(6, state != null ? new StringReader(state) : null);
+				Blob blob = conn.createBlob();
+				blob.setBytes(1, state.getBytes(CHARSET));
+				insertCP.setBlob(6, blob);
+			}
 			else
 				insertCP.setString(6, state);
 			insertCP.setLong(7, createTime);
@@ -494,7 +547,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			t2 = System.currentTimeMillis();
 			DelayProfiler.updateDelay("checkpoint", t1);
 			incrTotalCheckpoints();
-		} catch (SQLException sqle) {
+		} catch (SQLException | UnsupportedEncodingException sqle) {
 			log.log(Level.SEVERE,
 					"{0} SQLException while checkpointing using command {1} with values "
 							+ " {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9} "
@@ -669,8 +722,12 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			localLogMsgStmt.setInt(4, ballotnum);
 			localLogMsgStmt.setInt(5, coordinator);
 			localLogMsgStmt.setInt(6, type.getInt());
-			if (getLogMessageClobOption())
-				localLogMsgStmt.setClob(7, new StringReader(message));
+			if (getLogMessageClobOption()) {
+				//localLogMsgStmt.setBlob(7, new StringReader(message));
+				Blob blob = conn.createBlob();
+				blob.setBytes(1, message.getBytes(CHARSET));
+				localLogMsgStmt.setBlob(7, blob);
+			}
 			else
 				localLogMsgStmt.setString(7, message);
 
@@ -690,6 +747,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 						+ sqle);
 				sqle.printStackTrace();
 			}
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
 		} finally {
 			cleanup(localLogMsgStmt);
 			cleanup(conn);
@@ -816,7 +875,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			while (stateRS.next()) {
 				assert (state == null); // single result
 				state = (!getCheckpointClobOption() || !column.equals("state") ? stateRS
-						.getString(1) : clobToString(stateRS.getClob(1)));
+						.getString(1) : lobToString(stateRS.getBlob(1)));
 			}
 		} catch (IOException e) {
 			log.severe("IOException while getting state " + " : " + e);
@@ -857,7 +916,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return exists;
 	}
 
-	private static String clobToString(Clob clob) throws SQLException,
+	protected static String clobToString(Clob clob) throws SQLException,
 			IOException {
 		if (clob == null)
 			return null;
@@ -870,6 +929,14 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			sb.append(s);
 		}
 		return sb.toString();
+	}
+
+	private static String lobToString(Blob blob) throws SQLException,
+			IOException {
+		if (blob == null)
+			return null;
+		byte[] blobBytes = blob.getBytes(1L, (int)blob.length());
+		return new String(inflate(blobBytes), CHARSET);
 	}
 
 	/**
@@ -912,11 +979,13 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 							new Object[] { this, paxosID, version,
 									stateRS.getInt(5) });
 
+				assert(table.equals(getCTable()));
 				if (!versionMismatch)
 					sb = new SlotBallotState(stateRS.getInt(1),
 							stateRS.getInt(2), stateRS.getInt(3),
-							(!getCheckpointClobOption() ? stateRS.getString(4)
-									: clobToString(stateRS.getClob(4))),
+							(!getCheckpointClobOption() ? 
+									stateRS.getString(4)
+									: lobToString(stateRS.getBlob(4))),
 							stateRS.getInt(5), stateRS.getLong(6),
 							Util.stringToStringSet(stateRS.getString(7)));
 			}
@@ -1035,7 +1104,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				String members = cursorRset.getString(3);
 				String[] pieces = Util.jsonToStringArray(members);
 				String state = (readState ? (!getCheckpointClobOption() ? cursorRset
-						.getString(4) : clobToString(cursorRset.getClob(4)))
+						.getString(4) : lobToString(cursorRset.getBlob(4)))
 						: null);
 				pri = new RecoveryInfo(paxosID, version, pieces, state);
 			}
@@ -1071,7 +1140,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		try {
 			if (cursorRset != null && cursorRset.next()) {
 				String msg = (!getLogMessageClobOption() ? cursorRset
-						.getString(1) : clobToString(cursorRset.getClob(1)));
+						.getString(1) : lobToString(cursorRset.getBlob(1)));
 				packet = PaxosPacket.getPaxosPacket(msg);
 			}
 		} catch (SQLException | JSONException | IOException e) {
@@ -1158,13 +1227,13 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			assert (!messagesRS.isClosed());
 			while (messagesRS.next()) {
 				String msg = (!getLogMessageClobOption() ? messagesRS
-						.getString(1) : clobToString(messagesRS.getClob(1)));
+						.getString(1) : lobToString(messagesRS.getBlob(1)));
 				PaxosPacket packet = PaxosPacket.getPaxosPacket(msg);
 				messages.add(packet);
 			}
 		} catch (SQLException | JSONException | IOException e) {
 			log.severe(e.getClass().getSimpleName()
-					+ " while getting slot for " + paxosID + ":");
+					+ " while getting slot for " + paxosID);
 			e.printStackTrace();
 		} finally {
 			cleanup(pstmt, messagesRS);
@@ -1905,7 +1974,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			messagesRS = pstmt.executeQuery();
 			while (messagesRS.next() && !logged) {
 				String insertedMsg = (!getLogMessageClobOption() ? messagesRS
-						.getString(2) : clobToString(messagesRS.getClob(2)));
+						.getString(2) : lobToString(messagesRS.getBlob(2)));
 				logged = msg.equals(insertedMsg);
 			}
 		} catch (SQLException | IOException e) {
