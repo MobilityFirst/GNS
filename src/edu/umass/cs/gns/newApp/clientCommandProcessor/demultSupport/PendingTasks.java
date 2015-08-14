@@ -90,7 +90,7 @@ public class PendingTasks {
    * @throws org.json.JSONException
    */
   public static void handleActivesRequestReply(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    RequestActivesPacket requestActivesPacket = new RequestActivesPacket(json, handler.getGnsNodeConfig());
+    RequestActivesPacket<String> requestActivesPacket = new RequestActivesPacket<String>(json, handler.getGnsNodeConfig());
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Recvd request actives packet: " + requestActivesPacket
               + " name\t" + requestActivesPacket.getName());

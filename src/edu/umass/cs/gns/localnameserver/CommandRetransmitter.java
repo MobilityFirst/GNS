@@ -19,7 +19,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
-public class CommandRetransmitter implements SchedulableProtocolTask<String, PacketType, String> {
+public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 10000;
 
@@ -45,7 +45,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<String, Pac
   }
 
   @Override
-  public GenericMessagingTask[] restart() {
+  public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
       ProtocolExecutor.cancel(this);
     }
@@ -71,7 +71,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<String, Pac
   }
 
   @Override
-  public GenericMessagingTask[] start() {
+  public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     InetSocketAddress address = handler.getClosestReplica(actives, activesAlreadyContacted);
     // Remove these so the stamper will put new ones in so the packet will find it's way back here.
     json.remove(MessageNIOTransport.SNDR_IP_FIELD);
@@ -82,7 +82,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<String, Pac
               + " " + json);
     }
     activesAlreadyContacted.add(address);
-    GenericMessagingTask mtasks[] = new GenericMessagingTask(address, json).toArray();
+    GenericMessagingTask<InetSocketAddress, ?> mtasks[] = new GenericMessagingTask<>(address, json).toArray();
     return mtasks;
   }
 
@@ -105,7 +105,7 @@ public class CommandRetransmitter implements SchedulableProtocolTask<String, Pac
   }
 
   @Override
-  public GenericMessagingTask[] handleEvent(
+  public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent event,
           ProtocolTask[] ptasks) {
     return null;

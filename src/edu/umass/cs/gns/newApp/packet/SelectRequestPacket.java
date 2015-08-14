@@ -23,7 +23,7 @@ import org.json.JSONObject;
  * @author westy
  * @param <NodeIDType>
  */
-public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP implements InterfaceRequest {
+public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
   public enum SelectOperation {
 

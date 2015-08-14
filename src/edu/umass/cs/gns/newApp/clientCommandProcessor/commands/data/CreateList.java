@@ -43,7 +43,7 @@ public class CreateList extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String field = json.getString(FIELD);
@@ -55,9 +55,9 @@ public class CreateList extends GnsCommand {
     String message = json.getString(SIGNATUREFULLMESSAGE);
     NSResponseCode responseCode;
     if (!(responseCode = FieldAccess.create(guid, field, new ResultValue(value), writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse(OKRESPONSE);
+      return new CommandResponse<String>(OKRESPONSE);
     } else {
-      return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
   }
 

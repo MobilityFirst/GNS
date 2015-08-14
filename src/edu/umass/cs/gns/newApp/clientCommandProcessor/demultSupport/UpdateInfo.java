@@ -4,12 +4,10 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.BasicPacket;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.newApp.packet.Packet;
 import static edu.umass.cs.gns.newApp.packet.Packet.PacketType.*;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
-import java.net.InetSocketAddress;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -29,9 +27,9 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
 
   private final BasicPacket basicPacket;
   
-  private final ClientRequestHandlerInterface<NodeIDType> handler;
+  private final ClientRequestHandlerInterface handler;
 
-  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface<NodeIDType> handler) {
+  public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface handler) {
     this.ccpReqID = lnsRequestID;
     this.name = name;
     this.startTime = System.currentTimeMillis();
@@ -51,17 +49,18 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
     return getErrorMessage(NSResponseCode.FAIL_ACTIVE_NAMESERVER);
   }
   
+  @SuppressWarnings("unchecked")
   public JSONObject getErrorMessage(NSResponseCode errorCode) {
-    ConfirmUpdatePacket confirm = null;
+    ConfirmUpdatePacket<String> confirm = null;
     switch (basicPacket.getType()) {
       case ADD_RECORD:
-        confirm = new ConfirmUpdatePacket(errorCode, (AddRecordPacket) basicPacket);
+        confirm = new ConfirmUpdatePacket<String>(errorCode, (AddRecordPacket<String>) basicPacket);
         break;
       case REMOVE_RECORD:
-        confirm = new ConfirmUpdatePacket(errorCode, (RemoveRecordPacket) basicPacket);
+        confirm = new ConfirmUpdatePacket<String>(errorCode, (RemoveRecordPacket<String>) basicPacket);
         break;
       case UPDATE:
-        confirm = ConfirmUpdatePacket.createFailPacket((UpdatePacket) basicPacket, errorCode);
+        confirm = ConfirmUpdatePacket.createFailPacket((UpdatePacket<String>) basicPacket, errorCode);
         break;
     }
     try {

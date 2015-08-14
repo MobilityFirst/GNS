@@ -61,12 +61,11 @@ import org.json.JSONException;
  * retransmission of lookups).
  *
  * @author westy
- * @param <NodeIDType>
  */
-public class NewClientRequestHandler<NodeIDType> implements EnhancedClientRequestHandlerInterface<NodeIDType> {
+public class NewClientRequestHandler implements EnhancedClientRequestHandlerInterface {
 
-  private final Intercessor<NodeIDType> intercessor;
-  private final Admintercessor<NodeIDType> admintercessor;
+  private final Intercessor intercessor;
+  private final Admintercessor admintercessor;
   private final RequestHandlerParameters parameters;
   private final ScheduledThreadPoolExecutor executorService = new ScheduledThreadPoolExecutor(5);
   /**
@@ -84,38 +83,38 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * Cache of Name records Key: Name, Value: CacheEntry (DNS_SUBTYPE_QUERY record)
    *
    */
-  private final Cache<String, CacheEntry<NodeIDType>> cache;
+  private final Cache<String, CacheEntry<String>> cache;
 
   /**
    * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
-  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  private final GNSNodeConfig<String> gnsNodeConfig;
 
-  private final ConsistentReconfigurableNodeConfig<NodeIDType> nodeConfig;
+  private final ConsistentReconfigurableNodeConfig<String> nodeConfig;
 
-  private final InterfaceSSLMessenger<NodeIDType, JSONObject> messenger;
+  private final InterfaceSSLMessenger<String, JSONObject> messenger;
 
   private final Random random;
 
-  private final ProtocolExecutor<NodeIDType, ReconfigurationPacket.PacketType, String> protocolExecutor;
-  private final CCPProtocolTask<NodeIDType> protocolTask;
+  private final ProtocolExecutor<String, ReconfigurationPacket.PacketType, String> protocolExecutor;
+  private final CCPProtocolTask<String> protocolTask;
 
   /**
    * Host address of the local name server.
    */
   private final InetSocketAddress nodeAddress;
   //
-  private final NodeIDType activeReplicaID;
+  private final String activeReplicaID;
   private final NewApp app;
 
   private long receivedRequests = 0;
 
-  public NewClientRequestHandler(Intercessor<NodeIDType> intercessor, Admintercessor<NodeIDType> admintercessor,
+  public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress,
-          NodeIDType activeReplicaID,
+          String activeReplicaID,
           NewApp app,
-          GNSNodeConfig<NodeIDType> gnsNodeConfig,
-          JSONMessenger<NodeIDType> messenger, RequestHandlerParameters parameters) {
+          GNSNodeConfig<String> gnsNodeConfig,
+          JSONMessenger<String> messenger, RequestHandlerParameters parameters) {
     this.intercessor = intercessor;
     this.admintercessor = admintercessor;
     this.parameters = parameters;
@@ -125,7 +124,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
             : gnsNodeConfig.getReplicaNodeIdForTopLevelNode(activeReplicaID);
     this.app = app;
     // FOR NOW WE KEEP BOTH
-    this.nodeConfig = new ConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig);
+    this.nodeConfig = new ConsistentReconfigurableNodeConfig<String>(gnsNodeConfig);
     this.gnsNodeConfig = gnsNodeConfig;
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
@@ -142,8 +141,9 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
-    BasicReconfigurationPacket<NodeIDType> rcEvent
-            = (BasicReconfigurationPacket<NodeIDType>) ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
+    @SuppressWarnings("unchecked")
+    BasicReconfigurationPacket<String> rcEvent
+            = (BasicReconfigurationPacket<String>) ReconfigurationPacket.getReconfigurationPacket(json, gnsNodeConfig);
     return this.protocolExecutor.handleEvent(rcEvent);
   }
 
@@ -156,12 +156,12 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public GNSNodeConfig<NodeIDType> getGnsNodeConfig() {
+  public GNSNodeConfig<String> getGnsNodeConfig() {
     return gnsNodeConfig;
   }
 
   @Override
-  public ConsistentReconfigurableNodeConfig<NodeIDType> getNodeConfig() {
+  public ConsistentReconfigurableNodeConfig<String> getNodeConfig() {
     return nodeConfig;
   }
 
@@ -171,17 +171,17 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public NodeIDType getActiveReplicaID() {
+  public String getActiveReplicaID() {
     return activeReplicaID;
   }
 
   @Override
-  public Intercessor<NodeIDType> getIntercessor() {
+  public Intercessor getIntercessor() {
     return intercessor;
   }
 
   @Override
-  public Admintercessor<NodeIDType> getAdmintercessor() {
+  public Admintercessor getAdmintercessor() {
     return admintercessor;
   }
 
@@ -353,16 +353,16 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * @param packet DNS_SUBTYPE_QUERY packet containing record
    */
   @Override
-  public CacheEntry<NodeIDType> addCacheEntry(DNSPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<>(packet,
+  public CacheEntry<String> addCacheEntry(DNSPacket<String> packet) {
+    CacheEntry<String> entry = new CacheEntry<>(packet,
             nodeConfig.getReplicatedReconfigurators(packet.getGuid()));
     cache.put(entry.getName(), entry);
     return entry;
   }
 
   @Override
-  public CacheEntry<NodeIDType> addCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = new CacheEntry<>(packet,
+  public CacheEntry<String> addCacheEntry(RequestActivesPacket<String> packet) {
+    CacheEntry<String> entry = new CacheEntry<>(packet,
             nodeConfig.getReplicatedReconfigurators(packet.getName()));
     cache.put(entry.getName(), entry);
     return entry;
@@ -374,8 +374,8 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * @param packet DNS_SUBTYPE_QUERY packet containing record
    */
   @Override
-  public CacheEntry<NodeIDType> updateCacheEntry(DNSPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = cache.getIfPresent(packet.getGuid());
+  public CacheEntry<String> updateCacheEntry(DNSPacket<String> packet) {
+    CacheEntry<String> entry = cache.getIfPresent(packet.getGuid());
     if (entry == null) {
       return null;
     }
@@ -384,8 +384,8 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public void updateCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    CacheEntry<NodeIDType> entry = cache.getIfPresent(packet.getName());
+  public void updateCacheEntry(RequestActivesPacket<String> packet) {
+    CacheEntry<String> entry = cache.getIfPresent(packet.getName());
     if (entry == null) {
       return;
     }
@@ -393,20 +393,20 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet, String name, String key) {
+  public void updateCacheEntry(ConfirmUpdatePacket<String> packet, String name, String key) {
     switch (packet.getType()) {
       case ADD_CONFIRM:
         if (parameters.isDebugMode()) {
           GNS.getLogger().info("%%%%%%%%%%%%%%%%%% After add cacheing actives: " + nodeConfig.getReplicatedActives(name));
         }
-        cache.put(name, new CacheEntry<NodeIDType>(name, nodeConfig.getReplicatedReconfigurators(name),
+        cache.put(name, new CacheEntry<String>(name, nodeConfig.getReplicatedReconfigurators(name),
                 nodeConfig.getReplicatedActives(name)));
         break;
       case REMOVE_CONFIRM:
         cache.invalidate(name);
         break;
       case UPDATE_CONFIRM:
-        CacheEntry<NodeIDType> entry = cache.getIfPresent(name);
+        CacheEntry<String> entry = cache.getIfPresent(name);
         if (entry != null) {
           entry.updateCacheEntry(packet);
         }
@@ -420,7 +420,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * @param name Host/Domain name
    */
   @Override
-  public CacheEntry<NodeIDType> getCacheEntry(String name) {
+  public CacheEntry<String> getCacheEntry(String name) {
     return cache.getIfPresent(name);
   }
 
@@ -429,7 +429,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    *
    * @return
    */
-  public Set<Map.Entry<String, CacheEntry<NodeIDType>>> getCacheEntrySet() {
+  public Set<Map.Entry<String, CacheEntry<String>>> getCacheEntrySet() {
     return cache.asMap().entrySet();
   }
 
@@ -441,13 +441,13 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    */
   @Override
   public boolean isValidNameserverInCache(String name) {
-    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
+    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.isValidNameserver() : false;
   }
 
   @Override
   public void invalidateActiveNameServer(String name) {
-    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
+    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
     if (cacheEntry != null) {
       cacheEntry.invalidateActiveNameServer();
     }
@@ -455,7 +455,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
 
   @Override
   public int timeSinceAddressCached(String name, String recordKey) {
-    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
+    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.timeSinceAddressCached(recordKey) : -1;
   }
 
@@ -466,7 +466,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   @Override
   public String getCacheLogString(String preamble) {
     StringBuilder cacheTable = new StringBuilder();
-    List<CacheEntry<NodeIDType>> list = new ArrayList<>(cache.asMap().values());
+    List<CacheEntry<String>> list = new ArrayList<>(cache.asMap().values());
     Collections.sort(list, new CacheComparator());
     for (CacheEntry entry : list) {
       cacheTable.append("\n");
@@ -503,10 +503,10 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * @return
    */
   @Override
-  public Set<NodeIDType> getReplicaControllers(String name) {
-    CacheEntry<NodeIDType> cacheEntry = cache.getIfPresent(name);
+  public Set<String> getReplicaControllers(String name) {
+    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
     return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : nodeConfig.getReplicatedReconfigurators(name);
-    //return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<NodeIDType>)ConsistentHashing.getReplicaControllerSet(name);
+    //return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<String>)ConsistentHashing.getReplicaControllerSet(name);
   }
 
   /**
@@ -517,14 +517,14 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    *
    */
   @Override
-  public NodeIDType getClosestReplicaController(String name, Set<NodeIDType> nameServersQueried) {
+  public String getClosestReplicaController(String name, Set<String> nameServersQueried) {
     try {
-      Set<NodeIDType> primaries = getReplicaControllers(name);
+      Set<String> primaries = getReplicaControllers(name);
       if (parameters.isDebugMode()) {
         GNS.getLogger().info("Primary Name Servers: " + Util.setOfNodeIdToString(primaries) + " for name: " + name);
       }
 
-      NodeIDType x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
+      String x = gnsNodeConfig.getClosestServer(primaries, nameServersQueried);
       if (parameters.isDebugMode()) {
         GNS.getLogger().info("Closest Primary Name Server: " + x.toString() + " NS Queried: " + Util.setOfNodeIdToString(nameServersQueried));
       }
@@ -535,39 +535,39 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
   }
 
   @Override
-  public NodeIDType getRandomReplica() {
+  public String getRandomReplica() {
     int index = (int) (this.gnsNodeConfig.getActiveReplicas().size() * Math.random());
-    return (NodeIDType) (this.gnsNodeConfig.getActiveReplicas().toArray()[index]);
+    return (String) (this.gnsNodeConfig.getActiveReplicas().toArray()[index]);
   }
 
   @Override
-  public NodeIDType getRandomRCReplica() {
+  public String getRandomRCReplica() {
     int index = (int) (this.gnsNodeConfig.getReconfigurators().size() * Math.random());
-    return (NodeIDType) (this.gnsNodeConfig.getReconfigurators().toArray()[index]);
+    return (String) (this.gnsNodeConfig.getReconfigurators().toArray()[index]);
   }
 
   @Override
-  public NodeIDType getFirstReplica() {
+  public String getFirstReplica() {
     return this.gnsNodeConfig.getActiveReplicas().iterator().next();
   }
 
   @Override
-  public NodeIDType getFirstRCReplica() {
+  public String getFirstRCReplica() {
     return this.gnsNodeConfig.getReconfigurators().iterator().next();
   }
 
   @Override
   public void sendRequestToRandomReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException {
-    NodeIDType id = getRandomRCReplica();
+    String id = getRandomRCReplica();
     sendRequestToReconfigurator(req, id);
   }
 
   @Override
-  public void sendRequestToReconfigurator(BasicReconfigurationPacket req, NodeIDType id) throws JSONException, IOException {
+  public void sendRequestToReconfigurator(BasicReconfigurationPacket req, String id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {
       GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);
     }
-    this.messenger.send(new GenericMessagingTask<NodeIDType, Object>(id, req.toJSONObject()));
+    this.messenger.send(new GenericMessagingTask<String, Object>(id, req.toJSONObject()));
   }
 
   /**
@@ -577,7 +577,7 @@ public class NewClientRequestHandler<NodeIDType> implements EnhancedClientReques
    * @param id
    */
   @Override
-  public void sendToNS(JSONObject json, NodeIDType id) {
+  public void sendToNS(JSONObject json, String id) {
     try {
       if (parameters.isDebugMode()) {
         GNS.getLogger().info("Send to: " + id + " json: " + json);

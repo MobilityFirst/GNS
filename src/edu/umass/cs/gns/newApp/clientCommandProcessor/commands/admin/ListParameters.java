@@ -36,11 +36,11 @@ public class ListParameters extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) {
     if (module.isAdminMode()) {
-      return new CommandResponse(SystemParameter.listParameters());
+      return new CommandResponse<String>(SystemParameter.listParameters());
     }
-    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + LISTPARAMETERS);
+    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + LISTPARAMETERS);
   }
 
   @Override

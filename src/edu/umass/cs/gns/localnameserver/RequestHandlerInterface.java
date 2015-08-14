@@ -10,9 +10,9 @@ package edu.umass.cs.gns.localnameserver;
 import edu.umass.cs.gns.localnameserver.nodeconfig.LNSConsistentReconfigurableNodeConfig;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Set;
@@ -60,7 +60,7 @@ public interface RequestHandlerInterface {
   
   public Set<InetSocketAddress> getActivesIfValid(String name);
   
-  public ProtocolExecutor getProtocolExecutor();
+  public ProtocolExecutor<InetSocketAddress, ReconfigurationPacket.PacketType, String> getProtocolExecutor();
   
   public boolean handleEvent(JSONObject json) throws JSONException;
   
@@ -68,7 +68,7 @@ public interface RequestHandlerInterface {
   
   public void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException;
   
-  public PingManager getPingManager();
+  public PingManager<InetSocketAddress> getPingManager();
   
   public Set<InetSocketAddress> getReplicatedActives(String name);
  

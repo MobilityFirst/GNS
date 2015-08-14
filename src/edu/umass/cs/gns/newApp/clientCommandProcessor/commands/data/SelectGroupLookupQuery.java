@@ -37,7 +37,7 @@ public class SelectGroupLookupQuery extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String guid = json.getString(GUID);
     return FieldAccess.selectGroupLookupQuery(guid, handler);
   }

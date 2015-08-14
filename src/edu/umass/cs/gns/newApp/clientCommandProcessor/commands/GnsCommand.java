@@ -89,7 +89,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    * @throws NoSuchAlgorithmException
    * @throws SignatureException 
    */
-  public abstract CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public abstract CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException;
 
   /**

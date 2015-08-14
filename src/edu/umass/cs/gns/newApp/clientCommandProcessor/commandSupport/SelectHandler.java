@@ -43,7 +43,7 @@ public class SelectHandler {
   public static final int INVALID_REFRESH_INTERVAL = -1;
 
   private static final Object monitor = new Object();
-  private static ConcurrentMap<Integer, SelectResponsePacket> resultsMap = new ConcurrentHashMap<Integer, SelectResponsePacket>(10, 0.75f, 3);
+  private static ConcurrentMap<Integer, SelectResponsePacket<String>> resultsMap = new ConcurrentHashMap<Integer, SelectResponsePacket<String>>(10, 0.75f, 3);
   private static Random randomID = new Random();
 
   /**
@@ -121,7 +121,7 @@ public class SelectHandler {
       return null;
     }
     waitForResponsePacket(id);
-    SelectResponsePacket packet = resultsMap.get(id);
+    SelectResponsePacket<String> packet = resultsMap.get(id);
     if (SelectResponsePacket.ResponseCode.NOERROR.equals(packet.getResponseCode())) {
       JSONArray json = packet.getGuids();
       if (json != null) {
@@ -139,12 +139,12 @@ public class SelectHandler {
    * 
    * @param json
    */
-  public static void processSelectResponsePackets(JSONObject json, Stringifiable unstringer) {
+  public static void processSelectResponsePackets(JSONObject json, Stringifiable<String> unstringer) {
     try {
       switch (getPacketType(json)) {
         case SELECT_RESPONSE:
           try {
-            SelectResponsePacket response = new SelectResponsePacket(json, unstringer);
+            SelectResponsePacket<String> response = new SelectResponsePacket<String>(json, unstringer);
             int id = response.getId();
             GNS.getLogger().fine("Processing SelectResponse for " + id);
             synchronized (monitor) {

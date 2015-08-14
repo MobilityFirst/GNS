@@ -30,7 +30,7 @@ import java.util.logging.Level;
  *
  * @author Westy
  */
-public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable {
+public class CCPListenerAdmin extends Thread implements Shutdownable {
 
   /**
    * Socket over which active name server request arrive. *
@@ -41,14 +41,14 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
    */
   private final Map<Integer, Integer> replicationMap;
 
-  private final ClientRequestHandlerInterface<NodeIDType> handler;
+  private final ClientRequestHandlerInterface handler;
 
   /**
    *
    * The PingManager is here because one of the admin functions is to allow is to display
    * latencies.
    */
-  private final PingManager pingManager;
+  private final PingManager<String> pingManager;
 
   /**
    *
@@ -56,9 +56,9 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
    *
    * @throws IOException
    */
-  public CCPListenerAdmin(ClientRequestHandlerInterface<NodeIDType> handler, PingManager pingManager) throws IOException {
+  public CCPListenerAdmin(ClientRequestHandlerInterface handler, PingManager<String> pingManager) throws IOException {
     super("ListenerAdmin");
-    this.serverSocket = new ServerSocket(handler.getGnsNodeConfig().getCcpAdminPort((NodeIDType)handler.getActiveReplicaID()));
+    this.serverSocket = new ServerSocket(handler.getGnsNodeConfig().getCcpAdminPort((String)handler.getActiveReplicaID()));
     replicationMap = new HashMap<>();
     this.handler = handler;
     this.pingManager = pingManager;
@@ -94,24 +94,24 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
     }
   }
 
-  public void handlePacket(JSONObject incomingJSON, Socket incomingSocket, ClientRequestHandlerInterface<NodeIDType> handler) {
+  public void handlePacket(JSONObject incomingJSON, Socket incomingSocket, ClientRequestHandlerInterface handler) {
     try {
       switch (Packet.getPacketType(incomingJSON)) {
         case DUMP_REQUEST:
-          DumpRequestPacket dumpRequestPacket = new DumpRequestPacket<NodeIDType>(incomingJSON, handler.getGnsNodeConfig());
+          DumpRequestPacket dumpRequestPacket = new DumpRequestPacket<String>(incomingJSON, handler.getGnsNodeConfig());
           if (dumpRequestPacket.getPrimaryNameServer() == null) {
             // OUTGOING - multicast it to all the nameservers
             int id = dumpRequestPacket.getId();
             GNS.getLogger().fine("ListenerAdmin: Request from local HTTP server");
             JSONObject json = dumpRequestPacket.toJSONObject();
-            Set<NodeIDType> serverIds = handler.getNodeConfig().getActiveReplicas();
+            Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
             //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
             replicationMap.put(id, serverIds.size());
             Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, json, 2, GNS.PortType.NS_ADMIN_PORT, null);
             GNS.getLogger().fine("ListenerAdmin: Multicast out to " + serverIds.size() + " hosts for " + id + " --> " + dumpRequestPacket.toString());
           } else {
             // INCOMING - send it out to original requester
-            DumpRequestPacket incomingPacket = new DumpRequestPacket<NodeIDType>(incomingJSON, handler.getGnsNodeConfig());
+            DumpRequestPacket incomingPacket = new DumpRequestPacket<String>(incomingJSON, handler.getGnsNodeConfig());
             int incomingId = incomingPacket.getId();
             handler.getAdmintercessor().handleIncomingDumpResponsePackets(incomingJSON, handler);
             GNS.getLogger().fine("ListenerAdmin: Relayed response for " + incomingId + " --> " + dumpRequestPacket.toJSONObject());
@@ -136,7 +136,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
             case RESETDB:
               GNS.getLogger().fine("LNSListenerAdmin (" + handler.getNodeAddress() + ") "
                       + ": Forwarding " + incomingPacket.getOperation().toString() + " request");
-              Set<NodeIDType> serverIds = handler.getNodeConfig().getActiveReplicas();
+              Set<String> serverIds = handler.getNodeConfig().getActiveReplicas();
               //Set<NodeIDType> serverIds = handler.getGnsNodeConfig().getNodeIDs();
               Packet.multicastTCP(handler.getGnsNodeConfig(), serverIds, incomingJSON, 2, GNS.PortType.NS_ADMIN_PORT, null);
               // clear the cache
@@ -168,7 +168,7 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
                 } else {
                   // forward the packet on to the appropriate host
                   incomingPacket.setCCPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), 
-                          handler.getGnsNodeConfig().getCcpAdminPort((NodeIDType)handler.getActiveReplicaID())));
+                          handler.getGnsNodeConfig().getCcpAdminPort((String)handler.getActiveReplicaID())));
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node, GNS.PortType.NS_ADMIN_PORT);
                 }
               } else { // the incoming packet contained an invalid host number
@@ -182,19 +182,19 @@ public class CCPListenerAdmin<NodeIDType> extends Thread implements Shutdownable
               String node1 = new String(incomingPacket.getArgument());
               String node2 = new String(incomingPacket.getArgument2());
               // null or LNS means return the LNS data
-              if (node1 == null || node1.equals("LNS") || handler.getGnsNodeConfig().nodeExists((NodeIDType)node1)
-                      && handler.getGnsNodeConfig().nodeExists((NodeIDType)node2)) {
+              if (node1 == null || node1.equals("LNS") || handler.getGnsNodeConfig().nodeExists((String)node1)
+                      && handler.getGnsNodeConfig().nodeExists((String)node2)) {
                 if (node1 == null || node1.equals("LNS")) {
                   // handle it here
                   jsonResponse = new JSONObject();
-                  jsonResponse.put("PINGVALUE", pingManager.nodeAverage(node2));
+                  jsonResponse.put("PINGVALUE", pingManager.nodeAverage((String)node2));
                   // send a response back to where the request came from
                   responsePacket = new AdminResponsePacket(incomingPacket.getId(), jsonResponse);
                   returnResponsePacketToSender(incomingPacket.getCCPAddress(), responsePacket, handler);
                 } else {
                   // send it to the server that can handle it
                   incomingPacket.setCCPAddress(new InetSocketAddress(handler.getNodeAddress().getAddress(), 
-                  handler.getGnsNodeConfig().getCcpAdminPort((NodeIDType)handler.getActiveReplicaID())));
+                  handler.getGnsNodeConfig().getCcpAdminPort((String)handler.getActiveReplicaID())));
                   //incomingPacket.sethandlerId(handler.getNodeID()); // so the receiver knows where to return it
                   Packet.sendTCPPacket(handler.getGnsNodeConfig(), incomingPacket.toJSONObject(), node1, GNS.PortType.NS_ADMIN_PORT);
                 }

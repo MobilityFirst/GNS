@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.json.JSONException;
 
-public class RequestActives implements SchedulableProtocolTask<String, PacketType, String> {
+public class RequestActives implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
 
@@ -38,7 +38,7 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
 
     this.lnsRequestInfo = lnsRequestInfo;
     this.handler = handler;
-    reconfigurators = new ArrayList(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
+    reconfigurators = new ArrayList<InetSocketAddress>(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
     this.key = this.refreshKey();
     if (handler.isDebugMode()) {
       GNS.getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
@@ -46,7 +46,7 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
   }
 
   @Override
-  public GenericMessagingTask[] restart() {
+  public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
       try {
         // got our actives and they're in the cache so now send out the command
@@ -87,7 +87,7 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
   }
 
   @Override
-  public GenericMessagingTask[] start() {
+  public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
             lnsRequestInfo.getServiceName(), 0);
 
@@ -103,7 +103,7 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
       reconfiguratorAddress = new InetSocketAddress(reconfiguratorAddress.getAddress(),
               ActiveReplica.getClientFacingPort(reconfiguratorAddress.getPort()));
     }
-    GenericMessagingTask mtasks[] = new GenericMessagingTask(reconfiguratorAddress, packet).toArray();
+    GenericMessagingTask<InetSocketAddress, ?> mtasks[] = new GenericMessagingTask<>(reconfiguratorAddress, packet).toArray();
     requestCount++;
     return mtasks;
   }
@@ -127,7 +127,7 @@ public class RequestActives implements SchedulableProtocolTask<String, PacketTyp
   }
 
   @Override
-  public GenericMessagingTask[] handleEvent(
+  public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent event,
           ProtocolTask[] ptasks) {
     return null;

@@ -21,23 +21,23 @@ import org.json.JSONException;
 import java.util.HashSet;
 import java.util.TimerTask;
 
-public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
+public class SendReconfiguratorPacketTask extends TimerTask {
 
   private final String name;
   private final BasicReconfigurationPacket packet;
-  private final HashSet<NodeIDType> reconfiguratorsQueried;
+  private final HashSet<String> reconfiguratorsQueried;
   private int sendCount = -1;
   private int retries = 0;
   private static final int MAX_RETRIES = 3;
   private final long startTime;
-  private final EnhancedClientRequestHandlerInterface<NodeIDType> handler;
+  private final EnhancedClientRequestHandlerInterface handler;
 
   public SendReconfiguratorPacketTask(String name, BasicReconfigurationPacket packet,
-          EnhancedClientRequestHandlerInterface<NodeIDType> handler) {
+          EnhancedClientRequestHandlerInterface handler) {
     this.name = name;
     this.handler = handler;
     this.packet = packet;
-    this.reconfiguratorsQueried = new HashSet<NodeIDType>();
+    this.reconfiguratorsQueried = new HashSet<String>();
     this.startTime = System.currentTimeMillis();
   }
 
@@ -53,7 +53,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-      NodeIDType nameServerID = selectReconfigurator();
+      String nameServerID = selectReconfigurator();
 
       sendRequestToReconfigurator(nameServerID);
 
@@ -76,10 +76,11 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
       }
       return true;
     } else {
-      UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.getRequestInfo(lnsRequestID);
       if (updateInfo == null) {
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " UpdateInfo not found. Operation complete. Cancel task.");
+          GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " UpdateInfo<String> not found. Operation complete. Cancel task.");
         }
         return true;
       }
@@ -96,7 +97,8 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
     if (sendCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
       Integer ccpRequestID = removeRequestNameToIDMapping(name);
       if (ccpRequestID != null) {
-        UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(ccpRequestID);
+        @SuppressWarnings("unchecked")
+        UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.getRequestInfo(ccpRequestID);
         if (updateInfo == null) {
           GNS.getLogger().warning("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " TIME EXCEEDED: UPDATE INFO IS NULL!!: " + packet);
           return true;
@@ -117,8 +119,8 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
     return false;
   }
 
-  private NodeIDType selectReconfigurator() {
-    NodeIDType server = handler.getClosestReplicaController(name, reconfiguratorsQueried);
+  private String selectReconfigurator() {
+    String server = handler.getClosestReplicaController(name, reconfiguratorsQueried);
     if (server == null) {
       if (retries < MAX_RETRIES) {
         reconfiguratorsQueried.clear();
@@ -132,7 +134,7 @@ public class SendReconfiguratorPacketTask<NodeIDType> extends TimerTask {
     return server;
   }
 
-  private void sendRequestToReconfigurator(NodeIDType nameServerID) {
+  private void sendRequestToReconfigurator(String nameServerID) {
     if (nameServerID == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("ERROR: No more primaries left to query. RETURN. Primaries queried "

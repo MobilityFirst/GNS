@@ -42,7 +42,7 @@ public class RemoveTag extends GnsCommand {
   }
   
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String tag = json.getString(NAME);
@@ -51,7 +51,7 @@ public class RemoveTag extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     GuidInfo guidInfo;
     if ((guidInfo = AccountAccess.lookupGuidInfo(guid, handler)) == null) {
-      return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + guid);
+      return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + guid);
     }
     return AccountAccess.removeTag(guidInfo, tag, guid, signature, message, handler);
   }

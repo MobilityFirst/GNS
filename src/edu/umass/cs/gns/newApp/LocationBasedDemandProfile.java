@@ -300,7 +300,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
 
     // Otherwise get the topN from the votes list
-    ArrayList<InetAddress> newActives = new ArrayList(topN);
+    ArrayList<InetAddress> newActives = new ArrayList<InetAddress>(topN);
     if (debuggingEnabled) {
       LOG.info("%%%%%%%%%%%%%%%%%%%%%%%%%>>> TOP N: " + newActives);
     }
@@ -309,7 +309,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     // BTW: This is the only case that could maybe use some work because it 
     // totally ignores the current active set.
     if (numReplica < newActives.size()) {
-      return new ArrayList(newActives.subList(0, numReplica));
+      return new ArrayList<InetAddress>(newActives.subList(0, numReplica));
     }
 
     // Otherwise we need more than is contained in the top n.
@@ -441,7 +441,7 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     LOG.info("10000,200,200 = " + dp.computeNumberOfReplicas(10000, 200, 200));
 
     // All the actives
-    ArrayList<InetAddress> allActives = new ArrayList(Arrays.asList(
+    ArrayList<InetAddress> allActives = new ArrayList<>(Arrays.asList(
             InetAddress.getByName("128.119.1.1"),
             InetAddress.getByName("128.119.1.2"),
             InetAddress.getByName("128.119.1.3"),
@@ -455,13 +455,13 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
             InetAddress.getByName("128.119.10.2")));
 
     // The list of current actives
-    ArrayList<InetAddress> curActives = new ArrayList(Arrays.asList(
+    ArrayList<InetAddress> curActives = new ArrayList<>(Arrays.asList(
             InetAddress.getByName("128.119.1.1"),
             InetAddress.getByName("128.119.1.2"),
             InetAddress.getByName("128.119.1.3")));
 
     // Simulates the top N vote getters
-    ArrayList<InetAddress> topN = new ArrayList(Arrays.asList(
+    ArrayList<InetAddress> topN = new ArrayList<>(Arrays.asList(
             InetAddress.getByName("128.119.1.2"),
             InetAddress.getByName("128.119.1.3"),
             InetAddress.getByName("128.119.1.4"),

@@ -249,6 +249,7 @@ public class VotesMap {
   private static Map<String, Integer> toMap(JSONObject json) {
     Map<String, Integer> map = new HashMap<String, Integer>();
     try {
+      @SuppressWarnings("unchecked")
       Iterator<String> nameItr = json.keys();
       while (nameItr.hasNext()) {
         String name = nameItr.next();

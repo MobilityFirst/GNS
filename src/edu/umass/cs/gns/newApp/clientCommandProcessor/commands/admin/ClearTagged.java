@@ -46,7 +46,7 @@ public class ClearTagged extends GnsCommand {
 
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String tagName = json.getString(NAME);
     for (Iterator<?> it = handler.getAdmintercessor().collectTaggedGuids(tagName, handler).iterator(); it.hasNext();) {
@@ -56,7 +56,7 @@ public class ClearTagged extends GnsCommand {
         AccountAccess.removeAccount(accountInfo, handler);
       }
     }
-    return new CommandResponse(OKRESPONSE);
+    return new CommandResponse<String>(OKRESPONSE);
   }
 
   @Override

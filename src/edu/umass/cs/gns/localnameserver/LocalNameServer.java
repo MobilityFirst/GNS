@@ -73,8 +73,8 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   private final Cache<String, CacheEntry> cache;
 
   //private InterfaceNIOTransport<String, JSONObject> tcpTransport;
-  private JSONMessenger<String> messenger;
-  private ProtocolExecutor<String, PacketType, String> protocolExecutor;
+  private JSONMessenger<InetSocketAddress> messenger;
+  private ProtocolExecutor<InetSocketAddress, ReconfigurationPacket.PacketType, String> protocolExecutor;
   private final LNSNodeConfig nodeConfig;
   private final LNSConsistentReconfigurableNodeConfig crNodeConfig;
   private final InetSocketAddress address;
@@ -103,9 +103,9 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     this.demultiplexer = new LNSPacketDemultiplexer(this);
     this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
     try {
-      JSONNIOTransport gnsNiot = new JSONNIOTransport(address, crNodeConfig, demultiplexer, sslMode);
-      messenger = new JSONMessenger<String>(gnsNiot);
-      this.protocolExecutor = new ProtocolExecutor<>(messenger);
+      JSONNIOTransport<InetSocketAddress> gnsNiot = new JSONNIOTransport<>(address, crNodeConfig, demultiplexer, sslMode);
+      messenger = new JSONMessenger<InetSocketAddress>(gnsNiot);
+      this.protocolExecutor = new ProtocolExecutor<InetSocketAddress, ReconfigurationPacket.PacketType, String>(messenger);
     } catch (IOException e) {
       LOG.info("Unabled to start LNS listener: " + e);
       System.exit(0);
@@ -168,7 +168,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   @Override
-  public ProtocolExecutor getProtocolExecutor() {
+  public ProtocolExecutor<InetSocketAddress, PacketType, String> getProtocolExecutor() {
     return protocolExecutor;
   }
 
@@ -213,7 +213,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   }
 
   @Override
-  public PingManager getPingManager() {
+  public PingManager<InetSocketAddress> getPingManager() {
     return pingManager;
   }
 
@@ -331,6 +331,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
     return cache.getIfPresent(name) != null;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public boolean handleEvent(JSONObject json) throws JSONException {
     BasicReconfigurationPacket<String> rcEvent

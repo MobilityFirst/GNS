@@ -45,12 +45,12 @@ public class Update {
   public static void handlePacketUpdate(JSONObject json, EnhancedClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
 
-    UpdatePacket updatePacket = new UpdatePacket(json, handler.getGnsNodeConfig());
+    UpdatePacket<String> updatePacket = new UpdatePacket<String>(json, handler.getGnsNodeConfig());
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("UPDATE PACKET RECVD: " + json.toString());
     }
     int ccpRequestID = handler.getUniqueRequestID();
-    UpdateInfo info = new UpdateInfo(ccpRequestID, updatePacket.getName(), null, updatePacket, handler);
+    UpdateInfo<String> info = new UpdateInfo<String>(ccpRequestID, updatePacket.getName(), null, updatePacket, handler);
     handler.addRequestInfo(ccpRequestID, info);
     handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
     if (!handler.reallySendUpdateToReplica()) {
@@ -64,7 +64,7 @@ public class Update {
   }
 
   private static void handlePacketLocally(int ccpReqID, EnhancedClientRequestHandlerInterface handler,
-          UpdatePacket updatePacket, Object nameServerID) {
+          UpdatePacket<String> updatePacket, String nameServerID) {
     handler.getApp().handleRequest(makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID));
   }
 
@@ -78,9 +78,9 @@ public class Update {
    * @param nameServerID
    * @return
    */
-  public static UpdatePacket makeNewUpdatePacket(int ccpReqID, EnhancedClientRequestHandlerInterface handler,
-          UpdatePacket updatePacket, Object nameServerID) {
-    UpdatePacket pkt = new UpdatePacket(
+  public static UpdatePacket<String> makeNewUpdatePacket(int ccpReqID, EnhancedClientRequestHandlerInterface handler,
+          UpdatePacket<String> updatePacket, String nameServerID) {
+    UpdatePacket<String> pkt = new UpdatePacket<String>(
             updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
             updatePacket.getRequestID(),
             ccpReqID, // the id used by the CCP (that would be us here)
@@ -109,14 +109,15 @@ public class Update {
    * @throws JSONException
    */
   public static void handlePacketConfirmUpdate(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws UnknownHostException, JSONException {
-    ConfirmUpdatePacket confirmPkt = new ConfirmUpdatePacket(json, handler.getGnsNodeConfig());
+    ConfirmUpdatePacket<String> confirmPkt = new ConfirmUpdatePacket<String>(json, handler.getGnsNodeConfig());
 
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("ConfirmUpdate recvd: ResponseNum: " + " --> " + confirmPkt);
     }
     if (confirmPkt.isSuccess()) {
       // we are removing request info as processing for this request is complete
-      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getCCPRequestID());
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.removeRequestInfo(confirmPkt.getCCPRequestID());
       // if update info isn't available, we cant do anything. probably response is overly delayed and an error response
       // has already been sent to client.
       if (updateInfo == null) {
@@ -138,7 +139,8 @@ public class Update {
 //      }
     } else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)) {
       // NOTE: we are NOT removing request info as processing for this request is still ongoing
-      UpdateInfo updateInfo = (UpdateInfo) handler.getRequestInfo(confirmPkt.getCCPRequestID());
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.getRequestInfo(confirmPkt.getCCPRequestID());
       if (updateInfo == null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().warning("Update info not found. quitting. INVALID_ACTIVE_ERROR update " + confirmPkt);
@@ -150,7 +152,8 @@ public class Update {
       handleInvalidActiveError(updateInfo, handler);
     } else { // In all other types of errors, we immediately send response to client.
       // we are removing request info as processing for this request is complete
-      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(confirmPkt.getCCPRequestID());
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.removeRequestInfo(confirmPkt.getCCPRequestID());
       if (updateInfo == null) {
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().warning("Update info not found. quitting.  ERROR update. " + confirmPkt);
@@ -173,19 +176,20 @@ public class Update {
    * @param updateInfo state for this request stored at local name server
    * @throws JSONException
    */
-  private static void handleInvalidActiveError(UpdateInfo updateInfo, EnhancedClientRequestHandlerInterface handler) throws JSONException {
+  private static void handleInvalidActiveError(UpdateInfo<String> updateInfo, EnhancedClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t"
               + updateInfo.getName() + "\tRequest new actives.\t");
     }
 
-    UpdatePacket updatePacket = (UpdatePacket) updateInfo.getUpdatePacket();
+    @SuppressWarnings("unchecked")
+    UpdatePacket<String> updatePacket = (UpdatePacket<String>) updateInfo.getUpdatePacket();
 
     // clear out current cache
     handler.invalidateActiveNameServer(updateInfo.getName());
     // create objects that must be passed to PendingTasks
     SendUpdatesTask task = new SendUpdatesTask(updateInfo.getCCPReqID(), handler, updatePacket, null);
-//    ConfirmUpdatePacket failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
+//    ConfirmUpdatePacket<String> failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);
 
     PendingTasks.addToPendingRequests(updateInfo, task, handler.getParameters().getQueryTimeout(), handler);
   }
@@ -203,7 +207,7 @@ public class Update {
    * @param handler
    * @throws JSONException
    */
-  public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket packet, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void sendConfirmUpdatePacketBackToSource(ConfirmUpdatePacket<String> packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getReturnTo() == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());

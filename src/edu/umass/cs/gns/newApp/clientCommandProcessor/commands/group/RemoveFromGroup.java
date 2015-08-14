@@ -42,7 +42,7 @@ public class RemoveFromGroup extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String guid = json.getString(GUID);
     String member = json.getString(MEMBER);
@@ -53,9 +53,9 @@ public class RemoveFromGroup extends GnsCommand {
     String message = json.optString(SIGNATUREFULLMESSAGE, null);
     NSResponseCode responseCode;
     if (!(responseCode = GroupAccess.removeFromGroup(guid, member, writer, signature, message, handler)).isAnError()) {
-      return new CommandResponse(OKRESPONSE);
+      return new CommandResponse<String>(OKRESPONSE);
     } else {
-      return new CommandResponse(BADRESPONSE + " " + responseCode.getProtocolCode());
+      return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());
     }
   }
 

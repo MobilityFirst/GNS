@@ -124,7 +124,7 @@ public class NSAccountAccess {
    * @param guid
    * @return an {@link edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GuidInfo} instance
    */
-  public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface activeReplica) throws FailedDBOperationException {
+  public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, null);
   }
 
@@ -140,7 +140,8 @@ public class NSAccountAccess {
    * @return
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, GnsApplicationInterface activeReplica,
+  public static GuidInfo lookupGuidInfo(String guid, boolean allowQueryToOtherNSs, 
+          GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     ValuesMap valuesMap = NSFieldAccess.lookupFieldAnywhere(guid, AccountAccess.GUID_INFO, activeReplica, lnsAddress);
 //    ResultValue guidResult = NSFieldAccess.lookupListFieldAnywhere(guid, AccountAccess.GUID_INFO, allowQueryToOtherNSs, activeReplica,

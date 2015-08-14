@@ -41,32 +41,31 @@ import org.json.JSONObject;
 /**
  *
  * @author Westy
- * @param <NodeIDType>
  */
-public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
+public class ClientCommandProcessor implements Shutdownable {
 
   private final InetSocketAddress nodeAddress;
-  private final InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig;
-  private JSONMessenger<NodeIDType> messenger;
+  private final InterfaceReconfigurableNodeConfig<String> nodeConfig;
+  private JSONMessenger<String> messenger;
   /**
    * Handles the client support processing for the local name server.
    */
-  private Intercessor<NodeIDType> intercessor;
+  private Intercessor intercessor;
 
   /**
    * Handles administrative client support for the local name server.
    */
-  private Admintercessor<NodeIDType> admintercessor;
+  private Admintercessor admintercessor;
   /**
    * Ping manager object for pinging other nodes and updating ping latencies.
    */
-  private PingManager pingManager;
+  private PingManager<String> pingManager;
   /**
    * We also keep a pointer to the lnsListenerAdmin so we can shut it down.
    */
-  private CCPListenerAdmin<NodeIDType> ccpListenerAdmin;
+  private CCPListenerAdmin ccpListenerAdmin;
 
-  EnhancedClientRequestHandlerInterface<NodeIDType> requestHandler;
+  EnhancedClientRequestHandlerInterface requestHandler;
 
   /**
    * We keep a pointer to the udpDnsServer so we can shut it down.
@@ -78,16 +77,16 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
    */
   private DnsTranslator dnsTranslator;
 
-  AbstractJSONPacketDemultiplexer demultiplexer;
+  CCPPacketDemultiplexer<String> demultiplexer;
 
   private final Logger log = Logger.getLogger(getClass().getName());
 
-  public ClientCommandProcessor(JSONMessenger<NodeIDType> messenger,
+  public ClientCommandProcessor(JSONMessenger<String> messenger,
           InetSocketAddress nodeAddress,
-          GNSNodeConfig<NodeIDType> nodeConfig,
+          GNSNodeConfig<String> nodeConfig,
           boolean debug,
           NewApp app,
-          NodeIDType replicaID,
+          String replicaID,
           boolean dnsGnsOnly,
           boolean dnsOnly,
           String gnsServerIP) throws IOException {
@@ -95,9 +94,9 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     if (debug) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE CCP *********");
     }
-    this.demultiplexer = new CCPPacketDemultiplexer<NodeIDType>();
-    this.intercessor = new Intercessor<>(nodeAddress, nodeConfig, demultiplexer);
-    this.admintercessor = new Admintercessor<>();
+    this.demultiplexer = new CCPPacketDemultiplexer<>();
+    this.intercessor = new Intercessor(nodeAddress, nodeConfig, demultiplexer);
+    this.admintercessor = new Admintercessor();
     this.nodeAddress = nodeAddress;
     this.nodeConfig = nodeConfig;
 
@@ -108,16 +107,12 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     
     try {
       this.messenger = messenger;
-//      this.messenger = new JSONMessenger<NodeIDType>(
-//              new JSONNIOTransport(nodeAddress, nodeConfig,
-//                      new PacketDemultiplexerDefault(),
-//                      sslMode));
       messenger.addPacketDemultiplexer(demultiplexer);
-      this.requestHandler = new NewClientRequestHandler<>(intercessor, admintercessor, nodeAddress,
+      this.requestHandler = new NewClientRequestHandler(intercessor, admintercessor, nodeAddress,
               replicaID,
               app,
               nodeConfig, messenger, parameters);
-      ((CCPPacketDemultiplexer) demultiplexer).setHandler(requestHandler);
+      demultiplexer.setHandler(requestHandler);
       // Start HTTP server
       GnsHttpServer.runHttp(requestHandler);
 //      // Start server
@@ -125,10 +120,10 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
 //              + gnsNodeConfig.getCcpPingPort(replicaID));
 //      // Start a ping manager with no client, just a server.
 //      this.pingManager = new PingManager<>(replicaID,
-//              new GNSConsistentReconfigurableNodeConfig<NodeIDType>(gnsNodeConfig),
+//              new GNSConsistentReconfigurableNodeConfig<String>(gnsNodeConfig),
 //              true);
       // After starting PingManager because it accesses PingManager.
-      (this.ccpListenerAdmin = new CCPListenerAdmin<>(requestHandler, pingManager)).start();
+      (this.ccpListenerAdmin = new CCPListenerAdmin(requestHandler, pingManager)).start();
 
       // The Admintercessor needs to use the CCPListenerAdmin;
       this.admintercessor.setListenerAdmin(ccpListenerAdmin);
@@ -176,35 +171,10 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     return nodeAddress;
   }
 
-  public EnhancedClientRequestHandlerInterface<NodeIDType> getRequestHandler() {
+  public EnhancedClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }
 
-//  public static void startClientCommandProcessor(Map<String, String> options) throws IOException {
-//    ClientCommandProcessor<String> clientCommandProcessor
-//            = new ClientCommandProcessor<String>(
-//                    //address, nodeConfig, messenger,
-//                    options.get(NS_FILE),
-//                    options.containsKey(HOST) ? options.get(HOST) : NetworkUtils.getLocalHostLANAddress().getHostAddress(),
-//                    options.containsKey(PORT) ? Integer.parseInt(options.get(PORT)) : GNS.DEFAULT_CCP_TCP_PORT,
-//                    options.containsKey(DEBUG),
-//                    options.get(ClientCommandProcessorOptions.AR_ID),
-//                    options.containsKey(DNS_GNS_ONLY),
-//                    options.containsKey(DNS_ONLY),
-//                    options.get(GNS_SERVER_IP)
-//            );
-//  }
-//  public static void main(String[] args) throws IOException {
-//    Map<String, String> options
-//            = ParametersAndOptions.getParametersAsHashMap(ClientCommandProcessor.class.getCanonicalName(),
-//                    ClientCommandProcessorOptions.getAllOptions(), args);
-//    if (options.containsKey(HELP)) {
-//      ParametersAndOptions.printUsage(ClientCommandProcessor.class.getCanonicalName(),
-//              ClientCommandProcessorOptions.getAllOptions());
-//      System.exit(0);
-//    }
-//    startClientCommandProcessor(options);
-//  }
   @Override
   public void shutdown() {
     if (udpDnsServer != null) {
@@ -213,9 +183,6 @@ public class ClientCommandProcessor<NodeIDType> implements Shutdownable {
     if (dnsTranslator != null) {
       dnsTranslator.shutdown();
     }
-//    if (nodeConfig != null) {
-//      nodeConfig.shutdown();
-//    }
     if (pingManager != null) {
       pingManager.shutdown();
     }

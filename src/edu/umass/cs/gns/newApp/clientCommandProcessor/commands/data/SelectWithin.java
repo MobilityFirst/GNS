@@ -38,7 +38,7 @@ public class SelectWithin extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String field = json.getString(FIELD);
     String within = json.getString(WITHIN);
     return FieldAccess.selectWithin(field, within, handler);

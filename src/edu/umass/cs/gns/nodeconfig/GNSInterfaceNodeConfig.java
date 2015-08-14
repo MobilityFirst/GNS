@@ -9,8 +9,9 @@ import java.util.Set;
  * @param <NodeIDType>
  */
 
-/* An interface to translate from integer IDs to socket addresses.
+/** An interface to translate from integer IDs to socket addresses.
  * 
+ * @param <NodeIDType>
  */
 public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeIDType>,
         InterfaceReconfigurableNodeConfig<NodeIDType> {

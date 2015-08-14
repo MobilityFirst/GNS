@@ -46,7 +46,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   private NodeIDType returnTo;
 
   /**
-   * Constructs a new ConfirmUpdatePacket with the given parameters.
+   * Constructs a new ConfirmUpdatePacket<String>with the given parameters.
    *
    * @param type Type of this packet
    * @param requestID Id of local or name server
@@ -64,10 +64,11 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
    * the update is failed.
    *
    * @param updatePacket
+   * @param code
    * @return
    */
   @SuppressWarnings("unchecked")
-  public static ConfirmUpdatePacket createFailPacket(UpdatePacket updatePacket, NSResponseCode code) {
+  public static ConfirmUpdatePacket<String> createFailPacket(UpdatePacket<String>updatePacket, NSResponseCode code) {
     assert code != NSResponseCode.NO_ERROR; // that would be stupid
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
             updatePacket.getRequestID(), updatePacket.getCCPRequestID(), code);
@@ -81,7 +82,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
    * @return <code>ConfirmUpdateLNSPacket</code> indicating request failure.
    */
   @SuppressWarnings("unchecked")
-  public static ConfirmUpdatePacket createSuccessPacket(UpdatePacket updatePacket) {
+  public static ConfirmUpdatePacket<String> createSuccessPacket(UpdatePacket<String>updatePacket) {
     return new ConfirmUpdatePacket(Packet.PacketType.UPDATE_CONFIRM, updatePacket.getSourceId(),
             updatePacket.getRequestID(), updatePacket.getCCPRequestID(),
             NSResponseCode.NO_ERROR);
@@ -99,7 +100,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   }
 
   /**
-   * Constructs a new ConfirmUpdatePacket from a JSONObject.
+   * Constructs a new ConfirmUpdatePacket<String>from a JSONObject.
    *
    * @param json JSONObject that represents ConfirmUpdatePacket.
    * @throws org.json.JSONException
@@ -114,7 +115,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   }
 
   /**
-   * Converts a ConfirmUpdatePacket to a JSONObject
+   * Converts a ConfirmUpdatePacket<String>to a JSONObject
    *
    * @return JSONObject that represents ConfirmUpdatePacket
    * @throws org.json.JSONException

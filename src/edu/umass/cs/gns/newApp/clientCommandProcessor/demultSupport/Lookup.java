@@ -52,7 +52,7 @@ public class Lookup {
 
   private static Random random = new Random();
 
-  public static void handlePacketLookupRequest(JSONObject json, DNSPacket incomingPacket,
+  public static void handlePacketLookupRequest(JSONObject json, DNSPacket<String> incomingPacket,
           EnhancedClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     long startTime = System.currentTimeMillis();
@@ -60,7 +60,7 @@ public class Lookup {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Request:" + json);
     }
     int ccpReqID = handler.getUniqueRequestID();
-    DNSRequestInfo requestInfo = new DNSRequestInfo(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
+    DNSRequestInfo<String> requestInfo = new DNSRequestInfo<String>(ccpReqID, incomingPacket.getGuid(), -1, incomingPacket, handler.getGnsNodeConfig());
     handler.addRequestInfo(ccpReqID, requestInfo);
     int clientQueryID = incomingPacket.getQueryId(); // BS: save the value because we reuse the field in the packet
     incomingPacket.setCCPAddress(handler.getNodeAddress());
@@ -68,19 +68,20 @@ public class Lookup {
     JSONObject outgoingJSON = incomingPacket.toJSONObjectQuestion();
     incomingPacket.getHeader().setId(clientQueryID); // BS: restore the value because we reuse the field in the packet
     DelayProfiler.updateDelay("handlePacketLookupRequestSetup", startTime);
-    handler.getApp().handleRequest(new DNSPacket(outgoingJSON, handler.getGnsNodeConfig()));
+    handler.getApp().handleRequest(new DNSPacket<String>(outgoingJSON, handler.getGnsNodeConfig()));
     DelayProfiler.updateDelay("handlePacketLookupRequest", startTime);
     //handler.sendToNS(outgoingJSON, handler.getActiveReplicaID());
   }
 
-  public static void handlePacketLookupResponse(JSONObject json, DNSPacket dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void handlePacketLookupResponse(JSONObject json, DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info(">>>>>>>>>>>>>>>>>>>>>>> CCP DNS Response" + json);
     }
     if (dnsPacket.isResponse() && !dnsPacket.containsAnyError()) {
       //Packet is a response and does not have a response error
       //Match response to the query sent
-      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
+      @SuppressWarnings("unchecked")
+      DNSRequestInfo<String> requestInfo = (DNSRequestInfo<String>) handler.removeRequestInfo(dnsPacket.getQueryId());
       if (requestInfo == null) {
         // if there is none it means we already handled this request?
         return;
@@ -109,7 +110,7 @@ public class Lookup {
 //      }
       // send response to user right now.
       try {
-        DNSPacket outgoingPacket = new DNSPacket(requestInfo.getIncomingPacket().getSourceId(),
+        DNSPacket<String> outgoingPacket = new DNSPacket<>(requestInfo.getIncomingPacket().getSourceId(),
                 requestInfo.getIncomingPacket().getHeader().getId(),
                 requestInfo.getIncomingPacket().getGuid(),
                 requestInfo.getIncomingPacket().getKey(), requestInfo.getIncomingPacket().getKeys(),
@@ -125,7 +126,7 @@ public class Lookup {
     }
   }
 
-  public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void handlePacketLookupErrorResponse(JSONObject jsonObject, DNSPacket<String> dnsPacket, ClientRequestHandlerInterface handler) throws JSONException {
 
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().info("Recvd Lookup Error Response" + jsonObject);
@@ -138,7 +139,7 @@ public class Lookup {
 //        GNS.getLogger().info(" Invalid Active Name Server.\tName\t" + dnsPacket.getGuid() + "\tRequest new actives.");
 //      }
 //      handler.invalidateActiveNameServer(dnsPacket.getGuid());
-//      DNSRequestInfo requestInfo = (DNSRequestInfo) handler.getRequestInfo(dnsPacket.getQueryId());
+//      DNSRequestInfo<String> requestInfo = (DNSRequestInfo<String>) handler.getRequestInfo(dnsPacket.getQueryId());
 //      
 //      if (requestInfo == null) {
 //        GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
@@ -155,7 +156,8 @@ public class Lookup {
 //      }
 //      
 //    } else { // other types of errors, forward error response to client
-    DNSRequestInfo requestInfo = (DNSRequestInfo) handler.removeRequestInfo(dnsPacket.getQueryId());
+    @SuppressWarnings("unchecked")
+    DNSRequestInfo<String> requestInfo = (DNSRequestInfo<String>) handler.removeRequestInfo(dnsPacket.getQueryId());
     if (requestInfo == null) {
       GNS.getLogger().severe("No entry in queryTransmittedMap. QueryID:" + dnsPacket.getQueryId());
       return;
@@ -178,7 +180,7 @@ public class Lookup {
   /**
    * Send reply to user after DNS record is received.
    */
-//  private static void sendReplyToUser(DNSRequestInfo requestInfo, ValuesMap returnValue, int TTL, Object responder, ClientRequestHandlerInterface handler) {
+//  private static void sendReplyToUser(DNSRequestInfo<String> requestInfo, ValuesMap returnValue, int TTL, Object responder, ClientRequestHandlerInterface handler) {
 //    
 //    try {
 //      DNSPacket outgoingPacket = new DNSPacket(requestInfo.getIncomingPacket().getSourceId(),
@@ -197,7 +199,7 @@ public class Lookup {
    *
    * @throws JSONException
    */
-  public static void sendDNSResponseBackToSource(DNSPacket packet, ClientRequestHandlerInterface handler) throws JSONException {
+  public static void sendDNSResponseBackToSource(DNSPacket<String> packet, ClientRequestHandlerInterface handler) throws JSONException {
     if (packet.getSourceId() == null) {
       if (handler.getParameters().isDebugMode()) {
         GNS.getLogger().info("Sending back to Intercessor: " + packet.toJSONObject().toString());

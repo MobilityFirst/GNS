@@ -13,7 +13,6 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNode;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.newApp.GnsApplicationInterface;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
@@ -39,7 +38,8 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ResultValue
    */
-  public static ResultValue lookupListFieldOnThisServer(String guid, String field, GnsApplicationInterface activeReplica) throws FailedDBOperationException {
+  public static ResultValue lookupListFieldOnThisServer(String guid, String field, 
+          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     ResultValue result = null;
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.LIST_STRING, field);
@@ -73,7 +73,8 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ResultValue
    */
-  public static ValuesMap lookupFieldOnThisServer(String guid, String field, GnsApplicationInterface activeReplica)
+  public static ValuesMap lookupFieldOnThisServer(String guid, String field, 
+          GnsApplicationInterface<String> activeReplica)
           throws FailedDBOperationException {
     try {
       NameRecord nameRecord = NameRecord.getNameRecordMultiField(activeReplica.getDB(), guid, null, ColumnFieldType.USER_JSON, field);
@@ -102,7 +103,8 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return a string representing the first value in field
    */
-  public static String lookupSingletonFieldOnThisServer(String recordName, String key, GnsApplicationInterface activeReplica) throws FailedDBOperationException {
+  public static String lookupSingletonFieldOnThisServer(String recordName, String key, 
+          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     ResultValue guidResult = lookupListFieldOnThisServer(recordName, key, activeReplica);
     if (guidResult != null && !guidResult.isEmpty()) {
       return (String) guidResult.get(0);
@@ -124,7 +126,7 @@ public class NSFieldAccess {
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
    */
   public static ResultValue lookupListFieldAnywhere(String guid, String field, boolean allowQueryToOtherNSs,
-          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     ResultValue result = lookupListFieldOnThisServer(guid, field, activeReplica);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
     if (result.isEmpty() && !activeReplica.getDB().containsName(guid) && allowQueryToOtherNSs) {
@@ -136,9 +138,9 @@ public class NSFieldAccess {
     return result;
   }
 
-  private static ResultValue lookupListFieldQueryLNS(String guid, String field, GnsApplicationInterface activeReplica,
+  private static ResultValue lookupListFieldQueryLNS(String guid, String field, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) {
-    QueryResult queryResult = LNSQueryHandler.sendListFieldQuery(guid, field, activeReplica, lnsAddress);
+    QueryResult<String> queryResult = LNSQueryHandler.sendListFieldQuery(guid, field, activeReplica, lnsAddress);
     if (!queryResult.isError()) {
       return queryResult.getArray(field);
     } else {
@@ -157,7 +159,7 @@ public class NSFieldAccess {
    * @param activeReplica
    * @return ValuesMap containing the value of the field or null if field cannot be found
    */
-  public static ValuesMap lookupFieldAnywhere(String guid, String field, GnsApplicationInterface activeReplica, 
+  public static ValuesMap lookupFieldAnywhere(String guid, String field, GnsApplicationInterface<String> activeReplica, 
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     ValuesMap result = lookupFieldOnThisServer(guid, field, activeReplica);
     // if values wasn't found and the guid doesn't exist on this server and we're allowed then send a query to the LNS
@@ -170,9 +172,9 @@ public class NSFieldAccess {
     return result;
   }
 
-  private static ValuesMap lookupFieldQueryLNS(String guid, String field, GnsApplicationInterface activeReplica,
+  private static ValuesMap lookupFieldQueryLNS(String guid, String field, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) {
-    QueryResult queryResult = LNSQueryHandler.sendQuery(guid, field, activeReplica, lnsAddress);
+    QueryResult<String> queryResult= LNSQueryHandler.sendQuery(guid, field, activeReplica, lnsAddress);
     if (!queryResult.isError()) {
       return queryResult.getValuesMap();
     } else {

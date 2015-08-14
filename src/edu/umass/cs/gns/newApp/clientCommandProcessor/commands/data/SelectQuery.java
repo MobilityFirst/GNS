@@ -38,7 +38,7 @@ public class SelectQuery extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     String query = json.getString(QUERY);
     return FieldAccess.selectQuery(query, handler);
   }

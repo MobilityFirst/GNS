@@ -9,7 +9,6 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
@@ -27,6 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import static edu.umass.cs.gns.newApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.newApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
@@ -58,7 +58,7 @@ import java.util.ArrayList;
  *
  * @author westy
  */
-public class Intercessor<NodeIDType> implements IntercessorInterface {
+public class Intercessor implements IntercessorInterface {
 
   /* Used by the wait/notify calls */
   private final Object monitor = new Object();
@@ -70,7 +70,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
    * multiple value returns.
    */
-  private final ConcurrentMap<Integer, QueryResult> queryResultMap;
+  private final ConcurrentMap<Integer, QueryResult<String>> queryResultMap;
   private final Random randomID;
 
   //public Transport transport;
@@ -93,11 +93,11 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
   }
 
   private final AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer;
-  //private ClientRequestHandlerInterface<NodeIDType> handler;
-  private final GNSNodeConfig<NodeIDType> nodeConfig;
+  //private ClientRequestHandlerInterface handler;
+  private final GNSInterfaceNodeConfig<String> nodeConfig;
   private final InetSocketAddress nodeAddress;
 
-  public Intercessor(InetSocketAddress nodeAddress, GNSNodeConfig<NodeIDType> nodeConfig,
+  public Intercessor(InetSocketAddress nodeAddress, GNSInterfaceNodeConfig<String> nodeConfig,
           AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer) {
     //this.handler = handler;
     this.nodeConfig = nodeConfig;
@@ -141,7 +141,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
           case UPDATE_CONFIRM:
           case ADD_CONFIRM:
           case REMOVE_CONFIRM:
-            ConfirmUpdatePacket<NodeIDType> packet = new ConfirmUpdatePacket<NodeIDType>(json,
+            ConfirmUpdatePacket<String> packet = new ConfirmUpdatePacket<String>(json,
                     nodeConfig);
             int id = packet.getRequestID();
             //Packet is a response and does not have a response error
@@ -154,7 +154,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
             }
             break;
           case DNS:
-            DNSPacket<NodeIDType> dnsResponsePacket = new DNSPacket<NodeIDType>(json, nodeConfig);
+            DNSPacket<String> dnsResponsePacket = new DNSPacket<String>(json, nodeConfig);
             id = dnsResponsePacket.getQueryId();
             if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
               //Packet is a response and does not have a response error
@@ -165,7 +165,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
               }
               synchronized (monitor) {
                 queryResultMap.put(id,
-                        new QueryResult<NodeIDType>(dnsResponsePacket.getRecordValue(),
+                        new QueryResult<String>(dnsResponsePacket.getRecordValue(),
                                 dnsResponsePacket.getResponder()
                                 //,dnsResponsePacket.getLookupTime()
                         ));
@@ -179,7 +179,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
               }
               synchronized (monitor) {
                 queryResultMap.put(id,
-                        new QueryResult<NodeIDType>(dnsResponsePacket.getHeader().getResponseCode(),
+                        new QueryResult<String>(dnsResponsePacket.getHeader().getResponseCode(),
                                 dnsResponsePacket.getResponder()
                                 //,dnsResponsePacket.getLookupTime()
                         ));
@@ -214,7 +214,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param returnFormat
    * @return
    */
-  public QueryResult sendSingleFieldQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  public QueryResult<String> sendSingleFieldQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
   }
 
@@ -234,18 +234,18 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param returnFormat
    * @return
    */
-  public QueryResult sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  public QueryResult<String> sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
   }
 
-  private QueryResult sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
+  private QueryResult<String> sendQueryInternal(String name, String field, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     final Long startTime = System.currentTimeMillis(); // instrumentation
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending query: " + name + " " + field);
     }
     int id = nextQueryRequestID();
 
-    DNSPacket<NodeIDType> queryrecord = new DNSPacket<NodeIDType>(null, id, name, field, fields,
+    DNSPacket<String> queryrecord = new DNSPacket<String>(null, id, name, field, fields,
             returnFormat, reader, signature, message);
     JSONObject json;
     try {
@@ -278,7 +278,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
 //
 //    }
     Long receiptTime = System.currentTimeMillis(); // instrumentation
-    QueryResult result = queryResultMap.remove(id);
+    QueryResult<String> result = queryResultMap.remove(id);
     //queryResultMap.remove(id);
     Long sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
@@ -300,11 +300,11 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
    * @param field
    * @return
    */
-  public QueryResult sendSingleFieldQueryBypassingAuthentication(String name, String field) {
+  public QueryResult<String> sendSingleFieldQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
 
-  public QueryResult sendFullQueryBypassingAuthentication(String name, String field) {
+  public QueryResult<String> sendFullQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, GnsProtocolDefs.ALLFIELDS, null, null, null, ColumnFieldType.USER_JSON);
   }
 
@@ -321,7 +321,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().info("Sending add: " + name + " / " + field + "->" + value);
     }
-    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<>(null, id, name, field, value, nodeAddress);
+    AddRecordPacket<String> pkt = new AddRecordPacket<>(null, id, name, field, value, nodeAddress);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -348,7 +348,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().info("Sending add: " + name + value);
     }
-    AddRecordPacket<NodeIDType> pkt = new AddRecordPacket<>(null, id, name, value, nodeAddress);
+    AddRecordPacket<String> pkt = new AddRecordPacket<>(null, id, name, value, nodeAddress);
     if (debuggingEnabled) {
       GNS.getLogger().fine("#####PACKET: " + pkt.toString());
     }
@@ -381,7 +381,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
     if (debuggingEnabled) {
       GNS.getLogger().fine("Sending remove: " + name);
     }
-    RemoveRecordPacket<NodeIDType> pkt = new RemoveRecordPacket<>(null, id, name,
+    RemoveRecordPacket<String> pkt = new RemoveRecordPacket<>(null, id, name,
             nodeAddress);
     try {
       JSONObject json = pkt.toJSONObject();
@@ -559,7 +559,7 @@ public class Intercessor<NodeIDType> implements IntercessorInterface {
         GNS.getLogger().finer("Sending single field update: " + name + " : " + key + " newValue: " + newValue + " oldValue: " + oldValue);
       }
     }
-    UpdatePacket<NodeIDType> packet = new UpdatePacket<NodeIDType>(
+    UpdatePacket<String> packet = new UpdatePacket<String>(
             null, // means it came from Intercessor
             id,
             name,

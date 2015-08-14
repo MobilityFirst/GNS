@@ -87,7 +87,7 @@ public class CommandHandler {
           ClientRequestHandlerInterface handler, CommandPacket packet, NewApp app, long receiptTime) {
     try {
       final Long executeCommandStart = System.currentTimeMillis(); // instrumentation
-      CommandResponse returnValue = executeCommand(command, jsonFormattedCommand, handler);
+      CommandResponse<String> returnValue = executeCommand(command, jsonFormattedCommand, handler);
       DelayProfiler.updateDelay("executeCommand", executeCommandStart);
       // the last arguments here in the call below are instrumentation that the client can use to determine LNS load
       CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(packet.getClientRequestId(),
@@ -160,28 +160,28 @@ public class CommandHandler {
    * @param json
    * @return
    */
-  public static CommandResponse executeCommand(GnsCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> executeCommand(GnsCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
     try {
       if (command != null) {
         //GNS.getLogger().info("Executing command: " + command.toString());
         GNS.getLogger().fine("Executing command: " + command.toString() + " with " + json);
         return command.execute(json, handler);
       } else {
-        return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + json.toString());
+        return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " - Don't understand " + json.toString());
       }
     } catch (JSONException e) {
       e.printStackTrace();
-      return new CommandResponse(BADRESPONSE + " " + JSONPARSEERROR + " " + e + " while executing command.");
+      return new CommandResponse<String>(BADRESPONSE + " " + JSONPARSEERROR + " " + e + " while executing command.");
     } catch (NoSuchAlgorithmException e) {
-      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (InvalidKeySpecException e) {
-      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (SignatureException e) {
-      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (InvalidKeyException e) {
-      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     } catch (UnsupportedEncodingException e) {
-      return new CommandResponse(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
+      return new CommandResponse<String>(BADRESPONSE + " " + QUERYPROCESSINGERROR + " " + e);
     }
   }
 

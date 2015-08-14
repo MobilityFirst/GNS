@@ -32,9 +32,9 @@ import org.json.JSONObject;
  */
 public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
-  private EnhancedClientRequestHandlerInterface<NodeIDType> handler;
+  private EnhancedClientRequestHandlerInterface handler;
 
-  public void setHandler(EnhancedClientRequestHandlerInterface<NodeIDType> handler) {
+  public void setHandler(EnhancedClientRequestHandlerInterface handler) {
     this.handler = handler;
   }
 
@@ -76,7 +76,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
       if (type != null) {
         switch (type) {
           case DNS:
-            DNSPacket<NodeIDType> dnsPacket = new DNSPacket<NodeIDType>(json, handler.getGnsNodeConfig());
+            DNSPacket<String> dnsPacket = new DNSPacket<String>(json, handler.getGnsNodeConfig());
             Packet.PacketType incomingPacketType = Packet.getDNSPacketSubType(dnsPacket);
             switch (incomingPacketType) {
               // Lookup

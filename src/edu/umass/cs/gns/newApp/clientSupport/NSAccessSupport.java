@@ -106,7 +106,7 @@ public class NSAccessSupport {
    * @return
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
-          String accessorGuid, GnsApplicationInterface activeReplica,
+          String accessorGuid, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     //String accessorGuid = ClientUtils.createGuidStringFromPublicKey(accessorPublicKey);
     if (debuggingEnabled) {
@@ -140,8 +140,10 @@ public class NSAccessSupport {
    * @return
    * @throws FailedDBOperationException
    */
-  private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid, String field, String accessorGuid,
-          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+  private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid, 
+          String field, String accessorGuid,
+          GnsApplicationInterface<String> activeReplica, 
+          InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
@@ -158,12 +160,14 @@ public class NSAccessSupport {
   }
 
   private static boolean checkForAccess(MetaDataTypeName access, String guid, String field, String accessorGuid,
-          GnsApplicationInterface activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
     // first check the always world readable ones
     if (WORLDREADABLEFIELDS.contains(field)) {
       return true;
     }
     try {
+      // FIXME: Tidy this mess up.
+      @SuppressWarnings("unchecked")
       Set<String> allowedusers = (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access,
               guid, field, activeReplica);
       if (debuggingEnabled) {
@@ -187,7 +191,7 @@ public class NSAccessSupport {
   }
 
   private static boolean checkAllowedUsers(String accessorGuid,
-          Set<String> allowedUsers, GnsApplicationInterface activeReplica,
+          Set<String> allowedUsers, GnsApplicationInterface<String> activeReplica,
           InetSocketAddress lnsAddress) throws FailedDBOperationException {
     if (ClientUtils.publicKeyListContainsGuid(accessorGuid, allowedUsers)) {
       //if (allowedUsers.contains(accessorPublicKey)) {
@@ -204,7 +208,7 @@ public class NSAccessSupport {
   }
 
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
-          GnsApplicationInterface activeReplica) throws FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
       return NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica).contains(EVERYONE)
               || NSFieldMetaData.lookupOnThisNameServer(access, guid, ALLFIELDS, activeReplica).contains(EVERYONE);
@@ -217,12 +221,14 @@ public class NSAccessSupport {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
-          GnsApplicationInterface activeReplica) throws FailedDBOperationException {
+          GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     if (debuggingEnabled) {
       GNS.getLogger().info("###field=" + field);
     }
     try {
+      //FIXME: Clean this mess up.
       return (Set<String>) (Set<?>) NSFieldMetaData.lookupOnThisNameServer(access, guid, field, activeReplica);
     } catch (FieldNotFoundException e) {
       // do nothing

@@ -41,17 +41,17 @@ public class DeleteAllRecords extends GnsCommand {
 
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     // DISABLE THIS COMMAND
 //    if (module.isAdminMode()) {
 //      if (handler.getAdmintercessor().sendDeleteAllRecords(handler)) {
-//        return new CommandResponse(OKRESPONSE);
+//        return new CommandResponse<String>(OKRESPONSE);
 //      } else {
-//        return new CommandResponse(BADRESPONSE);
+//        return new CommandResponse<String>(BADRESPONSE);
 //      }
 //    }
-    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }
 
   @Override

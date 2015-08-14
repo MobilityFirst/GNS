@@ -34,22 +34,22 @@ import java.util.TimerTask;
  * Time: 4:59 PM
  * @param <NodeIDType>
  */
-public class SendAddRemoveTask<NodeIDType> extends TimerTask {
+public class SendAddRemoveTask extends TimerTask {
 
   private final String name;
   private final BasicPacket packet;
   private final int lnsRequestID;
-  private final HashSet<NodeIDType> replicaControllersQueried;
+  private final HashSet<String> replicaControllersQueried;
   private int timeoutCount = -1;
   private final long requestRecvdTime;
-  private final ClientRequestHandlerInterface<NodeIDType> handler;
+  private final ClientRequestHandlerInterface handler;
 
-  public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface<NodeIDType> handler, BasicPacket packet, String name, long requestRecvdTime) {
+  public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface handler, BasicPacket packet, String name, long requestRecvdTime) {
     this.name = name;
     this.handler = handler;
     this.packet = packet;
     this.lnsRequestID = lnsRequestID;
-    this.replicaControllersQueried = new HashSet<NodeIDType>();
+    this.replicaControllersQueried = new HashSet<String>();
     this.requestRecvdTime = requestRecvdTime;
   }
 
@@ -65,7 +65,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
         throw new CancelExecutorTaskException();
       }
 
-      NodeIDType nameServerID = selectNS();
+      String nameServerID = selectNS();
 
       sendToNS(nameServerID);
 
@@ -83,7 +83,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
   private boolean isResponseReceived() {
     if (handler.getRequestInfo(getLnsRequestID()) == null) {
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("UpdateInfo not found. Either update complete or invalid actives. Cancel task.");
+        GNS.getLogger().info("UpdateInfo<String> not found. Either update complete or invalid actives. Cancel task.");
       }
       return true;
     }
@@ -92,7 +92,8 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
 
   private boolean isMaxWaitTimeExceeded() {
     if (getTimeoutCount() > 0 && System.currentTimeMillis() - getRequestRecvdTime() > handler.getParameters().getMaxQueryWaitTime()) {
-      UpdateInfo updateInfo = (UpdateInfo) handler.removeRequestInfo(getLnsRequestID());
+      @SuppressWarnings("unchecked")
+      UpdateInfo<String> updateInfo = (UpdateInfo<String>) handler.removeRequestInfo(getLnsRequestID());
 
       if (updateInfo == null) {
         GNS.getLogger().warning("TIME EXCEEDED: UPDATE INFO IS NULL!!: " + getPacket());
@@ -102,7 +103,7 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
         GNS.getLogger().info("Request FAILED no response until MAX-wait time: " + getLnsRequestID() + " name = " + getName());
       }
       try {
-        ConfirmUpdatePacket<NodeIDType> confirmPkt = new ConfirmUpdatePacket<NodeIDType>(updateInfo.getErrorMessage(NSResponseCode.UPDATE_TIMEOUT), handler.getGnsNodeConfig());
+        ConfirmUpdatePacket<String> confirmPkt = new ConfirmUpdatePacket<String>(updateInfo.getErrorMessage(NSResponseCode.UPDATE_TIMEOUT), handler.getGnsNodeConfig());
         Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
       } catch (JSONException e) {
         e.printStackTrace();
@@ -120,11 +121,11 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
     return false;
   }
 
-  private NodeIDType selectNS() {
+  private String selectNS() {
     return handler.getClosestReplicaController(getName(), replicaControllersQueried);
   }
 
-  private void sendToNS(NodeIDType nameServerID) {
+  private void sendToNS(String nameServerID) {
 
     if (nameServerID == null) {
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -133,8 +134,8 @@ public class SendAddRemoveTask<NodeIDType> extends TimerTask {
       }
       return;
     }
-
-    UpdateInfo info = (UpdateInfo) handler.getRequestInfo(lnsRequestID);
+    @SuppressWarnings("unchecked")
+    UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(lnsRequestID);
 //    if (info != null) {
 //      info.addEventCode(LNSEventCode.CONTACT_RC);
 //    }

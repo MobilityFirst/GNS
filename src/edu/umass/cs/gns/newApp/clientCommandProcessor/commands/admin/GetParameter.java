@@ -41,17 +41,17 @@ public class GetParameter extends GnsCommand {
   }
 
   @Override
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
     String parameterString = json.getString(NAME);
     if (module.isAdminMode()) {
       try {
-        return new CommandResponse(SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString());
+        return new CommandResponse<String>(SystemParameter.valueOf(parameterString.toUpperCase()).getFieldValue().toString());
       } catch (Exception e) {
         System.out.println("Problem getting parameter: " + e);
       }
     }
-    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + GETPARAMETER + " " + parameterString);
+    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + GETPARAMETER + " " + parameterString);
   }
 
   @Override

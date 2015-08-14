@@ -37,12 +37,12 @@ public class PingTable extends GnsCommand {
 
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
     String nodeString = json.getString(N);
     if (module.isAdminMode()) {
-      return new CommandResponse(handler.getAdmintercessor().sendPingTable(nodeString, handler));
+      return new CommandResponse<String>(handler.getAdmintercessor().sendPingTable(nodeString, handler));
     }
-    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }
 
   @Override

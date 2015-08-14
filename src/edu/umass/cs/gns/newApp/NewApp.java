@@ -26,7 +26,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gns.nodeconfig.GNSConsistentReconfigurableNodeConfig;
-import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.clientSupport.LNSQueryHandler;
 import edu.umass.cs.gns.newApp.clientSupport.LNSUpdateHandler;
@@ -44,7 +43,6 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
@@ -68,7 +66,7 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
   private final static int INITIAL_RECORD_VERSION = 0;
   private final String nodeID;
   private final GNSConsistentReconfigurableNodeConfig<String> nodeConfig;
-  private final PingManager pingManager;
+  private final PingManager<String> pingManager;
   /**
    * Object provides interface to the database table storing name records
    */
@@ -77,7 +75,7 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
    * The Nio server
    */
   private final InterfaceSSLMessenger<String, JSONObject> messenger;
-  private final ClientCommandProcessor<String> clientCommandProcessor;
+  private final ClientCommandProcessor clientCommandProcessor;
 
   // Keep track of commands that are coming in
   public final ConcurrentMap<Integer, CommandHandler.CommandRequestInfo> outStandingQueries
@@ -91,20 +89,20 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
    * @param messenger
    * @param mongoRecords
    */
-  public NewApp(String id, GNSInterfaceNodeConfig<String> nodeConfig, JSONMessenger<String> messenger,
+  public NewApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger,
           MongoRecords<String> mongoRecords) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
     // Start a ping server, but not a client.
-    this.pingManager = new PingManager(nodeID, this.nodeConfig, true);
+    this.pingManager = new PingManager<String>(nodeID, this.nodeConfig, true);
     GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
             + nodeConfig.getCcpPingPort(nodeID));
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.messenger = messenger;
-    this.clientCommandProcessor = new ClientCommandProcessor<>(messenger,
+    this.clientCommandProcessor = new ClientCommandProcessor(messenger,
             new InetSocketAddress(nodeConfig.getBindAddress(id), nodeConfig.getCcpPort(id)),
-            (GNSNodeConfig) nodeConfig,
+            (GNSNodeConfig<String>) nodeConfig,
             AppReconfigurableNodeOptions.debuggingEnabled,
             this,
             (String) id,
@@ -403,12 +401,12 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
   }
 
   @Override
-  public PingManager getPingManager() {
+  public PingManager<String> getPingManager() {
     return pingManager;
   }
 
   @Override
-  public ClientCommandProcessor<String> getClientCommandProcessor() {
+  public ClientCommandProcessor getClientCommandProcessor() {
     return clientCommandProcessor;
   }
 

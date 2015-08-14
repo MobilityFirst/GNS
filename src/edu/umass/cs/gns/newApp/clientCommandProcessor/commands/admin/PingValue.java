@@ -37,13 +37,13 @@ public class PingValue extends GnsCommand {
 
   @Override
   @SuppressWarnings("unchecked")
-  public CommandResponse execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
+  public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, NumberFormatException {
     String node1String = json.getString(N);
     String node2String = json.getString(N2);
     if (module.isAdminMode()) {
-      return new CommandResponse(handler.getAdmintercessor().sendPingValue(node1String, node2String, handler));
+      return new CommandResponse<String>(handler.getAdmintercessor().sendPingValue(node1String, node2String, handler));
     }
-    return new CommandResponse(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
+    return new CommandResponse<String>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
   }
 
   @Override

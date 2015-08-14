@@ -73,11 +73,11 @@ public class FieldAccess {
    * @param message
    * @return the value of a single field
    */
-  public static CommandResponse lookup(String guid, String field, ArrayList<String> fields, String reader, String signature,
+  public static CommandResponse<String> lookup(String guid, String field, ArrayList<String> fields, String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
     long startTime = System.currentTimeMillis();
     String resultString;
-    QueryResult result;
+    QueryResult<String> result;
     if (field != null) {
       result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.USER_JSON);
     } else {
@@ -98,7 +98,7 @@ public class FieldAccess {
       }
     }
     DelayProfiler.updateDelay("FieldAccessreadLookup", startTime);
-    return new CommandResponse(resultString,
+    return new CommandResponse<String>(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
@@ -120,12 +120,12 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupJSONArray(String guid, String field, String reader, String signature, String message,
+  public static CommandResponse<String> lookupJSONArray(String guid, String field, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
     String resultString;
     // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
-    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -136,7 +136,7 @@ public class FieldAccess {
         resultString = emptyJSONArrayString;
       }
     }
-    return new CommandResponse(resultString,
+    return new CommandResponse<String>(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
@@ -154,18 +154,18 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupMultipleValues(String guid, String reader, String signature, String message,
+  public static CommandResponse<String> lookupMultipleValues(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
       // pull out all the key pairs ignoring "system" (ie., non-user) fields
       resultString = result.getValuesMapSansInternalFields().toString();
     }
-    return new CommandResponse(resultString,
+    return new CommandResponse<String>(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
@@ -183,11 +183,11 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupOne(String guid, String field, String reader, String signature, String message,
+  public static CommandResponse<String> lookupOne(String guid, String field, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -208,7 +208,7 @@ public class FieldAccess {
         resultString = emptyString;
       }
     }
-    return new CommandResponse(resultString,
+    return new CommandResponse<String>(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
@@ -225,11 +225,11 @@ public class FieldAccess {
    * @param message
    * @return
    */
-  public static CommandResponse lookupOneMultipleValues(String guid, String reader, String signature, String message,
+  public static CommandResponse<String> lookupOneMultipleValues(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
 
     String resultString;
-    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, GnsProtocolDefs.ALLFIELDS, reader, signature, message, ColumnFieldType.USER_JSON);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -241,7 +241,7 @@ public class FieldAccess {
       }
       resultString = emptyJSONObjectString;
     }
-    return new CommandResponse(resultString,
+    return new CommandResponse<String>(resultString,
             result.getErrorCode(),
             result.getRoundTripTime(),
             result.getResponder()
@@ -321,12 +321,12 @@ public class FieldAccess {
    * @param value - the value to match
    * @return
    */
-  public static CommandResponse select(String key, Object value, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> select(String key, Object value, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, key, value, null, handler);
     if (result != null) {
-      return new CommandResponse(result);
+      return new CommandResponse<String>(result);
     } else {
-      return new CommandResponse(emptyJSONArrayString);
+      return new CommandResponse<String>(emptyJSONArrayString);
     }
   }
 
@@ -337,12 +337,12 @@ public class FieldAccess {
    * @param value - a bounding box
    * @return
    */
-  public static CommandResponse selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, key, value, null, handler);
     if (result != null) {
-      return new CommandResponse(result);
+      return new CommandResponse<String>(result);
     } else {
-      return new CommandResponse(emptyJSONArrayString);
+      return new CommandResponse<String>(emptyJSONArrayString);
     }
   }
 
@@ -354,12 +354,12 @@ public class FieldAccess {
    * @param maxDistance - the maximum distance from position
    * @return
    */
-  public static CommandResponse selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, key, value, maxDistance, handler);
     if (result != null) {
-      return new CommandResponse(result);
+      return new CommandResponse<String>(result);
     } else {
-      return new CommandResponse(emptyJSONArrayString);
+      return new CommandResponse<String>(emptyJSONArrayString);
     }
   }
 
@@ -369,12 +369,12 @@ public class FieldAccess {
    * @param query
    * @return
    */
-  public static CommandResponse selectQuery(String query, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> selectQuery(String query, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectQuery(query, handler);
     if (result != null) {
-      return new CommandResponse(result);
+      return new CommandResponse<String>(result);
     } else {
-      return new CommandResponse(emptyJSONArrayString);
+      return new CommandResponse<String>(emptyJSONArrayString);
     }
   }
 
@@ -388,7 +388,7 @@ public class FieldAccess {
    * @param handler
    * @return
    */
-  public static CommandResponse selectGroupSetupQuery(String accountGuid, String query, String publicKey, int interval,
+  public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey, int interval,
           ClientRequestHandlerInterface handler) {
     String guid = ClientUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
@@ -397,20 +397,20 @@ public class FieldAccess {
       // FIXME: This should probably include authentication
       GuidInfo accountGuidInfo;
       if ((accountGuidInfo = AccountAccess.lookupGuidInfo(accountGuid, handler)) == null) {
-        return new CommandResponse(BADRESPONSE + " " + BADGUID + " " + accountGuid);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADGUID + " " + accountGuid);
       }
       AccountInfo accountInfo = AccountAccess.lookupAccountInfoFromGuid(accountGuid, handler);
       if (accountInfo == null) {
-        return new CommandResponse(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
+        return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + accountGuid);
       }
       if (!accountInfo.isVerified()) {
-        return new CommandResponse(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
+        return new CommandResponse<String>(BADRESPONSE + " " + VERIFICATIONERROR + " Account not verified");
       } else if (accountInfo.getGuids().size() > edu.umass.cs.gns.httpserver.Defs.MAXGUIDS) {
-        return new CommandResponse(BADRESPONSE + " " + TOMANYGUIDS);
+        return new CommandResponse<String>(BADRESPONSE + " " + TOMANYGUIDS);
       } else {
         // The alias (HRN) of the new guid is a hash of the query.
         String name = Base64.encodeToString(SHA1HashFunction.getInstance().hash(query.getBytes()), false);
-        CommandResponse groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo, 
+        CommandResponse<String> groupGuidCreateresult = AccountAccess.addGuid(accountInfo, accountGuidInfo, 
                 name, guid, publicKey, handler);
         if (!groupGuidCreateresult.getReturnValue().equals(OKRESPONSE)) {
           return groupGuidCreateresult;
@@ -420,9 +420,9 @@ public class FieldAccess {
     // We either found or created the guid above so now we set up the actual query structure.
     String result = SelectHandler.sendGroupGuidSetupSelectQuery(query, guid, interval, handler);
     if (result != null) {
-      return new CommandResponse(result);
+      return new CommandResponse<String>(result);
     } else {
-      return new CommandResponse(emptyJSONArrayString);
+      return new CommandResponse<String>(emptyJSONArrayString);
     }
   }
 
@@ -432,12 +432,12 @@ public class FieldAccess {
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
    * @return
    */
-  public static CommandResponse selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid, handler);
     if (result != null) {
-      return new CommandResponse(result);
+      return new CommandResponse<String>(result);
     } else {
-      return new CommandResponse(emptyJSONArrayString);
+      return new CommandResponse<String>(emptyJSONArrayString);
     }
   }
 

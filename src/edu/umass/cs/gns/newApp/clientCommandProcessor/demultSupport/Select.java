@@ -23,12 +23,12 @@ public class Select {
 
   public static void handlePacketSelectRequest(JSONObject incomingJSON, EnhancedClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
-    SelectRequestPacket packet = new SelectRequestPacket(incomingJSON, handler.getGnsNodeConfig());
+    SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, handler.getGnsNodeConfig());
 
     int queryId = handler.addSelectInfo(packet.getKey(), packet);
     packet.setCCPQueryId(queryId);
     JSONObject outgoingJSON = packet.toJSONObject();
-    Object serverID = pickNameServer(packet.getGuid(), handler);
+    String serverID = pickNameServer(packet.getGuid(), handler);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID.toString());
     }
@@ -40,12 +40,12 @@ public class Select {
   }
 
   // This should pick a Nameserver using the same method as a query!!
-  private static Object pickNameServer(String guid, ClientRequestHandlerInterface handler) {
+  private static String pickNameServer(String guid, ClientRequestHandlerInterface handler) {
     if (guid != null) {
-      CacheEntry cacheEntry = handler.getCacheEntry(guid);
+      CacheEntry<String> cacheEntry = handler.getCacheEntry(guid);
       if (cacheEntry != null && cacheEntry.getActiveNameServers() != null
               && !cacheEntry.getActiveNameServers().isEmpty()) {
-        Object id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
+        String id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
         if (id != null) {
           return id;
         }
@@ -58,7 +58,7 @@ public class Select {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " recvd QueryResponse: " + json);
     }
-    SelectResponsePacket packet = new SelectResponsePacket(json, handler.getGnsNodeConfig());
+    SelectResponsePacket<String> packet = new SelectResponsePacket<String>(json, handler.getGnsNodeConfig());
     //SelectInfo info = handler.getSelectInfo(packet.getCcpQueryId());
     // send a response back to the client
     handler.getIntercessor().handleIncomingPacket(packet.toJSONObject());

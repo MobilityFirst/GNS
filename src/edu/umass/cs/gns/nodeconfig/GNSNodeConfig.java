@@ -651,8 +651,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     // Create a new one so we don't hose the old one if the new file is bogus
     ConcurrentMap<NodeIDType, NodeInfo<NodeIDType>> newHostInfoMapping
             = new ConcurrentHashMap<NodeIDType, NodeInfo<NodeIDType>>(16, 0.75f, 8);
-    for (HostSpec<NodeIDType> spec : hosts) {
-      addHostInfo(newHostInfoMapping, spec.getId(), spec.getName(), spec.getExternalIP(),
+    for (HostSpec spec : hosts) {
+      addHostInfo(newHostInfoMapping, (NodeIDType) spec.getId(), spec.getName(), spec.getExternalIP(),
               spec.getStartPort() != null ? spec.getStartPort() : GNS.DEFAULT_STARTING_PORT);
     }
     // some idiot checking of the given Id

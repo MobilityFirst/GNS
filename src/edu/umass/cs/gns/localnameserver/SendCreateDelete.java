@@ -10,7 +10,6 @@ import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
-import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
@@ -18,9 +17,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.json.JSONException;
-
-public class SendCreateDelete implements SchedulableProtocolTask<String, PacketType, String> {
+public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
 
@@ -37,7 +34,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<String, PacketT
 
     this.lnsRequestInfo = lnsRequestInfo;
     this.handler = handler;
-    reconfigurators = new ArrayList(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
+    reconfigurators = new ArrayList<InetSocketAddress>(handler.getNodeConfig().getReplicatedReconfigurators(lnsRequestInfo.getServiceName()));
     this.key = this.refreshKey();
     if (handler.isDebugMode()) {
       GNS.getLogger().info("~~~~~~~~~~~~~~~~~~~~~~~~ Request actives starting: " + key);
@@ -45,7 +42,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<String, PacketT
   }
 
   @Override
-  public GenericMessagingTask[] restart() {
+  public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
       //try {
 //        handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
@@ -82,7 +79,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<String, PacketT
   }
 
   @Override
-  public GenericMessagingTask[] start() {
+  public GenericMessagingTask<InetSocketAddress, ?>[] start() {
     RequestActiveReplicas packet = new RequestActiveReplicas(handler.getNodeAddress(),
             lnsRequestInfo.getServiceName(), 0);
 
@@ -92,7 +89,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<String, PacketT
               + " Sending to " + reconfigurators.get(reconfigIndex)
               + " " + packet);
     }
-    GenericMessagingTask mtasks[] = new GenericMessagingTask(reconfigurators.get(reconfigIndex), packet).toArray();
+    GenericMessagingTask<InetSocketAddress, ?> mtasks[] = new GenericMessagingTask<>(reconfigurators.get(reconfigIndex), packet).toArray();
     requestCount++;
     return mtasks;
   }
@@ -116,7 +113,7 @@ public class SendCreateDelete implements SchedulableProtocolTask<String, PacketT
   }
 
   @Override
-  public GenericMessagingTask[] handleEvent(
+  public GenericMessagingTask<InetSocketAddress, ?>[] handleEvent(
           ProtocolEvent event,
           ProtocolTask[] ptasks) {
     return null;
