@@ -30,6 +30,8 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
+import edu.umass.cs.nio.nioutils.NIOHeader;
+
 import java.util.logging.Level;
 
 /**
@@ -90,6 +92,8 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 
 	abstract protected MessageType getMessage(String message);
 
+	abstract protected MessageType processHeader(String message, NIOHeader header);
+
 	private static final String DEFAULT_THREAD_NAME = AbstractPacketDemultiplexer.class
 			.getSimpleName();
 	private String threadName = DEFAULT_THREAD_NAME;
@@ -126,8 +130,9 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	}
 
 	// This method will be invoked by NIO
-	protected boolean handleMessageSuper(MessageType message)
+	protected boolean handleMessageSuper(String msg, NIOHeader header)
 			throws JSONException {
+		MessageType message = processHeader(msg, header);
 		Integer type = getPacketType(message);
 		if (type == null || !this.demuxMap.containsKey(type)) {
 			/*

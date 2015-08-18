@@ -117,7 +117,7 @@ public class IntegerMap<NodeIDType> {
 		 * assumption anyway).
 		 */
 
-		// Changed this to only return postive values - Westy
+		// Changed this to only return positive values - Westy
 		/*
 		 * We can't just return Math.abs(.) to get positive values because the
 		 * ID -1 is special. It is used to mean an invalid node ID. Changing

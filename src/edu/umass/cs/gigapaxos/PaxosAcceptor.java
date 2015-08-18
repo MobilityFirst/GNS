@@ -103,7 +103,7 @@ public class PaxosAcceptor {
 	private byte lastSyncdTime = 0;
 
 	// static, so does not count towards space.
-	private static Logger log = Logger.getLogger(PaxosAcceptor.class.getName());
+	private static Logger log = PaxosManager.getLogger();
 
 	PaxosAcceptor(int b, int c, int s, HotRestoreInfo hri) {
 		this.ballotNum = b;
@@ -285,7 +285,7 @@ public class PaxosAcceptor {
 			if (accept.slot - this.acceptedGCSlot > 0) 
 				this.acceptedProposals.put(accept.slot, accept); // wraparound
 			log.log(Level.FINE, "Node{0} acceptor accepting {1}", new Object[] {
-					myID, accept.getSummary() });
+					myID, accept.getSummary(log.isLoggable(Level.FINE)) });
 		}
 		garbageCollectAccepted(accept.getMedianCheckpointedSlot());
 		return new Ballot(ballotNum, ballotCoord);

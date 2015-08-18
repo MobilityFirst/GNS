@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -92,7 +93,7 @@ public class FailureDetection<NodeIDType> {
 
 	// non-final
 	private Set<NodeIDType> keepAliveTargets;
-	private HashMap<NodeIDType, Long> lastHeardFrom;
+	private ConcurrentHashMap<NodeIDType, Long> lastHeardFrom;
 	private HashMap<NodeIDType, ScheduledFuture<PingTask>> futures;
 
 	private static Logger log = Logger.getLogger(FailureDetection.class
@@ -103,15 +104,18 @@ public class FailureDetection<NodeIDType> {
 			String paxosLogFolder) {
 		nioTransport = niot;
 		myID = id;
-		this.execpool = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-			@Override
-			public Thread newThread(Runnable r) {
-				Thread thread = Executors.defaultThreadFactory().newThread(r);
-				thread.setName(FailureDetection.class.getSimpleName() + myID);
-				return thread;
-			}
-		});
-		lastHeardFrom = new HashMap<NodeIDType, Long>();
+		this.execpool = Executors.newScheduledThreadPool(1,
+				new ThreadFactory() {
+					@Override
+					public Thread newThread(Runnable r) {
+						Thread thread = Executors.defaultThreadFactory()
+								.newThread(r);
+						thread.setName(FailureDetection.class.getSimpleName()
+								+ myID);
+						return thread;
+					}
+				});
+		lastHeardFrom = new ConcurrentHashMap<NodeIDType, Long>();
 		keepAliveTargets = new TreeSet<NodeIDType>();
 		futures = new HashMap<NodeIDType, ScheduledFuture<PingTask>>();
 		initialize(paxosLogFolder);
@@ -265,11 +269,9 @@ public class FailureDetection<NodeIDType> {
 		return (System.currentTimeMillis() - lastHeardTime(id));
 	}
 
-	private synchronized long lastHeardTime(NodeIDType id) {
-		Long lastHeard = this.lastHeardFrom.get(id);
-		if (lastHeard == null)
-			lastHeard = initTime;
-		return lastHeard;
+	private long lastHeardTime(NodeIDType id) {
+		this.lastHeardFrom.putIfAbsent(id, initTime);
+		return this.lastHeardFrom.get(id);
 	}
 
 	private JSONObject getPingPacket(NodeIDType id) throws JSONException {
@@ -294,17 +296,13 @@ public class FailureDetection<NodeIDType> {
 		public void run() {
 			try {
 				// only to simulate crashes while testing
-				if (!TESTPaxosConfig.isCrashed(myID)) {
+				if (!TESTPaxosConfig.isCrashed(myID))
 					nioTransport.sendToID(destID, pingJson);
-				}
 			} catch (IOException e) {
 				try {
 					log.log(Level.INFO,
-							"{0}{1}{2}{3}",
-							new Object[] {
-									"Encountered IOException while sending keepalive from node ",
-									pingJson.getInt("sender"), " to node ",
-									destID });
+							"{0} encountered IOException while sending keepalive to {2}",
+							new Object[] { pingJson.getInt("sender"), destID });
 					cleanupFailedPingTask(destID);
 				} catch (JSONException je) {
 					e.printStackTrace();
@@ -313,10 +311,6 @@ public class FailureDetection<NodeIDType> {
 		}
 	}
 
-	/*
-	 * Currently unused. Will be useful for cleaning up ping tasks that fail
-	 * because of exceptions.
-	 */
 	private synchronized void cleanupFailedPingTask(NodeIDType id) {
 		ScheduledFuture<PingTask> pingTask = this.futures.get(id);
 		if (pingTask != null) {

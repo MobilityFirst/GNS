@@ -29,9 +29,9 @@ public interface InterfaceReplicable extends InterfaceApplication {
 	 * @param doNotReplyToClient
 	 * @return Returns true if the application handled the request successfully.
 	 *         If the request is bad and is to be discarded, the application
-	 *         must still return true (after "successfully" discarding it. If
+	 *         must still return true (after "successfully" discarding it). If
 	 *         the application returns false, the replica coordination protocol
-	 *         (e.g., paxos) may try to repeatedly re-execute it until
+	 *         (e.g., paxos) will try to repeatedly re-execute it until
 	 *         successful, so the application may get stuck.
 	 */
 	public boolean handleRequest(InterfaceRequest request,

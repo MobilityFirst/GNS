@@ -187,8 +187,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 	private final String strID;
 
-	private static Logger log = // PaxosManager.getLogger();
-	Logger.getLogger(SQLPaxosLogger.class.getName());
+	private static Logger log = PaxosManager.getLogger();
 
 	SQLPaxosLogger(int id, String strID, String dbPath, Messenger<?> messenger) {
 		super(id, dbPath, messenger);
@@ -280,8 +279,11 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 								this,
 								paxosID,
 								version,
-								Util.truncate(new String(cpRecord.getBytes("state"),CHARSET), 32,
-										32) });
+								Util.truncate(
+										(getCheckpointClobOption() ? new String(
+												cpRecord.getBytes("state"),
+												CHARSET) : cpRecord
+												.getString("state")), 32, 32) });
 			}
 		} catch (SQLException | UnsupportedEncodingException sqle) {
 			log.severe("SQLException while copying epoch final state for "
@@ -734,13 +736,12 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			int rowcount = localLogMsgStmt.executeUpdate();
 			assert (rowcount == 1);
 			logged = true;
-			log.log(Level.FINEST, "{0}{1}{2}{3}{4}{5}{6}{7}{8}{9}",
-					new Object[] { "Inserted (", paxosID, ",", slot, ",",
-							ballotnum, ",", coordinator, ":", message });
+			log.log(Level.FINEST, "{0} inserted {1}, {2}, {3}, {4}, {5}",
+					new Object[] {  this, paxosID, slot, ballotnum, coordinator, message });
 		} catch (SQLException sqle) {
 			if (SQL.DUPLICATE_KEY.contains(sqle.getSQLState())) {
-				log.log(Level.FINE, "{0}{1}{2}{3}", new Object[] { this,
-						" log message ", message, " previously logged" });
+				log.log(Level.FINE, "{0} log message {1} previously logged",
+						new Object[] { this, message });
 				logged = true;
 			} else {
 				log.severe("SQLException while logging as " + cmd + " : "
@@ -979,7 +980,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 							new Object[] { this, paxosID, version,
 									stateRS.getInt(5) });
 
-				assert(table.equals(getCTable()));
+				assert (table.equals(getCTable()) || table.equals(getPCTable()));
 				if (!versionMismatch)
 					sb = new SlotBallotState(stateRS.getInt(1),
 							stateRS.getInt(2), stateRS.getInt(3),
@@ -1120,8 +1121,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				|| this.cursorConn != null)
 			return false;
 
-		log.log(Level.FINE, "{0}{1}", new Object[] { this,
-				" invoked initiatedReadMessages()" });
+		log.log(Level.FINE, "{0} invoked initiatedReadMessages()", new Object[] { this,
+				});
 		boolean initiated = false;
 		try {
 			this.cursorPstmt = this.getPreparedStatement(this.getCursorConn(),
@@ -1250,7 +1251,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * Acceptors remove decisions right after executing them. So they need to
 	 * fetch logged decisions from the disk to handle synchronization requests.
 	 */
-	public synchronized ArrayList<PValuePacket> getLoggedDecisions(
+	public ArrayList<PValuePacket> getLoggedDecisions(
 			String paxosID, int version, int minSlot, int maxSlot) {
 		ArrayList<PValuePacket> decisions = new ArrayList<PValuePacket>();
 		if (maxSlot - minSlot <= 0)
@@ -1272,7 +1273,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * pressure. This allows us to remove accepted proposals once they have been
 	 * committed.
 	 */
-	public synchronized Map<Integer, PValuePacket> getLoggedAccepts(
+	public Map<Integer, PValuePacket> getLoggedAccepts(
 			String paxosID, int version, int firstSlot) {
 		long t1 = System.currentTimeMillis();
 		// fetch all accepts and then weed out those below firstSlot

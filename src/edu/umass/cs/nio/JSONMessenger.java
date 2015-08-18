@@ -112,7 +112,7 @@ public class JSONMessenger<NodeIDType> implements
 					} else
 						throw new RuntimeException(
 								"JSONMessenger received a message that is not of type JSONObject, nio.JSONPacket, or protocoltask.json.ProtocolPacket");
-					jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
+					//jsonMsg.put(SENT_TIME, System.currentTimeMillis()); // testing
 				} catch (JSONException je) {
 					log.severe("JSONMessenger" + getMyID()
 							+ " incurred JSONException while decoding: " + msg);
@@ -283,4 +283,37 @@ public class JSONMessenger<NodeIDType> implements
 					"Can not change client messenger once set");
 		this.clientMessenger = (InterfaceAddressMessenger<JSONObject>) clientMessenger;
 	}
+	
+	class JSONObjectWrapper extends JSONObject {
+		final Object obj;
+
+		JSONObjectWrapper(Object obj) {
+			super(obj instanceof JSONObject ? (JSONObject)obj : new JSONObject());
+			this.obj = obj;
+		}
+
+		public String toString() {
+			return obj.toString();
+		}
+	}
+
+	/**
+	 * A hack that relies on the fact that NIO treats JSONObject as no different
+	 * from any other object in that it invokes toString() and then getBytes(.)
+	 * to serialize and send it over the network. It is necessary that the other
+	 * end receiving this object be able to reconstruct it from a byte[], string,
+	 * or JSONObject.
+	 * 
+	 * @param sockAddr
+	 * @param message
+	 * @throws JSONException
+	 * @throws IOException
+	 */
+	@SuppressWarnings("unchecked")
+	public void send(InetSocketAddress sockAddr, Object message)
+			throws JSONException, IOException {
+		this.send((GenericMessagingTask<NodeIDType, ?>) new GenericMessagingTask<InetSocketAddress, JSONObject>(
+				sockAddr, new JSONObjectWrapper(message)));
+	}
+
 }

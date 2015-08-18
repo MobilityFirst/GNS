@@ -51,7 +51,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -195,7 +197,9 @@ public class PaxosManager<NodeIDType> {
 		// needed to unclose when testing multiple runs of open and close
 		open();
 		// so paxos packets will come to me
-		niot.addPacketDemultiplexer(new PaxosPacketDemultiplexer(this));
+		niot.addPacketDemultiplexer(Config.getGlobalString(PC.JSON_LIBRARY)
+				.equals("org.json") ? new PaxosPacketDemultiplexerJSON()
+				: new PaxosPacketDemultiplexerJSON());
 		initiateRecovery();
 	}
 
@@ -457,46 +461,39 @@ public class PaxosManager<NodeIDType> {
 		return (pism != null && (pism.getVersion() - version >= 0));
 	}
 
-	class PaxosPacketDemultiplexer extends AbstractJSONPacketDemultiplexer {
+	class PaxosPacketDemultiplexerJSON extends AbstractJSONPacketDemultiplexer {
 
-		private final PaxosManager<NodeIDType> paxosManager;
-
-		public PaxosPacketDemultiplexer(PaxosManager<NodeIDType> pm) {
+		public PaxosPacketDemultiplexerJSON() {
 			super(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS));
-			paxosManager = pm;
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
-			this.registerOrderPreserving(PaxosPacket.PaxosPacketType.REQUEST);
 			this.setThreadName("" + myID);
 		}
 
 		public boolean handleMessage(JSONObject jsonMsg) {
-			boolean isPacketTypeFound = false;
 			try {
-
-				PaxosPacket.PaxosPacketType type = PaxosPacket.PaxosPacketType
-						.getPaxosPacketType(JSONPacket.getPacketType(jsonMsg));
-				if (type == null
-						|| !type.equals(PaxosPacket.PaxosPacketType.PAXOS_PACKET))
-					return false;
-
 				PaxosManager.getLogger().log(Level.FINEST,
 						"{0} packet demultiplexer received {1}",
 						new Object[] { PaxosManager.this, jsonMsg });
-				paxosManager.handleIncomingPacket(jsonMsg);
+				PaxosManager.this
+						.handleIncomingPacket(edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexer
+								.toPaxosPacket(fixNodeStringToInt(jsonMsg),
+										PaxosManager.this.unstringer));
 				return true;
 			} catch (JSONException e) {
+				log.severe(this
+						+ " unable to parse JSON or unable fix node ID string to integer");
 				e.printStackTrace();
 			}
-			return isPacketTypeFound;
+			return false;
 		}
 
 		@Override
 		public boolean isOrderPreserving(JSONObject msg) {
 			try {
-				// we only preserve order or REQUEST packets
+				// only preserve order for REQUEST or PROPOSAL packets 
 				PaxosPacketType type = PaxosPacket.getPaxosPacketType(msg);
-				return type.equals(PaxosPacket.PaxosPacketType.REQUEST)
-						|| type.equals(PaxosPacket.PaxosPacketType.PROPOSAL);
+				return (type.equals(PaxosPacket.PaxosPacketType.REQUEST) || type
+						.equals(PaxosPacket.PaxosPacketType.PROPOSAL));
 			} catch (JSONException e) {
 				log.severe(this + " incurred JSONException while parsing "
 						+ msg);
@@ -506,17 +503,52 @@ public class PaxosManager<NodeIDType> {
 		}
 	}
 
-	// Called by external entities, so we need to fix node IDs
-	private void handleIncomingPacket(JSONObject jsonMsg) {
-		try {
-			if (Config.getGlobalBoolean(PC.BATCHING_ENABLED))
-				this.enqueueRequest(fixNodeStringToInt(jsonMsg));
-			else
-				this.handlePaxosPacket(fixNodeStringToInt(jsonMsg));
-		} catch (JSONException e) {
-			log.severe(this + " unable to fix node ID string to integer");
-			e.printStackTrace();
+	class PaxosPacketDemultiplexerJSONSmart extends
+			edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexerJSONSmart {
+
+		public PaxosPacketDemultiplexerJSONSmart() {
+			super(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS));
+			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
+			this.setThreadName("" + myID);
 		}
+
+		public boolean handleMessage(net.minidev.json.JSONObject jsonMsg) {
+			PaxosManager.getLogger().log(Level.FINEST,
+					"{0} packet demultiplexer received {1}",
+					new Object[] { PaxosManager.this, jsonMsg });
+			try {
+				PaxosManager.this
+						.handleIncomingPacket(edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexerJSONSmart
+								.toPaxosPacket(fixNodeStringToInt(jsonMsg),
+										PaxosManager.this.unstringer));
+			} catch (JSONException e) {
+				log.severe(this + " incurred JSONException while parsing "
+						+ jsonMsg);
+				e.printStackTrace();
+			}
+			return true;
+		}
+	}
+
+	private static final boolean BATCHING_ENABLED = Config
+			.getGlobalBoolean(PC.BATCHING_ENABLED);
+
+	// FIXME: No longer used and to be removed.
+	@SuppressWarnings("unused")
+	@Deprecated
+	private void handleIncomingPacket(JSONObject jsonMsg) {
+		if (BATCHING_ENABLED)
+			this.enqueueRequest((jsonMsg));
+		else
+			this.handlePaxosPacket((jsonMsg));
+	}
+
+	// Called by external entities, so we need to fix node IDs
+	private void handleIncomingPacket(PaxosPacket pp) {
+		if (BATCHING_ENABLED)
+			this.enqueueRequest(pp);
+		else
+			this.handlePaxosPacket(pp);
 	}
 
 	/*
@@ -525,8 +557,9 @@ public class PaxosManager<NodeIDType> {
 	 */
 	private void enqueueRequest(JSONObject jsonMsg) {
 		try {
-			if (PaxosPacket.getPaxosPacketType(jsonMsg).equals(
-					PaxosPacket.PaxosPacketType.REQUEST))
+			PaxosPacketType type = PaxosPacket.getPaxosPacketType(jsonMsg);
+			if (type.equals(PaxosPacketType.REQUEST)
+					|| type.equals(PaxosPacketType.PROPOSAL))
 				this.batched.enqueue(new RequestPacket(jsonMsg));
 			else
 				this.handlePaxosPacket(jsonMsg);
@@ -536,24 +569,44 @@ public class PaxosManager<NodeIDType> {
 		}
 	}
 
+	/*
+	 * If RequestPacket, hand over to batcher that will then call
+	 * handleIncomingPacketInternal on batched requests.
+	 */
+	private void enqueueRequest(PaxosPacket pp) {
+		PaxosPacketType type = pp.getType();
+		if (type.equals(PaxosPacketType.REQUEST)
+				|| type.equals(PaxosPacketType.PROPOSAL)) {
+			assert (pp.getPaxosID() != null) : pp.getSummary();
+			this.batched.enqueue((RequestPacket) pp);
+		} else
+			this.handlePaxosPacket(pp);
+	}
+
 	/**
 	 * Called by internal entities like rollForward and works with integer node
 	 * IDs.
 	 * 
+	 * FIXME: Remove. This method is no longer used because we now have the
+	 * demultiplexer convert everything into a PaxosPacket first, which is a
+	 * cleaner separation of serialization from paxos logic.
+	 * 
 	 * @param jsonMsg
 	 */
-	protected void handlePaxosPacket(JSONObject jsonMsg) {
+	@Deprecated
+	private void handlePaxosPacket(JSONObject jsonMsg) {
+		assert (false); // not used any more
 		if (this.isClosed())
 			return;
-		else if (this.emulateLazyPropagation(jsonMsg)
-				|| emulateUnreplicated(jsonMsg))
+		else if (emulateUnreplicated(jsonMsg)
+				|| this.emulateLazyPropagation(jsonMsg))
 			return; // testing
 		else
 			setProcessing(true);
 
 		PaxosPacketType paxosPacketType;
 		try {
-			RequestPacket.addDebugInfo(jsonMsg, ("i" + myID));
+			RequestPacket.addDebugInfo(jsonMsg, "i", myID);
 			// will throw exception if no PAXOS_PACKET_TYPE
 			paxosPacketType = PaxosPacket.getPaxosPacketType(jsonMsg);
 			switch (paxosPacketType) {
@@ -577,7 +630,7 @@ public class PaxosManager<NodeIDType> {
 					pism.handlePaxosMessage(jsonMsg);
 				else
 					// for recovering group created while crashed
-					this.findPaxosInstance(jsonMsg, paxosID);
+					this.findPaxosInstance(jsonMsg);
 				break;
 			}
 		} catch (JSONException je) {
@@ -589,26 +642,56 @@ public class PaxosManager<NodeIDType> {
 		}
 	}
 
-	private void handlePaxosPacket(RequestPacket request) {
+	@SuppressWarnings("unchecked")
+	private void handlePaxosPacket(PaxosPacket request) {
 		if (this.isClosed())
 			return;
-		else if (this.emulateLazyPropagation(request)
-				|| emulateUnreplicated(request))
-			return;
+		else if (emulateUnreplicated(request)
+				|| this.emulateLazyPropagation(request))
+			return; // testing
 		else
 			setProcessing(true);
+
+		PaxosPacketType paxosPacketType;
 		try {
-			PaxosInstanceStateMachine pism = this.getInstance(request
-					.getPaxosID());
-			log.log(Level.FINEST,
-					"{0} received paxos message for retrieved instance {1} : {2}",
-					new Object[] { this, pism, request.getSummary() });
-			if (pism != null)
-				// version checked internally
-				pism.handlePaxosMessage(request);
+			// will throw exception if no PAXOS_PACKET_TYPE
+			paxosPacketType = request.getType();
+			switch (paxosPacketType) {
+			case FAILURE_DETECT:
+				FD.receive((FailureDetectionPacket<NodeIDType>) request);
+				break;
+			case FIND_REPLICA_GROUP:
+				processFindReplicaGroup((FindReplicaGroupPacket) request);
+				break;
+			default: // paxos protocol messages
+				assert (request.getPaxosID() != null) : request.getSummary();
+				if (request instanceof RequestPacket) // base and super types
+					((RequestPacket) request).addDebugInfo("i", myID);
+
+				PaxosInstanceStateMachine pism = this.getInstance(request
+						.getPaxosID());
+				log.log(Level.FINEST,
+						"{0} received paxos message for retrieved instance {1} : {2}",
+						new Object[] {
+								this,
+								pism,
+								request.getSummary(log.isLoggable(Level.FINEST)) });
+				if (pism != null)
+					// version checked internally
+					pism.handlePaxosMessage(request);
+				else
+					// for recovering group created while crashed
+					this.findPaxosInstance(request);
+				break;
+			}
+		} catch (JSONException je) {
+			log.severe("Node" + this.myID + " received bad JSON message: "
+					+ request);
+			je.printStackTrace();
 		} finally {
 			setProcessing(false);
 		}
+
 	}
 
 	private String propose(String paxosID, RequestPacket requestPacket)
@@ -622,7 +705,7 @@ public class PaxosManager<NodeIDType> {
 			log.log(Level.FINE, "{0} proposing to {1}: {2}", new Object[] {
 					this, pism.getPaxosIDVersion(), requestPacket });
 			requestPacket.putPaxosID(paxosID, pism.getVersion());
-			this.handleIncomingPacket(requestPacket.toJSONObject());
+			this.handleIncomingPacket(requestPacket);
 		} else
 			log.log(Level.INFO,
 					"{0} could not find paxos instance {1} for request {2}; this can happen if a"
@@ -664,6 +747,72 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	/**
+	 * Avoids unnecessary conversion to string and back if request happens to be
+	 * RequestPacket.
+	 * 
+	 * @param paxosID
+	 * @param request
+	 * @return Refer {@link #propose(String, String)}.
+	 */
+	public String propose(String paxosID, InterfaceRequest request) {
+		if (request instanceof RequestPacket)
+			try {
+				return this.propose(paxosID, (RequestPacket) request);
+			} catch (JSONException e) {
+				log.severe(this + " unable to parse request " + request);
+				e.printStackTrace();
+			}
+		return this.propose(paxosID, request.toString());
+	}
+
+	/**
+	 * @param paxosID
+	 * @param request
+	 * @return Refer {@link #proposeStop(String, String)}.
+	 */
+	public String proposeStop(String paxosID, InterfaceRequest request) {
+		if (request instanceof RequestPacket)
+			try {
+				return this.propose(paxosID, (RequestPacket) request);
+			} catch (JSONException e) {
+				log.warning(this + " unable to parse " + request);
+				e.printStackTrace();
+			}
+		return this.proposeStop(paxosID, request.toString());
+	}
+
+	/**
+	 * @param paxosID
+	 * @param version
+	 * @param request
+	 * @return Refer {@link #proposeStop(String, int, InterfaceRequest)}.
+	 */
+	public String proposeStop(String paxosID, int version,
+			InterfaceRequest request) {
+		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
+		if (pism != null && pism.getVersion() == version) {
+			RequestPacket requestPacket = request instanceof RequestPacket ? (RequestPacket) request
+					: (new RequestPacket(request.toString(), true))
+							.setReturnRequestValue();
+			requestPacket.putPaxosID(paxosID, version);
+			try {
+				return this.propose(paxosID, requestPacket);
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		} else
+			log.log(Level.INFO,
+					"{0} failed to propose stop request for {1}:{2}; {3}",
+					new Object[] {
+							this,
+							paxosID,
+							version,
+							(pism == null ? " no paxos instance found " : pism
+									.getPaxosIDVersion() + " pre-exists") });
+		return null;
+	}
+
+	/**
 	 * Proposes a request to stop a specific version of paxosID. There is no way
 	 * to stop a paxos replicated state machine other than by issuing a stop
 	 * request. The only way to know for sure that the RSM is stopped is by the
@@ -675,7 +824,7 @@ public class PaxosManager<NodeIDType> {
 	 * @return The paxosID:version represented as a String to which this request
 	 *         was proposed.
 	 */
-	public String proposeStop(String paxosID, String value, int version) {
+	public String proposeStop(String paxosID, int version, String value) {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		if (pism != null && pism.getVersion() == version) {
 			RequestPacket request = (new RequestPacket(value, true))
@@ -712,7 +861,7 @@ public class PaxosManager<NodeIDType> {
 		if (pism == null)
 			return null;
 		else
-			return this.proposeStop(paxosID, value, pism.getVersion());
+			return this.proposeStop(paxosID, pism.getVersion(), value);
 	}
 
 	/**
@@ -922,7 +1071,6 @@ public class PaxosManager<NodeIDType> {
 		waitToFinishAll();
 
 		/* Close logger, FD, messenger, request batcher, executor */
-		this.batched.stop();
 		this.paxosLogger.close();
 		this.FD.close();
 		this.messenger.stop();
@@ -953,13 +1101,13 @@ public class PaxosManager<NodeIDType> {
 	private static final boolean EMULATE_UNREPLICATED = Config
 			.getGlobalBoolean(PC.EMULATE_UNREPLICATED);
 
-	private final boolean emulateUnreplicated(RequestPacket request) {
-		if (!EMULATE_UNREPLICATED)
+	private final boolean emulateUnreplicated(PaxosPacket request) {
+		if (!EMULATE_UNREPLICATED || !(request instanceof RequestPacket))
 			return false;
 		// else will finally return true
 		// pretend-execute new requests
-		PaxosInstanceStateMachine.execute(null, myApp,
-				request.setEntryReplica(getMyID()).getRequestValues(), false);
+		PaxosInstanceStateMachine.execute(null, this, myApp,
+				((RequestPacket) request).setEntryReplica(getMyID()), false);
 		return true;
 	}
 
@@ -983,17 +1131,19 @@ public class PaxosManager<NodeIDType> {
 	private static final boolean LAZY_PROPAGATION = Config
 			.getGlobalBoolean(PC.LAZY_PROPAGATION);
 
-	private final boolean emulateLazyPropagation(RequestPacket request) {
-		if (!LAZY_PROPAGATION)
+	private final boolean emulateLazyPropagation(PaxosPacket request) {
+		if (!LAZY_PROPAGATION || !(request instanceof RequestPacket))
 			return false;
 		// else will finally return true
 		try {
 			// extract newly received requests
-			request = request.getNoEntryReplicaRequestsAsBatch()[1];
+			request = ((RequestPacket) request)
+					.getNoEntryReplicaRequestsAsBatch()[1];
 			if (request != null) {
 				// pretend-execute newly received requests
-				PaxosInstanceStateMachine.execute(null, myApp, request
-						.setEntryReplica(getMyID()).getRequestValues(), false);
+				PaxosInstanceStateMachine.execute(null, this, myApp,
+						((RequestPacket) request).setEntryReplica(getMyID()),
+						false);
 				// broadcast newly received requests to others
 				PaxosInstanceStateMachine pism = this.getInstance(request
 						.getPaxosID());
@@ -1113,33 +1263,23 @@ public class PaxosManager<NodeIDType> {
 		int logCount = 0;
 		freq = 1;
 		// roll forward all logged messages in a single pass
-		// if (ONE_PASS_RECOVERY)
-		{
-			log.log(Level.INFO,
-					"{0} beginning to roll forward logged messages",
-					new Object[] { this });
-			while (this.paxosLogger.initiateReadMessages())
-				; // acquires lock
-			PaxosPacket packet = null;
-			while ((packet = this.paxosLogger.readNextMessage()) != null) {
-				try {
-					log.log(Level.FINEST,
-							"{0} rolling forward logged message {1}",
-							new Object[] { this, packet });
-					this.handlePaxosPacket(PaxosPacket.markRecovered(packet)
-							.toJSONObject());
-					if ((++logCount) % freq == 0) {
-						freq *= 2;
-					}
-				} catch (JSONException je) {
-					je.printStackTrace();
-				}
+		log.log(Level.INFO, "{0} beginning to roll forward logged messages",
+				new Object[] { this });
+		while (this.paxosLogger.initiateReadMessages())
+			; // acquires lock
+		PaxosPacket packet = null;
+		while ((packet = this.paxosLogger.readNextMessage()) != null) {
+			log.log(Level.FINEST, "{0} rolling forward logged message {1}",
+					new Object[] { this, packet });
+			this.handlePaxosPacket(PaxosPacket.markRecovered(packet));
+			if ((++logCount) % freq == 0) {
+				freq *= 2;
 			}
-			this.paxosLogger.closeReadAll(); // releases lock
-			log.log(Level.INFO,
-					"{0} rolled forward {1} messages total across {2} paxos groups",
-					new Object[] { this, logCount, groupCount });
 		}
+		this.paxosLogger.closeReadAll(); // releases lock
+		log.log(Level.INFO,
+				"{0} rolled forward {1} messages total across {2} paxos groups",
+				new Object[] { this, logCount, groupCount });
 
 		// need to make another pass to mark all instances as active
 		while (this.paxosLogger.initiateReadCheckpoints(true))
@@ -1173,13 +1313,14 @@ public class PaxosManager<NodeIDType> {
 				&& (pism != null && pism.isActive());
 	}
 
+	private static final boolean BATCHED_ACCEPT_REPLIES = Config
+			.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES);
+
 	private Messenger<NodeIDType> wrapMessenger(Messenger<NodeIDType> msgr) {
 		return new Messenger<NodeIDType>(PaxosManager.this.messenger) {
 			public void send(MessagingTask mtask) throws JSONException,
 					IOException {
-				PaxosManager.this.send(mtask,
-						Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES),
-						false);
+				PaxosManager.this.send(mtask, BATCHED_ACCEPT_REPLIES, false);
 			}
 
 			public void send(MessagingTask[] mtasks) throws JSONException,
@@ -1216,8 +1357,12 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	protected void send(MessagingTask mtask) throws JSONException, IOException {
-		this.send(mtask, Config.getGlobalBoolean(PC.BATCHED_ACCEPT_REPLIES),
-				true);
+		this.send(mtask, BATCHED_ACCEPT_REPLIES, true);
+	}
+
+	protected void send(InetSocketAddress sockAddr, InterfaceRequest request)
+			throws JSONException, IOException {
+		this.messenger.send(sockAddr, request);
 	}
 
 	/*
@@ -1447,13 +1592,18 @@ public class PaxosManager<NodeIDType> {
 			assert (this.getInstance(paxosID, false, false) != null);
 			// if (pism != null) pism.poke();
 		}
-		TESTPaxosConfig.setRecovered(this.myID, paxosID, true); // testing
+		//TESTPaxosConfig.setRecovered(this.myID, paxosID, true); // testing
 	}
 
-	private void findPaxosInstance(JSONObject jsonMsg, String paxosID)
-			throws JSONException {
+	private void findPaxosInstance(JSONObject json) throws JSONException {
+		this.findPaxosInstance(edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexer
+				.toPaxosPacket(json, unstringer));
+	}
+
+	private void findPaxosInstance(PaxosPacket pp) throws JSONException {
 		if (!this.hasRecovered())
 			return;
+		assert (pp.getPaxosID() != null);
 		/*
 		 * If it is possible for there to be no initial state checkpoint, under
 		 * missed birthing, an acceptor may incorrectly report its gcSlot as -1,
@@ -1467,12 +1617,9 @@ public class PaxosManager<NodeIDType> {
 		 */
 		if (!this.isNullCheckpointStateEnabled())
 			return;
-		PaxosInstanceStateMachine zombie = this.corpses.get(paxosID);
-		if (jsonMsg.has(PaxosPacket.Keys.V.toString())) {
-			int version = jsonMsg.getInt(PaxosPacket.Keys.V.toString());
-			if (zombie == null || (zombie.getVersion() - version) < 0)
-				findReplicaGroup(jsonMsg, paxosID, version);
-		}
+		PaxosInstanceStateMachine zombie = this.corpses.get(pp.getPaxosID());
+		if (zombie == null || (zombie.getVersion() - pp.getVersion()) < 0)
+			findReplicaGroup(pp);
 	}
 
 	/*
@@ -1672,23 +1819,24 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	// send a request asking for your group
-	private void findReplicaGroup(JSONObject msg, String paxosID, int version)
-			throws JSONException {
+	private void findReplicaGroup(PaxosPacket pp) throws JSONException {
 		FindReplicaGroupPacket findGroup = new FindReplicaGroupPacket(
-				this.myID, msg); // paxosID and version should be within
-		int nodeID = FindReplicaGroupPacket.getNodeID(msg);
+				this.myID, pp); // paxosID and version should be within
+		int nodeID = FindReplicaGroupPacket.getNodeID(pp);
 		if (nodeID >= 0) {
 			try {
 				log.log(Level.INFO,
 						"{0} received paxos message for non-existent instance {1}; contacting {2} for help",
-						new Object[] { this, paxosID, nodeID });
+						new Object[] { this, pp.getPaxosID(), nodeID });
 				this.send(new MessagingTask(nodeID, findGroup));
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			}
 		} else
-			log.log(Level.FINE, "{0} can't find group member in {1}:{2}: {3}",
-					new Object[] { this, paxosID, version, msg });
+			log.log(Level.FINE,
+					"{0} can't find group member in {1}:{2}: {3}",
+					new Object[] { this, pp.getPaxosID(), pp.getVersion(),
+							pp.getSummary() });
 	}
 
 	// process a request or send an answer
@@ -1877,6 +2025,13 @@ public class PaxosManager<NodeIDType> {
 		return this.myID;
 	}
 
+	/**
+	 * @return NodeIDType of this.
+	 */
+	public NodeIDType getNodeID() {
+		return this.messenger.getMyID();
+	}
+
 	private synchronized void waitToRecover() {
 		try {
 			this.wait();
@@ -1888,10 +2043,11 @@ public class PaxosManager<NodeIDType> {
 	private synchronized void notifyRecovered() {
 		this.notifyAll();
 	}
-
+	
 	// convert string -> NodeIDType -> int (can *NOT* convert string directly to
 	// int)
 	private JSONObject fixNodeStringToInt(JSONObject json) throws JSONException {
+		if(!Messenger.ENABLE_INT_STRING_CONVERSION) return json;
 		// FailureDetectionPacket already has generic NodeIDType
 		if (PaxosPacket.getPaxosPacketType(json) == PaxosPacket.PaxosPacketType.FAILURE_DETECT)
 			return json;
@@ -1900,9 +2056,9 @@ public class PaxosManager<NodeIDType> {
 			// fix ballot string
 			String ballotString = json.getString(PaxosPacket.NodeIDKeys.B
 					.toString());
-			Integer coordInt = this.integerMap.put(this.unstringer
-					.valueOf(Ballot.getBallotCoordString(ballotString)));
-			assert (coordInt != null);
+			int coordInt = this.integerMap.put(this.unstringer.valueOf(Ballot
+					.getBallotCoordString(ballotString)));
+			// assert (coordInt != null);
 			Ballot ballot = new Ballot(Ballot.getBallotNumString(ballotString),
 					coordInt);
 			json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
@@ -1916,11 +2072,56 @@ public class PaxosManager<NodeIDType> {
 						.valueOf(memberString));
 				jsonArray.put(i, memberInt);
 			}
+			// json.put(PaxosPacket.NodeIDKeys.GROUP.toString(), jsonArray);
+			// FIXME: we don't have to adjust GROUP
 		} else
 			for (PaxosPacket.NodeIDKeys key : PaxosPacket.NodeIDKeys.values()) {
 				if (json.has(key.toString())) {
 					// fix default node string
 					String nodeString = json.getString(key.toString());
+					int nodeInt = this.integerMap.put(this.unstringer
+							.valueOf(nodeString));
+					json.put(key.toString(), nodeInt);
+				}
+			}
+		return json;
+	}
+
+	private net.minidev.json.JSONObject fixNodeStringToInt(
+			net.minidev.json.JSONObject json) {
+		// FailureDetectionPacket already has generic NodeIDType
+		if ((Integer) json.get(PaxosPacket.Keys.PT.toString()) == PaxosPacket.PaxosPacketType.FAILURE_DETECT
+				.getInt())
+			return json;
+
+		if (json.containsKey(PaxosPacket.NodeIDKeys.B.toString())) {
+			// fix ballot string
+			String ballotString = (String) json.get(PaxosPacket.NodeIDKeys.B
+					.toString());
+			int coordInt = this.integerMap.put(this.unstringer.valueOf(Ballot
+					.getBallotCoordString(ballotString)));
+			// assert (coordInt != null);
+			Ballot ballot = new Ballot(Ballot.getBallotNumString(ballotString),
+					coordInt);
+			json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
+		} else if (json.containsKey(PaxosPacket.NodeIDKeys.GROUP.toString())) {
+			// fix group string (JSONArray)
+			Collection<?> jsonArray = (Collection<?>) json
+					.get(PaxosPacket.NodeIDKeys.GROUP.toString());
+
+			Set<Integer> group = new HashSet<Integer>();
+			for (Object element : jsonArray) {
+				String memberString = element.toString();
+				int memberInt = this.integerMap.put(this.unstringer
+						.valueOf(memberString));
+				group.add(memberInt);
+			}
+			// FIXME: we don't have to re-insert group
+		} else
+			for (PaxosPacket.NodeIDKeys key : PaxosPacket.NodeIDKeys.values()) {
+				if (json.containsKey(key.toString())) {
+					// fix default node string
+					String nodeString = json.get(key.toString()).toString();
 					int nodeInt = this.integerMap.put(this.unstringer
 							.valueOf(nodeString));
 					json.put(key.toString(), nodeInt);
@@ -1959,10 +2160,6 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	private void testingInitialization() {
-		/*
-		 * if (TESTPaxosConfig.getCleanDB()) while
-		 * (!this.paxosLogger.removeAll()) ;
-		 */
 		if (cleanDB)
 			while (!this.paxosLogger.removeAll())
 				;

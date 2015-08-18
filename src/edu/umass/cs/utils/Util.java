@@ -1,10 +1,10 @@
 package edu.umass.cs.utils;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -14,12 +14,12 @@ import java.util.logging.Logger;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-
+import org.json.JSONObject;
 
 /**
  * @author arun
  *
- *         Various generic static utility methods. 
+ *         Various generic static utility methods.
  */
 @SuppressWarnings("javadoc")
 public class Util {
@@ -150,6 +150,21 @@ public class Util {
 		return set;
 	}
 
+	// to test the json-smart parser 
+	public static JSONObject toJSONObject(String s) throws JSONException {
+		net.minidev.json.JSONObject sjson = (net.minidev.json.JSONObject) net.minidev.json.JSONValue
+				.parse(s);
+		JSONObject json = new JSONObject();
+		for (String key : sjson.keySet()) {
+			Object obj = sjson.get(key);
+			if (obj instanceof Collection<?>)
+				json.put(key, new JSONArray(obj.toString()));
+			else
+				json.put(key, obj);
+		}
+		return json;
+	}
+
 	public static Integer[] intToIntegerArray(int[] array) {
 		if (array == null) {
 			return null;
@@ -162,20 +177,6 @@ public class Util {
 			retarray[i++] = member;
 		}
 		return retarray;
-	}
-
-	public static Integer[] objectToIntegerArray(Object[] objects) {
-		if (objects == null) {
-			return null;
-		} else if (objects.length == 0) {
-			return new Integer[0];
-		}
-		Integer[] array = new Integer[objects.length];
-		int i = 0;
-		for (Object obj : objects) {
-			array[i++] = (Integer) obj;
-		}
-		return array;
 	}
 
 	public static Set<String> arrayOfIntToStringSet(int[] array) {
@@ -277,7 +278,7 @@ public class Util {
 
 	public static Object truncate(final String str, final int size) {
 		return new Object() {
-                        @Override
+			@Override
 			public String toString() {
 				return str == null || str.length() < size ? str
 						: str != null ? str.substring(0, size) : null;
@@ -285,10 +286,11 @@ public class Util {
 		};
 	}
 
-	public static Object truncate(final String str, final int prefixSize, final int suffixSize) {
+	public static Object truncate(final String str, final int prefixSize,
+			final int suffixSize) {
 		final int size = prefixSize + suffixSize;
 		return new Object() {
-                        @Override
+			@Override
 			public String toString() {
 				return str == null || str.length() < size ? str
 						: str != null ? str.substring(0, prefixSize)
@@ -327,7 +329,7 @@ public class Util {
 		System.exit(1);
 		return null; // will never come here
 	}
-	
+
 	// transfer from one byte buffer to another without throwing exception
 	public static ByteBuffer put(ByteBuffer dst, ByteBuffer src) {
 		if (src.remaining() < dst.remaining())
@@ -338,8 +340,14 @@ public class Util {
 	}
 
 	public static void main(String[] args) {
-		System.out.println(Util.getInetSocketAddressFromString(
-				(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0))
-						.toString()).getHostString());
+		int[] array = {21, -25, 456, 92};
+		int n = 10000000;
+		long t = System.currentTimeMillis();
+		for(int i=0; i<n; i++) {
+			//String s= (Arrays.toString(array));
+			//String s = (Util.arrayOfIntToString(array));
+		}
+		System.out.println(Arrays.toString(array));
+		System.out.println("average_iter_time = " + (System.currentTimeMillis() -t)*1000.0/n);
 	}
 }

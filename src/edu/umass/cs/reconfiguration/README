@@ -30,3 +30,13 @@ class to change the policy. To change the policy,
 - create your own implementation of
   reconfiguration.reconfigurationutils.AbstractDemandProfile
 - Call ReconfigurationConfig.setDemandProfile(.) with that class.
+
+To disable trivial reconfiguration, i.e., reconfiguring from a set of 
+current active replicas to the same set in the next epoch, set the
+property RECONFIGURE_IN_PLACE=false in gigapaxos.properties. The
+default value of this property is true.
+
+To disable reconfiguration altogether, the simplest way is to write
+an AbstractDemandProfile class that just returns null as the set of new
+active replicas. The default DemandProfile reconfigures after every 
+request.

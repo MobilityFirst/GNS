@@ -145,18 +145,14 @@ public class PaxosConfig {
 
 		/**
 		 * The maximum log message size. The higher the batching, the higher
-		 * this value needs to be. The default below is the maximum size of
-		 * varchar in embedded derby, which is probably somewhat faster than
-		 * clobs, which would be automatically used with bigger log message
-		 * sizes.
+		 * this value needs to be. 
 		 */
-		MAX_LOG_MESSAGE_SIZE(32672),
+		MAX_LOG_MESSAGE_SIZE(1024*512),
 
 		/**
 		 * The maximum checkpoint size. The default below is the maximum size of
 		 * varchar in embedded derby, which is probably somewhat faster than
-		 * clobs, which would be automatically used with bigger log message
-		 * sizes.
+		 * clobs, which would be automatically used with bigger checkpoint sizes.
 		 */
 		MAX_CHECKPOINT_SIZE(32672),
 
@@ -170,6 +166,11 @@ public class PaxosConfig {
 		 * sleep duration used for increasing batching gains.
 		 */
 		BATCH_OVERHEAD(0.01),
+		
+		/**
+		 * Maximum number of batched requests.
+		 */
+		MAX_BATCH_SIZE (1000),
 
 		/**
 		 * Checkpoint interval. A larger value means slower recovery, slower
@@ -214,7 +215,12 @@ public class PaxosConfig {
 		 * Instrumentation at various places. Should be enabled only during
 		 * testing and disabled during production use.
 		 */
-		ENABLE_INSTRUMENTATION (false);
+		ENABLE_INSTRUMENTATION (true),
+		
+		/**
+		 * 
+		 */
+		JSON_LIBRARY("org.json"),
 
 		;
 

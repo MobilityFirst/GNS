@@ -121,7 +121,7 @@ public class TESTPaxosMain {
 
 			assert (TESTPaxosClient.noOutstanding(clients));
 			TESTPaxosClient.resetLatencyComputation();
-			Thread.sleep(2000);
+			Thread.sleep(1000);
 
 			// begin second run
 			t1 = System.currentTimeMillis();
@@ -132,6 +132,9 @@ public class TESTPaxosMain {
 			System.out.println("[run2]" + getAggregateOutput(numReqs, t1, t2));
 			// end second run
 
+			// sleep for a bit to ensure all replicas get everything
+			Thread.sleep(2000);
+			
 			for (TESTPaxosNode node : tpMain.nodes.values()) {
 				node.close();
 			}
@@ -161,8 +164,6 @@ public class TESTPaxosMain {
 		 PaxosManager.getLogger().setLevel(Level.INFO);
 		 PaxosManager.getLogger().addHandler(handler);
 		 PaxosManager.getLogger().setUseParentHandlers(false);
-
-		// TESTPaxosConfig.load();
 			
 		processArgs(args);
 

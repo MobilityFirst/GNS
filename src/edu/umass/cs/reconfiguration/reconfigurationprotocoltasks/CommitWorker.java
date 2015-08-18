@@ -145,7 +145,7 @@ public class CommitWorker<NodeIDType> implements Runnable {
 		 * invoke the callback even if handled is false. That still won't
 		 * enqueue the executed notification if there is no corresponding
 		 * pending request, but for service names, it is not possible for a node
-		 * to issue a complete request too early (as it is issued only upon
+		 * to issue a RECONFIGURATION_COMPLETE request too early (as it is issued only upon
 		 * committing the intent and then receiving startEpoch acks), so
 		 * handled=false can only mean obviation, so the executed notification
 		 * can still be used to obviate a matching or lower pending request.

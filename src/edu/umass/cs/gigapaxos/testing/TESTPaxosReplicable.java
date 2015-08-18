@@ -23,6 +23,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -38,7 +39,6 @@ import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONNIOTransport;
-import edu.umass.cs.reconfiguration.examples.AppRequest.Keys;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
@@ -55,7 +55,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	private MessageDigest md = null;
 	private InterfaceNIOTransport<Integer, JSONObject> niot = null;
 
-	private HashMap<String, PaxosState> allState = new HashMap<String, PaxosState>();
+	private ConcurrentHashMap<String, PaxosState> allState = new ConcurrentHashMap<String, PaxosState>();
 
 	private class PaxosState {
 		private int seqnum = -1;
@@ -98,14 +98,13 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	 * slot numbers, but this method takes as input a ProposalPacket as opposed
 	 * to a RequestPacket only for tetsing purposes.
 	 */
-	public synchronized boolean handleDecision(ProposalPacket requestPacket,
+	public boolean handleDecision(ProposalPacket requestPacket,
 			boolean doNotReplyToClient) {
 		boolean executed = false;
 		try {
 			String paxosID = requestPacket.getPaxosID();
-			PaxosState state = this.allState.get(paxosID);
-			if (state == null)
-				state = new PaxosState();
+			PaxosState state = this.allState.putIfAbsent(paxosID,
+					state = new PaxosState());
 
 			/*
 			 * Initialize seqnum upon first decision. We know it is the first
@@ -146,8 +145,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			 * requestPacket.slot)
 			 */
 			state.committed.put(state.seqnum++, state.value);
-			allState.put(paxosID, state); // needed if we initialized state
-											// above
+			allState.put(paxosID, state); // needed if state initialized above
 			executed = true;
 			state.numExecuted++;
 
@@ -156,11 +154,11 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 						requestPacket.slot)) : requestPacket;
 			state.committed.remove(state.seqnum - MAX_STORED_REQUESTS); // GC
 
-			// testing and logging below
-			this.notify(); // needed for paxos manager's unit-test
+			//synchronized (this) {
+				//this.notify(); // needed only for paxos manager's unit-test
+			//}
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
-			if (!doNotReplyToClient && niot != null
-					&& TESTPaxosConfig.getSendReplyToClient()) {
+			if (!doNotReplyToClient && niot != null) {
 				this.sendResponseToClient(requestPacket);
 			} else
 				log.log(Level.FINE, "Node{0} not sending reply {1} to client",
@@ -175,26 +173,20 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 
 	private void sendResponseToClient(ProposalPacket requestPacket)
 			throws JSONException, IOException {
+		if (!TESTPaxosConfig.getSendReplyToClient())
+			return;
 		RequestInstrumenter.remove(requestPacket.requestID);
-
 		/*
 		 * Entry replica check must be done here as requests with different
 		 * entry replicas can get batched when forwarded between replicas.
 		 */
-		assert(requestPacket.getEntryReplica()!=-1);
+		assert (requestPacket.getEntryReplica() != -1);
 		if (requestPacket.getEntryReplica() == this.getMyID()) {
 			log.log(Level.FINE, "App {0} sending response to client {1}",
 					new Object[] { getMyID(), requestPacket.getSummary() });
-			niot.sendToAddress(
-					(requestPacket.getClientAddress()),
-					new ProposalPacket(0, requestPacket.getFirstOnly())
-							.toJSONObject()
-							// just keep a small prefix of the request value
-							.put(Keys.REQUEST_VALUE.toString(),
-									requestPacket.requestValue.substring(0,
-											Math.min(16,
-													requestPacket.requestValue
-															.length()))));
+			niot.sendToAddress((requestPacket.getClientAddress()),
+					new ProposalPacket(0, requestPacket.getCommit())
+							.toJSONObject());
 		}
 		// send responses for batched requests as well
 		if (requestPacket.getBatched() != null)
@@ -223,7 +215,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		return true;
 	}
 
-	public int digest(String s) {
+	public synchronized int digest(String s) {
 		// null check needed if null checkpoints are enabled
 		if (s == null)
 			return 0;

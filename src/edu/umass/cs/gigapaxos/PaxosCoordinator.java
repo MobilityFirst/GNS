@@ -60,11 +60,9 @@ import edu.umass.cs.gigapaxos.paxosutil.HotRestoreInfo;
  * along with PaxosInstanceStateMachine.
  */
 public class PaxosCoordinator {
-	private PaxosCoordinatorState pcs = null; // This gets recreated for each
-												// ballot.
+	private PaxosCoordinatorState pcs = null; // recreated for each ballot.
 
-	private static Logger log = // PaxosManager.getLogger();//
-	Logger.getLogger(PaxosCoordinator.class.getName());
+	private static Logger log = (PaxosManager.getLogger());
 
 	/*
 	 * Come to exist if nonexistent. Called by PaxosInstanceStateMachine
@@ -75,8 +73,8 @@ public class PaxosCoordinator {
 		if (pcs == null || (pcs.getBallot().compareTo(bnum, coord)) < 0) {
 			pcs = new PaxosCoordinatorState(bnum, coord, slot, members, pcs);
 			if (bnum == 0 || recovery)
-				pcs.setCoordinatorActive(); // Initial coordinator status
-											// assumed, not explicitly prepared.
+				// initial coordinator status assumed, not explicitly prepared.
+				pcs.setCoordinatorActive(); 
 			else
 				sendPrepare = true;
 		} else if (pcs != null && (pcs.getBallot().compareTo(bnum, coord)) == 0

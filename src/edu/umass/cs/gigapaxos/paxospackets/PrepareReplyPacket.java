@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -24,7 +24,9 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * 
@@ -45,21 +47,38 @@ public class PrepareReplyPacket extends PaxosPacket {
 	/**
 	 * Accepted pvalues from lower ballots.
 	 */
-	public final Map<Integer, PValuePacket> accepted;
+	public final TreeMap<Integer, PValuePacket> accepted;
 
 	// first pvalue slot in accepted pvalues
 	private int firstSlot;
 
+	/*
+	 * Maximum pvalue slot in accepted pvalues. We store this explicitly even
+	 * though it can be computed from the accepted pvalues map in order to
+	 * support fragmentation, wherein the accepted pvalues map may not contain
+	 * all of the pvalues needed for safety.
+	 */
+	private int maxSlot;
+
+	private long createTime = System.currentTimeMillis();
+
 	public PrepareReplyPacket(int receiverID, Ballot ballot,
-			Map<Integer, PValuePacket> accepted, int gcSlot) {
+			Map<Integer, PValuePacket> accepted, int gcSlot, int maxSlot) {
 		super(accepted == null || accepted.isEmpty() ? (PaxosPacket) null
 				: accepted.values().iterator().next());
 		this.acceptor = receiverID;
 		this.ballot = ballot;
-		this.accepted = accepted == null ? new HashMap<Integer, PValuePacket>()
-				: accepted;
+		this.accepted = accepted == null ? new TreeMap<Integer, PValuePacket>()
+				: new TreeMap<Integer, PValuePacket>(accepted);
 		this.firstSlot = gcSlot + 1;
+		this.maxSlot = maxSlot;
 		this.packetType = PaxosPacketType.PREPARE_REPLY;
+	}
+
+	public PrepareReplyPacket(int receiverID, Ballot ballot,
+			Map<Integer, PValuePacket> accepted, int gcSlot) {
+		this(receiverID, ballot, accepted, gcSlot, getMaxSlot(gcSlot + 1,
+				accepted));
 	}
 
 	public PrepareReplyPacket(JSONObject json) throws JSONException {
@@ -70,16 +89,17 @@ public class PrepareReplyPacket extends PaxosPacket {
 		this.ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.B
 				.toString()));
 		this.accepted = parseJsonForAccepted(json);
-		this.firstSlot = json.getInt(PaxosPacket.Keys.PREPLY_MIN
-				.toString());
+		this.firstSlot = json.getInt(PaxosPacket.Keys.PREPLY_MIN.toString());
+		this.maxSlot = json.getInt(PaxosPacket.Keys.MAX_S.toString());
+		this.createTime = json.getLong(RequestPacket.Keys.CT.toString());
 	}
 
-	private HashMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json)
+	private TreeMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json)
 			throws JSONException {
-		HashMap<Integer, PValuePacket> accepted = new HashMap<Integer, PValuePacket>();
+		TreeMap<Integer, PValuePacket> accepted = new TreeMap<Integer, PValuePacket>();
 		if (json.has(PaxosPacket.Keys.ACC_MAP.toString())) {
-			JSONArray jsonArray = json
-					.getJSONArray(PaxosPacket.Keys.ACC_MAP.toString());
+			JSONArray jsonArray = json.getJSONArray(PaxosPacket.Keys.ACC_MAP
+					.toString());
 			for (int i = 0; i < jsonArray.length(); i++) {
 				JSONObject element = jsonArray.getJSONObject(i);
 				PValuePacket pval = new PValuePacket(element);
@@ -96,17 +116,14 @@ public class PrepareReplyPacket extends PaxosPacket {
 		json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
 		assert (this.packetType == PaxosPacketType.PREPARE_REPLY);
 		addAcceptedToJSON(json);
-		json.put(PaxosPacket.Keys.PREPLY_MIN.toString(),
-				this.firstSlot);
+		json.put(PaxosPacket.Keys.PREPLY_MIN.toString(), this.firstSlot);
+		json.put(PaxosPacket.Keys.MAX_S.toString(), this.maxSlot);
+		json.put(RequestPacket.Keys.CT.toString(), this.createTime);
 		return json;
 	}
 
-	public void setFirstSlot(int gcSlot) {
-		this.firstSlot = gcSlot + 1;
-	}
-
-	public int getMaxSlot() {
-		return getMaxSlot(this.accepted);
+	private int getMaxSlot() {
+		return getMaxSlot(this.firstSlot, this.accepted);
 	}
 
 	public int getMinSlot() {
@@ -114,31 +131,25 @@ public class PrepareReplyPacket extends PaxosPacket {
 	}
 
 	private int getMinSlot(Map<Integer, PValuePacket> acceptedMap) {
-		Integer minSlot = null;
+		Integer minSlot = this.firstSlot;
 		if (acceptedMap != null && !acceptedMap.isEmpty()) {
 			for (Integer curSlot : acceptedMap.keySet()) {
-				if (minSlot == null)
-					minSlot = curSlot;
 				if (curSlot - minSlot < 0)
 					minSlot = curSlot;
 			}
-		} else
-			minSlot = this.firstSlot;
+		} 
 		return minSlot;
 	}
 
 	// FIXME: wraparound
-	private int getMaxSlot(Map<Integer, PValuePacket> acceptedMap) {
-		Integer maxSlot = null;
+	private static int getMaxSlot(int firstSlot,
+			Map<Integer, PValuePacket> acceptedMap) {
+		Integer maxSlot = firstSlot - 1;
 		if (acceptedMap != null && !acceptedMap.isEmpty()) {
-			for (Integer curSlot : acceptedMap.keySet()) {
-				if (maxSlot == null)
-					maxSlot = curSlot;
+			for (Integer curSlot : acceptedMap.keySet())
 				if (curSlot - maxSlot > 0)
 					maxSlot = curSlot;
-			}
-		} else
-			maxSlot = this.firstSlot;
+		}
 		return maxSlot;
 	}
 
@@ -160,5 +171,56 @@ public class PrepareReplyPacket extends PaxosPacket {
 				+ (!accepted.isEmpty() ? ", |accepted|=" + accepted.size()
 						+ "[" + this.getMinSlot() + "-" + this.getMaxSlot()
 						+ "]" : "");
+	}
+
+	public boolean isComplete() {
+		for (int i = this.firstSlot; i <= this.maxSlot; i++)
+			if (!this.accepted.containsKey(i))
+				return false;
+		return true;
+	}
+
+	public boolean combine(PrepareReplyPacket incoming) {
+		if (incoming.ballot.compareTo(this.ballot) != 0)
+			return false;
+		for (int slot : incoming.accepted.keySet())
+			this.accepted.put(slot, incoming.accepted.get(slot));
+		return this.isComplete();
+	}
+
+	public long getCreateTime() {
+		return this.createTime;
+	}
+
+	public int getByteLength() {
+		int size = 0;
+		for (PValuePacket pvalue : this.accepted.values())
+			size += pvalue.lengthEstimate();
+		return size;
+	}
+
+	// modifies self
+	public PrepareReplyPacket fragment(int length) {
+		PrepareReplyPacket frag = new PrepareReplyPacket(this.acceptor,
+				this.ballot, new HashMap<Integer, PValuePacket>(),
+				this.firstSlot - 1, this.maxSlot);
+		frag.putPaxosID(this.getPaxosID(), this.getVersion());
+		int curLength = 0;
+		System.out.println("creating fragment of length "+ length);
+		for (Iterator<Integer> slotIter = this.accepted.keySet().iterator(); slotIter
+				.hasNext();) {
+			PValuePacket pvalue = this.accepted.get(slotIter.next());
+			// will create at least one fragment
+			if ((curLength += pvalue.lengthEstimate()) > length && !frag.accepted.isEmpty()) {
+				System.out.println("breaking because curLength would become " + curLength);
+				break;
+			}
+
+			// put into frag and remove from this
+			frag.accepted.put(pvalue.slot, pvalue);
+			slotIter.remove();
+		}
+		System.out.println("returning " + frag.getSummary());
+		return frag;
 	}
 }

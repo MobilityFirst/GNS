@@ -71,7 +71,7 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<String> {
 	private final HashMap<String, CoordData> groups = new HashMap<String, CoordData>();
 
 	NoopAppCoordinator(InterfaceReplicable app) {
-		this(app, CoordType.LAZY, null, null);
+		this(app, CoordType.PAXOS, null, null);
 	}
 
 	NoopAppCoordinator(InterfaceReplicable app, CoordType coordType,

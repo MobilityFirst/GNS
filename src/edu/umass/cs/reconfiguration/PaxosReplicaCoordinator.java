@@ -110,11 +110,11 @@ public abstract class PaxosReplicaCoordinator<NodeIDType> extends
 		if (request instanceof InterfaceReconfigurableRequest
 				&& ((InterfaceReconfigurableRequest) request).isStop())
 			proposee = this.paxosManager
-					.proposeStop(paxosID, request.toString(),
+					.proposeStop(paxosID,
 							((InterfaceReconfigurableRequest) request)
-									.getEpochNumber());
+									.getEpochNumber(), request);
 		else
-			proposee = this.paxosManager.propose(paxosID, request.toString());
+			proposee = this.paxosManager.propose(paxosID, request);
 		return proposee;
 	}
 

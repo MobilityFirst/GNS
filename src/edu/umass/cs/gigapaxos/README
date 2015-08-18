@@ -71,7 +71,7 @@ to a server across a network. For the co-located case, each application node mus
 start PaxosManager and then create the corresponding paxos instances, as exemplified in
 TESTPaxosNode.java.
 
-The application itself must be an instance of Replicable. See TESTReplicable.java for a
+The application itself must be an instance of InterfaceReplicable. See TESTReplicable.java for a
 simple example that simply echoes back the request (with some instrumentation additions).  
 
 

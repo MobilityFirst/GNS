@@ -124,7 +124,7 @@ public abstract class AbstractPaxosLogger {
 		// else spawn a log-and-message task
 		PaxosPacket packet = logMTask.logMsg;
 		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}", new Object[] { "Node ",
-				logger.myID, " logging ", (packet.getType()), ": ", packet.getSummary() });
+				logger.myID, " logging ", (packet.getType()), ": ", packet.getSummary(log.isLoggable(Level.FINE)) });
 		assert (packet.getPaxosID() != null) : ("Null paxosID in " + packet);
 		logger.batchLogger.enqueue(logMTask); // batchLogger will also send
 	}

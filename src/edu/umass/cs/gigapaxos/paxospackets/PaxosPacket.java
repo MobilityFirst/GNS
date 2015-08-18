@@ -98,12 +98,12 @@ public abstract class PaxosPacket extends JSONPacket {
 		 * sync mode; used by pause deactivator
 		 */
 		SYNCM,
-		
+
 		/**
 		 * 
 		 */
 		SLOTS,
-		
+
 		/**
 		 * 
 		 */
@@ -122,25 +122,25 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * 
 		 */
-		SNDR, 
+		SNDR,
 		/**
 		 * Ballot.
 		 */
-		B, 
+		B,
 		/**
 		 * 
 		 */
-		COORD, 
+		COORD,
 		/**
 		 * 
 		 */
-		ACCPTR, 
+		ACCPTR,
 		/**
 		 * 
 		 */
-		GROUP, 
+		GROUP,
 		/**
-		 * Entry replica integer ID. 
+		 * Entry replica integer ID.
 		 */
 		E
 	}
@@ -162,68 +162,68 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * 
 		 */
-		RESPONSE("RESPONSE", 0), 
+		RESPONSE("RESPONSE", 0),
 		/**
 		 * 
 		 */
-		REQUEST("REQUEST", 1), 
+		REQUEST("REQUEST", 1),
 		/**
 		 * 
 		 */
-		PREPARE("PREPARE", 2), 
+		PREPARE("PREPARE", 2),
 		/**
 		 * 
 		 */
-		ACCEPT("ACCEPT", 3), 
+		ACCEPT("ACCEPT", 3),
 		/**
 		 * 
 		 */
-		RESEND_ACCEPT("RESEND_ACCEPT", 4), 
+		RESEND_ACCEPT("RESEND_ACCEPT", 4),
 		/**
 		 * 
 		 */
-		PROPOSAL("PROPOSAL", 5), 
+		PROPOSAL("PROPOSAL", 5),
 		/**
 		 * 
 		 */
-		DECISION("DECISION", 6), 
+		DECISION("DECISION", 6),
 		/**
 		 * 
 		 */
-		PREPARE_REPLY("PREPARE_REPLY", 7), 
+		PREPARE_REPLY("PREPARE_REPLY", 7),
 		/**
 		 * 
 		 */
-		ACCEPT_REPLY("ACCEPT_REPLY", 8), 
+		ACCEPT_REPLY("ACCEPT_REPLY", 8),
 		/**
 		 * 
 		 */
-		FAILURE_DETECT("FAILURE_DETECT", 9), 
+		FAILURE_DETECT("FAILURE_DETECT", 9),
 		/**
 		 * 
 		 */
-		PREEMPTED("PREEMPTED", 13), 
+		PREEMPTED("PREEMPTED", 13),
 		/**
 		 * 
 		 */
-		CHECKPOINT_STATE("CHECKPOINT_STATE", 21), 
+		CHECKPOINT_STATE("CHECKPOINT_STATE", 21),
 		/**
 		 * 
 		 */
-		CHECKPOINT_REQUEST(	"CHECKPOINT_REQUEST", 23), 
+		CHECKPOINT_REQUEST("CHECKPOINT_REQUEST", 23),
 		/**
 		 * 
 		 */
-		SYNC_REQUEST("SYNC_REQUEST", 31), 
+		SYNC_REQUEST("SYNC_REQUEST", 31),
 		/**
 		 * 
 		 */
-		SYNC_DECISIONS("SYNC_DECISIONS", 32), 
+		SYNC_DECISIONS("SYNC_DECISIONS", 32),
 		/**
 		 * 
 		 */
-		FIND_REPLICA_GROUP("FIND_REPLICA_GROUP",33),
-		
+		FIND_REPLICA_GROUP("FIND_REPLICA_GROUP", 33),
+
 		/**
 		 * 
 		 */
@@ -237,7 +237,7 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * 
 		 */
-		PAXOS_PACKET("PAXOS_PACKET", 90), 
+		PAXOS_PACKET("PAXOS_PACKET", 90),
 		/**
 		 * 
 		 */
@@ -338,6 +338,13 @@ public abstract class PaxosPacket extends JSONPacket {
 		}
 	}
 
+	// directly supply the two fields
+	protected PaxosPacket(String paxosID, int version) {
+		super(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
+		this.paxosID = paxosID;
+		this.version = version;
+	}
+
 	protected PaxosPacket(JSONObject json) throws JSONException {
 		super(json);
 		if (json != null) {
@@ -345,6 +352,21 @@ public abstract class PaxosPacket extends JSONPacket {
 				this.paxosID = json.getString(PaxosPacket.Keys.ID.toString());
 			if (json.has(PaxosPacket.Keys.V.toString()))
 				this.version = json.getInt(PaxosPacket.Keys.V.toString());
+		}
+	}
+
+	// testing
+	protected PaxosPacket(net.minidev.json.JSONObject json)
+			throws JSONException {
+		super(PaxosPacket.PaxosPacketType.getPaxosPacketType((Integer) json
+				.get(JSONPacket.PACKET_TYPE)));
+		if (json != null) {
+			if (json.containsKey(PaxosPacket.Keys.ID.toString()))
+				this.paxosID = (String) json
+						.get(PaxosPacket.Keys.ID.toString());
+			if (json.containsKey(PaxosPacket.Keys.V.toString()))
+				this.version = (Integer) json
+						.get(PaxosPacket.Keys.V.toString());
 		}
 	}
 
@@ -399,12 +421,38 @@ public abstract class PaxosPacket extends JSONPacket {
 	}
 
 	/**
+	 * @return Paxos ID and version as a single string.
+	 */
+	public String getPaxosIDVersion() {
+		return this.paxosID + ":" + this.version;
+	}
+
+	/**
 	 * @param json
 	 * @return True if packet generated during recovery mode.
 	 * @throws JSONException
 	 */
 	public static boolean isRecovery(JSONObject json) throws JSONException {
 		return json.optBoolean(PaxosPacket.Keys.RCVRY.toString());
+	}
+
+	/**
+	 * Only prepare, accept, and decision can be recovery packets.
+	 * 
+	 * @param pp
+	 * @return True if {@code pp} is a recovery packet.
+	 */
+	public static boolean isRecovery(PaxosPacket pp) {
+		switch (pp.getType()) {
+		case ACCEPT:
+		case DECISION:
+			return ((PValuePacket) pp).isRecovery();
+		case PREPARE:
+			return ((PreparePacket) pp).isRecovery();
+		default:
+			break;
+		}
+		return false;
 	}
 
 	@Override
@@ -416,21 +464,31 @@ public abstract class PaxosPacket extends JSONPacket {
 			return null;
 		}
 	}
-	
+
 	/**
 	 * @return {@code this} as a singleton array.
 	 */
 	public PaxosPacket[] toSingletonArray() {
-		PaxosPacket[] ppArray = {this};
+		PaxosPacket[] ppArray = { this };
 		return ppArray;
 	}
 
 	protected abstract String getSummaryString();
 
 	/**
-	 * @return For pretty printing.
+	 * @return Object for pretty printing.
 	 */
 	public Object getSummary() {
+		return getSummary(true);
+	}
+
+	/**
+	 * @param create
+	 * @return Object for pretty printing.
+	 */
+	public Object getSummary(boolean create) {
+		if (!create)
+			return null;
 		return new Object() {
 			public String toString() {
 				return getPaxosID() + ":" + getVersion() + ":" + getType()
@@ -464,7 +522,8 @@ public abstract class PaxosPacket extends JSONPacket {
 
 	/**
 	 * Returns a PaxosPacket if parseable from a string.
-	 * @param msg 
+	 * 
+	 * @param msg
 	 * @return Paxos packet from string.
 	 * 
 	 * @throws JSONException

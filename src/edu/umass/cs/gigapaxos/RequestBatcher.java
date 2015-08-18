@@ -38,7 +38,8 @@ import edu.umass.cs.utils.Util;
  */
 public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
-	private static final int MAX_BATCH_SIZE = 1000;
+	private static final int MAX_BATCH_SIZE = Config
+			.getGlobalInt(PC.MAX_BATCH_SIZE);
 	private static final long BATCH_SLEEP_DURATION = Config
 			.getGlobalLong(PC.BATCH_SLEEP_DURATION);
 	private static final double BATCH_OVERHEAD = Config
@@ -46,7 +47,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 	private final HashMap<String, LinkedBlockingQueue<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
-	private static double adaptiveSleepDuration = BATCH_SLEEP_DURATION;
+	private static double adaptiveSleepDuration = 0;//BATCH_SLEEP_DURATION;
 
 	/**
 	 * @param lock
@@ -61,7 +62,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		super(lock);
 		this.batched = lock;
 		this.paxosManager = paxosManager;
-		this.setSleepDuration(BATCH_SLEEP_DURATION);
+		//this.setSleepDuration(BATCH_SLEEP_DURATION);
 	}
 
 	/**
@@ -72,6 +73,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 				paxosManager);
 	}
 
+	// FIXME: unclear how best to set entryTime with batching.
 	@Override
 	public void process(RequestPacket task) {
 		this.paxosManager.proposeBatched(task.setEntryTime(System
@@ -129,8 +131,6 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 		// then pluck the rest into a batch within the first request
 		Set<RequestPacket> batch = new HashSet<RequestPacket>();
-		int maxBatchSize = Math.min(MAX_BATCH_SIZE - 1, firstEntry.getValue()
-				.size());
 		/*
 		 * totalByteLength must be less than SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE
 		 * that specifies the maximum length of a paxos log message. We use the
@@ -145,12 +145,15 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		 * salvage the batch or dropping the whole batch in the logger.
 		 */
 		int totalByteLength = first.lengthEstimate();
-		for (int i = 0; i < maxBatchSize; i++) {
-			assert (reqPktIter.hasNext());
+		int totalBatchSize = first.batchSize() + 1;
+		while (reqPktIter.hasNext()) {
 			RequestPacket next = reqPktIter.next();
-			// break if not within size limit
-			if (SQLPaxosLogger.isLoggingEnabled()
-					&& (totalByteLength += next.lengthEstimate()) > SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE)
+			// break if not within size limits
+			if (// log message size limit would be reached
+			SQLPaxosLogger.isLoggingEnabled()
+					&& (totalByteLength += next.lengthEstimate()) > SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE
+					// batch size limit would be reached
+					|| ((totalBatchSize += next.batchSize() + 1) > MAX_BATCH_SIZE))
 				break;
 			// else add to batch and remove
 			batch.add(next);
@@ -164,8 +167,10 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		// remove first list if all plucked
 		if (firstEntry.getValue().isEmpty())// !reqPktIter.hasNext())
 			mapEntryIter.remove();
-
-		DelayProfiler.updateMovAvg("batchSize", first.batchSize() + 1);
+			
+		if (Util.oneIn(10))
+			DelayProfiler.updateMovAvg("batchSize", first.batchSize() + 1);
+		assert (first.batchSize() < MAX_BATCH_SIZE);
 		return first;
 	}
 }

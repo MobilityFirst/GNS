@@ -252,7 +252,8 @@ public class TESTPaxosConfig {
 		//setupGroups();
 	}
 
-	private static boolean reply_to_client = true;
+	// replies directly sendable by paxos via InterfaceClientRequest
+	private static boolean reply_to_client = false;//true;
 
 	private static boolean clean_db = Config
 			.getGlobalBoolean(PC.DISABLE_LOGGING);
@@ -465,7 +466,7 @@ public class TESTPaxosConfig {
 	 * @param nodeID
 	 * @return True if crash is being simulated.
 	 */
-	public synchronized static boolean isCrashed(Object nodeID) {
+	public static boolean isCrashed(Object nodeID) {
 		return TESTPaxosConfig.failedNodes.contains(nodeID);
 	}
 
@@ -474,7 +475,8 @@ public class TESTPaxosConfig {
 	 * @param paxosID
 	 * @param b
 	 */
-	public synchronized static void setRecovered(int id, String paxosID,
+	@Deprecated
+	public static void setRecovered(int id, String paxosID,
 			boolean b) {
 		if (paxosID.equals(Config.getGlobalString(TC.TEST_GUID))) {
 			recovered[id] = b;
@@ -516,7 +518,8 @@ public class TESTPaxosConfig {
 	/**
 	 * @param reqnum
 	 */
-	public synchronized static void commit(int reqnum) {
+	@Deprecated
+	public static void commit(int reqnum) {
 		if (reqnum >= 0 && reqnum < committed.length)
 			committed[reqnum] = true;
 	}

@@ -30,12 +30,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
-import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
+import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -45,7 +46,6 @@ public class TESTPaxosClient {
 	static {
 		TESTPaxosConfig.load();
 	}
-	private static long minSleepInterval = 10;
 
 	private static final long createTime = System.currentTimeMillis();
 	private static final int RANDOM_REPLAY = (int) (Math.random() * Config
@@ -110,8 +110,6 @@ public class TESTPaxosClient {
 	private int reqCount = 0;
 	private int replyCount = 0;
 	private int noopCount = 0;
-	private int executedCount = 0;
-	private int preRecoveryExecutedCount = 0;
 
 	private final ConcurrentHashMap<Integer, RequestPacket> requests = new ConcurrentHashMap<Integer, RequestPacket>();
 	private final ConcurrentHashMap<Integer, Long> requestCreateTimes = new ConcurrentHashMap<Integer, Long>();
@@ -147,30 +145,12 @@ public class TESTPaxosClient {
 		return this.replyCount;
 	}
 
-	private synchronized int getExecutedCount() {
-		return this.executedCount - this.preRecoveryExecutedCount;
-	}
-
 	private synchronized int getRequestCount() {
 		return this.reqCount;
 	}
 
 	private synchronized int getNoopCount() {
 		return this.noopCount;
-	}
-
-	private synchronized void setExecutedCount(int ec) {
-		if (ec > this.executedCount)
-			this.executedCount = ec;
-	}
-
-	private synchronized void setPreRecoveryCount(int prc) {
-		if (this.executedCount == 0)
-			this.preRecoveryExecutedCount = prc;
-	}
-
-	private synchronized int getPreRecoveryCount() {
-		return this.preRecoveryExecutedCount;
 	}
 
 	synchronized void close() {
@@ -193,21 +173,18 @@ public class TESTPaxosClient {
 			this.setThreadName("" + tpc.myID);
 		}
 
-		public synchronized boolean handleMessage(JSONObject msg) {
+		public boolean handleMessage(JSONObject msg) {
 			try {
-				ProposalPacket proposal = new ProposalPacket(msg);
-				//long latency = System.currentTimeMillis() - proposal.getCreateTime();
-				if (requests.containsKey(proposal.requestID)) {
+				RequestPacket request = new RequestPacket(msg);
+				if (requests.containsKey(request.requestID)) {
 					client.incrReplyCount();
-					assert(requestCreateTimes.containsKey(proposal.requestID));
-					long latency = System.currentTimeMillis() - requestCreateTimes.get(proposal.requestID);
+					assert(requestCreateTimes.containsKey(request.requestID));
+					long latency = System.currentTimeMillis() - requestCreateTimes.get(request.requestID);
 					log.log(Level.FINE,
-							"{0}{1}{2}{3}{4}{5}{6}{7}{8}",
-							new Object[] { "Client ", client.myID,
-									" received response #",
-									client.getReplyCount(), " with latency ",
-									latency, proposal.getDebugInfo(), " : ",
-									proposal.getSummary() });
+							"Client {0} received response #{1} with latency {2} [{3}] : {4}",
+							new Object[] { client.myID, client.getReplyCount(),
+									latency, request.getDebugInfo(),
+									request.getSummary() });
 					updateLatency(latency);
 					synchronized (client) {
 						client.notify();
@@ -216,15 +193,13 @@ public class TESTPaxosClient {
 					log.log(Level.FINE,
 							"Client {0} received PHANTOM response #{1} [{2}] for request {3} : {4}",
 							new Object[] { client.myID, client.getReplyCount(),
-									proposal.getDebugInfo(),
-									proposal.requestID, proposal.getSummary() });
+									request.getDebugInfo(),
+									request.requestID, request.getSummary() });
 				}
-				if (proposal.isNoop())
+				if (request.isNoop())
 					client.incrNoopCount();
-				client.setPreRecoveryCount(proposal.slot);
-				client.setExecutedCount(proposal.slot + 1);
-				requests.remove(proposal.requestID);
-				requestCreateTimes.remove(proposal.requestID);
+				requests.remove(request.requestID);
+				requestCreateTimes.remove(request.requestID);
 			} catch (JSONException je) {
 				log.severe(this + " incurred JSONException while processing " + msg);
 				je.printStackTrace();
@@ -281,16 +256,13 @@ public class TESTPaxosClient {
 		this.timer = new Timer(TESTPaxosClient.class.getSimpleName() + myID);
 	}
 
-	protected boolean sendRequest(RequestPacket req) throws IOException,
+	private boolean sendRequest(RequestPacket req) throws IOException,
 			JSONException {
 		int[] group = TESTPaxosConfig.getGroup(req.getPaxosID());
-		int index = -1;
-		while (index < 0 || index > group.length
-				|| TESTPaxosConfig.isCrashed(group[index])) {
+		int index = req.requestID % group.length;
+		while (index < 0 || index >= group.length
+				|| TESTPaxosConfig.isCrashed(group[index]))
 			index = (int) (Math.random() * group.length);
-			if (index == group.length)
-				index--;
-		}
 		return this.sendRequest(group[index], req);
 	}
 
@@ -340,20 +312,20 @@ public class TESTPaxosClient {
 		return gibberish;
 	}
 
-	protected RequestPacket makeRequest() {
+	private RequestPacket makeRequest() {
 		int reqID = ((int) (Math.random() * Integer.MAX_VALUE));
 		RequestPacket req = new RequestPacket(reqID,
 				"[Sample request numbered " + getRequestCount() + "]"
 						+ gibberish, false);
-		req.putPaxosID(Config.getGlobalString(TC.TEST_GUID), 0);
 		return req;
 	}
 
+	private static final String TEST_GUID = Config
+			.getGlobalString(TC.TEST_GUID);
+
 	protected RequestPacket makeRequest(String paxosID) {
 		RequestPacket req = this.makeRequest();
-		req.putPaxosID(
-				paxosID != null ? paxosID : Config
-						.getGlobalString(TC.TEST_GUID), 0);
+		req.putPaxosID(paxosID != null ? paxosID : TEST_GUID, 0);
 		return req;
 	}
 
@@ -381,35 +353,31 @@ public class TESTPaxosClient {
 		return clients;
 	}
 
+	private static double TOTAL_LOAD = Config.getGlobalDouble(TC.TOTAL_LOAD);
+	private static int NUM_GROUPS = Config.getGlobalInt(TC.NUM_GROUPS);
 	protected static void sendTestRequests(int numReqsPerClient,
 			TESTPaxosClient[] clients) throws JSONException, IOException {
 		System.out.print("\nInitiating test sending " + numReqsPerClient
 				* clients.length + " requests using " + clients.length
 				+ " clients at an aggregate load of "
-				+ Config.getGlobalDouble(TC.TOTAL_LOAD) + " reqs/sec...");
+				+ (TOTAL_LOAD) + " reqs/sec...");
+		RateLimiter r = new RateLimiter(TOTAL_LOAD);
 		long initTime = System.currentTimeMillis();
 		for (int i = 0; i < numReqsPerClient; i++) {
 			for (int j = 0; j < clients.length; j++) {
 				int curTotalReqs = j + i * clients.length;
 				while (!clients[j].makeAndSendRequest("paxos"
-						+ ((RANDOM_REPLAY + curTotalReqs) % Config
-								.getGlobalInt(TC.NUM_GROUPS))))
+						+ ((RANDOM_REPLAY + curTotalReqs) % (NUM_GROUPS))))
 					;
-				long leadTime = (long) ((curTotalReqs)
-						/ Config.getGlobalDouble(TC.TOTAL_LOAD) * 1000)
-						- (System.currentTimeMillis() - initTime);
-				if (leadTime > minSleepInterval) {
-					try {
-						Thread.sleep(leadTime);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
+				r.record();
 			}
 		}
+
 		System.out.println("done sending requests in "
 				+ Util.df((System.currentTimeMillis() - initTime) / 1000.0)
-				+ " secs");
+				+ " secs; actual sending rate = "
+				+ Util.df(numReqsPerClient * clients.length * 1000.0
+						/ (System.currentTimeMillis() - initTime)));
 	}
 
 	protected static void waitForResponses(TESTPaxosClient[] clients) {
@@ -433,7 +401,8 @@ public class TESTPaxosClient {
 				
 				try {
 					Thread.sleep(1000);
-				} catch (InterruptedException e) {
+					System.out.println(DelayProfiler.getStats());
+				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -482,13 +451,10 @@ public class TESTPaxosClient {
 						+ clients[i].getRequestCount()
 						+ "; requests turned to no-ops = "
 						+ clients[i].getNoopCount() + "; responses received = "
-						+ clients[i].getReplyCount()
-						+ "; preRecoveryExecutedCount = "
-						+ clients[i].getPreRecoveryCount() + "\n");
+						+ clients[i].getReplyCount() + "\n");
 			} else
-				System.out.println("\nFAILURE: Exection count = "
-						+ clients[i].getExecutedCount()
-						+ "; requests issued = " + clients[i].getRequestCount()
+				System.out.println("\nFAILURE: Requests issued = "
+						+ clients[i].getRequestCount()
 						+ "; requests turned to no-ops = "
 						+ clients[i].getNoopCount() + "; responses received = "
 						+ clients[i].getReplyCount() + "\n");

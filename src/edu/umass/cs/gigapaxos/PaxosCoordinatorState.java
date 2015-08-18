@@ -140,8 +140,7 @@ public class PaxosCoordinatorState {
 	 */
 	private int[] nodeSlotNumbers = null;
 
-	private static Logger log = // PaxosManager.getLogger();//
-	Logger.getLogger(PaxosCoordinatorState.class.getName());
+	private static Logger log = PaxosManager.getLogger();
 
 	// Used in myProposals map above and nowhere else
 	private class ProposalStateAtCoordinator {
@@ -241,18 +240,14 @@ public class PaxosCoordinatorState {
 		assert (!this.myProposals.containsKey(pvalue.slot));
 		this.myProposals.put(pvalue.slot, new ProposalStateAtCoordinator(
 				members, pvalue));
-		log.log(Level.FINE, "{0}{1}{2}{3}",
-				new Object[] { "Node", myBallot.coordinatorID,
-						" inserted proposal: ", pvalue.getSummary() });
+		log.log(Level.FINE, "Node {0} inserted proposal {1}",
+				new Object[] { myBallot.coordinatorID,
+						pvalue.getSummary(log.isLoggable(Level.FINE)) });
 		if (this.isActive()) {
-			log.log(Level.FINEST, "{0}{1}{2}", new Object[] {
-					"Coordinator at node ", myBallot.coordinatorID,
-					" is active" });
 			acceptPacket = this.initCommander(members, pvalue);
 		} else {
-			log.log(Level.FINE, "{0}{1}{2}", new Object[] {
-					"Coordinator at node ", myBallot.coordinatorID,
-					" is not active" });
+			log.log(Level.FINE, "Coordinator at node {0} is not active",
+					new Object[] { myBallot.coordinatorID, });
 			/*
 			 * Got to wait till view change is complete as proposals for a slot
 			 * can change in the process. Do nothing for now.
@@ -300,7 +295,7 @@ public class PaxosCoordinatorState {
 					"Node{0} received outdated prepare reply, "
 							+ "which should normally happen only during recovery: {1}): ",
 					new Object[] { this.myBallotCoord,
-							prepareReply.getSummary() });
+							prepareReply.getSummary(log.isLoggable(Level.FINE)) });
 			return true;
 		}
 
@@ -325,8 +320,8 @@ public class PaxosCoordinatorState {
 	protected synchronized boolean isPrepareAcceptedByMajority(
 			PrepareReplyPacket prepareReply, int[] members) {
 		if (this.canIgnorePrepareReply(prepareReply, members)) {
-			log.log(Level.FINE, "{0}{1}{2}", new Object[] { "Node ",
-					this.myBallotCoord, " ignoring prepare reply" });
+			log.log(Level.FINE, "Node {0} ignoring prepare reply",
+					new Object[] { this.myBallotCoord });
 			return false;
 		}
 		// isPreemptable and canIgnorePrepareReply should have been called
@@ -363,19 +358,16 @@ public class PaxosCoordinatorState {
 			}
 		}
 		waitforMyBallot.updateHeardFrom(prepareReply.acceptor);
-		log.log(Level.FINEST, "{0}{1}", new Object[] { "Waitfor = ",
+		log.log(Level.FINEST, "Waitfor = {0}", new Object[] {
 				waitforMyBallot });
 		if (this.waitforMyBallot.heardFromMajority()) {
 			acceptedByMajority = true;
 			log.log(Level.FINE,
-					"{0}{1}{2}{3}{4}{5}",
-					new Object[] {
-							prepareReply.getPaxosID(),
-							" coordinator ",
+					"{0} coordinator {1} acquired PREPARE majority and about to conduct view change; "
+							+ "accepted_pvalues_min_slots = {2}",
+					new Object[] { prepareReply.getPaxosID(),
 							Ballot.getBallotString(myBallotNum, myBallotCoord),
-							" acquired PREPARE majority and about to conduct view change;",
-							" accepted_pvalues_min_slots = ",
-							Util.arrayOfIntToString(this.nodeSlotNumbers) });
+							getString(this.nodeSlotNumbers) });
 		}
 		return acceptedByMajority;
 	}
@@ -480,9 +472,9 @@ public class PaxosCoordinatorState {
 							.compareTo(psac2.pValuePacket.ballot) > 0) {
 						// convert request (psac2) to stop (psac1)
 						int reqSlot = psac2.pValuePacket.slot;
-						log.log(Level.FINE, "{0}{1}{2}", new Object[] {
-								"Converting ", psac2.pValuePacket.slot,
-								" to stop" });
+						log.log(Level.FINE, "Converting {0} to stop", new Object[] {
+								psac2.pValuePacket.slot,
+								});
 						ProposalStateAtCoordinator psac2ToStop = new ProposalStateAtCoordinator(
 								members, new PValuePacket(new Ballot(
 										this.myBallotNum, this.myBallotCoord),
@@ -495,9 +487,9 @@ public class PaxosCoordinatorState {
 							.compareTo(psac2.pValuePacket.ballot) < 0) {
 						// convert stop (psac1) to noop (psac1)
 						assert (psac1.pValuePacket.isStopRequest());
-						log.log(Level.FINE, "{0}{1}{2}", new Object[] {
-								"Converting ", psac1.pValuePacket.slot,
-								" to noop" });
+						log.log(Level.FINE, "Converting {0} to noop", new Object[] {
+								psac1.pValuePacket.slot,
+								 });
 						PValuePacket noopPValue = this
 								.makeNoopPValue(psac1.pValuePacket);
 						psac1 = new ProposalStateAtCoordinator(members,
@@ -601,16 +593,20 @@ public class PaxosCoordinatorState {
 		 */
 		if (pstate != null && ((waitfor = pstate.waitfor) != null)) {
 			waitfor.updateHeardFrom(acceptReply.acceptor);
-			log.log(Level.FINEST, "{0}{1}{2}{3}{4}{5}", new Object[] { "Node ",
-					this.myBallotCoord, " updated waitfor to: ", waitfor,
-					" for ", pstate.pValuePacket.getSummary() });
+			log.log(Level.FINEST,
+					"Node {0} updated waitfor to: {1} for {2}",
+					new Object[] {
+							this.myBallotCoord,
+							waitfor,
+							pstate.pValuePacket.getSummary(log
+									.isLoggable(Level.FINEST)) });
 			if (waitfor.heardFromMajority()) {
 				// phase2b success
 				acceptedByMajority = true;
 				decision = (pstate.pValuePacket
 						.makeDecision(getMajorityCommittedSlot()));
 				log.log(Level.FINE, "{0} decided {1}", new Object[] { this,
-						decision.getSummary() });
+						decision.getSummary(log.isLoggable(Level.FINE)) });
 				assert (!decision.isRecovery());
 				this.myProposals.remove(decision.slot);
 			} else
@@ -777,10 +773,9 @@ public class PaxosCoordinatorState {
 			}
 		}
 		if (updated)
-			log.log(Level.FINEST, "{0}{1}{2}{3}",
-					new Object[] { "Node ", this.myBallotCoord,
-							" updated nodeSlotNumbers on a prepare reply: ",
-							Arrays.toString(nodeSlotNumbers) });
+			log.log(Level.FINEST, "Node {0} updated nodeSlotNumbers on a prepare reply {1}",
+					new Object[] {this.myBallotCoord,
+							getString(nodeSlotNumbers) });
 	}
 
 	/*
@@ -801,10 +796,9 @@ public class PaxosCoordinatorState {
 			}
 		}
 		if (updated)
-			log.log(Level.FINE, "{0}{1}{2}{3}",
-					new Object[] { "Node ", this.myBallotCoord,
-							" updated nodeSlotNumbers on an accept reply: ",
-							Arrays.toString(nodeSlotNumbers) });
+			log.log(Level.FINE, "Node {0} updaed nodeSlotNumbers on an accept reply {1}",
+					new Object[] { this.myBallotCoord,
+							getString(nodeSlotNumbers) });
 	}
 
 	private synchronized AcceptPacket initCommander(int[] members,
@@ -812,16 +806,24 @@ public class PaxosCoordinatorState {
 		return this.initCommander(new ProposalStateAtCoordinator(members,
 				pvalue));
 	}
+	
+	private Object getString(int[] array) {
+		return new Object() {
+			public String toString() {
+				return Arrays.toString(array);
+			}
+		};
+	}
 
 	private synchronized AcceptPacket initCommander(
 			ProposalStateAtCoordinator pstate) {
 		AcceptPacket acceptPacket = new AcceptPacket(this.myBallotCoord,
 				pstate.pValuePacket, getMajorityCommittedSlot());
 		//pstate.waitfor.incrRetransmissonCount();
-		log.log(Level.FINE, "{0}{1}{2}{3}{4}{5}",
-				new Object[] { "Node ", this.myBallotCoord,
-						" initCommandering ", acceptPacket.getSummary(),
-						" nodeSlotNumbers=", Arrays.toString(nodeSlotNumbers) });
+		log.log(Level.FINE,
+				"Node {0} intCommandering {1}; nodeSlotNumbers = {2}",
+				new Object[] { this.myBallotCoord, acceptPacket.getSummary(log.isLoggable(Level.FINE)),
+						getString(nodeSlotNumbers) });
 		return acceptPacket;
 	}
 

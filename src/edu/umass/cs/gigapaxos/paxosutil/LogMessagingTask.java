@@ -38,6 +38,13 @@ public class LogMessagingTask extends MessagingTask {
 		this.logMsg = toLog;
 		assert (logMsg != null);
 	}
+	
+	public LogMessagingTask(int r, PaxosPacket[] p, PaxosPacket toLog) {
+		super(r, p);
+		assert (p != null);
+		this.logMsg = toLog;
+		assert (logMsg != null);
+	}
 
 	public LogMessagingTask(PaxosPacket toLog) {
 		super(new int[0], new PaxosPacket[0]);

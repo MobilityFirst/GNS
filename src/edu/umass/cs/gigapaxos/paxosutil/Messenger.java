@@ -42,6 +42,7 @@ import edu.umass.cs.nio.JSONMessenger;
 @SuppressWarnings("javadoc")
 public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 
+	public static final boolean ENABLE_INT_STRING_CONVERSION = true;//false;
 	private final IntegerMap<NodeIDType> nodeMap;
 
 	public Messenger(InterfaceNIOTransport<NodeIDType, JSONObject> niot,
@@ -55,17 +56,25 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 	}
 
 	public void send(MessagingTask mtask) throws JSONException, IOException {
-		if(mtask==null || mtask.isEmptyMessaging()) return;
+		if (mtask == null || mtask.isEmptyMessaging())
+			return;
 		// need to convert integers to NodeIDType.toString before sending
 		super.send(toGeneric(mtask));
 	}
-	
+
 	public void send(MessagingTask[] mtasks) throws JSONException, IOException {
-		if(mtasks==null) return;
-		for(MessagingTask mtask : mtasks)
+		if (mtasks == null)
+			return;
+		for (MessagingTask mtask : mtasks)
 			send(mtask);
 	}
 
+	public void send(GenericMessagingTask<NodeIDType, ?> mtask)
+			throws JSONException, IOException {
+		if (mtask == null || mtask.isEmpty())
+			return;
+		super.send(mtask);
+	}
 
 	private JSONObject[] toJSONObjects(PaxosPacket[] msgs) throws JSONException {
 		JSONObject[] jsonArray = new JSONObject[msgs.length];
@@ -85,6 +94,8 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 
 	// convert int to NodeIDType to String
 	private JSONObject fixNodeIntToString(JSONObject json) throws JSONException {
+		if (!ENABLE_INT_STRING_CONVERSION)
+			return json;
 		if (json.has(PaxosPacket.NodeIDKeys.B.toString())) {
 			// fix ballot string
 			Ballot ballot = new Ballot(json.getString(PaxosPacket.NodeIDKeys.B

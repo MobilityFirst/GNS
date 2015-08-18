@@ -281,6 +281,29 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 
 	/**
 	 * @param json
+	 * @return Parsed socket address
+	 */
+	public static InetSocketAddress getSenderAddressJSONSmart(
+			net.minidev.json.JSONObject json) {
+		try {
+			InetAddress address = (json
+					.containsKey(MessageNIOTransport.SNDR_IP_FIELD) ? InetAddress
+					.getByName(((String) (json
+							.get(MessageNIOTransport.SNDR_IP_FIELD)))
+							.replaceAll("[^0-9.]*", "")) : null);
+			int port = (json.containsKey(MessageNIOTransport.SNDR_PORT_FIELD) ? (Integer) (json
+					.get(MessageNIOTransport.SNDR_PORT_FIELD)) : -1);
+			if (address != null && port > 0) {
+				return new InetSocketAddress(address, port);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	/**
+	 * @param json
 	 * @return Socket address of the recorded recorded in this JSON message at
 	 *         receipt time. Sometimes a sender needs to know on which of its
 	 *         possibly multiple listening sockets this message was received,

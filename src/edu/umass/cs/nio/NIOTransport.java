@@ -388,7 +388,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		ByteBuffer bbuf = getHeaderedByteBuffer(data=this.deflate(data));
 		int written = this.enqueueSend(isa, bbuf);
 		DelayProfiler.updateCount("totalBytesSent", written);
-		return written - HEADER_SIZE;
+		return written > 0 ? written - HEADER_SIZE : written;
 	}
 
 	private byte[] deflate(byte[] data) {
@@ -428,7 +428,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			putHeaderLength(bbuf, data.length).put(data);
 		bbuf.flip();
 		int written = this.enqueueSend(isa, bbuf);
-		return written - batchSize * HEADER_SIZE;
+		return written > 0 ? written - batchSize * HEADER_SIZE : written;
 	}
 
 	private static ByteBuffer getHeaderedByteBuffer(byte[] data) {
@@ -796,11 +796,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			}
 		} catch (IOException e) {
 			// close socket channel and retry (but may still fail)
-			if(!Util.oneIn(8))
-				this.cleanupRetry(key, socketChannel,
+			this.cleanupRetry(key, socketChannel,
 					this.getSockAddrFromSockChannel(socketChannel));
-			else // clear pending writes
-				this.clearPending(socketChannel);
 		}
 	}
 	
@@ -808,12 +805,14 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private void clearPending(SocketChannel socketChannel) {
 		InetSocketAddress sockAddr = this
 				.getSockAddrFromSockChannel(socketChannel);
+		/* Invariant: if there is data buffered to a destination, we must have
+		 * a socket channel for it.
+		 */
 		synchronized (this.sendQueues) {
 			this.sendQueues.remove(sockAddr);
-		}
-		synchronized (this.sockAddrToSockChannel) {
-			cleanup(socketChannel.keyFor(this.selector));
-			this.sockAddrToSockChannel.remove(sockAddr);
+			synchronized (this.sockAddrToSockChannel) {
+				this.sockAddrToSockChannel.remove(sockAddr);
+			}
 		}
 	}
 
@@ -992,9 +991,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		/* No point setting op write unless connected and handshaken. If not yet
 		 * connected, the selector thread will set op to write when it finishes
 		 * connecting.
-		 * 
-		 * sc can be null here because of clearPending().
 		 */
+		//assert(sc!=null);
 		if (sc!=null && sc.isConnected() && this.isHandshakeComplete(sc))
 			try {
 				// set op to write if not already set
@@ -1063,19 +1061,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					 * We can be here only if an entry was made in queuePending,
 					 * which can happen only after initiateConnection, which
 					 * maps the isa to a socket channel. Hence, the assert.
-					 * 
-					 * FIXME: this invariant is no longer true because of the 
-					 * clearPending method that eventually gives up.
 					 */
 					//assert (sc != null) : isa;
-					if (sc == null) {
-						try {
-							this.testAndIntiateConnection(isa);
-						} catch (IOException e) {
-							log.info(this + " failed to reconnect to " + isa);
-						}
-						return;
-					}
+					if(sc==null) return;
 
 					// connected and handshake complete => set op_write
 					SelectionKey key = null;
@@ -1511,8 +1499,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 									.getInetAddress(), socketChannel.socket()
 									.getPort()), e.getMessage() });
 			cleanup(key, socketChannel);
-			// FIXME: Should probably also drop outstanding data here			
-			//if(Util.oneIn(8)) this.clearPending(socketChannel);
+			// clearPending will also drop outstanding data here			
+			if(Util.oneIn(5)) this.clearPending(socketChannel);
 			connected = false;
 		}
 		if (connected)

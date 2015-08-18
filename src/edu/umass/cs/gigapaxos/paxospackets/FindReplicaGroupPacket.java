@@ -1,21 +1,23 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
 package edu.umass.cs.gigapaxos.paxospackets;
+
+import java.util.Arrays;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,8 +32,9 @@ import edu.umass.cs.utils.Util;
  *
  *         This is a funky packet that is used to create paxos groups at nodes
  *         that missed its birthing, say, because they were down then. If a node
- *         receives a paxos packet for which it has no state, it uses this 
- *         packet to find the group membership and create the paxos instance locally.
+ *         receives a paxos packet for which it has no state, it uses this
+ *         packet to find the group membership and create the paxos instance
+ *         locally.
  */
 
 @SuppressWarnings("javadoc")
@@ -48,6 +51,13 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 
 	public FindReplicaGroupPacket(int id, JSONObject msg) throws JSONException {
 		super(msg);
+		this.packetType = PaxosPacketType.FIND_REPLICA_GROUP;
+		this.nodeID = id;
+		this.group = null;
+	}
+
+	public FindReplicaGroupPacket(int id, PaxosPacket pp) throws JSONException {
+		super(pp);
 		this.packetType = PaxosPacketType.FIND_REPLICA_GROUP;
 		this.nodeID = id;
 		this.group = null;
@@ -105,7 +115,7 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 			case PREPARE:
 				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.B
 						.toString()))).coordinatorID;
-				//msg.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
+				// msg.getInt(PaxosPacket.NodeIDKeys.COORDINATOR.toString());
 				break;
 			case DECISION:
 				id = (new Ballot(msg.getString(PaxosPacket.NodeIDKeys.B
@@ -114,6 +124,30 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 			default:
 				break;
 			}
+		}
+		return id;
+	}
+
+	public static int getNodeID(PaxosPacket pp) throws JSONException {
+		int id = -1;
+		assert (pp.getType() != null);
+		PaxosPacketType msgType = pp.getType();
+		switch (msgType) {
+		case ACCEPT:
+			id = ((AcceptPacket) pp).sender;
+			break;
+		case ACCEPT_REPLY:
+			// this can actually never happen
+			id = ((AcceptReplyPacket) pp).acceptor;
+			break;
+		case PREPARE:
+			id = ((PreparePacket) pp).ballot.coordinatorID;
+			break;
+		case DECISION:
+			id = ((PValuePacket) pp).ballot.coordinatorID;
+			break;
+		default:
+			break;
 		}
 		return id;
 	}
@@ -141,6 +175,6 @@ public class FindReplicaGroupPacket extends PaxosPacket {
 
 	@Override
 	protected String getSummaryString() {
-		return nodeID + Util.arrayOfIntToString(group);
+		return nodeID + Arrays.toString(group);
 	}
 }
