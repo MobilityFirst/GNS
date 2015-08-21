@@ -361,7 +361,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	public RequestPacket(net.minidev.json.JSONObject json) throws JSONException {
 		super(json);
 		this.packetType = PaxosPacketType.REQUEST;
-		this.stop = (Boolean) json.getOrDefault(Keys.STOP.toString(), false);
+		this.stop = json.containsKey(Keys.STOP.toString()) ?  (Boolean) json.get(Keys.STOP.toString()) : false;
 		this.requestID = (Integer) json.get(Keys.QID.toString());
 		this.requestValue = (String) json.get(Keys.QVAL.toString());
 		this.entryTime = (Long) json.get(Keys.ET.toString());
@@ -379,8 +379,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 				.getSenderAddressJSONSmart(json));
 		this.entryReplica = (Integer) json.get(PaxosPacket.NodeIDKeys.E
 				.toString());
-		this.shouldReturnRequestValue = (Boolean) json.getOrDefault(
-				Keys.RVAL.toString(), false);
+                this.shouldReturnRequestValue = json.containsKey(Keys.RVAL.toString()) ?  (Boolean) json.get(Keys.RVAL.toString()) : false;
 		// unwrap latched along batch
 		Collection<?> batchedJSON = json.containsKey(Keys.BATCH.toString()) ? (Collection<?>) json
 				.get(Keys.BATCH.toString()) : null;
