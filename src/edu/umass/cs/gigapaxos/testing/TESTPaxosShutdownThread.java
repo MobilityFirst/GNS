@@ -48,7 +48,7 @@ public class TESTPaxosShutdownThread extends Thread {
 				new Thread(new TESTPaxosShutdownThread()));
 	}
 	private static Set<TESTPaxosClient> testClients = new HashSet<TESTPaxosClient>();
-	private static Set<TESTPaxosReplicable> apps = new HashSet<TESTPaxosReplicable>();
+	private static Set<TESTPaxosApp> apps = new HashSet<TESTPaxosApp>();
 
 	protected static void register(TESTPaxosClient[] clients) {
 		for (TESTPaxosClient client : clients) {
@@ -56,7 +56,7 @@ public class TESTPaxosShutdownThread extends Thread {
 		}
 	}
 
-	protected static void register(TESTPaxosReplicable app) {
+	protected static void register(TESTPaxosApp app) {
 		apps.add(app);
 	}
 

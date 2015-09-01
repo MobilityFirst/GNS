@@ -133,6 +133,7 @@ public abstract class AbstractDemandProfile {
 
 	protected static AbstractDemandProfile createDemandProfile(String name) {
 		try {
+			assert(C!=null);
 			return (AbstractDemandProfile) C.getConstructor(String.class)
 					.newInstance(name);
 		} catch (InstantiationException | IllegalAccessException

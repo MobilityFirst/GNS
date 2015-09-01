@@ -130,10 +130,6 @@ public abstract class PaxosPacket extends JSONPacket {
 		/**
 		 * 
 		 */
-		COORD,
-		/**
-		 * 
-		 */
 		ACCPTR,
 		/**
 		 * 

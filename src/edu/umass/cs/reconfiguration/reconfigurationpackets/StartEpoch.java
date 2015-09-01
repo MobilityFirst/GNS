@@ -262,17 +262,20 @@ public class StartEpoch<NodeIDType> extends
 				serviceName, epochNumber);
 		this.prevEpochGroup = prevNodes;
 		this.curEpochGroup = curNodes;
-		this.creator = creator;
-		this.receiver = receiver;
 		this.prevGroupName = prevGroupName;
-		this.initialState = initialState;
-		this.newlyAddedNodes = newlyAddedNodes;
 		this.prevEpoch = prevEpoch;
 		this.isMerge = isMerge;
 		this.mergees = mergees;
-		this.forwarder = forwarder;
 		this.initTime = initTime;
+
+		// ClientReconfigurationPacket fields
+		this.creator = creator;
+		this.receiver = receiver;
+		this.forwarder = forwarder;
+		this.initialState = initialState;
 		this.nameStates = nameStates;
+		
+		this.newlyAddedNodes = newlyAddedNodes;
 	}
 
 	/**

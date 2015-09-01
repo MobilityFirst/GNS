@@ -1,5 +1,7 @@
-This README explains the following: (1) Testing gigapaxos on a single machine; (2) Testing
-gigapaxos in a distributed setting; (3) Writing a simple application using gigapaxos. 
+This README explains the following: 
+(1) Testing gigapaxos on a single machine; 
+(2) Testing gigapaxos in a distributed setting; 
+(3) Writing a simple application using gigapaxos. 
 
 For all of the steps below, you first need to either check out the GNS code from the 
 repository and compile it using "ant" in the top-level directory so as to create "GNS.jar"
@@ -32,38 +34,52 @@ change the schema of existing tables because they would conflict with recovery l
 (2) Testing gigapaxos in a distributed setting
 
 A distributed test requires two or more machines to run servers and clients. The servers 
-need to be specified in a config file as exemplified below. 
+and other gigapaxos parameters need to be specified in a config file called 
+"gigapaxos.properties" in the same directory where the servers are being run. This file 
+should contain entries as shown below. Each line should start with the constant string 
+"active." followed by a string, e.g., "100", that is the server name. The part 
+following the "=" symbol is a host:port value. 
 
-100 date.cs.umass.edu
-101 plum.cs.umass.edu
-102 pear.cs.umass.edu
+APPLICATION=edu.umass.cs.gigapaxos.testing.TESTPaxosApp
 
-The clients can run on any machine and do not have to be specified in the config file. 
-gigapaxos expects to find the config file in a file called "testing_servers.conf" in
-the directory TESTPaxosConfig.DISTRIBUTED_CONFIG_DIR.
-The name and path of the config file can be specified in TESTPaxosConfig.testing_servers.conf 
-and TESTPaxosConfig.DISTRIBUTED_CONFIG_DIR respectively. These files are by default located
-in conf/gigapaxos/ subdirectory in the top-level GNS directory. 
+active.100=date.cs.umass.edu:2100
+active.101=plum.cs.umass.edu:2101
+active.102=pear.cs.umass.edu:2102
+
+An example of a gigapaxos.properties file may be found in GNS/gigapaxos.properties, where "GNS"
+is the top-level GNS directory.
+
+The clients can run on any machine and do not have to be specified in the config file. The name 
+and path of the testing config file used by clients can be specified in a file called 
+"testing.properties" in the directory ./conf/gigapaxos/. An example of such a file is in 
+GNS/conf/gigapaxos/testing.properties where "GNS" is the top-level GNS directory. 
  
 The servers must be started first in any order as follows:
 
-[date$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosNode 100 2>/tmp/run1
-[plum$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosNode 101 2>/tmp/run1
-[pear$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosNode 102 2>/tmp/run1
+[date$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosServer 100 2>/tmp/log100
+[plum$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosServer 101 2>/tmp/log101
+[pear$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosServer 102 2>/tmp/log102
 
-The client must be started after at least two of the above servers are up. A server is
+The client must be started after at least a majority of the above servers are up. A server is
 up after it has stopped printing console output for more than a few seconds. The clients
 are started as follows:
 
-[fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.TESTPaxosClient 2>/tmp/run1
+[fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.TESTPaxosClient 
 
 If the test is successful, the console output should print a sequence of "SUCCESS" just as 
 in the single machine test.
 
 (3) Writing a simple application using gigapaxos
 
-FIXME: To be detailed further. Refer TESTPaxosClient for now to get an idea of how to make 
-and send a request from a remote client. 
+To write a simple "hello world" application using gigapaxos, follow 
+edu.umass.cs.gigapaxos.examples.noop.NoopPaxosApp as an example. This application is also the 
+default value of "APPLICATION" and does not have to be specified in gigapaxos.properties. Run
+the servers exactly as in step (2) above.
+
+Use NoopPaxosClient in the same package as NoopPaxosApp as the reference client. This client
+just sends a few requests to the server and gets back responses. Run this client as follows:
+
+[fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.examples.noop.NoopPaxosClient
 
 An application may also be co-located in the same JVM as the servers and can explicitly 
 invoke PaxosManager.propose(.) instead of transmitting the request as above from a client 
@@ -71,7 +87,9 @@ to a server across a network. For the co-located case, each application node mus
 start PaxosManager and then create the corresponding paxos instances, as exemplified in
 TESTPaxosNode.java.
 
-The application itself must be an instance of InterfaceReplicable. See TESTReplicable.java for a
-simple example that simply echoes back the request (with some instrumentation additions).  
+The application itself must be an instance of InterfaceReplicable. See NoopPaxosApp.java for a
+simple example that simply echoes back the request. The application can delegate messaging 
+of responses back to clients to gigapaxos if it also implements InterfaceClientMessenger
+and its requests implement InterfaceClientRequest. Again, see NooPaxosApp for an example.
 
 

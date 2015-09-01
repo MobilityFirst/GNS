@@ -154,7 +154,9 @@ public class Reconfigurator<NodeIDType> implements
 		this.messenger.setClientMessenger(this.initClientMessenger());
 		assert (this.getClientMessenger() != null || this
 				.clientFacingPortIsMyPort());
-		this.recovering = false; // if here, recovery must be complete
+		
+		// if here, recovery must be complete
+		this.DB.setRecovering(this.recovering = false); 
 		log.log(Level.INFO,
 				"{0} finished recovery with NodeConfig = {1}",
 				new Object[] { this,
@@ -245,9 +247,12 @@ public class Reconfigurator<NodeIDType> implements
 			this.DB.handleIncoming(report); // coordinated
 		else
 			this.updateDemandProfile(report); // no coordination
-		// coordinate and commit reconfiguration intent
-		this.initiateReconfiguration(report.getServiceName(),
-				shouldReconfigure(report.getServiceName())); // coordinated
+		ReconfigurationRecord<NodeIDType> record = this.DB.getReconfigurationRecord(report.getServiceName());
+		if (record != null)
+			// coordinate and commit reconfiguration intent
+			this.initiateReconfiguration(report.getServiceName(), record,
+					shouldReconfigure(report.getServiceName()), null, null,
+					null, null, null, null); // coordinated
 		trimAggregateDemandProfile();
 		return null; // never any messaging or ptasks
 	}
@@ -413,17 +418,25 @@ public class Reconfigurator<NodeIDType> implements
 								+ delete.getForwader() : "" });
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(delete.getServiceName());
-		RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
-				this.getMyID(), this.formStartEpoch(delete.getServiceName(),
-						record, null, delete.getCreator(),
-						delete.getMyReceiver(), delete.getForwader(), null),
-				RequestTypes.RECONFIGURATION_INTENT);
+		RCRecordRequest<NodeIDType> rcRecReq = null;
 		// coordinate delete intent, response will be sent in callback
-		if (record != null && this.isReadyForReconfiguration(rcRecReq, record))
-			return this.DB.handleIncoming(rcRecReq) ? null : null;
+		if (record != null
+				&& this.isReadyForReconfiguration(
+						rcRecReq = new RCRecordRequest<NodeIDType>(this
+								.getMyID(), this.formStartEpoch(
+								delete.getServiceName(), record, null,
+								delete.getCreator(), delete.getMyReceiver(),
+								delete.getForwader(), null, null, null),
+								RequestTypes.RECONFIGURATION_INTENT), record)) {
+			this.DB.handleIncoming(rcRecReq);
+			return null;
+		}
 		// WAIT_DELETE state also means success
 		else if (this.isWaitingDelete(delete)) {
-			this.sendDeleteConfirmationToClient(rcRecReq);
+			//this.sendDeleteConfirmationToClient(rcRecReq);
+			this.sendClientReconfigurationPacket(delete
+					.setResponseMessage(delete.getServiceName()
+							+ " already pending deletion"));
 			return null;
 		}
 		// else failure
@@ -431,7 +444,8 @@ public class Reconfigurator<NodeIDType> implements
 				.setFailed()
 				.setResponseMessage(
 						delete.getServiceName()
-								+ " is being reconfigured and can not be deleted just yet."));
+								+ (record != null ? " is being reconfigured and can not be deleted just yet."
+										: " does not exist")));
 		log.log(Level.INFO,
 				"{0} discarded {1} because RC record is not reconfiguration ready.",
 				new Object[] { this, delete.getSummary() });
@@ -523,7 +537,7 @@ public class Reconfigurator<NodeIDType> implements
 						.toString()));
 		log.log(Level.INFO,
 				"{0} received node config change request {1} from initiator {2}",
-				new Object[] { this, changeRC.getSummary(),
+				new Object[] { this, changeRC.toString(),
 						changeRC.getIssuer() });
 		if (!this.isPermitted(changeRC)) {
 			String errorMessage = " Impermissible node config change request";
@@ -631,10 +645,9 @@ public class Reconfigurator<NodeIDType> implements
 				this.sendCreateConfirmationToClient(rcRecReq);
 			// send response back to RCReconfigure initiator
 			else if (rcRecReq.isReconfigurationComplete()
-					&& rcRecReq.isNodeConfigChange()) {
+					&& rcRecReq.isNodeConfigChange()) 
 				// checkpoint and garbage collect
 				this.postCompleteNodeConfigChange(rcRecReq);
-			}
 
 			/*
 			 * If reconfiguration is complete, remove any previously spawned
@@ -648,9 +661,11 @@ public class Reconfigurator<NodeIDType> implements
 			this.garbageCollectStopAndStartTasks(rcRecReq);
 			this.garbageCollectPendingTasks(rcRecReq);
 		} else if (handled && rcRecReq.isNodeConfigChange()) {
-			if (rcRecReq.isReconfigurationIntent())
+			if (rcRecReq.isReconfigurationIntent()) {
+				ncAssert(rcRecReq, handled);
 				// initiate and complete reconfiguring RC groups here
 				executeNodeConfigChange(rcRecReq);
+			}
 		} else if (rcRecReq.isReconfigurationMerge()) {
 			if (!handled)
 				/*
@@ -662,7 +677,7 @@ public class Reconfigurator<NodeIDType> implements
 				 * getting the state because the merge needs a coordinated
 				 * commit task that is asynchronous. The only way to know if the
 				 * merge succeeded or failed is in this Reconfigurator
-				 * executed() callback function and WaitEpochFinalState by
+				 * executed() callback function but WaitEpochFinalState by
 				 * design belongs to ActiveReplica.
 				 */
 				this.protocolExecutor
@@ -687,6 +702,19 @@ public class Reconfigurator<NodeIDType> implements
 
 		}
 	}
+	
+	private void ncAssert(RCRecordRequest<NodeIDType> rcRecReq, boolean handled) {
+		ReconfigurationRecord<NodeIDType> ncRecord = this.DB
+				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+						.toString());
+		assert (!ncRecord.getActiveReplicas().equals(ncRecord.getNewActives())) : this
+				+ " : handled="
+				+ handled
+				+ "; "
+				+ ncRecord
+				+ "\n  upon \n"
+				+ rcRecReq;
+	}
 
 	@Override
 	public void preExecuted(InterfaceRequest request) {
@@ -706,7 +734,7 @@ public class Reconfigurator<NodeIDType> implements
 		 * reconfiguration complete out of the blue and may not even know the
 		 * socket addresses of other newly added nodes.
 		 */
-		if (rcRecReq.startEpoch.getNewlyAddedNodes().contains(this.getMyID()))
+		if (rcRecReq.startEpoch.getNewlyAddedNodes().contains(this.getMyID())) 
 			this.executeNodeConfigChange(rcRecReq);
 	}
 
@@ -714,8 +742,11 @@ public class Reconfigurator<NodeIDType> implements
 
 	/*********************** Private methods below **************************/
 
+	@SuppressWarnings("unchecked")
 	private RCRecordRequest<NodeIDType> requestToRCRecordRequest(
 			InterfaceRequest request) {
+		if (request instanceof RCRecordRequest<?>)
+			return (RCRecordRequest<NodeIDType>) request;
 		BasicReconfigurationPacket<?> rcPacket = null;
 		try {
 			rcPacket = ReconfigurationPacket.getReconfigurationPacket(request,
@@ -728,7 +759,6 @@ public class Reconfigurator<NodeIDType> implements
 				|| !rcPacket.getType().equals(
 						ReconfigurationPacket.PacketType.RC_RECORD_REQUEST))
 			return null;
-		@SuppressWarnings("unchecked")
 		// checked right above
 		RCRecordRequest<NodeIDType> rcRecReq = (RCRecordRequest<NodeIDType>) rcPacket;
 		return rcRecReq;
@@ -993,16 +1023,6 @@ public class Reconfigurator<NodeIDType> implements
 		}
 	}
 
-	private boolean initiateReconfiguration(String name,
-			Set<NodeIDType> newActives) {
-		ReconfigurationRecord<NodeIDType> record = this.DB
-				.getReconfigurationRecord(name);
-		if (record == null)
-			return false;
-		return this.initiateReconfiguration(name, record, newActives, null,
-				null, null, null, null, null);
-	}
-
 	// coordinate reconfiguration intent
 	private boolean initiateReconfiguration(String name,
 			ReconfigurationRecord<NodeIDType> record,
@@ -1091,15 +1111,6 @@ public class Reconfigurator<NodeIDType> implements
 						null, sender, receiver, forwarder, initialState,
 						nameStates, newlyAddedNodes);
 		return startEpoch;
-	}
-
-	private StartEpoch<NodeIDType> formStartEpoch(String name,
-			ReconfigurationRecord<NodeIDType> record,
-			Set<NodeIDType> newActives, InetSocketAddress sender,
-			InetSocketAddress receiver, InetSocketAddress forwarder,
-			String initialState) {
-		return this.formStartEpoch(name, record, newActives, sender, receiver,
-				forwarder, initialState, null, null);
 	}
 
 	/************ Start of key construction utility methods *************/
@@ -1244,7 +1255,7 @@ public class Reconfigurator<NodeIDType> implements
 					new Object[] { this, name });
 			RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
 					this.getMyID(), this.formStartEpoch(name, record,
-							record.getNewActives(), null, null, null, null),
+							record.getNewActives(), null, null, null, null, null, null),
 					RCRecordRequest.RequestTypes.RECONFIGURATION_INTENT);
 			/*
 			 * We spawn primary even though that may be unnecessary because we
@@ -1555,7 +1566,10 @@ public class Reconfigurator<NodeIDType> implements
 						.getEpochNumber());
 		if (!ncChanged)
 			throw new RuntimeException("Unable to change node config");
-
+		assert(!rcRecReq.startEpoch.getNewlyAddedNodes().isEmpty() || 
+				!diff(rcRecReq.startEpoch.prevEpochGroup,
+						rcRecReq.startEpoch.curEpochGroup).isEmpty());
+	
 		// to track epoch numbers of RC groups correctly
 		Set<NodeIDType> affectedNodes = this.DB.setRCEpochs(
 				rcRecReq.startEpoch.getNewlyAddedNodes(),
@@ -1716,6 +1730,8 @@ public class Reconfigurator<NodeIDType> implements
 		ReconfigurationRecord<NodeIDType> ncRecord = this.DB
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString());
+		
+		assert(!ncRecord.getActiveReplicas().equals(ncRecord.getNewActives())) : ncRecord;
 
 		if (ncRecord == null)
 			return false;
@@ -1749,14 +1765,11 @@ public class Reconfigurator<NodeIDType> implements
 	private static final long NODE_CONFIG_RESTART_PERIOD = 8 * WaitAckStopEpoch.RESTART_PERIOD;
 
 	private void repeatUntilObviated(RCRecordRequest<NodeIDType> rcRecReq) {
-		// this.protocolExecutor.spawnIfNotRunning(new
-		// WaitCoordinatedCommit<NodeIDType>(rcRecReq, this.DB));
 		if (this.DB.isNCRecord(rcRecReq.getServiceName()))
 			this.commitWorker.enqueueForExecution(rcRecReq,
 					NODE_CONFIG_RESTART_PERIOD);
 		else
 			this.commitWorker.enqueueForExecution(rcRecReq);
-
 	}
 
 	/*

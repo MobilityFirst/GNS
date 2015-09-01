@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -27,20 +27,25 @@ import java.util.Set;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
+import edu.umass.cs.reconfiguration.examples.AppRequest.ResponseCodes;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun
+ * 
+ *         A simple no-op application example.
  */
-public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
+public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable,
+		InterfaceClientMessenger {
 
 	private static final String DEFAULT_INIT_STATE = "";
 
@@ -62,10 +67,16 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		}
 	}
 
-	private final String myID;
+	private String myID; // used only for pretty printing
 	private final HashMap<String, AppData> appData = new HashMap<String, AppData>();
 	// only address based communication needed in app
 	private InterfaceSSLMessenger<?, JSONObject> messenger;
+
+	/**
+	 * Default constructor used to create app replica via reflection.
+	 */
+	public NoopApp() {
+	}
 
 	/**
 	 * @param id
@@ -75,29 +86,31 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 	}
 
 	// Need a messenger mainly to send back responses to the client.
-	protected void setMessenger(InterfaceSSLMessenger<?, JSONObject> msgr) {
+	@Override
+	public void setClientMessenger(InterfaceSSLMessenger<?, JSONObject> msgr) {
 		this.messenger = msgr;
+		this.myID = msgr.getMyID().toString();
 	}
 
-	// FIXME: return response to client
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
 			boolean doNotReplyToClient) {
-		if(request.toString().equals(InterfaceRequest.NO_OP)) return true;
-		try {
+		if (request.toString().equals(InterfaceRequest.NO_OP))
+			return true;
 			switch ((AppRequest.PacketType) (request.getRequestType())) {
 			case DEFAULT_APP_REQUEST:
-				return processRequest((NoopAppRequest) request);
+				return processRequest((NoopAppRequest) request,
+						doNotReplyToClient);
 			default:
 				break;
 			}
-		} catch (RequestParseException rpe) {
-			rpe.printStackTrace();
-		}
 		return false;
 	}
 
-	private boolean processRequest(NoopAppRequest request) {
+	private static final boolean DELEGATE_RESPONSE_MESSAGING = true;
+
+	private boolean processRequest(NoopAppRequest request,
+			boolean doNotReplyToClient) {
 		if (request.getServiceName() == null)
 			return true; // no-op
 		if (request.isStop())
@@ -112,24 +125,40 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 		data.setState(request.getValue());
 		this.appData.put(request.getServiceName(), data);
 		System.out.println("App-" + myID + " wrote " + data.name
-				+ " with state " + data.getState());
-		sendResponse(request);
+				+ " with state " + data.getState() + " from " + request.getClientAddress());
+		if (DELEGATE_RESPONSE_MESSAGING)
+			this.sendResponse(request);
+		else
+			sendResponse(request, doNotReplyToClient);
 		return true;
 	}
 
-	private void sendResponse(NoopAppRequest request) {
+	/**
+	 * This method exemplifies one way of sending responses back to the client.
+	 * A cleaner way of sending a simple, single-message response back to the
+	 * client is to delegate it to the replica coordinator, as exemplified below
+	 * in {@link #sendResponse(NoopAppRequest)} and supported by gigapaxos.
+	 * 
+	 * @param request
+	 * @param doNotReplyToClient
+	 */
+	private void sendResponse(NoopAppRequest request, boolean doNotReplyToClient) {
 		assert (this.messenger != null && this.messenger.getClientMessenger() != null);
-		if (this.messenger == null || !request.getEntryReplica().equals(this.myID))
+		if (this.messenger == null || doNotReplyToClient)
 			return;
-		InetSocketAddress sockAddr = new InetSocketAddress(
-				request.getSenderAddress(), request.getSenderPort());
+
+		InetSocketAddress sockAddr = request.getSenderAddress();
 		try {
-			// SSL: invoke clientMessenger here
 			this.messenger.getClientMessenger().sendToAddress(sockAddr,
 					request.toJSONObject());
 		} catch (JSONException | IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void sendResponse(NoopAppRequest request) {
+		// set to whatever response value is appropriate
+		request.setResponse(ResponseCodes.ACK.toString());
 	}
 
 	// no-op
@@ -142,7 +171,6 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 			throws RequestParseException {
 		NoopAppRequest request = null;
 		if (stringified.equals(InterfaceRequest.NO_OP)) {
-			System.out.println("************** returning NO_OP");
 			return this.getNoopRequest();
 		}
 		try {
@@ -165,7 +193,7 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 
 	private static AppRequest.PacketType[] types = {
 			AppRequest.PacketType.DEFAULT_APP_REQUEST,
-			AppRequest.PacketType.APP_COORDINATION };
+			AppRequest.PacketType.ANOTHER_APP_REQUEST };
 
 	@Override
 	public Set<IntegerPacketType> getRequestTypes() {
@@ -193,11 +221,12 @@ public class NoopApp implements InterfaceReplicable, InterfaceReconfigurable {
 
 		if (data == null && state != null) {
 			data = new AppData(name, state);
-//			System.out.println(">>>App-" + myID + " creating " + name
-	//				+ " with state " + state);
+			 System.out.println(">>>App-" + myID + " creating " + name
+			 + " with state " + state);
 		} else if (state == null) {
-			if(data!=null) System.out.println("App-" + myID + " deleting " + name
-					+ " with state " + data.state);
+			if (data != null)
+				System.out.println("App-" + myID + " deleting " + name
+						+ " with state " + data.state);
 			this.appData.remove(name);
 			assert (this.appData.get(name) == null);
 		} else if (data != null && state != null) {

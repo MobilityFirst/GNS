@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -37,6 +37,15 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
  * @author V. Arun
+ * 
+ *         An explicit coordinator class like this is optional and is needed
+ *         only of the application wants to implement its own replica
+ *         coordination scheme. For applications simply wanting to use gigapaxos
+ *         as their replica coordination protocol, a class like this is
+ *         unnecessary. The code below shows how to use a replica coordination
+ *         scheme based on lazy propagation as an alternative to paxos. Note
+ *         that the lazy propagation scheme below is not even eventually
+ *         consistent and is shown here only as a trivial alternative example.
  */
 public class NoopAppCoordinator extends PaxosReplicaCoordinator<String> {
 
@@ -75,12 +84,13 @@ public class NoopAppCoordinator extends PaxosReplicaCoordinator<String> {
 	}
 
 	NoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
-			Stringifiable<String> unstringer, InterfaceSSLMessenger<String,JSONObject> msgr) {
+			Stringifiable<String> unstringer,
+			InterfaceSSLMessenger<String, JSONObject> msgr) {
 		super(app, msgr.getMyID(), unstringer, msgr);
 		this.coordType = coordType;
 		this.registerCoordination(NoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
 		if (app instanceof NoopApp)
-			((NoopApp) app).setMessenger(msgr);
+			((NoopApp) app).setClientMessenger(msgr);
 	}
 
 	@Override

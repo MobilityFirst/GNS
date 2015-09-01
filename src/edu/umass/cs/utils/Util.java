@@ -1,6 +1,9 @@
 package edu.umass.cs.utils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -95,12 +98,20 @@ public class Util {
 		return set;
 	}
 
-	public static Set<String> nodeIdSetToStringSet(Set<?> set) {
+	public static Set<String> setToStringSet(Set<?> set) {
 		Set<String> result = new HashSet<String>();
 		for (Object id : set) {
 			result.add(id.toString());
 		}
 		return result;
+	}
+
+	// will throw exception if any string is not parseable as integer
+	public static Set<Integer> stringSetToIntegerSet(Set<String> set) {
+		Set<Integer> intIDs = new HashSet<Integer>();
+		for (String s : set)
+			intIDs.add(Integer.valueOf(s));
+		return intIDs;
 	}
 
 	public static int[] setToIntArray(Set<Integer> set) {
@@ -150,7 +161,7 @@ public class Util {
 		return set;
 	}
 
-	// to test the json-smart parser 
+	// to test the json-smart parser
 	public static JSONObject toJSONObject(String s) throws JSONException {
 		net.minidev.json.JSONObject sjson = (net.minidev.json.JSONObject) net.minidev.json.JSONValue
 				.parse(s);
@@ -339,15 +350,86 @@ public class Util {
 		return dst.put(buf);
 	}
 
-	public static void main(String[] args) {
-		int[] array = {21, -25, 456, 92};
-		int n = 10000000;
-		long t = System.currentTimeMillis();
-		for(int i=0; i<n; i++) {
-			//String s= (Arrays.toString(array));
-			//String s = (Util.arrayOfIntToString(array));
+	private static final String CHARSET = "ISO-8859-1";
+
+	public static String sockAddrToEncodedString(InetSocketAddress isa)
+			throws UnsupportedEncodingException {
+		byte[] address = isa.getAddress().getAddress();
+		byte[] buf = new byte[address.length + 2];
+		for (int i = 0; i < address.length; i++)
+			buf[i] = address[i];
+		buf[address.length] = (byte) (isa.getPort() >> 8);
+		buf[address.length + 1] = (byte) (isa.getPort() & 255);
+		return new String(buf, CHARSET);
+
+	}
+
+	public static InetSocketAddress encodedStringToInetSocketAddress(String str)
+			throws UnknownHostException, UnsupportedEncodingException {
+		byte[] buf = str.getBytes(CHARSET);
+		int port = (int) (buf[buf.length - 2] << 8)
+				+ (buf[buf.length - 1] & 255);
+		return new InetSocketAddress(InetAddress.getByAddress(Arrays
+				.copyOfRange(buf, 0, 4)), port);
+	}
+
+	public static byte[] longToBytes(long value) {
+		int size = Long.SIZE / 8;
+		byte[] buf = new byte[size];
+		for (int i = 0; i < size; i++)
+			buf[i] = (byte) ((value >> ((size - i - 1) * 8)) & 255);
+		return buf;
+	}
+
+	public static String longToEncodedString(long value)
+			throws UnsupportedEncodingException {
+		return new String(longToBytes(value), CHARSET);
+	}
+
+	public static long bytesToLong(byte[] bytes) {
+		long value = 0;
+		for (int i = 0; i < bytes.length; i++)
+			value += ((long) (bytes[i] & 255) << ((bytes.length - i - 1) * 8));
+		return value;
+	}
+
+	public static long encodedStringToLong(String str)
+			throws UnsupportedEncodingException {
+		return Util.bytesToLong(str.getBytes(CHARSET));
+	}
+
+	private static void testToBytesAndBack() throws UnknownHostException,
+			UnsupportedEncodingException {
+		InetSocketAddress isa = new InetSocketAddress("128.119.235.43", 23451);
+		assert (Util.encodedStringToInetSocketAddress(Util
+				.sockAddrToEncodedString(isa)).equals(isa));
+		int n = 10000;
+		for (int i = 0; i < n; i++) {
+			long t = (long) (Math.random() * Long.MAX_VALUE);
+			byte[] buf = (Util.longToBytes(t));
+			assert (t == Util.bytesToLong(buf));
 		}
-		System.out.println(Arrays.toString(array));
-		System.out.println("average_iter_time = " + (System.currentTimeMillis() -t)*1000.0/n);
+		for (int i = 0; i < n; i++) {
+			long value = (long) (Math.random() * Long.MAX_VALUE);
+			assert (value == Util.encodedStringToLong(Util
+					.longToEncodedString(value)));
+		}
+		for (int i = 0; i < n; i++) {
+			byte[] address = new byte[4];
+			for (int j = 0; j < 4; j++)
+				address[j] = (byte) (Math.random() * Byte.MAX_VALUE);
+			InetSocketAddress sockAddr = new InetSocketAddress(
+					InetAddress.getByAddress(address),
+					(int) (Math.random() * Short.MAX_VALUE));
+			assert (Util.encodedStringToInetSocketAddress(Util
+					.sockAddrToEncodedString(sockAddr)).equals(sockAddr));
+		}
+	}
+
+	public static void main(String[] args) throws UnsupportedEncodingException,
+			UnknownHostException {
+		Util.assertAssertionsEnabled();
+		testToBytesAndBack();
+
 	}
 }

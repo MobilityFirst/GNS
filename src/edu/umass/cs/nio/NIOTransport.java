@@ -1343,9 +1343,11 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		try {
 			serverChannel.socket().bind(isa);
 		} catch (BindException be) {
+			log.info(this + " failed to bind to " + isa + "; trying wildcard address instead");
 			// try wildcard IP
 			serverChannel.socket().bind(new InetSocketAddress(isa.getPort()));
 		}
+		log.log(Level.FINE, "{0} listening on channel {1}", new Object[]{this, serverChannel});
 		
 		if (isSSL())
 			// only for logging purposes
@@ -1516,7 +1518,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	}
 
 	public String toString() {
-		return this.getClass().getSimpleName() + this.myID;
+		return this.getClass().getSimpleName() + (this.myID!=null ? this.myID : "");
 	}
 
 	/*

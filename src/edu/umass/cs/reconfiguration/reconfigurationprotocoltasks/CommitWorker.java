@@ -69,10 +69,10 @@ public class CommitWorker<NodeIDType> implements Runnable {
 		if (!this.checkIfObviated(request))
 			enqueued = this.pending.add(request);
 		log.log(Util.oneIn(10) ? Level.INFO : Level.FINE,
-				"{0} pendingQSize = " + this.pending.size()
-						+ "; executedQSize = " + this.executed.size() + "\n  "
-						+ this.getSetSummary(pending) + "\n  "
-						+ this.getSetSummary(executed));
+				"{0} pendingQSize = {1}; executedQSize = {2}\n {3}\n {4}",
+				new Object[] { this, this.pending.size(), this.executed.size(),
+						this.getSetSummary(pending),
+						this.getSetSummary(executed) });
 		this.notify();
 		return enqueued;
 	}
@@ -193,19 +193,23 @@ public class CommitWorker<NodeIDType> implements Runnable {
 	private boolean shouldEnqueueEarlyExecutedNotification(
 			RCRecordRequest<NodeIDType> request) {
 		return this.isRCGroupName(request)
-		// split intents are not coordinated
+		/*
+		 * Split intents are not coordinated but will get here nevertheless via
+		 * the executed callback that is called even for uncoordinated requests.
+		 */
 				&& !request.isSplitIntent()
 		// && !request.isReconfigurationMerge()
 		;
 		/*
 		 * Merges are tricky coz they are idempotent but can be multiply
-		 * successful, i.e., return handled=true. This means that they may never
-		 * be garbage collected if enqueued. If not enqueued however, we may
-		 * keep trying the merge forever here and be unsuccessful even though
-		 * the merge has been obviated (say because the RC record has actually
-		 * moved on). The only way to be certain of obviation is to check the
-		 * DB. We just enqueue for now to ensure progress coz merges are rare
-		 * operations anyway, so some uncollected garbage is okay.
+		 * successful, i.e., return handled=true. This means that merge
+		 * execution notifications may never be garbage collected if enqueued.
+		 * If not enqueued however, we may keep trying the merge forever here
+		 * and be unsuccessful even though the merge has been obviated (say
+		 * because the RC record has actually moved on). The only way to be
+		 * certain of obviation is to check the DB. We just enqueue for now to
+		 * ensure progress coz merges are rare operations anyway, so some
+		 * uncollected garbage is okay.
 		 */
 	}
 

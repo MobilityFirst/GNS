@@ -235,14 +235,14 @@ public class PaxosPacketBatcher extends ConsumerTask<PaxosPacket[]> {
 			return mtask;
 
 		if (isAccReply) {
-			for (PaxosPacket acceptReply : mtask.msgs)
+			for (PaxosPacket acceptReply : nonLocal.msgs)
 				this.enqueue(acceptReply.toSingletonArray());
 		} else if (isCommit) {
 			BatchedCommit batchedCommit = new BatchedCommit(
-					(PValuePacket) mtask.msgs[0],
-					Util.arrayToIntSet(mtask.recipients));
-			for (int i = 1; i < mtask.msgs.length; i++)
-				batchedCommit.addCommit((PValuePacket) mtask.msgs[i]);
+					(PValuePacket) nonLocal.msgs[0],
+					Util.arrayToIntSet(nonLocal.recipients));
+			for (int i = 1; i < nonLocal.msgs.length; i++)
+				batchedCommit.addCommit((PValuePacket) nonLocal.msgs[i]);
 			this.enqueue(batchedCommit.toSingletonArray());
 		}
 		return local; // could be null

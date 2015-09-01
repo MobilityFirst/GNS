@@ -104,7 +104,7 @@ public class TESTPaxosMain {
 
 			/*************** Client requests/responses below ****************/
 
-			TESTPaxosClient[] clients = TESTPaxosClient.setupClients();
+			TESTPaxosClient[] clients = TESTPaxosClient.setupClients(null);
 			TESTPaxosShutdownThread.register(clients);
 			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS) / Config.getGlobalInt(TC.NUM_CLIENTS);
 
@@ -113,20 +113,20 @@ public class TESTPaxosMain {
 			// begin first run
 			long t1 = System.currentTimeMillis();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
-			TESTPaxosClient.waitForResponses(clients);
+			TESTPaxosClient.waitForResponses(clients, t1);
 			long t2 = System.currentTimeMillis();
 			System.out
 					.println("\n[run1]" + getAggregateOutput(numReqs, t1, t2));
 			// end first run
 
 			assert (TESTPaxosClient.noOutstanding(clients));
-			TESTPaxosClient.resetLatencyComputation();
+			TESTPaxosClient.resetLatencyComputation(clients);
 			Thread.sleep(1000);
 
 			// begin second run
 			t1 = System.currentTimeMillis();
 			TESTPaxosClient.sendTestRequests(numReqs, clients);
-			TESTPaxosClient.waitForResponses(clients);
+			TESTPaxosClient.waitForResponses(clients, t1);
 			t2 = System.currentTimeMillis();
 			TESTPaxosClient.printOutput(clients);
 			System.out.println("[run2]" + getAggregateOutput(numReqs, t1, t2));

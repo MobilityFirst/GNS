@@ -24,7 +24,6 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 
 /**
@@ -83,7 +82,7 @@ public abstract class BasicReconfigurationPacket<NodeIDType> extends Reconfigura
 		return getType() + ":"+getServiceName() +":"+getEpochNumber();
 	}
 	
-	public IntegerPacketType getRequestType() throws RequestParseException {
+	public IntegerPacketType getRequestType() {
 		return this.getType();
 	}
 	

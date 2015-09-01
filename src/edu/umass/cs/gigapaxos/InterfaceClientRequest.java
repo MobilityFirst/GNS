@@ -18,5 +18,10 @@ public interface InterfaceClientRequest extends InterfaceRequest {
 	 * @return The response to be sent back to the client that issued this
 	 *         request.
 	 */
-	public InterfaceRequest getResponse();
+	public InterfaceClientRequest getResponse();
+
+	/**
+	 * @return Request ID.
+	 */
+	public long getRequestID();
 }

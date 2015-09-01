@@ -56,6 +56,12 @@ public class RequestActiveReplicas extends ClientReconfigurationPacket {
 	private Set<InetSocketAddress> actives = null;
 
 	/**
+	 * @param name
+	 */
+	public RequestActiveReplicas(String name) {
+		this(null, name, 0);
+	}
+	/**
 	 * @param initiator
 	 * @param name
 	 * @param epochNumber
@@ -76,7 +82,8 @@ public class RequestActiveReplicas extends ClientReconfigurationPacket {
 	public RequestActiveReplicas(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
 		super(json, RequestActiveReplicas.unstringer); // ignores arg unstringer
-		assert(this.getSender()!=null);
+		// assertion may not hold with String packet demultiplexer
+		//assert(this.getSender()!=null);
 		//this.setSender(JSONNIOTransport.getSenderAddress(json));
 
 		JSONArray jsonArray = json.has(Keys.ACTIVE_REPLICAS.toString()) ? json

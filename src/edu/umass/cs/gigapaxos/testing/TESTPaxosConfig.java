@@ -28,12 +28,17 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
+import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
@@ -82,10 +87,16 @@ public class TESTPaxosConfig {
 		 * 
 		 */
 		NUM_NODES(10),
+		
 		/**
-		 * default paxos group name prefix.
+		 * Default paxos group name prefix.
 		 */
-		TEST_GUID_PREFIX("paxos"),
+		TEST_GUID_PREFIX(TESTPaxosApp.class.getSimpleName()),
+		
+		/**
+		 * First paxos group name.
+		 */
+		TEST_GUID(TESTPaxosApp.class.getSimpleName()+"0"),
 
 		/**
 		 * 
@@ -99,10 +110,6 @@ public class TESTPaxosConfig {
 		 * starting ID for clients
 		 */
 		TEST_CLIENT_ID(200),
-		/**
-		 * 
-		 */
-		TEST_GUID("paxos0"),
 		/**
 		 * Number of pre_configured groups for testing. An arbitrarily higher
 		 * number of additional groups can be created. These preconfigured
@@ -238,13 +245,6 @@ public class TESTPaxosConfig {
 		for (int i = 0; i < defaultGroup.length; i++)
 			defaultGroup[i] = Config.getGlobalInt(TC.TEST_START_NODE_ID) + i;
 		
-		/*
-		nodeConfig.clear();
-		for (int i = Config.getGlobalInt(TC.TEST_START_NODE_ID); i < Config
-				.getGlobalInt(TC.TEST_START_NODE_ID)
-				+ Config.getGlobalInt(TC.NUM_NODES); i++)
-			nodeConfig.addLocal(i);
-			*/
 		setDefaultGroups(Config.getGlobalInt(TC.PRE_CONFIGURED_GROUPS));
 	}
 
@@ -359,8 +359,8 @@ public class TESTPaxosConfig {
 	 */
 	public static final String getConfDirArg(String[] args) {
 		for (String arg : args)
-			if (!arg.trim().equals("-c"))
-				return arg;
+			if (arg.trim().contains("-D"))
+				return arg.replace("-D", "");
 		return null;
 	}
 
@@ -502,17 +502,17 @@ public class TESTPaxosConfig {
 	 * @return True if committed.
 	 */
 	@Deprecated
-	public synchronized static boolean isCommitted(int reqnum) {
+	public synchronized static boolean isCommitted(long reqnum) {
 		assert (reqnum < MAX_TEST_REQS);
-		return committed[reqnum];
+		return committed[(int)reqnum];
 	}
 
 	/**
 	 * @param reqnum
 	 */
-	public synchronized static void execute(int reqnum) {
+	public synchronized static void execute(long reqnum) {
 		assert (reqnum >= 0);
-		executedAtAll[reqnum] = true;
+		executedAtAll[(int)reqnum] = true;
 	}
 
 	/**
@@ -560,6 +560,67 @@ public class TESTPaxosConfig {
 		}
 		return found;
 	}
+	
+	protected static InterfaceNodeConfig<Integer> getFromPaxosConfig() {
+		final InterfaceNodeConfig<String> defaultNC = PaxosConfig
+				.getDefaultNodeConfig();
+		return new InterfaceNodeConfig<Integer>() {
+
+			@Override
+			public Integer valueOf(String strValue) {
+				return Integer.valueOf(strValue);
+			}
+
+			@Override
+			public Set<Integer> getValuesFromStringSet(Set<String> strNodes) {
+				throw new RuntimeException("Method not implemented");
+			}
+
+			@Override
+			public Set<Integer> getValuesFromJSONArray(JSONArray array)
+					throws JSONException {
+				throw new RuntimeException("Method not implemented");
+			}
+
+			@Override
+			public boolean nodeExists(Integer id) {
+				return defaultNC.nodeExists(id.toString());
+			}
+
+			@Override
+			public InetAddress getNodeAddress(Integer id) {
+				return defaultNC.nodeExists(id.toString()) ? defaultNC
+						.getNodeAddress(id.toString()) : 
+							nodeConfig.getNodeAddress(id);
+							//SampleNodeConfig.getLocalAddress();
+			}
+
+			@Override
+			public InetAddress getBindAddress(Integer id) {
+				return this.getNodeAddress(id);
+			}
+
+			@Override
+			public int getNodePort(Integer id) {
+				return defaultNC.nodeExists(id.toString()) ? defaultNC
+						.getNodePort(id.toString()) :
+							nodeConfig.getNodePort(id);
+							//SampleNodeConfig.getPort(id);
+			}
+
+			@Override
+			public Set<Integer> getNodeIDs() {
+				Set<String> nodes = defaultNC.getNodeIDs();
+				Set<Integer> intIDs = new HashSet<Integer>();
+				for (String s : nodes)
+					intIDs.add(Integer.valueOf(s));
+				for(int id : nodeConfig.getNodeIDs())
+					intIDs.add(id);
+				return intIDs;
+			}
+		};
+	}
+
 
 	private static void loadPropertiesFromFile(String filename,
 			boolean distributed) {
@@ -604,5 +665,14 @@ public class TESTPaxosConfig {
 							+ filename + "; exiting.");
 			System.exit(1);
 		}
+	}
+	
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		InterfaceNodeConfig<Integer> nc = TESTPaxosConfig.getFromPaxosConfig();
+		for(Integer i : nc.getNodeIDs())
+		System.out.println(i + ":" + nc.getNodeAddress(i)+":"+nc.getNodePort(i));
 	}
 }

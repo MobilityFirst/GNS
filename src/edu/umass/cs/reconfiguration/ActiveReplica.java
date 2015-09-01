@@ -1,17 +1,17 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.InterfaceClientRequest;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
@@ -48,6 +49,7 @@ import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorCallback;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckDropEpochFinalState;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStopEpoch;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.ActiveReplicaError;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DefaultAppRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
@@ -171,10 +173,25 @@ public class ActiveReplica<NodeIDType> implements
 				InterfaceRequest request = this.appCoordinator
 						.getRequest(jsonObject.toString());
 				// send to app via its coordinator
-				this.handRequestToApp(request);
-				// update demand stats (for reconfigurator) if handled by app
-				updateDemandStats(request,
-						MessageNIOTransport.getSenderInetAddress(jsonObject));
+				boolean handled = this.handRequestToApp(request);
+				// if handled, update demand stats (for reconfigurator) 
+				if (handled)
+					updateDemandStats(request,
+							MessageNIOTransport
+									.getSenderInetAddress(jsonObject));
+				// else send error message to sender
+				else {
+					if (request instanceof InterfaceClientRequest) {
+						this.send(
+								MessageNIOTransport
+										.getSenderAddress(jsonObject),
+								new ActiveReplicaError(this.nodeConfig
+										.getNodeSocketAddress(getMyID()),
+										request.getServiceName(),
+										((InterfaceClientRequest) request)
+												.getRequestID()).toJSONObject());
+					}
+				}
 			}
 		} catch (RequestParseException rpe) {
 			rpe.printStackTrace();
@@ -302,11 +319,8 @@ public class ActiveReplica<NodeIDType> implements
 		// if no previous group, create replica group with empty state
 		if (startEpoch.noPrevEpochGroup()) {
 			// createReplicaGroup is a local operation (but may fail)
-			boolean created = 
-					startEpoch.isBatchedCreate() ?
-							this.batchedCreate(startEpoch)
-							:
-							this.appCoordinator
+			boolean created = startEpoch.isBatchedCreate() ? this
+					.batchedCreate(startEpoch) : this.appCoordinator
 					.createReplicaGroup(startEpoch.getServiceName(),
 							startEpoch.getEpochNumber(),
 							startEpoch.getInitialState(),
@@ -329,7 +343,7 @@ public class ActiveReplica<NodeIDType> implements
 		this.spawnWaitEpochFinalState(startEpoch);
 		return null; // no messaging if asynchronously fetching state
 	}
-	
+
 	private boolean batchedCreate(StartEpoch<NodeIDType> startEpoch) {
 		boolean created = true;
 		for (String name : startEpoch.getNameStates().keySet()) {
@@ -482,10 +496,11 @@ public class ActiveReplica<NodeIDType> implements
 	 * ****************** Private methods below *******************
 	 */
 
-	private void handRequestToApp(InterfaceRequest request) {
+	private boolean handRequestToApp(InterfaceRequest request) {
 		long t1 = System.currentTimeMillis();
-		this.appCoordinator.handleIncoming(request);
+		boolean handled = this.appCoordinator.handleIncoming(request);
 		DelayProfiler.updateDelay("appHandleIncoming@AR", t1);
+		return handled;
 	}
 
 	private boolean stoppedOrMovedOn(BasicReconfigurationPacket<?> packet) {
@@ -499,7 +514,8 @@ public class ActiveReplica<NodeIDType> implements
 						.getReplicaGroup(packet.getServiceName()) == null)))
 			retval = true;
 		if (retval)
-			log.log(Level.INFO, "{0} has no state or has already moved on to epoch {1} when received {2}",
+			log.log(Level.INFO,
+					"{0} has no state or has already moved on to epoch {1} when received {2}",
 					new Object[] { this, epoch, packet.getSummary() });
 		else
 			log.log(Level.INFO,
@@ -532,8 +548,8 @@ public class ActiveReplica<NodeIDType> implements
 			 */
 			else if (epoch == packet.getEpochNumber())
 				// active epoch
-				return (this.appCoordinator
-						.getReplicaGroup(packet.getServiceName()) != null);
+				return (this.appCoordinator.getReplicaGroup(packet
+						.getServiceName()) != null);
 		return false;
 	}
 
@@ -630,6 +646,16 @@ public class ActiveReplica<NodeIDType> implements
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	private void send(InetSocketAddress isa, JSONObject msg) {
+		try {
+			((InterfaceAddressMessenger<JSONObject>) this.messenger)
+					.sendToAddress(isa, msg);
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+	}
+
 	private void report(Set<AbstractDemandProfile> demands) {
 		if (demands != null && !demands.isEmpty())
 			for (AbstractDemandProfile demand : demands)
@@ -676,10 +702,12 @@ public class ActiveReplica<NodeIDType> implements
 		try {
 			int myPort = (this.nodeConfig.getNodePort(getMyID()));
 			if (getClientFacingPort(myPort) != myPort) {
-                          log.log(Level.INFO, "Creating client messenger at {0}:{1}", 
-                                  new Object[] { this.nodeConfig.getBindAddress(getMyID()), 
-                                                 getClientFacingPort(myPort)});
-				
+				log.log(Level.INFO,
+						"Creating client messenger at {0}:{1}",
+						new Object[] {
+								this.nodeConfig.getBindAddress(getMyID()),
+								getClientFacingPort(myPort) });
+
 				cMsgr = new JSONMessenger<InetSocketAddress>(
 						new MessageNIOTransport<InetSocketAddress, JSONObject>(
 								this.nodeConfig.getBindAddress(getMyID()),

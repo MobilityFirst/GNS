@@ -206,16 +206,18 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 		// log creation only if the number of instances is small
 		log.log((hri == null && notManyInstances()) ? Level.INFO : Level.FINER,
-				"Node{0} initialized paxos "
-						+ (this.paxosState.getBallotCoordLog() == this
-								.getMyID() ? "COORDINATOR" : "instance")
-						+ " {1} with members {2}; {3} {4}"
-						+ (initialState == null ? "{recoveredState=["
+				"Node{0} initialized paxos {1} {2} with members {3}; {4} {5} {6}",
+				new Object[] {
+						this.getNodeID(),
+						(this.paxosState.getBallotCoordLog() == this.getMyID() ? "COORDINATOR"
+								: "instance"),
+						this.getPaxosIDVersion(),
+						Util.arrayOfIntToString(groupMembers),
+						this.paxosState,
+						this.coordinator,
+						(initialState == null ? "{recoveredState=["
 								+ Util.prefix(this.getCheckpointState(), 64)
-								: "{initialState=[" + initialState),
-				new Object[] { this.getNodeID(), this.getPaxosIDVersion(),
-						Util.arrayOfIntToString(groupMembers), this.paxosState,
-						this.coordinator });
+								: "{initialState=[" + initialState) + "]}" });
 	}
 
 	/**
@@ -1142,6 +1144,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 	private MessagingTask handleBatchedCommit(BatchedCommit batchedCommit) {
 		assert (BATCHED_COMMITS);
+		//assert(batchedCommit.ballot.coordinatorID!=getMyID());
 		// batched commits can only come directly from the coordinator
 		this.paxosManager.heardFrom(batchedCommit.ballot.coordinatorID); // FD
 		MessagingTask mtask = null;
@@ -1384,7 +1387,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 												Level.FINE) ? ((InterfaceSummarizableRequest) request)
 												.getSummary() : null });
 
-					executed = app.handleRequest(request, doNotReplyToClient);
+					executed = app
+							.handleRequest(
+									request,
+									// do not reply if recovery or not entry replica
+									(doNotReplyToClient
+											|| (requestPacket.getEntryReplica() != paxosManager
+													.getMyID())));
 					assert (requestPacket.getEntryReplica() > 0);
 
 					if (requestPacket.getEntryReplica() == paxosManager
@@ -1394,8 +1403,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 							&& request != null
 							&& request instanceof InterfaceClientRequest) {
 						RequestInstrumenter.remove(requestPacket.requestID);
-						paxosManager.send(((InterfaceClientRequest) request)
-								.getClientAddress(), request);
+						if (((InterfaceClientRequest) request)
+								.getClientAddress() != null)
+							paxosManager.send(
+									((InterfaceClientRequest) request)
+											.getClientAddress(), request);
 					}
 					// don't try any more if stopped
 					if (pism != null && pism.isStopped())
@@ -1996,15 +2008,17 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 										this.paxosState.getMaxCommittedSlot() + 1));
 
 		// filter non-missing from database decisions
-		for (Iterator<PValuePacket> pvalueIterator = missingDecisions
-				.iterator(); pvalueIterator.hasNext();) {
-			PValuePacket pvalue = pvalueIterator.next();
-			if (!syncReply.missingSlotNumbers.contains(pvalue.slot))
-				pvalueIterator.remove(); // filter non-missing
-			else
-				pvalue.setNoCoalesce(); // send as-is, no compacting
-			assert (!pvalue.isRecovery()); // isRecovery() only in rollForward
-		}
+		if(syncReply.maxDecisionSlot > minMissingSlot)
+			for (Iterator<PValuePacket> pvalueIterator = missingDecisions
+					.iterator(); pvalueIterator.hasNext();) {
+				PValuePacket pvalue = pvalueIterator.next();
+				if (!syncReply.missingSlotNumbers.contains(pvalue.slot))
+					pvalueIterator.remove(); // filter non-missing
+				else
+					pvalue.setNoCoalesce(); // send as-is, no compacting
+				// isRecovery() true only in rollForward
+				assert (!pvalue.isRecovery()); 
+			}
 
 		// copy over database decisions not in memory
 		for (PValuePacket pvalue : missingDecisions)

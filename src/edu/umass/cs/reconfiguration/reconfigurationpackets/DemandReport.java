@@ -25,7 +25,6 @@ import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -92,7 +91,7 @@ public class DemandReport<NodeIDType> extends
 	}
 
 	@Override
-	public IntegerPacketType getRequestType() throws RequestParseException {
+	public IntegerPacketType getRequestType() {
 		return ReconfigurationPacket.PacketType.DEMAND_REPORT;
 	}
 

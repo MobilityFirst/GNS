@@ -58,17 +58,17 @@ import org.json.JSONObject;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.SQLPaxosLogger;
 import edu.umass.cs.gigapaxos.paxosutil.SQL;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
-import edu.umass.cs.reconfiguration.examples.ReconfigurableSampleNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.AbstractDemandProfile;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
+import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurableSampleNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.StringLocker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
 import edu.umass.cs.utils.DelayProfiler;
@@ -96,6 +96,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	private static final String DEMAND_PROFILE_TABLE = "demand";
 	private static final String NODE_CONFIG_TABLE = "nodeconfig";
 
+	protected static final String LOG_DIRECTORY = "reconfiguration_DB";
 	private static final boolean CONN_POOLING = true;
 	private static final int MAX_POOL_SIZE = 100;
 	private static final int MAX_NAME_SIZE = 40;
@@ -143,7 +144,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	public SQLReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc, String logDir) {
 		super(myID, nc);
-		logDirectory = (logDir == null ? "." : logDir) + "/";
+		logDirectory = (logDir == null ? SQLReconfiguratorDB.LOG_DIRECTORY : logDir) + "/";
 		addDerbyPersistentReconfiguratorDB(this);
 		initialize();
 	}
@@ -348,6 +349,11 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		record.setState(name, epoch, state, newActives);
 		this.setPending(name, true);
 		this.putReconfigurationRecord(record);
+		
+		record = this.getReconfigurationRecord(name);
+		assert (!name.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
+				.toString()) || !record.getActiveReplicas().equals(
+				record.getNewActives()));
 		return true;
 	}
 
@@ -1238,16 +1244,15 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		long interAttemptDelay = 2000; // ms
 		Properties props = new Properties(); // connection properties
 		// providing a user name and PASSWORD is optional in embedded derby
-		props.put("user", SQL.getUser());
+		props.put("user", SQL.getUser() + (isEmbeddedDB() ? this.myID : ""));
 		props.put("password", SQL.getPassword());
 		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
-				+ (isEmbeddedDB() ? this.logDirectory + DATABASE
-						+ ";create=true" : DATABASE
+				+ (isEmbeddedDB() ? this.logDirectory + DATABASE + this.myID
+						+ (!SQLPaxosLogger.existsDB(SQL_TYPE, this.logDirectory, DATABASE
+								+ this.myID) ? ";create=true" : "") : DATABASE + this.myID
 						+ "?createDatabaseIfNotExist=true");
 
 		try {
-			// if (!SQLPaxosLogger.existsDB(SQL_TYPE, logDirectory, DATABASE))
-			// dbCreation += ";create=true";
 			dataSource = (ComboPooledDataSource) setupDataSourceC3P0(
 					dbCreation, props);
 		} catch (SQLException e) {
@@ -1261,10 +1266,12 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 			Connection conn = null;
 			try {
 				connAttempts++;
-				log.fine("Attempting getDefaultConn() to DB " + dbCreation);
+				log.info("Attempting getDefaultConn() to DB " + dbCreation);
 				getDefaultConn(); // open first connection
-				log.info("Connected to and created database " + DATABASE);
+				log.info("Connected to and created database " + DATABASE + this.myID);
 				connected = true;
+				if (isEmbeddedDB())
+					fixURI(); // remove create flag
 			} catch (SQLException sqle) {
 				log.severe("Could not connect to the derby DB: "
 						+ sqle.getErrorCode() + ":" + sqle.getSQLState());
@@ -1279,6 +1286,10 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 			}
 		}
 		return connected;
+	}
+	private void fixURI() {
+		this.dataSource.setJdbcUrl(SQL.getProtocolOrURL(SQL_TYPE)
+				+ this.logDirectory + DATABASE + this.myID);
 	}
 
 	private static DataSource setupDataSourceC3P0(String connectURI,
@@ -1454,8 +1465,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		return new InterfaceRequest() {
 
 			@Override
-			public IntegerPacketType getRequestType()
-					throws RequestParseException {
+			public IntegerPacketType getRequestType() {
 				return AppRequest.PacketType.DEFAULT_APP_REQUEST;
 			}
 

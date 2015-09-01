@@ -1,21 +1,21 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
-package edu.umass.cs.reconfiguration.examples;
+package edu.umass.cs.reconfiguration.testing;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -38,6 +38,7 @@ import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.examples.AppRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -124,9 +125,11 @@ public class ReconfigurableClient {
 				ActiveReplica.getClientFacingPort(address.getPort()));
 	}
 
+	private static final boolean RANDOM_SERVER = true;
+
 	private void sendRequest(AppRequest req) throws JSONException, IOException,
 			RequestParseException {
-		InetSocketAddress sockAddr = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
+		InetSocketAddress sockAddr = (!RANDOM_SERVER ? this
 				.getFirstActiveReplica() : this.getRandomActiveReplica());
 		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[] {
 				"Sending ", req.getRequestType(), " to ", sockAddr, ":",
@@ -137,8 +140,8 @@ public class ReconfigurableClient {
 
 	private void sendRequest(BasicReconfigurationPacket<?> req)
 			throws JSONException, IOException {
-		InetSocketAddress sockAddr = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
-				.getFirstRCReplica() : this.getRandomRCReplica());
+		InetSocketAddress sockAddr = (!RANDOM_SERVER ? this.getFirstRCReplica()
+				: this.getRandomRCReplica());
 		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[] {
 				"Sending ", req.getSummary(), " to ", sockAddr, ":",
 				(sockAddr), ": ", req });
@@ -216,7 +219,8 @@ public class ReconfigurableClient {
 						log.log(Level.INFO,
 								"Received node config change {0} {1}{2}",
 								new Object[] {
-										rcnc.isFailed() ? "ERROR: " + rcnc.getMessage()
+										rcnc.isFailed() ? "ERROR: "
+												+ rcnc.getMessage()
 												: "confirmation",
 										(rcnc.newlyAddedNodes != null ? "; added"
 												+ rcnc.newlyAddedNodes
@@ -249,7 +253,7 @@ public class ReconfigurableClient {
 						sentRequests.remove(request.getServiceName());
 						notifyReply();
 						break;
-					case APP_COORDINATION:
+					case ANOTHER_APP_REQUEST:
 						throw new RuntimeException(
 								"Client received unexpected APP_COORDINATION message");
 					}
@@ -279,9 +283,11 @@ public class ReconfigurableClient {
 	private static final long REQUEST_TIMEOUT = 2000;
 	private static final long RC_RECONFIGURE_TIMEOUT = 4000;
 
-	synchronized BasicReconfigurationPacket<?> waitForReply(String name, long timeout) {
+	synchronized BasicReconfigurationPacket<?> waitForReply(String name,
+			long timeout, boolean retransmission) {
 		while (sentRequests.containsKey(name)
-				&& System.currentTimeMillis() - sentRequests.get(name) < timeout)
+				&& (!retransmission || (System.currentTimeMillis()
+						- sentRequests.get(name) < timeout)))
 			try {
 				wait(timeout);
 			} catch (InterruptedException e) {
@@ -289,8 +295,9 @@ public class ReconfigurableClient {
 			}
 		return rcvdResponses.remove(name);
 	}
+
 	synchronized BasicReconfigurationPacket<?> waitForReply(String name) {
-		return this.waitForReply(name, REQUEST_TIMEOUT);
+		return this.waitForReply(name, REQUEST_TIMEOUT, true);
 	}
 
 	// only for ClientReconfigurationPacket
@@ -308,7 +315,8 @@ public class ReconfigurableClient {
 	}
 
 	synchronized boolean waitForReconfigureRCSuccess(String name) {
-		BasicReconfigurationPacket<?> reply = this.waitForReply(name, RC_RECONFIGURE_TIMEOUT);
+		BasicReconfigurationPacket<?> reply = this.waitForReply(name,
+				RC_RECONFIGURE_TIMEOUT, false);
 		return reply != null && reply instanceof ReconfigureRCNodeConfig<?>
 				&& !((ReconfigureRCNodeConfig<?>) reply).isFailed();
 	}
@@ -373,10 +381,11 @@ public class ReconfigurableClient {
 			 * authentication
 			 */
 			JSONMessenger<?> messenger = new JSONMessenger<String>(
-					(new MessageNIOTransport<String, JSONObject>(null, null, 
+					(new MessageNIOTransport<String, JSONObject>(null, null,
 							new PacketDemultiplexerDefault(), true,
 							ReconfigurationConfig.getClientSSLMode())));
-			client = new ReconfigurableClient(TestConfig.getReconfigurators(),
+			client = new ReconfigurableClient(
+					ReconfigurationConfig.getReconfiguratorAddresses(),
 					messenger);
 			int numRequests = 2;
 			String requestValuePrefix = "request_value";
@@ -389,7 +398,7 @@ public class ReconfigurableClient {
 			for (int j = 0; j < numIterations; j++) {
 				String namePrefix = "name"
 						+ (int) (Math.random() * Integer.MAX_VALUE);
-				String reconfiguratorID = "RC"+ (int) (Math.random() * 64000);
+				String reconfiguratorID = "RC" + (int) (Math.random() * 64000);
 				long t0 = System.currentTimeMillis();
 
 				// /////////////request active replicas////////////////////
@@ -484,13 +493,14 @@ public class ReconfigurableClient {
 				// ////////////////////////////////////////////////////////
 				// add RC node; the port below does not matter in this test
 				t0 = System.currentTimeMillis();
-				//do
-					client.sendRequest(new ReconfigureRCNodeConfig<String>(
-							null, reconfiguratorID, new InetSocketAddress(
-									InetAddress.getByName("localhost"), TEST_PORT)));
+				// do
+				client.sendRequest(new ReconfigureRCNodeConfig<String>(null,
+						reconfiguratorID, new InetSocketAddress(InetAddress
+								.getByName("localhost"), TEST_PORT)));
 				while (!client
 						.waitForReconfigureRCSuccess(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
-								.toString()));
+								.toString()))
+					;
 				DelayProfiler.updateDelay("addReconfigurator", t0);
 				// ////////////////////////////////////////////////////////
 
@@ -500,12 +510,13 @@ public class ReconfigurableClient {
 				HashSet<String> deleted = new HashSet<String>();
 				deleted.add(reconfiguratorID);
 				t0 = System.currentTimeMillis();
-				//do
-					client.sendRequest(new ReconfigureRCNodeConfig<String>(
-							null, null, deleted));
+				// do
+				client.sendRequest(new ReconfigureRCNodeConfig<String>(null,
+						null, deleted));
 				while (!client
 						.waitForReconfigureRCSuccess(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
-								.toString()));
+								.toString())) {
+				}
 				DelayProfiler.updateDelay("removeReconfigurator", t0);
 				// ////////////////////////////////////////////////////////
 

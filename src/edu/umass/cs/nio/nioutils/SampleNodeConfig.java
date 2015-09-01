@@ -152,6 +152,17 @@ public class SampleNodeConfig<NodeIDType> implements
 		}
 		return port;
 	}
+	/**
+	 * @param ID
+	 * @return Port + default offset.
+	 */
+	public static int getPort(int ID) {
+		int maxPort = 65536;
+		int port = (DEFAULT_START_PORT + ID) % maxPort;
+		if (port < 0) 
+			port = (port + maxPort) % maxPort;
+		return port;
+	}
 
 	/**
 	 * @return Set of all nodes.
@@ -230,7 +241,10 @@ public class SampleNodeConfig<NodeIDType> implements
 		return nodes;
 	}
 
-	private InetAddress getLocalAddress() {
+	/**
+	 * @return Local host address.
+	 */
+	public static InetAddress getLocalAddress() {
 		InetAddress localAddr = null;
 		try {
 			localAddr = InetAddress.getByName("localhost");

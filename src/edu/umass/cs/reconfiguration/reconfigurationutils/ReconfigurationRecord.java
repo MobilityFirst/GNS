@@ -244,8 +244,8 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	 */
 	public Set<NodeIDType> getActiveReplicas(String name, int epoch) {
 		if ((this.name.equals(name) && this.epoch == epoch))
-			return this.actives;
-		else
+			return this.getActiveReplicas();
+		else // should never get called otherwise
 			assert (false) : name + ":" + epoch + " != " + this.name + ":"
 					+ this.epoch;
 		return null;
@@ -259,7 +259,7 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	public Set<NodeIDType> getActiveReplicas() {
 		Set<NodeIDType> activeReplicas = !this.getState().equals(
 				RCStates.WAIT_DELETE) ? this.actives : null;
-		return activeReplicas;
+		return activeReplicas;// !=null ? activeReplicas : this.newActives;
 	}
 
 	/**

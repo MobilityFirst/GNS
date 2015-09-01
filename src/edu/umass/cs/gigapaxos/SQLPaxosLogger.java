@@ -1719,11 +1719,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * @param logDir
 	 * @param database
 	 * @return True if database exists.
-	 * @throws SQLException
 	 */
-	@Deprecated
+	//@Deprecated
 	public static boolean existsDB(SQL.SQLType sqlType, String logDir,
-			String database) throws SQLException {
+			String database) {
 		try {
 			Class.forName(SQL.getDriver(SQL_TYPE)).newInstance();
 		} catch (InstantiationException | IllegalAccessException
@@ -1742,7 +1741,11 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			sqle.printStackTrace();
 		} finally {
 			if (conn != null)
-				conn.close();
+				try {
+					conn.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 		}
 		return true;
 	}
@@ -1769,13 +1772,17 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		props.put("password", SQL.getPassword());
 		ensureLogDirectoryExists(this.logDirectory);
 		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
-				+ (isEmbeddedDB() ? this.logDirectory + DATABASE + this.myID
-						+ ";create=true" : DATABASE + this.myID
-						+ "?createDatabaseIfNotExist=true");
+				+ (isEmbeddedDB() ?
+				// embedded DB pre-creates DB to avoid c3p0 stack traces
+						this.logDirectory
+						+ DATABASE
+						+ this.myID
+						+ (!existsDB(SQL_TYPE, this.logDirectory, DATABASE
+								+ this.myID) ? ";create=true" : "") :
+						// else just use like a typical SQL DB
+						DATABASE + this.myID + "?createDatabaseIfNotExist=true");
 
 		try {
-			// if (isEmbeddedDB() && !this.existsDB(dbCreation, props));
-			// dbCreation += ";create=true";
 			dataSource = (ComboPooledDataSource) setupDataSourceC3P0(
 					dbCreation, props);
 		} catch (SQLException e) {

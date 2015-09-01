@@ -157,8 +157,8 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	 * Coordinate if needed, else hand over to app.
 	 * 
 	 * @param request
-	 * @return False if coordinated, else true if handled successfully
-	 *         (locally).
+	 * @return True if coordinated successfully or handled successfully
+	 *         (locally), false otherwise.
 	 */
 	public boolean handleIncoming(InterfaceRequest request) {
 		boolean handled = false;
@@ -166,8 +166,8 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 			try {
 				((InterfaceReplicableRequest) request)
 						.setNeedsCoordination(false);
-				coordinateRequest(request);
-				handled = false;
+				handled = coordinateRequest(request);
+				//handled = false;
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			} catch (RequestParseException rpe) {

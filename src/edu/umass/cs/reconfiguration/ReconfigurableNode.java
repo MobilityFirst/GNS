@@ -19,10 +19,16 @@ package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
 
+import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
+import edu.umass.cs.gigapaxos.InterfaceClientRequest;
+import edu.umass.cs.gigapaxos.InterfaceReplicable;
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 
 /**
@@ -48,6 +54,49 @@ public abstract class ReconfigurableNode<NodeIDType> {
 
 	private ActiveReplica<NodeIDType> activeReplica;
 	private Reconfigurator<NodeIDType> reconfigurator;
+
+	/**
+	 * @param id
+	 * @param nodeConfig
+	 * @throws IOException
+	 */
+	public ReconfigurableNode(NodeIDType id,
+			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig)
+			throws IOException {
+		this(id, nodeConfig, false);
+	}
+
+	/**
+	 * Close gracefully.
+	 */
+	public void close() {
+		if (this.activeReplica != null)
+			this.activeReplica.close();
+		if (this.reconfigurator != null)
+			this.reconfigurator.close();
+	}
+
+	private AbstractReplicaCoordinator<NodeIDType> createApp() {
+		if (ReconfigurationConfig.application != null) {
+			InterfaceReplicable app = ReconfigurationConfig.createApp();
+			if (app instanceof InterfaceClientMessenger)
+				((InterfaceClientMessenger) app).setClientMessenger(messenger);
+			else
+				Reconfigurator
+						.getLogger()
+						.info(app.getClass().getSimpleName()
+								+ " does not implement "
+								+ InterfaceClientMessenger.class
+										.getSimpleName()
+								+ ", which means the app should either rely on "
+								+ InterfaceClientRequest.class.getSimpleName()
+								+ " or not expect to send "
+								+ " responses back to clients or rely on alternate means for messaging.");
+			return new PaxosReplicaCoordinator<NodeIDType>(app, myID,
+					nodeConfig, messenger);
+		} else
+			return this.createAppCoordinator();
+	}
 
 	/**
 	 * @param id
@@ -90,14 +139,15 @@ public abstract class ReconfigurableNode<NodeIDType> {
 		if (nodeConfig.getActiveReplicas().contains(id)) {
 			// create active
 			ActiveReplica<NodeIDType> activeReplica = new ActiveReplica<NodeIDType>(
-					createAppCoordinator(), nodeConfig, messenger);
+			// createAppCoordinator(),
+					createApp(), nodeConfig, messenger);
 			// getPacketTypes includes app's packets
 			pd.register(activeReplica.getPacketTypes(), activeReplica);
 		} else if (nodeConfig.getReconfigurators().contains(id)) {
 			// create reconfigurator
 			Reconfigurator<NodeIDType> reconfigurator = new Reconfigurator<NodeIDType>(
 					nodeConfig, messenger, startCleanSlate);
-			pd.register(reconfigurator.getPacketTypes().toArray(),
+			pd.register(reconfigurator.getPacketTypes().toArray(new IntegerPacketType[0]),
 					reconfigurator);
 
 			// wrap reconfigurator in active to make it reconfigurable
@@ -108,25 +158,51 @@ public abstract class ReconfigurableNode<NodeIDType> {
 		}
 	}
 
+
+	// because ReconfigurableNode is abstract for backwards compatibility
+	static class DefaultReconfigurableNode extends ReconfigurableNode<String> {
+
+		public DefaultReconfigurableNode(String id,
+				InterfaceReconfigurableNodeConfig<String> nodeConfig,
+				boolean startCleanSlate) throws IOException {
+			super(id, nodeConfig, startCleanSlate);
+		}
+
+		@Override
+		protected AbstractReplicaCoordinator<String> createAppCoordinator() {
+			return super.createApp();
+		}
+	}
+
 	/**
-	 * @param id
-	 * @param nodeConfig
+	 * {@code args} only contains the list of node IDs that we should try to
+	 * start in this JVM. In a typical distributed setting, we only expect one
+	 * node ID as an argument, or two if we are co-locating actives and
+	 * reconfigurators.
+	 * 
+	 * @param args
 	 * @throws IOException
 	 */
-	public ReconfigurableNode(NodeIDType id,
-			InterfaceReconfigurableNodeConfig<NodeIDType> nodeConfig)
-			throws IOException {
-		this(id, nodeConfig, false);
+	public static void main(String[] args) throws IOException {
+		if (args.length == 0)
+			throw new RuntimeException(
+					"At least one node ID must be specified as a command-line argument for starting "
+							+ ReconfigurableNode.class);
+		InterfaceReconfigurableNodeConfig<String> nodeConfig = new DefaultNodeConfig<String>(
+				PaxosConfig.getActives(),
+				ReconfigurationConfig.getReconfigurators());
+		System.out.print("Creating node(s) [ ");
+		for (int i = args.length - 1; i >= 0 && nodeConfig.nodeExists(args[i]); i--)
+			if (nodeConfig.nodeExists(args[i])) {
+				System.out.print(args[i] + ":"
+						+ nodeConfig.getNodeAddress(args[i]) + ":"
+						+ nodeConfig.getNodePort(args[i]) + " ");
+				new DefaultReconfigurableNode(args[i], 
+						// must use a different nodeConfig for each
+						new DefaultNodeConfig<String>(
+						PaxosConfig.getActives(),
+						ReconfigurationConfig.getReconfigurators()), false);
+			}
+		System.out.println("]");
 	}
-
-	/**
-	 * Close gracefully.
-	 */
-	public void close() {
-		if (this.activeReplica != null)
-			this.activeReplica.close();
-		if (this.reconfigurator != null)
-			this.reconfigurator.close();
-	}
-
 }

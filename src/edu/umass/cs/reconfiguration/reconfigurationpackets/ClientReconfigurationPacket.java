@@ -30,7 +30,6 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.nio.StringifiableDefault;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -167,7 +166,7 @@ public abstract class ClientReconfigurationPacket extends
 	}
 
 	@Override
-	public IntegerPacketType getRequestType() throws RequestParseException {
+	public IntegerPacketType getRequestType() {
 		return this.type;
 	}
 

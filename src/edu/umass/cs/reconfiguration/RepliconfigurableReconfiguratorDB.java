@@ -34,6 +34,7 @@ import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB.RecordNames;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
+import edu.umass.cs.reconfiguration.reconfigurationpackets.StartEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
@@ -205,6 +206,12 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		return created;
 	}
 
+	/** The initial RC group record for RC nodes is just directly inserted into
+	 * the reconfiguration DB by paxos as the initial state and does not go
+	 * through {@link AbstractReconfiguratorDB#handleRCRecordRequest(edu.umass.cs.reconfiguration.reconfigurationpackets.RCRecordRequest)},
+	 * so it does not have to pass the {@link StartEpoch#isInitEpoch()} check and will indeed
+	 * not pass that check as both the previous group is not empty.
+	 */
 	private ReconfigurationRecord<NodeIDType> getInitialRCGroupRecord(
 			String groupName, Set<NodeIDType> group) {
 		return new ReconfigurationRecord<NodeIDType>(groupName, 0, group, group);
@@ -230,6 +237,10 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 
 	protected String getRCGroupName(String serviceName) {
 		return this.app.getRCGroupName(serviceName);
+	}
+	
+	protected void setRecovering(boolean b) {
+		this.app.recovering = false;
 	}
 
 	/******************* Reconfigurator reconfiguration methods ***************/

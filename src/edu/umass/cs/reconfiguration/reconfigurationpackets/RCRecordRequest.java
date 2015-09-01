@@ -26,7 +26,6 @@ import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /*
  * @author arun
@@ -162,7 +161,7 @@ public class RCRecordRequest<NodeIDType> extends
 	}
 
 	@Override
-	public IntegerPacketType getRequestType() throws RequestParseException {
+	public IntegerPacketType getRequestType() {
 		return this.getType();
 	}
 

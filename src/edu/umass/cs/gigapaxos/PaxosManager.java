@@ -33,7 +33,7 @@ import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
-import edu.umass.cs.gigapaxos.testing.TESTPaxosReplicable;
+import edu.umass.cs.gigapaxos.testing.TESTPaxosApp;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONNIOTransport;
@@ -1357,7 +1357,7 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	protected void send(MessagingTask mtask) throws JSONException, IOException {
-		this.send(mtask, BATCHED_ACCEPT_REPLIES, true);
+		this.send(mtask, true, true);
 	}
 
 	protected void send(InetSocketAddress sockAddr, InterfaceRequest request)
@@ -1826,8 +1826,9 @@ public class PaxosManager<NodeIDType> {
 		if (nodeID >= 0) {
 			try {
 				log.log(Level.INFO,
-						"{0} received paxos message for non-existent instance {1}; contacting {2} for help",
-						new Object[] { this, pp.getPaxosID(), nodeID });
+						"{0} received paxos {1} for non-existent instance {2}; contacting {3} for help",
+						new Object[] { this, pp.getSummary(), pp.getPaxosID(),
+								this.integerMap.get(nodeID) });
 				this.send(new MessagingTask(nodeID, findGroup));
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
@@ -2079,9 +2080,11 @@ public class PaxosManager<NodeIDType> {
 				if (json.has(key.toString())) {
 					// fix default node string
 					String nodeString = json.getString(key.toString());
-					int nodeInt = this.integerMap.put(this.unstringer
-							.valueOf(nodeString));
-					json.put(key.toString(), nodeInt);
+					if(!nodeString.equals("-1")) {
+						int nodeInt = this.integerMap.put(this.unstringer
+								.valueOf(nodeString));
+						json.put(key.toString(), nodeInt);
+					}
 				}
 			}
 		return json;
@@ -2122,9 +2125,11 @@ public class PaxosManager<NodeIDType> {
 				if (json.containsKey(key.toString())) {
 					// fix default node string
 					String nodeString = json.get(key.toString()).toString();
-					int nodeInt = this.integerMap.put(this.unstringer
-							.valueOf(nodeString));
-					json.put(key.toString(), nodeInt);
+					if (!nodeString.equals("-1")) {
+						int nodeInt = this.integerMap.put(this.unstringer
+								.valueOf(nodeString));
+						json.put(key.toString(), nodeInt);
+					}
 				}
 			}
 		return json;
@@ -2200,7 +2205,7 @@ public class PaxosManager<NodeIDType> {
 
 		@SuppressWarnings("unchecked")
 		PaxosManager<Integer>[] pms = new PaxosManager[numNodes];
-		TESTPaxosReplicable[] apps = new TESTPaxosReplicable[numNodes];
+		TESTPaxosApp[] apps = new TESTPaxosApp[numNodes];
 
 		/*
 		 * We always test with the first member crashed. This also ensures that
@@ -2230,7 +2235,7 @@ public class PaxosManager<NodeIDType> {
 			System.out.println("Initiating PaxosManager at node " + members[i]);
 			JSONNIOTransport<Integer> niot = new JSONNIOTransport<Integer>(
 					members[i], snc, new PacketDemultiplexerDefault(), true);
-			apps[i] = new TESTPaxosReplicable(niot); // app, PM reuse nio
+			apps[i] = new TESTPaxosApp(niot); // app, PM reuse nio
 			pms[i] = new PaxosManager<Integer>(members[i], snc, niot, apps[i],
 					null);
 		}

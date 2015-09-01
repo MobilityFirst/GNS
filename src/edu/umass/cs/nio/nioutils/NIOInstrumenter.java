@@ -24,7 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.reconfiguration.examples.ReconfigurableClient;
+import edu.umass.cs.reconfiguration.testing.ReconfigurableClient;
 import edu.umass.cs.utils.Util;
 
 /**

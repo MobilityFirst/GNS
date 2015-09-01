@@ -71,16 +71,12 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
 			boolean doNotReplyToClient) {
-		try {
 			switch ((AppRequest.PacketType) (request.getRequestType())) {
 			case DEFAULT_APP_REQUEST:
 				return processRequest((DistributedNoopAppRequest) request);
 			default:
 				break;
 			}
-		} catch (RequestParseException rpe) {
-			rpe.printStackTrace();
-		}
 		return false;
 	}
 
@@ -108,8 +104,8 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
 		assert (this.messenger != null && this.messenger.getClientMessenger() != null);
 		if (this.messenger == null || !request.getEntryReplica().equals(this.myID))
 			return;
-		InetSocketAddress sockAddr = new InetSocketAddress(
-				request.getSenderAddress(), request.getSenderPort());
+		InetSocketAddress sockAddr = 
+				request.getSenderAddress();
 		try {
 			// SSL: invoke clientMessenger here
 			this.messenger.getClientMessenger().sendToAddress(sockAddr,
@@ -152,7 +148,7 @@ public class DistributedNoopApp implements InterfaceReplicable, InterfaceReconfi
 
 	private static AppRequest.PacketType[] types = {
 			AppRequest.PacketType.DEFAULT_APP_REQUEST,
-			AppRequest.PacketType.APP_COORDINATION };
+			AppRequest.PacketType.ANOTHER_APP_REQUEST };
 
 	@Override
 	public Set<IntegerPacketType> getRequestTypes() {

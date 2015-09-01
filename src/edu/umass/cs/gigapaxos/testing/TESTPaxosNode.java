@@ -18,12 +18,12 @@
 package edu.umass.cs.gigapaxos.testing;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Set;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
+import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.utils.Config;
@@ -38,25 +38,31 @@ public class TESTPaxosNode {
 
 	private final int myID;
 	private PaxosManager<Integer> pm = null;
-	private TESTPaxosReplicable app = null;
+	private TESTPaxosApp app = null;
 
 	// A server must have an id
-	TESTPaxosNode(int id) throws IOException {
+	TESTPaxosNode(int id, InterfaceNodeConfig<Integer> nc) throws IOException {
 		this.myID = id;
-		pm = startPaxosManagerAndApp(id);
+		pm = startPaxosManagerAndApp(id, nc);
 		assert (pm != null);
 	}
 
-	private PaxosManager<Integer> startPaxosManagerAndApp(int id) {
+	/**
+	 * @param id
+	 * @throws IOException 
+	 */
+	public TESTPaxosNode(int id) throws IOException {
+		this(id, TESTPaxosConfig.getNodeConfig());
+	}
+
+	private PaxosManager<Integer> startPaxosManagerAndApp(int id, InterfaceNodeConfig<Integer> nc) {
 		try {
 			// shared between app and paxos manager only for testing
 			JSONNIOTransport<Integer> niot = null;
-			this.pm = new PaxosManager<Integer>(id,
-					TESTPaxosConfig.getNodeConfig(),
-					(niot = new JSONNIOTransport<Integer>(id, TESTPaxosConfig
-							.getNodeConfig(), new PacketDemultiplexerDefault(),
-							true)),
-					(this.app = new TESTPaxosReplicable(niot)), null, true);
+			this.pm = new PaxosManager<Integer>(id, nc,
+					(niot = new JSONNIOTransport<Integer>(id, nc,
+							new PacketDemultiplexerDefault(), true)),
+					(this.app = new TESTPaxosApp(niot)), null, true);
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -133,18 +139,18 @@ public class TESTPaxosNode {
 	}
 
 	private static int processArgs(String[] args) {
-		// first arg is always node ID
+		// last arg is always node ID
 		int myID = -1;
 		try {
-			myID = (args != null && args.length > 0 ? Integer.parseInt(args[0])
+			myID = (args != null && args.length > 0 ? Integer.parseInt(args[args.length-1])
 					: -1);
 		} catch (NumberFormatException nfe) {
 		}
-		assert (myID != -1) : "Need an integer node ID as the first argument";
+		assert (myID != -1) : "Need an integer node ID as the last argument";
 
-		// args[1] or beyond other than "-c" will be interpreted as confDir
-		TESTPaxosConfig.setDistribtedTest(TESTPaxosConfig.getConfDirArg(Arrays
-				.copyOfRange(args, 1, args.length)));
+		// first arg starting with "-D" will be interpreted as confDir
+		TESTPaxosConfig.setDistribtedTest(TESTPaxosConfig.getConfDirArg(args));
+				//Arrays.copyOfRange(args, 1, args.length)));
 
 		// if -c is in args
 		PaxosManager.startWithCleanDB(TESTPaxosConfig.shouldCleanDB(args));
@@ -158,7 +164,7 @@ public class TESTPaxosNode {
 	public static void main(String[] args) {
 		try {
 			int myID = processArgs(args);
-			TESTPaxosNode me = new TESTPaxosNode(myID);
+			TESTPaxosNode me = new TESTPaxosNode(myID, TESTPaxosConfig.getFromPaxosConfig());
 
 			// Creating default groups
 			int numGroups = Config.getGlobalInt(TC.NUM_GROUPS);

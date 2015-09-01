@@ -46,7 +46,7 @@ public class AcceptReplyPacket extends PaxosPacket {
 	 */
 	public final int maxCheckpointedSlot;
 
-	private int requestID = 0; // used only for debugging
+	private long requestID = 0; // used only for debugging
 
 	public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber,
 			int maxCheckpointedSlot, AcceptReplyPacket ar) {
@@ -65,7 +65,7 @@ public class AcceptReplyPacket extends PaxosPacket {
 
 	// used only for instrumentation
 	public AcceptReplyPacket(int nodeID, Ballot ballot, int slotNumber,
-			int maxCheckpointedSlot, int requestID) {
+			int maxCheckpointedSlot, long requestID) {
 		this(nodeID, ballot, slotNumber, maxCheckpointedSlot);
 		this.setRequestID(requestID);
 	}
@@ -84,11 +84,11 @@ public class AcceptReplyPacket extends PaxosPacket {
 				.toString());
 	}
 
-	public void setRequestID(int id) {
+	public void setRequestID(long id) {
 		this.requestID = id;
 	}
 
-	public int getRequestID() {
+	public long getRequestID() {
 		return this.requestID;
 	}
 

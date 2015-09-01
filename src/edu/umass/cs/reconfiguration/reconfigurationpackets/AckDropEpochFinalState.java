@@ -23,7 +23,6 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun
@@ -51,7 +50,7 @@ public class AckDropEpochFinalState<NodeIDType> extends BasicReconfigurationPack
 	}
 	
 	@Override
-	public IntegerPacketType getRequestType() throws RequestParseException {
+	public IntegerPacketType getRequestType() {
 		return this.getType();
 	}
 }

@@ -216,14 +216,26 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	 * @param types
 	 * @param pd
 	 */
-	public void register(Object[] types,
+	public void register(IntegerPacketType[] types,
 			InterfacePacketDemultiplexer<MessageType> pd) {
 		log.info("Registering types "
 				+ (new HashSet<Object>(Arrays.asList(types))) + " for " + pd);
 		for (Object type : types)
 			register((IntegerPacketType) type, pd);
 	}
-	
+
+	/**
+	 * Registers {@code types} with {@code this}.
+	 * 
+	 * @param types
+	 */
+	public void register(IntegerPacketType[] types) {
+		log.info("Registering types "
+				+ (new HashSet<Object>(Arrays.asList(types))) + " for " + this);
+		for (Object type : types)
+			register((IntegerPacketType) type, this);
+	}
+
 	/**
 	 * @param type
 	 */

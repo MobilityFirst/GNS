@@ -131,7 +131,7 @@ public class DelayProfiler {
 	/**
 	 * @return Statistics as a string.
 	 */
-	public synchronized static String getStats() {
+	public static String getStats() {
 		String s = "[ ";
 		s += statsHelper(averageMillis, "ms");
 		s += statsHelper(averageNanos, "ns");
@@ -142,10 +142,12 @@ public class DelayProfiler {
 
 	private static String statsHelper(HashMap<String, Double> map, String units) {
 		String s = "";
-		for (String field : map.keySet()) {
-			s += (field + ":" + Util.df(map.get(field)) + "/"
-					+ (stdDevs.get(field) > 0 ? "+" : "")
-					+ Util.df(stdDevs.get(field)) + units + " | ");
+		synchronized(map) {
+			for (String field : map.keySet()) {
+				s += (field + ":" + Util.df(map.get(field)) + "/"
+						+ (stdDevs.get(field) > 0 ? "+" : "")
+						+ Util.df(stdDevs.get(field)) + units + " | ");
+			}
 		}
 		return s;
 	}

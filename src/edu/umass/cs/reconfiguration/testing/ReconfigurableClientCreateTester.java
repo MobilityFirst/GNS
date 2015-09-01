@@ -15,7 +15,7 @@
  * 
  * Initial developer(s): V. Arun
  */
-package edu.umass.cs.reconfiguration.examples;
+package edu.umass.cs.reconfiguration.testing;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -39,6 +39,7 @@ import edu.umass.cs.nio.StringifiableDefault;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.reconfiguration.ActiveReplica;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
+import edu.umass.cs.reconfiguration.examples.AppRequest;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ClientReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
@@ -53,15 +54,19 @@ import edu.umass.cs.utils.MyLogger;
 /**
  * @author V. Arun
  * 
- *         FIXME: This is an example client for testing purposes. A cleaner
- *         "AbstractReconfigurationClient" is TBD.
+ *         This class is used to test batch creation of a large number of names.
+ *         Individually creating names is rather slow, so batch creation helps
+ *         significantly increase the creation throughput. For batch creation,
+ *         all of the names in a batch must have the same set of initial active
+ *         replicas.
+ *         <p>
  * 
- *         This class starts with a set of reconfigurator socket addresses known
- *         a priori and shows the following operations for a name (1) request
- *         active replicas, (2) creation, and (3) deletion. It also shows how to
- *         add and remove reconfigurator nodes, but these latter operations are
- *         normally for use only by administrators, not clients.
+ *         Note: There is no corresponding batch deletion mechanism. In genral,
+ *         different names will have different sets of active replicas, so it is
+ *         not meaningful to delete a batch of names as an atomic operation.
+ * 
  */
+
 public class ReconfigurableClientCreateTester {
 
 	private final Set<InetSocketAddress> reconfigurators;
@@ -93,8 +98,8 @@ public class ReconfigurableClientCreateTester {
 		for (int i = 0; i < batchSize; i++)
 			names.add(name + i);
 		Collection<Set<String>> batches = ConsistentReconfigurableNodeConfig
-				.splitIntoRCGroups(names, TestConfig.getTestNodeConfig()
-						.getReconfiguratorIDs());
+				.splitIntoRCGroups(names,
+						ReconfigurationConfig.getReconfiguratorIDs());
 
 		Set<CreateServiceName> creates = new HashSet<CreateServiceName>();
 		// each batched create corresponds to a different RC group
@@ -127,13 +132,15 @@ public class ReconfigurableClientCreateTester {
 				ActiveReplica.getClientFacingPort(address.getPort()));
 	}
 
+	private static final boolean RANDOM_SERVER = true;
+
 	private String sendRequest(BasicReconfigurationPacket<?> req)
 			throws JSONException, IOException {
-		InetSocketAddress sockAddr = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
-				.getFirstRCReplica() : this.getRandomRCReplica());
+		InetSocketAddress sockAddr = (!RANDOM_SERVER ? this.getFirstRCReplica()
+				: this.getRandomRCReplica());
 		log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[] {
 				"Sending ", req.getSummary(), " to ", sockAddr, ":",
-				(sockAddr), ": ", req });
+				(sockAddr)});
 		this.sentRequests.put(req.getServiceName(), System.currentTimeMillis());
 		this.sendRequest(sockAddr, req.toJSONObject());
 		return req.getServiceName();
@@ -243,7 +250,7 @@ public class ReconfigurableClientCreateTester {
 						sentRequests.remove(request.getServiceName());
 						notifyReply();
 						break;
-					case APP_COORDINATION:
+					case ANOTHER_APP_REQUEST:
 						throw new RuntimeException(
 								"Client received unexpected APP_COORDINATION message");
 					}
@@ -376,7 +383,8 @@ public class ReconfigurableClientCreateTester {
 							new PacketDemultiplexerDefault(), true,
 							ReconfigurationConfig.getClientSSLMode())));
 			final ReconfigurableClientCreateTester client = new ReconfigurableClientCreateTester(
-					TestConfig.getReconfigurators(), messenger);
+					ReconfigurationConfig.getReconfiguratorAddresses(),
+					messenger);
 			String initValue = "initVal";
 			int numIterations = 1;
 

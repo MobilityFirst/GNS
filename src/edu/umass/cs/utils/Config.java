@@ -256,7 +256,7 @@ public class Config extends Properties {
 		InputStream is = new FileInputStream(configFile);
 		this.load(is);
 		for (Object prop : this.keySet()) {
-			log.info("Set property " + prop + "="
+			log.fine("Set property " + prop + "="
 					+ this.getProperty(prop.toString()));
 		}
 	}

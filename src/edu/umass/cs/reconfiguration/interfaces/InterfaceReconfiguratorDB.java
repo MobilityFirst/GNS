@@ -227,6 +227,7 @@ public interface InterfaceReconfiguratorDB<NodeIDType> {
 	 * @param node
 	 */
 	public void garbageCollectedDeletedNode(NodeIDType node);
+		
 	/**
 	 * Close gracefully.
 	 */

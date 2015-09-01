@@ -19,13 +19,20 @@ package edu.umass.cs.reconfiguration.examples.noop;
 
 import java.io.IOException;
 
+import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
 import edu.umass.cs.reconfiguration.ReconfigurableNode;
-import edu.umass.cs.reconfiguration.examples.TestConfig;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
+import edu.umass.cs.reconfiguration.reconfigurationutils.DefaultNodeConfig;
 
 /**
  * @author V. Arun
+ * 
+ *         A class like this is optional and is needed only if the application
+ *         developer wants to use non-default means to instantiate an app
+ *         replica. For most applications, the default reflection-based replica
+ *         instantiation mechanism should suffice obviating this class.
  */
 public class NoopReconfigurableNode extends ReconfigurableNode<String> {
 
@@ -60,6 +67,8 @@ public class NoopReconfigurableNode extends ReconfigurableNode<String> {
 		return appCoordinator;
 	}
 
+	private static final boolean TEST_CLEAN_SLATE = false;
+
 	// local setup
 	/**
 	 * @param args
@@ -71,25 +80,29 @@ public class NoopReconfigurableNode extends ReconfigurableNode<String> {
 		// PaxosManager.getLogger().addHandler(handler);
 		// PaxosManager.getLogger().setUseParentHandlers(false);
 
-		InterfaceReconfigurableNodeConfig<String> nc = TestConfig
-				.getTestNodeConfig();
+		InterfaceReconfigurableNodeConfig<String> nc = new DefaultNodeConfig<String>(
+				PaxosConfig.getActives(),
+				ReconfigurationConfig.getReconfigurators());
 		try {
-			System.out.println("Setting up actives at "
-					+ nc.getActiveReplicas());
+			System.out.print("Setting up actives at " + nc.getActiveReplicas()
+					+ "...");
 			for (String activeID : nc.getActiveReplicas()) {
 				new NoopReconfigurableNode(activeID, nc);
 			}
-			System.out.println("Setting up RCs at " + nc.getReconfigurators());
+			System.out.println("done");
+			System.out.print("Setting up RCs at " + nc.getReconfigurators()
+					+ "...");
 			boolean first = true;
 			for (String rcID : nc.getReconfigurators()) {
 				// start first node with clean slate
 				new NoopReconfigurableNode(rcID,
 				// must use different node config for each node
-						TestConfig.getTestNodeConfig(),// nc,
-						first && !(first = false) ? TestConfig.TEST_CLEAN_SLATE
-								: false);
+						(new DefaultNodeConfig<String>(
+								PaxosConfig.getActives(), ReconfigurationConfig
+										.getReconfigurators())),
+						first && !(first = false) ? TEST_CLEAN_SLATE : false);
 			}
-
+			System.out.println("done");
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}

@@ -73,6 +73,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 
 	protected final NodeIDType myID;
 	protected final ConsistentReconfigurableNodeConfig<NodeIDType> consistentNodeConfig;
+	protected boolean recovering = true;
 
 	private static final Logger log = (Reconfigurator.getLogger());
 
@@ -105,12 +106,6 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		return record;
 	}
 
-	protected Set<NodeIDType> getActiveReplicas(String name) {
-		ReconfigurationRecord<NodeIDType> record = this
-				.getReconfigurationRecord(name);
-		return record.getActiveReplicas();
-	}
-
 	/***************** Paxos related methods below ***********/
 	@Override
 	public boolean handleRequest(InterfaceRequest request,
@@ -124,7 +119,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		// cast checked by assert above
 		@SuppressWarnings("unchecked")
 		BasicReconfigurationPacket<NodeIDType> rcPacket = (BasicReconfigurationPacket<NodeIDType>) request;
-		if (this.uglyRecoveryHack(rcPacket, doNotReplyToClient))
+		if (this.uglyRecoveryHack(rcPacket, this.recovering))
 			handled = true;
 		else
 			handled = (Boolean) AbstractReconfiguratorDB.autoInvokeMethod(this,
@@ -164,6 +159,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		if (recovering
 				&& rcPacket.getServiceName().equals(
 						RecordNames.NODE_CONFIG.toString())) {
+			assert(false) : " bad assert for testing; should be removed";
 			(new Thread(new Runnable() {
 				public void run() {
 					autoInvokeMethod(AbstractReconfiguratorDB.this, rcPacket,
@@ -197,6 +193,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		if (rcRecReq.startEpoch.isInitEpoch()
 				// don't create if delete is being re-executed
 				&& !rcRecReq.isDeleteIntentOrComplete()
+				// record==null ensures it is not waiting delete
 				&& this.getReconfigurationRecord(rcRecReq.getServiceName()) == null)
 			if(!rcRecReq.startEpoch.isBatchedCreate())
 				this.createReconfigurationRecord(new ReconfigurationRecord<NodeIDType>(
@@ -258,17 +255,18 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 							ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
 							rcRecReq.startEpoch.getCurEpochGroup() });			
 			
-			handled = rcRecReq.startEpoch.isBatchedCreate() ? 
-					this.setStateInitReconfiguration(
-					rcRecReq.startEpoch.getNameStates(), rcRecReq.getEpochNumber() - 1,
+			handled = rcRecReq.startEpoch.isBatchedCreate() ?
+			// batched create
+			this.setStateInitReconfiguration(
+					rcRecReq.startEpoch.getNameStates(),
+					rcRecReq.getEpochNumber() - 1,
 					ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
-					rcRecReq.startEpoch.getCurEpochGroup())
-					:
-						// typical unbatched create
-					this.setStateInitReconfiguration(
-					rcRecReq.getServiceName(), rcRecReq.getEpochNumber() - 1,
-					ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
-					rcRecReq.startEpoch.getCurEpochGroup());
+					rcRecReq.startEpoch.getCurEpochGroup()) :
+			// typical unbatched create
+					this.setStateInitReconfiguration(rcRecReq.getServiceName(),
+							rcRecReq.getEpochNumber() - 1,
+							ReconfigurationRecord.RCStates.WAIT_ACK_STOP,
+							rcRecReq.startEpoch.getCurEpochGroup());
 		} else if (rcRecReq.isReconfigurationComplete()) {
 			// WAIT_ACK_START -> READY
 			log.log(Level.FINE,
@@ -434,8 +432,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		if (stringified.equals(InterfaceRequest.NO_OP)) {
 			return new InterfaceRequest() {
 				@Override
-				public IntegerPacketType getRequestType()
-						throws RequestParseException {
+				public IntegerPacketType getRequestType() {
 					return new IntegerPacketType() {
 						@Override
 						public int getInt() {
@@ -531,7 +528,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			// ready to reconfigure
 			/*
 			 * FIXME: do we need to check if merges are all done correctly using
-			 * the pending task queue here as opposed to just record
+			 * the pending task queue here as opposed to just the record
 			 * information?
 			 */
 			(record.isReconfigurationReady() && rcRecReq
@@ -623,18 +620,6 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					new Object[] { this, ncRecord.getEpoch() + 1, debug });
 		DelayProfiler.updateDelay("isNodeConfigChangeComplete", t0);
 		return complete;
-	}
-
-	protected boolean isBeingAdded(String newRCGroup) {
-		Set<NodeIDType> newRCs = this.getReconfigurationRecord(
-				AbstractReconfiguratorDB.RecordNames.NODE_CONFIG.toString())
-				.getActiveReplicas();
-		boolean presentInOld = false;
-		for (NodeIDType node : newRCs) {
-			if (this.getRCGroupName(node).equals(newRCGroup))
-				presentInOld = true;
-		}
-		return !presentInOld;
 	}
 
 	protected Map<String, Set<NodeIDType>> getNewRCGroups() {
@@ -820,6 +805,8 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		ReconfigurationRecord<NodeIDType> ncRecord = this
 				.getReconfigurationRecord(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString());
+		assert (!ncRecord.getActiveReplicas().equals(ncRecord.getNewActives())) : this
+				+ " : " + ncRecord;
 		Set<NodeIDType> affectedNodes = new HashSet<NodeIDType>();
 		// affected by adds
 		for (NodeIDType addNode : addNodes) {

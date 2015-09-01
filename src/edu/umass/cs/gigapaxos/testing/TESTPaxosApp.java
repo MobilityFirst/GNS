@@ -50,7 +50,7 @@ import edu.umass.cs.utils.Util;
  *         instrumentations and asserts for testing.
  */
 @SuppressWarnings("javadoc")
-public class TESTPaxosReplicable implements InterfaceReplicable {
+public class TESTPaxosApp implements InterfaceReplicable {
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
 	private InterfaceNIOTransport<Integer, JSONObject> niot = null;
@@ -64,12 +64,12 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		private HashMap<Integer, String> committed = new HashMap<Integer, String>();
 	}
 
-	private static Logger log = Logger.getLogger(TESTPaxosReplicable.class
+	private static Logger log = Logger.getLogger(TESTPaxosApp.class
 			.getName());
 
 	// PaxosManager.getLogger();
 
-	public TESTPaxosReplicable(JSONNIOTransport<Integer> nio) {
+	public TESTPaxosApp(JSONNIOTransport<Integer> nio) {
 		this();
 		try {
 			/*
@@ -84,7 +84,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	}
 
 	// private because nio is necessary for testing
-	private TESTPaxosReplicable() {
+	public TESTPaxosApp() {
 		// app uses nio only to send, not receive, so no PacketDemultiplexer
 		try {
 			md = MessageDigest.getInstance("SHA");
@@ -155,7 +155,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			state.committed.remove(state.seqnum - MAX_STORED_REQUESTS); // GC
 
 			//synchronized (this) {
-				//this.notify(); // needed only for paxos manager's unit-test
+			// needed only for paxos manager's unit-test
+				//this.notify(); 
 			//}
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
 			if (!doNotReplyToClient && niot != null) {
@@ -185,7 +186,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 			log.log(Level.FINE, "App {0} sending response to client {1}",
 					new Object[] { getMyID(), requestPacket.getSummary() });
 			niot.sendToAddress((requestPacket.getClientAddress()),
-					new ProposalPacket(0, requestPacket.getCommit())
+					new ProposalPacket(0, requestPacket.getACK())
 							.toJSONObject());
 		}
 		// send responses for batched requests as well
@@ -294,8 +295,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		return s;
 	}
 
-	public boolean RSMInvariant(TESTPaxosReplicable app1,
-			TESTPaxosReplicable app2, String paxosID, int seqnum) {
+	public boolean RSMInvariant(TESTPaxosApp app1,
+			TESTPaxosApp app2, String paxosID, int seqnum) {
 		// invariant makes sense only when not recovery
 		if (!TESTPaxosConfig.getCleanDB())
 			return true;
@@ -311,8 +312,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	}
 
 	// legitimate holes can be caused because of checkpoint transfers
-	private boolean hasHoles(TESTPaxosReplicable app1,
-			TESTPaxosReplicable app2, String paxosID, int seqnum) {
+	private boolean hasHoles(TESTPaxosApp app1,
+			TESTPaxosApp app2, String paxosID, int seqnum) {
 		for (int i = seqnum; i >= 0; i--)
 			if (app1.allState.get(paxosID).committed.get(i) == null
 					&& app2.allState.get(paxosID).committed.get(i) != null
@@ -322,7 +323,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 		return false;
 	}
 
-	private String getTrace(TESTPaxosReplicable app1, TESTPaxosReplicable app2,
+	private String getTrace(TESTPaxosApp app1, TESTPaxosApp app2,
 			String paxosID, int seqnum) {
 		String s = "";
 		for (int i = seqnum; i >= 0; i--) {
@@ -337,8 +338,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	// check invariant at seqnum
 	public boolean RSMInvariant(String paxosID, int seqnum) {
 		boolean invariant = true;
-		TESTPaxosReplicable[] replicas = AllApps.getReplicas(paxosID).toArray(
-				new TESTPaxosReplicable[0]);
+		TESTPaxosApp[] replicas = AllApps.getReplicas(paxosID).toArray(
+				new TESTPaxosApp[0]);
 		for (int i = 0; i < replicas.length; i++) {
 			for (int j = i + 1; j < replicas.length; j++) {
 				invariant = invariant
@@ -352,8 +353,8 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	// check invariant at current frontier
 	public boolean RSMInvariant(String paxosID) {
 		boolean invariant = true;
-		TESTPaxosReplicable[] replicas = AllApps.getReplicas(paxosID).toArray(
-				new TESTPaxosReplicable[0]);
+		TESTPaxosApp[] replicas = AllApps.getReplicas(paxosID).toArray(
+				new TESTPaxosApp[0]);
 		for (int i = 0; i < replicas.length; i++) {
 			for (int j = i + 1; j < replicas.length; j++) {
 				invariant = invariant
@@ -368,17 +369,17 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 	public static class AllApps {
 		// private static Set<TESTPaxosReplicable> appMap = new
 		// HashSet<TESTPaxosReplicable>();
-		private static HashMap<Integer, TESTPaxosReplicable> appMap = new HashMap<Integer, TESTPaxosReplicable>();
+		private static HashMap<Integer, TESTPaxosApp> appMap = new HashMap<Integer, TESTPaxosApp>();
 
-		private synchronized static void addApp(TESTPaxosReplicable app) {
+		private synchronized static void addApp(TESTPaxosApp app) {
 			// appMap.add(app);
 			appMap.put(app.getMyID(), app);
 		}
 
-		private synchronized static Set<TESTPaxosReplicable> getReplicas(
+		private synchronized static Set<TESTPaxosApp> getReplicas(
 				String paxosID) {
-			Set<TESTPaxosReplicable> replicas = new HashSet<TESTPaxosReplicable>();
-			for (TESTPaxosReplicable app : appMap.values()) {
+			Set<TESTPaxosApp> replicas = new HashSet<TESTPaxosApp>();
+			for (TESTPaxosApp app : appMap.values()) {
 				if (app.allState.containsKey(paxosID))
 					replicas.add(app);
 			}
@@ -387,7 +388,7 @@ public class TESTPaxosReplicable implements InterfaceReplicable {
 
 		public synchronized static String toString(String paxosID) {
 			String s = "";
-			for (TESTPaxosReplicable app : getReplicas(paxosID)) {
+			for (TESTPaxosApp app : getReplicas(paxosID)) {
 				s += "\n" + app.toString(paxosID);
 			}
 			return s;

@@ -116,12 +116,15 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		CREATE_SERVICE_NAME(234), // : initiate create
 		DELETE_SERVICE_NAME(235), // : initiate delete
 		REQUEST_ACTIVE_REPLICAS(236), // : send current active replicas
-
+		
+		// active_replica -> app_client
+		ACTIVE_REPLICA_ERROR (237), 
+		
 		// reconfigurator -> reconfigurator
-		RC_RECORD_REQUEST(237),
+		RC_RECORD_REQUEST(238),
 		
 		// admin -> reconfigurator
-		RECONFIGURE_RC_NODE_CONFIG (238);
+		RECONFIGURE_RC_NODE_CONFIG (239);
 		;
 
 		private final int number;
@@ -132,6 +135,10 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		public static final IntegerPacketTypeMap<PacketType> intToType = 
 				new IntegerPacketTypeMap<PacketType>(PacketType.values());
 	}
+	
+	public static final ReconfigurationPacket.PacketType[] clientPacketTypes = {PacketType.CREATE_SERVICE_NAME,
+		PacketType.DELETE_SERVICE_NAME, PacketType.REQUEST_ACTIVE_REPLICAS, PacketType.ACTIVE_REPLICA_ERROR
+	};
 	
 	
 	/********************************* End of ReconfigurationpacketType ***********************/
@@ -160,7 +167,9 @@ public abstract class ReconfigurationPacket<NodeIDType> extends ProtocolPacket<N
 		typeMap.put(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME, CreateServiceName.class); 
 		typeMap.put(ReconfigurationPacket.PacketType.DELETE_SERVICE_NAME, DeleteServiceName.class); 
 		typeMap.put(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS, RequestActiveReplicas.class); 
-		
+
+		typeMap.put(ReconfigurationPacket.PacketType.ACTIVE_REPLICA_ERROR, ActiveReplicaError.class); 
+
 		typeMap.put(ReconfigurationPacket.PacketType.RC_RECORD_REQUEST, RCRecordRequest.class); 
 
 		typeMap.put(ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG, ReconfigureRCNodeConfig.class); 

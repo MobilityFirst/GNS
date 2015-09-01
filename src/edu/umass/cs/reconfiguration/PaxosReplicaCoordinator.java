@@ -41,7 +41,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  *
  * @param <NodeIDType>
  */
-public abstract class PaxosReplicaCoordinator<NodeIDType> extends
+public class PaxosReplicaCoordinator<NodeIDType> extends
 		AbstractReplicaCoordinator<NodeIDType> {
 
 	private final PaxosManager<NodeIDType> paxosManager;

@@ -42,7 +42,7 @@ public class RequestInstrumenter {
 	 * */
 	public static final boolean DEBUG = Config.getGlobalBoolean(PC.DEBUG);
 
-	private static final HashMap<Integer, String> map = new HashMap<Integer, String>();
+	private static final HashMap<Long, String> map = new HashMap<Long, String>();
 
 	private static Logger log = Logger.getLogger(RequestInstrumenter.class
 			.getName());
@@ -92,7 +92,7 @@ public class RequestInstrumenter {
 			}
 	}
 
-	public static String remove(int requestID) {
+	public static String remove(long requestID) {
 		String retval = null;
 		if (DEBUG)
 			synchronized (RequestInstrumenter.class) {
@@ -106,14 +106,14 @@ public class RequestInstrumenter {
 	public static void removeAll() {
 		if (DEBUG)
 			synchronized (RequestInstrumenter.class) {
-				for (Iterator<Integer> iter = map.keySet().iterator(); iter
+				for (Iterator<Long> iter = map.keySet().iterator(); iter
 						.hasNext();) {
 					remove(iter.next());
 				}
 			}
 	}
 
-	public static String getLog(int requestID) {
+	public static String getLog(long requestID) {
 		if (DEBUG)
 			synchronized (RequestInstrumenter.class) {
 				return map.containsKey(requestID) ? map.get(requestID)
@@ -122,7 +122,7 @@ public class RequestInstrumenter {
 		return "";
 	}
 
-	private static String rcvformat(int requestID, PaxosPacket packet,
+	private static String rcvformat(long requestID, PaxosPacket packet,
 			int sender, int receiver) {
 		if (DEBUG)
 			synchronized (RequestInstrumenter.class) {
@@ -134,7 +134,7 @@ public class RequestInstrumenter {
 		return "";
 	}
 
-	private static String sndformat(int requestID, PaxosPacket packet,
+	private static String sndformat(long requestID, PaxosPacket packet,
 			int sender, int receiver) {
 		if (DEBUG)
 			synchronized (RequestInstrumenter.class) {

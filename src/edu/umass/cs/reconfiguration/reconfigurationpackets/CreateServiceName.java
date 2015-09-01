@@ -66,6 +66,15 @@ public class CreateServiceName extends ClientReconfigurationPacket {
 	public final Map<String, String> nameStates;
 
 	/**
+	 * @param name
+	 * @param state
+	 */
+	public CreateServiceName(String name,
+			 String state) {
+		this(null, name, 0, state);
+	}
+
+	/**
 	 * @param initiator
 	 * @param name
 	 * @param epochNumber
@@ -109,7 +118,8 @@ public class CreateServiceName extends ClientReconfigurationPacket {
 	public CreateServiceName(JSONObject json, Stringifiable<?> unstringer)
 			throws JSONException {
 		super(json, CreateServiceName.unstringer); // ignores unstringer
-		assert (this.getSender() != null);
+		// may not be true for String packet demultiplexers
+		//assert (this.getSender() != null);
 		this.initialState = json.optString(Keys.STATE.toString(), null);
 		this.nameStates = getNameStateMap(json);
 	}

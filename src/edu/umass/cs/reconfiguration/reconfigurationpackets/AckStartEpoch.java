@@ -23,7 +23,6 @@ import org.json.JSONObject;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 
 /**
 @author V. Arun
@@ -60,7 +59,7 @@ public class AckStartEpoch<NodeIDType> extends BasicReconfigurationPacket<NodeID
 		coordType = b;
 	}
 	@Override
-	public IntegerPacketType getRequestType() throws RequestParseException {
+	public IntegerPacketType getRequestType() {
 		return this.getType();
 	}
 }

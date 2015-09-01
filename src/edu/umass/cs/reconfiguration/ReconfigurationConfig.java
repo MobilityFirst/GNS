@@ -1,27 +1,36 @@
 /*
  * Copyright (c) 2015 University of Massachusetts
  * 
- * Licensed under the Apache License, Version 2.0 (the "License"); you
- * may not use this file except in compliance with the License. You
- * may obtain a copy of the License at
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
  * 
  * http://www.apache.org/licenses/LICENSE-2.0
  * 
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
- * implied. See the License for the specific language governing
- * permissions and limitations under the License.
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  * 
  * Initial developer(s): V. Arun
  */
 package edu.umass.cs.reconfiguration;
 
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author arun
@@ -44,16 +53,52 @@ public class ReconfigurationConfig {
 		PaxosConfig.load(ReconfigurationConfig.RC.class);
 	}
 	/**
-	 * The default demand profile type. This will reconfigure once per request,
-	 * so you really want to use something else.
+	 * The default demand profile type is DemandProfile.class. This will
+	 * reconfigure once per request, so you probably want to use something else.
 	 */
-	public static final Class<?> DEFAULT_DEMAND_PROFILE_TYPE = DemandProfile.class;
-	private static Class<?> demandProfileType = DEFAULT_DEMAND_PROFILE_TYPE;
+	private static Class<?> demandProfileType = getDemandProfile(); // DEFAULT_DEMAND_PROFILE_TYPE;
+
+	private static Class<?> getClassSuppressExceptions(String className) {
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return clazz;
+	}
+
+	/**
+	 * 
+	 */
+	public static final Class<?> application = getClassSuppressExceptions(Config
+			.getGlobalString(RC.APPLICATION));
 
 	/**
 	 * Reconfiguration config parameters.
 	 */
 	public static enum RC implements Config.DefaultValueEnum {
+		/**
+		 * 
+		 */
+		APPLICATION(
+				edu.umass.cs.reconfiguration.examples.noopsimple.NoopApp.class
+						.getName()),
+		/**
+		 * Demand profile class name.
+		 */
+		DEMAND_PROFILE_TYPE(DemandProfile.class.getName()),
+
+		/**
+		 * File where host:port for actives and reconfigurators is stored.
+		 */
+		HOSTS_FILE(PaxosConfig.DEFAULT_GIGAPAXOS_CONFIG_FILE),
+		
+		/**
+		 * Directory where reconfiguration DB is maintained.
+		 */
+		RECONFIGURATION_DB_DIR ("reconfigurationDB"),
+
 		/**
 		 * Whether reconfigurations should be performed even though
 		 * AbstractDemandProfile returned a set of active replicas that are
@@ -99,12 +144,21 @@ public class ReconfigurationConfig {
 		 * True if further reconfigurations can progress without waiting for the
 		 * previous epoch final state to be dropped cleanly.
 		 */
-		AGGRESSIVE_RECONFIGURATIONS(true), 
+		AGGRESSIVE_RECONFIGURATIONS(true),
+
+		/**
+		 * Default retransmission timeout for coordinated requests in the
+		 * reconfiguration protocol.
+		 */
+		COMMIT_WORKER_RESTART_PERIOD(2000),
 		
 		/**
-		 * Default retransmission timeout for coordinated requests in the reconfiguration protocol.
+		 * Default restart period for the stop epoch task. All other restart
+		 * periods are multiples of this time.
 		 */
-		COMMIT_WORKER_RESTART_PERIOD(2000*20);
+		STOP_TASK_RESTART_PERIOD (2000),
+
+		;
 
 		final Object defaultValue;
 
@@ -179,6 +233,9 @@ public class ReconfigurationConfig {
 	 * @return DemandProfile class.
 	 */
 	public static Class<?> getDemandProfile() {
+		if (demandProfileType == null)
+			demandProfileType = getClassSuppressExceptions(Config
+					.getGlobalString(RC.DEMAND_PROFILE_TYPE));
 		return demandProfileType;
 	}
 
@@ -277,5 +334,55 @@ public class ReconfigurationConfig {
 	 */
 	public static void setAggressiveReconfigurations(boolean enable) {
 		aggressiveReconfigurations = enable;
+	}
+
+	private static String DEFAULT_RECONFIGURATOR_PREFIX = "reconfigurator.";
+
+	/**
+	 * @return A map of names and socket addresses corresponding to servers
+	 *         hosting paxos replicas.
+	 */
+	public static Map<String, InetSocketAddress> getReconfigurators() {
+		Map<String, InetSocketAddress> map = new HashMap<String, InetSocketAddress>();
+		Config config = Config.getConfig(PC.class);
+		Set<String> keys = config.stringPropertyNames();
+		for (String key : keys) {
+			if (key.trim().startsWith(DEFAULT_RECONFIGURATOR_PREFIX)) {
+				map.put(key.replaceFirst(DEFAULT_RECONFIGURATOR_PREFIX, ""),
+						Util.getInetSocketAddressFromString(config
+								.getProperty(key)));
+			}
+		}
+		return map;
+	}
+
+	/**
+	 * @return Returns only reconfigurator addresses.
+	 */
+	public static Set<InetSocketAddress> getReconfiguratorAddresses() {
+		return new HashSet<InetSocketAddress>(getReconfigurators().values());
+	}
+
+	/**
+	 * @return Gets only reconfigurator String IDs.
+	 */
+	public static Set<String> getReconfiguratorIDs() {
+		return new HashSet<String>(getReconfigurators().keySet());
+	}
+
+	protected static InterfaceReplicable createApp() {
+		if (ReconfigurationConfig.application != null) {
+			try {
+				return (InterfaceReplicable) ReconfigurationConfig.application
+						.getConstructor().newInstance();
+			} catch (InstantiationException | IllegalAccessException
+					| IllegalArgumentException | InvocationTargetException
+					| NoSuchMethodException | SecurityException e) {
+				Reconfigurator.getLogger().severe(
+						"App must support a constructor with no arguments");
+				System.exit(1);
+			}
+		}
+		return null;
 	}
 }

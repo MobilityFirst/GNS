@@ -18,11 +18,24 @@
 package edu.umass.cs.gigapaxos;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import edu.umass.cs.gigapaxos.examples.noop.NoopPaxosApp;
+import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
+import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.MultiArrayMap;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author arun
@@ -39,6 +52,8 @@ public class PaxosConfig {
 	 * -DgigapaxosConfig=<filename> as a JVM argument.
 	 */
 	public static final String GIGAPAXOS_CONFIG_FILE_KEY = "gigapaxosConfig";
+
+	private static String DEFAULT_SERVER_PREFIX = "active.";
 
 	/**
 	 * Loads from a default file or file name specified as a system property. We
@@ -63,6 +78,7 @@ public class PaxosConfig {
 		load(PC.class);
 	}
 
+
 	static {
 		load();
 		NIOTransport.setCompressionThreshold(Config
@@ -70,10 +86,50 @@ public class PaxosConfig {
 	}
 
 	/**
+	 * @return A map of names and socket addresses corresponding to servers
+	 *         hosting paxos replicas.
+	 */
+	public static Map<String, InetSocketAddress> getActives() {
+		Map<String, InetSocketAddress> map = new HashMap<String, InetSocketAddress>();
+		Config config = Config.getConfig(PC.class);
+		Set<String> keys = config.stringPropertyNames();
+		for (String key : keys) {
+			if (key.trim().startsWith(DEFAULT_SERVER_PREFIX)) {
+				map.put(key.replaceFirst(DEFAULT_SERVER_PREFIX, ""),
+						Util.getInetSocketAddressFromString(config
+								.getProperty(key)));
+			}
+		}
+		return map;
+	}
+	
+	private static Class<?> getClassSuppressExceptions(String className) {
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName(className);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+		return clazz;
+	}
+
+	/**
+	 * Paxos controlled application.
+	 */
+	public static final Class<?> application = getClassSuppressExceptions(Config
+			.getGlobalString(PC.APPLICATION));
+
+	/**
 	 * All gigapaxos config parameters that can be specified via a configuration
 	 * file.
 	 */
 	public static enum PC implements Config.DefaultValueEnum {
+
+		/**
+		 * Default application managed by gigapaxos.
+		 */
+		APPLICATION(NoopPaxosApp.class.getName()),
+
 		/**
 		 * Verbose debugging and request instrumentation
 		 */
@@ -87,11 +143,11 @@ public class PaxosConfig {
 		 * 
 		 */
 		ENABLE_COMPRESSION(true),
-		
+
 		/**
 		 * 
 		 */
-		COMPRESSION_THRESHOLD(4*1024*1024),
+		COMPRESSION_THRESHOLD(4 * 1024 * 1024),
 
 		/**
 		 * The default size of the {@link MultiArrayMap} used to store paxos
@@ -145,14 +201,15 @@ public class PaxosConfig {
 
 		/**
 		 * The maximum log message size. The higher the batching, the higher
-		 * this value needs to be. 
+		 * this value needs to be.
 		 */
-		MAX_LOG_MESSAGE_SIZE(1024*512),
+		MAX_LOG_MESSAGE_SIZE(1024 * 512),
 
 		/**
 		 * The maximum checkpoint size. The default below is the maximum size of
 		 * varchar in embedded derby, which is probably somewhat faster than
-		 * clobs, which would be automatically used with bigger checkpoint sizes.
+		 * clobs, which would be automatically used with bigger checkpoint
+		 * sizes.
 		 */
 		MAX_CHECKPOINT_SIZE(32672),
 
@@ -166,11 +223,11 @@ public class PaxosConfig {
 		 * sleep duration used for increasing batching gains.
 		 */
 		BATCH_OVERHEAD(0.01),
-		
+
 		/**
 		 * Maximum number of batched requests.
 		 */
-		MAX_BATCH_SIZE (1000),
+		MAX_BATCH_SIZE(1000),
 
 		/**
 		 * Checkpoint interval. A larger value means slower recovery, slower
@@ -210,17 +267,22 @@ public class PaxosConfig {
 		 * persistent logging can cause liveness problems.
 		 */
 		BATCHED_COMMITS(true),
-		
+
 		/**
 		 * Instrumentation at various places. Should be enabled only during
 		 * testing and disabled during production use.
 		 */
-		ENABLE_INSTRUMENTATION (true),
-		
+		ENABLE_INSTRUMENTATION(true),
+
 		/**
 		 * 
 		 */
 		JSON_LIBRARY("org.json"),
+
+		/**
+		 * Default location for paxos logs.
+		 */
+		PAXOS_LOGS_DIR("paxos_logs"),
 
 		;
 
@@ -237,9 +299,73 @@ public class PaxosConfig {
 	}
 
 	/**
-	 * @param args
+	 * @return Default node config.
 	 */
-	public static void main(String[] args) {
+	public static InterfaceNodeConfig<String> getDefaultNodeConfig() {
+		final Map<String, InetSocketAddress> actives = PaxosConfig.getActives();
 
+		return new InterfaceReconfigurableNodeConfig<String>() {
+
+			@Override
+			public boolean nodeExists(String id) {
+				return actives.containsKey(id);
+			}
+
+			@Override
+			public InetAddress getNodeAddress(String id) {
+				return actives.containsKey(id) ? actives.get(id).getAddress()
+						: null;
+			}
+
+			/**
+			 * Bind address is returned as the same as the regular address coz
+			 * we don't really need a bind address after all.
+			 * 
+			 * @param id
+			 * @return Bind address.
+			 */
+			@Override
+			public InetAddress getBindAddress(String id) {
+				return actives.containsKey(id) ? actives.get(id).getAddress()
+						: null;
+			}
+
+			@Override
+			public int getNodePort(String id) {
+				return actives.containsKey(id) ? actives.get(id).getPort()
+						: null;
+			}
+
+			@Override
+			public Set<String> getNodeIDs() {
+				return new HashSet<String>(actives.keySet());
+			}
+
+			@Override
+			public String valueOf(String strValue) {
+				return this.nodeExists(strValue) ? strValue : null;
+			}
+
+			@Override
+			public Set<String> getValuesFromStringSet(Set<String> strNodes) {
+				throw new RuntimeException("Method not yet implemented");
+			}
+
+			@Override
+			public Set<String> getValuesFromJSONArray(JSONArray array)
+					throws JSONException {
+				throw new RuntimeException("Method not yet implemented");
+			}
+
+			@Override
+			public Set<String> getActiveReplicas() {
+				return new HashSet<String>(actives.keySet());
+			}
+
+			@Override
+			public Set<String> getReconfigurators() {
+				return new HashSet<String>(actives.keySet());
+			}
+		};
 	}
 }

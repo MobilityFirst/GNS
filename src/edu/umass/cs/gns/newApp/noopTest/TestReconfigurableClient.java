@@ -107,8 +107,7 @@ public class TestReconfigurableClient {
 
   private void sendRequest(AppRequest req) throws JSONException, IOException,
           RequestParseException {
-    InetSocketAddress id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
-            .getFirstActiveReplica() : this.getRandomActiveReplica());
+    InetSocketAddress id = (this.getRandomActiveReplica());
     log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""), new Object[]{
       "Sending ", req.getRequestType(), " to ", id, ":", (id), ": ",
       req});
@@ -118,8 +117,7 @@ public class TestReconfigurableClient {
 
   private void sendRequest(BasicReconfigurationPacket<?> req)
           throws JSONException, IOException {
-    InetSocketAddress id = (TestConfig.serverSelectionPolicy == TestConfig.ServerSelectionPolicy.FIRST ? this
-            .getFirstRCReplica() : this.getRandomRCReplica());
+    InetSocketAddress id = (this.getRandomRCReplica());
     log.log(Level.INFO, MyLogger.FORMAT[7].replace(" ", ""),
             new Object[]{"Sending ", req.getSummary(), " to ", id, ":",
               (id), ": ", req});
@@ -208,7 +206,7 @@ public class TestReconfigurableClient {
                         + request.getValue()});
               exists.remove(request.getServiceName());
               break;
-            case APP_COORDINATION:
+            case ANOTHER_APP_REQUEST:
               throw new RuntimeException(
                       "Client received unexpected APP_COORDINATION message");
           }

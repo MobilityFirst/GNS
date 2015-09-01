@@ -29,6 +29,7 @@ import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.ThresholdProtocolTask;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.Reconfigurator;
 import edu.umass.cs.reconfiguration.RepliconfigurableReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.AckStopEpoch;
@@ -39,6 +40,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.StopEpoch;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.MyLogger;
 
@@ -59,7 +61,7 @@ public class WaitAckStopEpoch<NodeIDType>
 	 * reconfiguration protocol tasks are multiples of this, so it should be
 	 * changed with care.
 	 */
-	public static final long RESTART_PERIOD = 2000;
+	public static final long RESTART_PERIOD = Config.getGlobalLong(RC.STOP_TASK_RESTART_PERIOD);//2000;
 
 	private final String key;
 	private final StopEpoch<NodeIDType> stopEpoch;

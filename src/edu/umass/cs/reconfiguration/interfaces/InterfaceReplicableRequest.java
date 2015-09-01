@@ -24,6 +24,7 @@ import edu.umass.cs.reconfiguration.AbstractReplicaCoordinator;
  * @author V. Arun
  */
 public interface InterfaceReplicableRequest extends InterfaceRequest {
+	
 	/**
 	 * @return True if this request needs to be coordinated.
 	 */

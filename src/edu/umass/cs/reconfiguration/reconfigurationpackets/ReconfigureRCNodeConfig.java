@@ -31,7 +31,6 @@ import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
-import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -118,9 +117,10 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
-		if (this.newlyAddedNodes != null)
+		if (this.newlyAddedNodes != null) {
 			json.put(Keys.NEWLY_ADDED_NODES.toString(),
 					this.mapToArray(newlyAddedNodes));
+		}
 		if (this.deletedNodes != null)
 			json.put(Keys.DELETED_NODES.toString(),
 					this.setToArray(this.deletedNodes));
@@ -133,7 +133,7 @@ public class ReconfigureRCNodeConfig<NodeIDType> extends
 	}
 
 	@Override
-	public IntegerPacketType getRequestType() throws RequestParseException {
+	public IntegerPacketType getRequestType() {
 		return ReconfigurationPacket.PacketType.RECONFIGURE_RC_NODE_CONFIG;
 	}
 
