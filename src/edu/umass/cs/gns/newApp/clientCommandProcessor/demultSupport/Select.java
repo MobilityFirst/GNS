@@ -30,7 +30,7 @@ public class Select {
     JSONObject outgoingJSON = packet.toJSONObject();
     String serverID = pickNameServer(packet.getGuid(), handler);
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID.toString());
+      GNS.getLogger().info("CCP" + handler.getNodeAddress() + " transmitting QueryRequest " + outgoingJSON + " to " + serverID.toString());
     }
 //    if (AppReconfigurableNodeOptions.debuggingEnabled) {
 //      GNS.getLogger().fine("CCP" + handler.getNodeAddress() + " adding QueryRequest " + packet + " to queue.");
@@ -56,7 +56,7 @@ public class Select {
 
   public static void handlePacketSelectResponse(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
-      GNS.getLogger().fine("LNS" + handler.getNodeAddress() + " recvd QueryResponse: " + json);
+      GNS.getLogger().info("LNS" + handler.getNodeAddress() + " recvd QueryResponse: " + json);
     }
     SelectResponsePacket<String> packet = new SelectResponsePacket<String>(json, handler.getGnsNodeConfig());
     //SelectInfo info = handler.getSelectInfo(packet.getCcpQueryId());

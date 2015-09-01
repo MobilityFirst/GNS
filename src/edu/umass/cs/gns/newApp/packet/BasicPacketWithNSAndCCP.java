@@ -10,8 +10,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Provides packet with an and a NameServerID and LNS address. Address can be null. NameServerID can't be null
- * but can be null.
+ * Provides packet with an and a NameServerID and LNS address. Address can be null. 
+ * NameServerID can't be null but can be INVALID_PORT.
  *
  * @author westy
  * @param <NodeIDType>
@@ -19,8 +19,8 @@ import org.json.JSONObject;
 public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
   public final static String NAMESERVER_ID = "ns_ID";
-  public final static String CCP_ADDRESS = "lnsAddress";
-  public final static String CCP_PORT = "lnsPort";
+  public final static String CCP_ADDRESS = "ccpAddress";
+  public final static String CCP_PORT = "ccpPort";
 
   public final static int INVALID_PORT = -1;
 

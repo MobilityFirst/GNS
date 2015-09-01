@@ -32,10 +32,10 @@ public class NIOTesterD {
 	public static void main(String[] args) throws UnsupportedEncodingException {
 		if(args.length!=3) throw new RuntimeException("IP:port must be specified as args");
 		InetSocketAddress isa1 = Util.getInetSocketAddressFromString(args[0]);
-		InetSocketAddress isa2 = Util.getInetSocketAddressFromString(args[1]);
+		final InetSocketAddress isa2 = Util.getInetSocketAddressFromString(args[1]);
 		String mode = args[2];
 		
-		int numTestMessages = 1000000;
+		final int numTestMessages = 1000000;
 		RateLimiter r = new RateLimiter(40000);
 
 		while (gibberish.length() < 300)
@@ -45,7 +45,7 @@ public class NIOTesterD {
 		final byte[] replyBytes = new byte[gibberish.length() / 10];
 		final int replySize = replyBytes.length;
 		final int replyRatio = 1;
-		int printFreq = numTestMessages / 10 / replyRatio;
+		final int printFreq = numTestMessages / 10 / replyRatio;
 
 
 		class PDEcho extends AbstractPacketDemultiplexer<String> {

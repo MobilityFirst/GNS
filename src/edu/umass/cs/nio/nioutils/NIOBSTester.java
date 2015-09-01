@@ -32,12 +32,12 @@ public class NIOBSTester {
 		SampleNodeConfig<Integer> snc = new SampleNodeConfig<Integer>();
 		snc.addLocal(id1);
 		snc.addLocal(id2);
-		InetSocketAddress isa1 = new InetSocketAddress(snc.getNodeAddress(id1),
+		final InetSocketAddress isa1 = new InetSocketAddress(snc.getNodeAddress(id1),
 				snc.getNodePort(id1));
 		InetSocketAddress isa2 = new InetSocketAddress(snc.getNodeAddress(id2),
 				snc.getNodePort(id2));
 
-		int numTestMessages = 1000000;
+		final int numTestMessages = 1000000;
 		RateLimiter r = new RateLimiter(400000);
 
 		String gibberish = "|47343289u23094322|";
@@ -48,7 +48,7 @@ public class NIOBSTester {
 		final byte[] replyBytes = new byte[sendBytes.length / 1];
 		final int replySize = replyBytes.length;
 		final int replyRatio = 1;
-		int printFreq = numTestMessages / 10 / replyRatio;
+		final int printFreq = numTestMessages / 10 / replyRatio;
 
 		final int batchSize = 1;
 

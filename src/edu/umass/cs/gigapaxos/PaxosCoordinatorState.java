@@ -807,7 +807,7 @@ public class PaxosCoordinatorState {
 				pvalue));
 	}
 	
-	private Object getString(int[] array) {
+	private Object getString(final int[] array) {
 		return new Object() {
 			public String toString() {
 				return Arrays.toString(array);
