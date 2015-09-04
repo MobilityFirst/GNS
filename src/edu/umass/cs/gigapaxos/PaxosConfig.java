@@ -212,11 +212,18 @@ public class PaxosConfig {
 		 * sizes.
 		 */
 		MAX_CHECKPOINT_SIZE(32672),
+		
+		/**
+		 * Number of checkpoints after which log messages will be garbage
+		 * collected.
+		 */
+		LOG_GC_FREQUENCY (1),
 
 		/**
-		 * Only for testing.
+		 * FIXME: A sleep of a millisecond seems to improve latency because
+		 * of more batching.
 		 */
-		BATCH_SLEEP_DURATION(0),
+		BATCH_SLEEP_DURATION(1),
 
 		/**
 		 * Inverse of the percentage overhead of agreement latency added to the
@@ -240,7 +247,13 @@ public class PaxosConfig {
 		 * Number of threads in packet demultiplexer. More than 0 means that we
 		 * may not preserve the order of client requests while processing them.
 		 */
-		PACKET_DEMULTIPLEXER_THREADS(5),
+		PACKET_DEMULTIPLEXER_THREADS(4),
+		
+		/**
+		 * Whether request order is preserved for requests sent by the same
+		 * replica and committed by the same coordinator.
+		 */
+		ORDER_PRESERVING_REQUESTS (true),
 
 		/**
 		 * The replica receiving the request will simply send the request to the
@@ -248,6 +261,13 @@ public class PaxosConfig {
 		 * coordination. This is used only for testing.
 		 */
 		EMULATE_UNREPLICATED(false),
+
+		/**
+		 * Only for performance instrumentation. If true, replicas will simply
+		 * execute the request upon receiving an ACCEPT. This option will break
+		 * RSM safety.
+		 */
+		EXECUTE_UPON_ACCEPT (false),
 
 		/**
 		 * Also used for testing. Lazily propagates requests to other replicas
@@ -267,6 +287,11 @@ public class PaxosConfig {
 		 * persistent logging can cause liveness problems.
 		 */
 		BATCHED_COMMITS(true),
+		
+		/**
+		 * Whether to store compressed logs in the DB.
+		 */
+		DB_COMPRESSION (true),
 
 		/**
 		 * Instrumentation at various places. Should be enabled only during
@@ -280,9 +305,32 @@ public class PaxosConfig {
 		JSON_LIBRARY("org.json"),
 
 		/**
-		 * Default location for paxos logs.
+		 * Default location for paxos logs when an embedded DB is used.
 		 */
 		PAXOS_LOGS_DIR("paxos_logs"),
+		
+		/**
+		 * Prefix of the paxos DB's name. The whole name is obtained
+		 * by concatenating this prefix with the node ID.
+		 */
+		PAXOS_DB_PREFIX ("paxos_logs"),
+		
+		/**
+		 * Maximum length in characters of a paxos group name.
+		 */
+		MAX_PAXOS_ID_SIZE (40),
+		
+		/**
+		 * {@link edu.umass.cs.gigapaxos.paxosutil.SQL.SQLType} type. Currently,
+		 * the only other alternative is "MYSQL". Refer the above class to 
+		 * specify the user name and password. 
+		 */
+		SQL_TYPE ("EMBEDDED_DERBY"),
+		
+		/**
+		 * Maximum size of a paxos replica group.
+		 */
+		MAX_GROUP_SIZE (16),
 
 		;
 

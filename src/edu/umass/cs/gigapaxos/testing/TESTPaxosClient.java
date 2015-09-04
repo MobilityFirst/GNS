@@ -187,7 +187,7 @@ public class TESTPaxosClient {
 				RequestPacket request = new RequestPacket(msg);
 				if (requests.containsKey(request.requestID)) {
 					client.incrReplyCount();
-					assert (requestCreateTimes.containsKey(request.requestID));
+					assert (requestCreateTimes.containsKey(request.requestID)) : request;
 					long latency = System.currentTimeMillis()
 							- requestCreateTimes.get(request.requestID);
 					log.log(Level.FINE,
@@ -330,7 +330,7 @@ public class TESTPaxosClient {
 	private RequestPacket makeRequest() {
 		int reqID = ((int) (Math.random() * Integer.MAX_VALUE));
 		RequestPacket req = new RequestPacket(reqID,
-				"[Sample request numbered " + getTotalRequestCount() + "]"
+				"Sample request numbered " + getTotalRequestCount() + ":"
 						+ gibberish, false);
 		return req;
 	}

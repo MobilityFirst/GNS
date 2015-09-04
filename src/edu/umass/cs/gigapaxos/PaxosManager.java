@@ -487,8 +487,10 @@ public class PaxosManager<NodeIDType> {
 			return false;
 		}
 
+		private final boolean ORDER_PRESERVING_REQUESTS = Config.getGlobalBoolean(PC.ORDER_PRESERVING_REQUESTS);
 		@Override
 		public boolean isOrderPreserving(JSONObject msg) {
+			if(!ORDER_PRESERVING_REQUESTS) return false;
 			try {
 				// only preserve order for REQUEST or PROPOSAL packets 
 				PaxosPacketType type = PaxosPacket.getPaxosPacketType(msg);
@@ -527,6 +529,11 @@ public class PaxosManager<NodeIDType> {
 				e.printStackTrace();
 			}
 			return true;
+		}
+
+		@Override
+		protected boolean matchesType(Object message) {
+			return message instanceof JSONObject;
 		}
 	}
 
@@ -664,6 +671,7 @@ public class PaxosManager<NodeIDType> {
 				processFindReplicaGroup((FindReplicaGroupPacket) request);
 				break;
 			default: // paxos protocol messages
+				
 				assert (request.getPaxosID() != null) : request.getSummary();
 				if (request instanceof RequestPacket) // base and super types
 					((RequestPacket) request).addDebugInfo("i", myID);
@@ -1351,13 +1359,21 @@ public class PaxosManager<NodeIDType> {
 			AbstractPaxosLogger.logAndMessage(this.paxosLogger,
 					(LogMessagingTask) mtask);// , this.messenger);
 		} else {
-			this.messenger.send(coalesce ? PaxosManager.this.ppBatcher
+			this.sendOrLoopback(coalesce ? PaxosManager.this.ppBatcher
 					.coalesce(mtask) : mtask);
 		}
 	}
-
+	
 	protected void send(MessagingTask mtask) throws JSONException, IOException {
 		this.send(mtask, true, true);
+	}
+
+	private void sendOrLoopback(MessagingTask mtask) throws JSONException, IOException {
+		MessagingTask local = MessagingTask.getLoopback(mtask, myID);
+		if(local!=null && !local.isEmptyMessaging())
+			for(PaxosPacket pp : local.msgs)
+				this.handlePaxosPacket(pp);
+		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}
 
 	protected void send(InetSocketAddress sockAddr, InterfaceRequest request)
@@ -1517,7 +1533,8 @@ public class PaxosManager<NodeIDType> {
 			 */
 			assert (pism.isStopped());
 			this.softCrash(pism);
-			DelayProfiler.updateDelay("pause", pauseInitTime);
+			if (Util.oneIn(Integer.MAX_VALUE))
+				DelayProfiler.updateDelay("pause", pauseInitTime);
 			log.log(Level.FINE, "{0} successfully paused {1}", new Object[] {
 					this, pism.getPaxosIDVersion() });
 		} else
@@ -1545,7 +1562,7 @@ public class PaxosManager<NodeIDType> {
 		} else
 			log.log(Level.FINE, "{0} unable to unpause instance {1}",
 					new Object[] { this, paxosID });
-		DelayProfiler.updateDelay("unpause", unpauseInitTime);
+		if(restored) DelayProfiler.updateDelay("unpause", unpauseInitTime);
 		return restored;
 	}
 
@@ -2080,7 +2097,7 @@ public class PaxosManager<NodeIDType> {
 				if (json.has(key.toString())) {
 					// fix default node string
 					String nodeString = json.getString(key.toString());
-					if(!nodeString.equals("-1")) {
+					if(!nodeString.equals(IntegerMap.NULL_STR_NODE)) {
 						int nodeInt = this.integerMap.put(this.unstringer
 								.valueOf(nodeString));
 						json.put(key.toString(), nodeInt);
@@ -2125,7 +2142,7 @@ public class PaxosManager<NodeIDType> {
 				if (json.containsKey(key.toString())) {
 					// fix default node string
 					String nodeString = json.get(key.toString()).toString();
-					if (!nodeString.equals("-1")) {
+					if (!nodeString.equals(IntegerMap.NULL_STR_NODE)) {
 						int nodeInt = this.integerMap.put(this.unstringer
 								.valueOf(nodeString));
 						json.put(key.toString(), nodeInt);

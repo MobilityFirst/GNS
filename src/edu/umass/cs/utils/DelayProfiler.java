@@ -137,7 +137,7 @@ public class DelayProfiler {
 		s += statsHelper(averageNanos, "ns");
 		s += statsHelper(averages, "");
 		s += statsHelper(counters, "");
-		return (s + "]").replace(" | ]", "]");
+		return (s + "]").replace(" | ]", " ]");
 	}
 
 	private static String statsHelper(HashMap<String, Double> map, String units) {

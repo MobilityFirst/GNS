@@ -579,7 +579,7 @@ public class PaxosCoordinatorState {
 				.contains(acceptReply.acceptor)) : "ACCEPT = "
 				+ this.myProposals.get(acceptReply.slotNumber)
 				+ "; ACCEPT_REPLY = " + acceptReply;
-		// Current ballot, makes sense to process now
+		// current ballot, makes sense to process now
 		recordSlotNumber(members, acceptReply); // useful for garbage collection
 
 		boolean acceptedByMajority = false;

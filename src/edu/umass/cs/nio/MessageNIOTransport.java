@@ -386,7 +386,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	protected int sendToIDInternal(NodeIDType destID, MessageType msg)
 			throws IOException {
 		if (destID.equals(this.myID))
-			return sendLocal(msg);
+			return sendLocal(msg); 
 		// else
 		if (msg instanceof byte[])
 			return this.sendUnderlying(destID, (byte[]) msg);
@@ -407,6 +407,7 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 
 		String msg = message.toString();
 		int length = msg.length();
+		//((InterfaceMessageExtractor) worker).demultiplexMessage(message);
 		((InterfaceMessageExtractor) worker)
 				.processMessage(new InetSocketAddress(this.getNodeAddress(),
 						this.getNodePort()), msg);

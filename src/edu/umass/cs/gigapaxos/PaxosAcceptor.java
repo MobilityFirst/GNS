@@ -282,7 +282,7 @@ public class PaxosAcceptor {
 			// no-op if the two are equal anyway
 			this.ballotNum = accept.ballot.ballotNumber;
 			this.ballotCoord = accept.ballot.coordinatorID;
-			if (accept.slot - this.acceptedGCSlot > 0) 
+			if (accept.slot - this.acceptedGCSlot > 0)
 				this.acceptedProposals.put(accept.slot, accept); // wraparound
 			log.log(Level.FINE, "Node{0} acceptor accepting {1}", new Object[] {
 					myID, accept.getSummary(log.isLoggable(Level.FINE)) });
@@ -524,8 +524,9 @@ public class PaxosAcceptor {
 	private boolean isNonConflictingAccept(AcceptPacket accept) {
 		PValuePacket existing = this.acceptedProposals.get(accept.slot);
 		if (existing != null && accept.ballot.compareTo(existing.ballot) == 0) {
-			return (existing.requestID == accept.requestID && existing.requestValue
-					.equals(accept.requestValue));
+			return (existing.requestID == accept.requestID 
+					&& existing.requestValue.equals(accept.requestValue)
+					);
 		}
 		return true;
 	}
@@ -534,8 +535,9 @@ public class PaxosAcceptor {
 		PValuePacket existing = this.committedRequests.get(decision.slot);
 		if (existing != null && decision.ballot.compareTo(existing.ballot) == 0) {
 			if (existing.requestValue != null) // for meta commits
-				return (existing.requestID == decision.requestID && existing.requestValue
-						.equals(decision.requestValue));
+				return (existing.requestID == decision.requestID 
+				&& existing.requestValue.equals(decision.requestValue)
+				);
 		}
 		return true;
 	}

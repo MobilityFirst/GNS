@@ -90,6 +90,11 @@ public class NIOBSTester {
 				}
 			}
 
+			@Override
+			public void demultiplexMessage(Object message) {
+				throw new RuntimeException("Should not get here");
+			}
+
 		}
 		class DPWSender implements InterfaceDataProcessingWorker {
 			int count = 0;
@@ -129,6 +134,11 @@ public class NIOBSTester {
 									/ (System.currentTimeMillis() - t))
 							+ "/sec ");
 				}
+			}
+
+			@Override
+			public void demultiplexMessage(Object message) {
+				throw new RuntimeException("Should not get here");
 			}
 		}
 

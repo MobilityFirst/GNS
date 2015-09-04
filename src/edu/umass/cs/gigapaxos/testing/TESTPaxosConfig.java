@@ -218,7 +218,7 @@ public class TESTPaxosConfig {
 	 * @param b
 	 */
 	public static final void setAssertRSMInvariant(boolean b) {
-		assertRSMInvariant = b;
+			assertRSMInvariant = b && !Config.getGlobalBoolean(PC.EXECUTE_UPON_ACCEPT);
 	}
 
 	/**

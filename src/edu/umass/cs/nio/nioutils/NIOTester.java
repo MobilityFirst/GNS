@@ -108,6 +108,11 @@ public class NIOTester {
 				return message;
 			}
 
+			@Override
+			protected boolean matchesType(Object message) {
+				return message instanceof String;
+			}
+
 		}
 		class PDSender extends AbstractPacketDemultiplexer<String> {
 			int count = 0;
@@ -169,6 +174,11 @@ public class NIOTester {
 			@Override
 			protected String processHeader(String message, NIOHeader header) {
 				return message;
+			}
+
+			@Override
+			protected boolean matchesType(Object message) {
+				return message instanceof String;
 			}
 
 		}

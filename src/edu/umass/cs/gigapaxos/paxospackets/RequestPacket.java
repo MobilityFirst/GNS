@@ -27,6 +27,7 @@ import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.RequestBatcher;
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
+import edu.umass.cs.gigapaxos.paxosutil.IntegerMap;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONNIOTransport;
@@ -97,7 +98,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		/**
 		 * Request value.
 		 */
-		QVAL,
+		QV,
 
 		/**
 		 * Client socket address.
@@ -105,7 +106,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		CSA,
 
 		/**
-		 * Boolean flag to specify whether this request came into the system as
+		 * Boolean query flag to specify whether this request came into the system as
 		 * a string or RequestPacket.
 		 */
 		QF,
@@ -118,7 +119,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		/**
 		 * Response value.
 		 */
-		RVAL,
+		RV,
 
 	}
 
@@ -160,7 +161,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	private InetSocketAddress clientAddress = null;
 
 	// the replica that first received this request
-	private int entryReplica = -1;
+	private int entryReplica = IntegerMap.NULL_INT_NODE;
 
 	/*
 	 * Whether to return requestValue or this.toString() back to client. We need
@@ -186,12 +187,10 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	 * These fields are for testing and debugging. They are preserved across
 	 * forwarding by nodes, so they are not final
 	 */
-	// included always
-	// private long createTime = System.currentTimeMillis();
 	// included only in DEBUG mode
 	private String debugInfo = null;
 	// included only in DEBUG mode
-	private int forwarderID = -1;
+	private int forwarderID = IntegerMap.NULL_INT_NODE;
 
 	// let a random request ID be picked
 	public RequestPacket(String value, boolean stop) {
@@ -230,7 +229,6 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		this.responseValue = req.responseValue;
 
 		// debug/testing fields
-		// this.createTime = req.createTime;
 		this.entryTime = req.entryTime;
 		this.forwardCount = req.forwardCount;
 		this.forwarderID = req.forwarderID;
@@ -272,7 +270,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	}
 
 	public RequestPacket setEntryReplica(int id) {
-		if (this.entryReplica == -1) // one-time
+		if (this.entryReplica == IntegerMap.NULL_INT_NODE) // one-time
 			this.entryReplica = id;
 		if (this.isBatched())
 			for (RequestPacket req : this.batched)
@@ -350,15 +348,15 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		this.packetType = PaxosPacketType.REQUEST;
 		this.stop = json.optBoolean(Keys.STOP.toString());
 		this.requestID = json.getLong(Keys.QID.toString());
-		this.requestValue = json.getString(Keys.QVAL.toString());
+		this.requestValue = json.getString(Keys.QV.toString());
 
-		this.responseValue = json.has(Keys.RVAL.toString()) ? json
-				.getString(Keys.RVAL.toString()) : null;
+		this.responseValue = json.has(Keys.RV.toString()) ? json
+				.getString(Keys.RV.toString()) : null;
 		this.entryTime = json.getLong(Keys.ET.toString());
 		this.forwardCount = (json.has(Keys.NFWDS.toString()) ? json
 				.getInt(Keys.NFWDS.toString()) : 0);
 		this.forwarderID = (json.has(RequestPacket.Keys.FWDR.toString()) ? json
-				.getInt(RequestPacket.Keys.FWDR.toString()) : -1);
+				.getInt(RequestPacket.Keys.FWDR.toString()) : IntegerMap.NULL_INT_NODE);
 		this.debugInfo = (json.has(Keys.DBG.toString()) ? json
 				.getString(Keys.DBG.toString()) : "");
 
@@ -385,16 +383,16 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		this.packetType = PaxosPacketType.REQUEST;
 		this.stop = json.containsKey(Keys.STOP.toString()) ?  (Boolean) json.get(Keys.STOP.toString()) : false;
 		this.requestID = (Long) json.get(Keys.QID.toString());
-		this.requestValue = (String) json.get(Keys.QVAL.toString());
+		this.requestValue = (String) json.get(Keys.QV.toString());
 
-		this.responseValue = json.containsKey(Keys.RVAL.toString()) ? (String) json
-				.get(Keys.RVAL.toString()) : null;
+		this.responseValue = json.containsKey(Keys.RV.toString()) ? (String) json
+				.get(Keys.RV.toString()) : null;
 		this.entryTime = (Long) json.get(Keys.ET.toString());
 		this.forwardCount = (json.containsKey(Keys.NFWDS.toString()) ? (Integer) json
 				.get(Keys.NFWDS.toString()) : 0);
 		this.forwarderID = (json
 				.containsKey(RequestPacket.Keys.FWDR.toString()) ? (Integer) json
-				.get(RequestPacket.Keys.FWDR.toString()) : -1);
+				.get(RequestPacket.Keys.FWDR.toString()) : IntegerMap.NULL_INT_NODE);
 		this.debugInfo = (json.containsKey(Keys.DBG.toString()) ? (String) json
 				.get(Keys.DBG.toString()) : "");
 
@@ -422,9 +420,9 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = new JSONObject();
 		json.put(Keys.QID.toString(), this.requestID);
-		json.put(Keys.QVAL.toString(), this.requestValue);
+		json.put(Keys.QV.toString(), this.requestValue);
 
-		json.putOpt(Keys.RVAL.toString(), this.responseValue);
+		json.putOpt(Keys.RV.toString(), this.responseValue);
 		json.put(Keys.ET.toString(), this.entryTime);
 		if (forwardCount > 0)
 			json.put(Keys.NFWDS.toString(), this.forwardCount);
@@ -453,10 +451,10 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	public net.minidev.json.JSONObject toJSONSmart() throws JSONException {
 		net.minidev.json.JSONObject json = new net.minidev.json.JSONObject();
 		json.put(Keys.QID.toString(), this.requestID);
-		json.put(Keys.QVAL.toString(), this.requestValue);
+		json.put(Keys.QV.toString(), this.requestValue);
 
 		if (this.responseValue != null)
-			json.put(Keys.RVAL.toString(), this.responseValue);
+			json.put(Keys.RV.toString(), this.responseValue);
 		json.put(Keys.ET.toString(), this.entryTime);
 		if (forwardCount > 0)
 			json.put(Keys.NFWDS.toString(), this.forwardCount);
@@ -504,13 +502,6 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 			if (req.isStopRequest())
 				return true;
 		return false;
-	}
-
-	// for testing
-	public static int getRequestID(String req) {
-		String[] pieces = req.split("\\s");
-		return (pieces != null && pieces.length >= 6 ? Integer
-				.parseInt(pieces[5]) : -1);
 	}
 
 	public RequestPacket setEntryTime(long t) {
@@ -698,7 +689,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		List<RequestPacket> entryReplicaRequests = new LinkedList<RequestPacket>();
 
 		for (int i = 0; i < reqArray.length; i++)
-			if (reqArray[i].getEntryReplica() == -1)
+			if (reqArray[i].getEntryReplica() == IntegerMap.NULL_INT_NODE)
 				noEntryReplicaRequests.add(reqArray[i]);
 			else
 				entryReplicaRequests.add(reqArray[i]);
@@ -794,10 +785,14 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 
 	/*
 	 * Need an upper bound here for limiting batch size. Currently all the
-	 * fields in RequestPacket other than requestValue add up to around 270.
+	 * fields in RequestPacket other than requestValue add up to ~200B.
 	 */
 	public int lengthEstimate() {
-		return this.requestValue.length() + SIZE_ESTIMATE;
+		int len = this.requestValue.length() + SIZE_ESTIMATE;
+		if(this.isBatched())
+			for(RequestPacket req : this.batched)
+				len += req.lengthEstimate();
+		return len;
 	}
 
 	public String printBatched() {

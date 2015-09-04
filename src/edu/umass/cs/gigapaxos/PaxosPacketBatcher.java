@@ -215,10 +215,12 @@ public class PaxosPacketBatcher extends ConsumerTask<PaxosPacket[]> {
 	/*
 	 * Coalesces non-local messaging tasks and returns either the local part of
 	 * the messaging task or the input mtask if unable to coalesce. The sender
-	 * is expected to direct-send the returned messaging task.
+	 * is expected to direct-send the returned messaging task. 
 	 */
+	private static final boolean SHORT_CIRCUIT_LOCAL = false;
 	protected MessagingTask coalesce(MessagingTask mtask) {
-		if (mtask == null || mtask.isEmptyMessaging() || allLocal(mtask)
+		if (mtask == null || mtask.isEmptyMessaging()
+				|| (allLocal(mtask) && SHORT_CIRCUIT_LOCAL)
 				|| isUnbatchableAcceptReplies(mtask)
 				|| isUnbatchableDecision(mtask))
 			return mtask;
@@ -229,23 +231,28 @@ public class PaxosPacketBatcher extends ConsumerTask<PaxosPacket[]> {
 			return mtask;
 		MessagingTask local = MessagingTask.getLoopback(mtask,
 				this.paxosManager.getMyID());
+		if(local == null || local.isEmptyMessaging()) ; // no-op
 
-		boolean isAccReply = allAcceptReplies(nonLocal), isCommit = allCoalescableDecisions(nonLocal);
+		boolean isAccReply = allAcceptReplies(mtask), isCommit = allCoalescableDecisions(mtask);
 		if (!isAccReply && !isCommit)
 			return mtask;
 
+		if(SHORT_CIRCUIT_LOCAL) mtask = nonLocal;
+		
+		// use batched mtask as "local" NIO is worse for large requests
 		if (isAccReply) {
-			for (PaxosPacket acceptReply : nonLocal.msgs)
+			for (PaxosPacket acceptReply : mtask.msgs)
 				this.enqueue(acceptReply.toSingletonArray());
 		} else if (isCommit) {
 			BatchedCommit batchedCommit = new BatchedCommit(
-					(PValuePacket) nonLocal.msgs[0],
-					Util.arrayToIntSet(nonLocal.recipients));
-			for (int i = 1; i < nonLocal.msgs.length; i++)
-				batchedCommit.addCommit((PValuePacket) nonLocal.msgs[i]);
+					(PValuePacket) mtask.msgs[0],
+					Util.arrayToIntSet(mtask.recipients));
+			// add rest into first, so index starts from 1
+			for (int i = 1; i < mtask.msgs.length; i++)
+				batchedCommit.addCommit((PValuePacket) mtask.msgs[i]);
 			this.enqueue(batchedCommit.toSingletonArray());
 		}
-		return local; // could be null
+		return SHORT_CIRCUIT_LOCAL ? local : null;  //local could still be null
 	}
 
 	private boolean allLocal(MessagingTask mtask) {

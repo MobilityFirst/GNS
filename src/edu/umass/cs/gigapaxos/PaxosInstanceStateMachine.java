@@ -133,9 +133,18 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	private static final boolean instrument() {
 		return ENABLE_INSTRUMENTATION;
 	}
+	private static final boolean instrument(boolean flag) {
+		return flag && ENABLE_INSTRUMENTATION;
+	}
 
 	private static final boolean instrument(int n) {
 		return ENABLE_INSTRUMENTATION && Util.oneIn(n);
+	}
+	private static final void instrumentDelay(toLog field, long startTime) {
+		if(field.log()) DelayProfiler.updateDelay(field.toString(), startTime);
+	}
+	private static final void instrumentDelay(toLog field, long startTime, int n) {
+		if(field.log()) DelayProfiler.updateDelay(field.toString(), startTime, n);
 	}
 
 	private static enum SyncMode {
@@ -209,15 +218,15 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				"Node{0} initialized paxos {1} {2} with members {3}; {4} {5} {6}",
 				new Object[] {
 						this.getNodeID(),
-						(this.paxosState.getBallotCoordLog() == this.getMyID() ? "COORDINATOR"
-								: "instance"),
+						(this.paxosState.getBallotCoordLog() == this.getMyID() ? "coordinator"
+								: "acceptor"),
 						this.getPaxosIDVersion(),
 						Util.arrayOfIntToString(groupMembers),
 						this.paxosState,
 						this.coordinator,
-						(initialState == null ? "{recoveredState=["
+						(initialState == null ? "{recovered_state=["
 								+ Util.prefix(this.getCheckpointState(), 64)
-								: "{initialState=[" + initialState) + "]}" });
+								: "{initial_state=[" + initialState) + "]}" });
 	}
 
 	/**
@@ -547,8 +556,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			mtasks[2] = batchedTasks[1];
 		}
 
-		if (instrument(100))
-			DelayProfiler.updateDelay("handlePaxosMessage", methodEntryTime);
+		instrumentDelay(toLog.handlePaxosMessage, methodEntryTime);
 
 		this.checkIfTrapped(pp, mtasks[1]); // just to print a warning
 		if (!recovery) {
@@ -918,16 +926,18 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 * 
 	 * Action: Send back current or updated ballot to the ballot's coordinator.
 	 */
+	private static final boolean EXECUTE_UPON_ACCEPT = Config.getGlobalBoolean(PC.EXECUTE_UPON_ACCEPT);
 	private MessagingTask[] handleAccept(AcceptPacket accept) {
 		this.paxosManager.heardFrom(accept.ballot.coordinatorID); // FD
 		RequestInstrumenter.received(accept, accept.sender, this.getMyID());
+		if(EXECUTE_UPON_ACCEPT)  // only for testing
+			PaxosInstanceStateMachine.execute(this, getPaxosManager(), clientRequestHandler, accept, false);
 
 		Ballot ballot = this.paxosState.acceptAndUpdateBallot(accept,
 				this.getMyID());
 		if (ballot == null)
-			return null;
-		// can happen only if acceptor is stopped.
-
+			return null; // can happen only if acceptor is stopped.		
+		
 		this.garbageCollectAccepted(accept.getMedianCheckpointedSlot());
 		if (accept.isRecovery())
 			return null; // recovery ACCEPTS do not need any reply
@@ -1005,7 +1015,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 							this,
 							committedPValue.getSummary(log
 									.isLoggable(Level.FINE)) });
-			if (instrument()) {
+			if (instrument(Integer.MAX_VALUE)) {
 				DelayProfiler.updateCount("PAXOS_DECISIONS", 1);
 				DelayProfiler.updateCount("CLIENT_COMMITS",
 						committedPValue.batchSize() + 1);
@@ -1119,18 +1129,16 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		assert (committed.getPaxosID() != null);
 		RequestInstrumenter.received(committed, committed.ballot.coordinatorID,
 				this.getMyID());
-		if (instrument() && !BATCHED_COMMITS
+		if (instrument(!BATCHED_COMMITS)
 				&& committed.ballot.coordinatorID != this.getMyID())
 			DelayProfiler.updateCount("COMMITS", 1);
 
-		// Log, extract from or add to acceptor, and execute the request at app
+		// log, extract from or add to acceptor, and execute the request at app
 		if (!committed.isRecovery() && committed.hasRequestValue())
 			AbstractPaxosLogger.logDecision(this.paxosManager.getPaxosLogger(),
 					committed, this);
 
 		MessagingTask mtask = this.extractExecuteAndCheckpoint(committed);
-
-		//TESTPaxosConfig.commit(committed.requestID);
 
 		if (this.paxosState.getSlot() - committed.slot < 0)
 			log.log(Level.FINE,
@@ -1144,17 +1152,11 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 	private MessagingTask handleBatchedCommit(BatchedCommit batchedCommit) {
 		assert (BATCHED_COMMITS);
-		//assert(batchedCommit.ballot.coordinatorID!=getMyID());
 		// batched commits can only come directly from the coordinator
 		this.paxosManager.heardFrom(batchedCommit.ballot.coordinatorID); // FD
 		MessagingTask mtask = null;
 
-		if (instrument())
-			DelayProfiler.updateCount("META_COMMITS", 1);
-
-		// no need to process batchedCommit from self as we must get full commit
-		if (batchedCommit.ballot.coordinatorID == this.getMyID())
-			return null;
+		//if (instrument()) DelayProfiler.updateCount("META_COMMITS", 1);
 
 		for (Integer slot : batchedCommit.getCommittedSlots()) {
 			// check if we have the corresponding accept
@@ -1251,6 +1253,21 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		return false;
 	}
 
+	private static enum toLog {
+		EEC(false, 100), handlePaxosMessage(false, 100);
+		final boolean log;
+		final int sampleInt;
+
+		toLog(boolean log, int sampleInt) {
+			this.log = log;
+			this.sampleInt = sampleInt;
+		}
+
+		boolean log() {
+			return this.log && instrument(sampleInt);
+		}
+	};
+
 	/*
 	 * The three actions--(1) extracting the next slot request from the
 	 * acceptor, (2) having the app execute the request, and (3) checkpoint if
@@ -1267,10 +1284,10 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	protected synchronized MessagingTask extractExecuteAndCheckpoint(
 			PValuePacket loggedDecision) {
 		long methodEntryTime = System.currentTimeMillis();
+		int execCount = 0;
 		if (this.paxosState.isStopped())
 			return null;
 		PValuePacket inorderDecision = null;
-		int execCount = 0;
 		// extract next in-order decision
 		while ((inorderDecision = this.paxosState
 				.putAndRemoveNextExecutable(loggedDecision)) != null) {
@@ -1285,13 +1302,14 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			 * Execution must be atomic with extraction and possible
 			 * checkpointing below.
 			 */
-			if (execute(this, this.paxosManager, this.clientRequestHandler,
-					inorderDecision, inorderDecision.isRecovery()))
-				// +1 for each batch, not for each constituent requestValue
-				execCount++;
-			// unclean kill
-			else
-				this.paxosManager.kill(this, false);
+			if(!EXECUTE_UPON_ACCEPT) // used for testing
+				if (execute(this, this.paxosManager, this.clientRequestHandler,
+						inorderDecision, inorderDecision.isRecovery()))
+					// +1 for each batch, not for each constituent requestValue
+					execCount++;
+				// unclean kill
+				else
+					this.paxosManager.kill(this, false);
 
 			updateRequestBatcher(inorderDecision, loggedDecision == null);
 
@@ -1306,7 +1324,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						inorderDecision.slot, this.paxosState.getBallot(),
 						this.clientRequestHandler.getState(pid),
 						this.paxosState.getGCSlot());
-				if (Util.oneIn(5))
+				if (instrument(5))
 					log.log(Level.INFO, "{0}",
 							new Object[] { DelayProfiler.getStats() });
 			}
@@ -1324,8 +1342,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		}
 		this.paxosState.assertSlotInvariant();
 		if (loggedDecision != null && !loggedDecision.isRecovery())
-			if (instrument(10))
-				DelayProfiler.updateDelay("EEC", methodEntryTime, execCount);
+			instrumentDelay(toLog.EEC, methodEntryTime, execCount);
 		return this.fixLongDecisionGaps(loggedDecision);
 	}
 
@@ -1403,11 +1420,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 							&& request != null
 							&& request instanceof InterfaceClientRequest) {
 						RequestInstrumenter.remove(requestPacket.requestID);
-						if (((InterfaceClientRequest) request)
-								.getClientAddress() != null)
-							paxosManager.send(
-									((InterfaceClientRequest) request)
-											.getClientAddress(), request);
+						InterfaceClientRequest clientRequest = ((InterfaceClientRequest) request);
+						InterfaceClientRequest response = clientRequest
+								.getResponse();
+						if (clientRequest.getClientAddress() != null
+								&& response != null)
+							paxosManager.send(clientRequest.getClientAddress(),
+									response);
 					}
 					// don't try any more if stopped
 					if (pism != null && pism.isStopped())

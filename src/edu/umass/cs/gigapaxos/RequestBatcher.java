@@ -73,7 +73,6 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 				paxosManager);
 	}
 
-	// FIXME: unclear how best to set entryTime with batching.
 	@Override
 	public void process(RequestPacket task) {
 		this.paxosManager.proposeBatched(task.setEntryTime(System
@@ -83,9 +82,8 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	protected synchronized static void updateSleepDuration(long sample) {
 		adaptiveSleepDuration = Util.movingAverage(((double) sample)
 				* BATCH_OVERHEAD, adaptiveSleepDuration);
-		if (Util.oneIn(10))
-			DelayProfiler.updateMovAvg("sleepDuration",
-					(int) adaptiveSleepDuration);
+		// if (Util.oneIn(10)) DelayProfiler.updateMovAvg("sleepDuration", (int)
+		// adaptiveSleepDuration);
 	}
 
 	// just to name the thread, otherwise super suffices
@@ -169,7 +167,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 			mapEntryIter.remove();
 			
 		if (Util.oneIn(10))
-			DelayProfiler.updateMovAvg("batchSize", first.batchSize() + 1);
+			DelayProfiler.updateMovAvg("batching", first.batchSize() + 1);
 		assert (first.batchSize() < MAX_BATCH_SIZE);
 		return first;
 	}

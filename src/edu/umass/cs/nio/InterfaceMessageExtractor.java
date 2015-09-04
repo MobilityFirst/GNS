@@ -44,4 +44,8 @@ public interface InterfaceMessageExtractor extends
 	 */
 	public void processMessage(InetSocketAddress sockAddr, String msg);
 
+	/**
+	 * @param message
+	 */
+	public void demultiplexMessage(Object message);
 }

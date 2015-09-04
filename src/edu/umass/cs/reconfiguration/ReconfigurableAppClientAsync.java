@@ -212,6 +212,11 @@ public class ReconfigurableAppClientAsync {
 		protected String processHeader(String message, NIOHeader header) {
 			return message;
 		}
+
+		@Override
+		protected boolean matchesType(Object message) {
+			return message instanceof String;
+		}
 	}
 
 	/**

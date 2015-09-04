@@ -33,5 +33,9 @@ public interface InterfaceDataProcessingWorker {
 	 */
 	public abstract void processData(SocketChannel socket, ByteBuffer incoming);
 	
+	/**
+	 * @param message
+	 */
+	public void demultiplexMessage(Object message);
 	
 }

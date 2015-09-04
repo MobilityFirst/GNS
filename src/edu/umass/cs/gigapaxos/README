@@ -54,15 +54,15 @@ and path of the testing config file used by clients can be specified in a file c
 "testing.properties" in the directory ./conf/gigapaxos/. An example of such a file is in 
 GNS/conf/gigapaxos/testing.properties where "GNS" is the top-level GNS directory. 
  
-The servers must be started first in any order as follows:
+The servers must be started first in any order and can be started as follows:
 
-[date$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosServer 100 2>/tmp/log100
-[plum$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosServer 101 2>/tmp/log101
-[pear$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.testing.TESTPaxosServer 102 2>/tmp/log102
+[date$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.PaxosServer 100 2>/tmp/log100
+[plum$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.PaxosServer 101 2>/tmp/log101
+[pear$] java -ea -Xms4096M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.PaxosServer 102 2>/tmp/log102
 
-The client must be started after at least a majority of the above servers are up. A server is
-up after it has stopped printing console output for more than a few seconds. The clients
-are started as follows:
+The client should be started only after at least a majority of the above servers are up. 
+A server is up after it has stopped printing console output for more than a few seconds. 
+The clients are started as follows:
 
 [fig$] java -ea -Xms1024M -cp /path/to/GNS.jar edu.umass.cs.gigapaxos.TESTPaxosClient 
 

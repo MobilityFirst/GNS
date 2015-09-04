@@ -206,13 +206,13 @@ public class PrepareReplyPacket extends PaxosPacket {
 				this.firstSlot - 1, this.maxSlot);
 		frag.putPaxosID(this.getPaxosID(), this.getVersion());
 		int curLength = 0;
-		System.out.println("creating fragment of length "+ length);
+		//System.out.println("creating fragment of length "+ length);
 		for (Iterator<Integer> slotIter = this.accepted.keySet().iterator(); slotIter
 				.hasNext();) {
 			PValuePacket pvalue = this.accepted.get(slotIter.next());
 			// will create at least one fragment
 			if ((curLength += pvalue.lengthEstimate()) > length && !frag.accepted.isEmpty()) {
-				System.out.println("breaking because curLength would become " + curLength);
+				//System.out.println("breaking because curLength would become " + curLength);
 				break;
 			}
 
@@ -220,7 +220,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 			frag.accepted.put(pvalue.slot, pvalue);
 			slotIter.remove();
 		}
-		System.out.println("returning " + frag.getSummary());
+		//System.out.println("returning " + frag.getSummary());
 		return frag;
 	}
 }

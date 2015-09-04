@@ -36,8 +36,16 @@ import edu.umass.cs.utils.Util;
  *            PaxosManager and Messenger (used by the BatchLogger thread in
  *            AbstractPaxosLogger) use this class.
  */
-@SuppressWarnings("javadoc")
 public class IntegerMap<NodeIDType> {
+	/**
+	 * -1 can not be used as a node ID.
+	 */
+	public static final Integer NULL_INT_NODE = -1;
+	/**
+	 * 
+	 */
+	public static final String NULL_STR_NODE = NULL_INT_NODE.toString();
+	
 	private HashMap<Integer, NodeIDType> nodeMap = new HashMap<Integer, NodeIDType>();
 
 	private static Logger log = Logger.getLogger(IntegerMap.class.getName());
@@ -62,6 +70,10 @@ public class IntegerMap<NodeIDType> {
 			+ " to NodeIDType; this is likely a bug";
 
 	// get(int) maps int to NodeIDType
+	/**
+	 * @param id
+	 * @return Node ID corresponding to int id.
+	 */
 	public synchronized NodeIDType get(int id) {
 		NodeIDType node = this.nodeMap.get(id);
 		if (node == null) {
@@ -73,6 +85,10 @@ public class IntegerMap<NodeIDType> {
 		return node;
 	}
 
+	/**
+	 * @param nodes
+	 * @return Integer set corresponding to node ID set.
+	 */
 	public synchronized Set<Integer> put(Set<NodeIDType> nodes) {
 		Set<Integer> intNodes = new HashSet<Integer>();
 		for (NodeIDType node : nodes) {
@@ -81,6 +97,10 @@ public class IntegerMap<NodeIDType> {
 		return intNodes;
 	}
 
+	/**
+	 * @param intNodes
+	 * @return Node ID set.
+	 */
 	public synchronized Set<NodeIDType> get(Set<Integer> intNodes) {
 		Set<NodeIDType> nodes = new HashSet<NodeIDType>();
 		for (int id : intNodes) {
@@ -89,6 +109,10 @@ public class IntegerMap<NodeIDType> {
 		return nodes;
 	}
 
+	/**
+	 * @param members
+	 * @return Node ID set.
+	 */
 	public synchronized Set<NodeIDType> getIntArrayAsNodeSet(int[] members) {
 		Set<NodeIDType> nodes = new HashSet<NodeIDType>();
 		for (int member : members) {
@@ -124,9 +148,12 @@ public class IntegerMap<NodeIDType> {
 		 * that to +1 breaks code.
 		 */
 		int hash = node.hashCode();
-		return (hash != -1 ? Math.abs(node.hashCode()) : -1);
+		return (hash != NULL_INT_NODE ? Math.abs(node.hashCode()) : NULL_INT_NODE);
 	}
 
+	/**
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		Util.assertAssertionsEnabled();
 		IntegerMap<String> map = new IntegerMap<String>();

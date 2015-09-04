@@ -45,7 +45,7 @@ import edu.umass.cs.nio.Stringifiable;
  *         been merged into PaxosManager now and will be soon deprecated.
  */
 public abstract class PaxosPacketDemultiplexer extends
-		AbstractPacketDemultiplexer<net.minidev.json.JSONObject> {
+		AbstractPacketDemultiplexer<JSONObject> {
 
 	/**
 	 * @param json

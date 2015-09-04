@@ -191,6 +191,13 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 			}
 		}
 	}
+	
+	public void demultiplexMessage(Object message) {
+		for (final AbstractPacketDemultiplexer<?> pd : this.packetDemuxes) {
+			if (pd.loopback(message))
+				break;
+		}
+	}
 
 	protected void demultiplexMessage(SocketChannel socket, byte[] msg)
 			throws IOException {

@@ -35,4 +35,9 @@ public class DataProcessingWorkerDefault implements
 		incoming.get(rcvd);
 		System.out.println("Received: " + new String(rcvd));
 	}
+
+	@Override
+	public void demultiplexMessage(Object message) {
+		System.out.println("Received: " + message.toString());		
+	}
 }

@@ -76,11 +76,17 @@ public class PaxosClientAsync {
 		@Override
 		protected JSONObject processHeader(String message, NIOHeader header) {
 			try {
+				// don't care about sender server address
 				return new JSONObject(message);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 			return null;
+		}
+
+		@Override
+		protected boolean matchesType(Object message) {
+			return message instanceof JSONObject;
 		}
 
 	}

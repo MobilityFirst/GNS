@@ -95,9 +95,25 @@ public class ReconfigurationConfig {
 		HOSTS_FILE(PaxosConfig.DEFAULT_GIGAPAXOS_CONFIG_FILE),
 		
 		/**
-		 * Directory where reconfiguration DB is maintained.
+		 * Directory where reconfiguration DB is maintained when an
+		 * embedded DB is used.
 		 */
-		RECONFIGURATION_DB_DIR ("reconfigurationDB"),
+		RECONFIGURATION_DB_DIR ("reconfiguration_DB"),
+
+		/**
+		 * Prefix of the reconfiguration DB's name. The whole
+		 * name is obtained as this prefix concatenated with 
+		 * the node ID. 
+		 */
+		RECONFIGURATION_DB_PREFIX ("reconfiguration_DB"),
+
+		/**
+		 * {@link edu.umass.cs.gigapaxos.paxosutil.SQL.SQLType} type. Currently,
+		 * the only other alternative is "MYSQL". Note that this enum has the 
+		 * same name as {@link edu.umass.cs.gigapaxos.PaxosConfig.PC#SQL_TYPE},
+		 * so the two are currently forced to use the same DB type.
+		 */
+		SQL_TYPE ("EMBEDDED_DERBY"),
 
 		/**
 		 * Whether reconfigurations should be performed even though
@@ -157,6 +173,17 @@ public class ReconfigurationConfig {
 		 * periods are multiples of this time.
 		 */
 		STOP_TASK_RESTART_PERIOD (2000),
+		
+		/**
+		 * Maximum string length of a demand profile message.
+		 */
+		MAX_DEMAND_PROFILE_SIZE ( 4096),
+		
+		/**
+		 * Whether most recent demand report should be combined with
+		 * historic demand stats.
+		 */
+		COMBINE_DEMAND_STATS (false),
 
 		;
 

@@ -62,4 +62,8 @@ public abstract class AbstractJSONPacketDemultiplexer extends
 		return MessageExtractor.stampAddressIntoJSONObject(header.sndr, header.rcvr,
 				MessageExtractor.parseJSON(message));
 	}
+	
+	protected boolean matchesType(Object message) {
+		return message instanceof JSONObject;
+	}
 }

@@ -305,7 +305,7 @@ public class Util {
 			public String toString() {
 				return str == null || str.length() < size ? str
 						: str != null ? str.substring(0, prefixSize)
-								+ "..[snip].."
+								+ "[...]"
 								+ str.substring(str.length() - suffixSize)
 								: null;
 			}

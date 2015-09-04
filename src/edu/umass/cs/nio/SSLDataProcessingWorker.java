@@ -374,4 +374,9 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 		}
 		return retval;
 	}
+
+	@Override
+	public void demultiplexMessage(Object message) {
+		this.decryptedWorker.demultiplexMessage(message);
+	}
 }

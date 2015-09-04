@@ -61,6 +61,7 @@ import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.SQLPaxosLogger;
 import edu.umass.cs.gigapaxos.paxosutil.SQL;
 import edu.umass.cs.nio.IntegerPacketType;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.examples.AppRequest;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorDB;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DemandReport;
@@ -71,6 +72,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurableSampleNod
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.StringLocker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.MyLogger;
@@ -86,30 +88,43 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	/* ********************************************************************
 	 * DB related parameters to be changed to use a different database service.
 	 */
-	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.EMBEDDED_DERBY;
-	private static final String DATABASE = "reconfiguration_DB";
+	private static final SQL.SQLType SQL_TYPE = SQL.SQLType.valueOf(Config
+			.getGlobalString(RC.SQL_TYPE));
+	private static final String DATABASE = Config
+			.getGlobalString(RC.RECONFIGURATION_DB_PREFIX); // "reconfiguration_DB";
 	/* ************ End of DB service related parameters ************** */
 
-	// private static final boolean DISABLE_LOGGING = false;
 	private static final String RECONFIGURATION_RECORD_TABLE = "checkpoint";
 	private static final String PENDING_TABLE = "messages";
 	private static final String DEMAND_PROFILE_TABLE = "demand";
 	private static final String NODE_CONFIG_TABLE = "nodeconfig";
 
-	protected static final String LOG_DIRECTORY = "reconfiguration_DB";
-	private static final boolean CONN_POOLING = true;
+	private static final String LOG_DIRECTORY = Config
+			.getGlobalString(RC.RECONFIGURATION_DB_DIR);// "reconfiguration_DB";
+	private static final boolean CONN_POOLING = true; // should just be true
 	private static final int MAX_POOL_SIZE = 100;
-	private static final int MAX_NAME_SIZE = 40;
+	private static final int MAX_NAME_SIZE = SQLPaxosLogger.MAX_PAXOS_ID_SIZE;
 
-	private static final int MAX_RC_RECORD_SIZE = 4096;
-	private static final int MAX_DEMAND_PROFILE_SIZE = 4096;
+	/**
+	 * May need to increase this if the number of members in a replica group is
+	 * very large.
+	 */
+	private static final int MAX_RC_RECORD_SIZE = Math.max(4096,
+			SQLPaxosLogger.MAX_GROUP_STR_LENGTH * 16);
+	private static final int MAX_DEMAND_PROFILE_SIZE = Config
+			.getGlobalInt(RC.MAX_DEMAND_PROFILE_SIZE); // 4096;
 	private static final boolean RC_RECORD_CLOB_OPTION = MAX_RC_RECORD_SIZE > SQL
 			.getVarcharSize(SQL_TYPE);
 	private static final boolean DEMAND_PROFILE_CLOB_OPTION = MAX_DEMAND_PROFILE_SIZE > SQL
 			.getVarcharSize(SQL_TYPE);
 
-	private static final boolean COMBINE_STATS = false;
+	private static final boolean COMBINE_DEMAND_STATS = Config
+			.getGlobalBoolean(RC.COMBINE_DEMAND_STATS);// false;
 	private static final String CHECKPOINT_TRANSFER_DIR = "paxos_large_checkpoints";
+	/**
+	 * Should just be true as reconfigurator checkpoint size increases with the
+	 * number of service names and can therefore be very large.
+	 */
 	private static final boolean LARGE_CHECKPOINTS_OPTION = true;
 	private static final int MAX_FILENAME_LENGTH = 128;
 	private static final String CHARSET = "ISO-8859-1";
@@ -144,7 +159,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	public SQLReconfiguratorDB(NodeIDType myID,
 			ConsistentReconfigurableNodeConfig<NodeIDType> nc, String logDir) {
 		super(myID, nc);
-		logDirectory = (logDir == null ? SQLReconfiguratorDB.LOG_DIRECTORY : logDir) + "/";
+		logDirectory = (logDir == null ? SQLReconfiguratorDB.LOG_DIRECTORY
+				: logDir) + "/";
 		addDerbyPersistentReconfiguratorDB(this);
 		initialize();
 	}
@@ -349,7 +365,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		record.setState(name, epoch, state, newActives);
 		this.setPending(name, true);
 		this.putReconfigurationRecord(record);
-		
+
 		record = this.getReconfigurationRecord(name);
 		assert (!name.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 				.toString()) || !record.getActiveReplicas().equals(
@@ -779,7 +795,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	}
 
 	private boolean shouldCombineStats() {
-		return COMBINE_STATS;
+		return COMBINE_DEMAND_STATS;
 	}
 
 	private synchronized Connection getDefaultConn() throws SQLException {
@@ -1247,10 +1263,14 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		props.put("user", SQL.getUser() + (isEmbeddedDB() ? this.myID : ""));
 		props.put("password", SQL.getPassword());
 		String dbCreation = SQL.getProtocolOrURL(SQL_TYPE)
-				+ (isEmbeddedDB() ? this.logDirectory + DATABASE + this.myID
-						+ (!SQLPaxosLogger.existsDB(SQL_TYPE, this.logDirectory, DATABASE
-								+ this.myID) ? ";create=true" : "") : DATABASE + this.myID
-						+ "?createDatabaseIfNotExist=true");
+				+ (isEmbeddedDB() ? this.logDirectory
+						+ DATABASE
+						+ this.myID
+						+ (!SQLPaxosLogger.existsDB(SQL_TYPE,
+								this.logDirectory, DATABASE + this.myID) ? ";create=true"
+								: "")
+						: DATABASE + this.myID
+								+ "?createDatabaseIfNotExist=true");
 
 		try {
 			dataSource = (ComboPooledDataSource) setupDataSourceC3P0(
@@ -1268,7 +1288,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 				connAttempts++;
 				log.info("Attempting getDefaultConn() to DB " + dbCreation);
 				getDefaultConn(); // open first connection
-				log.info("Connected to and created database " + DATABASE + this.myID);
+				log.info("Connected to and created database " + DATABASE
+						+ this.myID);
 				connected = true;
 				if (isEmbeddedDB())
 					fixURI(); // remove create flag
@@ -1287,6 +1308,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		}
 		return connected;
 	}
+
 	private void fixURI() {
 		this.dataSource.setJdbcUrl(SQL.getProtocolOrURL(SQL_TYPE)
 				+ this.logDirectory + DATABASE + this.myID);

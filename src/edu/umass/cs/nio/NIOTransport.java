@@ -20,7 +20,6 @@ package edu.umass.cs.nio;
 import edu.umass.cs.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
-import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Stringer;
 import edu.umass.cs.utils.Util;
 
@@ -387,14 +386,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// we put length header in *all* messages
 		ByteBuffer bbuf = getHeaderedByteBuffer(data=this.deflate(data));
 		int written = this.enqueueSend(isa, bbuf);
-		DelayProfiler.updateCount("totalBytesSent", written);
 		return written > 0 ? written - HEADER_SIZE : written;
 	}
 
 	private byte[] deflate(byte[] data) {
 		if(isSSL() || !getCompression() || data.length < getCompressionThreshold()) return data;
 
-		long t = System.currentTimeMillis();
 		Deflater deflator = new Deflater();
 		byte[] compressed = new byte[data.length];
 		int compressedLength = data.length;
@@ -404,7 +401,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		deflator.end();
 		data = new byte[compressedLength];
 		for(int i=0; i<data.length; i++) data[i] = compressed[i];
-		DelayProfiler.updateDelay("deflate", t);
 		return data;
 	}
 	
@@ -700,8 +696,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		// if complete payload read, pass to worker
 		if (abbuf.bodyBuf != null && !abbuf.bodyBuf.hasRemaining()) {
 			bbuf.flip();
-			// DelayProfiler.updateCount("totalBytesRcvd", HEADER_SIZE +
-			// bbuf.capacity());
 			this.worker.processData(socketChannel, this.inflate(bbuf));
 			// clear header to prepare to read the next message
 			abbuf.clear();
@@ -749,7 +743,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private ByteBuffer inflate(ByteBuffer bbuf) throws IOException {
 		if(isSSL() || !getCompression()) return bbuf;
 		
-		long t = System.currentTimeMillis();
 		Inflater inflator = new Inflater();
 		inflator.setInput(bbuf.array(), 0, bbuf.capacity());
 		byte[] decompressed = new byte[bbuf.capacity()];
@@ -772,7 +765,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			return bbuf;
 		}
 		bbuf = ByteBuffer.wrap(baos.toByteArray());
-		DelayProfiler.updateDelay("inflate", t);
 		return bbuf;
 	}
 
@@ -893,7 +885,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				new Object[] { this, written, socketChannel.getRemoteAddress() });
 
 		// remove exactly what got sent above
-		int removed = 0;
 		while (!sendQueue.isEmpty()) {
 			ByteBuffer buf = sendQueue.peek();
 			int partial = buf.remaining() - written;
@@ -904,11 +895,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			}
 			// remove buf coz it got fully sent
 			written -= buf.remaining();
-			removed++;
 			sendQueue.remove();
 		}
-		if (Util.oneIn(100))
-			DelayProfiler.updateMovAvg(myID + "batchedNIOWrite", removed);
 	}
 
 	private void dequeueSendQueueIfEmpty(InetSocketAddress isa,

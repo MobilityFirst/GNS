@@ -33,6 +33,9 @@ public class SQL {
 	 * The user name and password here are used by both gigapaxos and
 	 * reconfiguration. Embedded derby can take any user name and password, so
 	 * the values here should be for mysql or other DBs supported here.
+	 * <p>
+	 * These values are intentionally not configurable using gigapaxos.properties.
+	 * We might support them using System command-line properties in the future.
 	 */
 	private static final String USER = "root";
 	private static final String PASSWORD = "gnsRoot";

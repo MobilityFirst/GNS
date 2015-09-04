@@ -137,9 +137,9 @@ public class TESTPaxosApp implements InterfaceReplicable {
 			 * is then just incremented by one below for every executed
 			 * decision.
 			 */
-			assert (state.seqnum == requestPacket.slot) : "state.seqnum = "
-					+ state.seqnum + " , requestPacket.slot = "
-					+ requestPacket.slot;
+			//assert (state.seqnum == requestPacket.slot) : "state.seqnum = "
+				//	+ state.seqnum + " , requestPacket.slot = "
+					//+ requestPacket.slot;
 			/*
 			 * increment seqnum (to the next expected seqnum and
 			 * requestPacket.slot)

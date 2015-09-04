@@ -156,6 +156,16 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 		 */
 		return true;
 	}
+	protected boolean loopback(Object obj) {
+		if(!this.matchesType(obj)) return false;
+		@SuppressWarnings("unchecked") // checked above
+		MessageType message = (MessageType)obj;
+		Integer type = getPacketType(message);
+		if (type == null || !this.demuxMap.containsKey(type)) 
+			this.demuxMap.get(type).handleMessage(message);
+		return true;
+	}
+	abstract protected boolean matchesType(Object message);
 	
 	/**
 	 * @param msg
