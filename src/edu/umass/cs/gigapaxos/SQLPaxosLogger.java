@@ -1411,6 +1411,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 	public void closeImpl() {
 		log.log(Level.INFO, "{0}{1}", new Object[] { this, " closing DB" });
+		this.GC.cancel();
 		this.setClosed(true);
 		// can not close derby until all instances are done
 		if (allClosed() || !isEmbeddedDB())
@@ -1570,10 +1571,12 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		/*
 		 * We create a non-unique-key index below instead of (unique) primary
 		 * key (commented out above) as otherwise we will get duplicate key
-		 * exceptions during batch inserts.
+		 * exceptions during batch inserts. It is unnecessary to create
+		 * an index on ballotnum and coordinator as the number of logged
+		 * prepares is likely to be small for any single group.
 		 */
 		String cmdMI = "create index messages_index on " + getMTable()
-				+ "(paxos_id,packet_type,slot,ballotnum,coordinator)";
+				+ "(paxos_id,packet_type,slot)";  //,ballotnum,coordinator)";
 		String cmdP = "create table " + getPTable() + " (paxos_id varchar("
 				+ MAX_PAXOS_ID_SIZE + ") not null, serialized varchar("
 				+ PAUSE_STATE_SIZE + ") not null, primary key (paxos_id))";

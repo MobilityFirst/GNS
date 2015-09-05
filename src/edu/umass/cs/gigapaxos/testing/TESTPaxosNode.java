@@ -163,6 +163,7 @@ public class TESTPaxosNode {
 	 */
 	public static void main(String[] args) {
 		try {
+			TESTPaxosConfig.setConsoleHandler();
 			int myID = processArgs(args);
 			TESTPaxosNode me = new TESTPaxosNode(myID, TESTPaxosConfig.getFromPaxosConfig());
 

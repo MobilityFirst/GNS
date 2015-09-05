@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 
 import org.json.JSONException;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.PValuePacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PreparePacket;
@@ -42,6 +43,7 @@ import edu.umass.cs.gigapaxos.paxosutil.Messenger;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -556,6 +558,7 @@ public abstract class AbstractPaxosLogger {
 					+ ".process() should not have been called");
 		}
 
+		private final boolean DISABLE_LOGGING = Config.getGlobalBoolean(PC.DISABLE_LOGGING);
 		@Override
 		public void process(LogMessagingTask[] lmTasks) {
 			PaxosPacket[] packets = new PaxosPacket[lmTasks.length];
@@ -568,7 +571,7 @@ public abstract class AbstractPaxosLogger {
 			this.setProcessing(false);
 			if (!logged)
 				return;
-			DelayProfiler.updateDelay("log", t1, packets.length);
+			if(!DISABLE_LOGGING) DelayProfiler.updateDelay("log", t1, packets.length);
 
 			// then message if successfully logged
 			{

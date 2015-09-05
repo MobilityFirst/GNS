@@ -1835,7 +1835,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	}
 
 	private int roundRobinCoordinator(int ballotnum) {
-		return this.getMembers()[ballotnum % this.getMembers().length];
+		// to load balance coordinatorship across groups
+		int randomOffset = this.getPaxosID().hashCode();
+		return this.getMembers()[(ballotnum + randomOffset)% this.getMembers().length];
 	}
 
 	/*

@@ -32,11 +32,14 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
@@ -125,7 +128,7 @@ public class TESTPaxosConfig {
 		/**
 		 * 
 		 */
-		NUM_CLIENTS(10),
+		NUM_CLIENTS(9),
 
 		/**
 		 * 
@@ -218,7 +221,7 @@ public class TESTPaxosConfig {
 	 * @param b
 	 */
 	public static final void setAssertRSMInvariant(boolean b) {
-			assertRSMInvariant = b && !Config.getGlobalBoolean(PC.EXECUTE_UPON_ACCEPT);
+			assertRSMInvariant = b && !Config.getGlobalBoolean(PC.EXECUTE_UPON_ACCEPT) && !Config.getGlobalBoolean(PC.DISABLE_LOGGING);
 	}
 
 	/**
@@ -665,6 +668,14 @@ public class TESTPaxosConfig {
 							+ filename + "; exiting.");
 			System.exit(1);
 		}
+	}
+	
+	protected static void setConsoleHandler() {
+		 ConsoleHandler handler = new ConsoleHandler();
+		 handler.setLevel(Level.INFO);
+		 PaxosManager.getLogger().setLevel(Level.INFO);
+		 PaxosManager.getLogger().addHandler(handler);
+		 PaxosManager.getLogger().setUseParentHandlers(false);
 	}
 	
 	/**

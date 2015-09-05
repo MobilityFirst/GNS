@@ -563,10 +563,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				if (key.isValid() && key.isReadable()) 
 					this.read(key);
 			} catch (IOException | CancelledKeyException e) {
-				log.warning("Node"
-						+ myID
-						+ " incurred IOException upon read/write/accept on key:channel "
-						+ key + ":" + key.channel());
+				log.warning("Node" + myID
+						+ " incurred IOException on "
+						+ key.channel()
+						+ " likely because remote end closed connection");
 				cleanup(key, (AbstractSelectableChannel) key.channel());
 				e.printStackTrace(); // print and move on with other keys
 			}
@@ -1481,22 +1481,35 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			// duplex connection => we may have to read replies
 			key.attach(new AlternatingByteBuffer());
 		} catch (IOException e) {
+			InetSocketAddress isa = new InetSocketAddress(socketChannel.socket()
+					.getInetAddress(), socketChannel.socket()
+					.getPort());
 			// cancel the channel's registration with selector
 			log.log(Level.INFO, "Node {0} failed to (re-)connect to {1}:{2}",
 					new Object[] {
 							this.myID,
-							new InetSocketAddress(socketChannel.socket()
-									.getInetAddress(), socketChannel.socket()
-									.getPort()), e.getMessage() });
+							isa, e.getMessage() });
 			cleanup(key, socketChannel);
-			// clearPending will also drop outstanding data here			
-			if(Util.oneIn(5)) this.clearPending(socketChannel);
+			// clearPending will also drop outstanding data here
+			if (!this.isNodeID(isa) || Util.oneIn(NUM_RETRIES))
+				this.clearPending(socketChannel);
 			connected = false;
 		}
 		if (connected)
 			log.log(Level.FINEST, "{0} finished connecting {1}", new Object[] {
 					this, socketChannel });
 		return connected;
+	}
+	private static final int NUM_RETRIES = 100;
+	
+	private boolean isNodeID(InetSocketAddress isa) {
+		if (this.nodeConfig == null)
+			return false;
+		for (NodeIDType node : this.nodeConfig.getNodeIDs())
+			if (isa.getAddress().equals(this.nodeConfig.getNodeAddress(node))
+					&& isa.getPort() == this.nodeConfig.getNodePort(node))
+				return true;
+		return false;
 	}
 
 	private boolean registerSSL(SelectionKey key, boolean client)

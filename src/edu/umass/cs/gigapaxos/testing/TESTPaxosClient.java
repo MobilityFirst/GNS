@@ -372,6 +372,7 @@ public class TESTPaxosClient {
 	private static int NUM_GROUPS = Config.getGlobalInt(TC.NUM_GROUPS);
 	private static final String TEST_GUID_PREFIX = Config.getGlobalString(TC.TEST_GUID_PREFIX);
 
+	private static double mostRecentSentRate = 0;
 	protected static void sendTestRequests(int numReqsPerClient,
 			TESTPaxosClient[] clients) throws JSONException, IOException {
 		System.out.print("\nInitiating test sending " + numReqsPerClient
@@ -389,12 +390,14 @@ public class TESTPaxosClient {
 				r.record();
 			}
 		}
+		
+		mostRecentSentRate = numReqsPerClient * clients.length * 1000.0
+				/ (System.currentTimeMillis() - initTime);
 
 		System.out.println("done sending requests in "
 				+ Util.df((System.currentTimeMillis() - initTime) / 1000.0)
 				+ " secs; actual sending rate = "
-				+ Util.df(numReqsPerClient * clients.length * 1000.0
-						/ (System.currentTimeMillis() - initTime)));
+				+ Util.df(mostRecentSentRate));
 	}
 
 	protected static void waitForResponses(TESTPaxosClient[] clients,
@@ -411,12 +414,12 @@ public class TESTPaxosClient {
 				}
 				System.out
 						.println(getWaiting(clients)
-								+ "; #num_total_retransmissions = "
-								+ getRtxCount()
+								+ (getRtxCount() > 0 ? "; #num_total_retransmissions = "
+								+ getRtxCount() : "")
 								+ (getRtxCount() > 0 ? "; num_retransmitted_requests = "
 										+ getNumRtxReqs()
 										: "")
-								+ "\nAggregate response rate = "
+								+ "; aggregate response rate = "
 								+ Util.df(getTotalThroughput(clients, startTime))
 								+ " reqs/sec");
 				if (clients[i].requests.size() > 0)
@@ -485,9 +488,7 @@ public class TESTPaxosClient {
 	}
 
 	protected static String getAggregateOutput(int numReqs, long delay) {
-		return "\n  average_throughput = "
-				+ Util.df(numReqs * Config.getGlobalInt(TC.NUM_CLIENTS)
-						* 1000.0 / delay) + "/s"
+		return "\n  average_sent_rate = " + Util.df(mostRecentSentRate) +"/s"
 				+ "\n  average_response_time = "
 				+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms"
 				+ "\n  noop_count = " + TESTPaxosClient.getTotalNoopCount();
@@ -498,6 +499,7 @@ public class TESTPaxosClient {
 	 */
 	public static void main(String[] args) {
 		try {
+			TESTPaxosConfig.setConsoleHandler();
 			TESTPaxosConfig.setDistribtedTest(args.length > 0 ? args[0] : null);
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients(TESTPaxosConfig.getFromPaxosConfig());
