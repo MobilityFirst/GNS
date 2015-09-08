@@ -16,11 +16,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+
 /**
  * Provides a cursor that can be used to iterate through rows of a collection.
  * Currently can generate rows as HashMaps or JSONObjects (which are really the same structure anyway)
  * and can populate all columns (fields) or just some of the columns in the row.
- * 
+ *
  * @author westy
  */
 public class MongoRecordCursor extends AbstractRecordCursor {
@@ -32,10 +33,11 @@ public class MongoRecordCursor extends AbstractRecordCursor {
 
   /**
    * Returns a cursor that iterates through all the rows in a collection and includes all columns.
-   * 
+   *
    * @param db
    * @param collectionName
-   * @param nameField 
+   * @param nameField
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public MongoRecordCursor(DB db, String collectionName, ColumnField nameField) throws FailedDBOperationException {
     this.nameField = nameField;
@@ -54,11 +56,12 @@ public class MongoRecordCursor extends AbstractRecordCursor {
 
   /**
    * Returns a cursor that iterates through all the rows in a collection and includes all columns in fields.
-   * 
+   *
    * @param db
    * @param collectionName
    * @param nameField
-   * @param fields 
+   * @param fields
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException 
    */
   public MongoRecordCursor(DB db, String collectionName, ColumnField nameField, ArrayList<ColumnField> fields)
           throws FailedDBOperationException {
@@ -82,12 +85,12 @@ public class MongoRecordCursor extends AbstractRecordCursor {
       throw new FailedDBOperationException(collectionName, nameField.toString());
     }
   }
-  
+
   /**
    * Wraps a cursor around the given DBCursor that iterates through all the rows indexed by the cursor.
-   * 
+   *
    * @param cursor
-   * @param nameField 
+   * @param nameField
    */
   public MongoRecordCursor(DBCursor cursor, ColumnField nameField) {
     this.nameField = nameField;
@@ -97,8 +100,8 @@ public class MongoRecordCursor extends AbstractRecordCursor {
 
   /**
    * Returns all the fields in the next row as a JSONObject.
-   * 
-   * @return JSONObject
+   *
+   * @return all the fields as a JSONObject
    */
   private JSONObject nextAllFieldsJSON() throws FailedDBOperationException {
     try {
@@ -122,12 +125,12 @@ public class MongoRecordCursor extends AbstractRecordCursor {
 
   /**
    * Returns all the fields in the next row as a HashMap.
-   * 
-   * @return HashMap
+   *
+   * @return the fields as a HashMap of ColumnFields and Objects
    */
   private HashMap<ColumnField, Object> nextSomeFieldsHashMap() {
     if (cursor.hasNext()) {
-      HashMap<ColumnField, Object> hashMap = new HashMap<ColumnField, Object>();
+      HashMap<ColumnField, Object> hashMap = new HashMap<>();
       DBObject dbObject = cursor.next();
 
       hashMap.put(nameField, dbObject.get(nameField.getName()).toString());// put the name in the hashmap!! very important!!
@@ -143,11 +146,12 @@ public class MongoRecordCursor extends AbstractRecordCursor {
 
   /**
    * Returns the next row as a JSONObject.
-   * 
-   * @return JSONObject
+   *
+   * @return the next row as a JSONObject
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   @Override
-  public JSONObject nextJSONObject() throws FailedDBOperationException{
+  public JSONObject nextJSONObject() throws FailedDBOperationException {
     if (allFields) {
       return nextAllFieldsJSON();
     } else {
@@ -157,8 +161,8 @@ public class MongoRecordCursor extends AbstractRecordCursor {
 
   /**
    * Returns the next row as a HashMap.
-   * 
-   * @return HashMap
+   *
+   * @return the next row as a HashMap
    */
   @Override
   public HashMap<ColumnField, Object> nextHashMap() {
@@ -168,11 +172,12 @@ public class MongoRecordCursor extends AbstractRecordCursor {
       return nextSomeFieldsHashMap();
     }
   }
-  
+
   /**
    * Returns the value of the field named name in the next row.
+   *
    * @param name
-   * @return String
+   * @return the name of the field as a String
    */
   public String nextRowField(String name) {
     if (cursor.hasNext()) {
@@ -191,9 +196,12 @@ public class MongoRecordCursor extends AbstractRecordCursor {
 
   /**
    * Returns true if the iteration has more elements.
+   * 
+   * @return true or false
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   @Override
-  public boolean hasNext() throws FailedDBOperationException{
+  public boolean hasNext() throws FailedDBOperationException {
     try {
       return cursor.hasNext();
     } catch (MongoException e) {
@@ -201,7 +209,7 @@ public class MongoRecordCursor extends AbstractRecordCursor {
     }
   }
 
-  private JSONObject hashMapWithFieldsToJSONObject(HashMap<ColumnField, Object> map) throws FailedDBOperationException{
+  private JSONObject hashMapWithFieldsToJSONObject(HashMap<ColumnField, Object> map) throws FailedDBOperationException {
     try {
       JSONObject json = new JSONObject();
       for (Entry<ColumnField, Object> entry : map.entrySet()) {

@@ -34,6 +34,13 @@ import org.json.JSONObject;
  */
 public class MongoRecordsThroughputTest {
 
+  /**
+   * Run the test.
+   * 
+   * @param args
+   * @throws Exception
+   * @throws RecordNotFoundException 
+   */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length == 3) {
       testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);

@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import java.io.File;
 import java.io.FileInputStream;

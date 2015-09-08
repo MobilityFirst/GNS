@@ -4,7 +4,6 @@ import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.aws.networktools.ExecuteBash;
 import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
-import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
 import edu.umass.cs.gns.util.Format;

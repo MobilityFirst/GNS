@@ -194,10 +194,10 @@ public class JSONUtils {
           return JSONUtils.JSONArrayToArrayListString(jsonObject.getJSONArray(field.getName()));
         case VALUES_MAP:
           return new ValuesMap(jsonObject.getJSONObject(field.getName()));
-        case VOTES_MAP:
-          return toIntegerMap(jsonObject.getJSONObject(field.getName()));
-        case STATS_MAP:
-          return toStatsMap(jsonObject.getJSONObject(field.getName()));
+//        case VOTES_MAP:
+//          return toIntegerMap(jsonObject.getJSONObject(field.getName()));
+//        case STATS_MAP:
+//          return toStatsMap(jsonObject.getJSONObject(field.getName()));
         default:
           GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
@@ -242,12 +242,12 @@ public class JSONUtils {
         case VALUES_MAP:
           jsonObject.put(field.getName(), ((ValuesMap) value));
           break;
-        case VOTES_MAP:
-          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, Integer>) value));
-          break;
-        case STATS_MAP:
-          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, StatsInfo>) value));
-          break;
+//        case VOTES_MAP:
+//          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, Integer>) value));
+//          break;
+//        case STATS_MAP:
+//          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, StatsInfo>) value));
+//          break;
         default:
           GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;

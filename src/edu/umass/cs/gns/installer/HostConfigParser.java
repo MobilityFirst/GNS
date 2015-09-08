@@ -5,7 +5,6 @@
  */
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.gns.database.DataStoreType;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.GEOLocator;

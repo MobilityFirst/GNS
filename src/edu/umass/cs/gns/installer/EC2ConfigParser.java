@@ -7,7 +7,6 @@ package edu.umass.cs.gns.installer;
 
 import edu.umass.cs.aws.support.AMIRecordType;
 import edu.umass.cs.aws.support.RegionRecord;
-import edu.umass.cs.gns.database.DataStoreType;
 
 import edu.umass.cs.gns.main.GNS;
 import java.io.File;

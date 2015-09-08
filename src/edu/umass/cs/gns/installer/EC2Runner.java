@@ -11,7 +11,6 @@ import edu.umass.cs.aws.support.AMIRecordType;
 import edu.umass.cs.aws.support.AWSEC2;
 import edu.umass.cs.aws.support.InstanceStateRecord;
 import edu.umass.cs.aws.support.RegionRecord;
-import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.GEOLocator;
 import edu.umass.cs.gns.util.ThreadUtils;

@@ -16,20 +16,37 @@ import java.util.Map;
  */
 public class MongoCollectionSpecs {
   
-  private Map<String, MongoCollectionSpec> collectionSpecMap = new HashMap<String, MongoCollectionSpec>();
+  private final Map<String, MongoCollectionSpec> collectionSpecMap = new HashMap<>();
 
-  private List<MongoCollectionSpec> collectionSpecs = new ArrayList<MongoCollectionSpec>();
+  private final List<MongoCollectionSpec> collectionSpecs = new ArrayList<>();
   
+  /**
+   * Add a collection spec to the collection specs.
+   * 
+   * @param name
+   * @param indexField
+   */
   public void addCollectionSpec(String name, ColumnField indexField) {
     MongoCollectionSpec spec = new MongoCollectionSpec(name, indexField);
     collectionSpecs.add(spec);
     collectionSpecMap.put(name, spec);
   }
           
+  /**
+   * Retrieve a collection specs.
+   * 
+   * @param name
+   * @return the collection spec
+   */
   public MongoCollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
   }
   
+  /**
+   * Retrieve all the collection specs.
+   * 
+   * @return
+   */
   public List<MongoCollectionSpec> allCollectionSpecs() {
     return collectionSpecs;
   }

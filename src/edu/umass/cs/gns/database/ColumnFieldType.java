@@ -12,29 +12,79 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Created with IntelliJ IDEA.
- * User: abhigyan
- * Date: 9/2/13
- * Time: 1:13 AM
- * To change this template use File | Settings | File Templates.
+ * Types that a column field can take on.
+ * 
+ * See also @link{JSONUtils}
+ * 
+ * SEEMS LIKE THIS COULD PROBABLY ALSO BE DONE 
+ * BETTER USING THE JSON LIB.
+ * 
+ * @author Abhigyan with touchups by Westy.
  */
 public enum ColumnFieldType {
 
+  /**
+   * Column type that is a Boolean.
+   */
   BOOLEAN,
+
+  /**
+   * Column type that is a Integer.
+   */
   INTEGER,
+
+  /**
+   * Column type that is a String.
+   */
   STRING,
+
+  /**
+   * Column type that is a set of Integers.
+   */
   SET_INTEGER,
+
+  /**
+   * Column type that is a set of Strings.
+   */
   SET_STRING,
+
+  /**
+   * Column type that is a NodeID.
+   */
   SET_NODE_ID_STRING,
+
+  /**
+   * Column type that is a list of Integer.
+   */
   LIST_INTEGER,
+
+  /**
+   * Column type that is a list of Strings.
+   */
   LIST_STRING,
+
+  /**
+   * Column type that a map of user values.
+   */
   VALUES_MAP,
-  VOTES_MAP,
-  STATS_MAP,
-  USER_JSON // NOT FULLY SUPPORTED YET
+
+//  /**
+//   * Votes column type
+//   */
+//  VOTES_MAP,
+//
+//  /**
+//   * Stats storage 
+//   */
+//  STATS_MAP,
+
+  /**
+   * Column type which is a JSON Object.
+   */
+  USER_JSON // never stored in a system field
   ;
 
-  // THIS COULD PROBABLY ALSO BE DONE USING THE JSON LIB.
+  // 
 
   /**
    *
@@ -109,22 +159,22 @@ public enum ColumnFieldType {
                 e.printStackTrace();
               }
               break;
-            case VOTES_MAP:
-              try {
-                hashMap.put(field, JSONUtils.toIntegerMap(new JSONObject(value)));
-              } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for VOTES_MAP: " + e);
-                e.printStackTrace();
-              }
-              break;
-            case STATS_MAP:
-              try {
-                hashMap.put(field, JSONUtils.toStatsMap(new JSONObject(value)));
-              } catch (JSONException e) {
-                GNS.getLogger().severe("Problem populating hash map for STATS_MAP: " + e);
-                e.printStackTrace();
-              }
-              break;
+//            case VOTES_MAP:
+//              try {
+//                hashMap.put(field, JSONUtils.toIntegerMap(new JSONObject(value)));
+//              } catch (JSONException e) {
+//                GNS.getLogger().severe("Problem populating hash map for VOTES_MAP: " + e);
+//                e.printStackTrace();
+//              }
+//              break;
+//            case STATS_MAP:
+//              try {
+//                hashMap.put(field, JSONUtils.toStatsMap(new JSONObject(value)));
+//              } catch (JSONException e) {
+//                GNS.getLogger().severe("Problem populating hash map for STATS_MAP: " + e);
+//                e.printStackTrace();
+//              }
+//              break;
             default:
               GNS.getLogger().severe("Exception Error Unknown type " + field + "value = " + value);
               break;
