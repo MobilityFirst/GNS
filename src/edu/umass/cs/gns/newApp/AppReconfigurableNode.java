@@ -1,6 +1,12 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
 package edu.umass.cs.gns.newApp;
 
-import edu.umass.cs.gns.database.MongoRecords;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
@@ -19,7 +25,7 @@ import java.util.Set;
  */
 public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
-  private MongoRecords<String> mongoRecords = null;
+  //private MongoRecords<String> mongoRecords = null;
 
   public AppReconfigurableNode(String nodeID, GNSInterfaceNodeConfig<String> nc)
           throws IOException {
@@ -28,14 +34,10 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
   @Override
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {
-    // this is called by super so we need to get this field initialized now
-    if (this.mongoRecords == null) {
-      this.mongoRecords = new MongoRecords<>(this.myID, AppReconfigurableNodeOptions.mongoPort);
-    }
     NewApp app = null;
     try {
       app = new NewApp(this.myID, (GNSNodeConfig<String>) this.nodeConfig,
-              this.messenger, mongoRecords);
+              this.messenger);
     } catch (IOException e) {
       GNS.getLogger().info("Unable to create app: " + e);
       // not sure what to do here other than just return null
@@ -43,9 +45,6 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     }
 
     NewAppCoordinator<String> appCoordinator = new NewAppCoordinator<String>(app, this.nodeConfig, this.messenger);
-    // start the NSListenerAdmin thread
-    new AppAdmin(app, (GNSNodeConfig<String>) nodeConfig).start();
-    GNS.getLogger().info(myID.toString() + " Admin thread initialized");
     return appCoordinator;
 
   }

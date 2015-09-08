@@ -3,7 +3,6 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 
 import org.json.JSONException;
@@ -111,7 +110,7 @@ public class RequestActivesTask extends TimerTask {
     try {
       //if (handler.isNewApp()) {
         RequestActiveReplicas packet = new RequestActiveReplicas(null, name, 0);
-        ((EnhancedClientRequestHandlerInterface)handler).addActivesRequestNameToIDMapping(name, requestID);
+        ((ClientRequestHandlerInterface)handler).addActivesRequestNameToIDMapping(name, requestID);
         sendJson = packet.toJSONObject();
 //      } else {
 //        RequestActivesPacket<NodeIDType> packet = new RequestActivesPacket<NodeIDType>(name, handler.getNodeAddress(), requestID, primaryID);

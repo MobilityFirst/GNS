@@ -4,6 +4,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.AddRemove;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.main.GNS;
 
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,9 +40,9 @@ public class CCPProtocolTask<NodeIDType> implements
   };
 
   private final String key;
-  private final EnhancedClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface handler;
 
-  public CCPProtocolTask(EnhancedClientRequestHandlerInterface requestHandler) {
+  public CCPProtocolTask(ClientRequestHandlerInterface requestHandler) {
     this.handler = requestHandler;
     this.key = refreshKey();
   }

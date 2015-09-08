@@ -39,7 +39,7 @@ import org.json.JSONObject;
  */
 public class CreateDelete {
 
-  public static void handleAddPacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
+  public static void handleAddPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       // do normal add which actually involves converting this into a CreateServiceName packet
       AddRecordPacket addRecordPacket = registerPacketAddRecord(json, handler);
@@ -72,7 +72,7 @@ public class CreateDelete {
     }
   }
 
-  public static void handleRemovePacket(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws JSONException, IOException {
+  public static void handleRemovePacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       RemoveRecordPacket removeRecordPacket = registerPacketRemoveRecord(json, handler);
       handler.addDeleteRequestNameToIDMapping(removeRecordPacket.getName(), removeRecordPacket.getCCPRequestID());
@@ -109,7 +109,7 @@ public class CreateDelete {
     return removeRecordPacket;
   }
 
-  public static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, EnhancedClientRequestHandlerInterface handler) {
+  public static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, ClientRequestHandlerInterface handler) {
     SendReconfiguratorPacketTask task = new SendReconfiguratorPacketTask(name, packet, handler);
     handler.getExecutorService().scheduleAtFixedRate(task, 0, 
             //AppReconfigurableNodeOptions.queryTimeout,

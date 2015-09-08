@@ -7,9 +7,8 @@
  */
 package edu.umass.cs.gns.gnamed;
 
-import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -52,7 +51,7 @@ public class LookupWorker implements Runnable {
   private final DatagramSocket socket;
   private final DatagramPacket incomingPacket;
   private final byte[] incomingData;
-  private final EnhancedClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface handler;
 
   /**
    * Creates a new <code>LookupWorker</code> object which handles the parallel GNS and DNS requesting.
@@ -65,7 +64,7 @@ public class LookupWorker implements Runnable {
    * @param dnsCache (might be null meaning DNS responses are not cached)
    */
   public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver gnsServer,
-          SimpleResolver dnsServer, Cache dnsCache, EnhancedClientRequestHandlerInterface handler) {
+          SimpleResolver dnsServer, Cache dnsCache, ClientRequestHandlerInterface handler) {
     this.socket = socket;
     this.incomingPacket = incomingPacket;
     this.incomingData = incomingData;

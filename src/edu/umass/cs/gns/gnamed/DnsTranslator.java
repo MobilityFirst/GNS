@@ -9,7 +9,7 @@
 package edu.umass.cs.gns.gnamed;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.util.ThreadUtils;
 import edu.umass.cs.utils.DelayProfiler;
@@ -36,7 +36,7 @@ public class DnsTranslator extends Thread implements Shutdownable {
   private int port;
   private DatagramSocket sock;
   private ExecutorService executor = null;
-  private EnhancedClientRequestHandlerInterface handler;
+  private ClientRequestHandlerInterface handler;
 
   /**
    * Creates a new <code>DnsTranslator</code> object bound to the given IP/port
@@ -47,7 +47,7 @@ public class DnsTranslator extends Thread implements Shutdownable {
    * @throws java.net.SocketException
    * @throws java.net.UnknownHostException
    */
-  public DnsTranslator(InetAddress addr, int port, EnhancedClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
+  public DnsTranslator(InetAddress addr, int port, ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
     this.port = port;
     this.sock = new DatagramSocket(port, addr);
     this.executor = Executors.newFixedThreadPool(5);

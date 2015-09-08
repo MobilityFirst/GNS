@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
@@ -52,8 +51,7 @@ public class Lookup {
 
   private static Random random = new Random();
 
-  public static void handlePacketLookupRequest(JSONObject json, DNSPacket<String> incomingPacket,
-          EnhancedClientRequestHandlerInterface handler)
+  public static void handlePacketLookupRequest(JSONObject json, DNSPacket<String> incomingPacket, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
     long startTime = System.currentTimeMillis();
     if (handler.getParameters().isDebugMode()) {

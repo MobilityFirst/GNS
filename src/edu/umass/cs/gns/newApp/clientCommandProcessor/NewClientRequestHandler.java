@@ -18,6 +18,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Adminterces
 import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.NewApp;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
@@ -62,7 +63,7 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class NewClientRequestHandler implements EnhancedClientRequestHandlerInterface {
+public class NewClientRequestHandler implements ClientRequestHandlerInterface {
 
   private final Intercessor intercessor;
   private final Admintercessor admintercessor;
@@ -475,7 +476,7 @@ public class NewClientRequestHandler implements EnhancedClientRequestHandlerInte
     return preamble + cacheTable.toString();
   }
   
-  boolean reallySendtoReplica = false;
+  private boolean reallySendtoReplica = false;
 
   @Override
   public boolean reallySendUpdateToReplica() {
@@ -541,7 +542,7 @@ public class NewClientRequestHandler implements EnhancedClientRequestHandlerInte
   }
 
   @Override
-  public String getRandomRCReplica() {
+  public String getRandomReconfigurator() {
     int index = (int) (this.gnsNodeConfig.getReconfigurators().size() * Math.random());
     return (String) (this.gnsNodeConfig.getReconfigurators().toArray()[index]);
   }
@@ -552,16 +553,10 @@ public class NewClientRequestHandler implements EnhancedClientRequestHandlerInte
   }
 
   @Override
-  public String getFirstRCReplica() {
+  public String getFirstReconfigurator() {
     return this.gnsNodeConfig.getReconfigurators().iterator().next();
   }
-
-  @Override
-  public void sendRequestToRandomReconfigurator(BasicReconfigurationPacket req) throws JSONException, IOException {
-    String id = getRandomRCReplica();
-    sendRequestToReconfigurator(req, id);
-  }
-
+  
   @Override
   public void sendRequestToReconfigurator(BasicReconfigurationPacket req, String id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {
@@ -598,49 +593,6 @@ public class NewClientRequestHandler implements EnhancedClientRequestHandlerInte
     } catch (IOException e) {
       e.printStackTrace();
     }
-  }
-
-  // STATS MAP
-  @Override
-  public NameRecordStats getStats(String name) {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
-  @Override
-  @SuppressWarnings("unchecked") // don't understand why there is a warning here!
-  public Set<String> getNameRecordStatsKeySet() {
-    throw new UnsupportedOperationException("Not supported.");
-  }
-
-  @Override
-  public void incrementLookupRequest(String name) {
-    //throw new UnsupportedOperationException("Not supported.");
-  }
-
-  @Override
-  public void incrementUpdateRequest(String name) {
-    //throw new UnsupportedOperationException("Not supported.");
-  }
-
-  @Override
-  public void incrementLookupResponse(String name) {
-    //throw new UnsupportedOperationException("Not supported.");
-  }
-
-  @Override
-  public void incrementUpdateResponse(String name) {
-    //throw new UnsupportedOperationException("Not supported.");
-  }
-
-  /**
-   **
-   * Prints name record statistic
-   *
-   * @return
-   */
-  @Override
-  public String getNameRecordStatsMapLogString() {
-    throw new UnsupportedOperationException("Not supported.");
   }
 
   long lastRecordedTime = -1;

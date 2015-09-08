@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.gnamed;
 
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import java.util.concurrent.Callable;
 import org.xbill.DNS.Message;
@@ -29,14 +28,14 @@ public class GnsDnsLookupTask implements Callable<Message> {
   private final Message query;
   private Message response;
   private final SimpleResolver nameServer; // It is used for both dnsServer and gnsServer
-  private EnhancedClientRequestHandlerInterface handler;
+  private ClientRequestHandlerInterface handler;
 
   /**
    * Creates a worker task that handles a query using the GNS.
    * 
    * @param query 
    */
-  GnsDnsLookupTask(Message query, EnhancedClientRequestHandlerInterface handler) {
+  GnsDnsLookupTask(Message query, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.GNSLOCAL;
     this.query = query;
     this.nameServer = null;
@@ -49,7 +48,7 @@ public class GnsDnsLookupTask implements Callable<Message> {
    * @param query 
    * @param dnsServer
    */
-  GnsDnsLookupTask(Message query, SimpleResolver dnsServer, EnhancedClientRequestHandlerInterface handler) {
+  GnsDnsLookupTask(Message query, SimpleResolver dnsServer, ClientRequestHandlerInterface handler) {
     this.workerClass = WorkerClass.DNS;
     this.query = query;
     this.nameServer = dnsServer;
@@ -62,7 +61,7 @@ public class GnsDnsLookupTask implements Callable<Message> {
    * @param query
    * @param nameServer
    */
-  GnsDnsLookupTask(Message query, SimpleResolver nameServer, Boolean isGNS, EnhancedClientRequestHandlerInterface handler) {
+  GnsDnsLookupTask(Message query, SimpleResolver nameServer, Boolean isGNS, ClientRequestHandlerInterface handler) {
     if (isGNS) {
       this.workerClass = WorkerClass.GNS;
     } else {

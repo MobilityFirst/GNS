@@ -8,9 +8,8 @@
  */
 package edu.umass.cs.gns.gnamed;
 
-import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.gns.util.ThreadUtils;
 import java.io.IOException;
@@ -45,7 +44,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
   private ExecutorService executor = null;
   private final String dnsServerIP; // just stored for informational purposes
   private final String gnsServerIP; // just stored for informational purposes
-  private final EnhancedClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface handler;
 
   /**
    * Creates a new <code>UDPServer</code> object bound to the given IP/port
@@ -63,7 +62,7 @@ public class UdpDnsServer extends Thread implements Shutdownable {
    * @throws java.net.UnknownHostException
    */
   public UdpDnsServer(InetAddress addr, int port, String dnsServerIP, String gnsServerIP, 
-          EnhancedClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
+          ClientRequestHandlerInterface handler) throws SecurityException, SocketException, UnknownHostException {
     this.dnsServer = dnsServerIP != null ? new SimpleResolver(dnsServerIP) : null;
     this.gnsServer = gnsServerIP != null ? new SimpleResolver(gnsServerIP) : null;
     this.dnsCache = dnsServerIP != null ? new Cache() : null;

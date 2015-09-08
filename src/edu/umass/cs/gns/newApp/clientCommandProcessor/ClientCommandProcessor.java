@@ -16,6 +16,7 @@ import edu.umass.cs.gns.httpserver.GnsHttpServer;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.NewApp;
 
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -65,7 +66,7 @@ public class ClientCommandProcessor implements Shutdownable {
    */
   private CCPListenerAdmin ccpListenerAdmin;
 
-  EnhancedClientRequestHandlerInterface requestHandler;
+  ClientRequestHandlerInterface requestHandler;
 
   /**
    * We keep a pointer to the udpDnsServer so we can shut it down.
@@ -171,7 +172,7 @@ public class ClientCommandProcessor implements Shutdownable {
     return nodeAddress;
   }
 
-  public EnhancedClientRequestHandlerInterface getRequestHandler() {
+  public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }
 

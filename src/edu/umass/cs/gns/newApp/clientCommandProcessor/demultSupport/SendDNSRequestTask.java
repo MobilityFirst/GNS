@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TimerTask;
-import java.util.logging.Level;
 
 /**
  * Handles a lookup request from client, and either sends response to client from cache or sends a lookup to
@@ -179,16 +178,6 @@ public class SendDNSRequestTask extends TimerTask {
     info.setFinishTime();
     info.setSuccess(true);
     info.setCacheHit(true);
-    //info.addEventCode(LNSEventCode.CACHE_HIT);
-    //GNS.getStatLogger().info(info.getLogString());
-    if (GNS.getLogger().isLoggable(Level.FINER)) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().finer(handler.getCacheLogString("LNS CACHE: "));
-      }
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().finer(handler.getNameRecordStatsMapLogString());
-      }
-    }
   }
 
   /**

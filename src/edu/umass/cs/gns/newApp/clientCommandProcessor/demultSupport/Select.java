@@ -7,7 +7,6 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.newApp.packet.SelectResponsePacket;
 import org.json.JSONException;
@@ -21,7 +20,7 @@ import java.net.UnknownHostException;
  */
 public class Select {
 
-  public static void handlePacketSelectRequest(JSONObject incomingJSON, EnhancedClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
+  public static void handlePacketSelectRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, handler.getGnsNodeConfig());
 

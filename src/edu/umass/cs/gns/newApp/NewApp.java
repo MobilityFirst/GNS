@@ -87,16 +87,15 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
    * @param id
    * @param nodeConfig
    * @param messenger
-   * @param mongoRecords
    */
-  public NewApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger,
-          MongoRecords<String> mongoRecords) throws IOException {
+  public NewApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
     this.nodeID = id;
     this.nodeConfig = new GNSConsistentReconfigurableNodeConfig<>(nodeConfig);
     // Start a ping server, but not a client.
     this.pingManager = new PingManager<String>(nodeID, this.nodeConfig, true);
     GNS.getLogger().info("Node " + nodeID + " started Ping server on port "
             + nodeConfig.getCcpPingPort(nodeID));
+    MongoRecords<String> mongoRecords = new MongoRecords<>(nodeID, AppReconfigurableNodeOptions.mongoPort);
     this.nameRecordDB = new MongoRecordMap<>(mongoRecords, MongoRecords.DBNAMERECORD);
     GNS.getLogger().info("App " + nodeID + " created " + nameRecordDB);
     this.messenger = messenger;
@@ -109,6 +108,9 @@ public class NewApp implements GnsApplicationInterface<String>, InterfaceReplica
             AppReconfigurableNodeOptions.dnsGnsOnly,
             AppReconfigurableNodeOptions.dnsOnly,
             AppReconfigurableNodeOptions.gnsServerIP);
+    // start the NSListenerAdmin thread
+    new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
+    GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
   }
 
   private static PacketType[] types = {

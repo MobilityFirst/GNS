@@ -9,7 +9,6 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -43,7 +42,7 @@ public class SendUpdatesTask extends TimerTask {
   private int timeoutCount = -1;
 
   private int requestActivesCount = -1;
-  private final EnhancedClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface handler;
 
   private String nameServerID; // just send it to this one
   // If this is true we send the update over the network to the AR
@@ -51,12 +50,12 @@ public class SendUpdatesTask extends TimerTask {
   // creation of guids which need to be explicitly coordinated by ARs 
   final boolean reallySendUpdatesToReplica;
 
-  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface handler,
+  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID) {
     this(lnsReqID, handler, updatePacket, nameServerID, false);
   }
 
-  public SendUpdatesTask(int lnsReqID, EnhancedClientRequestHandlerInterface handler,
+  public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID, boolean reallySendUpdatesToReplica) {
     // based on request info.
     this.ccpReqID = lnsReqID;
@@ -156,7 +155,7 @@ public class SendUpdatesTask extends TimerTask {
 
   }
 
-  private void requestNewActives(EnhancedClientRequestHandlerInterface handler) {
+  private void requestNewActives(ClientRequestHandlerInterface handler) {
     // remove update info from CCP
     @SuppressWarnings("unchecked")
     UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);

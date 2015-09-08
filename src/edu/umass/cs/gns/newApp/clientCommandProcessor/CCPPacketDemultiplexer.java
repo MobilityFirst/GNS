@@ -13,6 +13,7 @@ import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Lookup;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Select;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.Update;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.DNSPacket;
 import edu.umass.cs.gns.newApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
@@ -32,12 +33,15 @@ import org.json.JSONObject;
  */
 public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
-  private EnhancedClientRequestHandlerInterface handler;
+  private ClientRequestHandlerInterface handler;
 
-  public void setHandler(EnhancedClientRequestHandlerInterface handler) {
+  public void setHandler(ClientRequestHandlerInterface handler) {
     this.handler = handler;
   }
 
+  /**
+   * Create an instance of the CCPPacketDemultiplexer.
+   */
   public CCPPacketDemultiplexer() {
     // probably should get these from the event handler
     register(ReconfigurationPacket.PacketType.CREATE_SERVICE_NAME);

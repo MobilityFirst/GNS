@@ -6,7 +6,6 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
 import edu.umass.cs.gns.newApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.newApp.packet.UpdatePacket;
 import edu.umass.cs.gns.util.NSResponseCode;
@@ -42,7 +41,7 @@ public class Update {
    * @throws JSONException
    * @throws UnknownHostException
    */
-  public static void handlePacketUpdate(JSONObject json, EnhancedClientRequestHandlerInterface handler)
+  public static void handlePacketUpdate(JSONObject json, ClientRequestHandlerInterface handler)
           throws JSONException, UnknownHostException {
 
     UpdatePacket<String> updatePacket = new UpdatePacket<String>(json, handler.getGnsNodeConfig());
@@ -52,7 +51,7 @@ public class Update {
     int ccpRequestID = handler.getUniqueRequestID();
     UpdateInfo<String> info = new UpdateInfo<String>(ccpRequestID, updatePacket.getName(), null, updatePacket, handler);
     handler.addRequestInfo(ccpRequestID, info);
-    handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
+    //handler.incrementUpdateRequest(updatePacket.getName()); // important: used to count votes for names.
     if (!handler.reallySendUpdateToReplica()) {
       handlePacketLocally(ccpRequestID, handler, updatePacket, handler.getActiveReplicaID());
     } else {
@@ -63,7 +62,7 @@ public class Update {
     }
   }
 
-  private static void handlePacketLocally(int ccpReqID, EnhancedClientRequestHandlerInterface handler,
+  private static void handlePacketLocally(int ccpReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID) {
     handler.getApp().handleRequest(makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID));
   }
@@ -78,7 +77,7 @@ public class Update {
    * @param nameServerID
    * @return
    */
-  public static UpdatePacket<String> makeNewUpdatePacket(int ccpReqID, EnhancedClientRequestHandlerInterface handler,
+  public static UpdatePacket<String> makeNewUpdatePacket(int ccpReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID) {
     UpdatePacket<String> pkt = new UpdatePacket<String>(
             updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
@@ -108,7 +107,7 @@ public class Update {
    * @throws UnknownHostException
    * @throws JSONException
    */
-  public static void handlePacketConfirmUpdate(JSONObject json, EnhancedClientRequestHandlerInterface handler) throws UnknownHostException, JSONException {
+  public static void handlePacketConfirmUpdate(JSONObject json, ClientRequestHandlerInterface handler) throws UnknownHostException, JSONException {
     ConfirmUpdatePacket<String> confirmPkt = new ConfirmUpdatePacket<String>(json, handler.getGnsNodeConfig());
 
     if (handler.getParameters().isDebugMode()) {
@@ -176,7 +175,7 @@ public class Update {
    * @param updateInfo state for this request stored at local name server
    * @throws JSONException
    */
-  private static void handleInvalidActiveError(UpdateInfo<String> updateInfo, EnhancedClientRequestHandlerInterface handler) throws JSONException {
+  private static void handleInvalidActiveError(UpdateInfo<String> updateInfo, ClientRequestHandlerInterface handler) throws JSONException {
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("\tInvalid Active Name Server.\tName\t"
               + updateInfo.getName() + "\tRequest new actives.\t");

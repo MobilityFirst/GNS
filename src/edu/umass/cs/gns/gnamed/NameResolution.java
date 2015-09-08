@@ -13,7 +13,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.newApp.NewApp;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.EnhancedClientRequestHandlerInterface;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
 import edu.umass.cs.gns.newApp.recordmap.NameRecord;
 import edu.umass.cs.utils.DelayProfiler;
@@ -117,7 +117,7 @@ public class NameResolution {
    * @param handler
    * @return A message with either a good response or an error.
    */
-  public static Message lookupGnsServer(Message query, EnhancedClientRequestHandlerInterface handler) {
+  public static Message lookupGnsServer(Message query, ClientRequestHandlerInterface handler) {
     // check for queries we can't handle
     int type = query.getQuestion().getType();
     // Was the query legitimate or implemented?
@@ -240,8 +240,7 @@ public class NameResolution {
     return response;
   }
 
-  public static JSONObject lookupGuidField(String domainName, String fieldName, ArrayList<String> fieldNames,
-          EnhancedClientRequestHandlerInterface handler) {
+  public static JSONObject lookupGuidField(String domainName, String fieldName, ArrayList<String> fieldNames, ClientRequestHandlerInterface handler) {
     long startTime = System.currentTimeMillis();
     // Make an array of field names to fetch from fieldName or FieldNames
     String[] fieldArray = null;

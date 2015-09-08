@@ -10,6 +10,7 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.Util;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
@@ -30,10 +31,10 @@ public class SendReconfiguratorPacketTask extends TimerTask {
   private int retries = 0;
   private static final int MAX_RETRIES = 3;
   private final long startTime;
-  private final EnhancedClientRequestHandlerInterface handler;
+  private final ClientRequestHandlerInterface handler;
 
   public SendReconfiguratorPacketTask(String name, BasicReconfigurationPacket packet,
-          EnhancedClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler) {
     this.name = name;
     this.handler = handler;
     this.packet = packet;
