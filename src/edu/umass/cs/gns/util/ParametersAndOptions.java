@@ -141,7 +141,7 @@ public class ParametersAndOptions {
   }
 
   public static void main(String[] args) throws IOException {
-    args = new String[]{"-configFile", GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/ns.conf"};
+    args = new String[]{"-configFile", GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/ns.properties"};
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(ParametersAndOptions.class.getCanonicalName(),
                     getAllOptions(), args);

@@ -52,8 +52,8 @@ public class GNSInstaller {
   private static final String DEFAULT_KEYNAME = "id_rsa";
   private static final String DEFAULT_INSTALL_PATH = "gns";
   private static final String INSTALLER_CONFIG_FILENAME = "installer_config";
-  private static final String LNS_CONF_FILENAME = "lns.conf";
-  private static final String NS_CONF_FILENAME = "ns.conf";
+  private static final String LNS_PROPERTIES_FILENAME = "lns.properties";
+  private static final String NS_PROPERTIES_FILENAME = "ns.properties";
   private static final String LNS_HOSTS_FILENAME = "lns_hosts.txt";
   private static final String NS_HOSTS_FILENAME = "ns_hosts.txt";
   private static final String DEFAULT_JAVA_COMMAND = "java -ea -Xms1024M";
@@ -315,7 +315,7 @@ public class GNSInstaller {
               + "-nsfile "
               + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
               + "-configFile "
-              + "conf" + FILESEPARATOR + LNS_CONF_FILENAME + " "
+              + "conf" + FILESEPARATOR + LNS_PROPERTIES_FILENAME + " "
               + " > LNSlogfile 2>&1 &");
     }
     if (nsId != null) {
@@ -337,7 +337,7 @@ public class GNSInstaller {
               + "-nsfile "
               + "conf" + FILESEPARATOR + NS_HOSTS_FILENAME + " "
               + "-configFile "
-              + "conf" + FILESEPARATOR + NS_CONF_FILENAME + " "
+              + "conf" + FILESEPARATOR + NS_PROPERTIES_FILENAME + " "
               //+ " -demandProfileClass edu.umass.cs.gns.newApp.NullDemandProfile "
               + " > NSlogfile 2>&1 &");
     }
@@ -488,7 +488,7 @@ public class GNSInstaller {
       SSHClient.exec(userName, hostname, getKeyFile(), "mkdir -p " + installPath + CONF_FOLDER + FILESEPARATOR + TRUSTSTORE_FOLDER_NAME);
 
 //      SSHClient.exec(userName, hostname, getKeyFile(), "rm " + installPath + FILESEPARATOR + "*.txt");
-//      SSHClient.exec(userName, hostname, getKeyFile(), "rm " + installPath + FILESEPARATOR + "*.conf");
+//      SSHClient.exec(userName, hostname, getKeyFile(), "rm " + installPath + FILESEPARATOR + "*.properties");
       
       File keyFileName = getKeyFile();
       System.out.println("Copying jar and conf files");
@@ -568,11 +568,11 @@ public class GNSInstaller {
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + INSTALLER_CONFIG_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + INSTALLER_CONFIG_FILENAME);
     }
-    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath)) {
-      System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_CONF_FILENAME);
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_PROPERTIES_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_PROPERTIES_FILENAME);
     }
-    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath)) {
-      System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_CONF_FILENAME);
+    if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_PROPERTIES_FILENAME, confFolderPath)) {
+      System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_PROPERTIES_FILENAME);
     }
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + LNS_HOSTS_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + LNS_HOSTS_FILENAME);
@@ -580,8 +580,8 @@ public class GNSInstaller {
     if (!fileExistsSomewhere(configNameOrFolder + FILESEPARATOR + NS_HOSTS_FILENAME, confFolderPath)) {
       System.out.println("Config folder " + configNameOrFolder + " missing file " + NS_HOSTS_FILENAME);
     }
-    lnsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + LNS_CONF_FILENAME, confFolderPath).toString();
-    nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + NS_CONF_FILENAME, confFolderPath).toString();
+    lnsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + LNS_PROPERTIES_FILENAME, confFolderPath).toString();
+    nsConfFileLocation = fileSomewhere(configNameOrFolder + FILESEPARATOR + NS_PROPERTIES_FILENAME, confFolderPath).toString();
     lnsConfFileName = new File(lnsConfFileLocation).getName();
     nsConfFileName = new File(nsConfFileLocation).getName();
 
