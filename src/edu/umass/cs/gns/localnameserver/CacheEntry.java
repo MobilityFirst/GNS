@@ -36,7 +36,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
   private long activeNameServersTimestamp;
 
   /**
-   * Constructs a cache entry for a name from a list of replica controllers and a list of active replicas.
+   * Constructs a cache entry for a name.
    *
    * @param name
    * @param value
@@ -49,6 +49,12 @@ public class CacheEntry implements Comparable<CacheEntry> {
     this.activeNameServersTimestamp = 0;
   }
 
+  /**
+   * Constructs a cache entry for a name from a list of active replicas.
+   * 
+   * @param name
+   * @param activeNameServers
+   */
   public CacheEntry(String name, Set<InetSocketAddress> activeNameServers) {
     this.name = name;
     this.activeNameServers = activeNameServers;
@@ -57,11 +63,21 @@ public class CacheEntry implements Comparable<CacheEntry> {
     this.valueTimestamp = 0;
   }
 
+  /**
+   * Updates a cache entry with a new value.
+   * 
+   * @param value
+   */
   public synchronized void updateCacheEntry(String value) {
     this.value = value;
     this.valueTimestamp = System.currentTimeMillis();
   }
 
+  /**
+   * Updates a cache entry with a new list of active replicas.
+   * 
+   * @param activeNameServers
+   */
   public synchronized void updateCacheEntry(Set<InetSocketAddress> activeNameServers) {
     this.activeNameServers = activeNameServers;
     this.activeNameServersTimestamp = System.currentTimeMillis();
@@ -91,10 +107,22 @@ public class CacheEntry implements Comparable<CacheEntry> {
     return (System.currentTimeMillis() - activeNameServersTimestamp) < timeToLive;
   }
 
+  /**
+   * Returns the time since the cache value was updated.
+   * 
+   * @param key
+   * @return
+   */
   public synchronized long timeSinceValueCached(String key) {
     return (int) (System.currentTimeMillis() - valueTimestamp);
   }
 
+  /**
+   * Returns the time since the active replicas were updated.
+   * 
+   * @param key
+   * @return
+   */
   public synchronized long timeSinceActivesCached(String key) {
     return (int) (System.currentTimeMillis() - activeNameServersTimestamp);
   }
@@ -140,26 +168,56 @@ public class CacheEntry implements Comparable<CacheEntry> {
     return (this.name).compareTo(d.name);
   }
 
+  /**
+   * Returns the name.
+   * 
+   * @return the name
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Returns the TTL.
+   * 
+   * @return the ttl
+   */
   public int getTimeToLive() {
     return timeToLive;
   }
 
+  /**
+   * Returns the timestamp of the value.
+   * 
+   * @return the timestamp
+   */
   public long getValueTimestamp() {
     return valueTimestamp;
   }
 
+  /**
+   * Returns the cached value.
+   * 
+   * @return the value
+   */
   public String getValue() {
     return value;
   }
 
+  /**
+   * Returns the set of active replicas.
+   * 
+   * @return the set of active replicas
+   */
   public Set<InetSocketAddress> getActiveNameServers() {
     return activeNameServers;
   }
 
+  /**
+   * Returns the active replicas timestamp.
+   * 
+   * @return the active replicas timestamp
+   */
   public long getActiveNameServersTimestamp() {
     return activeNameServersTimestamp;
   }

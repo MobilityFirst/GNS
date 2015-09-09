@@ -9,7 +9,7 @@ package edu.umass.cs.gns.nodeconfig;
 import com.google.common.collect.ImmutableSet;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.util.Shutdownable;
 import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
 

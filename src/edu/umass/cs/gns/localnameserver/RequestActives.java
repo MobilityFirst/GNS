@@ -1,3 +1,10 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ * Initial developer(s): Westy.
+ */
 package edu.umass.cs.gns.localnameserver;
 
 import edu.umass.cs.gns.main.GNS;
@@ -11,7 +18,6 @@ import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.ActiveReplica;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import java.io.IOException;
@@ -21,6 +27,11 @@ import java.util.List;
 
 import org.json.JSONException;
 
+/**
+ * Handles the requesting of active replicas from a reconfigurator.
+ *
+ * @author westy
+ */
 public class RequestActives implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
@@ -31,8 +42,17 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
   private final List<InetSocketAddress> reconfigurators;
   private int requestCount = 0; // number of times we have requested
 
+  /**
+   * The logger.
+   */
   public static final Logger log = Logger.getLogger(RequestActives.class.getName());
 
+  /**
+   * Creates a RequestActives instance.
+   *
+   * @param lnsRequestInfo
+   * @param handler
+   */
   public RequestActives(LNSRequestInfo lnsRequestInfo,
           RequestHandlerInterface handler) {
 
@@ -108,13 +128,9 @@ public class RequestActives implements SchedulableProtocolTask<InetSocketAddress
     return mtasks;
   }
 
-  //@Override
-  public String refreshKey() {
+  private String refreshKey() {
     return lnsRequestInfo.getServiceName() + " | " + Integer.toString(lnsRequestInfo.getLNSReqID());
   }
-
-  // empty as task does not expect any events and will be explicitly removed
-  public static final ReconfigurationPacket.PacketType[] types = {};
 
   @Override
   public Set<PacketType> getEventTypes() {

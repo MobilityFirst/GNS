@@ -12,10 +12,10 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.NewApp;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
-import edu.umass.cs.gns.newApp.recordmap.NameRecord;
+import edu.umass.cs.gns.gnsApp.GnsApp;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.HRN_GUID;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -252,7 +252,7 @@ public class NameResolution {
       fieldArray = fieldNames.toArray(fieldArray);
     }
     // First we lookup the guid from the HRN
-    NewApp app = handler.getApp();
+    GnsApp app = handler.getApp();
     NameRecord hrnNameRecord = null;
     try {
       hrnNameRecord = NameRecord.getNameRecordMultiField(app.getDB(), domainName,

@@ -6,14 +6,27 @@
 package edu.umass.cs.gns.installer;
 
 /**
- *
+ * Represents the type of data store we're using.
+ * Default is MONGO.
+ * 
  * @author westy
  */
 public enum DataStoreType {
  
-  MONGO("edu.umass.cs.gns.nameserver.recordmap.MongoRecordMap"),
-  CASSANDRA("edu.umass.cs.gns.nameserver.recordmap.CassandraRecordMap"),
-  IN_CORE_JSON("edu.umass.cs.gns.nameserver.recordmap.InCoreRecordMapJSON");
+  /**
+   * Mongo.
+   */
+  MONGO("edu.umass.cs.gns.gnsApp.recordmap.MongoRecordMap"),
+
+  /**
+   * Cassandra.
+   */
+  CASSANDRA("edu.umass.cs.gns.gnsApp.recordmap.CassandraRecordMap"),
+
+  /**
+   * For testing we sometimes use JSON.
+   */
+  IN_CORE_JSON("edu.umass.cs.gns.gnsApp.recordmap.InCoreRecordMapJSON");
   
   String className;
 
@@ -21,6 +34,11 @@ public enum DataStoreType {
     this.className = className;
   }
 
+  /**
+   * Returns the associated classname.
+   * 
+   * @return
+   */
   public String getClassName() {
     return className;
   }

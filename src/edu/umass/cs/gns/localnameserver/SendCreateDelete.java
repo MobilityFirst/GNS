@@ -10,13 +10,17 @@ import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Sends create and delete requests to a reconfigurator with retransmission.
+ *
+ * @author westy
+ */
 public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 1000;
@@ -27,8 +31,17 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
   private final List<InetSocketAddress> reconfigurators;
   private int requestCount = 0; // number of times we have requested
 
+  /**
+   * The logger.
+   */
   public static final Logger log = Logger.getLogger(SendCreateDelete.class.getName());
 
+  /**
+   * Create a SendCreateDelete instance.
+   *
+   * @param lnsRequestInfo
+   * @param handler
+   */
   public SendCreateDelete(LNSRequestInfo lnsRequestInfo,
           RequestHandlerInterface handler) {
 
@@ -44,16 +57,6 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
   @Override
   public GenericMessagingTask<InetSocketAddress, ?>[] restart() {
     if (this.amObviated()) {
-      //try {
-//        handler.getProtocolExecutor().schedule(new CommandRetransmitter(lnsRequestInfo.getLNSReqID(),
-//                lnsRequestInfo.getCommandPacket().toJSONObject(),
-//                handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-//                handler));
-//       handler.sendToClosestReplica(handler.getActivesIfValid(lnsRequestInfo.getServiceName()),
-//                lnsRequestInfo.getCommandPacket().toJSONObject());
-//      } catch (JSONException e) {
-//        log.severe(this.refreshKey() + " unable to send command packet " + e);
-//      }
       ProtocolExecutor.cancel(this);
     }
     if (handler.isDebugMode()) {
@@ -69,9 +72,6 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
       if (handler.isDebugMode()) {
         log.info("~~~~~~~~~~~~~~~~~~~~~~~~" + this.refreshKey() + " No answer, using defaults");
       }
-      // no answer so we stuff in the default choices and return
-//      handler.updateCacheEntry(lnsRequestInfo.getServiceName(),
-//              handler.getNodeConfig().getReplicatedActives(lnsRequestInfo.getServiceName()));
       return true;
     } else {
       return false;
@@ -89,18 +89,15 @@ public class SendCreateDelete implements SchedulableProtocolTask<InetSocketAddre
               + " Sending to " + reconfigurators.get(reconfigIndex)
               + " " + packet);
     }
-    GenericMessagingTask<InetSocketAddress, ?> mtasks[] = new GenericMessagingTask<>(reconfigurators.get(reconfigIndex), packet).toArray();
+    GenericMessagingTask<InetSocketAddress, ?> mtasks[]
+            = new GenericMessagingTask<>(reconfigurators.get(reconfigIndex), packet).toArray();
     requestCount++;
     return mtasks;
   }
 
-  //@Override
-  public String refreshKey() {
+  private String refreshKey() {
     return lnsRequestInfo.getServiceName() + " | " + Integer.toString(lnsRequestInfo.getLNSReqID());
   }
-
-  // empty as task does not expect any events and will be explicitly removed
-  public static final ReconfigurationPacket.PacketType[] types = {};
 
   @Override
   public Set<PacketType> getEventTypes() {

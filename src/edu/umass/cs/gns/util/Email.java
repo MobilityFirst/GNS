@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;

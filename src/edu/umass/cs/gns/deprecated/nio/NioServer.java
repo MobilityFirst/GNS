@@ -9,7 +9,7 @@ package edu.umass.cs.gns.deprecated.nio;
 // When will this move take place? 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;

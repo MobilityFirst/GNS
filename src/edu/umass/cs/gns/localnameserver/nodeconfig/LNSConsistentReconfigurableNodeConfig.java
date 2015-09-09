@@ -1,8 +1,6 @@
 package edu.umass.cs.gns.localnameserver.nodeconfig;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,16 +9,15 @@ import org.json.JSONException;
 
 import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableActiveConfig;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceModifiableRCConfig;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
-import edu.umass.cs.reconfiguration.reconfigurationutils.SimpleReconfiguratorNodeConfig;
 
-/*
+/**
  * This class is a wrapper around NodeConfig to ensure that it is consistent,
  * i.e., it returns consistent results even if it changes midway. In particular,
  * it does not allow the use of a method like getNodeIDs().
- * 
+ *
  * It also has consistent hashing utility methods.
+ *
  */
 public class LNSConsistentReconfigurableNodeConfig extends
         LNSConsistentNodeConfig implements
@@ -37,6 +34,11 @@ public class LNSConsistentReconfigurableNodeConfig extends
 
   private Set<InetSocketAddress> reconfiguratorsSlatedForRemoval = new HashSet<InetSocketAddress>();
 
+  /**
+   * Create a LNSConsistentReconfigurableNodeConfig instance.
+   *
+   * @param nc
+   */
   public LNSConsistentReconfigurableNodeConfig(
           LNSNodeConfig nc) {
     super(nc);
@@ -73,20 +75,29 @@ public class LNSConsistentReconfigurableNodeConfig extends
     return this.nodeConfig.getReconfigurators();
   }
 
-  // refresh before returning
+  /**
+   * Returns the set of reconfigurators.
+   *
+   * @param name
+   * @return
+   */
   public Set<InetSocketAddress> getReplicatedReconfigurators(String name) {
+    // refresh before returning
     this.refreshReconfigurators();
     return this.CH_RC.getReplicatedServers(name);
   }
 
-  // refresh before returning
+  
+  /**
+   * Returns the set of active replicas.
+   * 
+   * @param name
+   * @return
+   */
   public Set<InetSocketAddress> getReplicatedActives(String name) {
+    // refresh before returning
     this.refreshActives();
     return this.CH_AR.getReplicatedServers(name);
-  }
-
-  public InterfaceReconfigurableNodeConfig<InetSocketAddress> getUnderlyingNodeConfig() {
-    return this.nodeConfig;
   }
 
   // refresh consistent hash structure if changed

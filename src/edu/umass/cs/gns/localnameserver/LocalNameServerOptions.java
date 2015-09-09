@@ -9,7 +9,7 @@ package edu.umass.cs.gns.localnameserver;
 
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
+import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.HELP;
 import edu.umass.cs.gns.ping.PingManager;
 import static edu.umass.cs.gns.util.Logging.DEFAULTCONSOLELEVEL;
 import static edu.umass.cs.gns.util.ParametersAndOptions.CONFIG_FILE;
@@ -27,6 +27,7 @@ import java.util.logging.Level;
 public class LocalNameServerOptions {
 
   // If you change this list, change it below in getAllOptions as well.
+
   public static final String NS_FILE = "nsfile";
   public static final String PORT = "port";
   public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
@@ -36,6 +37,11 @@ public class LocalNameServerOptions {
   public static final String DEBUG_MISC = "debugMisc";
   public static final String DISABLE_SSL = "disableSSL";
 
+  /**
+   * Returns all the command line options.
+   * 
+   * @return the command line options
+   */
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
@@ -65,6 +71,9 @@ public class LocalNameServerOptions {
 
   private static boolean initialized = false;
   
+  /**
+   * Controls whether SSL is used for comms with the servers.
+   */
   public static boolean disableSSL = false;
 
   /**

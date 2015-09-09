@@ -1,7 +1,5 @@
 package edu.umass.cs.gns.main;
 
-//import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
-
 import edu.umass.cs.gns.util.Logging;
 import java.io.IOException;
 import java.net.URL;
@@ -14,17 +12,42 @@ import java.util.logging.Logger;
  */
 public class GNS {
 
+  /**
+   * The default TTL.
+   */
   public static final int DEFAULT_TTL_SECONDS = 0;
   
+  /**
+   * The default starting port.
+   */
   public static final int DEFAULT_STARTING_PORT = 24400;
-  
+  /**
+   * The URL path used by the HTTP server.
+   */
   public static final String GNS_URL_PATH = "GNS";
   // Useful for testing with resources in conf/testCodeResources if using 
   // "import from build file in IDE". Better way to do this?
+  /**
+   * Hack.
+   */
   public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/";
+  /**
+   * Hack.
+   */
   public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS";
+  /**
+   * The maximum number of HRN aliases allowed for a guid.
+   */
+  public static int MAXALIASES = 100;
+  /**
+   * The maximum number of subguids allowed in an account guid.
+   */
+  public static int MAXGUIDS = 500;
   
   // This is designed so we can run multiple NSs on the same host if needed
+  /**
+   * Master port types.
+   */
   public enum PortType {
 
     NS_TCP_PORT(0), // TCP port at name servers
@@ -59,14 +82,19 @@ public class GNS {
       return offset;
     }
   }
+  /**
+   * Controls whether email verification is enabled.
+   */
   public static boolean enableEmailAccountVerification = false;
+  /**
+   * Controls whether signature verification is enabled.
+   */
   public static boolean enableSignatureAuthentication = true;
   /**
    * Number of primary nameservers. Default is 3 *
    */
   public static final int DEFAULT_NUM_PRIMARY_REPLICAS = 3;
   public static int numPrimaryReplicas = DEFAULT_NUM_PRIMARY_REPLICAS;
-  //public static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
   /**
    * Default query timeout in ms. How long we wait before retransmitting a query.
    */
@@ -93,6 +121,11 @@ public class GNS {
   private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
   public static boolean initRun = false;
 
+  /**
+   * Returns the master GNS logger.
+   * 
+   * @return the master GNS logger
+   */
   public static Logger getLogger() {
     if (!initRun) {
       System.out.println("Setting Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
@@ -105,7 +138,7 @@ public class GNS {
   /**
    * Attempts to look for a MANIFEST file in that contains the Build-Version attribute.
    * 
-   * @return 
+   * @return a build version
    */
   public static String readBuildVersion() {
     String result = null;

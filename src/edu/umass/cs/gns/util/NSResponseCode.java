@@ -8,7 +8,7 @@
 package edu.umass.cs.gns.util;
 
 
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import java.io.Serializable;
 
 /**

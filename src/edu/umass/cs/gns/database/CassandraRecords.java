@@ -18,7 +18,7 @@ import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.recordmap.NameRecord;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

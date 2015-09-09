@@ -53,7 +53,14 @@ public class LNSNodeConfig implements
         GNSInterfaceNodeConfig<InetSocketAddress>,
         Shutdownable {
 
+  /**
+   * Represents an invalid ping latency.
+   */
   public static final long INVALID_PING_LATENCY = -1L;
+
+  /**
+   * Represents an invalid port number.
+   */
   public static final int INVALID_PORT = -1;
 
   private long version = 0l;
@@ -66,10 +73,11 @@ public class LNSNodeConfig implements
   private ConcurrentMap<Object, LNSNodeInfo> hostInfoMapping;
 
   /**
-   * Creates a GNSNodeConfig for the given nameServerID and initializes it from a name server host file.
+   * Creates a LNSNodeConfig initializes it from a name server host file.
    * This supports the new hosts.txt style format.
    *
    * @param hostsFile
+   * @throws java.io.IOException
    */
   public LNSNodeConfig(String hostsFile) throws IOException {
     this.hostsFile = hostsFile;
@@ -226,6 +234,7 @@ public class LNSNodeConfig implements
     return getActiveReplicas();
   }
 
+  @Override
   public long getVersion() {
     return version;
   }
@@ -352,6 +361,9 @@ public class LNSNodeConfig implements
     }
   }
 
+  /**
+   * Handles LNS shutdown.
+   */
   @Override
   public void shutdown() {
     if (timerTask != null) {
@@ -365,7 +377,7 @@ public class LNSNodeConfig implements
   }
 
   /**
-   * Tests
+   * The main routine. For testing only.
    *
    * @param args
    * @throws java.lang.Exception

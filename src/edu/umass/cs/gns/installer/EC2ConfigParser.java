@@ -24,7 +24,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
- *
+ * Parses an XML formatted EC2 config file.
+ * 
+ * 
  * @author westy
  */
 public class EC2ConfigParser {
@@ -37,27 +39,52 @@ public class EC2ConfigParser {
   private DataStoreType dataStoreType;
   private List<EC2RegionSpec> regions = new ArrayList<EC2RegionSpec>();
 
+  /**
+   * Returns the ec2username.
+   * 
+   * @return the ec2username
+   */
   public String getEc2username() {
     return ec2username;
   }
 
+  /**
+   * Returns the amiRecordType.
+   * 
+   * @return the amiRecordType
+   */
   public AMIRecordType getAmiRecordType() {
     return amiRecordType;
   }
 
+  /**
+   * Returns the dataStoreType.
+   * 
+   * @return the dataStoreType
+   */
   public DataStoreType getDataStoreType() {
     return dataStoreType;
   }
 
+  /**
+   * Returns the list of regions.
+   * 
+   * @return list of regions
+   */
   public List<EC2RegionSpec> getRegions() {
     return regions;
   }
 
+  /**
+   * Creates an EC2ConfigParser.
+   * 
+   * @param filename
+   */
   public EC2ConfigParser(String filename) {
     parseFile(filename);
   }
 
-  public void parseFile(String filename) {
+  private void parseFile(String filename) {
     String confPath = getConfPath();
     if (confPath == null) {
       return;
@@ -107,7 +134,7 @@ public class EC2ConfigParser {
     }
   }
 
-  public static String getConfPath() {
+  private static String getConfPath() {
     try {
       File jarLoc = new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
       return jarLoc.getParentFile() + "/conf/";

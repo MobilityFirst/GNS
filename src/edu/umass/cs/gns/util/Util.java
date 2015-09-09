@@ -105,7 +105,7 @@ public class Util {
 
   public static Map<String, String> parseURIQueryString(String query) {
     Map<String, String> result = new HashMap<String, String>();
-    QueryStringParser parser = new QueryStringParser(query);
+    URLQueryStringParser parser = new URLQueryStringParser(query);
     while (parser.next()) {
       result.put(parser.getName(), parser.getValue());
     }

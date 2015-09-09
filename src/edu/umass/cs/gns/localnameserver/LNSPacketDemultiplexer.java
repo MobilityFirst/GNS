@@ -7,25 +7,23 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.packet.CommandPacket;
-import edu.umass.cs.gns.newApp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gns.newApp.packet.Packet;
+import edu.umass.cs.gns.gnsApp.packet.CommandPacket;
+import edu.umass.cs.gns.gnsApp.packet.CommandValueReturnPacket;
+import edu.umass.cs.gns.gnsApp.packet.Packet;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.RequestActiveReplicas;
-
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.Random;
 import java.util.Set;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Implements the <code>BasicPacketDemultiplexer</code> interface for using the {@link edu.umass.cs.gns.nio} package.
+ * Implements the <code>BasicPacketDemultiplexer</code> interface for using the {@link edu.umass.cs.nio} package.
  *
  * @param <NodeIDType>
  */
@@ -34,6 +32,11 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   private final RequestHandlerInterface handler;
   private final Random random = new Random();
 
+  /**
+   * Create an instance of the LNSPacketDemultiplexer.
+   * 
+   * @param handler
+   */
   public LNSPacketDemultiplexer(RequestHandlerInterface handler) {
     this.handler = handler;
     register(ReconfigurationPacket.PacketType.REQUEST_ACTIVE_REPLICAS);
@@ -85,8 +88,20 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   }
 
   private static boolean disableRequestActives = false;
+
+  /**
+   * If this is true we just send one copy to the nearest replica. 
+   */
+  // FIXME: Remove this at some point.
   protected static boolean disableCommandRetransmitter = true;
 
+  /**
+   * Handles a command packet that has come in from a client.
+   * 
+   * @param json
+   * @throws JSONException
+   * @throws IOException
+   */
   public void handleCommandPacket(JSONObject json) throws JSONException, IOException {
 
     CommandPacket packet = new CommandPacket(json);
@@ -123,6 +138,13 @@ public class LNSPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     }
   }
 
+  /**
+   * Handles sending the results of a command packet back to the client.
+   * 
+   * @param json
+   * @throws JSONException
+   * @throws IOException
+   */
   public void handleCommandReturnValuePacket(JSONObject json) throws JSONException, IOException {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     int id = returnPacket.getLNSRequestId();

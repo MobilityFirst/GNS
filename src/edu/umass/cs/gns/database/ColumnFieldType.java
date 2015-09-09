@@ -14,7 +14,7 @@ import java.util.HashMap;
 /**
  * Types that a column field can take on.
  * 
- * See also @link{JSONUtils}
+ * See also {@link JSONUtils}
  * 
  * SEEMS LIKE THIS COULD PROBABLY ALSO BE DONE 
  * BETTER USING THE JSON LIB.
