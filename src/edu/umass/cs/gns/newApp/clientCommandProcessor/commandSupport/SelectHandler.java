@@ -53,6 +53,7 @@ public class SelectHandler {
    * @param key
    * @param value
    * @param otherValue
+   * @param handler
    * @return
    */
   public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue, ClientRequestHandlerInterface handler) {
@@ -65,6 +66,7 @@ public class SelectHandler {
    * Sends the a Select query which returns a list of guids match the given query.
    *
    * @param query
+   * @param handler
    * @return
    */
   public static String sendSelectQuery(String query, ClientRequestHandlerInterface handler) {
@@ -79,6 +81,7 @@ public class SelectHandler {
    * @param query
    * @param guid
    * @param interval
+   * @param handler
    * @return
    */
   public static String sendGroupGuidSetupSelectQuery(String query, String guid, int interval, ClientRequestHandlerInterface handler) {
@@ -95,6 +98,7 @@ public class SelectHandler {
    *
    * @param query
    * @param guid
+   * @param handler
    * @return
    */
   public static String sendGroupGuidSetupSelectQuery(String query, String guid, ClientRequestHandlerInterface handler) {
@@ -105,6 +109,7 @@ public class SelectHandler {
    * Sends the Select query which returns the members of a previously created group guid.
    *
    * @param guid
+   * @param handler
    * @return
    */
   public static String sendGroupGuidLookupSelectQuery(String guid, ClientRequestHandlerInterface handler) {
@@ -138,6 +143,7 @@ public class SelectHandler {
    * Processes incoming SelectResponsePacket packets.
    * 
    * @param json
+   * @param unstringer
    */
   public static void processSelectResponsePackets(JSONObject json, Stringifiable<String> unstringer) {
     try {
@@ -180,6 +186,4 @@ public class SelectHandler {
     } while (resultsMap.containsKey(id));
     return id;
   }
-
-  public static String Version = "$Revision$";
 }

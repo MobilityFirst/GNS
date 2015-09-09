@@ -81,6 +81,9 @@ public class Intercessor implements IntercessorInterface {
   private final ConcurrentMap<String, NSResponseCode> createSuccessResult;
   private final ConcurrentMap<String, NSResponseCode> deleteSuccessResult;
 
+  /**
+   * True if debugging is enabled.
+   */
   public boolean debuggingEnabled = AppReconfigurableNodeOptions.debuggingEnabled;
 
   {
@@ -97,6 +100,13 @@ public class Intercessor implements IntercessorInterface {
   private final GNSInterfaceNodeConfig<String> nodeConfig;
   private final InetSocketAddress nodeAddress;
 
+  /**
+   * Creates an instance of the Intercessor.
+   * 
+   * @param nodeAddress
+   * @param nodeConfig
+   * @param ccpPacketDemultiplexer
+   */
   public Intercessor(InetSocketAddress nodeAddress, GNSInterfaceNodeConfig<String> nodeConfig,
           AbstractJSONPacketDemultiplexer ccpPacketDemultiplexer) {
     //this.handler = handler;
@@ -304,6 +314,13 @@ public class Intercessor implements IntercessorInterface {
     return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
   }
 
+  /**
+   * Sends a query to the Nameserver for all of the fields in a guid.
+   * 
+   * @param name
+   * @param field
+   * @return
+   */
   public QueryResult<String> sendFullQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, GnsProtocolDefs.ALLFIELDS, null, null, null, ColumnFieldType.USER_JSON);
   }
@@ -343,6 +360,13 @@ public class Intercessor implements IntercessorInterface {
     return result;
   }
 
+  /**
+   * Sends an add record to the Nameserver for all the fields in a JSONObject.
+   * 
+   * @param name
+   * @param value
+   * @return
+   */
   public NSResponseCode sendFullAddRecord(String name, JSONObject value) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {
@@ -445,6 +469,20 @@ public class Intercessor implements IntercessorInterface {
     return sendUpdateRecord(name, key, newValue, oldValue, argument, operation, writer, signature, message, true);
   }
 
+  /**
+   *
+   * @param name
+   * @param key
+   * @param newValue
+   * @param oldValue
+   * @param argument
+   * @param operation
+   * @param writer
+   * @param signature
+   * @param message
+   * @param wait
+   * @return
+   */
   public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
           String writer, String signature, String message, boolean wait) {
@@ -479,6 +517,18 @@ public class Intercessor implements IntercessorInterface {
     return sendUpdateUserJSON(name, userJSON, operation, writer, signature, message, true);
   }
 
+  /**
+   * Sends an update request for an entire JSON Object.
+   * 
+   * @param name
+   * @param userJSON
+   * @param operation
+   * @param writer
+   * @param signature
+   * @param message
+   * @param wait - indicates if we wait for a confirmation packet
+   * @return
+   */
   public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message, boolean wait) {
     int id = nextUpdateRequestID();

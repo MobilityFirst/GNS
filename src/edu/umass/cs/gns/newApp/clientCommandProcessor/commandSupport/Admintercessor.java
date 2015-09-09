@@ -88,6 +88,7 @@ public class Admintercessor {
   /**
    * Clears the database and reinitializes all indices.
    *
+   * @param handler
    * @return
    */
   public boolean sendResetDB(ClientRequestHandlerInterface handler) {
@@ -103,6 +104,7 @@ public class Admintercessor {
   /**
    * Sends the delete all records command.
    *
+   * @param handler
    * @return
    */
   public boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
@@ -118,6 +120,7 @@ public class Admintercessor {
   /**
    * Sends the clear cache command.
    *
+   * @param handler
    * @return
    */
   public boolean sendClearCache(ClientRequestHandlerInterface handler) {
@@ -133,6 +136,7 @@ public class Admintercessor {
   /**
    * Sends the dump cache command.
    *
+   * @param handler
    * @return
    */
   public String sendDumpCache(ClientRequestHandlerInterface handler) {
@@ -156,6 +160,7 @@ public class Admintercessor {
    * Sends the ping table command for a given node.
    *
    * @param node
+   * @param handler
    * @return a string containing the ping results for the node
    */
   public String sendPingTable(String node, ClientRequestHandlerInterface handler) {
@@ -184,6 +189,7 @@ public class Admintercessor {
    *
    * @param node1
    * @param node2
+   * @param handler
    * @return the ping value between those nodes
    */
   public String sendPingValue(int node1, int node2, ClientRequestHandlerInterface handler) {
@@ -196,6 +202,7 @@ public class Admintercessor {
    *
    * @param node1
    * @param node2
+   * @param handler
    * @return
    */
   public String sendPingValue(String node1, String node2, ClientRequestHandlerInterface handler) {
@@ -223,6 +230,7 @@ public class Admintercessor {
    * Sends the change log level command.
    *
    * @param level
+   * @param handler
    * @return
    */
   public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
@@ -284,6 +292,7 @@ public class Admintercessor {
   /**
    * Sends the dump command to the LNS.
    *
+   * @param handler
    * @return
    */
   public CommandResponse<String> sendDump(ClientRequestHandlerInterface handler) {
@@ -379,6 +388,7 @@ public class Admintercessor {
    * Processes incoming Dump packets.
    *
    * @param json
+   * @param handler
    */
   public void handleIncomingDumpResponsePackets(JSONObject json, ClientRequestHandlerInterface handler) {
     try {
@@ -431,6 +441,7 @@ public class Admintercessor {
    * Sends a command to collect all guids that contain the given tag.
    *
    * @param tagName
+   * @param handler
    * @return
    */
   public HashSet<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {

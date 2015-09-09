@@ -71,6 +71,7 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
+   * @param handler
    * @return the value of a single field
    */
   public static CommandResponse<String> lookup(String guid, String field, ArrayList<String> fields, String reader, String signature,
@@ -118,14 +119,17 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a command response
    */
-  public static CommandResponse<String> lookupJSONArray(String guid, String field, String reader, String signature, String message,
+  public static CommandResponse<String> lookupJSONArray(String guid, String field, String reader, String signature,
+          String message,
           ClientRequestHandlerInterface handler) {
 
     String resultString;
     // Note the use of ColumnFieldType.LIST_STRING in the sendSingleFieldQuery call which implies old data format.
-    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+    QueryResult<String> result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, 
+            ColumnFieldType.LIST_STRING);
     if (result.isError()) {
       resultString = GnsProtocolDefs.BADRESPONSE + " " + result.getErrorCode().getProtocolCode();
     } else {
@@ -152,7 +156,8 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a command response
    */
   public static CommandResponse<String> lookupMultipleValues(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -181,7 +186,8 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a command response
    */
   public static CommandResponse<String> lookupOne(String guid, String field, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -223,7 +229,8 @@ public class FieldAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a command response
    */
   public static CommandResponse<String> lookupOneMultipleValues(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -264,6 +271,7 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param handler
    * @return an NSResponseCode
    */
   public static NSResponseCode update(String guid, String key, ResultValue value, ResultValue oldValue, int argument,
@@ -286,6 +294,7 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param handler
    * @return an NSResponseCode
    */
   public static NSResponseCode update(String guid, JSONObject json, UpdateOperation operation,
@@ -306,6 +315,7 @@ public class FieldAccess {
    * readable or writable fields or for internal operations done without a signature.
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
+   * @param handler
    * @return
    */
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message,
@@ -319,6 +329,7 @@ public class FieldAccess {
    *
    * @param key - the key to match
    * @param value - the value to match
+   * @param handler
    * @return
    */
   public static CommandResponse<String> select(String key, Object value, ClientRequestHandlerInterface handler) {
@@ -335,6 +346,7 @@ public class FieldAccess {
    *
    * @param key - the field to match - should be a location field
    * @param value - a bounding box
+   * @param handler
    * @return
    */
   public static CommandResponse<String> selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
@@ -352,6 +364,7 @@ public class FieldAccess {
    * @param key - the field to match - should be a location field
    * @param value - the position
    * @param maxDistance - the maximum distance from position
+   * @param handler
    * @return
    */
   public static CommandResponse<String> selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
@@ -367,6 +380,7 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve all the guid matching the query.
    *
    * @param query
+   * @param handler
    * @return
    */
   public static CommandResponse<String> selectQuery(String query, ClientRequestHandlerInterface handler) {
@@ -383,12 +397,13 @@ public class FieldAccess {
    *
    * @param accountGuid
    * @param query
-   * @param publicKeyBytes
+   * @param publicKey
    * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
    * @param handler
    * @return
    */
-  public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey, int interval,
+  public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey, 
+          int interval,
           ClientRequestHandlerInterface handler) {
     String guid = ClientUtils.createGuidStringFromPublicKey(Base64.decode(publicKey));
     // Check to see if the guid doesn't exists and if so create it...
@@ -430,6 +445,7 @@ public class FieldAccess {
    * Sends a select request to the server to retrieve the members of a context aware group guid.
    *
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
+   * @param handler
    * @return
    */
   public static CommandResponse<String> selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {

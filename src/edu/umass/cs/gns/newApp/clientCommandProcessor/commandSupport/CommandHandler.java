@@ -158,6 +158,7 @@ public class CommandHandler {
    *
    * @param command
    * @param json
+   * @param handler
    * @return
    */
   public static CommandResponse<String> executeCommand(GnsCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
@@ -189,6 +190,9 @@ public class CommandHandler {
   // Code for handling commands at the app
   //
   // public because the app uses this
+  /**
+   * Encapsulates the info needed for a command request.
+   */
   public static class CommandRequestInfo {
 
     private final String host;
@@ -197,6 +201,13 @@ public class CommandHandler {
     private final String command;
     private final String guid;
 
+    /**
+     *
+     * @param host
+     * @param port
+     * @param command
+     * @param guid
+     */
     public CommandRequestInfo(String host, int port, String command, String guid) {
       this.host = host;
       this.port = port;
@@ -204,24 +215,52 @@ public class CommandHandler {
       this.guid = guid;
     }
 
+    /**
+     * Returns the host.
+     * 
+     * @return
+     */
     public String getHost() {
       return host;
     }
 
+    /**
+     * Returns the port.
+     * 
+     * @return
+     */
     public int getPort() {
       return port;
     }
 
+    /**
+     * Returns the command.
+     * 
+     * @return
+     */
     public String getCommand() {
       return command;
     }
 
+    /**
+     * Returns the guid.
+     * 
+     * @return
+     */
     public String getGuid() {
       return guid;
     }
 
   }
 
+  /**
+   * Called when a command packet is received by the app. 
+   * 
+   * @param json
+   * @param app
+   * @throws JSONException
+   * @throws IOException
+   */
   public static void handleCommandPacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandPacket packet = new CommandPacket(json);
     // Squirrel away the host and port so we know where to send the command return value
@@ -241,6 +280,14 @@ public class CommandHandler {
 
   private static long lastStatsTime = 0;
 
+  /**
+   * Called when a command return value packet is received by the app.
+   * 
+   * @param json
+   * @param app
+   * @throws JSONException
+   * @throws IOException
+   */
   public static void handleCommandReturnValuePacketForApp(JSONObject json, NewApp app) throws JSONException, IOException {
     CommandValueReturnPacket returnPacket = new CommandValueReturnPacket(json);
     int id = returnPacket.getClientRequestId();
@@ -263,8 +310,5 @@ public class CommandHandler {
     } else {
       GNS.getLogger().severe("Command packet info not found for " + id + ": " + json);
     }
-  }
-
-  public CommandHandler() {
   }
 }

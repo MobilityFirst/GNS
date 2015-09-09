@@ -6,8 +6,6 @@
 package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADGUID;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
 import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.Stats;
@@ -47,6 +45,7 @@ public class PerformanceTests {
    * @param numFields
    * @param guidCnt
    * @param verbose
+   * @param handler
    * @return 
    */
   public static String runRttPerformanceTest(int numFields, int guidCnt, boolean verbose, ClientRequestHandlerInterface handler) {

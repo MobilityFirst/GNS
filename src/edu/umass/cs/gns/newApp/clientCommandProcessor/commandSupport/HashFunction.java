@@ -10,10 +10,23 @@ package edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport;
  */
 public interface HashFunction {
   
-   public byte[] hash(String key);
+  /**
+   * Hashes a string to a byte array.
+   * 
+   * @param key
+   * @return
+   */
+  public byte[] hash(String key);
    
    // public byte[] hash(byte[] bytes);
    
+  /**
+   * Hashes a string to a long value.
+   * 
+   * @param key
+   * @return
+   */
+     
    public long hashToLong(String key);
   
 }

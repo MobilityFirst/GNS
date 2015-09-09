@@ -43,7 +43,7 @@ public class AccessSupport {
   /**
    * Compares the signature against the message to verify that the messages was signed by the guid.
    * 
-   * @param guidInfo
+   * @param publicKey
    * @param signature
    * @param message
    * @return
@@ -65,7 +65,7 @@ public class AccessSupport {
     return verifySignatureInternal(encodedPublicKey, signature, message);
   }
   
-  public static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
+  private static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
           throws InvalidKeySpecException, InvalidKeyException, SignatureException, UnsupportedEncodingException {
 
     //KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);

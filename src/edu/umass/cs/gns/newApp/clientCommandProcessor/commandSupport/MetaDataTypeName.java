@@ -15,12 +15,30 @@ import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.Inte
  * @author westy
  */
 public enum MetaDataTypeName {
+
+  /**
+   * The whitelist for reading.
+   */
   READ_WHITELIST("ACL"), 
+
+  /**
+   * The whitelist for writing.
+   */
   WRITE_WHITELIST("ACL"), 
-  READ_WHITELIST_GUID("ACL"), 
-  WRITE_WHITELIST_GUID("ACL"), 
+
+  /**
+   * The blacklist for reading.
+   */
   READ_BLACKLIST("ACL"), 
+
+  /**
+   * The blacklist for writing.
+   */
   WRITE_BLACKLIST("ACL"), 
+
+  /**
+   * A timestamp. Currently unused.
+   */
   TIMESTAMP("MD");
   
   private String prefix;
@@ -30,34 +48,21 @@ public enum MetaDataTypeName {
   }
 
   /**
-   *
-   * @return
+   * Returns the prefix.
+   * 
+   * @return the prefix
    */
   public String getPrefix() {
     return prefix;
   }
   
   /**
-   *
-   * @return
+   * Returns the path to the field.
+   * 
+   * @return the path
    */
   public String getFieldPath() {
     return prefix + "." + name();
   }
  
-//  /**
-//   * Currently unused.
-//   * @return
-//   */
-//  public static String typesToString() {
-//    StringBuilder result = new StringBuilder();
-//    String prefix = "";
-//    for (MetaDataTypeName type : MetaDataTypeName.values()) {
-//      result.append(prefix);
-//      result.append(type.name());
-//      prefix = ", ";
-//    }
-//    return result.toString();
-//  }
-  
 }

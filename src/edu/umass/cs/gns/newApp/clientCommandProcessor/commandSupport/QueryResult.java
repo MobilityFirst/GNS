@@ -132,7 +132,7 @@ public class QueryResult<NodeIDType> implements Serializable{
   }
 
   /**
-   * Does this QueryResult<String> represent an error result.
+   * Does this QueryResult represent an error result.
    * 
    * @return 
    */

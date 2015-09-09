@@ -17,24 +17,44 @@ import java.lang.reflect.Field;
 public enum SystemParameter {
 
   // NOTE: All the fields in here MUST be static fields.
-
+  /**
+   * Determines if email verification is used.
+   */
   EMAIL_VERIFICATION(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableEmailAccountVerification",
           "Determines if email verification is used."),
+  /**
+   * Determines if query and field authentication using signatures and ACLS is enabled.
+   */
   SIGNATURE_AUTHENTICATION(ParameterType.Boolean, "edu.umass.cs.gns.main.GNS", "enableSignatureAuthentication",
           "Determines if query and field authentication using signatures and ACLS is enabled."),
+  /**
+   * Puts a limit on the number of guids an account can have.
+   */
   MAX_GUIDS(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXGUIDS",
           "Puts a limit on the number of guids an account can have."),
+  /**
+   * Puts a limit on the number of alias an account can have.
+   */
   MAX_ALIASES(ParameterType.Integer, "edu.umass.cs.gns.httpserver.Defs", "MAXALIASES",
           "Puts a limit on the number of alias an account can have.");
 
   //
   /**
-   *
+   * The type of the parameter.
    */
   public enum ParameterType {
 
+    /**
+     * A Boolean parameter.
+     */
     Boolean,
+    /**
+     * An Integer parameter.
+     */
     Integer,
+    /**
+     * A String parameter.
+     */
     String
   }
   //
@@ -143,5 +163,8 @@ public enum SystemParameter {
     return description;
   }
 
+  /**
+   *
+   */
   public final static String NEWLINE = System.getProperty("line.separator");
 }

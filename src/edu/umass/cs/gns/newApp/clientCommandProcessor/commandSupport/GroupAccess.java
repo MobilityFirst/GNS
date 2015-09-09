@@ -44,7 +44,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    */
   public static NSResponseCode addToGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -72,7 +73,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    */
   public static NSResponseCode addToGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -101,7 +103,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    */
   public static NSResponseCode removeFromGroup(String guid, String memberGuid, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -128,7 +131,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    */
   public static NSResponseCode removeFromGroup(String guid, ResultValue members, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -156,7 +160,8 @@ public class GroupAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    */
   public static ResultValue lookup(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -175,7 +180,8 @@ public class GroupAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    */
   public static ResultValue lookupGroups(String guid, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -191,6 +197,7 @@ public class GroupAccess {
    * Removes all group links when we're deleting a guid.
    *
    * @param guid
+   * @param handler
    */
   public static void cleanupGroupsForDelete(String guid, ClientRequestHandlerInterface handler) {
     // just so you know all the nulls mean we're ignoring signatures and authentication
@@ -206,7 +213,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    * @deprecated
    */
   @Deprecated
@@ -224,7 +232,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a response code
    * @deprecated
    */
   @Deprecated
@@ -241,7 +250,8 @@ public class GroupAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a result value
    * @deprecated
    */
   @Deprecated
@@ -261,7 +271,8 @@ public class GroupAccess {
    * @param reader
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return a result value
    * @deprecated
    */
   @Deprecated
@@ -282,7 +293,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return boolean that indicates if the request was successful
    * @deprecated
    */
   @Deprecated
@@ -306,7 +318,8 @@ public class GroupAccess {
    * @param writer
    * @param signature
    * @param message
-   * @return
+   * @param handler
+   * @return boolean that indicates if the request was successful
    * @deprecated
    */
   @Deprecated

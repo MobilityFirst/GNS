@@ -89,6 +89,7 @@ public class AccountAccess {
    * HRN = Human Readable Name<br>
    *
    * @param guid
+   * @param handler
    * @return
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid,
@@ -129,6 +130,7 @@ public class AccountAccess {
    * GUID = Globally Unique Identifier
    *
    * @param guid
+   * @param handler
    * @return a GUID
    */
   public static String lookupPrimaryGuid(String guid, ClientRequestHandlerInterface handler) {
@@ -152,6 +154,7 @@ public class AccountAccess {
    * HRN = Human Readable Name<br>
    *
    * @param name
+   * @param handler
    * @return a GUID
    */
   public static String lookupGuid(String name, ClientRequestHandlerInterface handler) {
@@ -174,6 +177,7 @@ public class AccountAccess {
    * GUID = Globally Unique Identifier<br>
    *
    * @param guid
+   * @param handler
    * @return an {@link GuidInfo} instance
    */
   public static GuidInfo lookupGuidInfo(String guid, ClientRequestHandlerInterface handler) {
@@ -199,6 +203,7 @@ public class AccountAccess {
    * HRN = Human Readable Name<br>
    *
    * @param name
+   * @param handler
    * @return an {@link AccountInfo} instance
    */
   public static AccountInfo lookupAccountInfoFromName(String name, ClientRequestHandlerInterface handler) {
@@ -232,6 +237,7 @@ public class AccountAccess {
    * @param guid
    * @param publicKey
    * @param password
+   * @param handler
    * @return
    */
   public static CommandResponse<String> addAccountWithVerification(final String host, final String name, final String guid,
@@ -292,6 +298,7 @@ public class AccountAccess {
    *
    * @param guid
    * @param code
+   * @param handler
    * @return
    */
   public static CommandResponse<String> verifyAccount(String guid, String code, ClientRequestHandlerInterface handler) {
@@ -321,6 +328,15 @@ public class AccountAccess {
     }
   }
 
+  /**
+   * Reset the public key for a guid.
+   * 
+   * @param guid
+   * @param password
+   * @param publicKey
+   * @param handler
+   * @return
+   */
   public static CommandResponse<String> resetPublicKey(String guid, String password, String publicKey,
           ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
@@ -388,6 +404,8 @@ public class AccountAccess {
    * @param publicKey
    * @param password
    * @param emailVerify
+   * @param verifyCode
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> addAccount(String name, String guid, String publicKey, String password,
@@ -452,6 +470,7 @@ public class AccountAccess {
    * Removes a GNS user account.
    *
    * @param accountInfo
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> removeAccount(AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
@@ -488,9 +507,11 @@ public class AccountAccess {
    * HRN: "_GNS_GUID" -> GUID<br>
    *
    * @param accountInfo - the accountInfo of the account to add the GUID to
+   * @param accountGuidInfo
    * @param name = the human readable name to associate with the GUID
    * @param guid - the new GUID
    * @param publicKey - the public key to use with the new account
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> addGuid(AccountInfo accountInfo, GuidInfo accountGuidInfo, String name, String guid, String publicKey,
@@ -538,6 +559,7 @@ public class AccountAccess {
    * Remove a GUID. Guid should not be an account GUID.
    *
    * @param guid
+   * @param handler
    * @return
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, ClientRequestHandlerInterface handler) {
@@ -549,6 +571,7 @@ public class AccountAccess {
    *
    * @param accountInfo
    * @param guid
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, ClientRequestHandlerInterface handler) {
@@ -564,6 +587,7 @@ public class AccountAccess {
    * @param guid
    * @param accountInfo - can be null in which case we look it up
    * @param ignoreAccountGuid
+   * @param handler
    * @return
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid,
@@ -621,6 +645,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> addAlias(AccountInfo accountInfo, String alias, String writer,
@@ -661,6 +686,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> removeAlias(AccountInfo accountInfo, String alias, String writer, String signature, String message,
@@ -693,6 +719,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> setPassword(AccountInfo accountInfo, String password, String writer, String signature,
@@ -713,6 +740,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> addTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
@@ -733,6 +761,7 @@ public class AccountAccess {
    * @param writer
    * @param signature
    * @param message
+   * @param handler
    * @return status result
    */
   public static CommandResponse<String> removeTag(GuidInfo guidInfo, String tag, String writer, String signature, String message,
@@ -851,7 +880,4 @@ public class AccountAccess {
     }
     return result;
   }
-
-  //
-  public static String Version = "$Revision$";
 }
