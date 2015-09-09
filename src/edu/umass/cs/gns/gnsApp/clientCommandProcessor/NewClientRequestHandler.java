@@ -6,22 +6,14 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor;
 
-
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.RequestInfo;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.SelectInfo;
-import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.CacheEntry;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.Admintercessor;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.GnsApp;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
-import edu.umass.cs.gns.gnsApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.MovingAverage;
 import edu.umass.cs.gns.util.Util;
@@ -37,11 +29,6 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,13 +65,7 @@ public class NewClientRequestHandler implements ClientRequestHandlerInterface {
   private final ConcurrentMap<String, Integer> createServiceNameMap;
   private final ConcurrentMap<String, Integer> deleteServiceNameMap;
   private final ConcurrentMap<String, Integer> activesServiceNameMap;
-
-  /**
-   * Cache of Name records Key: Name, Value: CacheEntry (DNS_SUBTYPE_QUERY record)
-   *
-   */
-  private final Cache<String, CacheEntry<String>> cache;
-
+  
   /**
    * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
@@ -129,7 +110,6 @@ public class NewClientRequestHandler implements ClientRequestHandlerInterface {
     this.requestInfoMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.selectTransmittedMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.random = new Random(System.currentTimeMillis());
-    this.cache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(parameters.getCacheSize()).build();
     this.messenger = messenger;
     this.protocolExecutor = new ProtocolExecutor<>(messenger);
     this.protocolTask = new CCPProtocolTask<>(this);
@@ -327,153 +307,6 @@ public class NewClientRequestHandler implements ClientRequestHandlerInterface {
   public SelectInfo getSelectInfo(int id) {
     return selectTransmittedMap.get(id);
   }
-
-  // CACHE METHODS
-  @Override
-  public void invalidateCache() {
-    cache.invalidateAll();
-  }
-
-  /**
-   **
-   * Returns true if the local name server cache contains a record for the specified name, false otherwise.
-   *
-   * @param name Host/Domain name
-   */
-  @Override
-  public boolean containsCacheEntry(String name) {
-    return cache.getIfPresent(name) != null;
-  }
-
-  /**
-   **
-   * Adds a new CacheEntry (NameRecord) from a DNS_SUBTYPE_QUERY packet. Overwrites existing cache entry for a name, if the name
-   * record exist in the cache.
-   *
-   * @param packet DNS_SUBTYPE_QUERY packet containing record
-   */
-  @Override
-  public CacheEntry<String> addCacheEntry(DNSPacket<String> packet) {
-    CacheEntry<String> entry = new CacheEntry<>(packet,
-            nodeConfig.getReplicatedReconfigurators(packet.getGuid()));
-    cache.put(entry.getName(), entry);
-    return entry;
-  }
-
-  @Override
-  public CacheEntry<String> addCacheEntry(RequestActivesPacket<String> packet) {
-    CacheEntry<String> entry = new CacheEntry<>(packet,
-            nodeConfig.getReplicatedReconfigurators(packet.getName()));
-    cache.put(entry.getName(), entry);
-    return entry;
-  }
-
-  /**
-   * Updates an existing cache entry with new information from a DNS_SUBTYPE_QUERY packet.
-   *
-   * @param packet DNS_SUBTYPE_QUERY packet containing record
-   */
-  @Override
-  public CacheEntry<String> updateCacheEntry(DNSPacket<String> packet) {
-    CacheEntry<String> entry = cache.getIfPresent(packet.getGuid());
-    if (entry == null) {
-      return null;
-    }
-    entry.updateCacheEntry(packet);
-    return entry;
-  }
-
-  @Override
-  public void updateCacheEntry(RequestActivesPacket<String> packet) {
-    CacheEntry<String> entry = cache.getIfPresent(packet.getName());
-    if (entry == null) {
-      return;
-    }
-    entry.updateCacheEntry(packet);
-  }
-
-  @Override
-  public void updateCacheEntry(ConfirmUpdatePacket<String> packet, String name, String key) {
-    switch (packet.getType()) {
-      case ADD_CONFIRM:
-        if (parameters.isDebugMode()) {
-          GNS.getLogger().info("%%%%%%%%%%%%%%%%%% After add cacheing actives: " + nodeConfig.getReplicatedActives(name));
-        }
-        cache.put(name, new CacheEntry<String>(name, nodeConfig.getReplicatedReconfigurators(name),
-                nodeConfig.getReplicatedActives(name)));
-        break;
-      case REMOVE_CONFIRM:
-        cache.invalidate(name);
-        break;
-      case UPDATE_CONFIRM:
-        CacheEntry<String> entry = cache.getIfPresent(name);
-        if (entry != null) {
-          entry.updateCacheEntry(packet);
-        }
-        break;
-    }
-  }
-
-  /**
-   * Returns a cache entry for the specified name. Returns null if the cache does not have the key mapped to an entry
-   *
-   * @param name Host/Domain name
-   */
-  @Override
-  public CacheEntry<String> getCacheEntry(String name) {
-    return cache.getIfPresent(name);
-  }
-
-  /**
-   * Returns a Set containing name and CacheEntry
-   *
-   * @return
-   */
-  public Set<Map.Entry<String, CacheEntry<String>>> getCacheEntrySet() {
-    return cache.asMap().entrySet();
-  }
-
-  /**
-   * Checks the validity of active nameserver set in cache.
-   *
-   * @param name Host/device/domain name whose name record is cached.
-   * @return Returns true if the entry is valid, false otherwise
-   */
-  @Override
-  public boolean isValidNameserverInCache(String name) {
-    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.isValidNameserver() : false;
-  }
-
-  @Override
-  public void invalidateActiveNameServer(String name) {
-    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
-    if (cacheEntry != null) {
-      cacheEntry.invalidateActiveNameServer();
-    }
-  }
-
-  @Override
-  public int timeSinceAddressCached(String name, String recordKey) {
-    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.timeSinceAddressCached(recordKey) : -1;
-  }
-
-  /**
-   **
-   * Prints local name server cache (and sorts it for convenience)
-   */
-  @Override
-  public String getCacheLogString(String preamble) {
-    StringBuilder cacheTable = new StringBuilder();
-    List<CacheEntry<String>> list = new ArrayList<>(cache.asMap().values());
-    Collections.sort(list, new CacheComparator());
-    for (CacheEntry entry : list) {
-      cacheTable.append("\n");
-      cacheTable.append(entry.toString());
-    }
-    return preamble + cacheTable.toString();
-  }
   
   private boolean reallySendtoReplica = false;
 
@@ -487,13 +320,13 @@ public class NewClientRequestHandler implements ClientRequestHandlerInterface {
     reallySendtoReplica = reallySend;
   }
 
-  static class CacheComparator implements Comparator<CacheEntry> {
-
-    @Override
-    public int compare(CacheEntry t1, CacheEntry t2) {
-      return t1.compareTo(t2);
-    }
-  }
+//  static class CacheComparator implements Comparator<CacheEntry> {
+//
+//    @Override
+//    public int compare(CacheEntry t1, CacheEntry t2) {
+//      return t1.compareTo(t2);
+//    }
+//  }
 
   /**
    **
@@ -504,9 +337,7 @@ public class NewClientRequestHandler implements ClientRequestHandlerInterface {
    */
   @Override
   public Set<String> getReplicaControllers(String name) {
-    CacheEntry<String> cacheEntry = cache.getIfPresent(name);
-    return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : nodeConfig.getReplicatedReconfigurators(name);
-    //return (cacheEntry != null) ? cacheEntry.getReplicaControllers() : (Set<String>)ConsistentHashing.getReplicaControllerSet(name);
+    return nodeConfig.getReplicatedReconfigurators(name);
   }
 
   /**

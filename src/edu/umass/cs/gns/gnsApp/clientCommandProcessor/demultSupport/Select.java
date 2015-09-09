@@ -20,6 +20,14 @@ import java.net.UnknownHostException;
  */
 public class Select {
 
+  /**
+   * Handles the select request packet coming from a client.
+   * 
+   * @param incomingJSON
+   * @param handler
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
   public static void handlePacketSelectRequest(JSONObject incomingJSON, ClientRequestHandlerInterface handler) throws JSONException, UnknownHostException {
 
     SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, handler.getGnsNodeConfig());
@@ -40,19 +48,16 @@ public class Select {
 
   // This should pick a Nameserver using the same method as a query!!
   private static String pickNameServer(String guid, ClientRequestHandlerInterface handler) {
-    if (guid != null) {
-      CacheEntry<String> cacheEntry = handler.getCacheEntry(guid);
-      if (cacheEntry != null && cacheEntry.getActiveNameServers() != null
-              && !cacheEntry.getActiveNameServers().isEmpty()) {
-        String id = handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers());
-        if (id != null) {
-          return id;
-        }
-      }
-    }
     return handler.getGnsNodeConfig().getClosestServer(handler.getGnsNodeConfig().getActiveReplicas());
   }
 
+  /**
+   * Handles the responding to a select request packet being sent back to a client.
+   * 
+   * @param json
+   * @param handler
+   * @throws JSONException
+   */
   public static void handlePacketSelectResponse(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("LNS" + handler.getNodeAddress() + " recvd QueryResponse: " + json);

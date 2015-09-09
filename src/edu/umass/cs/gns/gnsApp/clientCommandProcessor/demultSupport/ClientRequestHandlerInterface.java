@@ -10,9 +10,6 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.Adminterces
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.Intercessor;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.RequestHandlerParameters;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
-import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
-import edu.umass.cs.gns.gnsApp.packet.RequestActivesPacket;
 import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
@@ -146,100 +143,6 @@ public interface ClientRequestHandlerInterface {
    * @return
    */
   public SelectInfo getSelectInfo(int id);
-
-  // CACHE METHODS
-  /**
-   * Clears the cache
-   */
-  public void invalidateCache();
-
-  /**
-   **
-   * Returns true if the local name server cache contains DNS record for the specified name, false otherwise
-   *
-   * @param name Host/Domain name
-   * @return
-   */
-  public boolean containsCacheEntry(String name);
-
-  /**
-   **
-   * Adds a new CacheEntry (NameRecord) from a DNS packet. Overwrites existing cache entry for a name, if the name
-   * record exist in the cache.
-   *
-   * @param packet DNS packet containing record
-   * @return
-   */
-  public CacheEntry<String> addCacheEntry(DNSPacket<String> packet);
-
-  /**
-   *
-   * @param packet
-   * @return
-   */
-  public CacheEntry<String> addCacheEntry(RequestActivesPacket<String> packet);
-
-  /**
-   * Updates an existing cache entry with new information from a DNS packet.
-   *
-   * @param packet DNS packet containing record
-   * @return
-   */
-  public CacheEntry<String> updateCacheEntry(DNSPacket<String> packet);
-
-  /**
-   * Updates an existing cache entry with new information from a DNS packet.
-   * 
-   * @param packet
-   */
-  public void updateCacheEntry(RequestActivesPacket<String> packet);
-
-  /**
-   *
-   * @param packet
-   * @param name
-   * @param key
-   */
-  public void updateCacheEntry(ConfirmUpdatePacket<String> packet, String name, String key);
-
-  /**
-   * Returns a cache entry for the specified name. Returns null if the cache does not have the key mapped to an entry
-   *
-   * @param name Host/Domain name
-   * @return
-   */
-  public CacheEntry<String> getCacheEntry(String name);
-
-  /**
-   * Checks the validity of active nameserver set in cache.
-   *
-   * @param name Host/device/domain name whose name record is cached.
-   * @return Returns true if the entry is valid, false otherwise
-   */
-  public boolean isValidNameserverInCache(String name);
-
-  /**
-   *
-   * @param name
-   * @param recordKey
-   * @return
-   */
-  public int timeSinceAddressCached(String name, String recordKey);
-
-  /**
-   * Invalidates the active name server set in cache by setting its value to <i>null</i>.
-   *
-   * @param name
-   */
-  public void invalidateActiveNameServer(String name);
-
-  /**
-   * Prints cache to a string (and sorts it for convenience)
-   *
-   * @param preamble
-   * @return
-   */
-  public String getCacheLogString(String preamble);
 
   // NETWORK METHODS
   /**

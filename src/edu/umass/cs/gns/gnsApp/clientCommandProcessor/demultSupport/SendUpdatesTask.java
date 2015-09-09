@@ -25,7 +25,6 @@ import java.util.TimerTask;
  * (3) local name server's cache does not have active replicas for a name. In this case, we start the process
  * of obtaining current set of actives for the name.
  *
- * @param <NodeIDType>
  * @see edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.Update
  * @see edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.UpdateInfo
  * @see edu.umass.cs.gns.gnsApp.packet.UpdatePacket
@@ -50,11 +49,26 @@ public class SendUpdatesTask extends TimerTask {
   // creation of guids which need to be explicitly coordinated by ARs 
   final boolean reallySendUpdatesToReplica;
 
+  /**
+   *
+   * @param lnsReqID
+   * @param handler
+   * @param updatePacket
+   * @param nameServerID
+   */
   public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID) {
     this(lnsReqID, handler, updatePacket, nameServerID, false);
   }
 
+  /**
+   *
+   * @param lnsReqID
+   * @param handler
+   * @param updatePacket
+   * @param nameServerID
+   * @param reallySendUpdatesToReplica
+   */
   public SendUpdatesTask(int lnsReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID, boolean reallySendUpdatesToReplica) {
     // based on request info.
@@ -68,8 +82,6 @@ public class SendUpdatesTask extends TimerTask {
   }
 
   @Override
-  // Pretty much the same code as in DNSRequestTask
-  // except DNSRequestTask can return a cached response to client
   public void run() {
     try {
       timeoutCount++;
@@ -78,18 +90,6 @@ public class SendUpdatesTask extends TimerTask {
       }
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {
         throw new CancelExecutorTaskException();
-      }
-      if (nameServerID == null) { // new code to not request actives and only send to one server
-        CacheEntry<String> cacheEntry = handler.getCacheEntry(name);
-        // IF we don't have one or more valid active replicas in the cache entry
-        // we need to request a new set for this name.
-        if (cacheEntry == null || !cacheEntry.isValidNameserver()) {
-          requestNewActives(handler);
-          // Cancel the task now. 
-          // When the new actives are received, a new task in place of this task will be rescheduled.
-          throw new CancelExecutorTaskException();
-        }
-        nameServerID = selectNS(cacheEntry);
       }
 
       sendToNS(nameServerID);
@@ -154,27 +154,7 @@ public class SendUpdatesTask extends TimerTask {
     return false;
 
   }
-
-  private void requestNewActives(ClientRequestHandlerInterface handler) {
-    // remove update info from CCP
-    @SuppressWarnings("unchecked")
-    UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);
-    if (info != null) {   // probably NS sent response
-      SendUpdatesTask newTask = new SendUpdatesTask(ccpReqID, handler, updatePacket, null);
-      PendingTasks.addToPendingRequests(info, newTask, handler.getParameters().getQueryTimeout(), handler);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().fine("Created a request actives task. " + info.getNumLookupActives());
-      }
-
-    }
-  }
-
-  private String selectNS(CacheEntry<String> cacheEntry) {
-    String nameServerID;
-    return handler.getGnsNodeConfig().getClosestServer(cacheEntry.getActiveNameServers(),
-              activesQueried);
-  }
-
+  
   private void sendToNS(String nameServerID) {
 
     if (nameServerID == null) {
@@ -187,25 +167,6 @@ public class SendUpdatesTask extends TimerTask {
     UpdateInfo<String> info = (UpdateInfo<String>) handler.getRequestInfo(ccpReqID);
     activesQueried.add(nameServerID);
     UpdatePacket<String> pkt = Update.makeNewUpdatePacket(ccpReqID, handler, updatePacket, nameServerID);
-    // FIXME we are creating a clone of the packet here? Why? Any other way to do this?
-    // create the packet that we'll send to the primary
-//    UpdatePacket<NodeIDType> pkt = new UpdatePacket<NodeIDType>(
-//            updatePacket.getSourceId(), // DON'T JUST USE -1!!!!!! THIS IS IMPORTANT!!!!
-//            updatePacket.getRequestID(),
-//            ccpReqID, // the id use by the CCP (that would be us here)
-//            name,
-//            updatePacket.getRecordKey(),
-//            updatePacket.getUpdateValue(),
-//            updatePacket.getOldValue(),
-//            updatePacket.getArgument(),
-//            updatePacket.getUserJSON(),
-//            updatePacket.getOperation(),
-//            handler.getNodeAddress(),
-//            nameServerID, updatePacket.getTTL(),
-//            //signature info
-//            updatePacket.getAccessor(),
-//            updatePacket.getSignature(),
-//            updatePacket.getMessage());
 
     if (handler.getParameters().isDebugMode()) {
       GNS.getLogger().fine("Sending Update to Node: " + nameServerID.toString());
@@ -236,8 +197,5 @@ public class SendUpdatesTask extends TimerTask {
       GNS.getLogger().fine("Send update to: " + nameServerID.toString() + " Name:" + name + " Id:" + ccpReqID
               + " Time:" + System.currentTimeMillis() + " --> " + pkt.toString());
     }
-//    } catch (JSONException e) {
-//      e.printStackTrace();
-//    }
   }
 }

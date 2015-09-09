@@ -55,6 +55,7 @@ public class PendingTasks {
    * @param requestInfo Information for this request stored at LNS.
    * @param task TimerTask to be executed once actives are received. Request represented in form of TimerTask
    * @param period Frequency at which TimerTask is repeated
+   * @param handler
    */
   public static void addToPendingRequests(RequestInfo requestInfo, TimerTask task, int period, ClientRequestHandlerInterface handler) {
     if (requestInfo != null && requestInfo.setLookupActives()) {
@@ -84,51 +85,11 @@ public class PendingTasks {
   }
 
   /**
-   * Received reply from primary with current actives, update the cache. If non-null set of actives received,
-   * execute all pending request. Otherwise, send error messages for all requests.
-   *
-   * @throws org.json.JSONException
-   */
-  public static void handleActivesRequestReply(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    RequestActivesPacket<String> requestActivesPacket = new RequestActivesPacket<String>(json, handler.getGnsNodeConfig());
-    if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Recvd request actives packet: " + requestActivesPacket
-              + " name\t" + requestActivesPacket.getName());
-    }
-    if (requestActivesPacket.getActiveNameServers() == null
-            || requestActivesPacket.getActiveNameServers().size() == 0) {
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Null set of actives received for name " + requestActivesPacket.getName()
-                + " sending error");
-      }
-      sendErrorMsgForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(),
-              //LNSEventCode.RC_NO_RECORD_ERROR, 
-              handler);
-      return;
-    }
-
-    if (handler.containsCacheEntry(requestActivesPacket.getName())) {
-      handler.updateCacheEntry(requestActivesPacket);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Updating cache Name:"
-                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
-      }
-    } else {
-      handler.addCacheEntry(requestActivesPacket);
-      if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("%%%%%%%%%%%%%%%%%% Adding to cache Name:"
-                + requestActivesPacket.getName() + " Actives: " + requestActivesPacket.getActiveNameServers());
-      }
-    }
-
-    runPendingRequestsForName(requestActivesPacket.getName(), requestActivesPacket.getLnsRequestID(), handler);
-
-  }
-
-  /**
    * After the set of active name servers is successfully received, execute all its pending requests.
    *
+   * @param name
    * @param requestID request ID of the <code>RequestActivesPacket</code>
+   * @param handler
    */
   public static void runPendingRequestsForName(String name, int requestID, ClientRequestHandlerInterface handler) {
     ArrayList<PendingTask> runTasks = removeAllRequestsFromQueue(name, requestID);
@@ -159,7 +120,9 @@ public class PendingTasks {
   /**
    * If the set of active name servers is null, send error messages for all requests.
    *
+   * @param name
    * @param requestID request ID of the <code>RequestActivesPacket</code>
+   * @param handler
    */
   public static void sendErrorMsgForName(String name, int requestID, 
           //LNSEventCode eventCode, 
@@ -209,6 +172,8 @@ public class PendingTasks {
 
   /**
    * Checks whether reply for this request ID is received
+   * @param requestID
+   * @return 
    */
   public static synchronized boolean isReplyReceived(int requestID) {
     return !requestActivesOngoing.contains(requestID);

@@ -26,13 +26,13 @@ import java.util.TimerTask;
  * Sends three types of messages (with retries): AddRecordPacket, RemoveRecordPacket, and
  * UpdateRecordPacket to replica controllers. These messages are sent one by one to all
  * replica controllers in order of their distance until
- * (1) local name server receives a response from one of the primary replicas.
- * (2) no response is received until {@code maxQueryWaitTime}. In this case, an error response is sent to client.
+ * (1) CPP receives a response from one of the primary replicas.
+ * (2) no response is received until {@code maxQueryWaitTime}.
+ * In this case, an error response is sent to client.
  *
  * User: abhigyan
  * Date: 8/9/13
  * Time: 4:59 PM
- * @param <NodeIDType>
  */
 public class SendAddRemoveTask extends TimerTask {
 
@@ -44,6 +44,14 @@ public class SendAddRemoveTask extends TimerTask {
   private final long requestRecvdTime;
   private final ClientRequestHandlerInterface handler;
 
+  /**
+   *
+   * @param lnsRequestID
+   * @param handler
+   * @param packet
+   * @param name
+   * @param requestRecvdTime
+   */
   public SendAddRemoveTask(int lnsRequestID, ClientRequestHandlerInterface handler, BasicPacket packet, String name, long requestRecvdTime) {
     this.name = name;
     this.handler = handler;
@@ -112,9 +120,6 @@ public class SendAddRemoveTask extends TimerTask {
 
       updateInfo.setSuccess(false);
       updateInfo.setFinishTime();
-      //updateInfo.addEventCode(LNSEventCode.MAX_WAIT_ERROR);
-//      String updateStats = updateInfo.getLogString();
-//      GNS.getStatLogger().info(updateStats);
 
       return true;
     }
@@ -183,6 +188,8 @@ public class SendAddRemoveTask extends TimerTask {
   }
 
   /**
+   * Returns the name.
+   * 
    * @return the name
    */
   public String getName() {
@@ -190,6 +197,8 @@ public class SendAddRemoveTask extends TimerTask {
   }
 
   /**
+   * Returns the packet.
+   * 
    * @return the packet
    */
   public BasicPacket getPacket() {
@@ -197,6 +206,8 @@ public class SendAddRemoveTask extends TimerTask {
   }
 
   /**
+   * Returns the request id.
+   * 
    * @return the lnsRequestID
    */
   public int getLnsRequestID() {
@@ -204,6 +215,8 @@ public class SendAddRemoveTask extends TimerTask {
   }
 
   /**
+   * Returns the timeout count.
+   * 
    * @return the timeoutCount
    */
   public int getTimeoutCount() {
@@ -211,6 +224,8 @@ public class SendAddRemoveTask extends TimerTask {
   }
 
   /**
+   * Returns the received time.
+   * 
    * @return the requestRecvdTime
    */
   public long getRequestRecvdTime() {

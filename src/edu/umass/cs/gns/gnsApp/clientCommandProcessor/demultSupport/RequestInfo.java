@@ -15,15 +15,16 @@ import org.json.JSONObject;
  */
 public abstract class RequestInfo {
 
+  /** The name. */
   protected String name;
 
-  /** Unique request ID assigned to this request by the local name server */
+  /** Unique request ID assigned to this request by the local name server. */
   protected int ccpReqID;
 
-  /** Time that CCP started processing this request */
+  /** Time that CCP started processing this request. */
   protected long startTime;
   
-  /** Time that CCP completed processing this request */
+  /** Time that CCP completed processing this request. */
   protected long finishTime =  -1;
 
   /** True if CCP is requesting current set of active replicas for this request. False, otherwise */
@@ -38,6 +39,7 @@ public abstract class RequestInfo {
    * Fields only for collecting statistics for a request and write log entries
    ***********/
 
+  /** The request type */
   protected Packet.PacketType requestType;
 
   /** Whether requests is finally successful or not. */
@@ -53,18 +55,33 @@ public abstract class RequestInfo {
 
   // methods that are implemented
 
+  /**
+   * Returns the name. 
+   * 
+   * @return the name
+   */
+  
   public synchronized String getName() {
     return name;
   }
 
+  /**
+   * Returns the CCP request id.
+   * 
+   * @return the CCP request id
+   */
   public synchronized int getCCPReqID() {
     return ccpReqID;
   }
 
+  /**
+   * Returns the start time.
+   * 
+   * @return returns the start time (ms)
+   */
   public synchronized long getStartTime() {
     return startTime;
   }
-
 
   /** 
    * Time duration for which the request was under processing at the client command processor.
@@ -74,29 +91,54 @@ public abstract class RequestInfo {
     return finishTime - startTime;
   }
 
+  /**
+   * Returns the finish time.
+   * 
+   * @return returns the finish time (ms)
+   */
   public synchronized long getFinishTime() {
     return finishTime;
   }
 
+  /**
+   * Sets the finish time (in milliseconds).
+   */
   public synchronized void setFinishTime() {
     this.finishTime = System.currentTimeMillis();
   }
 
+  /**
+   * Returns the success of the request.
+   * 
+   * @return true or false
+   */
   public synchronized boolean isSuccess() {
     return success;
   }
 
+  /**
+   * Sets the success of the request.
+   * 
+   * @param success
+   */
   public synchronized void setSuccess(boolean success) {
     this.success = success;
   }
 
+  /**
+   * Returns true if actives are currently being requested. Otherwise false.
+   * @return true or false
+   */
   public synchronized boolean isLookupActives() {
     return lookupActives;
   }
 
   /** 
-   * Returns true if actives are currently not being requested currently. Otherwise false.
-   * @return 
+   * Set if actives are currently being requested.
+   * Returns false if they are already being requested
+   * true if not.
+   * 
+   * @return true if it is newly set or false if they are already
    */
   public synchronized boolean setLookupActives() {
     if (lookupActives) {
@@ -108,12 +150,19 @@ public abstract class RequestInfo {
     }
   }
 
-  /** After active replicas are received for this request, reset the lookup actives variables */
+  /** 
+   * After active replicas are received for this request, reset the lookup actives variables.
+   */
   public synchronized void unsetLookupActives() {
     assert lookupActives;
     lookupActives = false;
   }
 
+  /**
+   * Returns the cumulative number of actives lookups.
+   * 
+   * @return the number of actives lookups
+   */
   public synchronized int getNumLookupActives() {
     return numLookupActives;
   }

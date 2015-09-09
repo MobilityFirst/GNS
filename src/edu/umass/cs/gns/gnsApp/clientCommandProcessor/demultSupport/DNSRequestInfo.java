@@ -20,43 +20,50 @@ import org.json.JSONObject;
  * Extends the <code>RequestInfo</code> class.
  *
  * @author abhigyan
- *************************************************************/
-public class DNSRequestInfo<NodeIDType> extends RequestInfo{
+ * @param <NodeIDType>
+ ************************************************************
+ */
+public class DNSRequestInfo<NodeIDType> extends RequestInfo {
 
-  private DNSPacket<NodeIDType> incomingPacket;
+  private final DNSPacket<NodeIDType> incomingPacket;
 
   private int nameserverID;
 
-  private boolean cacheHit = false;
-  
-  private Stringifiable<NodeIDType> unstringer;
+  private final Stringifiable<NodeIDType> unstringer;
 
-  /**************************************************************
-   * Constructs a QueryInfo object with the following parameters
+  /**
+   * Constructs a DNSRequestInfo object with the following parameters
+   *
    * @param lnsReqId Query id
    * @param name Host/Domain name
    * @param nameserverID Response name server ID
    * @param incomingPacket
    * @param unstringer
-   **************************************************************/
-  public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket<NodeIDType> incomingPacket, 
+   */
+  public DNSRequestInfo(int lnsReqId, String name, int nameserverID, DNSPacket<NodeIDType> incomingPacket,
           Stringifiable<NodeIDType> unstringer) {
     this.requestType = Packet.PacketType.DNS;
     this.ccpReqID = lnsReqId;
     this.name = name;
     this.startTime = System.currentTimeMillis();
-
     this.incomingPacket = incomingPacket;
     this.numLookupActives = 0;
     this.nameserverID = nameserverID;
     this.unstringer = unstringer;
   }
 
-  public synchronized void setNameserverID(int nameserverID1) {
-    nameserverID = nameserverID1;
+  /**
+   * Set the nameserverID.
+   *
+   * @param nameserverID
+   */
+  public synchronized void setNameserverID(int nameserverID) {
+    this.nameserverID = nameserverID;
   }
 
   /**
+   * Return the incoming packet.
+   *
    * @return the incomingPacket
    */
   public synchronized DNSPacket<NodeIDType> getIncomingPacket() {
@@ -74,13 +81,5 @@ public class DNSRequestInfo<NodeIDType> extends RequestInfo{
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);
     }
     return null;
-  }
-
-  public synchronized boolean isCacheHit() {
-    return cacheHit;
-  }
-
-  public synchronized void setCacheHit(boolean cacheHit) {
-    this.cacheHit = cacheHit;
   }
 }

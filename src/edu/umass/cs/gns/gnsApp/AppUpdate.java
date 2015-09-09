@@ -139,7 +139,6 @@ public class AppUpdate {
           }
           if (!doNotReplyToClient) {
             app.getClientCommandProcessor().injectPacketIntoCCPQueue(failPacket.toJSONObject());
-            //app.getMessenger().sendToAddress(updatePacket.getCppAddress(), failPacket.toJSONObject());
           }
         }
 

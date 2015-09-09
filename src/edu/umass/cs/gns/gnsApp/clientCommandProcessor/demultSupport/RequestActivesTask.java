@@ -19,7 +19,6 @@ import java.util.TimerTask;
  * (2) no response is received until max wait time. in this case, we send error messages for all pending requests
  * for this name.
  *
- * @param <NodeIDType>
  * @see edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.PendingTasks
  * @see edu.umass.cs.gns.gnsApp.packet.RequestActivesPacket
  *
@@ -38,6 +37,12 @@ public class RequestActivesTask extends TimerTask {
 
   private long startTime;
 
+  /**
+   *
+   * @param name
+   * @param requestID
+   * @param handler
+   */
   public RequestActivesTask(String name, int requestID, ClientRequestHandlerInterface handler) {
     this.name = name;
     this.nameServersQueried = new HashSet<String>();

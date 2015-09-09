@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Class contains a few static methods for handling update requests from clients as well responses to updates from
- * name servers. Most functionality for handling updates from clients is implemented in
+ * name servers.
+ * Most functionality for handling updates from clients is implemented in
  * <code>SendUpdatesTask</code>. So also refer to its documentation.
  * <p>
  * An update request is sent to an active replica of a name.
@@ -125,17 +126,11 @@ public class Update {
         }
         return;
       }
-      // update the cache BEFORE we send back the confirmation
-      handler.updateCacheEntry(confirmPkt, updateInfo.getName(), null);
       // send the confirmation back to the originator of the update
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
       updateInfo.setSuccess(confirmPkt.isSuccess());
       updateInfo.setFinishTime();
-      //updateInfo.addEventCode(LNSEventCode.SUCCESS);
-      // instrumentation?
-//      if (r.nextDouble() <= handler.getParameters().getOutputSampleRate()) {
-//        GNS.getStatLogger().info(updateInfo.getLogString());
-//      }
+      // FIXME: Verify that this branch is never being called.
     } else if (confirmPkt.getResponseCode().equals(NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER)) {
       // NOTE: we are NOT removing request info as processing for this request is still ongoing
       @SuppressWarnings("unchecked")
@@ -146,7 +141,6 @@ public class Update {
         }
         return;
       }
-      //updateInfo.addEventCode(LNSEventCode.INVALID_ACTIVE_ERROR);
       // if error type is invalid active error, we fetch a fresh set of actives from replica controllers and try again
       handleInvalidActiveError(updateInfo, handler);
     } else { // In all other types of errors, we immediately send response to client.
@@ -162,10 +156,6 @@ public class Update {
       Update.sendConfirmUpdatePacketBackToSource(confirmPkt, handler);
       updateInfo.setSuccess(confirmPkt.isSuccess());
       updateInfo.setFinishTime();
-      //updateInfo.addEventCode(LNSEventCode.OTHER_ERROR);
-//      if (r.nextDouble() <= handler.getParameters().getOutputSampleRate()) {
-//        GNS.getStatLogger().info(updateInfo.getLogString());
-//      }
     }
   }
 
@@ -185,7 +175,7 @@ public class Update {
     UpdatePacket<String> updatePacket = (UpdatePacket<String>) updateInfo.getUpdatePacket();
 
     // clear out current cache
-    handler.invalidateActiveNameServer(updateInfo.getName());
+    //handler.invalidateActiveNameServer(updateInfo.getName());
     // create objects that must be passed to PendingTasks
     SendUpdatesTask task = new SendUpdatesTask(updateInfo.getCCPReqID(), handler, updatePacket, null);
 //    ConfirmUpdatePacket<String> failPacket = ConfirmUpdatePacket.createFailPacket(updatePacket, NSResponseCode.ERROR);

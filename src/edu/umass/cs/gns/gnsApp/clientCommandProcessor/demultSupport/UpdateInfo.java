@@ -17,6 +17,7 @@ import org.json.JSONObject;
  * server. Extends {@link edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.RequestInfo}.
  *
  * @author abhigyan
+ * @param <NodeIDType>
  */
 public class UpdateInfo<NodeIDType> extends RequestInfo {
 
@@ -29,6 +30,14 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
   
   private final ClientRequestHandlerInterface handler;
 
+  /**
+   *
+   * @param lnsRequestID
+   * @param name
+   * @param nameserverId
+   * @param packet
+   * @param handler
+   */
   public UpdateInfo(int lnsRequestID, String name, NodeIDType nameserverId, BasicPacket packet, ClientRequestHandlerInterface handler) {
     this.ccpReqID = lnsRequestID;
     this.name = name;
@@ -40,6 +49,11 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
     this.handler = handler;
   }
 
+  /**
+   * Set the name server id.
+   * 
+   * @param nameserverID
+   */
   public synchronized void setNameserverID(NodeIDType nameserverID) {
     this.nameserverID = nameserverID;
   }
@@ -49,6 +63,12 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
     return getErrorMessage(NSResponseCode.FAIL_ACTIVE_NAMESERVER);
   }
   
+  /**
+   * Return the error packet.
+   * 
+   * @param errorCode
+   * @return a JSON error packet
+   */
   @SuppressWarnings("unchecked")
   public JSONObject getErrorMessage(NSResponseCode errorCode) {
     ConfirmUpdatePacket<String> confirm = null;
@@ -72,6 +92,8 @@ public class UpdateInfo<NodeIDType> extends RequestInfo {
   }
 
   /**
+   * Return the update packet.
+   * 
    * @return the basicPacket
    */
   public synchronized BasicPacket getUpdatePacket() {
