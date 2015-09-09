@@ -12,7 +12,7 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

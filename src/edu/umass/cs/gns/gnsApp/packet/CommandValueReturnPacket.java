@@ -3,8 +3,8 @@ package edu.umass.cs.gns.gnsApp.packet;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import edu.umass.cs.gns.gnsApp.packet.Packet.PacketType;
-import edu.umass.cs.gns.util.NSResponseCode;
 
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import org.json.JSONException;
 import org.json.JSONObject;
 

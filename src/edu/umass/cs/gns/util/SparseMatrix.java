@@ -39,6 +39,12 @@ public class SparseMatrix<U, V, T> {
     this.defaultValue = defaultValue;
   }
 
+  /**
+   *
+   * @param i
+   * @param j
+   * @param t
+   */
   public void put(U i, V j, T t) {
     if (rows.get(i) == null) {
       rows.put(i, new HashMap<V, T>());
@@ -46,6 +52,12 @@ public class SparseMatrix<U, V, T> {
     rows.get(i).put(j, t);
   }
 
+  /**
+   *
+   * @param i
+   * @param j
+   * @return
+   */
   public T get(U i, V j) {
     if (rows.get(i) == null) {
       return this.defaultValue;

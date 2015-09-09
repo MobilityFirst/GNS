@@ -1,8 +1,17 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.util;
 
 /**
- * Created by abhigyan on 7/18/14.
+ * Provides a means for a graceful shutdown.
  */
 public interface Shutdownable {
+
+  /**
+   * Handle shutdown.
+   */
   public void shutdown();
 }

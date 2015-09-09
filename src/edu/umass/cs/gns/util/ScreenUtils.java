@@ -16,6 +16,10 @@ import javax.swing.JFrame;
  */
 public class ScreenUtils {
     
+  /**
+   *
+   * @param frame
+   */
   public static void putOnWidestScreen(JFrame frame) {
     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
     GraphicsDevice[] gs = ge.getScreenDevices();
@@ -45,6 +49,11 @@ public class ScreenUtils {
     }
   }
 
+  /**
+   *
+   * @param screen
+   * @param frame
+   */
   public static void showOnScreen(int screen, JFrame frame) {
     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
     GraphicsDevice[] gs = ge.getScreenDevices();
@@ -57,7 +66,10 @@ public class ScreenUtils {
     }
   }
 
-   public static void showScreenDevices() {
+  /**
+   *
+   */
+  public static void showScreenDevices() {
     GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
     GraphicsDevice[] gs = ge.getScreenDevices();
     for (int j = 0; j < gs.length; j++) {

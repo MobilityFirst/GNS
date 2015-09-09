@@ -11,7 +11,6 @@ import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.Packet;
 import edu.umass.cs.gns.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gns.util.NSResponseCode;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
 

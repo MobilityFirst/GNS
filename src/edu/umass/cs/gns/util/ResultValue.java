@@ -13,7 +13,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
- * This class is one  representation used to transmit the value in the key / value store from
+ * This class is one representation used to transmit the value in the key / value store from
  * the client to the server. 
  * 
  * This extends ArrayList (like a JSONArray), but we made a class for this (as opposed to just using a
@@ -34,9 +34,16 @@ import org.json.JSONException;
  */
 public class ResultValue extends ArrayList<Object> {
 
+  /**
+   *
+   */
   public ResultValue() {
   }
 
+  /**
+   *
+   * @param clctn
+   */
   public ResultValue(Collection<? extends Object> clctn) {
     super(clctn);
   }
@@ -45,6 +52,7 @@ public class ResultValue extends ArrayList<Object> {
    * String should be a string representation of a JSON Array, that is, [thing, thing, thing... thing]
    * 
    * @param string 
+   * @throws org.json.JSONException 
    */
   public ResultValue(String string) throws JSONException {
     super(JSONUtils.JSONArrayToArrayList(new JSONArray(string)));

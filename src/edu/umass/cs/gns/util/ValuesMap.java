@@ -5,8 +5,6 @@
  */
 package edu.umass.cs.gns.util;
 
-// NEW
-//
 import edu.umass.cs.gns.main.GNS;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -229,7 +227,14 @@ public class ValuesMap extends JSONObject {
   }
 
   // Test Code
-  @SuppressWarnings("unchecked")
+
+  /**
+   * Main routine. For testing.
+   * 
+   * @param args
+   * @throws JSONException
+   */
+    @SuppressWarnings("unchecked")
   public static void main(String[] args) throws JSONException {
     JSONObject json = new JSONObject();
     json.put("name", "frank");

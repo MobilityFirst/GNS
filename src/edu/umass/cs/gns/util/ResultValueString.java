@@ -18,11 +18,19 @@ import java.util.Collection;
  */
 public class ResultValueString extends ArrayList<String> {
 
+  /**
+   * Create an empty ResultValueString instance.
+   */
   public ResultValueString() {
   }
 
-  public ResultValueString(Collection<? extends String> clctn) {
-    super(clctn);
+  /**
+   * Create a ResultValueString instance from the contents of the collection.
+   * 
+   * @param collection
+   */
+  public ResultValueString(Collection<? extends String> collection) {
+    super(collection);
   }
   
 }

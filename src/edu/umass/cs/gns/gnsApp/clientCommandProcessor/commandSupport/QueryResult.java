@@ -9,8 +9,8 @@ package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
-import edu.umass.cs.gns.util.NSResponseCode;
 
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import java.io.Serializable;
 import java.util.Iterator;
 

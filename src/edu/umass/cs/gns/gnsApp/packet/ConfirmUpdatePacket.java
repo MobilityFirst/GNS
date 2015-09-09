@@ -6,7 +6,7 @@
 package edu.umass.cs.gns.gnsApp.packet;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.nio.Stringifiable;
 import org.json.JSONException;
 import org.json.JSONObject;

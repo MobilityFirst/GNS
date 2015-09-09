@@ -12,7 +12,7 @@ import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 
 import org.json.JSONException;

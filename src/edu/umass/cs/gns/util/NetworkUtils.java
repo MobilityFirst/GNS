@@ -2,8 +2,6 @@
  * Copyright (C) 2015
  * University of Massachusetts
  * All Rights Reserved 
- *
- * Initial developer(s): Westy.
  */
 package edu.umass.cs.gns.util;
 
@@ -42,6 +40,7 @@ public class NetworkUtils {
    * calling and returning the result of JDK method <code>InetAddress.getLocalHost</code>.
    * <p/>
    *
+   * @return 
    * @throws UnknownHostException If the LAN address of the machine cannot be found.
    */
   public static InetAddress getLocalHostLANAddress() throws UnknownHostException {
@@ -122,10 +121,20 @@ public class NetworkUtils {
     return m2.matches();
   }
 
+  /**
+   *
+   * @param ipAddress
+   * @return
+   */
   public static boolean isIp4Address(String ipAddress) {
     return VALID_IPV4_PATTERN.matcher(ipAddress).matches();
   }
 
+  /**
+   *
+   * @param ipAddress
+   * @return
+   */
   public static boolean isIp6Address(String ipAddress) {
     return VALID_IPV6_PATTERN.matcher(ipAddress).matches();
   }

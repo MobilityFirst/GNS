@@ -15,7 +15,7 @@ import edu.umass.cs.gns.gnsApp.packet.BasicPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import static edu.umass.cs.gns.gnsApp.packet.Packet.PacketType.*;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.util.Util;
 import org.json.JSONException;
 import org.json.JSONObject;

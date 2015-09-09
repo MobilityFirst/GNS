@@ -23,11 +23,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 
+/**
+ * Provides encoding and decoding of URI strings.
+ * 
+ */
 public class URIEncoderDecoder {
 
-    static final String digits = "0123456789ABCDEF"; //$NON-NLS-1$
+    static final String digits = "0123456789ABCDEF";
 
-    static final String encoding = "UTF8"; //$NON-NLS-1$
+    static final String encoding = "UTF8";
 
     /**
      * Validate a string by checking if it contains any characters other than:
@@ -102,6 +106,7 @@ public class URIEncoderDecoder {
      * @param legal java.lang.String the characters allowed to be preserved in the
      *              string s
      * @return java.lang.String the converted string
+   * @throws java.io.UnsupportedEncodingException
      */
     public static String quoteIllegal(String s, String legal)
             throws UnsupportedEncodingException {
@@ -173,6 +178,7 @@ public class URIEncoderDecoder {
      *
      * @param s java.lang.String The encoded string.
      * @return java.lang.String The decoded version.
+   * @throws java.io.UnsupportedEncodingException
      */
     public static String decode(String s) throws UnsupportedEncodingException {
 

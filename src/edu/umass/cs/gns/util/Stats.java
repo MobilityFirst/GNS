@@ -18,15 +18,27 @@ public class Stats {
   ArrayList<Double> data;
   double size;
 
+  /**
+   *
+   * @param data
+   */
   public Stats(ArrayList<Double> data) {
     this.data = data;
     size = data.size();
   }
   
+  /**
+   *
+   * @return
+   */
   public int getN() {
     return (int) size;
   }
 
+  /**
+   *
+   * @return
+   */
   public double getMean() {
     double sum = 0.0;
     for (double a : data) {
@@ -35,6 +47,10 @@ public class Stats {
     return sum / size;
   }
 
+  /**
+   *
+   * @return
+   */
   public double getVariance() {
     double mean = getMean();
     double temp = 0;
@@ -44,10 +60,18 @@ public class Stats {
     return temp / size;
   }
 
+  /**
+   *
+   * @return
+   */
   public double getStdDev() {
     return Math.sqrt(getVariance());
   }
 
+  /**
+   *
+   * @return
+   */
   public double median() {
     ArrayList<Double> copy = new ArrayList<Double>(data);
     Collections.sort(data);

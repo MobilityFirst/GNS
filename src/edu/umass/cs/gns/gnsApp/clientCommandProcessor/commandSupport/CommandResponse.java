@@ -1,6 +1,6 @@
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 
 /**
  * Encapsulates the response values and instrumentation that we pass back to the client.

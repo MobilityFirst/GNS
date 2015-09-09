@@ -52,6 +52,9 @@ public class MovingAverage {
    * ***********************************************************
    * Constructs a new MovingAverage from a JSON Array with integers
    ***********************************************************
+   * @param json
+   * @param windowSize
+   * @throws org.json.JSONException
    */
   public MovingAverage(JSONArray json, int windowSize) throws JSONException {
     this.window = new LinkedList<Integer>(JSONUtils.JSONArrayToArrayListInteger(json));
@@ -62,6 +65,11 @@ public class MovingAverage {
     }
   }
 
+  /**
+   *
+   * @param values
+   * @param windowSize
+   */
   public MovingAverage(ArrayList<Integer> values, int windowSize) {
     this.window = new LinkedList<Integer>(values);
     this.WINDOW_SIZE = windowSize;
@@ -71,14 +79,26 @@ public class MovingAverage {
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public double getSum() {
     return sum;
   }
 
+  /**
+   *
+   * @return
+   */
   public JSONArray toJSONArray() {
     return new JSONArray(window);
   }
 
+  /**
+   *
+   * @return
+   */
   public ArrayList<Integer> toArrayList() {
     return new ArrayList<Integer>(this.window);
   }

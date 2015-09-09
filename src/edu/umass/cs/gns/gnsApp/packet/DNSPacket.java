@@ -10,7 +10,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.util.ResultValue;
 import edu.umass.cs.gns.util.ValuesMap;
 import edu.umass.cs.nio.Stringifiable;

@@ -30,9 +30,24 @@ import org.apache.commons.cli.ParseException;
  */
 public class ParametersAndOptions {
 
+  /**
+   * The config file option.
+   */
   public static final String CONFIG_FILE = "configFile";
+
+  /**
+   * The help file option.
+   */
   public static final String HELP = "help";
+
+  /**
+   * The header for printing help.
+   */
   public static final String HELP_HEADER = "";
+
+  /**
+   * The footer for printing help.
+   */
   public static final String HELP_FOOTER = "";
 
   /**
@@ -100,6 +115,14 @@ public class ParametersAndOptions {
     return allValues;
   }
 
+  /**
+   * Returns true if the option is true. Looks
+   * for strings like true, and not false.
+   * 
+   * @param key
+   * @param options
+   * @return
+   */
   public static boolean isOptionTrue(String key, Map<String, String> options) {
     String value;
     return (value = options.get(key)) != null
@@ -109,6 +132,12 @@ public class ParametersAndOptions {
             || "TRUE".equals(value));
   }
 
+  /**
+   * Prints the usage string.
+   * 
+   * @param className
+   * @param commandLineOptions
+   */
   public static void printUsage(String className, Options commandLineOptions) {
     HelpFormatter helpFormatter = new HelpFormatter();
     helpFormatter.setWidth(135);
@@ -116,6 +145,11 @@ public class ParametersAndOptions {
             HELP_FOOTER);
   }
   
+  /**
+   * Shows all the options on the console.
+   * 
+   * @param options
+   */
   public static void printOptions(Map<String, String> options) {
     StringBuilder result = new StringBuilder();
     TreeMap<String, String> tree = new TreeMap<String, String>(options);
@@ -128,6 +162,11 @@ public class ParametersAndOptions {
     System.out.print(result.toString());
   }
 
+  /**
+   * Returns the complete set of options.
+   * 
+   * @return the options
+   */
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
@@ -140,6 +179,12 @@ public class ParametersAndOptions {
     return commandLineOptions;
   }
 
+  /**
+   * The main routine. For testing.
+   * 
+   * @param args
+   * @throws IOException
+   */
   public static void main(String[] args) throws IOException {
     args = new String[]{"-configFile", GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/ns.properties"};
     Map<String, String> options

@@ -1,13 +1,15 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
  */
 package edu.umass.cs.gns.util;
 
 import edu.umass.cs.gns.main.GNS;
 
 /**
- *
+ * Sleep without worries.
+ * 
  * @author westy
  */
 public class ThreadUtils {

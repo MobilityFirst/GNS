@@ -16,6 +16,12 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONString;
 
+/**
+ * Generates canonical JSON strings. 
+ * Identical to the standard code to render a JSON object,
+ * except it forces the keys for maps to be listed in sorted order.
+ * @author westy
+ */
 public class CanonicalJSON {
 
   /**

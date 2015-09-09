@@ -1,16 +1,20 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ */
 package edu.umass.cs.gns.util;
 
-/**
- * A one line formatter for the logging utility.
- * 
- * @author westy
- */
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
 
+/**
+ * Alter the default formatter to be less verbose.
+ * 
+ */
 public class LogFormatter extends Formatter {
 
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");

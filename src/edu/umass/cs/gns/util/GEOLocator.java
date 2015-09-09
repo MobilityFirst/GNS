@@ -1,6 +1,7 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
  */
 package edu.umass.cs.gns.util;
 
@@ -47,6 +48,11 @@ public class GEOLocator {
    }
    */
 
+  /**
+   *
+   * @param ipAddress
+   * @return
+   */
   public static Point2D lookupIPLocation(String ipAddress) {
     String query = IPServiceURL + Defs.QUERYPREFIX + "ip" + Defs.VALSEP + ipAddress;
     JSONObject json = sendGetCommandReadJSONObject(query);
@@ -67,6 +73,12 @@ public class GEOLocator {
   
   //  http://maps.googleapis.com/maps/api/geocode/json?address=Palo+Alto,+CA&sensor=false
   
+  /**
+   *
+   * @param address
+   * @return
+   */
+    
   public static Point2D lookupCityLocation(String address) {
     String query = cityServiceURL + Defs.QUERYPREFIX + "address" + Defs.VALSEP 
             + address.replace(" ", "+") + Defs.KEYSEP + "sensor=false";
@@ -136,8 +148,10 @@ public class GEOLocator {
     return null;
   }
   
-  
-
+  /**
+   *
+   * @param args
+   */
   public static void main(String[] args) {
     System.out.println(lookupIPLocation("74.125.45.100"));
     System.out.println(lookupIPLocation("50.138.213.8"));

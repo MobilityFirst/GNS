@@ -16,7 +16,7 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket;
 import edu.umass.cs.gns.util.Base64;
 import edu.umass.cs.gns.util.ValuesMap;

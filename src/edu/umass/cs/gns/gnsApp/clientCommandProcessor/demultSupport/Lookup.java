@@ -29,7 +29,7 @@ import java.util.Random;
  * request for a name at this local name server and therefore no cache entry would exist for it. (2) the cache entry
  * may have been evicted due to replacement policy. (3) the set of active replicas changes over time, therefore
  * the cached set of active replicas may not be valid; A local name server learns this upon sending a request to
- * an invalid active replica, which generates a pre-defined error code in {@link edu.umass.cs.gns.util.NSResponseCode}.
+ * an invalid active replica, which generates a pre-defined error code in {@link edu.umass.cs.gns.gnsApp.NSResponseCode}.
  * <p>
  * In all the above cases, a local name server obtains the set of active replicas for a name by requesting the (fixed)
  * replica controllers for that name. This functionality is implemented in {@link edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.RequestActivesTask}

@@ -1,6 +1,7 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
  */
 package edu.umass.cs.gns.util;
 
@@ -17,12 +18,27 @@ import java.util.logging.Logger;
  */
 public class Logging {
 
+  /**
+   * The default level for writing to the screen.
+   */
   public static Level DEFAULTCONSOLELEVEL = Level.INFO;
+
+  /**
+   * The default level for writing to a file.
+   */
   public static Level DEFAULTFILELEVEL = Level.FINE;
-  public static String DEFAULTLOGFILENAME = "log" + System.getProperty("file.separator") + "gnrs_log.xml";
+
+  /**
+   * The default file path for logging.
+   */
+  public static String DEFAULTLOGFILENAME = "log" + System.getProperty("file.separator") + "gns_log.xml";
   
   private static ConsoleHandler consoleHandler;
 
+  /**
+   *
+   * @return
+   */
   public static ConsoleHandler getConsoleHandler() {
     return consoleHandler;
   }

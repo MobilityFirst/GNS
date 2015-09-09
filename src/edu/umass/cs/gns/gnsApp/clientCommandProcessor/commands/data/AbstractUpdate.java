@@ -15,7 +15,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.util.ValuesMap;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;

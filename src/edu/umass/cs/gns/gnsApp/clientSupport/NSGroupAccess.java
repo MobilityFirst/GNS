@@ -5,7 +5,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.InternalFie
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.SelectHandler;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
-import edu.umass.cs.gns.util.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;

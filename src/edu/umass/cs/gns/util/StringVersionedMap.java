@@ -6,6 +6,8 @@ import java.util.HashMap;
 
 /**
 @author V. Arun
+ * @param <KeyType>
+ * @param <ValueType>
  */
 
 /* This class implements a specific kind of a trie. The
@@ -23,13 +25,23 @@ public class StringVersionedMap<KeyType,ValueType> {
 	private HashMap<String,ValueType> map=null;
 	private HashMap<KeyType,ArrayList<Integer>> keyVersions=null;
 	
-	public StringVersionedMap() {
+  /**
+   *
+   */
+  public StringVersionedMap() {
 		map = new HashMap<String,ValueType>();
 		keyVersions = new HashMap<KeyType,ArrayList<Integer>>();
 	}
 	
 	// Inserts [key = keyPrefix.toString()+version, value]
-	public synchronized void put(KeyType keyPrefix, int version, ValueType value) {
+
+  /**
+   *
+   * @param keyPrefix
+   * @param version
+   * @param value
+   */
+  	public synchronized void put(KeyType keyPrefix, int version, ValueType value) {
 		this.map.put(this.combineIDVersion(keyPrefix.toString(),version),value);
 		ArrayList<Integer> versions = this.keyVersions.get(keyPrefix);
 		if(versions==null) versions = new ArrayList<Integer>();
@@ -41,6 +53,13 @@ public class StringVersionedMap<KeyType,ValueType> {
 	 * If none is found, it will try to find an exact match for 
 	 * some [keyPrefix.toString(), value] entry.
 	 */
+
+  /**
+   *
+   * @param keyPrefix
+   * @return
+   */
+  
 	public synchronized ValueType match(KeyType keyPrefix) {
 		ValueType value = null;
 		ArrayList<Integer> versions = this.keyVersions.get(keyPrefix);
@@ -54,16 +73,35 @@ public class StringVersionedMap<KeyType,ValueType> {
 		if(value==null) value = this.map.get(keyPrefix.toString()); // Not sure if we should do this or not
 		return value;
 	}
-	public static String combineIDVersion(String id, int version) {
+
+  /**
+   *
+   * @param id
+   * @param version
+   * @return
+   */
+  public static String combineIDVersion(String id, int version) {
 		return id + StringVersionedMap.SEPARATOR + version;
 	}
-	public static String getIDNoVersion(String paxosID) {
+
+  /**
+   *
+   * @param paxosID
+   * @return
+   */
+  public static String getIDNoVersion(String paxosID) {
 		if(paxosID==null) return null;
 		String[] pieces = paxosID.split(":");
 		assert(pieces!=null && pieces.length==2);
 		return pieces[0];
 	}
-	public static int getVersion(String paxosID) {
+
+  /**
+   *
+   * @param paxosID
+   * @return
+   */
+  public static int getVersion(String paxosID) {
 		if(paxosID==null) return 0;
 		String[] pieces = paxosID.split(":");
 		assert(pieces!=null && pieces.length==2);
@@ -72,36 +110,85 @@ public class StringVersionedMap<KeyType,ValueType> {
 	/* Usual get with a String key. Called must know key or must
 	 * use the combineIDVersion method above.
 	 */
+
+  /**
+   *
+   * @param key
+   * @return
+   */
+  
 	public synchronized ValueType get(String key) {
 		return this.map.get(key);
 	}
 	
-	/************ Standard map methods below ***********************/
+	/************ Standard map methods below
+   * @return  ***********************/
 	public synchronized Collection<String> keySet() {
 		return this.map.keySet();
 	}
-	public synchronized Collection<KeyType> keyPrefixSet() {
+
+  /**
+   *
+   * @return
+   */
+  public synchronized Collection<KeyType> keyPrefixSet() {
 		return this.keyVersions.keySet();
 	}
-	public synchronized Collection<ValueType> values() {
+
+  /**
+   *
+   * @return
+   */
+  public synchronized Collection<ValueType> values() {
 		return this.map.values();
 	}
-	public synchronized boolean containsKey(String key) {
+
+  /**
+   *
+   * @param key
+   * @return
+   */
+  public synchronized boolean containsKey(String key) {
 		return this.map.containsKey(key);
 	}
-	public synchronized boolean containsValue(ValueType value) {
+
+  /**
+   *
+   * @param value
+   * @return
+   */
+  public synchronized boolean containsValue(ValueType value) {
 		return this.map.containsValue(value);
 	}
-	public synchronized int size() {
+
+  /**
+   *
+   * @return
+   */
+  public synchronized int size() {
 		return this.map.size();
 	}
-	public synchronized int numKeyPrefixes() {
+
+  /**
+   *
+   * @return
+   */
+  public synchronized int numKeyPrefixes() {
 		return this.keyVersions.size();
 	}
-	public synchronized boolean isEmpty() {
+
+  /**
+   *
+   * @return
+   */
+  public synchronized boolean isEmpty() {
 		return this.map.isEmpty();
 	}
-	public synchronized void clear() {
+
+  /**
+   *
+   */
+  public synchronized void clear() {
 		this.keyVersions.clear();
 		this.map.clear();
 	}

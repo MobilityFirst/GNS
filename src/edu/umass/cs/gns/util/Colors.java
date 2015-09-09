@@ -2,11 +2,10 @@ package edu.umass.cs.gns.util;
 
 import java.awt.Color;
 
-import java.lang.reflect.Field;
-
 /**
- * A crapload of colors for us to use
- * @author	Westy (westy@cs.umass.edu)
+ * A crapload of colors for us to use.
+ * 
+ * @author	Westy
  */
 public class Colors {
     public static Color GreenYellow = new Color(.678f, 1.000f, .184f);

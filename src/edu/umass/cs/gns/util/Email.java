@@ -15,28 +15,12 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
 
+/**
+ * Contains a few different methods to send email to the recipient.
+ * 
+ * @author westy
+ */
 public class Email {
-
-  /**
-   * Example Email application
-   *
-   * @author Westy
-   */
-  /**
-   * Usage: java Email [username] [text]
-   *
-   * @param args message
-   */
-  public static void main(String[] args) {
-    emailSSL("abcd", "abhigyan.sharma@gmail.com", "first message");
-//    if (args.length < 2) {
-//      System.out.println("Usage: Email [to] [message]");
-//      System.exit(-1);
-//    } else {
-//      boolean result = email("Testing Subject", args[0], args[1]);
-//      System.exit(result ? 0 : -1);
-//    }
-  }
 
   /**
    * Attempts using a few different methods to send email to the recipient.
@@ -44,7 +28,7 @@ public class Email {
    * @param subject
    * @param recipient
    * @param text
-   * @return
+   * @return true if successful
    */
   public static boolean email(String subject, String recipient, String text) {
     if (emailSSL(subject, recipient, text, true)) {
@@ -76,6 +60,11 @@ public class Email {
    props.setProperty("mail.password", "mypwd");
 
    */
+
+  /**
+   *
+   */
+  
   public static final String ACCOUNT_CONTACT_EMAIL = "admin@gns.name";
   private static final String password = "deadDOG8";
   private static final String smtpHost = "smtp.gmail.com";

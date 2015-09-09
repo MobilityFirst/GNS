@@ -1,6 +1,7 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
  */
 package edu.umass.cs.gns.util;
 
@@ -9,29 +10,26 @@ import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.main.GNS;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
- * @author westy
+ * Utilities to help convert to and from JSON.
  */
+// FIXME: Clean these up and remove redundant ones.
 public class JSONUtils {
 
   /**
+   * Converts a JSON array to an ArrayList of Objects.
    *
    * @param jsonArray
-   * @return
+   * @return an ArrayList of Objects
    * @throws JSONException
    */
   public static ArrayList<Object> JSONArrayToArrayList(JSONArray jsonArray) throws JSONException {
@@ -42,6 +40,13 @@ public class JSONUtils {
     return list;
   }
 
+  /**
+   * Converts a JSON array to an ArrayList of Strings.
+   *
+   * @param jsonArray
+   * @return an ArrayList of Strings
+   * @throws JSONException
+   */
   public static ArrayList<String> JSONArrayToArrayListString(JSONArray jsonArray) throws JSONException {
     ArrayList<String> list = new ArrayList<String>();
     for (int i = 0; i < jsonArray.length(); i++) {
@@ -50,6 +55,13 @@ public class JSONUtils {
     return list;
   }
 
+  /**
+   * Converts a JSON array to a {@link ResultValue}.
+   *
+   * @param jsonArray
+   * @return a ResultValue
+   * @throws JSONException
+   */
   public static ResultValue JSONArrayToResultValue(JSONArray jsonArray) throws JSONException {
     ResultValue list = new ResultValue();
     for (int i = 0; i < jsonArray.length(); i++) {
@@ -59,6 +71,13 @@ public class JSONUtils {
     return list;
   }
 
+  /**
+   * Converts a JSON array to a HashSet.
+   *
+   * @param jsonArray
+   * @return a HashSet
+   * @throws JSONException
+   */
   public static HashSet<String> JSONArrayToHashSet(JSONArray jsonArray) throws JSONException {
     HashSet<String> set = new HashSet<String>();
     for (int i = 0; i < jsonArray.length(); i++) {
@@ -67,6 +86,13 @@ public class JSONUtils {
     return set;
   }
 
+  /**
+   * Converts a JSON array to an ArrayList of Integers.
+   *
+   * @param jsonArray
+   * @return an ArrayList of Integers
+   * @throws JSONException
+   */
   public static ArrayList<Integer> JSONArrayToArrayListInteger(JSONArray jsonArray) throws JSONException {
     ArrayList<Integer> list = new ArrayList<Integer>();
     for (int i = 0; i < jsonArray.length(); i++) {
@@ -76,13 +102,11 @@ public class JSONUtils {
   }
 
   /**
-   * **********************************************************
-   * Converts a JSONArray to an ArrayList of Integers
+   * Converts a JSONArray to an immutable set of Integers.
    *
    * @param json JSONArray
-   * @return ArrayList with the content of JSONArray.
+   * @return ArrayList set of Integers
    * @throws JSONException
-   **********************************************************
    */
   public static ImmutableSet<Integer> JSONArrayToImmutableSetInteger(JSONArray json) throws JSONException {
     Set<Integer> set = new HashSet<Integer>();
@@ -100,13 +124,11 @@ public class JSONUtils {
   }
 
   /**
-   * **********************************************************
-   * Converts a JSONArray to an ArrayList of Integers
+   * Converts a JSONArray to Set of Integers.
    *
    * @param json JSONArray
-   * @return ArrayList with the content of JSONArray.
+   * @return Set with the contents of JSONArray.
    * @throws JSONException
-   **********************************************************
    */
   public static Set<Integer> JSONArrayToSetInteger(JSONArray json) throws JSONException {
     Set<Integer> set = new HashSet<Integer>();
@@ -123,10 +145,10 @@ public class JSONUtils {
   }
 
   /**
-   * Converts a JSONArray to an ArrayList of string addresses
+   * Converts a JSONArray to a set of Strings.
    *
    * @param json JSONArray
-   * @return ArrayList with the content of JSONArray.
+   * @return a set of strings
    * @throws JSONException
    */
   public static Set<String> JSONArrayToSetString(JSONArray json) throws JSONException {
@@ -144,7 +166,7 @@ public class JSONUtils {
   }
 
   /**
-   * Converts a JSONArray to an set of NodeIds
+   * Converts a JSONArray to an set of NodeIds.
    *
    * @param json JSONArray
    * @return ArrayList with the content of JSONArray.
@@ -162,6 +184,13 @@ public class JSONUtils {
     return set;
   }
 
+  /**
+   * Converts a JSONObject to a map of strings to {@link ResultValue}.
+   *
+   * @param json
+   * @return
+   * @throws JSONException
+   */
   public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
     Map<String, ResultValue> result = new HashMap<String, ResultValue>();
     Iterator<?> keyIter = json.keys();
@@ -173,6 +202,14 @@ public class JSONUtils {
   }
 
   // This code is an abomination...
+  /**
+   * Extracts the column field from the JSONObject.
+   *
+   * @param field
+   * @param jsonObject
+   * @return the value of the field
+   * @throws JSONException
+   */
   public static Object getObject(ColumnField field, JSONObject jsonObject) throws JSONException {
     if (jsonObject.has(field.getName())) {
       switch (field.type()) {
@@ -194,10 +231,6 @@ public class JSONUtils {
           return JSONUtils.JSONArrayToArrayListString(jsonObject.getJSONArray(field.getName()));
         case VALUES_MAP:
           return new ValuesMap(jsonObject.getJSONObject(field.getName()));
-//        case VOTES_MAP:
-//          return toIntegerMap(jsonObject.getJSONObject(field.getName()));
-//        case STATS_MAP:
-//          return toStatsMap(jsonObject.getJSONObject(field.getName()));
         default:
           GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
@@ -207,6 +240,14 @@ public class JSONUtils {
     return null;
   }
 
+  /**
+   * Inserts a column field value into a JSONObject.
+   *
+   * @param field
+   * @param value
+   * @param jsonObject
+   * @throws JSONException
+   */
   @SuppressWarnings("unchecked") // because we assume the field types get it right
   public static void putFieldInJsonObject(ColumnField field, Object value, JSONObject jsonObject) throws JSONException {
     try {
@@ -231,7 +272,7 @@ public class JSONUtils {
           break;
         case SET_NODE_ID_STRING:
           Set set = (Set) value;
-          jsonObject.put(field.getName(), Util.nodeIdSetToStringSet(set));
+          jsonObject.put(field.getName(), nodeIdSetToStringSet(set));
           break;
         case LIST_INTEGER:
           jsonObject.put(field.getName(), (ArrayList<Integer>) value);
@@ -242,12 +283,6 @@ public class JSONUtils {
         case VALUES_MAP:
           jsonObject.put(field.getName(), ((ValuesMap) value));
           break;
-//        case VOTES_MAP:
-//          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, Integer>) value));
-//          break;
-//        case STATS_MAP:
-//          jsonObject.put(field.getName(), ((ConcurrentMap<Integer, StatsInfo>) value));
-//          break;
         default:
           GNS.getLogger().severe("Exception Error ERROR: unknown type: " + field.type());
           break;
@@ -259,90 +294,15 @@ public class JSONUtils {
   }
 
   /**
-   * *****************************************
-   * Utilities for converting maps to JSON objects
-   ******************************************
+   *
+   * @param set
+   * @return
    */
-  public static ConcurrentHashMap<Integer, Integer> toIntegerMap(JSONObject json) {
-    HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
-    try {
-      Iterator<?> nameItr = json.keys();
-      while (nameItr.hasNext()) {
-        String name = (String) nameItr.next();
-        map.put(Integer.valueOf(name), json.getInt(name));
-      }
-    } catch (JSONException e) {
+  public static Set<String> nodeIdSetToStringSet(Set set) {
+    Set<String> result = new HashSet<String>();
+    for (Object id : set) {
+      result.add(id.toString());
     }
-    return new ConcurrentHashMap<Integer, Integer>(map);
-  }
-
-  public static ConcurrentHashMap<Integer, StatsInfo> toStatsMap(JSONObject json) { //
-    HashMap<Integer, StatsInfo> map = new HashMap<Integer, StatsInfo>();
-    try {
-      Iterator<?> nameItr = json.keys();
-      while (nameItr.hasNext()) {
-        String name = (String) nameItr.next();
-        map.put(Integer.valueOf(name), new StatsInfo(json.getJSONObject(name)));
-      }
-    } catch (JSONException e) {
-    }
-    return new ConcurrentHashMap<Integer, StatsInfo>(map);
-  }
-
-  public JSONObject statsMapToJSONObject(ConcurrentMap<Integer, StatsInfo> map) {
-    JSONObject json = new JSONObject();
-    try {
-      if (map != null) {
-        for (Map.Entry<Integer, StatsInfo> e : map.entrySet()) {
-          StatsInfo value = e.getValue();
-          if (value != null) {
-            JSONObject jsonStats = new JSONObject();
-            jsonStats.put("read", value.getRead());
-            jsonStats.put("write", value.getWrite());
-            json.put(e.getKey().toString(), jsonStats);
-          }
-        }
-      }
-    } catch (JSONException e) {
-    }
-    return json;
-  }
-  
-  /* Arun to Westy: A lot of the above methods seem redundant.
-   * JSON does a nice job of handling collections and maps.
-   */
-  public static String toString(Collection<?> collection) {
-	  JSONArray jsonArray = new JSONArray(collection);
-	  return jsonArray.toString();
-  }
-  
-  public static String[] jsonToStringArray(String jsonString) throws JSONException {
-	  JSONArray jsonArray = new JSONArray(jsonString);
-	  String[] stringArray = new String[jsonArray.length()];
-	  for(int i=0; i<jsonArray.length(); i++) {
-		  stringArray[i] = jsonArray.getString(i);
-	  }
-	  return stringArray;
-  }
-  
-  public static String toString(int[] array) {
-	  return toString(Util.arrayOfIntToStringSet(array));
-  }
-  
-  public static void main(String[] args) {
-	  Integer[] intArray = {3, 21, 43, 11};
-	  Set<Integer> intSet = new HashSet<Integer>(Arrays.asList(intArray));
-	  System.out.println(toString(intSet));
-	  String[] strArray = {"hello", "world", "one,", ",comma,"};
-	  Set<String> strSet = new HashSet<String>(Arrays.asList(strArray));
-	  System.out.println(toString(strSet));
-	  try {
-		for(String s : jsonToStringArray(toString(strSet))) {
-			assert(strSet.contains(s));
-			System.out.println(s);
-		  }
-	} catch (JSONException e) {
-		e.printStackTrace();
-	}
+    return result;
   }
 }
