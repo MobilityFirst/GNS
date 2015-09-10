@@ -68,6 +68,15 @@ public class Select {
   private static Random randomID = new Random();
   private static ConcurrentMap<Integer, NSSelectInfo<String>> queriesInProgress = new ConcurrentHashMap<Integer, NSSelectInfo<String>>(10, 0.75f, 3);
 
+  /**
+   * Handles a select request that was received from a client.
+   * 
+   * @param incomingJSON
+   * @param replica
+   * @throws JSONException
+   * @throws UnknownHostException
+   * @throws FailedDBOperationException
+   */
   public static void handleSelectRequest(JSONObject incomingJSON, 
           GnsApplicationInterface<String> replica) throws JSONException, UnknownHostException, FailedDBOperationException {
     SelectRequestPacket<String> packet = new SelectRequestPacket<String>(incomingJSON, replica.getGNSNodeConfig());

@@ -39,6 +39,8 @@ public class VotesMap {
 
   /**
    * Creates a new VotesMap by copying a VotesMap.
+   * 
+   * @param votesMap
    */
   public VotesMap(VotesMap votesMap) {
     this(votesMap.storage);
@@ -46,6 +48,7 @@ public class VotesMap {
 
   /**
    * Creates a new VotesMap from a JSON Object.
+   * @param json
    */
   public VotesMap(JSONObject json) {
     this();
@@ -193,6 +196,13 @@ public class VotesMap {
     return toJSONObject().toString();
   }
 
+  /**
+   * Main routine. For testing only.
+   * 
+   * @param args
+   * @throws JSONException
+   * @throws UnknownHostException
+   */
   public static void main(String[] args) throws JSONException, UnknownHostException {
     System.out.println("InetAddress");
     VotesMap votesMap1 = new VotesMap();

@@ -78,6 +78,9 @@ public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplica
   private final ClientCommandProcessor clientCommandProcessor;
 
   // Keep track of commands that are coming in
+  /**
+   *
+   */
   public final ConcurrentMap<Integer, CommandHandler.CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
 
@@ -87,6 +90,7 @@ public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplica
    * @param id
    * @param nodeConfig
    * @param messenger
+   * @throws java.io.IOException
    */
   public GnsApp(String id, GNSNodeConfig<String> nodeConfig, JSONMessenger<String> messenger) throws IOException {
     this.nodeID = id;

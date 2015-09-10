@@ -24,7 +24,7 @@ import org.json.JSONObject;
 public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
   /**
-   *
+   * The possible response codes for select packets.
    */
   public enum ResponseCode {
 

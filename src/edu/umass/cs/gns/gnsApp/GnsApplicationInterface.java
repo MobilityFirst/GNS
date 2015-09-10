@@ -26,18 +26,59 @@ import org.json.JSONObject;
  */
 public interface GnsApplicationInterface<NodeIDType> {
   
+  /**
+   * Returns the node id.
+   * 
+   * @return the node id
+   */
   NodeIDType getNodeID();
 
+  /**
+   * Returns the record map.
+   * 
+   * @return the record map
+   */
   BasicRecordMap getDB();
 
+  /**
+   * Returns the node config.
+   * 
+   * @return the node config
+   */
   InterfaceReconfigurableNodeConfig<NodeIDType> getGNSNodeConfig();
   
+  /**
+   * Sends a JSON packet to a client.
+   * 
+   * @param isa
+   * @param msg
+   * @throws IOException
+   */
   void sendToClient(InetSocketAddress isa, JSONObject msg) throws IOException;
   
+  /**
+   * Sends a JSON packet to a node.
+   * 
+   * @param id
+   * @param msg
+   * @throws IOException
+   */
   void sendToID(NodeIDType id, JSONObject msg) throws IOException;
   
+  /**
+   * Returns the ping manager.
+   * @see PingManager
+   * 
+   * @return the ping manager
+   */
   PingManager<NodeIDType> getPingManager();
   
+  /**
+   * Returns the client command processor.
+   * @see ClientCommandProcessor
+   * 
+   * @return the client command processor
+   */
   ClientCommandProcessor getClientCommandProcessor();
   
 }

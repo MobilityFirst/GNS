@@ -75,7 +75,7 @@ public class DNSRequestInfo<NodeIDType> extends RequestInfo {
     try {
       DNSPacket<NodeIDType> dnsPacketOut = new DNSPacket<NodeIDType>(incomingPacket.toJSONObjectQuestion(), unstringer);
       dnsPacketOut.getHeader().setResponseCode(NSResponseCode.FAIL_ACTIVE_NAMESERVER);
-      dnsPacketOut.getHeader().setQRCode(DNSRecordType.RESPONSE);
+      dnsPacketOut.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
       return dnsPacketOut.toJSONObject();
     } catch (JSONException e) {
       GNS.getLogger().severe("Problem converting packet to JSON: " + e);

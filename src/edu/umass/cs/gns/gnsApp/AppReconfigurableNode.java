@@ -21,17 +21,33 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * Instantiates the replicas and reconfigurators. Also parses
+ * all the command line options.
+ * 
  * @author Westy
  */
 public class AppReconfigurableNode extends ReconfigurableNode<String> {
 
   //private MongoRecords<String> mongoRecords = null;
 
+  /**
+   * Create an AppReconfigurableNode instance.
+   * 
+   * @param nodeID
+   * @param nc
+   * @throws IOException
+   */
+  
   public AppReconfigurableNode(String nodeID, GNSInterfaceNodeConfig<String> nc)
           throws IOException {
     super(nodeID, nc);
   }
 
+  /**
+   * Create and returns an app coordinator.
+   * 
+   * @return
+   */
   @Override
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {
     GnsApp app = null;
@@ -86,6 +102,13 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
     }
   }
 
+  /**
+   * Parses all the command line arguments and invoke methods
+   * to create replicas and reconfigurators.
+   * 
+   * @param args
+   * @throws IOException
+   */
   public static void main(String[] args) throws IOException {
     Map<String, String> options
             = ParametersAndOptions.getParametersAsHashMap(AppReconfigurableNode.class.getCanonicalName(),

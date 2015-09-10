@@ -22,24 +22,51 @@ import org.json.JSONObject;
  */
 public class NullDemandProfile extends AbstractDemandProfile {
 
+  /**
+   * The keys used in NullDemandProfile.
+   */
   public enum Keys {
 
+    /**
+     * SERVICE_NAME
+     */
     SERVICE_NAME
   };
 
+  /**
+   * Creates a NullDemandProfile instance.
+   * 
+   * @param name
+   */
   public NullDemandProfile(String name) {
     super(name);
   }
 
-  // deep copy constructor
-  public NullDemandProfile(NullDemandProfile dp) {
+  /**
+   * Creates a NullDemandProfile by doing a deep copy of another instance.
+   * 
+   * @param dp
+   */
+    public NullDemandProfile(NullDemandProfile dp) {
     super(dp.name);
   }
 
+  /**
+   * Creates a NullDemandProfile from a JSON packet.
+   * 
+   * @param json
+   * @throws JSONException
+   */
   public NullDemandProfile(JSONObject json) throws JSONException {
     super(json.getString(Keys.SERVICE_NAME.toString()));
   }
 
+  /**
+   * Creates an empty NullDemandProfile.
+   * 
+   * @param name
+   * @return
+   */
   public static NullDemandProfile createDemandProfile(String name) {
     return new NullDemandProfile(name);
   }

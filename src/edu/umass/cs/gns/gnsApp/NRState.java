@@ -23,14 +23,31 @@ public class NRState {
   
   final static String SEPARATOR = ":::"; // Made this something that probably won't appear in JSON. - Westy
 
+  /**
+   *
+   */
   public final ValuesMap valuesMap;
+
+  /**
+   *
+   */
   public final int ttl;
 
+  /**
+   *
+   * @param valuesMap
+   * @param ttl
+   */
   public NRState(ValuesMap valuesMap, int ttl) {
     this.valuesMap = valuesMap;
     this.ttl = ttl;
   }
 
+  /**
+   *
+   * @param state
+   * @throws JSONException
+   */
   public NRState(String state) throws JSONException {
     int ttlIndex;
     if (state != null &&  (ttlIndex = state.indexOf(SEPARATOR)) != -1) {

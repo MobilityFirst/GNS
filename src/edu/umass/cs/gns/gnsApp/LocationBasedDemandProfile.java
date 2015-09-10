@@ -40,9 +40,28 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
 
   private static final Logger LOG = Logger.getLogger(LocationBasedDemandProfile.class.getName());
 
+  /**
+   * The keys for the demand profile packet.
+   */
   public enum Keys {
 
-    SERVICE_NAME, STATS, RATE, NUM_REQUESTS, NUM_TOTAL_REQUESTS, VOTES_MAP, LOOKUP_COUNT, UPDATE_COUNT
+    
+    /** SERVICE_NAME */ 
+    SERVICE_NAME, 
+    /** STATS */ 
+    STATS, 
+    /** RATE */ 
+    RATE, 
+    /** NUM_REQUESTS */ 
+    NUM_REQUESTS,
+    /** NUM_TOTAL_REQUESTS */ 
+    NUM_TOTAL_REQUESTS, 
+    /** VOTES_MAP */ 
+    VOTES_MAP, 
+    /** LOOKUP_COUNT */ 
+    LOOKUP_COUNT, 
+    /** UPDATE_COUNT */ 
+    UPDATE_COUNT
   };
 
   /**
@@ -69,11 +88,20 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   
   private boolean debuggingEnabled = false;
 
+  /**
+   * Create a LocationBasedDemandProfile instance.
+   * 
+   * @param name 
+   */
   public LocationBasedDemandProfile(String name) {
     super(name);
   }
 
-  // deep copy constructor
+  /**
+   * Create a LocationBasedDemandProfile instance by making a deep copy of another instance.
+   * 
+   * @param dp 
+   */
   public LocationBasedDemandProfile(LocationBasedDemandProfile dp) {
     super(dp.name);
     this.interArrivalTime = dp.interArrivalTime;
@@ -85,6 +113,12 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.updateCount = dp.updateCount;
   }
 
+  /**
+   * Create a LocationBasedDemandProfile instance from a JSON packet. 
+   * 
+   * @param json
+   * @throws org.json.JSONException
+   */
   public LocationBasedDemandProfile(JSONObject json) throws JSONException {
     super(json.getString(Keys.SERVICE_NAME.toString()));
     this.interArrivalTime = 1.0 / json.getDouble(Keys.RATE.toString());
@@ -121,6 +155,11 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     return json;
   }
 
+  /**
+   * Create an empty LocationBasedDemandProfile instance for a name. 
+   * @param name
+   * @return 
+   */
   public static LocationBasedDemandProfile createDemandProfile(String name) {
     return new LocationBasedDemandProfile(name);
   }
@@ -377,22 +416,38 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     }
   }
 
-  //
-  // Accessors
-  //
+  /**
+   * Returns the request rate.
+   * 
+   * @return the request rate
+   */
   public double getRequestRate() {
     return this.interArrivalTime > 0 ? 1.0 / this.interArrivalTime
             : 1.0 / (this.interArrivalTime + 1000);
   }
 
+  /**
+   * Return the number of requests.
+   * 
+   * @return the number of requests
+   */
   public double getNumRequests() {
     return this.numRequests;
   }
 
+  /**
+   * Return the total number of requests.
+   * 
+   * @return the total number of requests
+   */
   public double getNumTotalRequests() {
     return this.numTotalRequests;
   }
-
+/**
+ * Return the votes map.
+ * 
+ * @return the votes map
+ */
   public VotesMap getVotesMap() {
     return votesMap;
   }
@@ -405,7 +460,6 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
   /**
    * JUST FOR TESTING!
    *
-   * @param dp
    */
   public LocationBasedDemandProfile() {
     super("FRANK");
@@ -418,6 +472,12 @@ public class LocationBasedDemandProfile extends AbstractDemandProfile {
     this.updateCount = 50;
   }
 
+  /**
+   * Main routine. Only for testing.
+   * 
+   * @param args
+   * @throws UnknownHostException 
+   */
   public static void main(String[] args) throws UnknownHostException {
     LocationBasedDemandProfile dp = new LocationBasedDemandProfile();
     LOG.info(dp.toString());

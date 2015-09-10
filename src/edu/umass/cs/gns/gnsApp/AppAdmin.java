@@ -45,7 +45,8 @@ public class AppAdmin extends Thread implements Shutdownable{
   /**
    * Creates a new listener thread for handling response packet
    *
-   * @throws IOException
+   * @param app
+   * @param gnsNodeConfig
    */
   
   public AppAdmin(GnsApplicationInterface<String> app, GNSNodeConfig gnsNodeConfig) {

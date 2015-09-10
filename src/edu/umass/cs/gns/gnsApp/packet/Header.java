@@ -19,7 +19,7 @@ public class Header {
   private static final String ID = "id";
   private static final String QRCODE = "qr";
   private static final String RESPONSECODE = "rcode";
-  
+
   /**
    * Unique ID for each query. Used by the requester to match up replies to outstanding queries *
    */
@@ -27,66 +27,62 @@ public class Header {
   /**
    * Specifies whether this message is a query or a response
    */
-  private DNSRecordType qrCode;
+  private DNSRecordType queryResponseCode;
   /**
-   * Response code *
+   * Response code
    */
   private NSResponseCode responseCode;
 
   /**
-   * ***********************************************************
    * Constructs a Header for the resource record packet with the specified fields.
    *
    * @param id Unique ID for each query
    * @param qr Specifies whether this message is a query (0), or a response (1)
    * @param rcode Response code
-	 ***********************************************************
+   *
    */
   public Header(int id, DNSRecordType qr, NSResponseCode rcode) {
     this.id = id;
-    this.qrCode = qr;
+    this.queryResponseCode = qr;
     this.responseCode = rcode;
   }
 
   /**
-   * ***********************************************************
    * Constructs a Header for the resource record packet from a JSONObject that represents the packet header
    *
    * @param json JSONObject that represents the packet header
    * @throws org.json.JSONException
-	 ***********************************************************
+   *
    */
   public Header(JSONObject json) throws JSONException {
     this.id = json.getInt(ID);
     // stored as an int in the JSON to keep the byte counting folks happy
-    this.qrCode = DNSRecordType.getRecordType(json.getInt(QRCODE));
+    this.queryResponseCode = DNSRecordType.getRecordType(json.getInt(QRCODE));
     // stored as an int in the JSON to keep the byte counting folks happy
     this.responseCode = NSResponseCode.getResponseCode(json.getInt(RESPONSECODE));
   }
 
   /**
-   * ***********************************************************
    * Converts the packet header to a JSONObject that represents the header.
    *
    * @return Return a JSONObject that represents the packet header
    * @throws org.json.JSONException
-	 ***********************************************************
+   *
    */
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
     json.put(ID, getId());
     // store it as an int in the JSON to keep the byte counting folks happy
-    json.put(QRCODE, getQRCode().getCodeValue());
+    json.put(QRCODE, getQueryResponseCode().getCodeValue());
     // store it as an int in the JSON to keep the byte counting folks happy
     json.put(RESPONSECODE, getResponseCode().getCodeValue());
     return json;
   }
 
   /**
-   * ***********************************************************
    * Returns a string representing the packet header.
-	 ***********************************************************
-   * @return 
+   *
+   * @return
    */
   @Override
   public String toString() {
@@ -99,6 +95,8 @@ public class Header {
   }
 
   /**
+   * Return the id.
+   * 
    * @return the id
    */
   public int getId() {
@@ -106,6 +104,8 @@ public class Header {
   }
 
   /**
+   * Set the id.
+   * 
    * @param id the id to set
    */
   public void setId(int id) {
@@ -113,20 +113,25 @@ public class Header {
   }
 
   /**
+   * Return the query reponse code.
+   * 
    * @return the qr
    */
-  public DNSRecordType getQRCode() {
-    return qrCode;
+  public DNSRecordType getQueryResponseCode() {
+    return queryResponseCode;
   }
 
   /**
+   * Return the query/response code.
+   * 
    * @param qr the qr to set
    */
-  public void setQRCode(DNSRecordType qr) {
-    this.qrCode = qr;
+  public void setQueryResponseCode(DNSRecordType qr) {
+    this.queryResponseCode = qr;
   }
 
   /**
+   * Return the name server response code.
    * @return the rcode
    */
   public NSResponseCode getResponseCode() {
@@ -134,6 +139,8 @@ public class Header {
   }
 
   /**
+   * Set the name server response code.
+   * 
    * @param rcode the rcode to set
    */
   public void setResponseCode(NSResponseCode rcode) {
@@ -142,34 +149,34 @@ public class Header {
 
   /**
    * Return true if the request is a query.
-   * 
+   *
    * @return
    */
   public boolean isQuery() {
-    return qrCode == DNSRecordType.QUERY;
+    return queryResponseCode == DNSRecordType.QUERY;
   }
 
   /**
    * Returns true if the packet is a response, false otherwise.
-   * 
-   * @return 
+   *
+   * @return
    */
   public boolean isResponse() {
-    return qrCode == DNSRecordType.RESPONSE;
+    return queryResponseCode == DNSRecordType.RESPONSE;
   }
 
   /**
    * Returns true if the packet contains any kind of response error, false otherwise
    *
-   * @return 
+   * @return
    */
   public boolean isAnyKindOfError() {
     return responseCode.isAnError();
   }
 
   /**
-   * Return true if the result is Invalid Active NSError. 
-   * 
+   * Return true if the result is Invalid Active NSError.
+   *
    * @return
    */
   public boolean isInvalidActiveNSError() {

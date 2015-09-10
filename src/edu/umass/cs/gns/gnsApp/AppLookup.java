@@ -106,7 +106,7 @@ public class AppLookup {
     DelayProfiler.updateDelay("totalLookupAuth", receiptTime);
     // return an error packet if one of the checks doesn't pass
     if (errorCode.isAnError()) {
-      dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+      dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
       dnsPacket.getHeader().setResponseCode(errorCode);
       dnsPacket.setResponder(gnsApp.getNodeID());
       if (AppReconfigurableNodeOptions.debuggingEnabled) {
@@ -176,7 +176,7 @@ public class AppLookup {
     if (NSGroupAccess.isGroupGuid(guid, gnsApp)) {
       ValuesMap valuesMap = NSGroupAccess.lookupFieldInGroupGuid(guid, field, gnsApp, dnsPacket.getCCPAddress());
       // Set up the response packet
-      dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+      dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
       dnsPacket.setResponder(gnsApp.getNodeID());
       dnsPacket.getHeader().setResponseCode(NSResponseCode.NO_ERROR);
       dnsPacket.setRecordValue(valuesMap);
@@ -245,7 +245,7 @@ public class AppLookup {
   private static DNSPacket<String> checkAndMakeResponsePacket(DNSPacket<String> dnsPacket, NameRecord nameRecord,
           GnsApplicationInterface<String> gnsApp) {
     // change it to a response packet
-    dnsPacket.getHeader().setQRCode(DNSRecordType.RESPONSE);
+    dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
     dnsPacket.setResponder(gnsApp.getNodeID());
     String guid = dnsPacket.getGuid();
     String key = dnsPacket.getKey();

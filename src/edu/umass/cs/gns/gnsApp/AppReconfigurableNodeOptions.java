@@ -42,23 +42,35 @@ public class AppReconfigurableNodeOptions {
    */
   public static boolean allowGroupGuidIndirection = true;
 
-  // parameter related to replication of records
-  public static double normalizingConstant = 0.5;
+  /**
+   * The minimum number of replicas. Used by {@link LocationBasesDemandProfile}.
+   */
   public static int minReplica = 3;
+  /**
+   * The maximum number of replicas. Used by {@link LocationBasesDemandProfile}.
+   */
   public static int maxReplica = 100;
+  /**
+   * Determines the number of replicas based on ratio of lookups to writes.
+   * Used by {@link LocationBasesDemandProfile}.
+   */
+  public static double normalizingConstant = 0.5;
 
   /**
-   * Fixed timeout after which a query retransmitted.
+   * Fixed timeout after which a query is retransmitted.
    */
   public static int queryTimeout = GNS.DEFAULT_QUERY_TIMEOUT;
 
-  public static boolean replicateAll = false;
   //  Abhigyan: parameters related to retransmissions.
   //  If adaptive timeouts are used, see more parameters in util.AdaptiveRetransmission.java
   /**
    * Maximum time a local name server waits for a response from name server query is logged as failed after this.
    */
   public static int maxQueryWaitTime = GNS.DEFAULT_MAX_QUERY_WAIT_TIME;
+
+  /**
+   * If this is true sending of email by the verification mechanism is disabled.
+   */
   public static boolean noEmail = false;
   /**
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
@@ -72,38 +84,100 @@ public class AppReconfigurableNodeOptions {
    * Set to true if you want the DNS server to not lookup records using DNS (will only lookup records in the GNS).
    */
   public static boolean dnsOnly = false;
-
+  /**
+   * Set this to true to enable additional debugging output.
+   */
   public static boolean debuggingEnabled = false;
-
+  /**
+   * If this is true the app will handle all operations locally (ie., it won't send request to reconfigurators).
+   */
   public static boolean standAloneApp = false;
-
+  /**
+   * If this is true SSL will not be used for communications between servers.
+   */
   public static boolean disableSSL = false;
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
+  /**
+   * ID
+   */
   public static final String ID = "id";
+  /**
+   * NS_FILE
+   */
   public static final String NS_FILE = "nsfile";
+  /**
+   * FILE_LOGGING_LEVEL
+   */
   public static final String FILE_LOGGING_LEVEL = "fileLoggingLevel";
+  /**
+   * CONSOLE_OUTPUT_LEVEL
+   */
   public static final String CONSOLE_OUTPUT_LEVEL = "consoleOutputLevel";
+  /**
+   * DEBUG
+   */
   public static final String DEBUG = "debug"; // for backwards compat
+  /**
+   * DEBUG_APP
+   */
   public static final String DEBUG_APP = "debugAPP";
+  /**
+   * DEBUG_AR
+   */
   public static final String DEBUG_AR = "debugAR";
+  /**
+   * DEBUG_RECON
+   */
   public static final String DEBUG_RECON = "debugRecon";
+  /**
+   * DEBUG_PAXOS
+   */
   public static final String DEBUG_PAXOS = "debugPaxos";
+  /**
+   * DEBUG_NIO
+   */
   public static final String DEBUG_NIO = "debugNio";
+  /**
+   * DEBUG_MISC
+   */
   public static final String DEBUG_MISC = "debugMisc";
   /**
-   * This option is used to create multiple nodes on a single host
+   * TEST. This option is used to create multiple nodes on a single host
    */
   public static final String TEST = "test";
+  /**
+   * STANDALONE
+   */
   public static final String STANDALONE = "standalone";
+  /**
+   * DEMAND_PROFILE_CLASS
+   */
   public static final String DEMAND_PROFILE_CLASS = "demandProfileClass";
   // for CCP
+  /**
+   * DNS_GNS_ONLY
+   */
   public static final String DNS_GNS_ONLY = "dnsGnsOnly";
+  /**
+   * DNS_ONLY
+   */
   public static final String DNS_ONLY = "dnsOnly";
+  /**
+   * GNS_SERVER_IP
+   */
   public static final String GNS_SERVER_IP = "gnsServerIP";
+  /**
+   * DISABLE_SSL
+   */
   public static final String DISABLE_SSL = "disableSSL";
 
+  /**
+   * Returns all the options.
+   *
+   * @return all the options
+   */
   public static Options getAllOptions() {
     Option help = new Option(HELP, "Prints usage");
     Option configFile = new Option(CONFIG_FILE, true, "Configuration file with list of parameters and values (an alternative to using command-line options)");
@@ -171,7 +245,7 @@ public class AppReconfigurableNodeOptions {
     if (allValues == null) {
       return;
     }
-    
+
     // make sure this has been initialized
     GNS.getLogger();
 
@@ -203,7 +277,7 @@ public class AppReconfigurableNodeOptions {
     if (isOptionTrue(DEBUG_RECON, allValues)) {
       System.out.println("******** DEBUGGING IS ENABLED IN THE RECONFIGURATOR *********");
       // For backwards compatibility until Config goes away
-      
+
       ConsoleHandler handler = Logging.getConsoleHandler();
       handler.setLevel(Level.FINEST);
       Logger log = Reconfigurator.getLogger();

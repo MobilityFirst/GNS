@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * This class represents a data structure to store information
  * about Select operations performed on the GNS.
+ * @param <NodeIDType>
  */
 public class NSSelectInfo<NodeIDType> {
   private final int id;
@@ -101,26 +102,50 @@ public class NSSelectInfo<NodeIDType> {
     return new HashSet<JSONObject>(responses.values());
   }
 
+  /**
+   *
+   * @return
+   */
   public Map<String, JSONObject> getResponsesAsMap() {
     return new HashMap<String, JSONObject>(responses);
   }
 
+  /**
+   *
+   * @return
+   */
   public SelectOperation getSelectOperation() {
     return selectOperation;
   }
 
+  /**
+   *
+   * @return
+   */
   public GroupBehavior getGroupBehavior() {
     return groupBehavior;
   }
   
+  /**
+   *
+   * @return
+   */
   public String getQuery() {
     return query;
   }
   
+  /**
+   *
+   * @return
+   */
   public String getGuid() {
     return guid;
   }
 
+  /**
+   *
+   * @return
+   */
   public int getMinRefreshInterval() {
     return minRefreshInterval;
   }
