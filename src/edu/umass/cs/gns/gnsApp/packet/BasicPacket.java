@@ -40,11 +40,19 @@ public abstract class BasicPacket implements PacketInterface {
   }
   
   // For InterfaceRequest
-  public IntegerPacketType getRequestType() {
+
+  /**
+   * Return the request type.
+   * 
+   * @return the request type
+   */
+    public IntegerPacketType getRequestType() {
      return type;
   }
 
   /**
+   * Set the packet type.
+   * 
    * @param type the type to set
    */
   public void setType(Packet.PacketType type) {

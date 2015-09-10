@@ -102,6 +102,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
    * @param id
    * @param guid
    * @param key
+   * @param keys
    * @param accessor
    * @param signature
    * @param message
@@ -147,6 +148,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
    * @param id
    * @param name
    * @param key
+   * @param keys
    * @param entireRecord
    * @param TTL
    * @param activeNameServers
@@ -172,6 +174,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
    * The response section will be empty if this is an error response.
    *
    * @param json JSONObject that represents a DNS packet
+   * @param unstringer
    * @throws org.json.JSONException
    */
   public DNSPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
@@ -319,15 +322,19 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
     return getHeader().isAnyKindOfError();
   }
 
+  /**
+   * Returns true if the packet contains an InvalidActiveNSError.
+   * 
+   * @return true or false
+   */
   public boolean containsInvalidActiveNSError() {
     return getHeader().isInvalidActiveNSError();
   }
 
   /**
-   **
    * Returns the ID for this query from the packet header. Used by the requester to match up replies to outstanding queries
    *
-   * @return
+   * @return the ID for this query
    */
   public int getQueryId() {
     return getHeader().getId();
@@ -343,6 +350,8 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   }
 
   /**
+   * Return the header.
+   * 
    * @return the header
    */
   public Header getHeader() {
@@ -357,6 +366,8 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   }
 
   /**
+   * Return the guid.
+   * 
    * @return the guid
    */
   public String getGuid() {
@@ -364,12 +375,19 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   }
 
   /**
-   * @return the qrecordKey
+   * Return the key.
+   * 
+   * @return the key
    */
   public String getKey() {
     return key;
   }
 
+  /**
+   * Return true if the field key is ALL_FIELDS or a top level key.
+   * 
+   * @return true or false
+   */
   public boolean keyIsAllFieldsOrTopLevel() {
     if (key != null) {
       return FieldAccess.isKeyAllFieldsOrTopLevel(key);
@@ -381,40 +399,51 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   /**
    * Returns the keys in a multi-field query.
    *
-   * @return
+   * @return all the keys
    */
   public List<String> getKeys() {
     return keys;
   }
 
+  /**
+   * Return the key or multiple keys.
+   * 
+   * @return the key or multiple keys
+   */
   public String getKeyOrKeysString() {
     return key != null ? key : keys.toString();
   }
 
   /**
-   * @return the ttlAddress
+   * Return the TTL
+   * 
+   * @return the ttl
    */
   public int getTTL() {
     return ttl;
   }
 
   /**
-   * @param ttlAddress the ttlAddress to set
+   * Set the ttl.
+   * 
+   * @param ttl the ttl to set
    */
-  public void setTTL(int ttlAddress) {
-    this.ttl = ttlAddress;
+  public void setTTL(int ttl) {
+    this.ttl = ttl;
   }
 
   /**
-   *
-   * @return
+   * Return the record value.
+   * 
+   * @return the record value
    */
   public ValuesMap getRecordValue() {
     return recordValue;
   }
 
   /**
-   *
+   * Set the record value.
+   * 
    * @param recordValue
    */
   public void setRecordValue(ValuesMap recordValue) {
@@ -422,6 +451,8 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   }
 
   /**
+   * Set the single return value.
+   * 
    * @param data the data to set
    */
   public void setSingleReturnValue(ResultValue data) {
@@ -431,22 +462,47 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
     this.recordValue.putAsArray(key, data);
   }
 
+  /**
+   * Return the source id.
+   * 
+   * @return the source id
+   */
   public NodeIDType getSourceId() {
     return sourceId;
   }
 
+  /**
+   * Set the source id.
+   * 
+   * @param sourceId
+   */
   public void setSourceId(NodeIDType sourceId) {
     this.sourceId = sourceId;
   }
 
+  /**
+   * Return the responder.
+   * 
+   * @return the responder
+   */
   public NodeIDType getResponder() {
     return responder;
   }
 
+  /**
+   * Set the responder.
+   * 
+   * @param responder
+   */
   public void setResponder(NodeIDType responder) {
     this.responder = responder;
   }
 
+  /**
+   * Return the return format.
+   * 
+   * @return
+   */
   public ColumnFieldType getReturnFormat() {
     return returnFormat;
   }
@@ -456,13 +512,4 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   public String getServiceName() {
     return this.guid;
   }
-
-//  public int getLookupTime() {
-//    return lookupTime;
-//  }
-//
-//  public void setLookupTime(int lookupTime) {
-//    this.lookupTime = lookupTime;
-//  }
-//
 }

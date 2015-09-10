@@ -16,8 +16,13 @@ import org.json.JSONObject;
  */
 public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPacketWithCCPAddress implements PacketInterface, ExtensiblePacketInterface {
 
+  /** accessor */
   public final static String ACCESSOR = "si_accessor";
+
+  /** signature */
   public final static String SIGNATURE = "si_signature";
+
+  /** message */
   public final static String MESSAGE = "si_message";
   //
   private String accessor;
@@ -67,6 +72,13 @@ public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPac
     addToJSONObject(json, true);
   }
 
+  /**
+   * Add this packets fields to a Json object. 
+   * 
+   * @param json
+   * @param includeSignatureSection
+   * @throws JSONException
+   */
   public void addToJSONObject(JSONObject json, boolean includeSignatureSection) throws JSONException {
     super.addToJSONObject(json);
     if (includeSignatureSection) {
@@ -82,14 +94,29 @@ public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPac
     }
   }
 
+  /**
+   * Return the accessor.
+   * 
+   * @return
+   */
   public String getAccessor() {
     return accessor;
   }
 
+  /**
+   * Return the signature.
+   * 
+   * @return
+   */
   public String getSignature() {
     return signature;
   }
 
+  /**
+   * Return the message.
+   * 
+   * @return
+   */
   public String getMessage() {
     return message;
   }

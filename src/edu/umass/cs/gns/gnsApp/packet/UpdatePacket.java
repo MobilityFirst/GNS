@@ -83,7 +83,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   /**
    * The key of the value key pair.
    */
-  private final String recordKey;
+  private final String key;
   /**
    * Value for updating.
    * This is mutually exclusive with userJSON below - one or the other will be used in any operation, but not both.
@@ -243,7 +243,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     this.requestID = requestID;
     this.CCPRequestID = CCPRequestID;
     this.name = name;
-    this.recordKey = recordKey;
+    this.key = recordKey;
     this.operation = operation;
     this.updateValue = newValue;
     this.oldValue = oldValue;
@@ -256,6 +256,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
    * Constructs a new UpdateAddressPacket from a JSONObject.
    *
    * @param json JSONObject that represents UpdatedAddressPacket.
+   * @param unstringer
    * @throws org.json.JSONException
    */
   @SuppressWarnings("unchecked")
@@ -269,7 +270,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     this.requestID = json.getInt(REQUESTID);
     this.CCPRequestID = json.getInt(CCPREQUESTID);
     this.name = json.getString(NAME);
-    this.recordKey = json.has(RECORDKEY) ? json.getString(RECORDKEY) : null;
+    this.key = json.has(RECORDKEY) ? json.getString(RECORDKEY) : null;
     this.operation = UpdateOperation.valueOf(json.getString(OPERATION));
     this.updateValue = json.has(NEWVALUE) ? JSONUtils.JSONArrayToResultValue(json.getJSONArray(NEWVALUE)) : null;
     this.argument = json.optInt(ARGUMENT, -1);
@@ -306,8 +307,8 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     json.put(SOURCE_ID, sourceId);
     json.put(CCPREQUESTID, CCPRequestID);
     json.put(NAME, name);
-    if (recordKey != null) {
-      json.put(RECORDKEY, recordKey);
+    if (key != null) {
+      json.put(RECORDKEY, key);
     }
 
     if (updateValue != null) {
@@ -338,6 +339,8 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   }
 
   /**
+   * Return the CCP request id.
+   *
    * @return the id which is used by the CCP for bookkeeping
    */
   public int getCCPRequestID() {
@@ -345,6 +348,8 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   }
 
   /**
+   * Set the CCP request id.
+   *
    * @param id the id to set
    */
   public void setCCPRequestID(int id) {
@@ -352,6 +357,8 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   }
 
   /**
+   * Return the name.
+   *
    * @return the name
    */
   public String getName() {
@@ -359,23 +366,37 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   }
 
   /**
+   * Return the key.
+   *
    * @return the recordKey
    */
-  public String getRecordKey() {
-    return recordKey;
+  public String getKey() {
+    return key;
   }
 
   /**
+   * Return the value.
+   *
    * @return the new value
    */
   public ResultValue getUpdateValue() {
     return updateValue;
   }
 
+  /**
+   * Return the old value.
+   *
+   * @return the old value
+   */
   public ResultValue getOldValue() {
     return oldValue;
   }
 
+  /**
+   * Return the argument.
+   *
+   * @return the argument
+   */
   public int getArgument() {
     return argument;
   }
@@ -389,11 +410,18 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     return userJSON;
   }
 
+  /**
+   * Return the source id.
+   *
+   * @return the source id
+   */
   public NodeIDType getSourceId() {
     return sourceId;
   }
 
   /**
+   * Return the ttl.
+   *
    * @return the ttl
    */
   public int getTTL() {
@@ -401,6 +429,8 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   }
 
   /**
+   * Return the operation.
+   *
    * @return the operation
    */
   public UpdateOperation getOperation() {
@@ -413,12 +443,16 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
     return this.name;
   }
 
+  /**
+   * Set the request id.
+   *
+   * @param requestID
+   */
   public void setRequestID(int requestID) {
     this.requestID = requestID;
   }
-  
-  // For InterfaceReplicableRequest
 
+  // For InterfaceReplicableRequest
   @Override
   public boolean needsCoordination() {
     return needsCoordination;
@@ -432,6 +466,11 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   //
   // TEST CODE
   //
+  /**
+   * The main routine. For testing.
+   *
+   * @param args
+   */
   @SuppressWarnings("unchecked")
   public static void main(String[] args) {
     ResultValue x = new ResultValue();

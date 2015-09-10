@@ -139,6 +139,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    * Constructs a new AddRecordPacket from a JSONObject
    *
    * @param json JSONObject that represents this packet
+   * @param unstringer
    * @throws org.json.JSONException
    */
   public AddRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
@@ -190,14 +191,29 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     return json;
   }
 
+  /**
+   * Return the request id.
+   * 
+   * @return the request id
+   */
   public int getRequestID() {
     return requestID;
   }
 
+  /**
+   * Set the request id.
+   * 
+   * @param requestID
+   */
   public void setRequestID(int requestID) {
     this.requestID = requestID;
   }
 
+  /**
+   * Return the CCP request id.
+   * 
+   * @return the CCP request id
+   */
   public int getCCPRequestID() {
     return CCPRequestID;
   }
@@ -212,6 +228,8 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   }
 
   /**
+   * Return the name.
+   * 
    * @return the name
    */
   public String getName() {
@@ -219,6 +237,8 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   }
 
   /**
+   * Return the field.
+   * 
    * @return the field
    */
   public String getField() {
@@ -226,13 +246,19 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   }
 
   /**
+   * Return the field value.
+   * 
    * @return the fieldValue
    */
   public ResultValue getFieldValue() {
     return fieldValue;
   }
   
- 
+  /**
+   * Return the source id.
+   * 
+   * @return
+   */
   public NodeIDType getSourceId() {
     return sourceId;
   }
@@ -243,6 +269,11 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
     return this.name;
   }
 
+  /**
+   * Return the values.
+   * 
+   * @return
+   */
   public JSONObject getValues() {
     return values;
   }

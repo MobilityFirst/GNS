@@ -76,6 +76,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Node
    * Constructs a new RemoveRecordPacket from a JSONObject
    *
    * @param json JSONObject that represents this packet
+   * @param unstringer
    * @throws org.json.JSONException
    */
   @SuppressWarnings("unchecked")
@@ -112,36 +113,57 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Node
     return json;
   }
 
+  /**
+   * Return the request id.
+   * 
+   * @return the request id
+   */
   public int getRequestID() {
     return requestID;
   }
 
+  /**
+   * Return the CCP request id.
+   * 
+   * @return the CCP request id
+   */
   public int getCCPRequestID() {
     return CCPRequestID;
   }
 
+  /**
+   * Set the CCP request id.
+   * 
+   * @param CCPRequestID
+   */
   public void setCCPRequestID(int CCPRequestID) {
     this.CCPRequestID = CCPRequestID;
   }
 
   /**
+   * Return the name.
+   * 
    * @return the name
    */
   public String getName() {
     return name;
   }
 
+  /**
+   * Return the source id.
+   * 
+   * @return
+   */
   public NodeIDType getSourceId() {
     return sourceId;
   }
 
-//  /**
-//   * This really should be documented.
-//   */
-//  public void changePacketTypeToRcRemove() {
-//    type = Packet.PacketType.RC_REMOVE;
-//  }
-
+  /**
+   * Set the request id.
+   * 
+   * @param requestID
+   */
+  
   public void setRequestID(int requestID) {
     this.requestID = requestID;
   }

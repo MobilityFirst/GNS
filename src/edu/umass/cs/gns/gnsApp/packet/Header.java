@@ -86,6 +86,7 @@ public class Header {
    * ***********************************************************
    * Returns a string representing the packet header.
 	 ***********************************************************
+   * @return 
    */
   @Override
   public String toString() {
@@ -139,12 +140,19 @@ public class Header {
     this.responseCode = rcode;
   }
 
-   public boolean isQuery() {
+  /**
+   * Return true if the request is a query.
+   * 
+   * @return
+   */
+  public boolean isQuery() {
     return qrCode == DNSRecordType.QUERY;
   }
 
   /**
-   * Returns true if the packet is a response, false otherwise
+   * Returns true if the packet is a response, false otherwise.
+   * 
+   * @return 
    */
   public boolean isResponse() {
     return qrCode == DNSRecordType.RESPONSE;
@@ -153,13 +161,15 @@ public class Header {
   /**
    * Returns true if the packet contains any kind of response error, false otherwise
    *
+   * @return 
    */
   public boolean isAnyKindOfError() {
     return responseCode.isAnError();
   }
 
   /**
-   *
+   * Return true if the result is Invalid Active NSError. 
+   * 
    * @return
    */
   public boolean isInvalidActiveNSError() {

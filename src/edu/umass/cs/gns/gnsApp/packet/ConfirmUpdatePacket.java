@@ -46,10 +46,13 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   private NodeIDType returnTo;
 
   /**
-   * Constructs a new ConfirmUpdatePacket<String>with the given parameters.
+   * Constructs a new ConfirmUpdatePacket with the given parameters.
    *
    * @param type Type of this packet
+   * @param returnTo
    * @param requestID Id of local or name server
+   * @param CCPRequestID
+   * @param responseCode
    */
   public ConfirmUpdatePacket(Packet.PacketType type, NodeIDType returnTo, int requestID, int CCPRequestID, NSResponseCode responseCode) {
     this.type = type;
@@ -88,21 +91,34 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
             NSResponseCode.NO_ERROR);
   }
 
+  /**
+   * Create a ConfirmUpdatePacket instance.
+   * 
+   * @param code
+   * @param packet
+   */
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.ADD_CONFIRM, packet.getSourceId(),
             packet.getRequestID(), packet.getCCPRequestID(), code);
 
   }
 
+  /**
+   * Create a ConfirmUpdatePacket instance.
+   * 
+   * @param code
+   * @param packet
+   */
   public ConfirmUpdatePacket(NSResponseCode code, RemoveRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.REMOVE_CONFIRM, packet.getSourceId(),
             packet.getRequestID(), packet.getCCPRequestID(), code);
   }
 
   /**
-   * Constructs a new ConfirmUpdatePacket<String>from a JSONObject.
+   * Constructs a new ConfirmUpdatePacket from a JSONObject.
    *
    * @param json JSONObject that represents ConfirmUpdatePacket.
+   * @param unstringer
    * @throws org.json.JSONException
    */
   public ConfirmUpdatePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
@@ -115,7 +131,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   }
 
   /**
-   * Converts a ConfirmUpdatePacket<String>to a JSONObject
+   * Converts a ConfirmUpdatePacket to a JSONObject
    *
    * @return JSONObject that represents ConfirmUpdatePacket
    * @throws org.json.JSONException
@@ -135,26 +151,56 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
     return json;
   }
 
+  /**
+   * Return the return to.
+   * 
+   * @return the return to
+   */
   public NodeIDType getReturnTo() {
     return returnTo;
   }
 
+  /**
+   * Return the request id.
+   * 
+   * @return the request id
+   */
   public int getRequestID() {
     return requestID;
   }
 
+  /**
+   * Return the CCP request id.
+   * 
+   * @return the CCP request id
+   */
   public int getCCPRequestID() {
     return CCPRequestID;
   }
 
+  /**
+   * Return the response code.
+   * 
+   * @return the response code
+   */
   public NSResponseCode getResponseCode() {
     return responseCode;
   }
 
+  /**
+   * Return the success value.
+   * 
+   * @return true or false
+   */
   public boolean isSuccess() {
     return responseCode == NSResponseCode.NO_ERROR;
   }
 
+  /**
+   * Set the request id.
+   * 
+   * @param requestID
+   */
   public void setRequestID(int requestID) {
     this.requestID = requestID;
   }

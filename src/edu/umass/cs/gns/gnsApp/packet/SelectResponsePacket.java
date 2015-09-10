@@ -19,12 +19,23 @@ import org.json.JSONObject;
  * to a select statement.
  *
  * @author Westy
+ * @param <NodeIDType>
  */
 public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
+  /**
+   *
+   */
   public enum ResponseCode {
 
+    /**
+     * NOERROR
+     */
     NOERROR,
+
+    /**
+     * ERROR
+     */
     ERROR
   }
   //
@@ -119,6 +130,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    * Constructs new SelectResponsePacket from a JSONObject
    *
    * @param json JSONObject representing this packet
+   * @param unstringer
    * @throws org.json.JSONException
    */
   public SelectResponsePacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
@@ -170,36 +182,65 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     return json;
   }
 
+  /**
+   * Return the id.
+   * 
+   * @return the id
+   */
   public int getId() {
     return id;
   }
 
-//  public int getLnsID() {
-//    return lnsID;
-//  }
-  public JSONArray getRecords() {
+  /**
+   * Return the records.
+   * 
+   * @return the records
+   */
+    public JSONArray getRecords() {
     return records;
   }
 
+  /**
+   * Return the guids.
+   * 
+   * @return the guids
+   */
   public JSONArray getGuids() {
     return guids;
   }
 
+  /**
+   * Return the LNS query id.
+   * 
+   * @return the LNS query id
+   */
   public int getLnsQueryId() {
     return lnsQueryId;
   }
 
+  /**
+   * Return the NS query id.
+   * 
+   * @return the NS query id
+   */
   public int getNsQueryId() {
     return nsQueryId;
   }
 
-//  public NodeIDType getNameServerID() {
-//    return nameServer;
-//  }
-  public ResponseCode getResponseCode() {
+  /**
+   * Return the response code.
+   * 
+   * @return the response code
+   */
+    public ResponseCode getResponseCode() {
     return responseCode;
   }
 
+  /**
+   * Return the error message.
+   * 
+   * @return the error message
+   */
   public String getErrorMessage() {
     return errorMessage;
   }
@@ -209,6 +250,5 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     // FIXME:
     return "SelectResponse";
   }
-            
 
 }

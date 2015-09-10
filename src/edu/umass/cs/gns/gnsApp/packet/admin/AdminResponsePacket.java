@@ -22,8 +22,13 @@ import java.util.Date;
  */
 public class AdminResponsePacket extends BasicPacket {
 
+  /** The id */
   public final static String ID = "id";
+
+  /** The JSON */
   public final static String JSON = "json";
+
+  /** The time */
   public final static String TIME = "time";
   private int id;
   private Date time;
@@ -31,7 +36,8 @@ public class AdminResponsePacket extends BasicPacket {
   private JSONObject jsonObject;
 
   /**
-   * Constructs a new AdminResponsePacket with the given JSONObject
+   * Constructs a new AdminResponsePacket with the given JSONObject.
+   * 
    * @param id
    * @param jsonObject
    */
@@ -43,7 +49,7 @@ public class AdminResponsePacket extends BasicPacket {
   }
 
   /**
-   * Constructs a new empty status packet
+   * Constructs a new empty status packet.
    *
    * @param id
    */
@@ -52,9 +58,11 @@ public class AdminResponsePacket extends BasicPacket {
   }
 
   /**
-   * Constructs new AdminResponsePacket from a JSONObject
+   * Constructs new AdminResponsePacket from a JSONObject.
+   * 
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
+   * @throws java.text.ParseException
    */
   public AdminResponsePacket(JSONObject json) throws JSONException, ParseException {
     if (Packet.getPacketType(json) != Packet.PacketType.ADMIN_RESPONSE) {
@@ -69,20 +77,36 @@ public class AdminResponsePacket extends BasicPacket {
     this.jsonObject = json.getJSONObject(JSON);
   }
 
+  /**
+   * Return the id.
+   * 
+   * @return the id
+   */
   public int getId() {
     return id;
   }
 
+  /**
+   * Return the time.
+   * 
+   * @return the time
+   */
   public Date getTime() {
     return time;
   }
 
+  /**
+   * Return the json.
+   * 
+   * @return the json
+   */
   public JSONObject getJsonObject() {
     return jsonObject;
   }
 
   /**
    * Converts a AdminResponsePacket to a JSONObject.
+   * 
    * @return JSONObject representing this packet.
    * @throws org.json.JSONException
    */

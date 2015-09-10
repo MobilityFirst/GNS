@@ -16,9 +16,15 @@ import org.json.JSONObject;
  */
 public abstract class BasicPacketWithCCPAddress extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
+  /** ccpAddress */
   public final static String CCP_ADDRESS = "ccpAddress";
+
+  /** ccpPort */
   public final static String CCP_PORT = "ccpPort";
 
+  /**
+   * An invalid port.
+   */
   public final static int INVALID_PORT = -1;
   //
   /**

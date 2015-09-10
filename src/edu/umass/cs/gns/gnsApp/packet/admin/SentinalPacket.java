@@ -7,17 +7,24 @@ import org.json.JSONObject;
 
 /**
  * This class implements the packet used to mark the end of a dump request.
- * 
+ *
  * @author Westy
- **/
+ *
+ */
 public class SentinalPacket extends BasicPacket {
 
+  /**
+   * id
+   */
   public final static String ID = "id";
   private int id;
 
   /**
    * Constructs new SentinalPacket.
-   **/
+   *
+   * @param id
+   *
+   */
   public SentinalPacket(int id) {
     this.type = Packet.PacketType.SENTINAL;
     this.id = id;
@@ -25,9 +32,11 @@ public class SentinalPacket extends BasicPacket {
 
   /**
    * Constructs new SentinalPacket from a JSONObject
+   *
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
-   **/
+   *
+   */
   public SentinalPacket(JSONObject json) throws JSONException {
     if (Packet.getPacketType(json) != Packet.PacketType.SENTINAL) {
       Exception e = new Exception("SentinalPacket: wrong packet type " + Packet.getPacketType(json));
@@ -41,9 +50,11 @@ public class SentinalPacket extends BasicPacket {
 
   /**
    * Converts a SentinalPacket to a JSONObject.
+   *
    * @return JSONObject representing this packet.
    * @throws org.json.JSONException
-   **/
+   *
+   */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -52,6 +63,11 @@ public class SentinalPacket extends BasicPacket {
     return json;
   }
 
+  /**
+   * Return the id.
+   *
+   * @return the id
+   */
   public int getId() {
     return id;
   }

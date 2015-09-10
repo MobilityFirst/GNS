@@ -15,15 +15,14 @@ public class StatusInitPacket extends BasicPacket {
 
   /**
    * Constructs a new status init packet
-   * @param id
-   * @param jsonObject
    */
   public StatusInitPacket() {
     this.type = Packet.PacketType.STATUS_INIT;
   }
 
   /**
-   * Constructs new StatusInitPacket from a JSONObject
+   * Constructs new StatusInitPacket from a JSONObject.
+   * 
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
    */
@@ -39,6 +38,7 @@ public class StatusInitPacket extends BasicPacket {
 
   /**
    * Converts a StatusInitPacket to a JSONObject.
+   * 
    * @return JSONObject representing this packet.
    * @throws org.json.JSONException
    */

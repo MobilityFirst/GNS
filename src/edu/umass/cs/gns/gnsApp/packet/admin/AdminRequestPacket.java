@@ -14,17 +14,28 @@ import org.json.JSONObject;
  */
 public class AdminRequestPacket extends BasicPacketWithCCPAddress {
 
+  /**
+   * The admin operations.
+   */
   public enum AdminOperation {
 
-    DELETEALLRECORDS, // calls remove record on every record
-    RESETDB, // clears the database and reinitializes all indices
+    /** Remove record on every record. **/
+    DELETEALLRECORDS, 
+    /** clears the database and reinitializes all indices. **/
+    RESETDB, // 
+    /** Clear the cache. **/
     CLEARCACHE,
+    /** Prints the cache. **/
     DUMPCACHE,
+    /** Set the logging level. **/
     CHANGELOGLEVEL,
+    /** Prints the entire ping table. **/
     PINGTABLE,
+    /** Prints the a single ping table. **/
     PINGVALUE;
   };
-  public final static String ID = "id";
+
+  private final static String ID = "id";
   private final static String OPERATION = "operation";
   private final static String ARGUMENT = "arg";
   private final static String ARGUMENT2 = "arg2";
@@ -35,8 +46,7 @@ public class AdminRequestPacket extends BasicPacketWithCCPAddress {
   private String argument2;
 
   /**
-   *
-   * Constructs new AdminRequestPacket with the given parameter.
+   * Constructs new AdminRequestPacket.
    *
    * @param operation
    */
@@ -157,42 +167,47 @@ public class AdminRequestPacket extends BasicPacketWithCCPAddress {
     return json;
   }
 
+  /**
+   * Returns the id.
+   * 
+   * @return the id
+   */
   public int getId() {
     return id;
   }
 
+  /**
+   * Sets the id.
+   * 
+   * @param id
+   */
   public void setId(int id) {
     this.id = id;
   }
 
-//  public int getLocalNameServerId() {
-//    return localNameServerId;
-//  }
-//
-//  public void setLocalNameServerId(int lnsid) {
-//    this.localNameServerId = lnsid;
-//  }
-  
-//  /** 
-//   * Gets the lns return address. If thi
-//   * @return 
-//   */
-//  public InetSocketAddress getCCPAddress() {
-//    return lnsAddress;
-//  }
-//
-//  public void setCCPAddress(InetSocketAddress lnsAddress) {
-//    this.lnsAddress = lnsAddress;
-//  }
-
+  /**
+   * Return the operation.
+   * 
+   * @return the operation
+   */
   public AdminOperation getOperation() {
     return operation;
   }
 
+  /**
+   * Return the first argument.
+   * 
+   * @return the first argument
+   */
   public String getArgument() {
     return argument;
   }
 
+  /**
+   * Return the second argument.
+   * 
+   * @return the second argument
+   */
   public String getArgument2() {
     return argument2;
   }

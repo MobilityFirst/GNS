@@ -9,11 +9,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * The basic packet interface.
+ * 
  * @author westy
  */
 public interface PacketInterface {
   
+  /**
+   * Convert this to a JSON Object.
+   * 
+   * @return
+   * @throws JSONException
+   */
   public JSONObject toJSONObject() throws JSONException;
   
 }

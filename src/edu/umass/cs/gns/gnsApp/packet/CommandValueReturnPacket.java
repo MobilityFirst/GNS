@@ -175,6 +175,11 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     return json;
   }
 
+  /**
+   * Get the client request id.
+   * 
+   * @return the client request id
+   */
   public int getClientRequestId() {
     return clientRequestId;
   }
@@ -184,40 +189,76 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
     return serviceName;
   }
 
+  /**
+   * Get the LNS request id.
+   * 
+   * @return the LNS request id
+   */
   public int getLNSRequestId() {
     return LNSRequestId;
   }
 
+  /**
+   * Get the return value.
+   * 
+   * @return the return value
+   */
   public String getReturnValue() {
     return returnValue;
   }
 
+  /**
+   * Get the error code.
+   * 
+   * @return the error code
+   */
   public NSResponseCode getErrorCode() {
     return errorCode;
   }
 
+  /**
+   * Get the LNS round trip time (instrumentation).
+   * 
+   * @return the LNS round trip time
+   */
   public long getLNSRoundTripTime() {
     return CCPRoundTripTime;
   }
 
+  /**
+   * Get the LNS processing time (instrumentation).
+   *
+   * @return the LNS processing time
+   */
   public long getLNSProcessingTime() {
     return CCPProcessingTime;
   }
 
+  /**
+   * Get the responder host id (instrumentation).
+   * 
+   * @return the responder
+   */
   public String getResponder() {
     return responder;
   }
 
+  /**
+   * Get the request count (instrumentation).'
+   * 
+   * @return the request count
+   */
   public long getRequestCnt() {
     return requestCnt;
   }
 
+  /**
+   * Get the request rate (instrumentation).
+   * 
+   * @return the request rate
+   */
   public int getRequestRate() {
     return requestRate;
   }
-
-//  public int getLookupTime() {
-//    return lookupTime;
-//  }
 
 }

@@ -15,8 +15,13 @@ import org.json.JSONObject;
  */
 public abstract class BasicPacketWithSignatureInfo extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
+  /** accessor */
   public final static String ACCESSOR = "si_accessor";
+
+  /** signature */
   public final static String SIGNATURE = "si_signature";
+
+  /** message */
   public final static String MESSAGE = "si_message";
   //
   private String accessor;
@@ -57,14 +62,29 @@ public abstract class BasicPacketWithSignatureInfo extends BasicPacket implement
     }
   }
 
+  /**
+   * Return the accessor.
+   * 
+   * @return
+   */
   public String getAccessor() {
     return accessor;
   }
 
+  /**
+   * Return the signature.
+   * 
+   * @return
+   */
   public String getSignature() {
     return signature;
   }
 
+  /**
+   * Return the message.
+   * 
+   * @return
+   */
   public String getMessage() {
     return message;
   }

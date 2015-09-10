@@ -12,16 +12,21 @@ import org.json.JSONObject;
 
 /**
  *
- * This class implements the packet transmitted between local nameserver and a primary nameserver to toString information about the
- contents of the nameserver;
+ * This class implements the packet transmitted between local nameserver and a primary
+ * nameserver to toString information about the contents of the nameserver.
  *
  * @author Westy
  * @param <NodeIDType>
  */
 public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCCPAddress {
 
+  /** id */
   public final static String ID = "id";
+
+  /** primary */
   public final static String PRIMARY_NAMESERVER = "primary";
+
+  /** json */
   public final static String JSON = "json";
   private final static String ARGUMENT = "arg";
   private int id;
@@ -75,10 +80,10 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCCPAddress {
   }
 
   /**
-   *
    * Constructs new DumpRequestPacket from a JSONObject
    *
    * @param json JSONObject representing this packet
+   * @param unstringer
    * @throws org.json.JSONException
    */
   public DumpRequestPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
@@ -116,30 +121,65 @@ public class DumpRequestPacket<NodeIDType> extends BasicPacketWithCCPAddress {
     return json;
   }
 
+  /**
+   * Return the id.
+   * 
+   * @return the id
+   */
   public int getId() {
     return id;
   }
 
+  /**
+   * Set the id.
+   * 
+   * @param id
+   */
   public void setId(int id) {
     this.id = id;
   }
 
+  /**
+   * Return the json array.
+   * 
+   * @return the json array
+   */
   public JSONArray getJsonArray() {
     return jsonArray;
   }
 
+  /**
+   * Set the json array.
+   * 
+   * @param jsonArray
+   */
   public void setJsonArray(JSONArray jsonArray) {
     this.jsonArray = jsonArray;
   }
 
+  /**
+   * Return the primary Name Server.
+   * 
+   * @return the primary Name Server
+   */
   public NodeIDType getPrimaryNameServer() {
     return primaryNameServer;
   }
 
+  /**
+   * Set the primary Name Server.
+   * 
+   * @param primaryNameServer
+   */
   public void setPrimaryNameServer(NodeIDType primaryNameServer) {
     this.primaryNameServer = primaryNameServer;
   }
 
+  /**
+   * Get the argument.
+   * 
+   * @return the argument
+   */
   public String getArgument() {
     return argument;
   }

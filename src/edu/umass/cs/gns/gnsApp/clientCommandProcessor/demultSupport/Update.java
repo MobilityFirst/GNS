@@ -85,7 +85,7 @@ public class Update {
             updatePacket.getRequestID(),
             ccpReqID, // the id used by the CCP (that would be us here)
             updatePacket.getName(),
-            updatePacket.getRecordKey(),
+            updatePacket.getKey(),
             updatePacket.getUpdateValue(),
             updatePacket.getOldValue(),
             updatePacket.getArgument(),

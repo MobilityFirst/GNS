@@ -29,8 +29,13 @@ import java.util.Set;
  */
 public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
+  /** NAME */
   public static final String NAME = "name";
+
+  /** ACTIVES */
   public static final String ACTIVES = "actives";
+
+  /** LNS REQUEST ID */
   public static final String LNS_REQ_ID = "lnsreqid";
 
   /**
@@ -49,6 +54,14 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    */
   private final int lnsRequestID;
 
+  /**
+   * Create a RequestActivesPacket instance.
+   *
+   * @param name
+   * @param lnsAddress
+   * @param lnsRequestID
+   * @param nameServerID
+   */
   @SuppressWarnings("unchecked")
   public RequestActivesPacket(String name, InetSocketAddress lnsAddress, int lnsRequestID, NodeIDType nameServerID) {
     super(nameServerID, lnsAddress);
@@ -57,6 +70,13 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     this.lnsRequestID = lnsRequestID;
   }
 
+  /**
+   * Create a RequestActivesPacket instance.
+   *
+   * @param json
+   * @param unstringer
+   * @throws JSONException
+   */
   @SuppressWarnings("unchecked")
   public RequestActivesPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
     super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
@@ -68,6 +88,11 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     this.lnsRequestID = json.getInt(LNS_REQ_ID);
   }
 
+  /**
+   * Convert the RequestActivesPacket to a JSON Object.
+   * @return
+   * @throws JSONException
+   */
   @Override
   public JSONObject toJSONObject() throws JSONException {
     JSONObject json = new JSONObject();
@@ -82,18 +107,38 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     return json;
   }
 
+  /**
+   * Set the active name servers.
+   * 
+   * @param activeNameServers
+   */
   public void setActiveNameServers(Set<NodeIDType> activeNameServers) {
     this.activeNameServers = activeNameServers;
   }
 
+  /**
+   * Return the name.
+   * 
+   * @return
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Return the active name servers.
+   * 
+   * @return
+   */
   public Set<NodeIDType> getActiveNameServers() {
     return activeNameServers;
   }
 
+  /**
+   * Return the LNS request ID.
+   * 
+   * @return
+   */
   public int getLnsRequestID() {
     return lnsRequestID;
   }

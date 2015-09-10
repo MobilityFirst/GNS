@@ -20,6 +20,7 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
   private final static String SENDERPORT = MessageNIOTransport.SNDR_PORT_FIELD;
   private final static String COMMAND = "command";
 
+  /** bogus service name */
   public final static String BOGUS_SERVICE_NAME = "unknown";
 
   /**
@@ -50,9 +51,12 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
   private boolean needsCoordinationExplicitlySet = false;
 
   /**
-   *
+   * Create a CommandPacket instance.
+   * 
    * @param requestId
+   * @param senderAddress
    * @param command
+   * @param senderPort
    */
   public CommandPacket(int requestId, String senderAddress, int senderPort, JSONObject command) {
     this.setType(PacketType.COMMAND);
@@ -63,6 +67,12 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
     this.command = command;
   }
 
+  /**
+   * Create a CommandPacket instance.
+   *
+   * @param json
+   * @throws JSONException
+   */
   public CommandPacket(JSONObject json) throws JSONException {
     this.type = Packet.getPacketType(json);
     this.clientRequestId = json.getInt(CLIENTREQUESTID);
@@ -96,26 +106,56 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
     return json;
   }
 
+  /**
+   * Return the client request id.
+   * 
+   * @return the client request id
+   */
   public int getClientRequestId() {
     return clientRequestId;
   }
 
+  /**
+   * Return the LNS request id.
+   * 
+   * @return the LNS request id
+   */
   public int getLNSRequestId() {
     return LNSRequestId;
   }
 
+  /**
+   * Set the LNS request id.
+   * 
+   * @param LNSRequestId
+   */
   public void setLNSRequestId(int LNSRequestId) {
     this.LNSRequestId = LNSRequestId;
   }
 
+  /**
+   * Return the sender address.
+   * 
+   * @return
+   */
   public String getSenderAddress() {
     return senderAddress;
   }
 
+  /**
+   * Return the sender port.
+   * 
+   * @return the sender port
+   */
   public int getSenderPort() {
     return senderPort;
   }
 
+  /**
+   * Return the command.
+   * 
+   * @return the command
+   */
   public JSONObject getCommand() {
     return command;
   }
@@ -137,6 +177,11 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
     return BOGUS_SERVICE_NAME;
   }
 
+  /**
+   * Return the command name.
+   * 
+   * @return the command name
+   */
   public String getCommandName() {
     try {
       if (command != null) {

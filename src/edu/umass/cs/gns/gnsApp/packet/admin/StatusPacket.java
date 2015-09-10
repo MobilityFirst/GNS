@@ -13,11 +13,17 @@ import java.util.Date;
  * This class implements a packet that contains status information
  * 
  * @author Westy
+ * @param <NodeIDType>
  */
 public class StatusPacket<NodeIDType> extends BasicPacket {
 
+  /** id */
   public final static String ID = "id";
+
+  /** json */
   public final static String JSON = "json";
+
+  /** time */
   public final static String TIME = "time";
   private NodeIDType id;
   private Date time;
@@ -25,7 +31,8 @@ public class StatusPacket<NodeIDType> extends BasicPacket {
   private JSONObject jsonObject;
 
   /**
-   * Constructs a new status packet with the given JSONObject
+   * Constructs a new status packet with the given JSONObject.
+   * 
    * @param id
    * @param jsonObject
    */
@@ -37,7 +44,7 @@ public class StatusPacket<NodeIDType> extends BasicPacket {
   }
 
   /**
-   * Constructs a new empty status packet
+   * Constructs a new empty status packet.
    *
    * @param id
    */
@@ -46,9 +53,11 @@ public class StatusPacket<NodeIDType> extends BasicPacket {
   }
 
   /**
-   * Constructs new StatusPacket from a JSONObject
+   * Constructs new StatusPacket from a JSONObject.
+   * 
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
+   * @throws java.text.ParseException
    */
   @SuppressWarnings("unchecked")
   public StatusPacket(JSONObject json) throws JSONException, ParseException {
@@ -64,14 +73,29 @@ public class StatusPacket<NodeIDType> extends BasicPacket {
     this.jsonObject = json.getJSONObject(JSON);
   }
 
+  /**
+   * Return the id.
+   * 
+   * @return the id
+   */
   public NodeIDType getId() {
     return id;
   }
 
+  /**
+   * Return the time.
+   * 
+   * @return the time
+   */
   public Date getTime() {
     return time;
   }
 
+  /**
+   * Return the json object.
+   * 
+   * @return the json object
+   */
   public JSONObject getJsonObject() {
     return jsonObject;
   }

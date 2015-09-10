@@ -18,8 +18,13 @@ import org.json.JSONObject;
 public abstract class BasicPacketWithSignatureInfoAndNSAndCCP<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> 
 implements PacketInterface, ExtensiblePacketInterface {
 
+  /** accessor */
   public final static String ACCESSOR = "si_accessor";
+
+  /** signature */
   public final static String SIGNATURE = "si_signature";
+
+  /** message */
   public final static String MESSAGE = "si_message";
   //
   private String accessor;
@@ -29,6 +34,7 @@ implements PacketInterface, ExtensiblePacketInterface {
   /**
    * Construct this guy with the address, but no signature info.
    *
+   * @param nameServerID
    * @param lnsAddress
    */
   public BasicPacketWithSignatureInfoAndNSAndCCP(NodeIDType nameServerID, InetSocketAddress lnsAddress) {
@@ -38,6 +44,7 @@ implements PacketInterface, ExtensiblePacketInterface {
   /**
    * Construct this with the address and all the signature info.
    *
+   * @param nameServerID
    * @param lnsAddress
    * @param accessor
    * @param signature
@@ -53,6 +60,7 @@ implements PacketInterface, ExtensiblePacketInterface {
   /**
    * Construct this with all the address and signature info.
    *
+   * @param nameServerID
    * @param address
    * @param port
    * @param accessor
@@ -69,6 +77,12 @@ implements PacketInterface, ExtensiblePacketInterface {
     addToJSONObject(json, true);
   }
 
+  /**
+   * Add this packets fields to a Json object.
+   * @param json
+   * @param includeSignatureSection
+   * @throws JSONException
+   */
   public void addToJSONObject(JSONObject json, boolean includeSignatureSection) throws JSONException {
     super.addToJSONObject(json);
     if (includeSignatureSection) {
@@ -84,14 +98,29 @@ implements PacketInterface, ExtensiblePacketInterface {
     }
   }
 
+  /**
+   * Return the accessor.
+   * 
+   * @return
+   */
   public String getAccessor() {
     return accessor;
   }
 
+  /**
+   * Return the signature.
+   * 
+   * @return
+   */
   public String getSignature() {
     return signature;
   }
 
+  /**
+   * Return the message.
+   * 
+   * @return
+   */
   public String getMessage() {
     return message;
   }

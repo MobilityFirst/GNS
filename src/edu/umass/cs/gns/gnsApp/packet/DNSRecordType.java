@@ -14,7 +14,10 @@ package edu.umass.cs.gns.gnsApp.packet;
  */
 public enum DNSRecordType {
 
+  /** query */
   QUERY(0),
+
+  /** response */
   RESPONSE(1);
   // stash the codes in a lookup table
   private static DNSRecordType[] typeCodes;
@@ -35,6 +38,11 @@ public enum DNSRecordType {
     this.codeValue = codeValue;
   }
 
+  /**
+   * Return the code value.
+   * 
+   * @return the code value
+   */
   public int getCodeValue() {
     return codeValue;
   }

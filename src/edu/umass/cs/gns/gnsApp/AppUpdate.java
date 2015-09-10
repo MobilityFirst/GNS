@@ -57,7 +57,7 @@ public class AppUpdate {
 
     // First we do signature and ACL checks
     String guid = updatePacket.getName();
-    String field = updatePacket.getRecordKey() != null ? updatePacket.getRecordKey() : null;
+    String field = updatePacket.getKey() != null ? updatePacket.getKey() : null;
     String writer = updatePacket.getAccessor();
     String signature = updatePacket.getSignature();
     String message = updatePacket.getMessage();

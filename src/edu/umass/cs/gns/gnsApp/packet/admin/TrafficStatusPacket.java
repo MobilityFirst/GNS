@@ -21,12 +21,25 @@ import java.util.Date;
  */
 public class TrafficStatusPacket<NodeIDType> extends BasicPacket {
 
+  /** fromID */
   public final static String FROMID = "fromID";
+
+  /** toID */
   public final static String TOID = "toID";
+
+  /** porttype */
   public final static String PORTTYPE = "porttype";
+
+  /** packettype */
   public final static String PACKETTYPE = "packettype";
+
+  /** time */
   public final static String TIME = "time";
+
+  /** name */
   public final static String NAME = "name";
+
+  /** other */
   public final static String OTHER = "other";
   private Date time;
   private NodeIDType fromID;
@@ -74,6 +87,7 @@ public class TrafficStatusPacket<NodeIDType> extends BasicPacket {
    *
    * @param json JSONObject representing this packet
    * @throws org.json.JSONException
+   * @throws java.text.ParseException
    *
    */
   @SuppressWarnings("unchecked")
@@ -94,36 +108,70 @@ public class TrafficStatusPacket<NodeIDType> extends BasicPacket {
     this.other = json.optString(OTHER, null);
   }
 
+  /**
+   * Return the time.
+   * 
+   * @return the time
+   */
   public Date getTime() {
     return time;
   }
 
+  /**
+   * Return the from id.
+   * 
+   * @return the from id
+   */
   public NodeIDType getFromID() {
     return fromID;
   }
 
+  /**
+   * Return the to id.
+   * 
+   * @return the to id
+   */
   public NodeIDType getToID() {
     return toID;
   }
 
+  /**
+   * Return the port type.
+   * 
+   * @return the port type
+   */
   public PortType getPortType() {
     return portType;
   }
 
+  /**
+   * Return the packet type.
+   * 
+   * @return the packet type
+   */
   public PacketType getPacketType() {
     return packetType;
   }
 
+  /**
+   * Return the name.
+   * 
+   * @return the name
+   */
   public String getName() {
     return name;
   }
 
+  /**
+   * Return the other.
+   * 
+   * @return the other
+   */
   public String getOther() {
     return other;
   }
 
   /**
-   *
    * Converts a TrafficStatusPacket to a JSONObject.
    *
    * @return JSONObject representing this packet.

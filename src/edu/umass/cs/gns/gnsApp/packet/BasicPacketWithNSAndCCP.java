@@ -18,10 +18,18 @@ import org.json.JSONObject;
  */
 public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket implements PacketInterface, ExtensiblePacketInterface {
 
+  /** ns_ID */
   public final static String NAMESERVER_ID = "ns_ID";
+
+  /** ccpAddress */
   public final static String CCP_ADDRESS = "ccpAddress";
+
+  /** ccpPort */
   public final static String CCP_PORT = "ccpPort";
 
+  /**
+   * An invalid port.
+   */
   public final static int INVALID_PORT = -1;
 
   /**
@@ -39,6 +47,7 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket im
   /**
    * Creates a BasicPacketWithNSAndLnsAddress.
    *
+   * @param nameServerID
    * @param address
    */
   public BasicPacketWithNSAndCCP(NodeIDType nameServerID, InetSocketAddress address) {
@@ -49,6 +58,7 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket im
   /**
    * Creates a BasicPacketWithNSAndLnsAddress.
    *
+   * @param nameServerID
    * @param address
    * @param port
    */

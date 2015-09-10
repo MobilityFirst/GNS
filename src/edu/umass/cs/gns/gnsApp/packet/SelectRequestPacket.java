@@ -25,19 +25,51 @@ import org.json.JSONObject;
  */
 public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
+  /**
+   * The select operation.
+   */
   public enum SelectOperation {
 
-    EQUALS, // special case query for field with value
-    NEAR, // special case query for location field near point
-    WITHIN, // special case query for location field within bounding box
-    QUERY, // general purpose query
+    /**
+     * Special case query for field with value.
+     */
+    EQUALS, 
+
+    /**
+     * Special case query for location field near point.
+     */
+    NEAR,
+
+    /**
+     * Special case query for location field within bounding box.
+     */
+    WITHIN,
+
+    /**
+     * General purpose query.
+     */
+    QUERY, 
   }
 
+  /**
+   * The group behavior.
+   */
   public enum GroupBehavior {
 
-    NONE, // normal query, just returns results
-    GROUP_SETUP, // set up a group guid that satisfies general purpose query
-    GROUP_LOOKUP; // lookup value of group guid with an associated query
+    /**
+     * Normal query, just returns results.
+     */
+    NONE, // 
+
+    /**
+     * Set up a group guid that satisfies general purpose query.
+     */
+    GROUP_SETUP, // 
+
+    /**
+     * Lookup value of group guid with an associated query.
+     */
+    GROUP_LOOKUP; // 
   }
   //
   private final static String ID = "id";
@@ -160,6 +192,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * Constructs new SelectRequestPacket from a JSONObject
    *
    * @param json JSONObject representing this packet
+   * @param unstringer
    * @throws org.json.JSONException
    */
   @SuppressWarnings("unchecked")
@@ -227,50 +260,110 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
     }
   }
 
+  /**
+   * Set the CCP Query ID.
+   * 
+   * @param ccpQueryId
+   */
   public void setCCPQueryId(int ccpQueryId) {
     this.ccpQueryId = ccpQueryId;
   }
 
+  /**
+   * Set the NS Query ID.
+   * 
+   * @param nsQueryId
+   */
   public void setNsQueryId(int nsQueryId) {
     this.nsQueryId = nsQueryId;
   }
 
+  /**
+   * Return the ID.
+   * 
+   * @return the ID
+   */
   public int getId() {
     return id;
   }
 
+  /**
+   * Return the key.
+   * 
+   * @return the key
+   */
   public String getKey() {
     return key;
   }
 
+  /**
+   * Return the value.
+   * 
+   * @return the value
+   */
   public Object getValue() {
     return value;
   }
 
+  /**
+   * Return the CCP query id.
+   * 
+   * @return the CCP query id
+   */
   public int getCcpQueryId() {
     return ccpQueryId;
   }
 
+  /**
+   * Return the NS query id.
+   * 
+   * @return the NS query id
+   */
   public int getNsQueryId() {
     return nsQueryId;
   }
 
+  /**
+   * Return the select operation.
+   * 
+   * @return the select operation
+   */
   public SelectOperation getSelectOperation() {
     return selectOperation;
   }
 
+  /**
+   * Return the group behavior.
+   * 
+   * @return the group behavior
+   */
   public GroupBehavior getGroupBehavior() {
     return groupBehavior;
   }
 
+  /**
+   * Return the other value.
+   * 
+   * @return the other value
+   */
   public Object getOtherValue() {
     return otherValue;
   }
 
+  /**
+   * Return the query.
+   * 
+   * @return the query
+   */
   public String getQuery() {
     return query;
   }
 
+  /**
+   * Set the query.
+   * 
+   * @param query
+   */
   public void setQuery(String query) {
     this.query = query;
   }
@@ -286,10 +379,20 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
     }
   }
 
+  /**
+   * Return the guid.
+   * 
+   * @return the guid
+   */
   public String getGuid() {
     return guid;
   }
 
+  /**
+   * Get the min refresh interval.
+   * 
+   * @return the min refresh interval
+   */
   public int getMinRefreshInterval() {
     return minRefreshInterval;
   }
