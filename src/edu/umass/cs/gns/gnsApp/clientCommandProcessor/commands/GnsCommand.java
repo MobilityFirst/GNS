@@ -26,6 +26,9 @@ import org.json.JSONObject;
  */
 public abstract class GnsCommand implements Comparable<GnsCommand> {
 
+  /**
+   *
+   */
   protected CommandModule module;
 
   /**
@@ -88,6 +91,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    * @throws JSONException
    * @throws NoSuchAlgorithmException
    * @throws SignatureException 
+   * @throws java.io.UnsupportedEncodingException 
    */
   public abstract CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException;

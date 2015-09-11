@@ -10,7 +10,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 //import edu.umass.cs.gns.paxos.paxospacket.PaxosPacket;
 //import edu.umass.cs.gns.paxos.paxospacket.PaxosPacketType;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
 

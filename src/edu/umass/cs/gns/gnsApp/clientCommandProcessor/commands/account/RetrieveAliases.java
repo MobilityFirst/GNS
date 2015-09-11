@@ -32,6 +32,11 @@ import org.json.JSONObject;
  */
 public class RetrieveAliases extends GnsCommand {
 
+  /**
+   * Creates a RetriveAliases instance.
+   * 
+   * @param module
+   */
   public RetrieveAliases(CommandModule module) {
     super(module);
   }

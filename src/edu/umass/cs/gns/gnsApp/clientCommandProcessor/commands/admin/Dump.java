@@ -21,6 +21,10 @@ import org.json.JSONObject;
  */
 public class Dump extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public Dump(CommandModule module) {
     super(module);
   }

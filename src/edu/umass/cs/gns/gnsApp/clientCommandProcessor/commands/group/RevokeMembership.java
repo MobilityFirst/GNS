@@ -13,7 +13,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GroupAccess
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.utils.ResultValue;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -30,6 +30,10 @@ import org.json.JSONObject;
 @Deprecated
 public class RevokeMembership extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public RevokeMembership(CommandModule module) {
     super(module);
   }

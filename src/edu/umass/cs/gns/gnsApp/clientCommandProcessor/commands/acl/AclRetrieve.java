@@ -29,6 +29,10 @@ import org.json.JSONObject;
  */
 public class AclRetrieve extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public AclRetrieve(CommandModule module) {
     super(module);
   }

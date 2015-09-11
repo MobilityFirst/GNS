@@ -16,6 +16,10 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
  */
 public class AddToGroupSelf extends AddToGroup {
 
+  /**
+   *
+   * @param module
+   */
   public AddToGroupSelf(CommandModule module) {
     super(module);
   }

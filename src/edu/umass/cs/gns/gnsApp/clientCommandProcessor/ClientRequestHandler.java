@@ -15,8 +15,8 @@ import edu.umass.cs.gns.gnsApp.GnsApp;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket;
-import edu.umass.cs.gns.util.MovingAverage;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.MovingAverage;
+import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
@@ -49,7 +49,7 @@ import org.json.JSONException;
  *
  * @author westy
  */
-public class NewClientRequestHandler implements ClientRequestHandlerInterface {
+public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
   private final Intercessor intercessor;
   private final Admintercessor admintercessor;
@@ -90,7 +90,19 @@ public class NewClientRequestHandler implements ClientRequestHandlerInterface {
 
   private long receivedRequests = 0;
 
-  public NewClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
+  /**
+   * Creates an instance of the ClientRequestHandler.
+   * 
+   * @param intercessor
+   * @param admintercessor
+   * @param nodeAddress
+   * @param activeReplicaID
+   * @param app
+   * @param gnsNodeConfig
+   * @param messenger
+   * @param parameters
+   */
+  public ClientRequestHandler(Intercessor intercessor, Admintercessor admintercessor,
           InetSocketAddress nodeAddress,
           String activeReplicaID,
           GnsApp app,

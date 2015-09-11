@@ -34,6 +34,11 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   private ClientRequestHandlerInterface handler;
 
+  /**
+   * Sets the handler.
+   * 
+   * @param handler
+   */
   public void setHandler(ClientRequestHandlerInterface handler) {
     this.handler = handler;
   }

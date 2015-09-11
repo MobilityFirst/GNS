@@ -23,6 +23,10 @@ import org.json.JSONObject;
  */
 public class SelectQuery extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public SelectQuery(CommandModule module) {
     super(module);
   }

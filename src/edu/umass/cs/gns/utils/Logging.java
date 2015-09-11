@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import java.io.File;
 import java.util.logging.ConsoleHandler;

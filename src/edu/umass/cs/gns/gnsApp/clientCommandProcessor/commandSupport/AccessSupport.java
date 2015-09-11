@@ -9,8 +9,8 @@ package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.Base64;
-import edu.umass.cs.gns.util.ByteUtils;
+import edu.umass.cs.gns.utils.Base64;
+import edu.umass.cs.gns.utils.ByteUtils;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;

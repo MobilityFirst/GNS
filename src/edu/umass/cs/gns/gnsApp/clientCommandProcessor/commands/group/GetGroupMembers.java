@@ -27,6 +27,10 @@ import org.json.JSONObject;
  */
 public class GetGroupMembers extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public GetGroupMembers(CommandModule module) {
     super(module);
   }

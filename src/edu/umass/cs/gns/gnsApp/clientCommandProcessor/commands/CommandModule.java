@@ -108,18 +108,46 @@ public class CommandModule {
     return null;
   }
   
+  /**
+   * The types of command description formats we support.
+   */
   public enum CommandDescriptionFormat {
-    HTML, TCP, TCP_Wiki
+
+    /**
+     *
+     */
+    HTML,
+
+    /**
+     *
+     */
+    TCP,
+
+    /**
+     *
+     */
+    TCP_Wiki
   }
   
+  /**
+   *
+   */
   public static final String standardPreamble = "COMMAND PACKAGE: %s";
   
+  /**
+   *
+   */
   public static final String wikiPreamble = "{| class=\"wikitable\"\n" +
 "|+ Commands in %s\n" +
 "! scope=\"col\" | Command Name\n" +
 "! scope=\"col\" | Parameters\n" +
 "! scope=\"col\" | Description";
 
+  /**
+   *
+   * @param format
+   * @return
+   */
   public String allCommandDescriptions(CommandDescriptionFormat format) {
     StringBuilder result = new StringBuilder();
     List<GnsCommand> commandList = new ArrayList<>(commands);
@@ -158,22 +186,41 @@ public class CommandModule {
     return true;
   }
 
+  /**
+   *
+   * @return
+   */
   public String getHTTPHost() {
     return httpHost;
   }
 
+  /**
+   *
+   * @param host
+   */
   public void setHTTPHost(String host) {
     this.httpHost = host;
   }
 
+  /**
+   *
+   * @return
+   */
   public boolean isAdminMode() {
     return adminMode;
   }
 
+  /**
+   *
+   * @param adminMode
+   */
   public void setAdminMode(boolean adminMode) {
     this.adminMode = adminMode;
   }
 
+  /**
+   *
+   */
   public static Comparator<GnsCommand> CommandPackageComparator
           = new Comparator<GnsCommand>() {
 
@@ -192,6 +239,9 @@ public class CommandModule {
 
           };
 
+  /**
+   *
+   */
   public static Comparator<GnsCommand> CommandNameComparator
           = new Comparator<GnsCommand>() {
 

@@ -27,6 +27,11 @@ public class DistributedNoopReconfigurableNode extends ReconfigurableNode<String
     System.out.println("Starting node " + id + " at " + nc.getNodeAddress(id) + ":" + nc.getNodePort(id));
   }
 
+  /**
+   * Creates the app coordinator.
+   * 
+   * @return
+   */
   @Override
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {
     DistributedNoopApp app = new DistributedNoopApp(this.myID);
@@ -36,8 +41,9 @@ public class DistributedNoopReconfigurableNode extends ReconfigurableNode<String
     return appCoordinator;
   }
 
-  // local setup
   /**
+   * The main routine. Does local setup.
+   * 
    * @param args
    */
   public static void main(String[] args) {

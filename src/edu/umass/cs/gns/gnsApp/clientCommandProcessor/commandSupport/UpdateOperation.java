@@ -6,8 +6,8 @@
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.ValuesMap;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;

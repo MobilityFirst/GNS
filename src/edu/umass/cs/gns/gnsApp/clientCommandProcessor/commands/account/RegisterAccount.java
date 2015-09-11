@@ -16,7 +16,7 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.utils.Base64;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +31,11 @@ import org.json.JSONObject;
  */
 public class RegisterAccount extends GnsCommand {
 
+  /**
+   * Creates a RegisterAccount instance.
+   * 
+   * @param module
+   */
   public RegisterAccount(CommandModule module) {
     super(module);
   }

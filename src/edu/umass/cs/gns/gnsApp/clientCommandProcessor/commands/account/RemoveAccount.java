@@ -30,6 +30,11 @@ import org.json.JSONObject;
  */
 public class RemoveAccount extends GnsCommand {
 
+  /**
+   * Creates a RemoveAccount instance.
+   * 
+   * @param module
+   */
   public RemoveAccount(CommandModule module) {
     super(module);
   }

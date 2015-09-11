@@ -17,10 +17,18 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class ReplaceOrCreateUnsigned extends AbstractUpdate {
 
+  /**
+   *
+   * @param module
+   */
   public ReplaceOrCreateUnsigned(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE;

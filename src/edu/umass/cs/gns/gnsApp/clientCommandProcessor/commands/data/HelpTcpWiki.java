@@ -16,6 +16,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class HelpTcpWiki extends Help {
 
+  /**
+   *
+   * @param module
+   */
   public HelpTcpWiki(CommandModule module) {
     super(module);
   }

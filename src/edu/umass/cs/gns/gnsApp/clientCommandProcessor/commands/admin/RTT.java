@@ -22,6 +22,10 @@ import org.json.JSONObject;
  */
 public class RTT extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public RTT(CommandModule module) {
     super(module);
   }

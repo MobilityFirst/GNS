@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,17 +35,18 @@ import org.json.JSONException;
 public class ResultValue extends ArrayList<Object> {
 
   /**
-   *
+   * Create an empty ResultValue instance.
    */
   public ResultValue() {
   }
 
   /**
-   *
-   * @param clctn
+   * Create a ResultValue instance from a collection.
+   * 
+   * @param collection
    */
-  public ResultValue(Collection<? extends Object> clctn) {
-    super(clctn);
+  public ResultValue(Collection<? extends Object> collection) {
+    super(collection);
   }
 
   /**
@@ -72,7 +73,7 @@ public class ResultValue extends ArrayList<Object> {
   }
 
   /**
-   * Converts this ResultValue to a Set<String> which insures that they're all strings.
+   * Converts this ResultValue to a Set which insures that they're all strings.
    * 
    * @return 
    */

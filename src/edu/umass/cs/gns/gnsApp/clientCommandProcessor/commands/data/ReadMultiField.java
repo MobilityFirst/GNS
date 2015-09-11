@@ -16,6 +16,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class ReadMultiField extends Read {
 
+  /**
+   *
+   * @param module
+   */
   public ReadMultiField(CommandModule module) {
     super(module);
   }

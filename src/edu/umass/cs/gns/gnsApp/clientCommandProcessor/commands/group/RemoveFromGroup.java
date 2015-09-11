@@ -27,6 +27,10 @@ import org.json.JSONObject;
  */
 public class RemoveFromGroup extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public RemoveFromGroup(CommandModule module) {
     super(module);
   }

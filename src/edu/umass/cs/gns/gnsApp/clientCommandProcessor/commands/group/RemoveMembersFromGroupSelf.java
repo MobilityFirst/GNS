@@ -16,6 +16,10 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
  */
 public class RemoveMembersFromGroupSelf extends RemoveMembersFromGroup {
 
+  /**
+   *
+   * @param module
+   */
   public RemoveMembersFromGroupSelf(CommandModule module) {
     super(module);
   }

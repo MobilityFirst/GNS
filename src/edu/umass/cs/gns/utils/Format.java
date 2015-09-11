@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -19,16 +19,10 @@ import java.util.TimeZone;
 public class Format {
 
   /**
-   *
-   */
-  public Format() {
-  }
-
-  /**
    * TIME
    */
-  public final static ThreadLocal<DecimalFormat> formatTime =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatTime
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("###.##");
@@ -36,9 +30,10 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a time string that looks like this: "###.##".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parseTime(String text) throws ParseException {
@@ -50,7 +45,7 @@ public class Format {
    * Format is ###.##"
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatTime(double x) {
     return formatTime.get().format(x);
@@ -58,8 +53,8 @@ public class Format {
   /**
    * LATLONG
    */
-  public final static ThreadLocal<DecimalFormat> formatLatLong =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatLatLong
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("####.00000");
@@ -67,9 +62,10 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a Lat long string.
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parseLatLong(String text) throws ParseException {
@@ -79,7 +75,7 @@ public class Format {
   /**
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatLatLong(double x) {
     return formatLatLong.get().format(x);
@@ -87,8 +83,8 @@ public class Format {
   /**
    * UTILITY
    */
-  public final static ThreadLocal<DecimalFormat> formatUtility =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatUtility
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("#.####");
@@ -96,9 +92,10 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a utility string that looks like this: "#.####".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parseUtility(String text) throws ParseException {
@@ -110,7 +107,7 @@ public class Format {
    * Format is #.####"
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatUtility(double x) {
     return formatUtility.get().format(x);
@@ -118,8 +115,8 @@ public class Format {
   /**
    * dBZ
    */
-  public final static ThreadLocal<DecimalFormat> formatdBZ =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatdBZ
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("###.#");
@@ -127,9 +124,10 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a dBZ string that looks like this: "###.#".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parsedBZ(String text) throws ParseException {
@@ -141,7 +139,7 @@ public class Format {
    * Format is ###.#"
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatdBZ(double x) {
     return formatdBZ.get().format(x);
@@ -149,8 +147,8 @@ public class Format {
   /**
    * LONG FLOATs
    */
-  public final static ThreadLocal<DecimalFormat> formatFloatLong =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatFloatLong
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("#####.######");
@@ -158,11 +156,12 @@ public class Format {
           };
 
   /**
+   * Parses a long float string.
    * Lots of decimal places.
    * Format is #####.######"
    *
    * @param text
-   * @return
+   * @return a number
    * @throws java.text.ParseException
    */
   public static Number parseFloatLong(String text) throws ParseException {
@@ -172,7 +171,7 @@ public class Format {
   /**
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatFloatLong(double x) {
     return formatFloatLong.get().format(x);
@@ -180,8 +179,8 @@ public class Format {
   /**
    * FLOATS
    */
-  public final static ThreadLocal<DecimalFormat> formatFloat =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatFloat
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("####.###");
@@ -189,9 +188,10 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a float string that looks like this: "####.###".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parseFloat(String text) throws ParseException {
@@ -202,7 +202,7 @@ public class Format {
    * Format is "####.###"
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatFloat(double x) {
     return formatFloat.get().format(x);
@@ -211,8 +211,8 @@ public class Format {
   /**
    *
    */
-  public final static ThreadLocal<DecimalFormat> formatFloat2 =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatFloat2
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("#.0");
@@ -220,9 +220,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a float string.
+   * Format is "#.0".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parseFloat2(String text) throws ParseException {
@@ -233,7 +235,7 @@ public class Format {
    * Format is "#.0"
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatFloat2(double x) {
     return formatFloat2.get().format(x);
@@ -242,8 +244,8 @@ public class Format {
   /**
    *
    */
-  public final static ThreadLocal<DecimalFormat> formatDistance =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatDistance
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("#0.0");
@@ -251,9 +253,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a distance string.
+   * Format is #0.0.
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parseDistance(String text) throws ParseException {
@@ -264,7 +268,7 @@ public class Format {
    * Format is #0.0"
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatDistance(double x) {
     return formatDistance.get().format(x);
@@ -272,8 +276,8 @@ public class Format {
   /**
    * LONG DATE
    */
-  public final static ThreadLocal<SimpleDateFormat> formatPrettyDate =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatPrettyDate
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               return new SimpleDateFormat("yyyy.MM.dd H:mm:ss zzz");
@@ -281,9 +285,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a date string.
+   * Format is "yyyy.MM.dd H:mm:ss zzz".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parsePrettyDate(String text) throws ParseException {
@@ -294,7 +300,7 @@ public class Format {
    * Format is yyyy.MM.dd H:mm:ss zzz"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatPrettyDate(Date date) {
     return formatPrettyDate.get().format(date);
@@ -302,8 +308,8 @@ public class Format {
   /**
    * LONG DATE IN UTC
    */
-  public final static ThreadLocal<SimpleDateFormat> formatPrettyDateUTC =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatPrettyDateUTC
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("yyyy.MM.dd H:mm:ss zzz");
@@ -316,7 +322,7 @@ public class Format {
    * Format is yyyy.MM.dd H:mm:ss zzz"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatPrettyDateUTC(Date date) {
     return formatPrettyDateUTC.get().format(date);
@@ -324,8 +330,8 @@ public class Format {
   /**
    * TIMESTAMP
    */
-  public final static ThreadLocal<SimpleDateFormat> formatDate =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatDate
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               return new SimpleDateFormat("yyyyMMddHHmmss");
@@ -333,9 +339,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a date string.
+   * Format is "yyyyMMddHHmmss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseDate(String text) throws ParseException {
@@ -346,7 +354,7 @@ public class Format {
    * Format is yyyyMMddHHmmss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatDate(Date date) {
     return formatDate.get().format(date);
@@ -354,8 +362,8 @@ public class Format {
   /**
    * TIMESTAMP in UTC
    */
-  public final static ThreadLocal<SimpleDateFormat> formatDateUTC =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatDateUTC
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("yyyyMMddHHmmss");
@@ -368,16 +376,18 @@ public class Format {
    * Format is yyyyMMddHHmmss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatDateUTC(Date date) {
     return formatDateUTC.get().format(date);
   }
 
   /**
-   *
+   * Parses a date string assuming UTC.
+   * Format is "yyyyMMddHHmmss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseDateUTC(String text) throws ParseException {
@@ -387,7 +397,7 @@ public class Format {
   /**
    *
    * @param text
-   * @return
+   * @return a number
    */
   public static Date parseDateUTCOrNull(String text) {
     try {
@@ -399,8 +409,8 @@ public class Format {
   /**
    * SHORT DATE
    */
-  public final static ThreadLocal<SimpleDateFormat> formatShortDate =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatShortDate
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               return new SimpleDateFormat("dd/MM/yy HH:mm:ss");
@@ -408,9 +418,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a short date string.
+   * Format is "dd/MM/yy HH:mm:ss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseShortDate(String text) throws ParseException {
@@ -421,7 +433,7 @@ public class Format {
    * Format is dd/MM/yy HH:mm:ss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatShortDate(Date date) {
     return formatShortDate.get().format(date);
@@ -429,8 +441,8 @@ public class Format {
   /**
    * SHORT DATE UTC
    */
-  public final static ThreadLocal<SimpleDateFormat> formatShortDateUTC =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatShortDateUTC
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("dd/MM/yy HH:mm:ss");
@@ -440,9 +452,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a short date string assuming UTC.
+   * Format is "dd/MM/yy HH:mm:ss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseShortDateUTC(String text) throws ParseException {
@@ -453,7 +467,7 @@ public class Format {
    * Format is dd/MM/yy HH:mm:ss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatShortDateUTC(Date date) {
     return formatShortDateUTC.get().format(date);
@@ -461,8 +475,8 @@ public class Format {
   /**
    * TIME ONLY
    */
-  public final static ThreadLocal<SimpleDateFormat> formatDateTimeOnly =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatDateTimeOnly
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               return new SimpleDateFormat("HH:mm:ss zzz");
@@ -470,9 +484,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a time string.
+   * Format is "HH:mm:ss zzz".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseDateTimeOnly(String text) throws ParseException {
@@ -480,10 +496,10 @@ public class Format {
   }
 
   /**
-   * Format is HH:mm:ss"
+   * Format is "HH:mm:ss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatDateTimeOnly(Date date) {
     return formatDateTimeOnly.get().format(date);
@@ -493,8 +509,8 @@ public class Format {
   /**
    *
    */
-    public final static ThreadLocal<SimpleDateFormat> formatDateTimeOnlyUTC =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatDateTimeOnlyUTC
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("HH:mm:ss");
@@ -504,9 +520,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a time string assuming UTC.
+   * Format is "HH:mm:ss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseDateTimeOnlyUTC(String text) throws ParseException {
@@ -517,7 +535,7 @@ public class Format {
    * Format is HH:mm:ss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatDateTimeOnlyUTC(Date date) {
     return formatDateTimeOnlyUTC.get().format(date);
@@ -530,17 +548,17 @@ public class Format {
    * Format is yyyy.MM.dd H:mm:ss zzz [HH:mm:ss]"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatDualDate(Date date) {
     return formatPrettyDateUTC.get().format(date) + " [" + formatDateTimeOnly.get().format(date) + "]";
   }
-  
+
   /**
    *
    */
-  public final static ThreadLocal<SimpleDateFormat> formatDateTimeOnlyMilleUTC =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatDateTimeOnlyMilleUTC
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -550,9 +568,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a time string with milleseconds assumimg UTC.
+   * Format is "HH:mm:ss.SSS".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseDateTimeOnlyMilleUTC(String text) throws ParseException {
@@ -563,17 +583,17 @@ public class Format {
    * Format is HH:mm:ss.SSS"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatDateTimeOnlyMilleUTC(Date date) {
     return formatDateTimeOnlyMilleUTC.get().format(date);
   }
-  
+
   /**
    * LOG FORMAT (UTC)
    */
-  public final static ThreadLocal<SimpleDateFormat> formatLogDate =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatLogDate
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
@@ -583,9 +603,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a log date string assumimg UTC.
+   * Format is "yyyy-MM-dd'T'HH:mm:ss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseLogDate(String text) throws ParseException {
@@ -597,7 +619,7 @@ public class Format {
    * Format is yyyy-MM-dd'T'HH:mm:ss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatLogDate(Date date) {
     return formatLogDate.get().format(date);
@@ -605,8 +627,8 @@ public class Format {
   /**
    * LOG FORMAT (UTC)
    */
-  public final static ThreadLocal<SimpleDateFormat> formatMYSQLDate =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatMYSQLDate
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -616,9 +638,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses a java log date string assumimg UTC.
+   * Format is "yyyy-MM-dd HH:mm:ss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseMYSQLDate(String text) throws ParseException {
@@ -630,7 +654,7 @@ public class Format {
    * Format is yyyy-MM-dd HH:mm:ss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatMYSQLDate(Date date) {
     return formatMYSQLDate.get().format(date);
@@ -638,8 +662,8 @@ public class Format {
   /**
    * Format For File Names (UTC) - used in renameFileUsingModificationTime
    */
-  public final static ThreadLocal<SimpleDateFormat> formatFilenameDate =
-          new ThreadLocal<SimpleDateFormat>() {
+  public final static ThreadLocal<SimpleDateFormat> formatFilenameDate
+          = new ThreadLocal<SimpleDateFormat>() {
             @Override
             protected SimpleDateFormat initialValue() {
               SimpleDateFormat result = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
@@ -649,9 +673,11 @@ public class Format {
           };
 
   /**
-   *
+   * Parses date string suitable for a filename assumimg UTC.
+   * Format is "yyyy-MM-dd-HH-mm-ss".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Date parseFilenameDate(String text) throws ParseException {
@@ -663,7 +689,7 @@ public class Format {
    * Format is yyyy-MM-dd-HH-mm-ss"
    *
    * @param date
-   * @return
+   * @return a number
    */
   public static String formatFilenameDate(Date date) {
     return formatFilenameDate.get().format(date);
@@ -672,8 +698,8 @@ public class Format {
   /**
    *
    */
-  public final static ThreadLocal<DecimalFormat> formatQ =
-          new ThreadLocal<DecimalFormat>() {
+  public final static ThreadLocal<DecimalFormat> formatQ
+          = new ThreadLocal<DecimalFormat>() {
             @Override
             protected DecimalFormat initialValue() {
               return new DecimalFormat("0.00");
@@ -681,20 +707,21 @@ public class Format {
           };
 
   /**
-   *
+   * Parses this: "0.00".
+   * 
    * @param text
-   * @return
+   * @return a number
    * @throws ParseException
    */
   public static Number parseQ(String text) throws ParseException {
     return formatQ.get().parse(text);
   }
 
-   /**
+  /**
    * Format is 0.00"
    *
    * @param x
-   * @return
+   * @return a number
    */
   public static String formatQ(double x) {
     return formatQ.get().format(x);

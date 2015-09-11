@@ -23,6 +23,10 @@ import org.json.JSONObject;
  */
 public class SelectNear extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public SelectNear(CommandModule module) {
     super(module);
   }

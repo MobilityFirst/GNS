@@ -6,8 +6,8 @@
 package edu.umass.cs.gns.gnsApp.packet;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
-import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.utils.JSONUtils;
+import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.nio.Stringifiable;
 import java.net.InetSocketAddress;
 import org.json.JSONArray;

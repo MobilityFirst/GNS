@@ -21,6 +21,10 @@ import org.json.JSONObject;
  */
 public class PingTable extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public PingTable(CommandModule module) {
     super(module);
   }

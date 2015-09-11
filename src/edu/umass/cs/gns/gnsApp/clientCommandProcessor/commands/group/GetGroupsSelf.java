@@ -17,6 +17,10 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
  */
 public class GetGroupsSelf extends GetGroups {
 
+  /**
+   *
+   * @param module
+   */
   public GetGroupsSelf(CommandModule module) {
     super(module);
   }

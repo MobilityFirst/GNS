@@ -41,6 +41,11 @@ public class PingClient<NodeIDType> {
   private Thread receiveThread;
   private boolean shutdown = false;
 
+  /**
+   * Create a PingClient instance.
+   * 
+   * @param nodeConfig
+   */
   public PingClient(GNSInterfaceNodeConfig<NodeIDType> nodeConfig) {
     this.nodeConfig = nodeConfig;
     try {
@@ -57,6 +62,7 @@ public class PingClient<NodeIDType> {
    * @param nodeId
    * @return the round trip time or INVALID_INTERVAL if the request times out
    * @throws IOException
+   * @throws java.lang.InterruptedException
    */
   public long sendPing(NodeIDType nodeId) throws IOException, InterruptedException {
     InetAddress IPAddress = nodeConfig.getNodeAddress(nodeId);
@@ -84,6 +90,9 @@ public class PingClient<NodeIDType> {
     }
   }
 
+  /**
+   * Shuts down this client.
+   */
   public void shutdown() {
     this.setShutdown();
     this.clientSocket.close();
@@ -186,6 +195,11 @@ public class PingClient<NodeIDType> {
     return shutdown;
   }
 
+  /**
+   * Main routine. For testing only.
+   * @param args
+   * @throws Exception
+   */
   @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];

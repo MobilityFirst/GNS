@@ -28,6 +28,11 @@ import org.json.JSONObject;
  */
 public class RemoveAlias extends GnsCommand {
   
+  /**
+   * Creates a RemoveAlias instance.
+   * 
+   * @param module
+   */
   public RemoveAlias(CommandModule module) {
     super(module);
   }

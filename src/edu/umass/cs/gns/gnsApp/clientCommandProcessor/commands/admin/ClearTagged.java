@@ -30,6 +30,10 @@ import org.json.JSONObject;
  */
 public class ClearTagged extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public ClearTagged(CommandModule module) {
     super(module);
   }

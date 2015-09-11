@@ -20,6 +20,10 @@ import org.json.JSONObject;
  */
 public class Help extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public Help(CommandModule module) {
     super(module);
   }

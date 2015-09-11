@@ -16,7 +16,7 @@ import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
@@ -39,6 +39,14 @@ import org.json.JSONObject;
  */
 public class CreateDelete {
 
+  /**
+   * Handles add packets coming in from the client.
+   * 
+   * @param json
+   * @param handler
+   * @throws JSONException
+   * @throws IOException
+   */
   public static void handleAddPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       // do normal add which actually involves converting this into a CreateServiceName packet
@@ -72,6 +80,14 @@ public class CreateDelete {
     }
   }
 
+  /**
+   * Handles remove packets coming in from the client.
+   * 
+   * @param json
+   * @param handler
+   * @throws JSONException
+   * @throws IOException
+   */
   public static void handleRemovePacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       RemoveRecordPacket removeRecordPacket = registerPacketRemoveRecord(json, handler);
@@ -89,7 +105,7 @@ public class CreateDelete {
     }
   }
 
-  public static AddRecordPacket<String> registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  private static AddRecordPacket<String> registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     AddRecordPacket<String> addRecordPacket = new AddRecordPacket<>(json, handler.getGnsNodeConfig());
     int ccpReqId = handler.getUniqueRequestID();
     UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, addRecordPacket.getName(), null, addRecordPacket, handler);
@@ -99,7 +115,7 @@ public class CreateDelete {
     return addRecordPacket;
   }
 
-  public static RemoveRecordPacket<String> registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+  private static RemoveRecordPacket<String> registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     RemoveRecordPacket<String> removeRecordPacket = new RemoveRecordPacket<String>(json, handler.getGnsNodeConfig());
     int ccpReqId = handler.getUniqueRequestID();
     UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, removeRecordPacket.getName(), null, removeRecordPacket, handler);
@@ -109,7 +125,7 @@ public class CreateDelete {
     return removeRecordPacket;
   }
 
-  public static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, ClientRequestHandlerInterface handler) {
+  private static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, ClientRequestHandlerInterface handler) {
     SendReconfiguratorPacketTask task = new SendReconfiguratorPacketTask(name, packet, handler);
     handler.getExecutorService().scheduleAtFixedRate(task, 0, 
             //AppReconfigurableNodeOptions.queryTimeout,

@@ -14,7 +14,7 @@ import edu.umass.cs.gns.gnsApp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gns.gnsApp.packet.DNSRecordType;
 import edu.umass.cs.gns.gnsApp.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
 

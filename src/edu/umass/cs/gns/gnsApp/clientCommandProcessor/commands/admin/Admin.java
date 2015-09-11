@@ -25,6 +25,10 @@ import org.json.JSONObject;
  */
 public class Admin extends GnsCommand {
   
+  /**
+   *
+   * @param module
+   */
   public Admin(CommandModule module) {
     super(module);
   }

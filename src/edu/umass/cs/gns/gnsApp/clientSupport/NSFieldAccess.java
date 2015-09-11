@@ -16,8 +16,8 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.ValuesMap;
 import java.net.InetSocketAddress;
 
 /**
@@ -37,6 +37,7 @@ public class NSFieldAccess {
    * @param field
    * @param activeReplica
    * @return ResultValue
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static ResultValue lookupListFieldOnThisServer(String guid, String field, 
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -72,6 +73,7 @@ public class NSFieldAccess {
    * @param field
    * @param activeReplica
    * @return ResultValue
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static ValuesMap lookupFieldOnThisServer(String guid, String field, 
           GnsApplicationInterface<String> activeReplica)
@@ -102,6 +104,7 @@ public class NSFieldAccess {
    * @param key
    * @param activeReplica
    * @return a string representing the first value in field
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static String lookupSingletonFieldOnThisServer(String recordName, String key, 
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -123,7 +126,9 @@ public class NSFieldAccess {
    * @param field
    * @param allowQueryToOtherNSs
    * @param activeReplica
+   * @param lnsAddress
    * @return ResultValue containing the value of the field or an empty ResultValue if field cannot be found
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static ResultValue lookupListFieldAnywhere(String guid, String field, boolean allowQueryToOtherNSs,
           GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) throws FailedDBOperationException {
@@ -157,7 +162,9 @@ public class NSFieldAccess {
    * @param guid
    * @param field
    * @param activeReplica
+   * @param lnsAddress
    * @return ValuesMap containing the value of the field or null if field cannot be found
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static ValuesMap lookupFieldAnywhere(String guid, String field, GnsApplicationInterface<String> activeReplica, 
           InetSocketAddress lnsAddress) throws FailedDBOperationException {

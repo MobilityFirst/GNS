@@ -22,6 +22,10 @@ import org.json.JSONObject;
  */
 public class LookupPrimaryGuid extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public LookupPrimaryGuid(CommandModule module) {
     super(module);
   }

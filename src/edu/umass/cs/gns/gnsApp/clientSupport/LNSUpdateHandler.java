@@ -12,7 +12,7 @@ import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.utils.ResultValue;
 import org.json.JSONException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -145,7 +145,7 @@ public class LNSUpdateHandler {
 //  }
 
   /**
-   * Handles a ConfirmUpdatePacket<String>coming back to this NameServer from a Local Name Server
+   * Handles a ConfirmUpdatePacket coming back to this NameServer from a Local Name Server
    *
    * @param packet
    * @param activeReplica

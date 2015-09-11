@@ -5,16 +5,16 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.utils.Base64;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gns.util.ByteUtils;
-import edu.umass.cs.gns.util.Email;
+import edu.umass.cs.gns.utils.ByteUtils;
+import edu.umass.cs.gns.utils.Email;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;

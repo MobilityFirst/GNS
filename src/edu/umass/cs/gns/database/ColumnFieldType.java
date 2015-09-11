@@ -2,8 +2,8 @@ package edu.umass.cs.gns.database;
 
 import com.mongodb.DBObject;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.JSONUtils;
+import edu.umass.cs.gns.utils.ValuesMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

@@ -19,7 +19,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.httpserver.Defs;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.utils.Base64;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -34,6 +34,11 @@ import org.json.JSONObject;
  */
 public class AddGuid extends GnsCommand {
 
+  /**
+   * Creates an AddGuid instance.
+   * 
+   * @param module
+   */
   public AddGuid(CommandModule module) {
     super(module);
   }

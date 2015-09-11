@@ -20,16 +20,9 @@ import java.io.IOException;
 import java.util.logging.Logger;
 
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.util.Shutdownable;
+import edu.umass.cs.gns.utils.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
-import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.nio.JSONNIOTransport;
-import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
-import static edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES.*;
-import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 
 import java.net.BindException;
@@ -39,21 +32,19 @@ import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
 /**
- *
+ * 
  * @author Westy
  */
 public class ClientCommandProcessor implements Shutdownable {
 
   private final InetSocketAddress nodeAddress;
-  private final InterfaceReconfigurableNodeConfig<String> nodeConfig;
-  private JSONMessenger<String> messenger;
   /**
-   * Handles the client support processing for the local name server.
+   * Handles the client support processing for the CCP.
    */
   private Intercessor intercessor;
 
   /**
-   * Handles administrative client support for the local name server.
+   * Handles administrative client support for the CCP.
    */
   private Admintercessor admintercessor;
   /**
@@ -81,6 +72,20 @@ public class ClientCommandProcessor implements Shutdownable {
 
   private final Logger log = Logger.getLogger(getClass().getName());
 
+  /**
+   * Create and instance of the ClientCommandProcessor.
+   * 
+   * @param messenger
+   * @param nodeAddress
+   * @param nodeConfig
+   * @param debug
+   * @param app
+   * @param replicaID
+   * @param dnsGnsOnly
+   * @param dnsOnly
+   * @param gnsServerIP
+   * @throws IOException
+   */
   public ClientCommandProcessor(JSONMessenger<String> messenger,
           InetSocketAddress nodeAddress,
           GNSNodeConfig<String> nodeConfig,
@@ -98,7 +103,6 @@ public class ClientCommandProcessor implements Shutdownable {
     this.intercessor = new Intercessor(nodeAddress, nodeConfig, demultiplexer);
     this.admintercessor = new Admintercessor();
     this.nodeAddress = nodeAddress;
-    this.nodeConfig = nodeConfig;
 
     System.out.println("BIND ADDRESS for " + replicaID + " is " + nodeConfig.getBindAddress(replicaID));
     System.out.println("NODE ADDRESS for " + replicaID + " is " + nodeConfig.getNodeAddress(replicaID));
@@ -106,9 +110,8 @@ public class ClientCommandProcessor implements Shutdownable {
     parameters.setDebugMode(debug);
     
     try {
-      this.messenger = messenger;
       messenger.addPacketDemultiplexer(demultiplexer);
-      this.requestHandler = new NewClientRequestHandler(intercessor, admintercessor, nodeAddress,
+      this.requestHandler = new ClientRequestHandler(intercessor, admintercessor, nodeAddress,
               replicaID,
               app,
               nodeConfig, messenger, parameters);
@@ -159,6 +162,11 @@ public class ClientCommandProcessor implements Shutdownable {
     }
   }
 
+  /**
+   * Adds a JSON packet to the demultiplexer queue.
+   * 
+   * @param jsonObject
+   */
   public void injectPacketIntoCCPQueue(JSONObject jsonObject) {
 
     boolean isPacketTypeFound = demultiplexer.handleMessage(jsonObject);
@@ -167,10 +175,20 @@ public class ClientCommandProcessor implements Shutdownable {
     }
   }
 
+  /**
+   * Returns the address.
+   * 
+   * @return the address
+   */
   public InetSocketAddress getAddress() {
     return nodeAddress;
   }
 
+  /**
+   * Returns the request handler.
+   * 
+   * @return the request handler
+   */
   public ClientRequestHandlerInterface getRequestHandler() {
     return requestHandler;
   }

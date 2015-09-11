@@ -17,6 +17,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class HelpTcp extends Help {
 
+  /**
+   *
+   * @param module
+   */
   public HelpTcp(CommandModule module) {
     super(module);
   }

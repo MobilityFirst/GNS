@@ -11,11 +11,16 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 
 /**
- *
+ * Creates a RemoveGuidNoAccount instance.
+ * 
  * @author westy
  */
 public class RemoveGuidNoAccount extends RemoveGuid {
 
+  /**
+   *
+   * @param module
+   */
   public RemoveGuidNoAccount(CommandModule module) {
     super(module);
   }

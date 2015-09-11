@@ -25,6 +25,10 @@ import org.json.JSONObject;
  */
 public class DumpCache extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public DumpCache(CommandModule module) {
     super(module);
   }

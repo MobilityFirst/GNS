@@ -15,8 +15,8 @@ import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.gnsApp.GnsApp;
 import edu.umass.cs.gns.gnsApp.packet.CommandPacket;
 import edu.umass.cs.gns.gnsApp.packet.CommandValueReturnPacket;
-import edu.umass.cs.gns.util.CanonicalJSON;
 
+import edu.umass.cs.gns.utils.CanonicalJSON;
 import edu.umass.cs.utils.DelayProfiler;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

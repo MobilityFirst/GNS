@@ -16,6 +16,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class ReadArrayOneSelf extends ReadArray {
 
+  /**
+   *
+   * @param module
+   */
   public ReadArrayOneSelf(CommandModule module) {
     super(module);
   }

@@ -16,6 +16,10 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
  */
 public class AclAddSelf extends AclAdd {
 
+  /**
+   *
+   * @param module
+   */
   public AclAddSelf(CommandModule module) {
     super(module);
   }

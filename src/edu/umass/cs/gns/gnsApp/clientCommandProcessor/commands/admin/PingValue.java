@@ -21,6 +21,10 @@ import org.json.JSONObject;
  */
 public class PingValue extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public PingValue(CommandModule module) {
     super(module);
   }

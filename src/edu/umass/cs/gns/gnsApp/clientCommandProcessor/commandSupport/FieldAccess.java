@@ -15,11 +15,11 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.gnsApp.packet.SelectRequestPacket;
-import edu.umass.cs.gns.util.Base64;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.Base64;
+import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import java.util.ArrayList;
 import org.json.JSONArray;

@@ -23,71 +23,181 @@ import java.util.Set;
  */
 public interface RecordMapInterface {
 
+  /**
+   * Add a name record to the database.
+   * 
+   * @param recordEntry
+   * @throws FailedDBOperationException
+   * @throws RecordExistsException
+   */
   public void addNameRecord(NameRecord recordEntry) throws FailedDBOperationException, RecordExistsException;
 
+  /**
+   * Retrieve a name record from the database.
+   * 
+   * @param name
+   * @return
+   * @throws RecordNotFoundException
+   * @throws FailedDBOperationException
+   */
   public NameRecord getNameRecord(String name) throws RecordNotFoundException, FailedDBOperationException;
 
+  /**
+   * Update a name record in the database.
+   * 
+   * @param recordEntry
+   * @throws FailedDBOperationException
+   */
   public void updateNameRecord(NameRecord recordEntry) throws FailedDBOperationException;
 
+  /**
+   * Add a name record to the database from a JSON Object.
+   * 
+   * @param json
+   * @throws FailedDBOperationException
+   * @throws RecordExistsException
+   */
   public void addNameRecord(JSONObject json) throws FailedDBOperationException, RecordExistsException;
 
+  /**
+   * Add multiple name records to the database from an list of JSON Objects.
+   * 
+   * @param jsons
+   * @throws FailedDBOperationException
+   * @throws RecordExistsException
+   */
   public void bulkInsertRecords(ArrayList<JSONObject> jsons) throws FailedDBOperationException, RecordExistsException;
 
+  /**
+   * Remove a name record from the database.
+   * 
+   * @param name
+   * @throws FailedDBOperationException
+   */
   public void removeNameRecord(String name) throws FailedDBOperationException;
 
+  /**
+   * Returns true if the database contains a name record with the given name.
+   * 
+   * @param name
+   * @return
+   * @throws FailedDBOperationException
+   */
   public boolean containsName(String name) throws FailedDBOperationException;
 
+  /**
+   * Return all the column keys from a name record in the database.
+   * 
+   * @param key
+   * @return
+   * @throws RecordNotFoundException
+   * @throws FailedDBOperationException
+   */
   public Set<String> getAllColumnKeys(String key) throws RecordNotFoundException, FailedDBOperationException;
 
   /**
    * Clears the database and reinitializes all indices.
+   * 
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void reset() throws FailedDBOperationException;
 
-  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> fields1) throws
+  /**
+   * Retrieves all the system fields from the database that match field.
+   * 
+   * @param name - the name of the record
+   * @param nameField - the field that contains the name of the record
+   * @param fields - the system fields to retrieve
+   * @return
+   * @throws FailedDBOperationException
+   * @throws RecordNotFoundException
+   */
+  public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> fields) throws
           FailedDBOperationException, RecordNotFoundException;
 
-  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> fields1,
+  /**
+   *
+   * @param name  - the name of the record
+   * @param nameField - the field that contains the name of the record
+   * @param fields - the system fields to retrieve
+   * @param valuesMapField - the field that contains all the user fields
+   * @param valuesMapKeys - the user fields to return
+   * @return
+   * @throws FailedDBOperationException
+   * @throws RecordNotFoundException
+   */
+  public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String name, ColumnField nameField, ArrayList<ColumnField> fields,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys) throws
           FailedDBOperationException, RecordNotFoundException;
 
-  public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
+  /**
+   * Update system fields in a record.
+   * 
+   * @param name - the name of the record
+   * @param nameField - the field that contains the name of the record
+   * @param fields - the system fields to update
+   * @param values - the values to set them to
+   * @throws FailedDBOperationException
+   */
+  public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values)
           throws FailedDBOperationException;
 
-  public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields1, ArrayList<Object> values1,
+  /**
+   * Update system and user fields in a record.
+   * 
+   * @param name - the name of the record
+   * @param nameField - the field that contains the name of the record
+   * @param fields - the system fields to update
+   * @param values - the values to set the system fields to
+   * @param valuesMapField - the field that contains all the user fields
+   * @param valuesMapKeys - the user fields to update
+   * @param valuesMapValues - the values to set the user fields to to
+   * @throws FailedDBOperationException
+   */
+  public abstract void update(String name, ColumnField nameField, ArrayList<ColumnField> fields, ArrayList<Object> values,
           ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException;
 
   /**
    * Updates the record indexed by name conditionally. The condition specified by 
    * conditionField whose value must be equal to conditionValue.
-   * Didn't write this so not sure about all the other arguments.
    * 
-   * @param name
-   * @param nameField
+   * @param name - the name of the record
+   * @param nameField - the field that contains the name of the record
    * @param conditionField
    * @param conditionValue
-   * @param fields1
-   * @param values1
-   * @param valuesMapField
-   * @param valuesMapKeys
-   * @param valuesMapValues
+   * @param fields - the system fields to update
+   * @param values - the values to set the system fields to
+   * @param valuesMapField - the field that contains all the user fields
+   * @param valuesMapKeys - the user fields to update
+   * @param valuesMapValues - the values to set the user fields to to
    * @return Returns true if the update was applied false otherwise.
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue,
-          ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField,
+          ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField,
           ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues)
           throws FailedDBOperationException;
 
-  public abstract void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1)
+  /**
+   * Increments system fields in a record.
+   * 
+   * @param name - the name of the record
+   * @param fields - the system fields to update
+   * @param values - the values to increment the system fields by
+   * @throws FailedDBOperationException
+   */
+  public abstract void increment(String name, ArrayList<ColumnField> fields, ArrayList<Object> values)
           throws FailedDBOperationException;
 
-  public abstract void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1,
-          ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
-          throws FailedDBOperationException;
-
+  /**
+   * Remove keys from a field.
+   * 
+   * @param name - the name of the record
+   * @param mapField - the system fields to update
+   * @param mapKeys - the keys to remove
+   * @throws FailedDBOperationException
+   */
   public abstract void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException;
 
@@ -105,56 +215,56 @@ public interface RecordMapInterface {
   /**
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor getAllRowsIterator() throws FailedDBOperationException;
 
   /**
-   * Given a key and a value return all the records as a AbstractRecordCursor that have a *user* key with that value.
+   * Given a key and a value return all the records as a AbstractRecordCursor that 
+   * have a *user* key with that value.
    *
    * @param valuesMapField - the field in the row that contains the *user* fields
    * @param key
    * @param value
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecords(ColumnField valuesMapField, String key, Object value) throws FailedDBOperationException;
 
   /**
-   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified as a nested JSONArray
- string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]] The returned value is a AbstractRecordCursor.
+   * If key is a GeoSpatial field return all fields that are within value which is a bounding box specified 
+   * as a nested JSONArray string tuple of paired tuples: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]].
    *
    * @param valuesMapField - the field in the row that contains the *user* fields
    * @param key
    * @param value - a string that looks like this [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecordsWithin(ColumnField valuesMapField, String key, String value) throws FailedDBOperationException;
 
   /**
-   * If key is a GeoSpatial field return all fields that are near value which is a point specified as a JSONArray string tuple:
-   * [LONG, LAT]. maxDistance is in radians. The returned value is a AbstractRecordCursor.
+   * If key is a GeoSpatial field return all fields that are near value which is a point specified 
+   * as a JSONArray string tuple: [LONG, LAT]. maxDistance is in radians. 
    *
    * @param valuesMapField - the field in the row that contains the *user* fields
    * @param key
    * @param value - a string that looks like this [LONG, LAT]
    * @param maxDistance - the distance in meters
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor selectRecordsNear(ColumnField valuesMapField, String key, String value, Double maxDistance) throws FailedDBOperationException;
 
+  /**
+   * Return all the fields that match the query.
+   * 
+   * @param valuesMapField
+   * @param query
+   * @return {@link AbstractRecordCursor}
+   * @throws FailedDBOperationException
+   */
   public abstract AbstractRecordCursor selectRecordsQuery(ColumnField valuesMapField, String query) throws FailedDBOperationException;
 
-  // Replica Controller
-//  @Deprecated
-//  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException;
-//
-//  @Deprecated
-//  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException;
-//
-//  @Deprecated
-//  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException;
 }

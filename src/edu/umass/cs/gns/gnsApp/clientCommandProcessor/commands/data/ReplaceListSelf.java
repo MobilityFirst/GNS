@@ -17,10 +17,18 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class ReplaceListSelf extends AbstractUpdateList {
 
+  /**
+   *
+   * @param module
+   */
   public ReplaceListSelf(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;

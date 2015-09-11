@@ -17,10 +17,18 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOpera
  */
 public class Substitute extends AbstractUpdate {
 
+  /**
+   *
+   * @param module
+   */
   public Substitute(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_SUBSTITUTE;

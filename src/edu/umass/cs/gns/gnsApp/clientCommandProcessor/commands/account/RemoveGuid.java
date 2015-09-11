@@ -30,6 +30,11 @@ import org.json.JSONObject;
  */
 public class RemoveGuid extends GnsCommand {
 
+  /**
+   * Creates a RemoveGuid instance.
+   * 
+   * @param module
+   */
   public RemoveGuid(CommandModule module) {
     super(module);
   }

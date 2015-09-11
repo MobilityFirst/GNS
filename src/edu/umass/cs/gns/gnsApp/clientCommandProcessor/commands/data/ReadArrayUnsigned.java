@@ -16,6 +16,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class ReadArrayUnsigned extends ReadArray {
 
+  /**
+   *
+   * @param module
+   */
   public ReadArrayUnsigned(CommandModule module) {
     super(module);
   }

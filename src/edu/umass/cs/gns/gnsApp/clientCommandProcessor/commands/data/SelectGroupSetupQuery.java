@@ -13,7 +13,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.utils.Base64;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,6 +24,10 @@ import org.json.JSONObject;
  */
 public class SelectGroupSetupQuery extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public SelectGroupSetupQuery(CommandModule module) {
     super(module);
   }

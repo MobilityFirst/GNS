@@ -23,6 +23,10 @@ import org.json.JSONObject;
  */
 public class Select extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public Select(CommandModule module) {
     super(module);
   }

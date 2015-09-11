@@ -28,6 +28,10 @@ import org.json.JSONObject;
 @Deprecated
 public class RetrieveGroupJoinRequests extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public RetrieveGroupJoinRequests(CommandModule module) {
     super(module);
   }

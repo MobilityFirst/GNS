@@ -30,6 +30,10 @@ import org.json.JSONObject;
  */
 public class AclRemove extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public AclRemove(CommandModule module) {
     super(module);
   }

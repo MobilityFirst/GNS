@@ -27,6 +27,10 @@ import org.json.JSONObject;
  */
 public class RemoveTag extends GnsCommand {
   
+  /**
+   *
+   * @param module
+   */
   public RemoveTag(CommandModule module) {
     super(module);
   }

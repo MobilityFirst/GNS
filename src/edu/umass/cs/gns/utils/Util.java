@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
@@ -29,7 +29,7 @@ public class Util {
    * Format as "#.#".
    * 
    * @param d
-   * @return
+   * @return a decimal formatted string
    */
   public static final String df(double d) {
     return decimalFormat.format(d);
@@ -39,7 +39,7 @@ public class Util {
    * Format as "#.#" microseconds.
    * 
    * @param d
-   * @return
+   * @return a decimal formatted as microseconds string
    */
   public static final String mu(double d) {
     return decimalFormat.format(d * 1000) + "us";
@@ -51,7 +51,7 @@ public class Util {
    * @param sample
    * @param historicalAverage
    * @param alpha
-   * @return
+   * @return the moving average as a double
    */
   public static final double movingAverage(double sample, double historicalAverage, double alpha) {
     return (1 - alpha) * ((double) historicalAverage) + alpha * ((double) sample);
@@ -62,7 +62,7 @@ public class Util {
    * 
    * @param sample
    * @param historicalAverage
-   * @return
+   * @return the moving average as a double
    */
   public static final double movingAverage(double sample, double historicalAverage) {
     return movingAverage(sample, historicalAverage, ALPHA);
@@ -73,7 +73,7 @@ public class Util {
    * 
    * @param sample
    * @param historicalAverage
-   * @return
+   * @return the moving average as a double
    */
   public static final double movingAverage(long sample, double historicalAverage) {
     return movingAverage((double) sample, historicalAverage);
@@ -85,7 +85,7 @@ public class Util {
    * @param sample
    * @param historicalAverage
    * @param alpha
-   * @return
+   * @return the moving average as a double
    */
   public static final double movingAverage(long sample, double historicalAverage, double alpha) {
     return movingAverage((double) sample, historicalAverage, alpha);
@@ -95,7 +95,7 @@ public class Util {
    * Round.
    * 
    * @param d
-   * @return
+   * @return the value rounded to an integer
    */
   public static int roundToInt(double d) {
     return (int) Math.round(d);
@@ -105,7 +105,7 @@ public class Util {
    * Parses a URI string into a map of strings to strings.
    * 
    * @param query
-   * @return
+   * @return a map of string to string
    */
   public static Map<String, String> parseURIQueryString(String query) {
     Map<String, String> result = new HashMap<>();
@@ -117,9 +117,10 @@ public class Util {
   }
 
   /**
-   *
+   * Converts a set of integers into an array of integers.
+   * 
    * @param set
-   * @return
+   * @return an integer array
    */
   public static int[] setToIntArray(Set<Integer> set) {
     int[] array = new int[set.size()];
@@ -156,7 +157,7 @@ public class Util {
    * @param <K>
    * @param <V>
    * @param map
-   * @return
+   * @return the map sorted in ascending order
    */
   public static <K, V extends Comparable<? super V>> Map<K, V>sortByValueIncreasing(Map<K, V> map) {
     List<Map.Entry<K, V>> list
@@ -181,7 +182,7 @@ public class Util {
    * @param <K>
    * @param <V>
    * @param map
-   * @return
+   * @return the map sorted in descending order
    */
   public static <K, V extends Comparable<? super V>> Map<K, V> sortByValueDecreasing(Map<K, V> map) {
     List<Map.Entry<K, V>> list
@@ -206,7 +207,7 @@ public class Util {
   /**
    * Returns a random string of length.
    * @param length
-   * @return
+   * @return a random string of the given length
    */
   public static String randomString(int length) {
     StringBuilder sb = new StringBuilder(length);
@@ -220,7 +221,7 @@ public class Util {
    * Returns a InetSocketAddress parsed from a string.
    * 
    * @param s
-   * @return
+   * @return an InetSocketAddress parsed from the string
    */
   public static InetSocketAddress getInetSocketAddressFromString(String s) {
     s = s.replaceAll("[^0-9.:]", "");
@@ -231,8 +232,12 @@ public class Util {
     return new InetSocketAddress(tokens[0], Integer.valueOf(tokens[1]));
   }
 
-  // cute little hack to show us where
-  private String stackTraceToString() {
+  /**
+   * Returns a stack trace.
+   * 
+   * @return the stack trace as a string
+   */
+  public String stackTraceToString() {
     StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
     return (stackTrace.length > 2 ? stackTrace[2].toString() + "\n   " : "")
             + (stackTrace.length > 3 ? stackTrace[3].toString() + "\n   " : "")

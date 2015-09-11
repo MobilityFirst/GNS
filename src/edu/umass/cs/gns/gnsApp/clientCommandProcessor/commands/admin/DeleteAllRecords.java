@@ -25,6 +25,10 @@ import org.json.JSONObject;
  */
 public class DeleteAllRecords extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public DeleteAllRecords(CommandModule module) {
     super(module);
   }

@@ -10,8 +10,8 @@ package edu.umass.cs.gns.gnamed;
 
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.Shutdownable;
-import edu.umass.cs.gns.util.ThreadUtils;
+import edu.umass.cs.gns.utils.Shutdownable;
+import edu.umass.cs.gns.utils.ThreadUtils;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.DatagramPacket;

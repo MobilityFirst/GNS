@@ -24,7 +24,7 @@ import java.util.logging.Level;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADRESPONSE;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import static edu.umass.cs.gns.gnsApp.packet.Packet.getPacketType;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.Util;
 import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Map;

@@ -28,138 +28,153 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
  */
 public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<String> {
 
-	/**
-	 * Intended to support two types of coordination policies: lazy and paxos.
-	 */
-	public static enum CoordType {
-		/**
-		 * Lazily propagates coordination-needing requests to all replicas.
-		 */
-		LAZY,
-		/**
-		 * Coordinates coordination-needing requests using gigapaxos.
-		 */
-		PAXOS
-	};
+  /**
+   * Intended to support two types of coordination policies: lazy and paxos.
+   */
+  public static enum CoordType {
 
-	private final CoordType coordType;
+    /**
+     * Lazily propagates coordination-needing requests to all replicas.
+     */
+    LAZY,
+    /**
+     * Coordinates coordination-needing requests using gigapaxos.
+     */
+    PAXOS
+  };
 
-	private class CoordData {
-		final String name;
-		final int epoch;
-		final Set<String> replicas;
+  private final CoordType coordType;
 
-		CoordData(String name, int epoch, Set<String> replicas) {
-			this.name = name;
-			this.epoch = epoch;
-			this.replicas = replicas;
-		}
-	}
+  private class CoordData {
 
-	private final HashMap<String, CoordData> groups = new HashMap<String, CoordData>();
+    final String name;
+    final int epoch;
+    final Set<String> replicas;
 
-	DistributedNoopAppCoordinator(InterfaceReplicable app) {
-		this(app, CoordType.LAZY, null, null);
-	}
+    CoordData(String name, int epoch, Set<String> replicas) {
+      this.name = name;
+      this.epoch = epoch;
+      this.replicas = replicas;
+    }
+  }
 
-	DistributedNoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
-			Stringifiable<String> unstringer, InterfaceSSLMessenger<String,JSONObject> msgr) {
-		super(app, msgr.getMyID(), unstringer, msgr);
-		this.coordType = coordType;
-		this.registerCoordination(DistributedNoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
-		if (app instanceof DistributedNoopApp)
-			((DistributedNoopApp) app).setMessenger(msgr);
-	}
+  private final HashMap<String, CoordData> groups = new HashMap<String, CoordData>();
 
-	@Override
-	public boolean coordinateRequest(InterfaceRequest request)
-			throws IOException, RequestParseException {
-		try {
-			// coordinate exactly once, and set self to entry replica
-			if (request instanceof InterfaceReplicableRequest)
-				((InterfaceReplicableRequest) request)
-						.setNeedsCoordination(false);
-			if (request instanceof DistributedNoopAppRequest)
-				((DistributedNoopAppRequest) request).setEntryReplica(this.getMyID());
-			// pick lazy or paxos coordinator, the defaults supported
-			if (this.coordType.equals(CoordType.LAZY))
-				this.sendAllLazy(request);
-			else if (this.coordType.equals(CoordType.PAXOS)) {
-				super.coordinateRequest(request);
-			}
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
+  DistributedNoopAppCoordinator(InterfaceReplicable app) {
+    this(app, CoordType.LAZY, null, null);
+  }
 
-	@Override
-	public boolean createReplicaGroup(String serviceName, int epoch,
-			String state, Set<String> nodes) {
-		boolean created = false;
-		if (this.coordType.equals(CoordType.LAZY)) {
-			this.groups.put(serviceName, new CoordData(serviceName, epoch,
-					nodes));
-		} else if (this.coordType.equals(CoordType.PAXOS)) {
-			created = super
-					.createReplicaGroup(serviceName, epoch, state, nodes);
-		}
-		return created;
-	}
+  DistributedNoopAppCoordinator(InterfaceReplicable app, CoordType coordType,
+          Stringifiable<String> unstringer, InterfaceSSLMessenger<String, JSONObject> msgr) {
+    super(app, msgr.getMyID(), unstringer, msgr);
+    this.coordType = coordType;
+    this.registerCoordination(DistributedNoopAppRequest.PacketType.DEFAULT_APP_REQUEST);
+    if (app instanceof DistributedNoopApp) {
+      ((DistributedNoopApp) app).setMessenger(msgr);
+    }
+  }
 
-	@Override
-	public boolean deleteReplicaGroup(String serviceName, int epoch) {
-		if (this.coordType.equals(CoordType.LAZY)) {
-			// FIXME: check epoch here
-			this.groups.remove(serviceName);
-		} else if (this.coordType.equals(CoordType.PAXOS)) {
-			super.deleteReplicaGroup(serviceName, epoch);
-		}
-		return true;
-	}
+  @Override
+  public boolean coordinateRequest(InterfaceRequest request)
+          throws IOException, RequestParseException {
+    try {
+      // coordinate exactly once, and set self to entry replica
+      if (request instanceof InterfaceReplicableRequest) {
+        ((InterfaceReplicableRequest) request)
+                .setNeedsCoordination(false);
+      }
+      if (request instanceof DistributedNoopAppRequest) {
+        ((DistributedNoopAppRequest) request).setEntryReplica(this.getMyID());
+      }
+      // pick lazy or paxos coordinator, the defaults supported
+      if (this.coordType.equals(CoordType.LAZY)) {
+        this.sendAllLazy(request);
+      } else if (this.coordType.equals(CoordType.PAXOS)) {
+        super.coordinateRequest(request);
+      }
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return true;
+  }
 
-	@Override
-	public Set<String> getReplicaGroup(String serviceName) {
-		if (this.coordType.equals(CoordType.LAZY)) {
-			CoordData data = this.groups.get(serviceName);
-			if (data != null)
-				return data.replicas;
-			else
-				return null;
-		} else
-			assert (this.coordType.equals(CoordType.PAXOS));
-		return super.getReplicaGroup(serviceName);
-	}
+  @Override
+  public boolean createReplicaGroup(String serviceName, int epoch,
+          String state, Set<String> nodes) {
+    boolean created = false;
+    if (this.coordType.equals(CoordType.LAZY)) {
+      this.groups.put(serviceName, new CoordData(serviceName, epoch,
+              nodes));
+    } else if (this.coordType.equals(CoordType.PAXOS)) {
+      created = super
+              .createReplicaGroup(serviceName, epoch, state, nodes);
+    }
+    return created;
+  }
 
-	@Override
-	public Set<IntegerPacketType> getRequestTypes() {
-		return this.app.getRequestTypes();
-	}
+  @Override
+  public boolean deleteReplicaGroup(String serviceName, int epoch) {
+    if (this.coordType.equals(CoordType.LAZY)) {
+      // FIXME: check epoch here
+      this.groups.remove(serviceName);
+    } else if (this.coordType.equals(CoordType.PAXOS)) {
+      super.deleteReplicaGroup(serviceName, epoch);
+    }
+    return true;
+  }
 
-	@Override
-	public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
-		if (this.app instanceof InterfaceReconfigurable)
-			return ((InterfaceReconfigurable) this.app).getStopRequest(name,
-					epoch);
-		throw new RuntimeException(
-				"Can not get stop request for a non-reconfigurable app");
-	}
+  @Override
+  public Set<String> getReplicaGroup(String serviceName) {
+    if (this.coordType.equals(CoordType.LAZY)) {
+      CoordData data = this.groups.get(serviceName);
+      if (data != null) {
+        return data.replicas;
+      } else {
+        return null;
+      }
+    } else {
+      assert (this.coordType.equals(CoordType.PAXOS));
+    }
+    return super.getReplicaGroup(serviceName);
+  }
 
-	// FIXME: unused method that exists only to prevent warnings
-	protected boolean existsGroup(String name, int epoch) {
-		CoordData data = this.groups.get(name);
-		assert (data == null || data.name.equals(name));
-		return (data != null && data.epoch == epoch);
-	}
+  @Override
+  public Set<IntegerPacketType> getRequestTypes() {
+    return this.app.getRequestTypes();
+  }
 
-	/*
-	 * protected void sendAllLazy(DistributedNoopAppRequest request) throws IOException,
-	 * RequestParseException, JSONException {
-	 * if(this.getReplicaGroup(request.getServiceName())==null) return;
-	 * GenericMessagingTask<Integer, JSONObject> mtask = new
-	 * GenericMessagingTask<Integer, JSONObject>(
-	 * this.getReplicaGroup(request.getServiceName()).toArray(),
-	 * request.toJSONObject()); if (this.messenger != null)
-	 * this.messenger.send(mtask); }
-	 */
+  @Override
+  public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {
+    if (this.app instanceof InterfaceReconfigurable) {
+      return ((InterfaceReconfigurable) this.app).getStopRequest(name,
+              epoch);
+    }
+    throw new RuntimeException(
+            "Can not get stop request for a non-reconfigurable app");
+  }
+
+// FIXME: unused method that exists only to prevent warnings
+  /**
+   * Exists only to prevent warnings.
+   *
+   * @param name
+   * @param epoch
+   * @return
+   */
+  protected boolean existsGroup(String name, int epoch) {
+    CoordData data = this.groups.get(name);
+    assert (data == null || data.name.equals(name));
+    return (data != null && data.epoch == epoch);
+  }
+
+  /*
+   * protected void sendAllLazy(DistributedNoopAppRequest request) throws IOException,
+   * RequestParseException, JSONException {
+   * if(this.getReplicaGroup(request.getServiceName())==null) return;
+   * GenericMessagingTask<Integer, JSONObject> mtask = new
+   * GenericMessagingTask<Integer, JSONObject>(
+   * this.getReplicaGroup(request.getServiceName()).toArray(),
+   * request.toJSONObject()); if (this.messenger != null)
+   * this.messenger.send(mtask); }
+   */
 }

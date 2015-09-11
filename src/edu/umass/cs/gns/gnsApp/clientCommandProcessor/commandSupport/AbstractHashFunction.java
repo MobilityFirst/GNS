@@ -4,13 +4,13 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gns.util.ByteUtils;
+import edu.umass.cs.gns.utils.ByteUtils;
 
 /**
  *
  * @author westy
  */
-public abstract class BasicHashFunction implements HashFunction {
+public abstract class AbstractHashFunction implements HashFunction {
   
   /**
    *  Hashes a string to a long.

@@ -16,6 +16,10 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
  */
 public class AclRemoveSelf extends AclRemove {
 
+  /**
+   *
+   * @param module
+   */
   public AclRemoveSelf(CommandModule module) {
     super(module);
   }

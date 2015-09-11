@@ -30,6 +30,10 @@ import org.json.JSONObject;
  */
 public class AclAdd extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public AclAdd(CommandModule module) {
     super(module);
   }

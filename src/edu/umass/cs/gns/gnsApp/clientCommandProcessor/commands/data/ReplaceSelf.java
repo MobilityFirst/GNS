@@ -17,10 +17,18 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOpera
  */
 public class ReplaceSelf extends AbstractUpdate {
 
+  /**
+   *
+   * @param module
+   */
   public ReplaceSelf(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;

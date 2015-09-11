@@ -35,6 +35,25 @@ public class NSAuthentication {
 
   private static final Cache<String, String> publicKeyCache = CacheBuilder.newBuilder().concurrencyLevel(5).maximumSize(1000).build();
 
+  /**
+   * Does access and signature checking for a field in a guid.
+   * 
+   * @param guid - the guid containing the field being accessed
+   * @param field - the field being accessed
+   * @param accessorGuid - the guid doing the access
+   * @param signature
+   * @param message
+   * @param access - the type of access
+   * @param gnsApp
+   * @param lnsAddress - used in case we need to do a query for more records
+   * @return
+   * @throws InvalidKeyException
+   * @throws InvalidKeySpecException
+   * @throws SignatureException
+   * @throws NoSuchAlgorithmException
+   * @throws FailedDBOperationException
+   * @throws UnsupportedEncodingException
+   */
   public static NSResponseCode signatureAndACLCheck(String guid, String field, String accessorGuid, String signature,
           String message, MetaDataTypeName access, 
           GnsApplicationInterface<String> gnsApp, InetSocketAddress lnsAddress)

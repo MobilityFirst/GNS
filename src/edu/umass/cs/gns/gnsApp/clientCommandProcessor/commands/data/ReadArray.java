@@ -29,6 +29,10 @@ import org.json.JSONObject;
  */
 public class ReadArray extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public ReadArray(CommandModule module) {
     super(module);
   }

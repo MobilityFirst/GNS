@@ -23,6 +23,11 @@ import org.json.JSONObject;
  */
 public class LookupAccountRecord extends GnsCommand {
 
+  /**
+   * Creates a LookupAccountRecord instance.
+   * 
+   * @param module
+   */
   public LookupAccountRecord(CommandModule module) {
     super(module);
   }

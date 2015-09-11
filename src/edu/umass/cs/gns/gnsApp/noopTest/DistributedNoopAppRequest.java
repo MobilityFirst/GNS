@@ -90,6 +90,11 @@ public class DistributedNoopAppRequest extends AppRequest implements InterfaceRe
     return this.entryReplica;
   }
 
+  /**
+   * The main routine.
+   *
+   * @param args
+   */
   public static void main(String[] args) {
   }
 }

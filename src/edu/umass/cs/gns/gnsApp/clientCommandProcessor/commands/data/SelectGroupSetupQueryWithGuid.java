@@ -17,6 +17,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class SelectGroupSetupQueryWithGuid extends SelectGroupSetupQuery {
 
+  /**
+   *
+   * @param module
+   */
   public SelectGroupSetupQueryWithGuid(CommandModule module) {
     super(module);
   }

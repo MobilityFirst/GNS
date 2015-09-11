@@ -232,6 +232,7 @@ public class TestReconfigurableClient {
    * reconfigurators.
    *
    * @param args
+   * @throws java.io.IOException
    */
   public static void main(String[] args) throws IOException {
     TestReconfigurableNodeConfig nc = new TestReconfigurableNodeConfig(args[0]);

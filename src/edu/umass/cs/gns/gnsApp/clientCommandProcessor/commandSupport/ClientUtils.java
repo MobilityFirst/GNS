@@ -5,8 +5,8 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gns.util.Base64;
-import edu.umass.cs.gns.util.ByteUtils;
+import edu.umass.cs.gns.utils.Base64;
+import edu.umass.cs.gns.utils.ByteUtils;
 import java.util.HashSet;
 import java.util.Set;
 import org.json.JSONArray;

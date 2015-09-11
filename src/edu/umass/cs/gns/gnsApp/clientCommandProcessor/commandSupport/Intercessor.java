@@ -13,8 +13,8 @@ import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.ResultValue;
 
+import edu.umass.cs.gns.utils.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -27,7 +27,7 @@ import static edu.umass.cs.gns.gnsApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;

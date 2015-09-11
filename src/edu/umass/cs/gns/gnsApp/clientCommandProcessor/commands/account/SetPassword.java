@@ -27,6 +27,11 @@ import org.json.JSONObject;
  */
 public class SetPassword extends GnsCommand {
 
+  /**
+   * Creates a SetPassword instance.
+   * 
+   * @param module
+   */
   public SetPassword(CommandModule module) {
     super(module);
   }

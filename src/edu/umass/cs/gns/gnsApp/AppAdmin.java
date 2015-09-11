@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp;
 
-import edu.umass.cs.gns.util.Shutdownable;
+import edu.umass.cs.gns.utils.Shutdownable;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;

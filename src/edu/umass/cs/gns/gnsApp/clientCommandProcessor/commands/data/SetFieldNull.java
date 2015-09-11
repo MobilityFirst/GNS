@@ -13,7 +13,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.utils.ResultValue;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -28,10 +28,18 @@ import org.json.JSONObject;
  */
 public class SetFieldNull extends AbstractUpdate {
 
+  /**
+   *
+   * @param module
+   */
   public SetFieldNull(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_SET_FIELD_NULL;

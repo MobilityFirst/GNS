@@ -26,6 +26,11 @@ import org.json.JSONObject;
  */
 public class ResetKey extends GnsCommand {
 
+  /**
+   * Creates a ResetKey instance.
+   * 
+   * @param module
+   */
   public ResetKey(CommandModule module) {
     super(module);
   }

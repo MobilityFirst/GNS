@@ -23,6 +23,10 @@ import org.json.JSONObject;
  */
 public class SelectWithin extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public SelectWithin(CommandModule module) {
     super(module);
   }

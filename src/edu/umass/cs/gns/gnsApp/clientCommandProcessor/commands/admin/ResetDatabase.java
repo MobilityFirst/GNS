@@ -25,6 +25,10 @@ import org.json.JSONObject;
  */
 public class ResetDatabase extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public ResetDatabase(CommandModule module) {
     super(module);
   }

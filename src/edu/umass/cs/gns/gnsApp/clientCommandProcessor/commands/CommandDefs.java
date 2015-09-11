@@ -13,11 +13,6 @@ package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands;
  */
 public class CommandDefs {
   
-  // If true this will enable a new feature that handles certain command
-  // requests at the name server. It is not finished and maybe never will be
-  // now. Don't set this to true without talking to Westy first!!
-  public static boolean handleAcccountCommandsAtNameServer = false;
-
   private static String[] commands = new String[]{
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.data.Append",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.data.AppendList",
@@ -163,6 +158,10 @@ public class CommandDefs {
           
   };
 
+  /**
+   *
+   * @return
+   */
   public static String[] getCommandDefs() {
     return commands;
   }

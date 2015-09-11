@@ -14,9 +14,9 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.JSONUtils;
+import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -25,13 +25,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+// PLEASE DO NOT DELETE THE implements Comparable BELOW. IT IS NECESSARY!!!! - Westy
+
 /**
- *
- * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
+ * The name record. 
+ * It specifies what is store in the database for system and user fields.
+ * This is also the in memory version of what is store in the database.
+ * 
  *
  * @author abhigyan
  */
-// FIXME: All this needs to be cleaned up. There are unused fields and
+// FIXME: All this needs to be cleaned up. There are many unused system fields and
 // why is this not just JSON anyway? - Westy
 public class NameRecord implements Comparable<NameRecord> {
 
@@ -40,16 +44,45 @@ public class NameRecord implements Comparable<NameRecord> {
    */
   public static final int NULL_VALUE_ACTIVE_VERSION = -1;
 
+  /**
+   * NAME
+   */
   public final static ColumnField NAME = new ColumnField("nr_name", ColumnFieldType.STRING);
+  /**
+   * PRIMARY_NAMESERVERS
+   */
   public final static ColumnField PRIMARY_NAMESERVERS = new ColumnField("nr_primary", ColumnFieldType.SET_NODE_ID_STRING);
+  /**
+   * ACTIVE_VERSION
+   */
   public final static ColumnField ACTIVE_VERSION = new ColumnField("nr_version", ColumnFieldType.INTEGER);
+  /**
+   * OLD_ACTIVE_VERSION
+   */
   public final static ColumnField OLD_ACTIVE_VERSION = new ColumnField("nr_oldVersion", ColumnFieldType.INTEGER);
+  /**
+   * TIME_TO_LIVE
+   */
   public final static ColumnField TIME_TO_LIVE = new ColumnField("nr_ttl", ColumnFieldType.INTEGER);
+  /**
+   * VALUES_MAP
+   */
   public final static ColumnField VALUES_MAP = new ColumnField("nr_valuesMap", ColumnFieldType.VALUES_MAP);
+  /**
+   * OLD_VALUES_MAP
+   */
   public final static ColumnField OLD_VALUES_MAP = new ColumnField("nr_oldValuesMap", ColumnFieldType.VALUES_MAP);
+  /**
+   * TOTAL_UPDATE_REQUEST
+   */
   public final static ColumnField TOTAL_UPDATE_REQUEST = new ColumnField("nr_totalUpdate", ColumnFieldType.INTEGER);
+  /**
+   * TOTAL_LOOKUP_REQUEST
+   */
   public final static ColumnField TOTAL_LOOKUP_REQUEST = new ColumnField("nr_totalLookup", ColumnFieldType.INTEGER);
-  // instrumentation
+  /**
+   * LOOKUP_TIME - instrumentation
+   */
   public final static ColumnField LOOKUP_TIME = new ColumnField("lookup_time", ColumnFieldType.INTEGER);
 
   /**
@@ -60,17 +93,14 @@ public class NameRecord implements Comparable<NameRecord> {
   private BasicRecordMap recordMap;
 
   /**
-   * ******************************************
-   * CONSTRUCTORS
-   * *****************************************
-   */
-  /**
    * Creates a <code>NameRecord</code> object initialized with given fields. The record is in memory and not written to DB.
    *
+   * @param recordMap
    * @param name
    * @param activeVersion
    * @param values
    * @param ttl
+   * @param replicaControllers
    */
   public NameRecord(BasicRecordMap recordMap, String name, int activeVersion, ValuesMap values, int ttl,
           Set<String> replicaControllers) {
@@ -93,8 +123,8 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Creates a <code>NameRecord</code> object by reading fields from the JSONObject.
    *
+   * @param recordMap
    * @param jsonObject
-   * @return
    * @throws org.json.JSONException
    */
   public NameRecord(BasicRecordMap recordMap, JSONObject jsonObject) throws JSONException {
@@ -146,6 +176,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Constructor used by the reInitialize values read from database
    *
+   * @param recordMap
    * @param allValues
    */
   public NameRecord(BasicRecordMap recordMap, HashMap<ColumnField, Object> allValues) {
@@ -156,6 +187,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Creates an empty name record without checking if name exists in database.
    *
+   * @param recordMap
    * @param name
    */
   public NameRecord(BasicRecordMap recordMap, String name) {
@@ -174,6 +206,12 @@ public class NameRecord implements Comparable<NameRecord> {
     return null;
   }
 
+  /**
+   * Convert the name record to a JSON Object.
+   * 
+   * @return
+   * @throws JSONException
+   */
   public JSONObject toJSONObject() throws JSONException {
     JSONObject jsonObject = new JSONObject();
     for (ColumnField f : hashMap.keySet()) {
@@ -186,6 +224,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * ******************************************
    * GETTER methods for each field in name record
    * *****************************************
+   * @return 
+   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException 
    */
   public String getName() throws FieldNotFoundException {
     if (hashMap.containsKey(NAME)) {
@@ -194,6 +234,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(NAME);
   }
 
+  /**
+   * Returns the primary name server.
+   * 
+   * @return the primary name server
+   * @throws FieldNotFoundException
+   */
   public Set getPrimaryNameservers() throws FieldNotFoundException {
     if (hashMap.containsKey(PRIMARY_NAMESERVERS)) {
       return (Set) hashMap.get(PRIMARY_NAMESERVERS);
@@ -201,6 +247,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(PRIMARY_NAMESERVERS);
   }
 
+  /**
+   * Returns the active version.
+   * 
+   * @return the active version
+   * @throws FieldNotFoundException
+   */
   public int getActiveVersion() throws FieldNotFoundException {
     if (hashMap.containsKey(ACTIVE_VERSION)) {
       return (Integer) hashMap.get(ACTIVE_VERSION);
@@ -208,6 +260,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(ACTIVE_VERSION);
   }
 
+  /**
+   * Returns the old active version.
+   * 
+   * @return the old active version
+   * @throws FieldNotFoundException
+   */
   public int getOldActiveVersion() throws FieldNotFoundException {
     if (hashMap.containsKey(OLD_ACTIVE_VERSION)) {
       return (Integer) hashMap.get(OLD_ACTIVE_VERSION);
@@ -215,6 +273,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(OLD_ACTIVE_VERSION);
   }
 
+  /**
+   * Return the TTL.
+   * 
+   * @return the TTL
+   * @throws FieldNotFoundException
+   */
   public int getTimeToLive() throws FieldNotFoundException {
     if (hashMap.containsKey(TIME_TO_LIVE)) {
       return (Integer) hashMap.get(TIME_TO_LIVE);
@@ -222,6 +286,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(TIME_TO_LIVE);
   }
 
+  /**
+   * Return the values map.
+   * 
+   * @return the values map
+   * @throws FieldNotFoundException
+   */
   public ValuesMap getValuesMap() throws FieldNotFoundException {
     if (hashMap.containsKey(VALUES_MAP)) {
       return (ValuesMap) hashMap.get(VALUES_MAP);
@@ -229,6 +299,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(VALUES_MAP);
   }
 
+  /**
+   * Return the old values map.
+   * 
+   * @return the old values map
+   * @throws FieldNotFoundException
+   */
   public ValuesMap getOldValuesMap() throws FieldNotFoundException {
     if (hashMap.containsKey(OLD_VALUES_MAP)) {
       return (ValuesMap) hashMap.get(OLD_VALUES_MAP);
@@ -236,6 +312,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(OLD_VALUES_MAP);
   }
 
+  /**
+   * Return the total lookup request instrumentation.
+   * 
+   * @return the total lookup request
+   * @throws FieldNotFoundException
+   */
   public int getTotalLookupRequest() throws FieldNotFoundException {
     if (hashMap.containsKey(TOTAL_LOOKUP_REQUEST)) {
       return (Integer) hashMap.get(TOTAL_LOOKUP_REQUEST);
@@ -243,6 +325,12 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(TOTAL_LOOKUP_REQUEST);
   }
 
+  /**
+   * Return the total update request instrumentation.
+   * 
+   * @return the total update request
+   * @throws FieldNotFoundException
+   */
   public int getTotalUpdateRequest() throws FieldNotFoundException {
     if (hashMap.containsKey(TOTAL_UPDATE_REQUEST)) {
       return (Integer) hashMap.get(TOTAL_UPDATE_REQUEST);
@@ -250,6 +338,11 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(TOTAL_UPDATE_REQUEST);
   }
 
+  /**
+   * Return the total lookup time instrumentation.
+   * 
+   * @return the total lookup time
+   */
   public int getLookupTime() {
     try {
       if (hashMap.containsKey(LOOKUP_TIME)) {
@@ -305,10 +398,24 @@ public class NameRecord implements Comparable<NameRecord> {
     throw new FieldNotFoundException(VALUES_MAP);
   }
 
+  /**
+   * The version status.
+   */
   public enum VersionStatus {
 
+    /**
+     *
+     */
     ActiveVersionEqualsVersion,
+
+    /**
+     *
+     */
     OldActiveVersionEqualsVersion,
+
+    /**
+     *
+     */
     SomethingElse
   }
 
@@ -350,6 +457,8 @@ public class NameRecord implements Comparable<NameRecord> {
    * ******************************************
    * WRITE methods, these methods change one or more fields in database.
    * *****************************************
+   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void incrementLookupRequest() throws FieldNotFoundException, FailedDBOperationException {
     ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
@@ -362,6 +471,11 @@ public class NameRecord implements Comparable<NameRecord> {
     // TODO implement batching
   }
 
+  /**
+   *
+   * @throws FieldNotFoundException
+   * @throws FailedDBOperationException
+   */
   public void incrementUpdateRequest() throws FieldNotFoundException, FailedDBOperationException {
     ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
     incrementFields.add(TOTAL_UPDATE_REQUEST);
@@ -378,6 +492,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param recordKey
    * @param newValues
    * @param oldValues
+   * @param argument
    * @param operation
    * @param userJSON
    * @return True if the update does anything, false otherwise.
@@ -462,6 +577,7 @@ public class NameRecord implements Comparable<NameRecord> {
 
   /**
    * @throws FieldNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void handleCurrentActiveStop() throws FieldNotFoundException, FailedDBOperationException {
 
@@ -485,7 +601,9 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   /**
+   * @param oldVersion
    * @throws FieldNotFoundException
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public void deleteOldState(int oldVersion) throws FieldNotFoundException, FailedDBOperationException {
 
@@ -518,6 +636,14 @@ public class NameRecord implements Comparable<NameRecord> {
     }
   }
 
+  /**
+   *
+   * @param version
+   * @param currentValue
+   * @param ttl
+   * @throws FieldNotFoundException
+   * @throws FailedDBOperationException
+   */
   public void handleNewActiveStart(int version, ValuesMap currentValue, int ttl)
           throws FieldNotFoundException, FailedDBOperationException {
 
@@ -538,6 +664,13 @@ public class NameRecord implements Comparable<NameRecord> {
 
   }
 
+  /**
+   *
+   * @param currentValue
+   * @param ttl
+   * @throws FieldNotFoundException
+   * @throws FailedDBOperationException
+   */
   public void updateState(ValuesMap currentValue, int ttl) throws FieldNotFoundException, FailedDBOperationException {
 
     ArrayList<ColumnField> updateFields = new ArrayList<ColumnField>();
@@ -558,35 +691,64 @@ public class NameRecord implements Comparable<NameRecord> {
    * ******************************************
    * SETTER methods, these methods write to database one field in the name record.
    * *****************************************
+   * @param valuesMap
    */
   public void setValuesMap(ValuesMap valuesMap) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   *
+   * @param activeNameServers1
+   */
   public void setActiveNameServers(Set<Integer> activeNameServers1) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   *
+   * @param activeNameservers
+   */
   public void setActiveNameservers(Set<Integer> activeNameservers) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   *
+   * @param activeVersion
+   */
   public void setActiveVersion(int activeVersion) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   *
+   * @param oldActiveVersion
+   */
   public void setOldActiveVersion(int oldActiveVersion) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   *
+   * @param totalLookupRequest
+   */
   public void setTotalLookupRequest(int totalLookupRequest) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   *
+   * @param totalUpdateRequest
+   */
   public void setTotalUpdateRequest(int totalUpdateRequest) {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   *
+   * @param oldValuesMap
+   */
   public void setOldValuesMap(ValuesMap oldValuesMap) {
     throw new UnsupportedOperationException();
   }
@@ -765,12 +927,7 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   /**
-   * ****************************
-   * End of name record methods
-   *****************************
-   */
-  /**
-   * PLEASE DO NOT DELETE THE implements Comparable<NameRecord> BELOW. IT IS NECESSARY!!!! - Westy
+   * PLEASE DO NOT DELETE THE THIS. IT IS NECESSARY!!!! - Westy
    *
    * @param d
    * @return

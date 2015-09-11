@@ -26,6 +26,10 @@ import org.json.JSONObject;
  */
 public class ChangeLogLevel extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public ChangeLogLevel(CommandModule module) {
     super(module);
   }

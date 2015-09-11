@@ -27,6 +27,10 @@ import org.json.JSONObject;
  */
 public class AddToGroup extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public AddToGroup(CommandModule module) {
     super(module);
   }

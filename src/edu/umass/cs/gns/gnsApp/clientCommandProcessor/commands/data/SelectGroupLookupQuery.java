@@ -22,6 +22,10 @@ import org.json.JSONObject;
  */
 public class SelectGroupLookupQuery extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public SelectGroupLookupQuery(CommandModule module) {
     super(module);
   }

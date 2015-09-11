@@ -52,6 +52,9 @@ import org.json.JSONObject;
  */
 public class NameResolution {
 
+  /**
+   * If true debugging is enabled.
+   */
   public static final boolean debuggingEnabled = false;
 
   /**
@@ -240,6 +243,15 @@ public class NameResolution {
     return response;
   }
 
+  /**
+   * Lookup the field or fields in the guid.
+   * 
+   * @param domainName - the HRN of the guid
+   * @param fieldName - the field to lookup (mutually exclusive with fieldNames)
+   * @param fieldNames - the fields to lookup (mutually exclusive with fieldNames)
+   * @param handler
+   * @return
+   */
   public static JSONObject lookupGuidField(String domainName, String fieldName, ArrayList<String> fieldNames, ClientRequestHandlerInterface handler) {
     long startTime = System.currentTimeMillis();
     // Make an array of field names to fetch from fieldName or FieldNames

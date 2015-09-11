@@ -17,10 +17,18 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOpera
  */
 public class ReplaceUnsigned extends AbstractUpdate {
 
+  /**
+   *
+   * @param module
+   */
   public ReplaceUnsigned(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REPLACE_ALL;

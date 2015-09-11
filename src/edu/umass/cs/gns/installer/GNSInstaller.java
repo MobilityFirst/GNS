@@ -6,7 +6,7 @@ import edu.umass.cs.aws.networktools.RSync;
 import edu.umass.cs.aws.networktools.SSHClient;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
-import edu.umass.cs.gns.util.Format;
+import edu.umass.cs.gns.utils.Format;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
@@ -215,7 +215,7 @@ public class GNSInstaller {
   }
 
   /**
-   *
+   * What action to perform on the servers.
    */
   public enum InstallerAction {
 

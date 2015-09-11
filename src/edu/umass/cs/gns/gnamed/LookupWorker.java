@@ -62,6 +62,7 @@ public class LookupWorker implements Runnable {
    * @param dnsServer (might be null meaning don't send requests to a DNS server)
    * @param gnsServer (might be null gns requests are resolved locally)
    * @param dnsCache (might be null meaning DNS responses are not cached)
+   * @param handler
    */
   public LookupWorker(DatagramSocket socket, DatagramPacket incomingPacket, byte[] incomingData, SimpleResolver gnsServer,
           SimpleResolver dnsServer, Cache dnsCache, ClientRequestHandlerInterface handler) {

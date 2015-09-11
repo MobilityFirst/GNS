@@ -17,6 +17,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class SelectGroupSetupQueryWithInterval extends SelectGroupSetupQuery {
 
+  /**
+   *
+   * @param module
+   */
   public SelectGroupSetupQueryWithInterval(CommandModule module) {
     super(module);
   }

@@ -10,7 +10,7 @@ import edu.umass.cs.gns.gnsApp.packet.admin.AdminResponsePacket;
 import edu.umass.cs.gns.gnsApp.packet.admin.SentinalPacket;
 import edu.umass.cs.gns.gnsApp.packet.admin.AdminRequestPacket;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.Shutdownable;
+import edu.umass.cs.gns.utils.Shutdownable;
 import edu.umass.cs.gns.gnsApp.packet.Packet;
 import edu.umass.cs.gns.ping.PingManager;
 import org.json.JSONException;

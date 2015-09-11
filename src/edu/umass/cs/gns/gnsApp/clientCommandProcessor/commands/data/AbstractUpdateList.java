@@ -15,7 +15,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.gns.utils.JSONUtils;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -30,10 +30,18 @@ import org.json.JSONObject;
  */
 public abstract class AbstractUpdateList extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public AbstractUpdateList(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   public abstract UpdateOperation getUpdateOperation();
 
   @Override

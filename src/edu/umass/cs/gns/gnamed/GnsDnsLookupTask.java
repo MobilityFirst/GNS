@@ -88,6 +88,11 @@ public class GnsDnsLookupTask implements Callable<Message> {
     return response;
   }
 
+  /**
+   * Returns the response.
+   * 
+   * @return the response
+   */
   public Message getResponse() {
     return response;
   }

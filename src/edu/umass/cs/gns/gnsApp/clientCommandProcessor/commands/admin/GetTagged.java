@@ -26,6 +26,10 @@ import org.json.JSONObject;
  */
 public class GetTagged extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public GetTagged(CommandModule module) {
     super(module);
   }

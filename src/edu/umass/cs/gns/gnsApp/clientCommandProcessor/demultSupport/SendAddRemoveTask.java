@@ -16,7 +16,7 @@ import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import static edu.umass.cs.gns.gnsApp.packet.Packet.PacketType.*;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.Util;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashSet;

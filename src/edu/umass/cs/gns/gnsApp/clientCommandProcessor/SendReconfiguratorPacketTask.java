@@ -11,7 +11,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.UpdateInfo;
 import edu.umass.cs.gns.exceptions.CancelExecutorTaskException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 
@@ -22,6 +22,11 @@ import org.json.JSONException;
 import java.util.HashSet;
 import java.util.TimerTask;
 
+/**
+ * Sends packets to reconfigurators with retransmission.
+ * 
+ * @author westy
+ */
 public class SendReconfiguratorPacketTask extends TimerTask {
 
   private final String name;
@@ -33,6 +38,13 @@ public class SendReconfiguratorPacketTask extends TimerTask {
   private final long startTime;
   private final ClientRequestHandlerInterface handler;
 
+  /**
+   * Creates an instance of SendReconfiguratorPacketTask.
+   * 
+   * @param name
+   * @param packet
+   * @param handler
+   */
   public SendReconfiguratorPacketTask(String name, BasicReconfigurationPacket packet,
           ClientRequestHandlerInterface handler) {
     this.name = name;

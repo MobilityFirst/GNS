@@ -3,7 +3,7 @@
  * University of Massachusetts
  * All Rights Reserved 
  */
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -80,24 +80,27 @@ public class MovingAverage {
   }
 
   /**
-   *
-   * @return
+   * The sum.
+   * 
+   * @return the sum
    */
   public double getSum() {
     return sum;
   }
 
   /**
-   *
-   * @return
+   * Return the all the values in the window as a JSON Array.
+   * 
+   * @return all the values in the window as a JSON Array
    */
   public JSONArray toJSONArray() {
     return new JSONArray(window);
   }
 
   /**
-   *
-   * @return
+   * Return the all the values in the window as an arrayList.
+   * 
+   * @return all the values in the window as an arrayList.
    */
   public ArrayList<Integer> toArrayList() {
     return new ArrayList<Integer>(this.window);
@@ -122,22 +125,18 @@ public class MovingAverage {
   }
 
   /**
-   * ***********************************************************
    * Returns the moving average.<br/>
    * Returns 0 if the window is empty.
-   ***********************************************************
-   * @return
+   * @return the moving average
    */
   public synchronized double getAverage() {
     return (window.isEmpty()) ? 0 : (sum / window.size());
   }
 
   /**
-   * ***********************************************************
    * Returns the median value in window.<br/>
    * Returns 0 if the window is empty.
-   ***********************************************************
-   * @return
+   * @return the median value
    */
   public synchronized double getMedian() {
     if (window.isEmpty()) {
@@ -154,20 +153,13 @@ public class MovingAverage {
 
   }
 
-  /**
-   * ***********************************************************
-   * Returns the String representation of this object
-   *
-   * @return
-   ***********************************************************
-   */
   @Override
   public String toString() {
     return "Window:" + window.toString() + " Size:" + window.size() + " Sum:" + sum + " Avg:" + getAverage();
   }
 
   /**
-   * Test
+   * The main routine. For testing only.
    *
    * @param args *
    */

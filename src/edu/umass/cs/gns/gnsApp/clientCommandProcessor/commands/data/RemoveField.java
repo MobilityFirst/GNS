@@ -17,10 +17,18 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class RemoveField extends AbstractUpdate {
 
+  /**
+   *
+   * @param module
+   */
   public RemoveField(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_REMOVE_FIELD;

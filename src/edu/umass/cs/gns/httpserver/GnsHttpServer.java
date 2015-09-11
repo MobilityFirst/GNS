@@ -29,8 +29,8 @@ import static edu.umass.cs.gns.httpserver.Defs.VALSEP;
 import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.Format;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.Format;
+import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.util.Date;
 import java.util.Map;
@@ -64,7 +64,7 @@ public class GnsHttpServer {
   }
 
   /**
-   *
+   * Start the server.
    */
   public static void runServer() {
     int cnt = 0;

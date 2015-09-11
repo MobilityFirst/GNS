@@ -1,4 +1,4 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -163,7 +163,7 @@ public class URIEncoderDecoder {
 
     /**
      * Decodes the string argument which is assumed to be encoded in the
-     * <code>x-www-form-urlencoded MIME content type using the UTF-8
+     * <code>x-www-form-urlencoded</code> MIME content type using the UTF-8
      * encoding scheme.
      * <p/>
      * '%' and two following hex digit characters are converted to the

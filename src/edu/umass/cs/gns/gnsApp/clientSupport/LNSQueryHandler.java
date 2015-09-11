@@ -49,7 +49,7 @@ public class LNSQueryHandler {
 
   /**
    * Sends a DNS query from this Name Server to a Local Name Server.
-   * The value returned in the QueryResult<String> will be an old-style values list.
+   * The value returned in the QueryResult will be an old-style values list.
    *
    * @param name
    * @param key

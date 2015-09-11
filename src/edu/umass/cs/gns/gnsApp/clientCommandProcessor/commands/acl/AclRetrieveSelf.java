@@ -16,6 +16,10 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
  */
 public class AclRetrieveSelf extends AclRetrieve {
 
+  /**
+   *
+   * @param module
+   */
   public AclRetrieveSelf(CommandModule module) {
     super(module);
   }

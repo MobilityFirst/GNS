@@ -16,6 +16,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class CreateListSelf extends CreateList {
 
+  /**
+   *
+   * @param module
+   */
   public CreateListSelf(CommandModule module) {
     super(module);
   }

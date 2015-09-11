@@ -7,7 +7,7 @@ package edu.umass.cs.gns.installer;
 
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.GEOLocator;
+import edu.umass.cs.gns.utils.GEOLocator;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;

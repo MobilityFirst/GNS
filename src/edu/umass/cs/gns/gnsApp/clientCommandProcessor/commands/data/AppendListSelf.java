@@ -17,10 +17,18 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class AppendListSelf extends AbstractUpdateList {
 
+  /**
+   *
+   * @param module
+   */
   public AppendListSelf(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_APPEND;

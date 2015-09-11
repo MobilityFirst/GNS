@@ -7,10 +7,10 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ResultValueString;
-import edu.umass.cs.gns.util.Format;
-import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.ResultValueString;
+import edu.umass.cs.gns.utils.Format;
+import edu.umass.cs.gns.utils.JSONUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;

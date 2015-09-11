@@ -11,7 +11,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.HostFileLoader;
 import edu.umass.cs.gns.nodeconfig.HostSpec;
-import edu.umass.cs.gns.util.Shutdownable;
+import edu.umass.cs.gns.utils.Shutdownable;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 
 import java.io.BufferedReader;

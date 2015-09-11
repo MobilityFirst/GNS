@@ -2,7 +2,7 @@ package edu.umass.cs.gns.gnsApp.packet.admin;
 
 import edu.umass.cs.gns.gnsApp.packet.BasicPacket;
 import edu.umass.cs.gns.gnsApp.packet.Packet;
-import edu.umass.cs.gns.util.Format;
+import edu.umass.cs.gns.utils.Format;
 import org.json.JSONException;
 import org.json.JSONObject;
 

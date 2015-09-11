@@ -42,6 +42,11 @@ public class CCPProtocolTask<NodeIDType> implements
   private final String key;
   private final ClientRequestHandlerInterface handler;
 
+  /**
+   * Sets the handler.
+   *
+   * @param requestHandler
+   */
   public CCPProtocolTask(ClientRequestHandlerInterface requestHandler) {
     this.handler = requestHandler;
     this.key = refreshKey();
@@ -57,8 +62,7 @@ public class CCPProtocolTask<NodeIDType> implements
     return null;
   }
 
-  //@Override
-  public String refreshKey() {
+  private String refreshKey() {
     return ((handler.getNodeAddress().getHostString() + (int) (Math.random() * Integer.MAX_VALUE)));
   }
 

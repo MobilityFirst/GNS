@@ -5,7 +5,7 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import edu.umass.cs.gns.main.GNS;
 import java.io.File;

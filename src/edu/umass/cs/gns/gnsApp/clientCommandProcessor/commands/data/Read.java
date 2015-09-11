@@ -13,7 +13,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.FieldAccess;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.gns.utils.JSONUtils;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -28,6 +28,10 @@ import org.json.JSONObject;
  */
 public class Read extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public Read(CommandModule module) {
     super(module);
   }

@@ -33,7 +33,10 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
   private Logger log = Logger.getLogger(getClass().getName());
 
   /**
-   *
+   * Creates a TestReconfigurableNodeConfig instance.
+   * 
+   * @param hostsFile
+   * @throws java.io.IOException
    */
   public TestReconfigurableNodeConfig(String hostsFile) throws IOException {
     super();
@@ -41,7 +44,9 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
   }
 
   /**
+   * @param hostsFile
    * @param defaultPort
+   * @throws java.io.IOException
    */
   public TestReconfigurableNodeConfig(String hostsFile, int defaultPort) throws IOException {
     super(defaultPort);
@@ -117,10 +122,20 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
     throw new UnsupportedOperationException("Not supported yet.");
   }
 
+  /**
+   *
+   * @param activeID
+   * @return
+   */
   public String activeToRC(String activeID) {
     return activeID + "_" + RC_SUFFIX;
   }
 
+  /**
+   *
+   * @param rcID
+   * @return
+   */
   public String RCToActive(String rcID) {
     int index;
     if ((index = rcID.lastIndexOf("_")) != -1) {

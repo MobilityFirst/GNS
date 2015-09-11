@@ -7,9 +7,9 @@ package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.Stats;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.Stats;
+import edu.umass.cs.gns.utils.Util;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

@@ -10,7 +10,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
 import java.net.InetSocketAddress;
 import org.json.JSONException;
 
@@ -122,7 +122,9 @@ public class NSAccountAccess {
    * GUID = Globally Unique Identifier<br>
    *
    * @param guid
+   * @param activeReplica
    * @return an {@link edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GuidInfo} instance
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static GuidInfo lookupGuidInfo(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     return NSAccountAccess.lookupGuidInfo(guid, false, activeReplica, null);

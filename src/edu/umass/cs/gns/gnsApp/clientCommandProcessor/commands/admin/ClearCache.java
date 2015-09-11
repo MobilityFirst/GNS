@@ -25,6 +25,10 @@ import org.json.JSONObject;
  */
 public class ClearCache extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public ClearCache(CommandModule module) {
     super(module);
   }

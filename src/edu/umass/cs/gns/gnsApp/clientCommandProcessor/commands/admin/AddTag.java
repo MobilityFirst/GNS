@@ -27,6 +27,10 @@ import org.json.JSONObject;
  */
 public class AddTag extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public AddTag(CommandModule module) {
     super(module);
   }

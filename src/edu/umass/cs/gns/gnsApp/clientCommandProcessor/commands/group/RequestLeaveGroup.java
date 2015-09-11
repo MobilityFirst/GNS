@@ -27,6 +27,10 @@ import org.json.JSONObject;
 @Deprecated
 public class RequestLeaveGroup extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public RequestLeaveGroup(CommandModule module) {
     super(module);
   }

@@ -15,8 +15,8 @@ import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.Base64;
-import edu.umass.cs.gns.util.ByteUtils;
+import edu.umass.cs.gns.utils.Base64;
+import edu.umass.cs.gns.utils.ByteUtils;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
@@ -57,6 +57,18 @@ public class NSAccessSupport {
     }
   }
 
+  /**
+   * Verifies that the signature corresponds to the message using the public key.
+   * 
+   * @param accessorPublicKey
+   * @param signature
+   * @param message
+   * @return
+   * @throws InvalidKeyException
+   * @throws SignatureException
+   * @throws UnsupportedEncodingException
+   * @throws InvalidKeySpecException
+   */
   public static boolean verifySignature(String accessorPublicKey, String signature, String message) throws
           InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
     if (!GNS.enableSignatureAuthentication) {
@@ -80,7 +92,7 @@ public class NSAccessSupport {
     return result;
   }
 
-  public static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
+  private static synchronized boolean verifySignatureInternal(byte[] publickeyBytes, String signature, String message)
           throws InvalidKeyException, SignatureException, UnsupportedEncodingException, InvalidKeySpecException {
 
     //KeyFactory keyFactory = KeyFactory.getInstance(RSAALGORITHM);
@@ -99,11 +111,13 @@ public class NSAccessSupport {
    * Note: Blacklists are currently not activated.
    *
    * @param access
-   * @param guidInfo
+   * @param guid
    * @param field
+   * @param accessorGuid
    * @param activeReplica
    * @param lnsAddress
    * @return
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
           String accessorGuid, GnsApplicationInterface<String> activeReplica,
@@ -207,6 +221,16 @@ public class NSAccessSupport {
     }
   }
 
+  /**
+   * Returns true if the field has access setting that allow it to be read globally.
+   * 
+   * @param access
+   * @param guid
+   * @param field
+   * @param activeReplica
+   * @return
+   * @throws FailedDBOperationException
+   */
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
     try {
@@ -221,6 +245,16 @@ public class NSAccessSupport {
     }
   }
 
+  /**
+   * Looks up the public key for a guid using the acl of a field.
+   * 
+   * @param access
+   * @param guid
+   * @param field
+   * @param activeReplica
+   * @return
+   * @throws FailedDBOperationException
+   */
   @SuppressWarnings("unchecked")
   public static Set<String> lookupPublicKeysFromAcl(MetaDataTypeName access, String guid, String field,
           GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {

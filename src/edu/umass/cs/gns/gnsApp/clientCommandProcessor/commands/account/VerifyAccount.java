@@ -26,6 +26,11 @@ import org.json.JSONObject;
  */
 public class VerifyAccount extends GnsCommand {
 
+  /**
+   * Creates a VerifyAccount instance.
+   * 
+   * @param module
+   */
   public VerifyAccount(CommandModule module) {
     super(module);
   }

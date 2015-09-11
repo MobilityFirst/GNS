@@ -4,7 +4,7 @@
  * All Rights Reserved 
  *
  */
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Collection;

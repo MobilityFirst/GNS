@@ -35,6 +35,8 @@ public class TestNodeConfig<NodeIDType> implements
   private final int defaultPort;
 
   /**
+   * Creates a TestNodeConfig instance.
+   * 
    * @param defaultPort
    * Assigns port numbers to nodes starting from defaultPort
    */
@@ -43,7 +45,7 @@ public class TestNodeConfig<NodeIDType> implements
   }
 
   /**
-   *
+   * Creates a TestNodeConfig instance with the default port.
    */
   public TestNodeConfig() {
     this(DEFAULT_PORT);
@@ -63,7 +65,7 @@ public class TestNodeConfig<NodeIDType> implements
   public InetAddress getNodeAddress(NodeIDType ID) {
     return nmap.get(ID);
   }
-  
+
   @Override
   public InetAddress getBindAddress(NodeIDType ID) {
     return nmap.get(ID);
@@ -71,6 +73,7 @@ public class TestNodeConfig<NodeIDType> implements
 
   /**
    * Maps each node ID to a port number.
+   *
    * @param ID
    */
   @Override

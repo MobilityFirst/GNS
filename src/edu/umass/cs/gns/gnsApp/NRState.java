@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp;
 
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
 

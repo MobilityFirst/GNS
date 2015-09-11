@@ -8,8 +8,7 @@ import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-//import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-import edu.umass.cs.gns.util.JSONUtils;
+import edu.umass.cs.gns.utils.JSONUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,10 +25,15 @@ import java.util.Set;
  */
 public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
 
-  private String collectionName;
-  private MongoRecords<NodeIDType> mongoRecords;
+  private final String collectionName;
+  private final MongoRecords<NodeIDType> mongoRecords;
 
-  
+  /**
+   * Creates an MongoRecordMap instance.
+   * 
+   * @param mongoRecords
+   * @param collectionName
+   */
   public MongoRecordMap(MongoRecords<NodeIDType> mongoRecords, String collectionName) {
     this.collectionName = collectionName;
     this.mongoRecords = mongoRecords;
@@ -52,10 +56,10 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
     }
   }
 
+
   @Override
   public HashMap<ColumnField, Object> lookupMultipleSystemFields(String name, ColumnField nameField, ArrayList<ColumnField> systemFields) throws RecordNotFoundException, FailedDBOperationException {
     return mongoRecords.lookupMultipleSystemFields(collectionName, name, nameField, systemFields);
-//    return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
   @Override
@@ -90,13 +94,6 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
   public void increment(String name, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues)
           throws FailedDBOperationException {
     mongoRecords.increment(collectionName, name, systemFields, systemValues);
-  }
-
-  @Override
-  public void increment(String name, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues, ColumnField votesMapField,
-          ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
-          throws FailedDBOperationException {
-    mongoRecords.increment(collectionName, name, systemFields, systemValues, votesMapField, votesMapKeys, votesMapValues);
   }
 
   @Override
@@ -158,7 +155,6 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
       GNS.getLogger().severe("Error adding name record: " + e);
       return;
     }
-//    GNS.getLogger().fine("here 2 ..");
   }
 
   @Override
@@ -200,76 +196,14 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
     return mongoRecords.contains(collectionName, name);
   }
 
-  /**
-   * Clears the database and reinitializes all indices.
-   */
   @Override
   public void reset() throws FailedDBOperationException {
     mongoRecords.reset(collectionName);
   }
 
-//  @Override
-//  @Deprecated
-//  public ReplicaControllerRecord getNameRecordPrimary(String name) throws RecordNotFoundException, FailedDBOperationException {
-//    try {
-//      JSONObject json = mongoRecords.lookupEntireRecord(collectionName, name);
-//      if (json == null) {
-//        return null;
-//      } else {
-//        return new ReplicaControllerRecord(this, json);
-//      }
-//    } catch (JSONException e) {
-//      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
-//    }
-//    return null;
-//  }
-//
-//  @Override
-//  @Deprecated
-//  public void addNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException, RecordExistsException {
-//    try {
-//      mongoRecords.insert(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
-//    } catch (JSONException e) {
-//      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
-//      return;
-//    } catch (FieldNotFoundException e) {
-//      GNS.getLogger().severe("Field not found: " + e.getMessage());
-//
-//    }
-//  }
-//
-//  @Override
-//  @Deprecated
-//  public void updateNameRecordPrimary(ReplicaControllerRecord recordEntry) throws FailedDBOperationException {
-//    try {
-//      mongoRecords.update(collectionName, recordEntry.getName(), recordEntry.toJSONObject());
-//    } catch (JSONException e) {
-//      GNS.getLogger().warning("JSON Exception while converting record to JSON: " + e.getMessage());
-//    } catch (FieldNotFoundException e) {
-//      GNS.getLogger().severe("Field not found: " + e.getMessage());
-//    }
-//  }
-  
   @Override
   public String toString() {
     return "MongoRecordMap{" + "collectionName=" + collectionName + ", mongoRecords=" + mongoRecords + '}';
   }
-
-//
-//  // test code
-//  public static void main(String[] args) throws Exception {
-//    NameServer.nodeID = 2;
-//    retrieveFieldTest();
-//    //System.exit(0);
-//  }
-//
-//  private static void retrieveFieldTest() throws Exception {
-//    ConfigFileInfo.readHostInfo("ns1", NameServer.nodeID);
-//    ConsistentHashing.initializeHashFunction();
-//    BasicRecordMap recordMap = new MongoRecordMap(MongoRecords.DBNAMERECORD);
-//    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", NameRecord.PRIMARY_NAMESERVERS.getName()));
-//    recordMap.updateNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED", new HashSet<Integer>(Arrays.asList(1, 2, 3)));
-//    System.out.println(recordMap.getNameRecordFieldAsIntegerSet("1A434C0DAA0B17E48ABD4B59C632CF13501C7D24", "FRED"));
-//  }
 
 }

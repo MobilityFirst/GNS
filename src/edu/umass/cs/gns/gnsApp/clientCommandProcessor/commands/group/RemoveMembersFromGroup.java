@@ -13,7 +13,7 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GroupAccess
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.ResultValue;
+import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -28,6 +28,10 @@ import org.json.JSONObject;
  */
 public class RemoveMembersFromGroup extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public RemoveMembersFromGroup(CommandModule module) {
     super(module);
   }

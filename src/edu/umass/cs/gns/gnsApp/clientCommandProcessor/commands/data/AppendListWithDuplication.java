@@ -17,10 +17,18 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class AppendListWithDuplication extends AbstractUpdateList {
 
+  /**
+   *
+   * @param module
+   */
   public AppendListWithDuplication(CommandModule module) {
     super(module);
   }
 
+  /**
+   *
+   * @return
+   */
   @Override
   public UpdateOperation getUpdateOperation() {
     return UpdateOperation.SINGLE_FIELD_APPEND_WITH_DUPLICATION;

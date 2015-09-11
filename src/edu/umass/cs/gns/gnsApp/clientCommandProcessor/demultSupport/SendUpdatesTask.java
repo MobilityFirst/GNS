@@ -12,7 +12,7 @@ import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.Util;
 import org.json.JSONException;
 import java.util.HashSet;
 import java.util.TimerTask;

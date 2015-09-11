@@ -7,9 +7,9 @@ package edu.umass.cs.gns.gnsApp.packet;
 
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.JSONUtils;
+import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.nio.Stringifiable;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
 

@@ -26,6 +26,10 @@ import org.json.JSONObject;
  */
 public class SetParameter extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public SetParameter(CommandModule module) {
     super(module);
   }

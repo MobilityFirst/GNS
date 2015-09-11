@@ -7,7 +7,7 @@ package edu.umass.cs.gns.gnsApp.packet;
 
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.SHA1HashFunction;
-import edu.umass.cs.gns.util.Base64;
+import edu.umass.cs.gns.utils.Base64;
 import edu.umass.cs.nio.Stringifiable;
 
 import java.net.InetSocketAddress;

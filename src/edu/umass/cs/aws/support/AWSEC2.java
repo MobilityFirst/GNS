@@ -39,7 +39,7 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import static edu.umass.cs.aws.support.AWSEC2.DEFAULTSECONDMOUNTPOINT;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ThreadUtils;
+import edu.umass.cs.gns.utils.ThreadUtils;
 import edu.umass.cs.aws.networktools.ExecuteBash;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

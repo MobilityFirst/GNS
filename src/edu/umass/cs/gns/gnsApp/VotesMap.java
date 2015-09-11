@@ -8,7 +8,7 @@
 package edu.umass.cs.gns.gnsApp;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.Util;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;

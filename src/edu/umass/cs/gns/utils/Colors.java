@@ -1,11 +1,10 @@
-package edu.umass.cs.gns.util;
+package edu.umass.cs.gns.utils;
 
 import java.awt.Color;
 
 /**
- * A crapload of colors for us to use.
- * 
- * @author	Westy
+ * A crapload of colors for us to use
+ * @author	Westy (westy@cs.umass.edu)
  */
 public class Colors {
     public static Color GreenYellow = new Color(.678f, 1.000f, .184f);

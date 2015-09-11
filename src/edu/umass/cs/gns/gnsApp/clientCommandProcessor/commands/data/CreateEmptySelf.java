@@ -17,6 +17,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
  */
 public class CreateEmptySelf extends Create {
 
+  /**
+   *
+   * @param module
+   */
   public CreateEmptySelf(CommandModule module) {
     super(module);
   }

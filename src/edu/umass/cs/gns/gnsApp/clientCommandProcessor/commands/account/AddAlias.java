@@ -30,6 +30,11 @@ import org.json.JSONObject;
  */
 public class AddAlias extends GnsCommand {
 
+  /**
+   * Creates an AddAlias instance.
+   * 
+   * @param module
+   */
   public AddAlias(CommandModule module) {
     super(module);
   }

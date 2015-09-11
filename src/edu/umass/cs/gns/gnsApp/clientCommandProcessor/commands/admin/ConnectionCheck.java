@@ -21,6 +21,10 @@ import org.json.JSONObject;
  */
 public class ConnectionCheck extends GnsCommand {
 
+  /**
+   *
+   * @param module
+   */
   public ConnectionCheck(CommandModule module) {
     super(module);
   }
