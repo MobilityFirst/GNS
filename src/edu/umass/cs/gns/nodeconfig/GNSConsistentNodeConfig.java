@@ -8,6 +8,15 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+/**
+ * A wrapper around NodeConfig to ensure that it is
+ * consistent, i.e., it returns consistent results even if it changes
+ * midway. 
+ * In particular, it does not allow the use of a method like
+ * getNodeIDs().
+ *
+ * @param <NodeIDType>
+ */
 public class GNSConsistentNodeConfig<NodeIDType> implements
         GNSInterfaceNodeConfig<NodeIDType> {
 
@@ -16,6 +25,11 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
 
   private final ConsistentHashing<NodeIDType> CH; // need to refresh when nodeConfig changes
 
+  /**
+   * Creates a GNSConsistentNodeConfig instance.
+   * 
+   * @param nc
+   */
   public GNSConsistentNodeConfig(GNSInterfaceNodeConfig<NodeIDType> nc) {
     this.nodeConfig = nc;
     this.nodes = this.nodeConfig.getNodeIDs();
@@ -42,6 +56,12 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
     return this.nodeConfig.getReconfigurators();
   }
 
+  /**
+   * Returns replicated servers.
+   * 
+   * @param name
+   * @return
+   */
   public Set<NodeIDType> getReplicatedServers(String name) {
     refresh();
     return this.CH.getReplicatedServers(name);
@@ -56,7 +76,7 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   public InetAddress getNodeAddress(NodeIDType id) {
     return this.nodeConfig.getNodeAddress(id);
   }
-  
+
   @Override
   public InetAddress getBindAddress(NodeIDType id) {
     return this.nodeConfig.getBindAddress(id);
@@ -81,12 +101,12 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
   public int getCcpPort(NodeIDType id) {
     return this.nodeConfig.getCcpPort(id);
   }
-  
+
   @Override
   public int getCcpAdminPort(NodeIDType id) {
     return this.nodeConfig.getCcpAdminPort(id);
   }
-  
+
   @Override
   public int getCcpPingPort(NodeIDType id) {
     return this.nodeConfig.getCcpPingPort(id);

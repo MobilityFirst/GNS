@@ -5,10 +5,9 @@
  */
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.gns.database.DataStoreType;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.GEOLocator;
+import edu.umass.cs.gns.utils.GEOLocator;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +29,8 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
- *
+ * Parses an XML config file to get all info needed create hosts.
+ * 
  * @author westy
  */
 public class HostConfigParser {
@@ -56,35 +56,71 @@ public class HostConfigParser {
   private String installPath;
   private List<HostInfo> hosts = new ArrayList<HostInfo>();
 
+  /**
+   * Returns the keyname.
+   * 
+   * @return the keyname
+   */
   public String getKeyname() {
     return keyname;
   }
 
+  /**
+   * Returns the username.
+   * 
+   * @return
+   */
   public String getUsername() {
     return username;
   }
 
+  /**
+   * Returns the host type.
+   * 
+   * @return the host type.
+   */
   public String getHostType() {
     return hostType;
   }
 
+  /**
+   * Returns the dataStoreType.
+   * 
+   * @return the dataStoreType
+   */
   public DataStoreType getDataStoreType() {
     return dataStoreType;
   }
 
+  /**
+   * Returns the install path.
+   * 
+   * @return the install path.
+   */
   public String getInstallPath() {
     return installPath;
   }
 
+  /**
+   * Returns the list of hosts.
+   * 
+   * @return the list of hosts
+   */
   public List<HostInfo> getHosts() {
     return hosts;
   }
 
+  /**
+   * Creates a HostConfigParser instance.
+   * 
+   * @param filename
+   * @throws HostConfigParseException
+   */
   public HostConfigParser(String filename) throws HostConfigParseException {
     parseFile(filename);
   }
 
-  public void parseFile(String filename) throws HostConfigParseException {
+  private void parseFile(String filename) throws HostConfigParseException {
     String confPath = getConfPath();
     if (confPath == null) {
       return;
@@ -170,7 +206,7 @@ public class HostConfigParser {
     }
   }
 
-  public static String getConfPath() {
+  private static String getConfPath() {
     try {
       File jarLoc = new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
       return jarLoc.getParentFile() + "/conf/";

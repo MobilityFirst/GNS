@@ -9,8 +9,8 @@ package edu.umass.cs.gns.nodeconfig;
 import com.google.common.collect.ImmutableSet;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gns.util.Shutdownable;
+import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gns.utils.Shutdownable;
 import edu.umass.cs.nio.nioutils.InterfaceDelayEmulator;
 
 import java.io.BufferedReader;
@@ -57,21 +57,20 @@ import org.json.JSONException;
  */
 public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDType>, Shutdownable, InterfaceDelayEmulator<NodeIDType> {
 
+  /**
+   * An invalid latency.
+   */
   public static final long INVALID_PING_LATENCY = -1L;
+
+  /**
+   * An invalid port.
+   */
   public static final int INVALID_PORT = -1;
 
   private long version = 0l;
   private NodeIDType nodeID; // if this is null you should check isLocalNameServer; otherwise it might be invalid
   private boolean isCCP = false;
   private final String hostsFile;
-
-  // A hack for the transition. If set to true you'll just get
-  // node-1, node-2 instead of node-1_Reconfigurator and node-1_ActiveReplica
-  private boolean useOldCombinedNodeName = false;
-
-  public void setUseOldCombinedNodeName(boolean useOldCombinedNodeName) {
-    this.useOldCombinedNodeName = useOldCombinedNodeName;
-  }
 
   /**
    * Contains information about each name server. <Key = HostID, Value = NodeInfo>
@@ -85,6 +84,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    *
    * @param hostsFile
    * @param nameServerID - specify null to mean the local name server
+   * @throws java.io.IOException
    */
   public GNSNodeConfig(String hostsFile, NodeIDType nameServerID) throws IOException {
     if (nameServerID == null) {
@@ -151,15 +151,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public Set<NodeIDType> getActiveReplicas() {
-    if (!useOldCombinedNodeName) {
-      Set<NodeIDType> result = new HashSet<>();
-      for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
-        result.add(hostInfo.getActiveReplicaID());
-      }
-      return result;
-    } else {
-      return ImmutableSet.copyOf(hostInfoMapping.keySet());
+    Set<NodeIDType> result = new HashSet<>();
+    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+      result.add(hostInfo.getActiveReplicaID());
     }
+    return result;
   }
 
   private NodeInfo<NodeIDType> getActiveReplicaInfo(NodeIDType id) {
@@ -171,6 +167,13 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
+  /**
+   *
+   * Returns true if this node is an active replica, otherwise false.
+   * 
+   * @param id
+   * @return
+   */
   public boolean isActiveReplica(NodeIDType id) {
     return getActiveReplicaInfo(id) != null;
   }
@@ -207,7 +210,6 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
 //    }
 //    return null;
 //  }
-
   /**
    * Returns the set of reconfigurator ids.
    *
@@ -215,15 +217,11 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    */
   @Override
   public Set<NodeIDType> getReconfigurators() {
-    if (!useOldCombinedNodeName) {
-      Set<NodeIDType> result = new HashSet<>();
-      for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
-        result.add(hostInfo.getReconfiguratorID());
-      }
-      return result;
-    } else {
-      return ImmutableSet.copyOf(hostInfoMapping.keySet());
+    Set<NodeIDType> result = new HashSet<>();
+    for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
+      result.add(hostInfo.getReconfiguratorID());
     }
+    return result;
   }
 
   private NodeInfo<NodeIDType> getReconfiguratorInfo(NodeIDType id) {
@@ -261,6 +259,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
+  /**
+   * Returns the active replica associated with this node id.
+   * 
+   * @param id
+   * @return
+   */
   public NodeIDType getReplicaNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
     if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
@@ -269,6 +273,12 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     return null;
   }
 
+  /**
+   * Returns the reconfigurator associated with this node id.
+   * 
+   * @param id
+   * @return
+   */
   public NodeIDType getReconfiguratorNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
     if ((nodeInfo = getNodeInfoForTopLevelNode(id)) != null) {
@@ -355,7 +365,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
       return INVALID_PORT;
     }
   }
-  
+
   @Override
   public int getCcpAdminPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
@@ -365,7 +375,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
       return INVALID_PORT;
     }
   }
-  
+
   @Override
   public int getCcpPingPort(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo = getNodeInfoForAnyNode(id);
@@ -403,7 +413,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
       return null;
     }
   }
-  
+
   @Override
   public InetAddress getBindAddress(NodeIDType id) {
     // handle special case for CCP node
@@ -788,8 +798,8 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
     System.exit(0);
   }
 
-@Override
-public long getEmulatedDelay(NodeIDType node2) {
-	return this.getPingLatency(node2);
-}
+  @Override
+  public long getEmulatedDelay(NodeIDType node2) {
+    return this.getPingLatency(node2);
+  }
 }

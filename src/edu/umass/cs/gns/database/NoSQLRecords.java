@@ -8,7 +8,6 @@ package edu.umass.cs.gns.database;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.util.ResultValue;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -308,7 +307,12 @@ public interface NoSQLRecords {
    */
   public void reset(String collection) throws FailedDBOperationException;
 
-  @Override
+ 
+  /** 
+   * Return a string representation of the record set.
+   * @return 
+   */
+   @Override
   public String toString();
 
   /**

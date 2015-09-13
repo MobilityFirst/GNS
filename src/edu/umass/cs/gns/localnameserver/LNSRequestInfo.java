@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.newApp.packet.CommandPacket;
+import edu.umass.cs.gns.gnsApp.packet.CommandPacket;
 
 /**
  * Class represents the abstract class in which LNS stores info for each ongoing request,
@@ -34,36 +34,76 @@ public class LNSRequestInfo {
   /** Whether requests is finally successful or not. */
   private boolean success = false;
 
-public LNSRequestInfo(int lnsReqId, CommandPacket commandPacket) {
+  /**
+   *
+   * @param lnsReqId
+   * @param commandPacket
+   */
+  public LNSRequestInfo(int lnsReqId, CommandPacket commandPacket) {
     this.lnsReqID = lnsReqId;
     this.startTime = System.currentTimeMillis();
     this.commandPacket = commandPacket;
   }
 
+  /**
+   * Returns the service name.
+   * 
+   * @return the service name
+   */
   public synchronized String getServiceName() {
     return commandPacket.getServiceName();
   }
 
+  /**
+   * Returns the command packet.
+   * 
+   * @return the command packet
+   */
   public CommandPacket getCommandPacket() {
     return commandPacket;
   }
 
+  /**
+   * Returns the command type.
+   * 
+   * @return the command type
+   */
   public String getCommandType() {
     return commandPacket.getCommandName();
   }
   
+  /**
+   * Returns the host.
+   * 
+   * @return the host
+   */
   public String getHost() {
     return commandPacket.getSenderAddress();
   }
 
+  /**
+   * Returns the port.
+   * 
+   * @return the port
+   */
   public int getPort() {
     return commandPacket.getSenderPort();
   }
 
+  /**
+   * Returns the LNS request id.
+   * 
+   * @return the LNS request id
+   */
   public synchronized int getLNSReqID() {
     return lnsReqID;
   }
 
+  /**
+   * Returns the start time.
+   * 
+   * @return the start time
+   */
   public synchronized long getStartTime() {
     return startTime;
   }
@@ -76,18 +116,36 @@ public LNSRequestInfo(int lnsReqId, CommandPacket commandPacket) {
     return finishTime - startTime;
   }
 
+  /**
+   * Returns the finish time.
+   * 
+   * @return the finish time
+   */
   public synchronized long getFinishTime() {
     return finishTime;
   }
 
+  /**
+   * Sets the finish time.
+   */
   public synchronized void setFinishTime() {
     this.finishTime = System.currentTimeMillis();
   }
 
+  /**
+   * Returns the success value.
+   * 
+   * @return true or false
+   */
   public synchronized boolean isSuccess() {
     return success;
   }
 
+  /**
+   * Sets the success value.
+   * 
+   * @param success
+   */
   public synchronized void setSuccess(boolean success) {
     this.success = success;
   }

@@ -28,8 +28,25 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+/**
+ * Writes out configuration files for an set of running EC2 hosts created by
+ * {@link EC2Runner}.
+ *
+ * @author westy
+ */
 public class WriteConfFile {
 
+  /**
+   * Write all the config files.
+   *
+   * @param configName
+   * @param directory
+   * @param keyName
+   * @param ec2UserName
+   * @param hostType
+   * @param datastore
+   * @param idTable
+   */
   public static void writeConfFiles(String configName, String directory, String keyName, String ec2UserName, String hostType, String datastore,
           ConcurrentHashMap<String, HostInfo> idTable) {
     System.out.println("Config directory: " + directory);
@@ -93,7 +110,7 @@ public class WriteConfFile {
 //  <host hostname="ec2-23-21-160-80.compute-1.amazonaws.com" id="0" ip="23.21.160.80" lat="39.043701" lon="-77.487503"/>
 //  <host hostname="ec2-79-125-27-206.eu-west-1.compute.amazonaws.com" id="7" ip="79.125.27.206" lat="53.0" lon="-8.0"/>
 //</root>
-  public static void writeXMLFile(String filename, String keyName, String ec2UserName, String hostType, String datastore,
+  private static void writeXMLFile(String filename, String keyName, String ec2UserName, String hostType, String datastore,
           ConcurrentHashMap<String, HostInfo> idTable) {
 
     try {
@@ -173,6 +190,11 @@ public class WriteConfFile {
     }
   }
 
+  /**
+   * The main routine. For testing only.
+   * 
+   * @param argv
+   */
   @SuppressWarnings("unchecked")
   public static void main(String argv[]) {
     ConcurrentHashMap<String, HostInfo> idTable = new ConcurrentHashMap();

@@ -26,7 +26,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceClientRequest;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.JSONPacket;
 import edu.umass.cs.nio.MessageNIOTransport;

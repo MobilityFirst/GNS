@@ -13,12 +13,15 @@ import org.json.JSONException;
 
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentHashing;
 
-/*
- * This class is a wrapper around NodeConfig to ensure that it is consistent,
- * i.e., it returns consistent results even if it changes midway. In particular,
+/**
+ * A wrapper around NodeConfig to ensure that it is consistent,
+ * i.e., it returns consistent results even if it changes midway.
+ * In particular,
  * it does not allow the use of a method like getNodeIDs().
- * 
+ *
  * It also has consistent hashing utility methods.
+ *
+ * @param <NodeIDType>
  */
 public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
         GNSConsistentNodeConfig<NodeIDType> implements
@@ -33,6 +36,11 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
   // need to refresh when nodeConfig changes
   private final ConsistentHashing<NodeIDType> CH_AR;
 
+  /**
+   * Create a GNSConsistentReconfigurableNodeConfig instance.
+   *
+   * @param nc
+   */
   public GNSConsistentReconfigurableNodeConfig(
           GNSInterfaceNodeConfig<NodeIDType> nc) {
     super(nc);
@@ -71,6 +79,12 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
   }
 
   // consistent coz it always consults nodeConfig
+  /**
+   * Returns the inet addresses of the nodes.
+   *
+   * @param nodeIDs
+   * @return
+   */
   public ArrayList<InetAddress> getNodeIPs(Set<NodeIDType> nodeIDs) {
     ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
     for (NodeIDType id : nodeIDs) {
@@ -81,28 +95,48 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
   }
 
   // refresh before returning
+  /**
+   * Returns the reconfigurators.
+   * 
+   * @param name
+   * @return
+   */
   public Set<NodeIDType> getReplicatedReconfigurators(String name) {
     this.refreshReconfigurators();
     return this.CH_RC.getReplicatedServers(name);
   }
 
   // refresh before returning
+  /**
+   * Return the active replicas.
+   * 
+   * @param name
+   * @return
+   */
   public Set<NodeIDType> getReplicatedActives(String name) {
     this.refreshActives();
     return this.CH_AR.getReplicatedServers(name);
   }
 
+  /**
+   * Return the inet address of the active replicas.
+   * @param name
+   * @return
+   */
   public ArrayList<InetAddress> getReplicatedActivesIPs(String name) {
     return this.getNodeIPs(this.getReplicatedActives(name));
   }
 
-  /*
+  // Changed this to only return ActiveReplicas - Westy
+  /**
    * This method maps a set of addresses, newAddresses, to a set of nodes such
    * that there is maximal overlap with the specified set of nodes, oldNodes.
    * It is somewhat nontrivial only because there is a many-to-one mapping
    * from nodes to addresses, so a simple reverse lookup is not meaningful.
+   * @param newAddresses
+   * @param oldNodes
+   * @return
    */
-  // Changed this to only return ActiveReplicas - Westy
   public Set<NodeIDType> getIPToActiveReplicaIDs(ArrayList<InetAddress> newAddresses,
           Set<NodeIDType> oldNodes) {
     Set<NodeIDType> newNodes = new HashSet<NodeIDType>(); // return value
@@ -127,10 +161,6 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
       }
     }
     return newNodes;
-  }
-
-  public InterfaceReconfigurableNodeConfig<NodeIDType> getUnderlyingNodeConfig() {
-    return this.nodeConfig;
   }
 
   // refresh consistent hash structure if changed

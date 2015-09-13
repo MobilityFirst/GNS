@@ -4,12 +4,12 @@ package edu.umass.cs.gns.httpserver;
  *
  * @author westy
  */
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.AccessSupport;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
 import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.main.GNS;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,17 +20,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executors;
-import static edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.CommandModule;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commands.GnsCommand;
+import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import static edu.umass.cs.gns.httpserver.Defs.KEYSEP;
 import static edu.umass.cs.gns.httpserver.Defs.QUERYPREFIX;
 import static edu.umass.cs.gns.httpserver.Defs.VALSEP;
-import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.CommandHandler;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.util.Format;
-import edu.umass.cs.gns.util.Util;
+import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import edu.umass.cs.gns.utils.Format;
+import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import java.util.Date;
 import java.util.Map;
@@ -54,11 +54,18 @@ public class GnsHttpServer {
 
   private static boolean debuggingEnabled = false;
 
+  /**
+   *
+   * @param requestHandler
+   */
   public static void runHttp(ClientRequestHandlerInterface requestHandler) {
     GnsHttpServer.requestHandler = requestHandler;
     runServer();
   }
 
+  /**
+   * Start the server.
+   */
   public static void runServer() {
     int cnt = 0;
     do {
@@ -71,6 +78,11 @@ public class GnsHttpServer {
     } while (cnt++ < 100);
   }
 
+  /**
+   *
+   * @param port
+   * @return
+   */
   public static boolean tryPort(int port) {
     try {
       InetSocketAddress addr = new InetSocketAddress(port);
@@ -287,6 +299,10 @@ public class GnsHttpServer {
     }
   }
 
+  /**
+   *
+   * @return
+   */
   public static int getPort() {
     return port;
   }

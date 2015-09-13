@@ -11,10 +11,9 @@ import edu.umass.cs.aws.support.AMIRecordType;
 import edu.umass.cs.aws.support.AWSEC2;
 import edu.umass.cs.aws.support.InstanceStateRecord;
 import edu.umass.cs.aws.support.RegionRecord;
-import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.GEOLocator;
-import edu.umass.cs.gns.util.ThreadUtils;
+import edu.umass.cs.gns.utils.GEOLocator;
+import edu.umass.cs.gns.utils.ThreadUtils;
 import java.awt.geom.Point2D;
 import java.io.File;
 import java.io.IOException;
@@ -37,9 +36,9 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 /**
- * Runs a set of EC2 instances
- */
-/**
+ * Starts a set of EC2 instances.
+ * Reads from a XML configuration file whose name is specified on the command line.
+ *
  * Typical use:
  *
  * java -cp GNS.jar edu.umass.cs.gns.installer.EC2Runner -create dev
@@ -298,6 +297,11 @@ public class EC2Runner {
   private static final String MongoRecordsClass = "edu.umass.cs.gns.database.MongoRecords";
   private static final String CassandraRecordsClass = "edu.umass.cs.gns.database.CassandraRecords";
 
+  /**
+   * Terminates all the hosts in the named run set.
+   * 
+   * @param name
+   */
   public static void terminateRunSet(String name) {
     try {
       AWSCredentials credentials = new PropertiesCredentials(new File(CREDENTIALSFILE));
@@ -368,14 +372,14 @@ public class EC2Runner {
     }
   }
 
-  public static void describeRunSet(final String name) {
+  private static void describeRunSet(final String name) {
     populateIDTableForRunset(name);
     for (HostInfo info : hostTable.values()) {
       System.out.println(info);
     }
   }
 
-  public static void writeGNSINstallerConfForRunSet(final String name) {
+  private static void writeGNSINstallerConfForRunSet(final String name) {
     populateIDTableForRunset(name);
     for (HostInfo info : hostTable.values()) {
       System.out.println(info);
@@ -502,6 +506,11 @@ public class EC2Runner {
     System.out.println("ShutdownHook removed.");
   }
 
+  /**
+   * The main routine.
+   * 
+   * @param args
+   */
   public static void main(String[] args) {
     try {
       CommandLine parser = initializeOptions(args);
@@ -556,7 +565,7 @@ public class EC2Runner {
     System.exit(0);
   }
 
-  static class EC2RunnerThread extends Thread {
+  private static class EC2RunnerThread extends Thread {
 
     String runSetName;
     RegionRecord region;
@@ -588,7 +597,7 @@ public class EC2Runner {
     //WriteConfFile.writeXMLFile(confFileLocation, keyName, ec2UserName, "linux", dataStoreType.toString(), hostTable);
   }
 
-  public static File getJarPath() {
+  private static File getJarPath() {
     try {
       return new File(GNS.class.getProtectionDomain().getCodeSource().getLocation().toURI());
     } catch (URISyntaxException e) {

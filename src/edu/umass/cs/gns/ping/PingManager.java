@@ -7,13 +7,13 @@
  */
 package edu.umass.cs.gns.ping;
 
-import edu.umass.cs.gns.util.SparseMatrix;
+import edu.umass.cs.gns.utils.SparseMatrix;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.util.Shutdownable;
 
+import edu.umass.cs.gns.utils.Shutdownable;
 import java.io.IOException;
 import java.net.PortUnreachableException;
 import java.util.Collections;
@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Uses PingClient to send out ping requests.
  *
  * @author westy
+ * @param <NodeIDType>
  */
 public class PingManager<NodeIDType> implements Shutdownable {
 
@@ -45,6 +46,9 @@ public class PingManager<NodeIDType> implements Shutdownable {
   // The list of actives we should be pinging.
   private final Set<NodeIDType> activeReplicas;
 
+  /**
+   * If true extra debugging info will be printed.
+   */
   public static boolean debuggingEnabled = false;
 
   /**
@@ -52,6 +56,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
    *
    * @param nodeId
    * @param gnsNodeConfig
+   * @param noClient
    */
   public PingManager(NodeIDType nodeId, GNSInterfaceNodeConfig<NodeIDType> gnsNodeConfig, boolean noClient) {
     this.nodeId = nodeId;
@@ -240,6 +245,12 @@ public class PingManager<NodeIDType> implements Shutdownable {
     GNS.getLogger().warning("Ping shutdown  complete.");
   }
 
+  /**
+   * The main routine.  For testing only.
+   * 
+   * @param args
+   * @throws Exception
+   */
   @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
@@ -248,6 +259,10 @@ public class PingManager<NodeIDType> implements Shutdownable {
     GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
     new PingManager(nodeID, nodeConfig).startPinging();
   }
+
+  /**
+   * A newline.
+   */
   public final static String NEWLINE = System.getProperty("line.separator");
 
 }

@@ -7,19 +7,42 @@ package edu.umass.cs.gns.database;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+
+/**
+ * Encapsulates the name and type of a column in the database.
+ *
+ * @author Abhigyan
+ */
 public class ColumnField {
 
   private final String name;
   private final ColumnFieldType type;
 
+  /** 
+   * Create a column field instance.
+   * 
+   * @param name
+   * @param type 
+   */
   public ColumnField(String name, ColumnFieldType type) {
     this.name = name;
     this.type = type;
   }
-
+  
+  /**
+   * Return the name of a column.
+   * 
+   * @return 
+   */
   public String getName() {
     return name;
   }
+
+  /**
+   * Return the type of a column.
+   * 
+   * @return 
+   */
   public ColumnFieldType type() {
     return type;
   }
@@ -28,12 +51,5 @@ public class ColumnField {
   public String toString() {
     return name + " " + type.toString();
   }
-  
-  public static ArrayList<ColumnField> keys(ColumnField ... fields) {
-    return new ArrayList<ColumnField>(Arrays.asList(fields));
-  }
 
-  public static ArrayList<Object> values(Object ... objects) {
-    return new ArrayList<Object>(Arrays.asList(objects));
-  }
 }

@@ -16,16 +16,16 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
-import edu.umass.cs.gns.newApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.newApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.newApp.recordmap.NameRecord;
-import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gns.utils.JSONUtils;
+import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,8 +39,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for guid, key, record triples using JSONObjects as the intermediate
- * representation.
+ * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for 
+ * guid, key, record triples using JSONObjects as the intermediate representation.
+ * All records are stored in a document called NameRecord.
  *
  * @author westy, Abhigyan
  * @param <NodeIDType>
@@ -48,8 +49,10 @@ import java.util.Set;
 public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   private static final String DBROOTNAME = "GNS";
+  /**
+   * The name of the document where name records are stored.
+   */
   public static final String DBNAMERECORD = "NameRecord";
-  //public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
 
   private DB db;
   private String dbName;
@@ -80,23 +83,18 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   private void init(NodeIDType nodeID, int mongoPort) {
     mongoCollectionSpecs = new MongoCollectionSpecs();
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
-    //mongoCollectionSpecs.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
     // add location as another index
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.LOCATION_FIELD_NAME, "2d"));
     // The good thing is that indexes are not required for 2dsphere fields, but they will make things faster
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
-//    mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-//            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "geoLocationHome", "2dsphere"));
-//    mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-//            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "geoLocationWork", "2dsphere"));
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
             .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
       dbName = DBROOTNAME + "-" + nodeID.toString().replace('.', '-');
-//      MongoClient mongoClient;
+      //MongoClient mongoClient;
       //MongoCredential credential = MongoCredential.createMongoCRCredential("admin", dbName, "changeit".toCharArray());
       if (mongoPort > 0) {
         //mongoClient = new MongoClient(new ServerAddress("localhost", mongoPort), Arrays.asList(credential));
@@ -139,7 +137,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         db.getCollection(collectionName).drop();
         GNS.getLogger().info("MONGO DB RESET. DBNAME: " + dbName + " Collection name: " + collectionName);
 
-        // IMPORTANT... recreate the index
+        // IMPORTANT... recreate the indices
         initializeIndex(collectionName);
       } catch (MongoException e) {
         throw new FailedDBOperationException(collectionName, "reset");
@@ -837,6 +835,13 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   //THIS ISN'T JUST TEST CODE - DO NOT REMOVE
   // the -clear option is currently used by the EC2 installer so keep it working
   // this use will probably go away at some point
+  /**
+   * Does a few things.
+   * 
+   * @param args
+   * @throws Exception
+   * @throws RecordNotFoundException 
+   */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
@@ -851,6 +856,10 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     System.exit(0);
   }
 
+  /**
+   * A utility to drop all the databases.
+   * 
+   */
   public static void dropAllDatabases() {
     MongoClient mongoClient;
     try {
@@ -963,12 +972,12 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   /**
    * *
-   * Close mongo client before shutting down name server. As per mongo doc:
+   * Close mongo client before shutting down name server. 
+   * As per mongo doc:
    * "to dispose of an instance, make sure you call MongoClient.close() to clean up resources."
    */
   public void close() {
     mongoClient.close();
   }
-
-  public static String Version = "$Revision$";
+  
 }

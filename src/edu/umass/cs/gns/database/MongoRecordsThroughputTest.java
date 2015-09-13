@@ -11,10 +11,10 @@ import static edu.umass.cs.gns.database.MongoRecords.DBNAMERECORD;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.newApp.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.newApp.recordmap.NameRecord;
-import edu.umass.cs.gns.util.Format;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.gnsApp.recordmap.MongoRecordMap;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gns.utils.Format;
+import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -34,6 +34,13 @@ import org.json.JSONObject;
  */
 public class MongoRecordsThroughputTest {
 
+  /**
+   * Run the test.
+   * 
+   * @param args
+   * @throws Exception
+   * @throws RecordNotFoundException 
+   */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length == 3) {
       testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);

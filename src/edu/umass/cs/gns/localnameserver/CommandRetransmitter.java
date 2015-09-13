@@ -13,12 +13,16 @@ import edu.umass.cs.protocoltask.ProtocolExecutor;
 import edu.umass.cs.protocoltask.ProtocolTask;
 import edu.umass.cs.protocoltask.SchedulableProtocolTask;
 import edu.umass.cs.reconfiguration.Reconfigurator;
-import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket.PacketType;
 
 import java.net.InetSocketAddress;
 import org.json.JSONObject;
 
+/**
+ * Handles resending of packets to active replicas.
+ * 
+ * @author westy
+ */
 public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketAddress, PacketType, String> {
 
   private final long RESTART_PERIOD = 10000;
@@ -30,9 +34,20 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
   private final Set<InetSocketAddress> actives;
   private final Set<InetSocketAddress> activesAlreadyContacted = new HashSet<>();
 
+  /**
+   * The logger.
+   */
   public static final Logger log = Logger.getLogger(Reconfigurator.class.getName());
 
-  public CommandRetransmitter(int requestId, JSONObject json, Set<InetSocketAddress> actives, 
+  /**
+   * Create an instance of the CommandRetransmitter.
+   *
+   * @param requestId
+   * @param json
+   * @param actives
+   * @param handler
+   */
+  public CommandRetransmitter(int requestId, JSONObject json, Set<InetSocketAddress> actives,
           RequestHandlerInterface handler) {
     this.requestId = requestId;
     this.json = json;
@@ -86,13 +101,9 @@ public class CommandRetransmitter implements SchedulableProtocolTask<InetSocketA
     return mtasks;
   }
 
-  //@Override
-  public String refreshKey() {
+  private String refreshKey() {
     return Integer.toString(requestId);
   }
-
-  // empty as task does not expect any events and will be explicitly removed
-  public static final ReconfigurationPacket.PacketType[] types = {};
 
   @Override
   public Set<PacketType> getEventTypes() {

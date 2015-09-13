@@ -51,6 +51,7 @@ public class HostFileLoader {
    *
    * @param hostsFile
    * @return a List of hostnames
+   * @throws java.lang.Exception
    */
   public static List<HostSpec> loadHostFile(String hostsFile) throws Exception {
     hostFileHasNodeIds = false;
@@ -163,6 +164,13 @@ public class HostFileLoader {
     return getTheVersionFromLine(line);
   }
 
+  /**
+   * Returns true if the node file change versions.
+   * 
+   * @param hostsFile
+   * @return
+   * @throws IOException
+   */
   public static boolean isChangedFileVersion(String hostsFile) throws IOException {
     Long newVersion = readVersionLine(hostsFile);
     if (debuggingEnabled) {
@@ -188,6 +196,11 @@ public class HostFileLoader {
     return getTheVersionFromLine(line) != null;
   }
 
+  /**
+   * Returns the file version.
+   * 
+   * @return
+   */
   public static Long getFileVersion() {
     return fileVersion;
   }

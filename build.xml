@@ -89,6 +89,10 @@
       <classpath refid="classpath.base"/>
       <link href="http://java.sun.com/javase/6/docs/api/"/>
     </javadoc>
+    <mkdir dir="${dist}/doc"/>
+    <copy todir="${dist}/doc">
+      <fileset dir="${build}/doc" includes="**"/>
+    </copy> 
   </target>
     
   <target name="jar" depends="main_jarbuild, nio_jarbuild">

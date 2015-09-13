@@ -11,9 +11,9 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 /**
- * The NodeInfo class is used to represent nodes in a GNSNodeConfig.
- * 
- * @author  Westy
+ * The NodeInfo class is used to represent nodes in a LNSNodeConfig.
+ *
+ * @author Westy
  */
 public class LNSNodeInfo {
 
@@ -29,7 +29,7 @@ public class LNSNodeInfo {
    * The id of the reconfigurator part of the name server.
    */
   private final Object reconfiguratorID;
-  
+
   /**
    * IP address of the name server *
    */
@@ -39,7 +39,7 @@ public class LNSNodeInfo {
    * IP address of the name server - should be a host name*
    */
   private final String ipAddressString;
-  
+
   /**
    * External IP address of the name server - should be in dot format *
    */
@@ -67,21 +67,20 @@ public class LNSNodeInfo {
   private final double longitude;
 
   /**
-   * ***********************************************************
-   * Constructs a NameServerInfo with the give parameter
+   * Constructs a LNSNodeInfo with the given parameters.
    *
    * @param id Name server id
    * @param activeReplicaID id of the activeReplica part of the name server.
    * @param reconfiguratorID id of the reconfigurator part of the name server
    * @param ipAddressString ip address as a string
+   * @param externalIP
    * @param startingPortNumber first port number of block of ports used for TCP and UDP comms
    * @param pingLatency RTT latency between the local nameserver and this nameserver in milleseconds
    * @param latitude Latitude of the nameserver
    * @param longitude Longitude of the nameserver
-   ***********************************************************
    */
   public LNSNodeInfo(Object id, Object activeReplicaID, Object reconfiguratorID,
-          String ipAddressString, String externalIP, int startingPortNumber, 
+          String ipAddressString, String externalIP, int startingPortNumber,
           long pingLatency, double latitude, double longitude) {
 
     this.id = id;
@@ -97,8 +96,8 @@ public class LNSNodeInfo {
 
   /**
    * Returns the top-level node id of this node;
-   * 
-   * @return 
+   *
+   * @return top-level node id
    */
   public Object getId() {
     return id;
@@ -106,8 +105,8 @@ public class LNSNodeInfo {
 
   /**
    * Returns the ActiveReplica id for this node.
-   * 
-   * @return 
+   *
+   * @return the ActiveReplica id
    */
   public Object getActiveReplicaID() {
     return activeReplicaID;
@@ -115,12 +114,18 @@ public class LNSNodeInfo {
 
   /**
    * Returns the Reconfigurator id for this node.
-   * @return 
+   *
+   * @return the Reconfigurator id
    */
   public Object getReconfiguratorID() {
     return reconfiguratorID;
   }
 
+  /**
+   * Returns the ip address for this node.
+   * 
+   * @return the ip address
+   */
   public synchronized InetAddress getIpAddress() {
     // Lookup IP address on first access.
     if (ipAddress == null) {
@@ -133,30 +138,56 @@ public class LNSNodeInfo {
     return ipAddress;
   }
 
+  /**
+   * Returns the external IP for this node.
+   * 
+   * @return the externalIP
+   */
   public String getExternalIP() {
     return externalIP;
   }
 
+  /**
+   * Returns the starting port number for this node.
+   * 
+   * @return starting port number
+   */
   public int getStartingPortNumber() {
     return startingPortNumber;
   }
+
   /**
-   * Returns ping latency in milleseconds
-   * Ping latency is a
+   * Returns the recorded ping latency in milleseconds.
+   *
    * @return pingLatency (ms)
    */
   public synchronized long getPingLatency() {
     return pingLatency;
   }
 
+  /**
+   * Sets the recorded ping latency (in milleseconds).
+   * 
+   * @param pingLatency
+   */
   public synchronized void setPingLatency(long pingLatency) {
     this.pingLatency = pingLatency;
   }
 
+  /**
+   * Returns the latitude for this node.
+   * 
+   * @return the latitude
+   */
   public double getLatitude() {
     return latitude;
   }
 
+  /**
+   * Returns the longitude for this node.
+   * 
+   * @return the longitude
+   */
   public double getLongitude() {
     return longitude;
   }
@@ -166,5 +197,5 @@ public class LNSNodeInfo {
     return "HostInfo{" + "id=" + id.toString() + ", ipAddress=" + getIpAddress() + ", startingPortNumber="
             + startingPortNumber + ", pingLatency=" + pingLatency + ", latitude=" + latitude + ", longitude=" + longitude + '}';
   }
-  
+
 }

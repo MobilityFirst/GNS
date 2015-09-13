@@ -74,8 +74,8 @@ public class ReconfigurationConfig {
 	/**
 	 * 
 	 */
-	public static final Class<?> application = getClassSuppressExceptions(Config
-			.getGlobalString(RC.APPLICATION));
+	public static final Class<?> application = null;
+                //getClassSuppressExceptions(Config.getGlobalString(RC.APPLICATION));
 
 	/**
 	 * Reconfiguration config parameters.

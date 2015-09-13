@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.installer;
 
-import edu.umass.cs.gns.database.DataStoreType;
 import edu.umass.cs.gns.main.GNS;
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,7 +16,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- *
+ * Parses a properties file to get all info needed to install the GNS on hosts.
+ * 
  * @author westy
  */
 public class InstallConfig {
@@ -36,30 +36,65 @@ public class InstallConfig {
   private String installPath;
   private String javaCommand;
 
+  /**
+   * Returns the username.
+   * 
+   * @return the username
+   */
   public String getUsername() {
     return username;
   }
 
+  /**
+   * Returns the key file.
+   * 
+   * @return the key file
+   */
   public String getKeyFile() {
     return keyFile;
   }
 
+  /**
+   * Returns the host type.
+   * 
+   * @return the host type
+   */
   public String getHostType() {
     return hostType;
   }
 
+  /**
+   * Returns the dataStoreType.
+   * 
+   * @return the dataStoreType
+   */
   public DataStoreType getDataStoreType() {
     return dataStoreType;
   }
 
+  /**
+   * Returns the install path.
+   * 
+   * @return the install path
+   */
   public String getInstallPath() {
     return installPath;
   }
 
+  /**
+   * Returns the java command.
+   * 
+   * @return the java command
+   */
   public String getJavaCommand() {
     return javaCommand;
   }
 
+  /**
+   * Creates an instance of InstallConfig.
+   * 
+   * @param filename
+   */
   public InstallConfig(String filename) {
     try {
       loadPropertiesFile(filename);
@@ -95,6 +130,11 @@ public class InstallConfig {
     return "InstallConfig{" + "username=" + username + ", keyFile=" + keyFile + ", hostType=" + hostType + ", dataStoreType=" + dataStoreType + ", installPath=" + installPath + ", javaCommand=" + javaCommand + '}';
   }
 
+  /**
+   * The main routine. For testing only.
+   * 
+   * @param args
+   */
   public static void main(String[] args) {
     String filename = GNS.WESTY_GNS_DIR_PATH + "/conf/ec2_small/installer_config";
     InstallConfig config = new InstallConfig(filename);

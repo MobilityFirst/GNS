@@ -32,6 +32,12 @@ public class PingServer<NodeIDType> extends Thread{
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
+  /**
+   * Create a PingServer instance.
+   * 
+   * @param nodeID
+   * @param nodeConfig
+   */
   public PingServer(final NodeIDType nodeID, final GNSInterfaceNodeConfig<NodeIDType> nodeConfig) {
     this.nodeID = nodeID;
     this.nodeConfig = nodeConfig;
@@ -73,6 +79,9 @@ public class PingServer<NodeIDType> extends Thread{
     }
   }
 
+  /**
+   * Shutdown the ping server.
+   */
   public void shutdown() {
     setShutdown();
     serverSocket.close();
@@ -86,6 +95,12 @@ public class PingServer<NodeIDType> extends Thread{
     return shutdown;
   }
 
+  /**
+   * The main routine. For testing only.
+   * 
+   * @param args
+   * @throws Exception
+   */
   @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];

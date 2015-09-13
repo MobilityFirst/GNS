@@ -119,6 +119,11 @@ public class NodeInfo<NodeIDType> {
     return reconfiguratorID;
   }
 
+  /**
+   * Return the ip address.
+   * 
+   * @return the ip address
+   */
   public synchronized InetAddress getIpAddress() {
     if (ipAddress == null) {
       try {
@@ -130,6 +135,11 @@ public class NodeInfo<NodeIDType> {
     return ipAddress;
   }
 
+  /**
+   * Return the external ip address.
+   * 
+   * @return the external ip address
+   */
   public synchronized InetAddress getExternalIPAddress() {
     if (externalIPAddress == null) {
       try {
@@ -145,13 +155,17 @@ public class NodeInfo<NodeIDType> {
     return externalIPAddress;
   }
 
+  /**
+   * Return the starting port number.
+   * 
+   * @return the starting port number
+   */
   public int getStartingPortNumber() {
     return startingPortNumber;
   }
 
   /**
    * Returns ping latency in milleseconds
-   * Ping latency is a
    *
    * @return pingLatency (ms)
    */
@@ -159,14 +173,29 @@ public class NodeInfo<NodeIDType> {
     return pingLatency;
   }
 
+  /**
+   * Set the ping latency
+   * 
+   * @param pingLatency in milleseconds
+   */
   public synchronized void setPingLatency(long pingLatency) {
     this.pingLatency = pingLatency;
   }
 
+  /**
+   * Return the latitude.
+   * 
+   * @return the latitude
+   */
   public double getLatitude() {
     return latitude;
   }
 
+  /**
+   * Return the longitude.
+   * 
+   * @return the longitude
+   */
   public double getLongitude() {
     return longitude;
   }
