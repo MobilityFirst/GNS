@@ -525,7 +525,7 @@ public class PaxosAcceptor {
 		PValuePacket existing = this.acceptedProposals.get(accept.slot);
 		if (existing != null && accept.ballot.compareTo(existing.ballot) == 0) {
 			return (existing.requestID == accept.requestID 
-					&& existing.requestValue.equals(accept.requestValue)
+					//&& existing.requestValue.equals(accept.requestValue)
 					);
 		}
 		return true;
@@ -536,7 +536,7 @@ public class PaxosAcceptor {
 		if (existing != null && decision.ballot.compareTo(existing.ballot) == 0) {
 			if (existing.requestValue != null) // for meta commits
 				return (existing.requestID == decision.requestID 
-				&& existing.requestValue.equals(decision.requestValue)
+				//&& existing.requestValue.equals(decision.requestValue)
 				);
 		}
 		return true;

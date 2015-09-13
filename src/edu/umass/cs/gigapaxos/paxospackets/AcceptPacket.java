@@ -45,6 +45,14 @@ public final class AcceptPacket extends PValuePacket {
 		this.sender = json.getInt(PaxosPacket.NodeIDKeys.SNDR.toString());
 		this.paxosID = json.getString(PaxosPacket.Keys.ID.toString());
 	}
+	public AcceptPacket(net.minidev.json.JSONObject json) throws JSONException {
+		super(json);
+		assert(json.containsKey(RequestPacket.Keys.STRINGIFIED.toString()));
+		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.ACCEPT); 
+		this.packetType = PaxosPacketType.ACCEPT;
+		this.sender = (Integer)json.get(PaxosPacket.NodeIDKeys.SNDR.toString());
+		this.paxosID = (String)json.get(PaxosPacket.Keys.ID.toString());
+	}
 
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
@@ -52,6 +60,13 @@ public final class AcceptPacket extends PValuePacket {
 		json.put(PaxosPacket.NodeIDKeys.SNDR.toString(), sender);
 		return json;
 	}
+	@Override
+	public net.minidev.json.JSONObject toJSONSmartImpl() throws JSONException {
+		net.minidev.json.JSONObject json = super.toJSONSmartImpl();
+		json.put(PaxosPacket.NodeIDKeys.SNDR.toString(), sender);
+		return json;
+	}
+	
 
 	@Override
 	protected String getSummaryString() {

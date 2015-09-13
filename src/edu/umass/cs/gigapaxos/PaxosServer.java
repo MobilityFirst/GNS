@@ -28,22 +28,21 @@ public class PaxosServer {
 				(new MessageNIOTransport<String, JSONObject>(myID, nodeConfig,
 						ReconfigurationConfig.getServerSSLMode()))));
 		InterfaceReplicable app = this.createApp();
-		PaxosManager<String> pm = startPaxosManager(this.messenger, app);
+		PaxosManager<String> pm = startPaxosManager(this.messenger, app,
+				new InetSocketAddress(nodeConfig.getNodeAddress(myID),
+						nodeConfig.getNodePort(myID)));
 
 		// create default paxos group with same name as app class
-		pm.createPaxosInstance(app.getClass().getSimpleName()+"0",
+		pm.createPaxosInstance(app.getClass().getSimpleName() + "0",
 				nodeConfig.getNodeIDs(), null);
 	}
 
 	private PaxosManager<String> startPaxosManager(
 			InterfaceMessenger<String, JSONObject> messenger,
-			InterfaceReplicable app) {
-		// shared between app and paxos manager only for testing
-		InterfaceNodeConfig<String> nodeConfig = PaxosConfig
-				.getDefaultNodeConfig();
-
-		return new PaxosManager<String>(messenger.getMyID(), nodeConfig,
-				this.messenger, app, null, true);
+			InterfaceReplicable app, InetSocketAddress myAddress) {
+		return new PaxosManager<String>(messenger.getMyID(),
+				PaxosConfig.getDefaultNodeConfig(), this.messenger, app, null,
+				true).initClientMessenger(myAddress);
 	}
 
 	protected static Set<InetSocketAddress> getDefaultServers() {
@@ -103,10 +102,11 @@ public class PaxosServer {
 			throw new RuntimeException(
 					"At least one node ID must be specified as a command-line argument for starting "
 							+ PaxosServer.class.getSimpleName());
+		PaxosConfig.setConsoleHandler();
 		InterfaceNodeConfig<String> nodeConfig = PaxosConfig
 				.getDefaultNodeConfig();
 		System.out.print("Starting paxos servers [ ");
-		for(String server : processArgs(args, nodeConfig)) {
+		for (String server : processArgs(args, nodeConfig)) {
 			new PaxosServer(server, nodeConfig);
 			System.out.print(server + " ");
 		}

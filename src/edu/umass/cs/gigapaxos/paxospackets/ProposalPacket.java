@@ -50,9 +50,21 @@ public class ProposalPacket extends RequestPacket {
 		this.slot = json.getInt(PaxosPacket.Keys.S.toString());
 	}
 
+	public ProposalPacket(net.minidev.json.JSONObject json) throws JSONException {
+		super(json);
+		this.packetType = PaxosPacketType.PROPOSAL;
+		this.slot = (Integer)json.get(PaxosPacket.Keys.S.toString());
+	}
+
 	@Override
 	public JSONObject toJSONObjectImpl() throws JSONException {
 		JSONObject json = super.toJSONObjectImpl();
+		json.put(PaxosPacket.Keys.S.toString(), slot);
+		return json;
+	}
+	@Override
+	public net.minidev.json.JSONObject toJSONSmartImpl() throws JSONException {
+		net.minidev.json.JSONObject json = super.toJSONSmartImpl();
 		json.put(PaxosPacket.Keys.S.toString(), slot);
 		return json;
 	}

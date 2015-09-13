@@ -42,7 +42,7 @@ public interface InterfaceMessageExtractor extends
 	 * @param sockAddr
 	 * @param msg
 	 */
-	public void processMessage(InetSocketAddress sockAddr, String msg);
+	public void processLocalMessage(InetSocketAddress sockAddr, String msg);
 
 	/**
 	 * @param message

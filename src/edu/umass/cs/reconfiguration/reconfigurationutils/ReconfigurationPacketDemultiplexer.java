@@ -26,6 +26,16 @@ import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
  */
 public class ReconfigurationPacketDemultiplexer extends
 		AbstractJSONPacketDemultiplexer {
+	/**
+	 * 
+	 */
+	public ReconfigurationPacketDemultiplexer(){}
+	/**
+	 * @param numThreads
+	 */
+	public ReconfigurationPacketDemultiplexer(int numThreads) {
+		super(numThreads);
+	}
 
 	@Override
 	public boolean handleMessage(JSONObject json) {

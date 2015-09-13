@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptPacket;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptReplyPacket;
 import edu.umass.cs.gigapaxos.paxospackets.BatchedAcceptReply;
@@ -37,6 +38,7 @@ import edu.umass.cs.gigapaxos.paxospackets.StatePacket;
 import edu.umass.cs.gigapaxos.paxospackets.SyncDecisionsPacket;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.utils.Config;
 
 /**
  * @author V. Arun
@@ -106,6 +108,20 @@ public abstract class PaxosPacketDemultiplexer extends
 		assert (paxosPacket != null) : json;
 		return paxosPacket;
 	}
+	
+	private static final double THROTTLE_SLEEP = Config.getGlobalDouble(PC.THROTTLE_SLEEP);
+	/**
+	 * 
+	 */
+	public static void throttleExcessiveLoad() {
+		try {
+			Thread.sleep(THROTTLE_SLEEP >= 1 ? (long) THROTTLE_SLEEP : (Math
+					.random() < THROTTLE_SLEEP ? 1 : 0));
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+
 
 
 	private static void fatal(Object json) {

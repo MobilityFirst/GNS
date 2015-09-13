@@ -27,6 +27,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.ConsumerTask;
+import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
@@ -40,14 +41,14 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 	private static final int MAX_BATCH_SIZE = Config
 			.getGlobalInt(PC.MAX_BATCH_SIZE);
-	private static final long BATCH_SLEEP_DURATION = Config
-			.getGlobalLong(PC.BATCH_SLEEP_DURATION);
+	private static final double MIN_BATCH_SLEEP_DURATION = Config
+			.getGlobalDouble(PC.BATCH_SLEEP_DURATION);
 	private static final double BATCH_OVERHEAD = Config
 			.getGlobalDouble(PC.BATCH_OVERHEAD);
 
 	private final HashMap<String, LinkedBlockingQueue<RequestPacket>> batched;
 	private final PaxosManager<?> paxosManager;
-	private static double adaptiveSleepDuration = 0;//BATCH_SLEEP_DURATION;
+	private static double agreementLatency = 0;
 
 	/**
 	 * @param lock
@@ -62,7 +63,6 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		super(lock);
 		this.batched = lock;
 		this.paxosManager = paxosManager;
-		//this.setSleepDuration(BATCH_SLEEP_DURATION);
 	}
 
 	/**
@@ -75,15 +75,16 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 	@Override
 	public void process(RequestPacket task) {
-		this.paxosManager.proposeBatched(task.setEntryTime(System
-				.currentTimeMillis()));
+		this.paxosManager.proposeBatched(task);
 	}
 
+	private static final long MAX_BATCH_SLEEP_DURATION = 10;
+
 	protected synchronized static void updateSleepDuration(long sample) {
-		adaptiveSleepDuration = Util.movingAverage(((double) sample)
-				* BATCH_OVERHEAD, adaptiveSleepDuration);
-		// if (Util.oneIn(10)) DelayProfiler.updateMovAvg("sleepDuration", (int)
-		// adaptiveSleepDuration);
+		agreementLatency = Util.movingAverage(((double) sample),
+				agreementLatency);
+		if (Util.oneIn(10))
+			DelayProfiler.updateMovAvg("latency", agreementLatency);
 	}
 
 	// just to name the thread, otherwise super suffices
@@ -94,16 +95,40 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		me.start();
 	}
 
+	private static final int MAX_QUEUED_REQUESTS = Config.getGlobalInt(PC.MAX_OUTSTANDING_REQUESTS);
 	@Override
 	public void enqueueImpl(RequestPacket task) {
-		this.setSleepDuration(BATCH_SLEEP_DURATION
-				+ (long) adaptiveSleepDuration);
+		this.setSleepDuration(Math.max(MAX_BATCH_SLEEP_DURATION,
+				MIN_BATCH_SLEEP_DURATION + agreementLatency*BATCH_OVERHEAD));
 		LinkedBlockingQueue<RequestPacket> taskList = this.batched.get(task
 				.getPaxosID());
 		if (taskList == null)
 			taskList = new LinkedBlockingQueue<RequestPacket>();
 		taskList.add(task);
 		this.batched.put(task.getPaxosID(), taskList);
+		queueSize += task.batchSize()+1;
+		this.throttleExcessiveLoad();
+		// increase outstanding count by requests entering through me
+		this.paxosManager.incrNumOutstanding(task.setEntryReplicaAndReturnCount(this.paxosManager.getMyID()));
+		this.paxosManager.incrNumOutstanding(task);
+	}
+	
+	protected int getQueueSize() {
+		return this.queueSize;
+	}
+	private int queueSize = 0;
+
+	/** 
+	 * This load throttling mechanism will propagate the exception so that
+	 * the client facing demultiplexer will catch it and take the necessary
+	 * action to throttle the incoming request load.
+	 * 
+	 * @param paxosID
+	 */
+	private void throttleExcessiveLoad() {
+		if (this.queueSize > MAX_QUEUED_REQUESTS) {
+			//throw new OverloadException("Excessive client request load");
+		}
 	}
 
 	/*
@@ -114,6 +139,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	public RequestPacket dequeueImpl() {
 		if (this.batched.isEmpty())
 			return null;
+		
 		// pluck first list (each grouped by paxosID)
 		Iterator<Entry<String, LinkedBlockingQueue<RequestPacket>>> mapEntryIter = this.batched
 				.entrySet().iterator();
@@ -147,9 +173,12 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		while (reqPktIter.hasNext()) {
 			RequestPacket next = reqPktIter.next();
 			// break if not within size limits
-			if (// log message size limit would be reached
-			SQLPaxosLogger.isLoggingEnabled()
-					&& (totalByteLength += next.lengthEstimate()) > SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE
+			if (// log message or network payload size limit would be reached
+			((totalByteLength += next.lengthEstimate()) > (SQLPaxosLogger
+					.isLoggingEnabled() ? Math.min(
+					NIOTransport.MAX_PAYLOAD_SIZE,
+					SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE)
+					: NIOTransport.MAX_PAYLOAD_SIZE))
 					// batch size limit would be reached
 					|| ((totalBatchSize += next.batchSize() + 1) > MAX_BATCH_SIZE))
 				break;
@@ -165,10 +194,20 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		// remove first list if all plucked
 		if (firstEntry.getValue().isEmpty())// !reqPktIter.hasNext())
 			mapEntryIter.remove();
-			
-		if (Util.oneIn(10))
-			DelayProfiler.updateMovAvg("batching", first.batchSize() + 1);
+
+		if (Util.oneIn(10)) {
+			//DelayProfiler.updateMovAvg("rb_batch", first.batchSize() + 1);
+			DelayProfiler.updateMovAvg("queued", queueSize);
+		}
 		assert (first.batchSize() < MAX_BATCH_SIZE);
+		queueSize -= (first.batchSize()+1);
+		/*
+		assert(first.lengthEstimate() < (SQLPaxosLogger
+				.isLoggingEnabled() ? Math.min(
+				NIOTransport.MAX_PAYLOAD_SIZE,
+				SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE)
+				: NIOTransport.MAX_PAYLOAD_SIZE)) : first.lengthEstimate() + " , " + totalByteLength;
+				*/
 		return first;
 	}
 }

@@ -29,6 +29,7 @@ import java.util.Map;
  */
 @SuppressWarnings("javadoc")
 public abstract class ConsumerTask<TaskType> implements Runnable {
+	
 	protected final Object lock;
 	private boolean processing = false;
 	private boolean stopped = false;
@@ -46,7 +47,8 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 	private TaskType dequeue() {
 		if(this.sleepDuration>0)
 			try {
-				Thread.sleep(sleepDuration);
+				Thread.sleep(sleepDuration >= 1 ? (long) sleepDuration : (Math
+						.random() < sleepDuration ? 1 : 0));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -57,8 +59,11 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 
 	public void enqueue(TaskType task) {
 		synchronized (lock) {
-			this.enqueueImpl(task);
-			this.lock.notify();
+			try {
+				this.enqueueImpl(task);
+			} finally {
+				this.lock.notify();
+			}
 		}
 	}
 
@@ -154,8 +159,8 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 	}
 
 	// nonzero only for testing
-	private long sleepDuration = 0;
-	protected void setSleepDuration(long sleep) {
+	private double sleepDuration = 0;
+	protected void setSleepDuration(double sleep) {
 		this.sleepDuration = sleep;
 	}
 }

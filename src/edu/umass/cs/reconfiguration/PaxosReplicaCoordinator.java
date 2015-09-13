@@ -18,6 +18,7 @@
 package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +65,14 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 		this.paxosManager = new PaxosManager<NodeIDType>(myID, unstringer,
 				(JSONMessenger<NodeIDType>) niot, this, paxosLogFolder,
 				enableNullCheckpoints);
+	}
+
+	protected void createDefaultGroup(String name, Set<String> strNodes,
+			Stringifiable<NodeIDType> unstringer) {
+		Set<NodeIDType> nodes = new HashSet<NodeIDType>();
+		for (String strNode : strNodes)
+			nodes.add(unstringer.valueOf(strNode));
+		this.paxosManager.createPaxosInstance(name, nodes, null);
 	}
 
 	/**
@@ -128,7 +137,7 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	public boolean coordinateRequest(String paxosGroupID,
 			InterfaceRequest request) throws RequestParseException {
 		String proposee = this.propose(paxosGroupID, request);
-		log.log(Level.INFO,
+		log.log(Level.FINE,
 				"{0} {1} request {2}:{3} [{4}] {5} to {6}",
 				new Object[] {
 						this,

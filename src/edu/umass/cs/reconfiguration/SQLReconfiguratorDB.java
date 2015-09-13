@@ -1027,7 +1027,9 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	}
 
 	// garbage collection methods below for file system based checkpoints
-
+	private boolean deleteOldCheckpoints(final String rcGroupName, int keep) {
+		return deleteOldCheckpoints(getCheckpointDir(), rcGroupName, keep, this);
+	}
 	/*
 	 * Deletes all but the most recent checkpoint for the RC group name. We
 	 * could track recency based on timestamps using either the timestamp in the
@@ -1035,8 +1037,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 	 * checkpoint filename explicitly as we know it when this method is called
 	 * anyway.
 	 */
-	private boolean deleteOldCheckpoints(final String rcGroupName, int keep) {
-		File dir = new File(getCheckpointDir());
+	private static boolean deleteOldCheckpoints(final String cpDir, final String rcGroupName, int keep, Object lockMe) {
+		File dir = new File(cpDir);
 		assert (dir.exists());
 		// get files matching the prefix for this rcGroupName's checkpoints
 		File[] foundFiles = dir.listFiles(new FilenameFilter() {
@@ -1046,16 +1048,18 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		});
 		// delete all but the most recent
 		boolean allDeleted = true;
-		for (Filename f : this.getAllButLatest(foundFiles, keep))
-			allDeleted = allDeleted && this.deleteFile(f.file);
+		for (Filename f : getAllButLatest(foundFiles, keep))
+			allDeleted = allDeleted && deleteFile(f.file, lockMe);
 		return allDeleted;
 	}
 
-	private synchronized boolean deleteFile(File f) {
-		return f.delete();
+	private static boolean deleteFile(File f, Object lockMe) {
+		synchronized(lockMe) {
+			return f.delete();
+		}
 	}
 
-	private Set<Filename> getAllButLatest(File[] files, int keep) {
+	private static Set<Filename> getAllButLatest(File[] files, int keep) {
 		TreeSet<Filename> allFiles = new TreeSet<Filename>();
 		TreeSet<Filename> oldFiles = new TreeSet<Filename>();
 		for (File file : files)
@@ -1069,7 +1073,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		return oldFiles;
 	}
 
-	private class Filename implements Comparable<Filename> {
+	private static class Filename implements Comparable<Filename> {
 		final File file;
 
 		Filename(File f) {
@@ -1077,7 +1081,7 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		}
 
 		@Override
-		public int compareTo(SQLReconfiguratorDB<NodeIDType>.Filename o) {
+		public int compareTo(SQLReconfiguratorDB.Filename o) {
 			long t1 = file.lastModified();
 			long t2 = o.file.lastModified();
 			if (t1 < t2)

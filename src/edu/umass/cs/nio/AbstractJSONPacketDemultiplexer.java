@@ -66,4 +66,9 @@ public abstract class AbstractJSONPacketDemultiplexer extends
 	protected boolean matchesType(Object message) {
 		return message instanceof JSONObject;
 	}
+	
+	@Override
+	protected boolean isCongested(NIOHeader header) {
+		return false;
+	}
 }

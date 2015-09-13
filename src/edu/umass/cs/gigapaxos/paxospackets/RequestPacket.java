@@ -59,7 +59,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	 * they are here as opposed to PaxosPacket. Application developers don't
 	 * have to worry about these.
 	 */
-	protected static enum Keys {
+	public static enum Keys {
 		/**
 		 * True if stop request.
 		 */
@@ -119,8 +119,22 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		/**
 		 * Response value.
 		 */
-		RV,
-
+		RV, 
+		
+		/**
+		 * Batch size.
+		 */
+		BS, 
+				
+		/**
+		 * Stringified self
+		 */
+		STRINGIFIED,
+		
+		/**
+		 * Meta request value.
+		 */
+		METAVAL,
 	}
 
 	public static enum ResponseCodes {
@@ -176,6 +190,8 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 
 	// batch of requests attached to this request
 	private RequestPacket[] batched = null;
+	
+	private String stringifiedSelf = null;
 
 	// used to optimized batching
 	private long entryTime = System.currentTimeMillis();
@@ -234,6 +250,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		this.forwarderID = req.forwarderID;
 		this.debugInfo = req.debugInfo;
 		this.batched = req.batched;
+		this.stringifiedSelf = req.stringifiedSelf;
 	}
 
 	public RequestPacket makeNoop() {
@@ -269,14 +286,33 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		return this.forwardCount;
 	}
 
+	// we also set entry time when we initialize entryReplica
 	public RequestPacket setEntryReplica(int id) {
-		if (this.entryReplica == IntegerMap.NULL_INT_NODE) // one-time
+		if (this.entryReplica == IntegerMap.NULL_INT_NODE) {// one-time
 			this.entryReplica = id;
+			this.entryTime = System.currentTimeMillis();
+		}
 		if (this.isBatched())
 			for (RequestPacket req : this.batched)
-				req.setEntryReplica(id); // recursive
+				// recursive but doesn't have to be
+				req.setEntryReplica(id); 
 		return this;
 	}
+
+	public int setEntryReplicaAndReturnCount(int id) {
+		int count = 0;
+		if (this.entryReplica == IntegerMap.NULL_INT_NODE) {// one-time
+			this.entryReplica = id;
+			this.entryTime = System.currentTimeMillis();
+			count++;
+		}
+		if (this.isBatched())
+			for (RequestPacket req : this.batched)
+				// recursive but doesn't have to be
+				count += req.setEntryReplicaAndReturnCount(id); 
+		return count;
+	}
+	
 
 	public int getEntryReplica() {
 		return this.entryReplica;
@@ -365,6 +401,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 						.toString())) : JSONNIOTransport.getSenderAddress(json));
 		this.entryReplica = json.getInt(PaxosPacket.NodeIDKeys.E.toString());
 		this.shouldReturnRequestValue = json.optBoolean(Keys.QF.toString());
+		
 		// unwrap latched along batch
 		JSONArray batchedJSON = json.has(Keys.BATCH.toString()) ? json
 				.getJSONArray(Keys.BATCH.toString()) : null;
@@ -372,17 +409,34 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 			this.batched = new RequestPacket[batchedJSON.length()];
 			for (int i = 0; i < batchedJSON.length(); i++) {
 				this.batched[i] = new RequestPacket(
-						(JSONObject) batchedJSON.get(i));
+						(JSONObject) batchedJSON.get(i)
+				// new JSONObject(batchedJSON.getString(i))
+				);
 			}
 		}
+
+		// we remembered the original string for recalling here
+		this.stringifiedSelf = json.has(Keys.STRINGIFIED.toString()) ? (String) json
+				.get(Keys.STRINGIFIED.toString()) : null;
+	}
+	//private static final boolean USE_JSON_SMART = !Config.getGlobalString(PC.JSON_LIBRARY).equals("org.json");
+	
+	public String getStringifiedSelf() {
+		return this.stringifiedSelf;
+	}
+	public RequestPacket setStringifiedSelf(String s) {
+		this.stringifiedSelf = s;
+		//if(Util.oneIn(10)) DelayProfiler.updateMovAvg("stringified", s.length());
+		return this;
 	}
 
 	// for comparing against a different json implementation
 	public RequestPacket(net.minidev.json.JSONObject json) throws JSONException {
 		super(json);
+		assert (PaxosPacket.getPaxosPacketType(json) != PaxosPacketType.ACCEPT || json.containsKey(Keys.STRINGIFIED.toString()));
 		this.packetType = PaxosPacketType.REQUEST;
 		this.stop = json.containsKey(Keys.STOP.toString()) ?  (Boolean) json.get(Keys.STOP.toString()) : false;
-		this.requestID = (Long) json.get(Keys.QID.toString());
+		this.requestID = (long)(Integer)(json.get(Keys.QID.toString()));
 		this.requestValue = (String) json.get(Keys.QV.toString());
 
 		this.responseValue = json.containsKey(Keys.RV.toString()) ? (String) json
@@ -403,6 +457,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		this.entryReplica = (Integer) json.get(PaxosPacket.NodeIDKeys.E
 				.toString());
                 this.shouldReturnRequestValue = json.containsKey(Keys.QF.toString()) ?  (Boolean) json.get(Keys.QF.toString()) : false;
+                
 		// unwrap latched along batch
 		Collection<?> batchedJSON = json.containsKey(Keys.BATCH.toString()) ? (Collection<?>) json
 				.get(Keys.BATCH.toString()) : null;
@@ -411,9 +466,17 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 			int i = 0;
 			for (Object element : batchedJSON) {
 				this.batched[i++] = new RequestPacket(
-						(net.minidev.json.JSONObject) element);
+						(net.minidev.json.JSONObject) element
+				// (net.minidev.json.JSONObject)net.minidev.json.JSONValue.parse((String)element)
+				);
 			}
 		}
+
+		// we remembered the original string for recalling here
+		this.stringifiedSelf = json.containsKey(Keys.STRINGIFIED.toString()) ? (String) json
+				.get(Keys.STRINGIFIED.toString()) : null;
+		assert (PaxosPacket.getPaxosPacketType(json) != PaxosPacketType.ACCEPT
+				&& PaxosPacket.getPaxosPacketType(json) != PaxosPacketType.DECISION || this.stringifiedSelf != null);
 	}
 
 	@Override
@@ -442,13 +505,15 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 			JSONArray batchedJSON = new JSONArray();
 			for (int i = 0; i < this.batched.length; i++) {
 				batchedJSON.put(this.batched[i].toJSONObject());
+				//batchedJSON.put(this.batched[i].toString());
 			}
 			json.put(Keys.BATCH.toString(), batchedJSON);
 		}
+		
 		return json;
 	}
 
-	public net.minidev.json.JSONObject toJSONSmart() throws JSONException {
+	public net.minidev.json.JSONObject toJSONSmartImpl() throws JSONException {
 		net.minidev.json.JSONObject json = new net.minidev.json.JSONObject();
 		json.put(Keys.QID.toString(), this.requestID);
 		json.put(Keys.QV.toString(), this.requestValue);
@@ -475,12 +540,40 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 			net.minidev.json.JSONArray batchedJSON = new net.minidev.json.JSONArray();
 			for (int i = 0; i < this.batched.length; i++) {
 				batchedJSON.add(this.batched[i].toJSONSmart());
+				//batchedJSON.add(this.batched[i].toString());
 			}
 			json.put(Keys.BATCH.toString(), batchedJSON);
 		}
+		
 		return json;
 	}
-
+	
+	/**
+	 * Learned the hard way that using org.json to stringify is an order of
+	 * magnitude slower with large request values compared to manually inserting
+	 * the string like below. json-smart is fast enough for our purposes but
+	 * still doesn't beat direct string construction like below.
+	 * 
+	 * Note: we need to account for batching carefully here. So, we use a json
+	 * array of strings as opposed to json objects for batched requests above.
+	 * Otherwise, this method will only use string construction for the first
+	 * request in a batch.
+	 */
+	public String toString() {
+		try {
+			if (this.packetType == PaxosPacketType.ACCEPT)
+				if (this.stringifiedSelf != null)
+					return this.stringifiedSelf;
+				else
+					return (this.stringifiedSelf = this.toJSONSmart()
+							.toString());
+			return this.toJSONSmart().toString();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	// only for size estimation
 	private RequestPacket setClientAddress(InetSocketAddress sockAddr) {
 		this.clientAddress = sockAddr;
@@ -494,7 +587,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	public boolean isStopRequest() {
 		return stop || this.isAnyBatchedRequestStop();
 	}
-
+	
 	private boolean isAnyBatchedRequestStop() {
 		if (this.batchSize() == 0)
 			return false;
@@ -502,14 +595,6 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 			if (req.isStopRequest())
 				return true;
 		return false;
-	}
-
-	public RequestPacket setEntryTime(long t) {
-		this.entryTime = Math.max(this.entryTime, t);
-		if (this.isBatched())
-			for (RequestPacket req : this.batched)
-				req.setEntryTime(t);
-		return this;
 	}
 
 	public long getEntryTime() {
@@ -587,6 +672,9 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		return allThreaded;
 	}
 
+	public boolean isMetaValue() {
+		return this.requestValue.equals(Keys.METAVAL.toString());
+	}
 	private static int size(ArrayList<RequestPacket[]> reqArrayList) {
 		int size = 0;
 		for (RequestPacket[] reqArray : reqArrayList)
@@ -599,7 +687,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	}
 
 	// gets only the first request without the batch
-	private RequestPacket getFirstOnly() {
+	protected RequestPacket getFirstOnly() {
 		if (this.batchSize() == 0)
 			return this;
 		// else
@@ -682,14 +770,15 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	 * separate requests that first entered the requests (or requests with
 	 * entryReplica==-1) from the rest in a batched request.
 	 */
-	public RequestPacket[] getNoEntryReplicaRequestsAsBatch() {
+	public RequestPacket[] getEntryReplicaRequestsAsBatch(int id) {
 		RequestPacket[] reqArray = this.toArray(); // all unbatched
 
 		List<RequestPacket> noEntryReplicaRequests = new LinkedList<RequestPacket>();
 		List<RequestPacket> entryReplicaRequests = new LinkedList<RequestPacket>();
 
 		for (int i = 0; i < reqArray.length; i++)
-			if (reqArray[i].getEntryReplica() == IntegerMap.NULL_INT_NODE)
+			if (reqArray[i].getEntryReplica() == IntegerMap.NULL_INT_NODE || 
+			reqArray[i].getEntryReplica() == id)
 				noEntryReplicaRequests.add(reqArray[i]);
 			else
 				entryReplicaRequests.add(reqArray[i]);
@@ -730,7 +819,6 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	protected String getSummaryString() {
 		return requestID + ":" + "["
 				+ (NO_OP.equals(this.requestValue) ? NO_OP : "...")
-				// Util.truncate(requestValue, 16, 16)
 				+ "]" + (stop ? ":STOP" : "")
 				+ (isBatched() ? "+(" + batchSize() + " batched" + ")" : "");
 	}
@@ -761,15 +849,15 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	 * in PValuePacket other than the requestValue itself, i.e., the size of a
 	 * no-op decision.
 	 */
-	private static final int SIZE_ESTIMATE = estimateSize();
+	public static final int SIZE_ESTIMATE = estimateSize();
 
 	private static int estimateSize() {
 		int length = 0;
 		try {
-			length = (samplePValue = (PValuePacket) (getRandomPValue(TC.TEST_GUID.toString(),
-					0, 3142, new Ballot(23, 2178), true, new InetSocketAddress(
-							"128.119.245.40", 2000)))).toJSONObject()
-					.toString().length();
+			length = (samplePValue == null ? (samplePValue = (PValuePacket) (getRandomPValue(
+					TC.TEST_GUID.toString(), 0, 3142, new Ballot(23, 2178),
+					true, new InetSocketAddress("128.119.245.40", 2000))))
+					: samplePValue).toJSONObject().toString().length();
 			// 25% extra for other miscellaneous additions
 			return (int) (length * 1.25);
 

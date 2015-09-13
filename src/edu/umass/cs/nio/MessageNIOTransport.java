@@ -25,6 +25,7 @@ import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -396,20 +397,14 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 	}
 
 	// bypass network send by directly passing to local worker
-	private int sendLocal(MessageType message) {
-		/*
-		 * We create a deep copy for local sends as otherwise it can end up
-		 * getting modified by the receiver end and cause the number of bytes
-		 * written to be not equal to those sent for sends to receivers other
-		 * than the sender when the same message is being sent to a set of nodes
-		 * including self.
-		 */
+	private int sendLocal(Object message) throws UnsupportedEncodingException {
 
-		String msg = message.toString();
-		int length = msg.length();
-		//((InterfaceMessageExtractor) worker).demultiplexMessage(message);
+		String msg = (message instanceof byte[] ? new String((byte[]) message,
+				NIO_CHARSET_ENCODING) : message.toString());
+		int length = message instanceof byte[] ? ((byte[]) message).length
+				: msg.length();
 		((InterfaceMessageExtractor) worker)
-				.processMessage(new InetSocketAddress(this.getNodeAddress(),
+				.processLocalMessage(new InetSocketAddress(this.getNodeAddress(),
 						this.getNodePort()), msg);
 		return length;
 	}
@@ -669,5 +664,21 @@ public class MessageNIOTransport<NodeIDType, MessageType> extends
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public InterfaceNodeConfig<NodeIDType> getNodeConfig() {
+		return this.nodeConfig;
+	}
+
+	@Override
+	public int sendToID(NodeIDType id, byte[] msg) throws IOException {
+		return id != myID ? this.sendUnderlying(id, msg) : this.sendLocal(msg);		
+	}
+
+	@Override
+	public int sendToAddress(InetSocketAddress isa, byte[] msg)
+			throws IOException {
+		return this.sendUnderlying(isa, msg);
 	}
 }

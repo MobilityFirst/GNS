@@ -132,7 +132,10 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 	// This method will be invoked by NIO
 	protected boolean handleMessageSuper(String msg, NIOHeader header)
 			throws JSONException {
-		MessageType message = processHeader(msg, header);
+		MessageType message = null;
+		try {
+		message = processHeader(msg, header);
+		} catch(Exception e) {System.out.println(msg);}
 		Integer type = getPacketType(message);
 		if (type == null || !this.demuxMap.containsKey(type)) {
 			/*
@@ -194,8 +197,16 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 			InterfacePacketDemultiplexer<MessageType> pd) {
 		if (pd == null)
 			return;
+		if(this.demuxMap.containsKey(type)) throw new RuntimeException("re-regitering type " +type);
 		log.finest("Registering type " + type.getInt() + " with " + pd);
 		this.demuxMap.put(type.getInt(), pd);
+	}
+	
+	/**
+	 * @return True if congested
+	 */
+	protected boolean isCongested(NIOHeader header) {
+		return false;
 	}
 
 	/**

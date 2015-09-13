@@ -17,6 +17,7 @@
  */
 package edu.umass.cs.nio;
 
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 import edu.umass.cs.nio.nioutils.DataProcessingWorkerDefault;
 import edu.umass.cs.nio.nioutils.NIOInstrumenter;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
@@ -117,7 +118,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * is the number of packets, not bytes. Currently, there is no way to set a
 	 * byte limit for the queue size.
 	 */
-	public static final int MAX_QUEUED_SENDS = 8192;
+	public static final int MAX_QUEUED_SENDS = 1024*128;
 	private int maxQueuedSends = MAX_QUEUED_SENDS;
 
 	/**
@@ -179,7 +180,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	protected final InterfaceDataProcessingWorker worker;
 
 	// Maps id to socket address
-	private final InterfaceNodeConfig<NodeIDType> nodeConfig;
+	protected final InterfaceNodeConfig<NodeIDType> nodeConfig;
 
 	// selector we'll be monitoring
 	private Selector selector = null;
@@ -207,6 +208,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 	/* Map to optimize connection attempts by the selector thread. */
 	private ConcurrentHashMap<InetSocketAddress, Long> connAttempts = null;
+	
+	private SenderTask senderTask;
 
 	private boolean started = false;
 
@@ -252,6 +255,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			Thread me = (new Thread(this));
 			me.setName(getClass().getSimpleName() + myID);
 			me.start();
+			
+			this.senderTask = new SenderTask();
+			this.senderTask.setName(getClass().getSimpleName()
+					+ SenderTask.class.getSimpleName() + myID);
+			if (useSenderTask())
+				this.senderTask.start();
 		}
 	}
 
@@ -477,12 +486,14 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				 * with pending writes.
 				 */
 				registerWriteInterests();
-				// Set ops to CONNECT for pending connect requests.
+				// set ops to CONNECT for pending connect requests.
 				processPendingConnects();
-				// Wait for an event one of the registered channels.
+				// wait for an event one of the registered channels.
 				this.selector.select(SELECT_TIMEOUT);
-				// Accept, connect, read, or write as needed.
+				// accept, connect, read, or write as needed.
 				processSelectedKeys();
+				// process data from pending buffers on congested channels
+				this.tryProcessCongested();
 			} catch (Exception e) {
 				/*
 				 * Can do little else here. Hopefully, the exceptions inside the
@@ -493,6 +504,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			}
 		}
 		try {
+			this.senderTask.close();
 			this.selector.close();
 			this.serverChannel.close();
 			if (this.worker instanceof SSLDataProcessingWorker)
@@ -511,6 +523,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 */
 	public synchronized void stop() {
 		this.stopped = true;
+		this.senderTask.close();
 		this.selector.wakeup();
 	}
 
@@ -559,11 +572,14 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				if (key.isValid() && key.isConnectable())
 					this.finishConnection(key);
 				if (key.isValid() && key.isWritable()) 
-					this.write(key);
+					if (useSenderTask())
+						this.senderTask.addKey(key);
+					else
+						this.write(key);
 				if (key.isValid() && key.isReadable()) 
 					this.read(key);
 			} catch (IOException | CancelledKeyException e) {
-				log.warning("Node" + myID
+				log.info("Node" + myID
 						+ " incurred IOException on "
 						+ key.channel()
 						+ " likely because remote end closed connection");
@@ -626,7 +642,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	public static final int MAX_PAYLOAD_SIZE = 4 * 1024 * 1024;
 
 	// used also by SSLDataProcessingWorker
-	protected class AlternatingByteBuffer {
+	protected static class AlternatingByteBuffer {
 		final ByteBuffer headerBuf;
 		ByteBuffer bodyBuf = null;
 
@@ -642,6 +658,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	}
 
 	private final ConcurrentHashMap<SelectionKey, ByteBuffer> readBuffers = new ConcurrentHashMap<SelectionKey, ByteBuffer>();
+
+	private final ConcurrentHashMap<SelectionKey, AlternatingByteBuffer> congested = new ConcurrentHashMap<SelectionKey, AlternatingByteBuffer>();
 
 	private void read(SelectionKey key) throws IOException {
 		SocketChannel socketChannel = (SocketChannel) key.channel();
@@ -665,7 +683,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			return;
 		}
 		// else first read payload length in header, then ready payload
-		NIOTransport<?>.AlternatingByteBuffer abbuf = (NIOTransport<?>.AlternatingByteBuffer) key
+		AlternatingByteBuffer abbuf = (AlternatingByteBuffer) key
 				.attachment();
 		assert (abbuf != null) : this + ": no attachment for " + key.channel();
 
@@ -673,7 +691,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		ByteBuffer bbuf = (abbuf.headerBuf.remaining() == 0 ? abbuf.bodyBuf
 				: abbuf.headerBuf);
 		// end-of-stream => cleanup
-		if (socketChannel.read(bbuf) < 0) {
+		if (bbuf.hasRemaining() && socketChannel.read(bbuf) < 0) {
 			cleanup(key);
 			return;
 		}
@@ -698,15 +716,36 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			bbuf.flip();
 			this.worker.processData(socketChannel, this.inflate(bbuf));
 			// clear header to prepare to read the next message
-			abbuf.clear();
+			if (!bbuf.hasRemaining()) {
+				abbuf.clear();
+				this.congested.remove(key);
+			}
+			// else worker has not finished reading
+			else {
+				bbuf.compact();
+				assert (!bbuf.hasRemaining()); // all or nothing processing
+				// check later to prevent the last one from hanging
+				congested.putIfAbsent(key, abbuf);
+			}
 		}
 
 		/*
 		 * When we hand the data off to our worker thread, the worker is
-		 * expected to synchronously get() from readBuffer and return and can
-		 * not continue reading from readBuffer after returning as we compact it
-		 * immediately after.
+		 * expected to synchronously get() everything from readBuffer and 
+		 * return, i.e., no partial reads, the flip/compact structure
+		 * above notwithstanding.
 		 */
+	}
+	
+	private void tryProcessCongested() throws IOException {
+		for (Iterator<SelectionKey> keyIter = this.congested.keySet()
+				.iterator(); keyIter.hasNext();) {
+			SelectionKey key = keyIter.next();
+			if (key.isValid())
+				this.read(key);
+			else
+				keyIter.remove();
+		}
 	}
 	
 	private static boolean enableCompression = true;
@@ -730,7 +769,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	 * @param t
 	 */
 	public static void setCompressionThreshold(int t) {
-		compressionThreshold = t;
+		// FIXME: compression is disabled
+		//compressionThreshold = t;
 	}
 
 	/**
@@ -807,6 +847,68 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			}
 		}
 	}
+	
+	private static boolean useSenderTask = true;
+	private static final boolean useSenderTask() {
+		return useSenderTask;
+	}
+	/**
+	 * @param b 
+	 * 
+	 */
+	public static final void setUseSenderTask(boolean b) {
+		useSenderTask = b;
+	}
+	class SenderTask extends Thread {
+		LinkedBlockingQueue<SelectionKey> selectedKeys = new LinkedBlockingQueue<SelectionKey>();
+		private boolean stopped = false;
+		private static final long PO_TIMEOUT = 1000;
+
+		public void close() {
+			this.stopped = true;
+		}
+
+		void addKey(SelectionKey key) {
+			assert(key!=null);
+			if (!this.selectedKeys.contains(key)) {
+				try {
+					this.selectedKeys.offer(key, PO_TIMEOUT, TimeUnit.MILLISECONDS);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		SelectionKey pluckHead() {
+			try {
+				return this.selectedKeys.poll(PO_TIMEOUT, TimeUnit.MILLISECONDS);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+
+		public void run() {
+			SelectionKey key = null;
+			while (!stopped) {
+				if ((key = this.pluckHead()) != null && key.isValid()
+						&& key.isWritable()) {
+					try {
+						NIOTransport.this.write(key);
+					} catch (IOException e) {
+						log.info("Node"
+								+ myID
+								+ " incurred IOException on "
+								+ key.channel()
+								+ " likely because remote end closed connection");
+						cleanup(key);
+						e.printStackTrace();
+					}
+				}
+
+			}
+		}
+	}
 
 	/* Start of methods synchronizing on pendingWrites. */
 
@@ -836,7 +938,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		return (sendQueue.isEmpty());
 	}
 
-	private static boolean SEND_BATCHED = false;// true; // default true
+	private static boolean SEND_BATCHED = true; // default true
 
 	// dequeue and send one message at a time
 	private void sendUnbatched(LinkedBlockingQueue<ByteBuffer> sendQueue,
@@ -922,6 +1024,14 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	private boolean isSSL() {
 		return this.worker instanceof SSLDataProcessingWorker ? true : false;
 	}
+	
+	/**
+	 * @return SSL mode used by this NIO transport.
+	 */
+	public SSL_MODES getSSLMode() {
+		return this.worker instanceof SSLDataProcessingWorker ? ((SSLDataProcessingWorker) this.worker).sslMode
+				: SSL_MODES.CLEAR;
+	}
 
 	// invoked only by selector thread
 	private boolean isHandshakeComplete(SocketChannel socketChannel) {
@@ -954,15 +1064,17 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					&& data.remaining() == 0)
 				return data.capacity();
 
-			if (sendQueue.size() < getMaxQueuedSends() || this.isConnected(isa)) {
+			if (sendQueue.size() < getMaxQueuedSends()) {
 				sendQueue.add(data);
 				queuedBytes = data.capacity();
 
-			} else {
+			} 
+			else {
 				log.log(Level.WARNING,
 						"{0} message queue for {1} out of room, dropping message",
 						new Object[] { this, isa });
-				queuedBytes = -1; // could also drop queue here
+				queuedBytes = this.isConnected(isa) ? 0 : -1; 
+				// could also drop queue here
 			}
 		}
 
@@ -972,7 +1084,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 		return queuedBytes;
 	}
-
+	
 	private void wakeupSelector(InetSocketAddress isa) {
 		SocketChannel sc = this.getSockAddrToSockChannel(isa);
 		SelectionKey key = null;

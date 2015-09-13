@@ -19,14 +19,15 @@ package edu.umass.cs.gigapaxos.paxosutil;
 
 import java.util.Collection;
 
-import net.minidev.json.JSONValue;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.paxospackets.AcceptPacket;
+import edu.umass.cs.gigapaxos.paxospackets.PValuePacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
+import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
@@ -69,6 +70,17 @@ public abstract class PaxosPacketDemultiplexerJSONSmart extends
 		case REQUEST:
 			paxosPacket = (new RequestPacket(jsonS));
 			break;
+		case PROPOSAL:
+			paxosPacket = (new ProposalPacket(jsonS));
+			break;
+		case ACCEPT:
+			paxosPacket = (new AcceptPacket(jsonS));
+			break;
+		case DECISION:
+			// not really needed as a special case if we use batched commits
+			paxosPacket = (new PValuePacket(jsonS));
+			break;
+
 		default:
 			return PaxosPacketDemultiplexer.toPaxosPacket(toJSONObject(jsonS),
 					unstringer);
@@ -76,6 +88,8 @@ public abstract class PaxosPacketDemultiplexerJSONSmart extends
 		assert (paxosPacket != null) : jsonS;
 		return paxosPacket;
 	}
+	
+	//private static final boolean UNCACHE_STRINGIFIED = Config.getGlobalBoolean(PC.UNCACHE_STRINGIFIED);
 
 	/**
 	 * @param jsonS
@@ -105,21 +119,27 @@ public abstract class PaxosPacketDemultiplexerJSONSmart extends
 
 	public abstract boolean handleMessage(net.minidev.json.JSONObject message);
 
+	
 	@Override
 	protected Integer getPacketType(net.minidev.json.JSONObject message) {
 		return (Integer) message.get(JSONPacket.PACKET_TYPE.toString());
 	}
-
+	
 	@Override
 	protected net.minidev.json.JSONObject getMessage(String message) {
-		return (net.minidev.json.JSONObject) JSONValue.parse(message);
+		return this.insertStringifiedSelf(MessageExtractor.parseJSONSmart(message), message);
 	}
 
 	@Override
 	protected net.minidev.json.JSONObject processHeader(String message,
 			NIOHeader header) {
-		return MessageExtractor.stampAddressIntoJSONObject(header.sndr,
-				header.rcvr, MessageExtractor.parseJSON1(message));
+		net.minidev.json.JSONObject json = MessageExtractor.parseJSONSmart(message);
+		assert(json!=null) : message;
+		return MessageExtractor.stampAddressIntoJSONObject(
+				header.sndr,
+				header.rcvr,
+				this.insertStringifiedSelf(
+						json, message));
 	}
 
 	@Override
@@ -131,5 +151,16 @@ public abstract class PaxosPacketDemultiplexerJSONSmart extends
 		return (type != null
 				&& type.equals(PaxosPacket.PaxosPacketType.REQUEST) || type
 					.equals(PaxosPacket.PaxosPacketType.PROPOSAL));
+	}
+	
+	private net.minidev.json.JSONObject insertStringifiedSelf(net.minidev.json.JSONObject json, String message) {
+		// sigh: we need the string to avoid restringification overhead
+		try {
+			if (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.ACCEPT)
+				json.put(RequestPacket.Keys.STRINGIFIED.toString(), message);
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return json;
 	}
 }

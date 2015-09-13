@@ -23,10 +23,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.PaxosConfig;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.reconfiguration.reconfigurationutils.DemandProfile;
 import edu.umass.cs.utils.Config;
@@ -183,8 +186,8 @@ public class ReconfigurationConfig {
 		 * Whether most recent demand report should be combined with
 		 * historic demand stats.
 		 */
-		COMBINE_DEMAND_STATS (false),
-
+		COMBINE_DEMAND_STATS (false), 
+		
 		;
 
 		final Object defaultValue;
@@ -202,11 +205,11 @@ public class ReconfigurationConfig {
 	private static boolean reconfigureInPlace = Config
 			.getGlobalBoolean(RC.RECONFIGURE_IN_PLACE);
 
-	private static SSLDataProcessingWorker.SSL_MODES clientSSLMode = (SSLDataProcessingWorker.SSL_MODES) Config
-			.getGlobal(RC.CLIENT_SSL_MODE);
+	private static SSLDataProcessingWorker.SSL_MODES clientSSLMode = SSLDataProcessingWorker.SSL_MODES.valueOf(Config
+			.getGlobal(RC.CLIENT_SSL_MODE).toString());
 
-	private static SSLDataProcessingWorker.SSL_MODES serverSSLMode = (SSLDataProcessingWorker.SSL_MODES) Config
-			.getGlobal(RC.SERVER_SSL_MODE);
+	private static SSLDataProcessingWorker.SSL_MODES serverSSLMode = SSLDataProcessingWorker.SSL_MODES.valueOf(Config
+			.getGlobal(RC.SERVER_SSL_MODE).toString());
 
 	private static int clientPortOffset = Config
 			.getGlobalInt(RC.CLIENT_PORT_OFFSET);
@@ -411,5 +414,16 @@ public class ReconfigurationConfig {
 			}
 		}
 		return null;
+	}
+	
+	protected static void setConsoleHandler() {
+		 ConsoleHandler handler = new ConsoleHandler();
+		 handler.setLevel(Level.INFO);
+		 Reconfigurator.getLogger().setLevel(Level.INFO);
+		 Reconfigurator.getLogger().addHandler(handler);
+		 Reconfigurator.getLogger().setUseParentHandlers(false);
+		 PaxosManager.getLogger().setLevel(Level.INFO);
+		 PaxosManager.getLogger().addHandler(handler);
+		 PaxosManager.getLogger().setUseParentHandlers(false);		 
 	}
 }

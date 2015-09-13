@@ -18,13 +18,16 @@
 package edu.umass.cs.gigapaxos.testing;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Set;
 
 import edu.umass.cs.gigapaxos.PaxosManager;
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.deprecated.Replicable;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
@@ -41,9 +44,9 @@ public class TESTPaxosNode {
 	private TESTPaxosApp app = null;
 
 	// A server must have an id
-	TESTPaxosNode(int id, InterfaceNodeConfig<Integer> nc) throws IOException {
+	TESTPaxosNode(int id, InterfaceNodeConfig<Integer> nc, boolean local) throws IOException {
 		this.myID = id;
-		pm = startPaxosManagerAndApp(id, nc);
+		pm = startPaxosManagerAndApp(id, nc, local);
 		assert (pm != null);
 	}
 
@@ -52,10 +55,10 @@ public class TESTPaxosNode {
 	 * @throws IOException 
 	 */
 	public TESTPaxosNode(int id) throws IOException {
-		this(id, TESTPaxosConfig.getNodeConfig());
+		this(id, TESTPaxosConfig.getNodeConfig(), true);
 	}
 
-	private PaxosManager<Integer> startPaxosManagerAndApp(int id, InterfaceNodeConfig<Integer> nc) {
+	private PaxosManager<Integer> startPaxosManagerAndApp(int id, InterfaceNodeConfig<Integer> nc, boolean local) {
 		try {
 			// shared between app and paxos manager only for testing
 			JSONNIOTransport<Integer> niot = null;
@@ -63,6 +66,8 @@ public class TESTPaxosNode {
 					(niot = new JSONNIOTransport<Integer>(id, nc,
 							new PacketDemultiplexerDefault(), true)),
 					(this.app = new TESTPaxosApp(niot)), null, true);
+				pm.initClientMessenger(new InetSocketAddress(nc
+						.getNodeAddress(myID), nc.getNodePort(myID)));
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
@@ -164,8 +169,9 @@ public class TESTPaxosNode {
 	public static void main(String[] args) {
 		try {
 			TESTPaxosConfig.setConsoleHandler();
+			NIOTransport.setUseSenderTask(Config.getGlobalBoolean(PC.USE_NIO_SENDER_TASK));
 			int myID = processArgs(args);
-			TESTPaxosNode me = new TESTPaxosNode(myID, TESTPaxosConfig.getFromPaxosConfig());
+			TESTPaxosNode me = new TESTPaxosNode(myID, TESTPaxosConfig.getFromPaxosConfig(), false);
 
 			// Creating default groups
 			int numGroups = Config.getGlobalInt(TC.NUM_GROUPS);

@@ -17,6 +17,9 @@
  */
 package edu.umass.cs.gigapaxos.paxospackets;
 
+import java.net.InetSocketAddress;
+
+import edu.umass.cs.nio.MessageNIOTransport;
 import edu.umass.cs.nio.Stringifiable;
 
 import org.json.JSONException;
@@ -35,7 +38,7 @@ import org.json.JSONObject;
 public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 
 	private static enum Keys {
-		SNDR, RCVR, MODE
+		SNDR, RCVR, MODE, SADDR
 	};
 
 	/**
@@ -50,6 +53,10 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 	 * A status flag that is currently not used for anything.
 	 */
 	private final boolean status;
+	
+	/** Need this if sender's address is different from that in node config.
+	 */
+	private InetSocketAddress saddr=null;
 
 	public FailureDetectionPacket(NodeIDType senderNodeID,
 			NodeIDType responderNodeID, boolean status) {
@@ -70,6 +77,7 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 		assert (PaxosPacket.getPaxosPacketType(json) == PaxosPacketType.FAILURE_DETECT);
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
 		this.status = json.getBoolean(Keys.MODE.toString());
+		this.saddr = MessageNIOTransport.getSenderAddress(json);
 	}
 
 	@Override
@@ -78,7 +86,12 @@ public class FailureDetectionPacket<NodeIDType> extends PaxosPacket {
 		json.put(Keys.MODE.toString(), status);
 		json.put(Keys.SNDR.toString(), senderNodeID);
 		json.put(Keys.RCVR.toString(), responderNodeID);
+		json.putOpt(Keys.SADDR.toString(), this.saddr);
 		return json;
+	}
+	
+	public InetSocketAddress getSender() {
+		return this.saddr;
 	}
 
 	@Override
