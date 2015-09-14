@@ -130,7 +130,7 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 			while (this.isEmpty() && !isStopped())
 				this.lockWait();
 		}
-		assert (!isEmpty() || isStopped());
+		//assert (!isEmpty() || isStopped());
 	}
 
 	public void run() {

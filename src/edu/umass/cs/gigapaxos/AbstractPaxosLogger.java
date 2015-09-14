@@ -74,7 +74,7 @@ public abstract class AbstractPaxosLogger {
 		this.aboutToClose = true;
 	}
 
-	private static ArrayList<AbstractPaxosLogger> instances = new ArrayList<AbstractPaxosLogger>();
+	private static ArrayList<AbstractPaxosLogger> myInstances = new ArrayList<AbstractPaxosLogger>();
 
 	private final BatchedLogger batchLogger;
 	private final Messenger<?> messenger;
@@ -87,10 +87,17 @@ public abstract class AbstractPaxosLogger {
 		this.myID = id;
 		logDirectory = (logDir == null ? SQLPaxosLogger.LOG_DIRECTORY : logDir) + "/";
 		this.messenger = msgr;
+		ArrayList<LogMessagingTask> logQueue = null;
 		(this.batchLogger = new BatchedLogger(
-				new ArrayList<LogMessagingTask>(), this, this.messenger))
+				logQueue = new ArrayList<LogMessagingTask>(), this, this.messenger))
 				.start(AbstractPaxosLogger.class.getSimpleName()+myID);
+
+		// a second (unused) orphan batch logger just for performance testing
+		if(Config.getGlobalBoolean(PC.MULTITHREAD_LOGGER))
+			new BatchedLogger(logQueue, this, this.messenger)
+				.start(AbstractPaxosLogger.class.getSimpleName() + myID)
 		;
+				
 		// checkpoint thread is not used and Checkpointer is deprecated
 		this.collapsingCheckpointer = new Checkpointer(
 				new HashMap<String, CheckpointTask>());//.start(AbstractPaxosLogger.class.getSimpleName()+myID);
@@ -239,9 +246,9 @@ public abstract class AbstractPaxosLogger {
 	}
 
 	private static void addLogger(AbstractPaxosLogger logger) {
-		synchronized (AbstractPaxosLogger.instances) {
-			if (!AbstractPaxosLogger.instances.contains(logger)) {
-				AbstractPaxosLogger.instances.add(logger);
+		synchronized (AbstractPaxosLogger.myInstances) {
+			if (!AbstractPaxosLogger.myInstances.contains(logger)) {
+				AbstractPaxosLogger.myInstances.add(logger);
 			}
 		}
 	}
@@ -537,7 +544,7 @@ public abstract class AbstractPaxosLogger {
 
 		private final AbstractPaxosLogger logger;
 		private final Messenger<?> messenger;
-		private ArrayList<LogMessagingTask> logMessages = new ArrayList<LogMessagingTask>();
+		private final ArrayList<LogMessagingTask> logMessages;
 
 		BatchedLogger(ArrayList<LogMessagingTask> lock,
 				AbstractPaxosLogger logger, Messenger<?> messenger) {

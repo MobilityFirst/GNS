@@ -171,6 +171,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 */
 	private static final boolean DONT_SHUTDOWN_EMBEDDED = true;
 
+	private static final int MAX_FILENAME_SIZE = 512;
+
 	/**
 	 * Batching can make log messages really big, so we need a maximum
 	 * size here to ensure that we don't try to batch more than we can
@@ -610,6 +612,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return packet.toString();
 	}
 
+	// various options for performance testng below
 	private static final boolean ENABLE_JOURNALING=Config.getGlobalBoolean(PC.ENABLE_JOURNALING);
 	private static final boolean STRINGIFY_WO_JOURNALING=Config.getGlobalBoolean(PC.STRINGIFY_WO_JOURNALING);
 	private static final boolean NON_COORD_ONLY=Config.getGlobalBoolean(PC.NON_COORD_ONLY);
@@ -621,22 +624,56 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	private static final boolean NON_COORD_DONT_LOG_DECISIONS=Config.getGlobalBoolean(PC.NON_COORD_DONT_LOG_DECISIONS);
 	private static final boolean COORD_DONT_LOG_DECISIONS=Config.getGlobalBoolean(PC.COORD_DONT_LOG_DECISIONS);
 	private static final boolean JOURNAL_COMPRESSION=Config.getGlobalBoolean(PC.JOURNAL_COMPRESSION);
+	private static final boolean SYNC_INDEX_JOURNAL=Config.getGlobalBoolean(PC.SYNC_INDEX_JOURNAL);
+	private static final boolean INDEX_JOURNAL=Config.getGlobalBoolean(PC.INDEX_JOURNAL);
 	
 	private static final int MAX_BATCH_SIZE = 10000;
 
+	/*
+	 * A wrapper to select between the purely DB-based logger and the
+	 * work-in-progress journaling logger.
+	 */
 	@Override
-	public synchronized boolean logBatch(LogMessagingTask[] packets) {
+	public boolean logBatch(LogMessagingTask[] packets) {
 		if (isClosed())
 			return false;
-		if (!isLoggingEnabled()) {
-			//return true;
-			return this.journal(packets);
+		if (!isLoggingEnabled() && !ENABLE_JOURNALING) 
+			return true;
+		if (isLoggingEnabled()) // no need to journal
+			return this.logBatchDB(packets, this.curLogFile);
+		
+		// else journaling but no DB logging
+		String journalFile = this.curLogFile;
+		boolean journaled = (ENABLE_JOURNALING && this.journal(packets));
+		
+		// can asynchronously log to DB as already journaled synchronously
+		if (SYNC_INDEX_JOURNAL)
+			return journaled && logBatchDB(packets, journalFile);
+		else if(INDEX_JOURNAL) {
+			this.GC.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					logBatchDB(packets, journalFile);
+				}
+			}, 0);
 		}
+		// else no indexing of journal
+		return journaled;
+	}
+
+	private synchronized boolean logBatchDB(LogMessagingTask[] packets, String journalFile) {
+		if (isClosed())
+			return false;
+		boolean journaled = (ENABLE_JOURNALING && this.journal(packets));
+		if (!isLoggingEnabled() && !ENABLE_JOURNALING) 
+			return true;
+			;
+		
 		boolean logged = true;
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		String cmd = "insert into " + getMTable()
-				+ " values (?, ?, ?, ?, ?, ?, ?)";
+				+ " values (?, ?, ?, ?, ?, ?, ?, ?)";
 		long t1 = System.currentTimeMillis();
 		int i = 0;
 		try {
@@ -649,7 +686,6 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				PaxosPacket packet = packets[i].logMsg;
 				// accept and decision use a faster implementation
 				String packetString = null;//toString(packet);
-				byte[] packetBytes = toBytes(packet);
 				int[] sb = AbstractPaxosLogger.getSlotBallot(packet);
 
 				pstmt.setString(1, packet.getPaxosID());
@@ -658,15 +694,15 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				pstmt.setInt(4, sb[1]);
 				pstmt.setInt(5, sb[2]);
 				pstmt.setInt(6, packet.getType().getInt());
-				assert (packetBytes != null);
+				pstmt.setString(7, journalFile);
 				if (getLogMessageClobOption()) {
-					// pstmt.setBlob(7, new StringReader(compressed));
-					byte[] compressed = deflate(packetBytes);
+					// pstmt.setBlob(8, new StringReader(compressed));
+					byte[] compressed = isLoggingEnabled() ? deflate(toBytes(packet)) : new byte[0];
 					Blob blob = conn.createBlob();
 					blob.setBytes(1, compressed);
-					pstmt.setBlob(7, blob);
+					pstmt.setBlob(8, blob);
 				} else
-					pstmt.setString(7, packetString);
+					pstmt.setString(8, packetString);
 								
 				pstmt.addBatch();
 				if ((i + 1) % MAX_BATCH_SIZE == 0 || (i + 1) == packets.length) {
@@ -703,7 +739,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			cleanup(conn);
 		}
 
-		return logged;
+		return logged && journaled;
 	}
 
 	/**
@@ -727,6 +763,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		compressedLength = deflator.deflate(compressed);
 		assert (compressedLength <= data.length);
 		deflator.end();
+		//if(Util.oneIn(10)) DelayProfiler.updateMovAvg("deflation", data.length*1.0/compressedLength);
 		return Arrays.copyOf(compressed, compressedLength);
 	}
 
@@ -771,7 +808,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	public void putCheckpointState(final String paxosID, final int version,
 			final Set<String> group, final int slot, final Ballot ballot, final String state,
 			final int acceptedGCSlot, final long createTime) {
-		if (isClosed() || !isLoggingEnabled())
+		if (isClosed() || (!isLoggingEnabled() && !ENABLE_JOURNALING))
 			return;
 
 		long t1 = System.currentTimeMillis();
@@ -1773,8 +1810,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				+ getMTable()
 				+ " (paxos_id varchar("
 				+ MAX_PAXOS_ID_SIZE
-				+ ") not null, "
-				+ "version int, slot int, ballotnum int, coordinator int, packet_type int, message "
+				+ ") not null, version int, slot int, ballotnum int, "
+				+ "coordinator int, packet_type int, logfile varchar ("
+				+ MAX_FILENAME_SIZE
+				+ "),  message "
 				+ (getLogMessageClobOption() ? SQL.getClobString(
 						maxLogMessageSize, SQL_TYPE) : " varchar("
 						+ maxLogMessageSize + ")") + ")";
@@ -1815,7 +1854,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			stmt = conn.createStatement();
 			createdCheckpoint = createTable(stmt, cmdC, getCTable());
 			createdMessages = createTable(stmt, cmdM, getMTable())
-					&& createIndex(stmt, cmdMI, getMTable());
+					&& (!Config.getGlobalBoolean(PC.INDEX_LOG_TABLE) || createIndex(
+							stmt, cmdMI, getMTable()));
 			createdPTable = createTable(stmt, cmdP, getPTable());
 			createdPrevCheckpoint = createTable(stmt, cmdPC, getPCTable());
 			log.log(Level.INFO, "{0}{1}{2}{3}{4}{5}", new Object[] {

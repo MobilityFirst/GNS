@@ -237,9 +237,18 @@ public class PaxosConfig {
 		
 		/**
 		 * Number of checkpoints after which log messages will be garbage
-		 * collected.
+		 * collected for a paxos group. We really don't need to do garbage
+		 * collection at all until the size of the table starts affecting log
+		 * message retrieval time or the size of the table starts causing the
+		 * indexing overhead to become high at insertion time; the latter is
+		 * unlikely as we maintain an index on the paxosID key.
 		 */
-		LOG_GC_FREQUENCY (1),
+		LOG_GC_FREQUENCY (10),
+		
+		/**
+		 * 
+		 */
+		INDEX_LOG_TABLE (true),
 
 		/**
 		 * A tiny amount of minimum sleep imposed on every request in order
@@ -468,7 +477,34 @@ public class PaxosConfig {
 		/**
 		 * 
 		 */
-		COORD_JOURNALS_WO_STRINGIFYING(false),
+		COORD_JOURNALS_WO_STRINGIFYING(false), 
+		
+		/**
+		 * Whether journal entries should be synchronously indexed in the DB.
+		 * Makes journaling (and overall throughput) slower but makes safe
+		 * retrieval of logged messages easier both during normal operations and
+		 * upon recovery. During normal operations, we just have to check the DB
+		 * and also check the pending log in memory to ensure that we don't miss
+		 * any log messages. Upon recovery however, there is no pending log in
+		 * memory and the system may have crashed with some pending log messages
+		 * before they could be inserted into the DB, so we just have to find
+		 * the last message logged in the DB and put the rest in a pending queue
+		 * for logging into the DB.
+		 */
+		SYNC_INDEX_JOURNAL(false), 
+		
+		/**
+		 * Whether more than one thread is used to log messages.
+		 */
+		MULTITHREAD_LOGGER(false), 
+		
+		/**
+		 * False for testing only. We do need to index the journal files in the
+		 * DB. But this option for now emulates the (unimplemented) strategy of
+		 * maintaining a memory log and only infrequently inserting the index
+		 * entries into the DB.
+		 */
+		INDEX_JOURNAL(false),
 		
 		;
 

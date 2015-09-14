@@ -368,7 +368,9 @@ public class TESTPaxosClient {
 
 	private RequestPacket makeRequest() {
 		int reqID = ((int) (Math.random() * Integer.MAX_VALUE));
-		RequestPacket req = new RequestPacket(reqID, gibberish, false);
+		RequestPacket req = new RequestPacket(reqID,
+		// createGibberish(), // randomly create each string
+				gibberish, false);
 		return req;
 	}
 

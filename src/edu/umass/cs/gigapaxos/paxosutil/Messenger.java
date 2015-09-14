@@ -34,7 +34,6 @@ import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.utils.Config;
-import edu.umass.cs.utils.DelayProfiler;
 
 /**
  * @author V. Arun
