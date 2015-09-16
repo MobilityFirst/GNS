@@ -634,7 +634,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * work-in-progress journaling logger.
 	 */
 	@Override
-	public boolean logBatch(LogMessagingTask[] packets) {
+	public boolean logBatch(final LogMessagingTask[] packets) {
 		if (isClosed())
 			return false;
 		if (!isLoggingEnabled() && !ENABLE_JOURNALING) 
@@ -643,7 +643,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			return this.logBatchDB(packets, this.curLogFile);
 		
 		// else journaling but no DB logging
-		String journalFile = this.curLogFile;
+		final String journalFile = this.curLogFile;
 		boolean journaled = (ENABLE_JOURNALING && this.journal(packets));
 		
 		// can asynchronously log to DB as already journaled synchronously
