@@ -83,10 +83,8 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 */
 	@Override
 	public void processData(SocketChannel socket, ByteBuffer incoming) {
-		byte[] buf = new byte[incoming.remaining()];
-		incoming.get(buf);
 		try {
-			this.processMessageInternal(socket, buf);
+			this.processMessageInternal(socket, incoming);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -98,11 +96,11 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		this.executor.shutdownNow();
 	}
 
+	// called only for loopback receives or by SSL worker
 	@Override
-	public void processMessage(InetSocketAddress sockAddr, String msg) {
+	public void processLocalMessage(InetSocketAddress sockAddr, String msg) {
 		try {
-			this.demultiplexMessage(new NIOHeader(sockAddr, sockAddr),
-					msg.getBytes(MessageNIOTransport.NIO_CHARSET_ENCODING));
+			this.demultiplexLocalMessage(new NIOHeader(sockAddr, sockAddr), msg);
 		} catch (UnsupportedEncodingException e) {
 			fatalExit(e);
 		} catch (IOException e) {
@@ -133,7 +131,7 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 * @param msg
 	 * @return Parsed JSON.
 	 */
-	public static net.minidev.json.JSONObject parseJSON1(String msg) {
+	public static net.minidev.json.JSONObject parseJSONSmart(String msg) {
 		net.minidev.json.JSONObject jsonData = null;
 		try {
 			if (msg.length() > 0)
@@ -155,43 +153,90 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		System.exit(1);
 	}
 
-	private void processMessageInternal(SocketChannel socket, byte[] msg)
-			throws IOException {
+	// exists only to support delay emulation
+	private void processMessageInternal(SocketChannel socket,
+			ByteBuffer incoming) throws IOException {
+		/*
+		 * The emulated delay value is in the message, so we need to read all
+		 * bytes off incoming and stringify right away.
+		 */
 		long delay = -1;
-		if (JSONDelayEmulator.isDelayEmulated()
-				&& (delay = JSONDelayEmulator.getEmulatedDelay(new String(msg,
-						MessageNIOTransport.NIO_CHARSET_ENCODING))) >= 0)
-			// run in a separate thread after scheduled delay
-			executor.schedule(new MessageWorker(socket, msg, packetDemuxes),
-					delay, TimeUnit.MILLISECONDS);
-		else
+		if (JSONDelayEmulator.isDelayEmulated()) {
+			byte[] msg = new byte[incoming.remaining()];
+			incoming.get(msg);
+			String message = new String(msg,
+					MessageNIOTransport.NIO_CHARSET_ENCODING);
+			if ((delay = JSONDelayEmulator.getEmulatedDelay(message)) >= 0)
+				// run in a separate thread after scheduled delay
+				executor.schedule(new MessageWorker(socket, message,
+						packetDemuxes), delay, TimeUnit.MILLISECONDS);
+		} else
 			// run it immediately
-			this.demultiplexMessage(socket, msg);
+			this.demultiplexMessage(
+					new NIOHeader(
+							(InetSocketAddress) socket.getRemoteAddress(),
+							(InetSocketAddress) socket.getLocalAddress()),
+					incoming);
 	}
 
-	protected void demultiplexMessage(NIOHeader header, byte[] msg)
+	private void demultiplexMessage(NIOHeader header, ByteBuffer incoming)
 			throws IOException {
-		synchronized (this.packetDemuxes) {
+		boolean extracted = false;
+		byte[] msg = null;
+		// synchronized (this.packetDemuxes)
+		{
 			for (final AbstractPacketDemultiplexer<?> pd : this.packetDemuxes) {
-				try {
-					if (pd instanceof PacketDemultiplexerDefault)
-						continue;
+				if (pd instanceof PacketDemultiplexerDefault
+				// if congested, don't process
+						|| pd.isCongested(header))
+					continue;
 
-					String message = //pd.getMessage
-							(new String(msg,
-							MessageNIOTransport.NIO_CHARSET_ENCODING));
-					//if (message == null) continue;
-					// the handler turns true if it handled the message
-					if (pd.handleMessageSuper(message, header))
-						return;
-
-				} catch (JSONException je) {
-					je.printStackTrace();
+				if (!extracted) { // extract at most once
+					msg = new byte[incoming.remaining()];
+					incoming.get(msg);
+					extracted = true;
 				}
+
+				String message = (new String(msg,
+						MessageNIOTransport.NIO_CHARSET_ENCODING));
+				if (this.callDemultiplexerHandler(header, message, pd))
+					return;
 			}
 		}
 	}
-	
+
+	// called only for loopback receives or emulated delays
+	private void demultiplexLocalMessage(NIOHeader header, String message)
+			throws IOException {
+		// synchronized (this.packetDemuxes)
+		{
+			for (final AbstractPacketDemultiplexer<?> pd : this.packetDemuxes) {
+				if (pd instanceof PacketDemultiplexerDefault)
+					// no congestion check
+					continue;
+
+				if (this.callDemultiplexerHandler(header, message, pd))
+					return;
+			}
+		}
+	}
+
+	// finally called for all receives
+	private boolean callDemultiplexerHandler(NIOHeader header, String message,
+			AbstractPacketDemultiplexer<?> pd) {
+		try {
+			// the handler turns true if it handled the message
+			if (pd.handleMessageSuper(message, header))
+				return true;
+
+		} catch (JSONException je) {
+			je.printStackTrace();
+		}
+		return false;
+
+	}
+
+	@Override
 	public void demultiplexMessage(Object message) {
 		for (final AbstractPacketDemultiplexer<?> pd : this.packetDemuxes) {
 			if (pd.loopback(message))
@@ -199,20 +244,12 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		}
 	}
 
-	protected void demultiplexMessage(SocketChannel socket, byte[] msg)
-			throws IOException {
-		this.demultiplexMessage(
-				new NIOHeader((InetSocketAddress) socket.getRemoteAddress(),
-						(InetSocketAddress) socket.getLocalAddress()), msg);
-		;
-	}
-
 	private class MessageWorker extends TimerTask {
 
 		private final SocketChannel socket;
-		private final byte[] msg;
+		private final String msg;
 
-		public MessageWorker(SocketChannel socket, byte[] msg,
+		MessageWorker(SocketChannel socket, String msg,
 				ArrayList<AbstractPacketDemultiplexer<?>> pdemuxes) {
 			this.msg = msg;
 			this.socket = socket;
@@ -221,7 +258,9 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 		@Override
 		public void run() {
 			try {
-				demultiplexMessage(socket, msg);
+				MessageExtractor.this.demultiplexLocalMessage(new NIOHeader(
+						(InetSocketAddress) socket.getRemoteAddress(),
+						(InetSocketAddress) socket.getLocalAddress()), msg);
 			} catch (UnsupportedEncodingException e) {
 				fatalExit(e);
 			} catch (IOException e) {

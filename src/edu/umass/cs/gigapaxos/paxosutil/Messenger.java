@@ -18,16 +18,22 @@
 package edu.umass.cs.gigapaxos.paxosutil;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
+import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
+import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.InterfaceNIOTransport;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.utils.Config;
 
 /**
  * @author V. Arun
@@ -42,24 +48,19 @@ import edu.umass.cs.nio.JSONMessenger;
 @SuppressWarnings("javadoc")
 public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 
+	private static final int NUM_MESSENGER_WORKERS = Config.getGlobalInt(PC.NUM_MESSENGER_WORKERS);
+	
 	public static final boolean ENABLE_INT_STRING_CONVERSION = true;//false;
 	private final IntegerMap<NodeIDType> nodeMap;
 
 	public Messenger(InterfaceNIOTransport<NodeIDType, JSONObject> niot,
 			IntegerMap<NodeIDType> nodeMap) {
-		super(niot);
+		super(niot, NUM_MESSENGER_WORKERS);
 		this.nodeMap = nodeMap;
 	}
 
 	public Messenger(Messenger<NodeIDType> msgr) {
 		this(msgr.getNIOTransport(), msgr.nodeMap);
-	}
-
-	public void send(MessagingTask mtask) throws JSONException, IOException {
-		if (mtask == null || mtask.isEmptyMessaging())
-			return;
-		// need to convert integers to NodeIDType.toString before sending
-		super.send(toGeneric(mtask));
 	}
 
 	public void send(MessagingTask[] mtasks) throws JSONException, IOException {
@@ -69,32 +70,84 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 			send(mtask);
 	}
 
-	public void send(GenericMessagingTask<NodeIDType, ?> mtask)
-			throws JSONException, IOException {
-		if (mtask == null || mtask.isEmpty())
+	// all send roads lead to here
+	public void send(MessagingTask mtask) throws JSONException, IOException {
+		if (mtask == null || mtask.isEmptyMessaging())
 			return;
-		super.send(mtask);
+		// need to convert integers to NodeIDType.toString before sending
+		super.send(toGeneric(mtask), useWorkers(mtask));
+	}
+	
+	private boolean useWorkers(MessagingTask mtask) {
+		return mtask != null
+				&& !mtask.isEmptyMessaging()
+				&& (mtask.msgs[0].getType() == PaxosPacketType.ACCEPT
+						|| mtask.msgs[0].getType() == PaxosPacketType.DECISION 
+						|| mtask.msgs[0]
+						.getType() == PaxosPacketType.BATCHED_COMMIT);
+	}
+	
+	private static boolean cacheStringifiedAccept() {
+		return IntegerMap.allInt();
 	}
 
-	private JSONObject[] toJSONObjects(PaxosPacket[] msgs) throws JSONException {
-		JSONObject[] jsonArray = new JSONObject[msgs.length];
-		for (int i = 0; i < msgs.length; i++) {
-			jsonArray[i] = fixNodeIntToString(msgs[i].toJSONObject());
+	private Object toJSONObject(PaxosPacket msg) throws JSONException {
+		if (cacheStringifiedAccept() && msg.getType() == PaxosPacketType.ACCEPT
+				&& ((RequestPacket) msg).getStringifiedSelf() != null)
+			return ((RequestPacket) msg).getStringifiedSelf();
+
+		JSONObject jsonified = fixNodeIntToString(msg.toJSONObject());
+		String stringified = jsonified.toString();
+		
+		if (cacheStringifiedAccept() && msg.getType() == PaxosPacketType.ACCEPT)
+			((RequestPacket) msg).setStringifiedSelf(stringified);
+		return stringified;
+	}
+
+	private Object toJSONSmartObject(PaxosPacket msg) throws JSONException {
+		if (cacheStringifiedAccept() && msg.getType() == PaxosPacketType.ACCEPT
+				&& ((RequestPacket) msg).getStringifiedSelf() != null)
+			return ((RequestPacket) msg).getStringifiedSelf();
+
+		net.minidev.json.JSONObject jsonSmart = msg.toJSONSmart();
+		assert (msg.getType() != PaxosPacketType.ACCEPT || jsonSmart != null);
+		// fallback to JSONObject
+		Object jsonified = jsonSmart == null ? fixNodeIntToString(msg
+				.toJSONObject()) : fixNodeIntToString(msg.toJSONSmart());
+		String stringified = jsonified.toString();
+
+		if (cacheStringifiedAccept() && msg.getType() == PaxosPacketType.ACCEPT)
+			((RequestPacket) msg).setStringifiedSelf(stringified);
+		return stringified;
+	}
+	
+	// we explicitly 
+	private Object[] toObjects(PaxosPacket[] packets) throws JSONException {
+		Object[] objects = new Object[packets.length];
+		for (int i = 0; i < packets.length; i++) {
+			objects[i] = USE_JSON_SMART ? toJSONSmartObject(packets[i])
+					: toJSONObject(packets[i]);
+			assert (!cacheStringifiedAccept()
+					|| packets[i].getType() != PaxosPacketType.ACCEPT || ((RequestPacket) packets[i])
+						.getStringifiedSelf() != null);
 		}
-		return jsonArray;
+		return objects;
 	}
 
-	private GenericMessagingTask<NodeIDType, JSONObject> toGeneric(
+	private static final boolean USE_JSON_SMART = !Config.getGlobalString(PC.JSON_LIBRARY).equals("org.json");
+	private GenericMessagingTask<NodeIDType, ?> toGeneric(
 			MessagingTask mtask) throws JSONException {
 		Set<NodeIDType> nodes = this.nodeMap
 				.getIntArrayAsNodeSet(mtask.recipients);
-		return new GenericMessagingTask<NodeIDType, JSONObject>(
-				nodes.toArray(), toJSONObjects(mtask.msgs));
+		return new GenericMessagingTask<NodeIDType, String>(
+				nodes.toArray(),
+				toObjects(mtask.msgs));
 	}
+	
 
 	// convert int to NodeIDType to String
 	private JSONObject fixNodeIntToString(JSONObject json) throws JSONException {
-		if (!ENABLE_INT_STRING_CONVERSION)
+		if (!ENABLE_INT_STRING_CONVERSION || IntegerMap.allInt())
 			return json;
 		if (json.has(PaxosPacket.NodeIDKeys.B.toString())) {
 			// fix ballot string
@@ -121,6 +174,40 @@ public class Messenger<NodeIDType> extends JSONMessenger<NodeIDType> {
 				}
 			}
 		return json;
+	}
+	
+	private net.minidev.json.JSONObject fixNodeIntToString(
+			net.minidev.json.JSONObject jsonSmart) {
+		if (!ENABLE_INT_STRING_CONVERSION || IntegerMap.allInt())
+			return jsonSmart;
+		if (jsonSmart.containsKey(PaxosPacket.NodeIDKeys.B.toString())) {
+			// fix ballot string
+			Ballot ballot = new Ballot(
+					(String) jsonSmart.get(PaxosPacket.NodeIDKeys.B.toString()));
+			jsonSmart.put(PaxosPacket.NodeIDKeys.B.toString(), Ballot
+					.getBallotString(ballot.ballotNumber,
+							intToString(ballot.coordinatorID)));
+		} else if (jsonSmart.containsKey(PaxosPacket.NodeIDKeys.GROUP
+				.toString())) {
+			// fix group JSONArray
+			Collection<?> jsonArray = (Collection<?>) jsonSmart
+					.get(PaxosPacket.NodeIDKeys.GROUP.toString());
+			ArrayList<String> nodes = new ArrayList<String>();
+			for (Object element : jsonArray) {
+				int member = (Integer) element;
+				nodes.add(intToString(member));
+				// jsonArray.put(i, intToString(member));
+			}
+			jsonSmart.put(PaxosPacket.NodeIDKeys.GROUP.toString(), nodes);
+		} else
+			for (PaxosPacket.NodeIDKeys key : PaxosPacket.NodeIDKeys.values()) {
+				if (jsonSmart.containsKey(key.toString())) {
+					// simple default int->string fix
+					int id = (Integer) jsonSmart.get(key.toString());
+					jsonSmart.put(key.toString(), intToString(id));
+				}
+			}
+		return jsonSmart;
 	}
 
 	private String intToString(int id) {

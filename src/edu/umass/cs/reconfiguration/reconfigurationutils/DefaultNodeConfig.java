@@ -150,4 +150,12 @@ public class DefaultNodeConfig<NodeIDType> implements
 	public InetSocketAddress removeReconfigurator(NodeIDType id) {
 		return this.reconfigurators.remove(id);
 	}
+	
+	public String toString() {
+		String s="";
+		for(NodeIDType id : this.getNodeIDs()) {
+			s = (s + id+":"+this.getNodeAddress(id)+":"+this.getNodePort(id) + " " );
+		}
+		return s;
+	}
 }

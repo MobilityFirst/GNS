@@ -18,6 +18,7 @@
 package edu.umass.cs.gigapaxos.testing;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Timer;
@@ -29,6 +30,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
@@ -36,6 +38,7 @@ import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig.TC;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONNIOTransport;
+import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 
@@ -108,7 +111,8 @@ public class TESTPaxosClient {
 			client.runReplyCount = 0;
 	}
 
-	private final JSONNIOTransport<Integer> niot;
+	private  JSONNIOTransport<Integer> niot;
+	private final InterfaceNodeConfig<Integer> nc;
 	private final int myID;
 	private int totReqCount = 0;
 	private int totReplyCount = 0;
@@ -186,10 +190,10 @@ public class TESTPaxosClient {
 			try {
 				RequestPacket request = new RequestPacket(msg);
 				if (requests.containsKey(request.requestID)) {
-					client.incrReplyCount();
-					assert (requestCreateTimes.containsKey(request.requestID)) : request;
 					long latency = System.currentTimeMillis()
 							- requestCreateTimes.get(request.requestID);
+					client.incrReplyCount();
+					//assert (requestCreateTimes.containsKey(request.requestID)) : request;
 					log.log(Level.FINE,
 							"Client {0} received response #{1} with latency {2} [{3}] : {4}",
 							new Object[] { client.myID,
@@ -251,7 +255,7 @@ public class TESTPaxosClient {
 					log.log(Level.INFO, "{0}{1}{2}{3}{4}{5}", new Object[] {
 							"Retransmitting request ", "" + req.requestID,
 							" to node ", id, ": ", req });
-					niot.sendToID(id, req.toJSONObject());
+					sendToID(id, req.toJSONObject());
 					timer.schedule(new Retransmitter(id, req, timeout * 2),
 							(long) (timeout * 2));
 				}
@@ -263,51 +267,68 @@ public class TESTPaxosClient {
 
 	protected TESTPaxosClient(int id, InterfaceNodeConfig<Integer> nc) throws IOException {
 		this.myID = id;
-		niot = (new JSONNIOTransport<Integer>(id,
-				nc==null ? TESTPaxosConfig.getNodeConfig() : nc,
-				//TESTPaxosConfig.getNodeConfig(),
+		this.nc = (nc==null ? TESTPaxosConfig.getNodeConfig() : nc);
+		niot = (new JSONNIOTransport<Integer>(id, this.nc,
 				(new ClientPacketDemultiplexer(this)), true));
 		this.timer = new Timer(TESTPaxosClient.class.getSimpleName() + myID);
 	}
 	
 
+	private static final boolean PIN_CLIENT = Config.getGlobalBoolean(TC.PIN_CLIENT);
 	private boolean sendRequest(RequestPacket req) throws IOException,
 			JSONException {
 		int[] group = TESTPaxosConfig.getGroup(req.getPaxosID());
-		int index = (int)(req.requestID % group.length);
+		int index = !PIN_CLIENT ? (int) (req.requestID % group.length)
+				: (int) (myID % group.length);
 		while (index < 0 || index >= group.length
 				|| TESTPaxosConfig.isCrashed(group[index]))
 			index = (int) (Math.random() * group.length);
 		return this.sendRequest(group[index], req);
 	}
 
+	private static final int CLIENT_PORT_OFFSET = Config.getGlobalInt(PC.CLIENT_PORT_OFFSET);
+	//private static InterfaceNodeConfig<Integer> nc = TESTPaxosConfig.getFromPaxosConfig(true);
 	protected boolean sendRequest(int id, RequestPacket req)
 			throws IOException, JSONException {
+		assert(nc.getNodeAddress(id)!=null) : id;
 		log.log(Level.FINE, "Sending request to node {0}: {1}", new Object[] {
-				id, req.getSummary() });
-		if (this.requests.put(req.requestID, req) != null
-				|| this.requestCreateTimes.put(req.requestID,
-						System.currentTimeMillis()) != null)
+				id, nc.getNodeAddress(id)+":"+nc.getNodePort(id), req.getSummary() });
+		if (this.requests.put(req.requestID, req) != null)
 			return false; // collision in integer space
 		this.incrReqCount();
+		this.requestCreateTimes.put(req.requestID,
+				System.currentTimeMillis());
+
 		// no retransmission send
-		assert (this.niot.sendToID(id, req.toJSONObject()) > 0);
+		while (this.sendToID(id, req.toJSONObject()) <= 0) {
+			try {
+				Thread.sleep(req.lengthEstimate()/RequestPacket.SIZE_ESTIMATE + 1);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		// retransmit if enabled
 		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
 			this.timer
 					.schedule(new Retransmitter(id, req), (long) getTimeout());
 		return true;
 	}
+	
+	private int sendToID(int id, JSONObject json) throws IOException {
+		return this.niot.sendToAddress(
+				CLIENT_PORT_OFFSET > 0 ? new InetSocketAddress(this.nc
+						.getNodeAddress(id), this.nc.getNodePort(id)
+						+ CLIENT_PORT_OFFSET) : new InetSocketAddress(this.nc
+						.getNodeAddress(id), this.nc.getNodePort(id)
+						+ CLIENT_PORT_OFFSET), json);
+	}
 
-	/**
-	 * to control request size; min request size is still at least ~350B
-	 */
-	public static final String GIBBERISH = "47343289u230798sd7f69sf79s8fs9fys9nlk,.nesd5623mfds87wekldsoi;,DS"
-			+ "NFSDHGFBLLLAS7238485734934MNFD Z|47343289u23094322|94322"
-			+ "FHKSDF74JKFHDSOLRW0-3NCML,VFDYUP9045YMRJBJ;ASSKJBKNL7R3498 lc"
-			+ "fdslfmsf90sdjwe;dj8934r436854398uewnljscnzxjkcfairw"
-			+ "6943rhewldscnsodfuyoilkndsyrupornwekitcew9or;nwcigblw819ei23-t05860";;
-	static String gibberish = GIBBERISH;
-	static {
+	private static final String GIBBERISH = "89432hoicnbsd89233u2eoiwdj-329hbousfnc";
+	static String gibberish = Config.getGlobalBoolean(TC.COMPRESSIBLE_REQUEST) ? createGibberishCompressible()
+			: createGibberish();
+	
+	private static final String createGibberishCompressible() {
+		gibberish = GIBBERISH;
 		int baggageSize = Config.getGlobalInt(TC.REQUEST_BAGGAGE_SIZE);
 		if (gibberish.length() > baggageSize)
 			gibberish = gibberish.substring(0, baggageSize);
@@ -318,7 +339,25 @@ public class TESTPaxosClient {
 								baggageSize - gibberish.length()));
 		Util.assertAssertionsEnabled();
 		assert (gibberish.length() == baggageSize);
+		return gibberish;
 	}
+	
+	private static final String createGibberish() {
+		int baggageSize = Config.getGlobalInt(TC.REQUEST_BAGGAGE_SIZE);
+		byte[] buf = new byte[baggageSize];
+		byte[] chars = Util.getAlphanumericAsBytes();
+		for(int i=0; i<baggageSize; i++) buf[i] = (chars[(int)(Math.random()*chars.length)]);
+		gibberish = new String(buf);
+		if (gibberish.length() > baggageSize)
+			gibberish = gibberish.substring(0, baggageSize);
+		else
+			gibberish += gibberish.substring(0,
+					baggageSize - gibberish.length());
+		Util.assertAssertionsEnabled();
+		assert (gibberish.length() == baggageSize);
+		return gibberish;
+	}
+	
 
 	/**
 	 * @return Literally gibberish.
@@ -330,8 +369,8 @@ public class TESTPaxosClient {
 	private RequestPacket makeRequest() {
 		int reqID = ((int) (Math.random() * Integer.MAX_VALUE));
 		RequestPacket req = new RequestPacket(reqID,
-				"Sample request numbered " + getTotalRequestCount() + ":"
-						+ gibberish, false);
+		// createGibberish(), // randomly create each string
+				gibberish, false);
 		return req;
 	}
 
@@ -372,13 +411,24 @@ public class TESTPaxosClient {
 	private static int NUM_GROUPS = Config.getGlobalInt(TC.NUM_GROUPS);
 	private static final String TEST_GUID_PREFIX = Config.getGlobalString(TC.TEST_GUID_PREFIX);
 
-	private static double mostRecentSentRate = 0;
 	protected static void sendTestRequests(int numReqsPerClient,
 			TESTPaxosClient[] clients) throws JSONException, IOException {
-		System.out.print("\nInitiating test sending " + numReqsPerClient
-				* clients.length + " requests using " + clients.length
-				+ " clients at an aggregate load of " + (TOTAL_LOAD)
-				+ " reqs/sec...");
+		sendTestRequests(numReqsPerClient, clients, false);
+	}
+	private static double mostRecentSentRate = 0;
+	protected static void sendTestRequests(int numReqsPerClient,
+			TESTPaxosClient[] clients, boolean warmup) throws JSONException, IOException {
+		System.out.print((warmup ? "\nWarming up by sending "
+				: "\nInitiating test sending ")
+				+ numReqsPerClient
+				* clients.length
+				+ " "
+				+ gibberish.length()
+				+ "B requests using "
+				+ clients.length
+				+ " clients "
+				+ (!warmup ? "at an aggregate load of " + (TOTAL_LOAD)
+						+ " reqs/sec..." : ""));
 		RateLimiter r = new RateLimiter(TOTAL_LOAD);
 		long initTime = System.currentTimeMillis();
 		for (int i = 0; i < numReqsPerClient; i++) {
@@ -394,14 +444,19 @@ public class TESTPaxosClient {
 		mostRecentSentRate = numReqsPerClient * clients.length * 1000.0
 				/ (System.currentTimeMillis() - initTime);
 
-		System.out.println("done sending requests in "
+		if(!warmup)
+			System.out.println("done sending requests in "
 				+ Util.df((System.currentTimeMillis() - initTime) / 1000.0)
 				+ " secs; actual sending rate = "
-				+ Util.df(mostRecentSentRate));
+				+ Util.df(mostRecentSentRate)+"/s");
 	}
-
 	protected static void waitForResponses(TESTPaxosClient[] clients,
 			long startTime) {
+		waitForResponses(clients, startTime, false);
+	}
+	
+	protected static void waitForResponses(TESTPaxosClient[] clients,
+			long startTime, boolean warmup) {
 		for (int i = 0; i < Config.getGlobalInt(TC.NUM_CLIENTS); i++) {
 			while (clients[i].requests.size() > 0) {
 				synchronized (clients[i]) {
@@ -413,15 +468,19 @@ public class TESTPaxosClient {
 						}
 				}
 				System.out
-						.println(getWaiting(clients)
+						.println("["
+								+ clients[i].myID
+								+ "] "
+								+ getWaiting(clients)
 								+ (getRtxCount() > 0 ? "; #num_total_retransmissions = "
-								+ getRtxCount() : "")
+										+ getRtxCount()
+										: "")
 								+ (getRtxCount() > 0 ? "; num_retransmitted_requests = "
 										+ getNumRtxReqs()
 										: "")
-								+ "; aggregate response rate = "
-								+ Util.df(getTotalThroughput(clients, startTime))
-								+ " reqs/sec");
+								+ (!warmup ? "; aggregate response rate = "
+										+ Util.df(getTotalThroughput(clients,
+												startTime)) + " reqs/sec" : ""));
 				if (clients[i].requests.size() > 0)
 					try {
 						Thread.sleep(1000);
@@ -473,13 +532,13 @@ public class TESTPaxosClient {
 	protected static void printOutput(TESTPaxosClient[] clients) {
 		for (int i = 0; i < Config.getGlobalInt(TC.NUM_CLIENTS); i++) {
 			if (clients[i].requests.isEmpty()) {
-				System.out.println("\n\nSUCCESS! requests issued = "
+				System.out.println("\n\n[SUCCESS] requests issued = "
 						+ clients[i].getTotalRequestCount()
 						+ "; requests turned to no-ops = "
 						+ clients[i].getNoopCount() + "; responses received = "
 						+ clients[i].getTotalReplyCount() + "\n");
 			} else
-				System.out.println("\nFAILURE: Requests issued = "
+				System.out.println("\n[FAILURE]: Requests issued = "
 						+ clients[i].getTotalRequestCount()
 						+ "; requests turned to no-ops = "
 						+ clients[i].getNoopCount() + "; responses received = "
@@ -500,17 +559,30 @@ public class TESTPaxosClient {
 	public static void main(String[] args) {
 		try {
 			TESTPaxosConfig.setConsoleHandler();
+			NIOTransport.setUseSenderTask(Config.getGlobalBoolean(PC.USE_NIO_SENDER_TASK));
 			TESTPaxosConfig.setDistribtedTest(args.length > 0 ? args[0] : null);
 
-			TESTPaxosClient[] clients = TESTPaxosClient.setupClients(TESTPaxosConfig.getFromPaxosConfig());
+			TESTPaxosClient[] clients = TESTPaxosClient.setupClients(TESTPaxosConfig.getFromPaxosConfig(true));
+			System.out.println(TESTPaxosConfig.getFromPaxosConfig(true));
 			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS)
 					/ Config.getGlobalInt(TC.NUM_CLIENTS);
 
-			// begin first run
+			// begin warmup run
 			long t1 = System.currentTimeMillis();
-			sendTestRequests(numReqs, clients);
+			sendTestRequests(10, clients, true);
 			waitForResponses(clients, t1);
 			long t2 = System.currentTimeMillis();
+			System.out.println("[success]");
+			// end warmup run
+			
+			resetLatencyComputation(clients);
+			Thread.sleep(1000);
+
+			// begin first run
+			t1 = System.currentTimeMillis();
+			sendTestRequests(numReqs, clients);
+			waitForResponses(clients, t1);
+			t2 = System.currentTimeMillis();
 			System.out.println("\n[run1]"
 					+ getAggregateOutput(numReqs, t2 - t1));
 			// end first run

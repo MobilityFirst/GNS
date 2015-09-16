@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,6 +33,7 @@ import org.json.JSONException;
 import edu.umass.cs.gigapaxos.examples.noop.NoopPaxosApp;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.NIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.reconfiguration.AbstractReconfiguratorDB;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.utils.Config;
@@ -131,6 +134,11 @@ public class PaxosConfig {
 		APPLICATION(NoopPaxosApp.class.getName()),
 
 		/**
+		 * Default offset for the client facing port.
+		 */
+		CLIENT_PORT_OFFSET (00),
+		
+		/**
 		 * Verbose debugging and request instrumentation
 		 */
 		DEBUG(false),
@@ -138,6 +146,20 @@ public class PaxosConfig {
 		 * True means no persistent logging
 		 */
 		DISABLE_LOGGING(false),
+
+		/**
+		 * FIXME: Journaling based log for efficiency. Needs periodic compaction
+		 * that is not yet implemented, so this log exists only for performance
+		 * instrumentation.
+		 */
+		ENABLE_JOURNALING(false),
+
+		/**
+		 * True means no checkpointing. If logging is enabled (as is the default), the
+		 * logs will grow unbounded. So either both should be true or both should be
+		 * false.
+		 */
+		DISABLE_CHECKPOINTING (false),
 
 		/**
 		 * 
@@ -203,7 +225,7 @@ public class PaxosConfig {
 		 * The maximum log message size. The higher the batching, the higher
 		 * this value needs to be.
 		 */
-		MAX_LOG_MESSAGE_SIZE(1024 * 512),
+		MAX_LOG_MESSAGE_SIZE(1024 * 1024),
 
 		/**
 		 * The maximum checkpoint size. The default below is the maximum size of
@@ -215,26 +237,37 @@ public class PaxosConfig {
 		
 		/**
 		 * Number of checkpoints after which log messages will be garbage
-		 * collected.
+		 * collected for a paxos group. We really don't need to do garbage
+		 * collection at all until the size of the table starts affecting log
+		 * message retrieval time or the size of the table starts causing the
+		 * indexing overhead to become high at insertion time; the latter is
+		 * unlikely as we maintain an index on the paxosID key.
 		 */
-		LOG_GC_FREQUENCY (1),
+		LOG_GC_FREQUENCY (10),
+		
+		/**
+		 * 
+		 */
+		INDEX_LOG_TABLE (true),
 
 		/**
-		 * FIXME: A sleep of a millisecond seems to improve latency because
-		 * of more batching.
+		 * A tiny amount of minimum sleep imposed on every request in order
+		 * to improve batching benefits. Also refer to {@link #BATCH_OVERHEAD}.
 		 */
-		BATCH_SLEEP_DURATION(1),
+		BATCH_SLEEP_DURATION(0),
 
 		/**
 		 * Inverse of the percentage overhead of agreement latency added to the
-		 * sleep duration used for increasing batching gains.
+		 * sleep duration used for increasing batching gains. Also refer to
+		 * {@value #BATCH_SLEEP_DURATION}.
 		 */
 		BATCH_OVERHEAD(0.01),
 
 		/**
-		 * Maximum number of batched requests.
+		 * Maximum number of batched requests. Setting it to infinity means
+		 * that the log message size will still limit it.
 		 */
-		MAX_BATCH_SIZE(1000),
+		MAX_BATCH_SIZE(2000),
 
 		/**
 		 * Checkpoint interval. A larger value means slower recovery, slower
@@ -302,7 +335,7 @@ public class PaxosConfig {
 		/**
 		 * 
 		 */
-		JSON_LIBRARY("org.json"),
+		JSON_LIBRARY("json.smart"),
 
 		/**
 		 * Default location for paxos logs when an embedded DB is used.
@@ -330,8 +363,149 @@ public class PaxosConfig {
 		/**
 		 * Maximum size of a paxos replica group.
 		 */
-		MAX_GROUP_SIZE (16),
+		MAX_GROUP_SIZE (16), 
+		
+		/**
+		 * Threshold for throttling client request load. 
+		 */
+		MAX_OUTSTANDING_REQUESTS(8000), 
+		
+		/**
+		 * Sleep millis to throttle client requests if overloaded. Used only for 
+		 * testing.
+		 */
+		THROTTLE_SLEEP(0),
+		
+		/**
+		 * Client-server SSL mode.
+		 */
+		CLIENT_SSL_MODE(SSLDataProcessingWorker.SSL_MODES.CLEAR),
 
+		/**
+		 * Server-server SSL mode.
+		 */
+		SERVER_SSL_MODE(SSLDataProcessingWorker.SSL_MODES.CLEAR), 
+		
+		/**
+		 * Number of additional sending connections used by paxos. We need this
+		 * because the sending throughput of a single TCP connection is limited
+		 * and can become a bottleneck at the coordinator.
+		 */
+		NUM_MESSENGER_WORKERS(1), 
+		
+		/**
+		 * 
+		 */
+		USE_NIO_SENDER_TASK(false),
+		
+		/**
+		 * Disable congestion pushback.
+		 */
+		DISABLE_CC(false), 
+		
+		/**
+		 * If true, we just approximately count outstanding instead of maintaining an
+		 * exact map with callbacks. Flag used for testing overhead. 
+		 */
+		COUNT_OUTSTANDING(false), 
+		
+		/**
+		 * If true, we use a garbage collected map that has higher overhead than a
+		 * regular map, but is still not a bottleneck.
+		 */
+		USE_GC_MAP(false), 
+		
+		/**
+		 * Only log meta decisions if corresponding accept was previously received.
+		 */
+		LOG_META_DECISIONS (true),
+		
+		/** FIXME: The options below only exist for testing stringification overhead.
+		 * They should probably be moved to {@link TESTPaxosConfig}.
+		 */
+
+		/**
+		 * Testing option.
+		 */
+		JOURNAL_COMPRESSION(false), 
+
+		/**
+		 * Testing option.
+		 */
+		STRINGIFY_WO_JOURNALING(false), 
+		
+		/**
+		 * Testing option.
+		 */
+		NON_COORD_ONLY(false), 
+
+		/**
+		 * Testing option.
+		 */
+		COORD_ONLY(false), 
+
+		/**
+		 * Testing option. 
+		 */
+		NO_STRINGIFY_JOURNALING(false), 
+		
+		/**
+		 * Testing option.
+		 */
+		MESSENGER_CACHES_ACCEPT(false), 
+				
+		/**
+		 * Testing option.
+		 */
+		COORD_STRINGIFIES_WO_JOURNALING(false), 
+		
+		/**
+		 * Testing option.
+		 */
+		DONT_LOG_DECISIONS(false),
+		
+		/**
+		 * Testing option.
+		 */
+		NON_COORD_DONT_LOG_DECISIONS(false),
+
+		/**
+		 * Testing option.
+		 */
+		COORD_DONT_LOG_DECISIONS(false),
+
+		/**
+		 * 
+		 */
+		COORD_JOURNALS_WO_STRINGIFYING(false), 
+		
+		/**
+		 * Whether journal entries should be synchronously indexed in the DB.
+		 * Makes journaling (and overall throughput) slower but makes safe
+		 * retrieval of logged messages easier both during normal operations and
+		 * upon recovery. During normal operations, we just have to check the DB
+		 * and also check the pending log in memory to ensure that we don't miss
+		 * any log messages. Upon recovery however, there is no pending log in
+		 * memory and the system may have crashed with some pending log messages
+		 * before they could be inserted into the DB, so we just have to find
+		 * the last message logged in the DB and put the rest in a pending queue
+		 * for logging into the DB.
+		 */
+		SYNC_INDEX_JOURNAL(false), 
+		
+		/**
+		 * Whether more than one thread is used to log messages.
+		 */
+		MULTITHREAD_LOGGER(false), 
+		
+		/**
+		 * False for testing only. We do need to index the journal files in the
+		 * DB. But this option for now emulates the (unimplemented) strategy of
+		 * maintaining a memory log and only infrequently inserting the index
+		 * entries into the DB.
+		 */
+		INDEX_JOURNAL(false),
+		
 		;
 
 		final Object defaultValue;
@@ -344,6 +518,24 @@ public class PaxosConfig {
 		public Object getDefaultValue() {
 			return this.defaultValue;
 		}
+	}
+	
+	/**
+	 * @param level
+	 */
+	public static void setConsoleHandler(Level level) {
+		 ConsoleHandler handler = new ConsoleHandler();
+		 handler.setLevel(level);
+		 PaxosManager.getLogger().setLevel(level);
+		 PaxosManager.getLogger().addHandler(handler);
+		 PaxosManager.getLogger().setUseParentHandlers(false);
+		 //NIOTransport.getLogger().setLevel(level);
+		 //NIOTransport.getLogger().addHandler(handler);
+		 //NIOTransport.getLogger().setUseParentHandlers(false);
+
+	}
+	protected static void setConsoleHandler() {
+		setConsoleHandler(Level.INFO);
 	}
 
 	/**

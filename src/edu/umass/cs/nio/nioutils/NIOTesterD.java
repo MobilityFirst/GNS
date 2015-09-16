@@ -30,16 +30,20 @@ public class NIOTesterD {
 	 * @throws UnsupportedEncodingException
 	 */
 	public static void main(String[] args) throws UnsupportedEncodingException {
-		if(args.length!=3) throw new RuntimeException("IP:port must be specified as args");
+		if(args.length<3) throw new RuntimeException("IP:port must be specified as args");
 		InetSocketAddress isa1 = Util.getInetSocketAddressFromString(args[0]);
 		final InetSocketAddress isa2 = Util.getInetSocketAddressFromString(args[1]);
 		String mode = args[2];
 		
 		final int numTestMessages = 1000000;
-		RateLimiter r = new RateLimiter(40000);
+		RateLimiter r = new RateLimiter(400000);
 
-		while (gibberish.length() < 300)
+		int size = args.length > 3 ? Integer.valueOf(args[3]) : 1000;
+		while (gibberish.length() < size)
 			gibberish += gibberish;
+		if(gibberish.length() > size) gibberish = gibberish.substring(0, size);
+		System.out.println("message_size = " + size);
+		
 		final int msgSize = gibberish.length();
 		final int batchSize = 1;
 		final byte[] replyBytes = new byte[gibberish.length() / 10];
@@ -71,7 +75,7 @@ public class NIOTesterD {
 				try {
 					if (sendReply) {
 						if (twoWay)
-							niot.send(isa2, replyBytes, batchSize);
+							while(niot.send(isa2, replyBytes, batchSize) <=0) Thread.sleep(1);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -188,8 +192,10 @@ public class NIOTesterD {
 			if(isSender) {
 				int totalSent = 0;
 				for (int i = 0; i < numTestMessages / batchSize; i++) {
-					totalSent += niot.send(isa2,
-							gibberish.getBytes("ISO-8859-1"), batchSize) + 8;
+					int sent = 0;
+					while ((sent = niot.send(isa2,
+							gibberish.getBytes("ISO-8859-1"), batchSize)) <= 0) Thread.sleep(1);
+					totalSent += sent;
 					r.record();
 				}
 				System.out.println("Sent "

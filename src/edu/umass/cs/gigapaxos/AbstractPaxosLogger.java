@@ -45,6 +45,7 @@ import edu.umass.cs.gigapaxos.paxosutil.SlotBallotState;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
+import edu.umass.cs.utils.Util;
 
 /**
  * @author V. Arun
@@ -73,7 +74,7 @@ public abstract class AbstractPaxosLogger {
 		this.aboutToClose = true;
 	}
 
-	private static ArrayList<AbstractPaxosLogger> instances = new ArrayList<AbstractPaxosLogger>();
+	private static ArrayList<AbstractPaxosLogger> myInstances = new ArrayList<AbstractPaxosLogger>();
 
 	private final BatchedLogger batchLogger;
 	private final Messenger<?> messenger;
@@ -86,10 +87,17 @@ public abstract class AbstractPaxosLogger {
 		this.myID = id;
 		logDirectory = (logDir == null ? SQLPaxosLogger.LOG_DIRECTORY : logDir) + "/";
 		this.messenger = msgr;
+		ArrayList<LogMessagingTask> logQueue = null;
 		(this.batchLogger = new BatchedLogger(
-				new ArrayList<LogMessagingTask>(), this, this.messenger))
+				logQueue = new ArrayList<LogMessagingTask>(), this, this.messenger))
 				.start(AbstractPaxosLogger.class.getSimpleName()+myID);
+
+		// a second (unused) orphan batch logger just for performance testing
+		if(Config.getGlobalBoolean(PC.MULTITHREAD_LOGGER))
+			new BatchedLogger(logQueue, this, this.messenger)
+				.start(AbstractPaxosLogger.class.getSimpleName() + myID)
 		;
+				
 		// checkpoint thread is not used and Checkpointer is deprecated
 		this.collapsingCheckpointer = new Checkpointer(
 				new HashMap<String, CheckpointTask>());//.start(AbstractPaxosLogger.class.getSimpleName()+myID);
@@ -137,7 +145,7 @@ public abstract class AbstractPaxosLogger {
 			PValuePacket decision, PaxosInstanceStateMachine pism) {
 		if (logger.isAboutToClose())
 			return;
-
+		
 		logger.batchLogger.enqueue(new LogMessagingTask(decision));
 	}
 
@@ -238,9 +246,9 @@ public abstract class AbstractPaxosLogger {
 	}
 
 	private static void addLogger(AbstractPaxosLogger logger) {
-		synchronized (AbstractPaxosLogger.instances) {
-			if (!AbstractPaxosLogger.instances.contains(logger)) {
-				AbstractPaxosLogger.instances.add(logger);
+		synchronized (AbstractPaxosLogger.myInstances) {
+			if (!AbstractPaxosLogger.myInstances.contains(logger)) {
+				AbstractPaxosLogger.myInstances.add(logger);
 			}
 		}
 	}
@@ -451,7 +459,7 @@ public abstract class AbstractPaxosLogger {
 	 * @param packets
 	 * @return Returns true if the entire batch is logged successfully.
 	 */
-	public abstract boolean logBatch(PaxosPacket[] packets);
+	public abstract boolean logBatch(LogMessagingTask[] packets);
 
 	/**
 	 * Gets a list of all logged messages for the paxos group {@code paxosID}.
@@ -470,10 +478,11 @@ public abstract class AbstractPaxosLogger {
 	 * @param paxosID
 	 * @param version
 	 * @param firstSlot
+	 * @param maxSlot 
 	 * @return A map of logged ACCEPTs indexed by their integer slot numbers.
 	 */
 	public abstract Map<Integer, PValuePacket> getLoggedAccepts(String paxosID,
-			int version, int firstSlot);
+			int version, int firstSlot, Integer maxSlot);
 
 	/**
 	 * 
@@ -496,6 +505,10 @@ public abstract class AbstractPaxosLogger {
 
 	/**************** End of extensible methods ***********************/
 
+	protected Map<Integer, PValuePacket> getLoggedAccepts(String paxosID,
+			int version, int firstSlot) {
+		return this.getLoggedAccepts(paxosID, version, firstSlot, null);
+	}
 	/**
 	 * @param packet
 	 * @return The slot and ballot as a 3-integer array.
@@ -517,7 +530,7 @@ public abstract class AbstractPaxosLogger {
 			ballot = pvalue.ballot;
 			break;
 		default:
-			assert (false);
+			assert (false) : packet.getType() + " : " + packet.getSummary();
 		}
 		assert (ballot != null);
 		int[] slotBallot = { slot, ballot.ballotNumber, ballot.coordinatorID };
@@ -531,7 +544,7 @@ public abstract class AbstractPaxosLogger {
 
 		private final AbstractPaxosLogger logger;
 		private final Messenger<?> messenger;
-		private ArrayList<LogMessagingTask> logMessages = new ArrayList<LogMessagingTask>();
+		private final ArrayList<LogMessagingTask> logMessages;
 
 		BatchedLogger(ArrayList<LogMessagingTask> lock,
 				AbstractPaxosLogger logger, Messenger<?> messenger) {
@@ -558,7 +571,10 @@ public abstract class AbstractPaxosLogger {
 					+ ".process() should not have been called");
 		}
 
-		private final boolean DISABLE_LOGGING = Config.getGlobalBoolean(PC.DISABLE_LOGGING);
+		private final boolean PERSISTENCE = !Config
+				.getGlobalBoolean(PC.DISABLE_LOGGING)
+				|| Config.getGlobalBoolean(PC.ENABLE_JOURNALING);
+
 		@Override
 		public void process(LogMessagingTask[] lmTasks) {
 			PaxosPacket[] packets = new PaxosPacket[lmTasks.length];
@@ -567,11 +583,12 @@ public abstract class AbstractPaxosLogger {
 
 			// first log
 			long t1 = System.currentTimeMillis();
-			boolean logged = this.logger.logBatch(packets);
+			boolean logged = this.logger.logBatch(lmTasks);
 			this.setProcessing(false);
 			if (!logged)
 				return;
-			if(!DISABLE_LOGGING) DelayProfiler.updateDelay("log", t1, packets.length);
+			if (PERSISTENCE && Util.oneIn(10))
+					DelayProfiler.updateDelay("log", t1, packets.length);
 
 			// then message if successfully logged
 			{

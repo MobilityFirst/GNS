@@ -27,6 +27,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptPacket;
 import edu.umass.cs.gigapaxos.paxospackets.AcceptReplyPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PValuePacket;
@@ -36,6 +37,7 @@ import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
 import edu.umass.cs.gigapaxos.paxosutil.Ballot;
 import edu.umass.cs.gigapaxos.paxosutil.WaitforUtility;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.NullIfEmptyMap;
@@ -225,6 +227,7 @@ public class PaxosCoordinatorState {
 	 * Return: An AcceptPacket if any that will be sent out by the caller to
 	 * other nodes so as to actually propose this request.
 	 */
+	private static final boolean EXECUTE_UPON_ACCEPT = Config.getGlobalBoolean(PC.EXECUTE_UPON_ACCEPT);
 	protected synchronized AcceptPacket propose(int[] members,
 			RequestPacket request) {
 		if (this.myProposals.containsKey(this.nextProposalSlotNumber - 1) &&
@@ -238,7 +241,8 @@ public class PaxosCoordinatorState {
 				this.nextProposalSlotNumber++, request));
 		// nextSlot should always be free
 		assert (!this.myProposals.containsKey(pvalue.slot));
-		this.myProposals.put(pvalue.slot, new ProposalStateAtCoordinator(
+		if(!EXECUTE_UPON_ACCEPT) // only for testing
+			this.myProposals.put(pvalue.slot, new ProposalStateAtCoordinator(
 				members, pvalue));
 		log.log(Level.FINE, "Node {0} inserted proposal {1}",
 				new Object[] { myBallot.coordinatorID,

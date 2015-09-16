@@ -47,6 +47,7 @@ public class IntegerMap<NodeIDType> {
 	public static final String NULL_STR_NODE = NULL_INT_NODE.toString();
 	
 	private HashMap<Integer, NodeIDType> nodeMap = new HashMap<Integer, NodeIDType>();
+	private static boolean allInteger = true;
 
 	private static Logger log = Logger.getLogger(IntegerMap.class.getName());
 	
@@ -59,11 +60,26 @@ public class IntegerMap<NodeIDType> {
 	public int put(NodeIDType node) {
 		assert (node != null);
 		int id = getID(node);
+
+		if (!node.toString().equals(Integer.valueOf(id).toString()))
+			allInteger = false;
+
+		// address hashcode collisions
 		while (this.nodeMap.containsKey(id)
 				&& !this.nodeMap.get(id).equals(node))
 			id++;
 		this.nodeMap.put(id, node);
 		return id;
+	}
+	
+
+	/**
+	 * @return True if no non-integer node ID was ever encountered.
+	 * If so, we can be slightly more efficient in messaging by
+	 * avoiding node to int conversion and back.
+	 */
+	public static final boolean allInt() {
+		return allInteger;
 	}
 
 	private static String message = ": Unable to translate integer ID "

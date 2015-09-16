@@ -29,19 +29,29 @@ import edu.umass.cs.gigapaxos.paxosutil.IntegerMap;
 import edu.umass.cs.gigapaxos.paxosutil.LogMessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.MessagingTask;
 import edu.umass.cs.gigapaxos.paxosutil.Messenger;
+import edu.umass.cs.gigapaxos.paxosutil.OverloadException;
+import edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexer;
 import edu.umass.cs.gigapaxos.paxosutil.RateLimiter;
 import edu.umass.cs.gigapaxos.paxosutil.RecoveryInfo;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosApp;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
+import edu.umass.cs.nio.InterfaceMessenger;
 import edu.umass.cs.nio.InterfaceNIOTransport;
+import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.JSONMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.JSONPacket;
+import edu.umass.cs.nio.MessageNIOTransport;
+import edu.umass.cs.nio.SSLDataProcessingWorker;
 import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.nio.nioutils.NIOHeader;
 import edu.umass.cs.nio.nioutils.PacketDemultiplexerDefault;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.GCConcurrentHashMap;
+import edu.umass.cs.utils.GCConcurrentHashMapCallback;
 import edu.umass.cs.utils.Util;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.MultiArrayMap;
@@ -51,6 +61,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,6 +70,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -112,6 +124,32 @@ public class PaxosManager<NodeIDType> {
 	private int checkpointTransferTrigger = PaxosInstanceStateMachine.MAX_SYNC_DECISIONS_GAP;
 	private long minResyncDelay = PaxosInstanceStateMachine.MIN_RESYNC_DELAY;
 	private final boolean nullCheckpointsEnabled;
+	private final Outstanding outstanding = new Outstanding();
+
+	private static final boolean USE_GC_MAP = Config.getGlobalBoolean(PC.USE_GC_MAP);
+	private static class Outstanding {
+		static final long REQUEST_TIMEOUT = 10000;
+		int numOutstanding = 0;
+		int avgRequestSize = 0;
+		ConcurrentHashMap<Long, Long> requests = USE_GC_MAP ?
+				new GCConcurrentHashMap<Long, Long>(
+				new GCConcurrentHashMapCallback() {
+
+					@Override
+					public void callbackGC(Object key, Object value) {
+						// do nothing
+					}
+
+				}, REQUEST_TIMEOUT) :
+		new ConcurrentHashMap<Long,Long>();
+	}
+
+	protected boolean executed(RequestPacket request) {
+		if(countNumOutstanding()) return false;
+		boolean removed = this.outstanding.requests.remove(request.requestID) != null;
+		assert(request.batchSize()==0);
+		return removed;
+	}
 
 	// non-final
 	private boolean hasRecovered = false;
@@ -199,7 +237,7 @@ public class PaxosManager<NodeIDType> {
 		// so paxos packets will come to me
 		niot.addPacketDemultiplexer(Config.getGlobalString(PC.JSON_LIBRARY)
 				.equals("org.json") ? new PaxosPacketDemultiplexerJSON()
-				: new PaxosPacketDemultiplexerJSON());
+				: new PaxosPacketDemultiplexerJSONSmart());
 		initiateRecovery();
 	}
 
@@ -432,6 +470,8 @@ public class PaxosManager<NodeIDType> {
 
 		// keepalives only if needed
 		this.FD.sendKeepAlive(gms);
+		//this.integerMap.put(gms);
+		this.addServers(gms);
 		return true;
 	}
 
@@ -448,6 +488,7 @@ public class PaxosManager<NodeIDType> {
 	 * @return True if {@code id} was being monitored.
 	 */
 	public boolean stopFailureMonitoring(NodeIDType id) {
+		this.removeServer(id);
 		return this.FD.dontSendKeepAlive(id);
 	}
 
@@ -460,13 +501,43 @@ public class PaxosManager<NodeIDType> {
 		PaxosInstanceStateMachine pism = this.getInstance(paxosID);
 		return (pism != null && (pism.getVersion() - version >= 0));
 	}
+	
+	private Set<InetAddress> servers = new HashSet<InetAddress>();
+	private boolean isServer(InetAddress isa) {
+		// play safe if we can't distinguish servers from clients
+		if(!(this.unstringer instanceof InterfaceNodeConfig)) return true;
+		return servers.contains(isa);
+	}
+	protected void addServers(Set<NodeIDType> nodes) {
+		if(this.unstringer instanceof InterfaceNodeConfig)
+		for(NodeIDType node : nodes) {
+			this.servers.add(((InterfaceNodeConfig<NodeIDType>)this.unstringer).getNodeAddress(node));
+		}
+	}
+	private void removeServer(NodeIDType node) {
+		if(this.unstringer instanceof InterfaceNodeConfig)
+			servers.remove(((InterfaceNodeConfig<NodeIDType>)this.unstringer).getNodeAddress(node));
+	}
 
+
+	private static int MAX_OUTSTANDING_REQUESTS = Config.getGlobalInt(PC.MAX_OUTSTANDING_REQUESTS);
+	private final boolean DISABLE_CC = Config.getGlobalBoolean(PC.DISABLE_CC);
+	private final boolean ORDER_PRESERVING_REQUESTS = Config.getGlobalBoolean(PC.ORDER_PRESERVING_REQUESTS);
+	
 	class PaxosPacketDemultiplexerJSON extends AbstractJSONPacketDemultiplexer {
 
+		private final boolean clientFacing;
 		public PaxosPacketDemultiplexerJSON() {
 			super(Config.getGlobalInt(PC.PACKET_DEMULTIPLEXER_THREADS));
 			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
 			this.setThreadName("" + myID);
+			this.clientFacing= false;
+		}
+		public PaxosPacketDemultiplexerJSON(int numThreads, boolean clientFacing) {
+			super(numThreads);
+			this.register(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
+			this.setThreadName(myID+(clientFacing?"-clientFacing":""));
+			this.clientFacing = clientFacing;
 		}
 
 		public boolean handleMessage(JSONObject jsonMsg) {
@@ -483,11 +554,22 @@ public class PaxosManager<NodeIDType> {
 				log.severe(this
 						+ " unable to parse JSON or unable fix node ID string to integer");
 				e.printStackTrace();
+			} catch(OverloadException oe) {
+				if (this.clientFacing)
+					PaxosPacketDemultiplexer.throttleExcessiveLoad();
 			}
-			return false;
+			return true;
+		}
+		
+
+		@Override
+		protected boolean isCongested(NIOHeader header) {
+			if(DISABLE_CC) return false;
+			if(PaxosManager.this.isServer(header.sndr.getAddress())) return false;
+			//if(!clientFacing) return false;
+			return PaxosManager.this.isCongested();
 		}
 
-		private final boolean ORDER_PRESERVING_REQUESTS = Config.getGlobalBoolean(PC.ORDER_PRESERVING_REQUESTS);
 		@Override
 		public boolean isOrderPreserving(JSONObject msg) {
 			if(!ORDER_PRESERVING_REQUESTS) return false;
@@ -504,7 +586,13 @@ public class PaxosManager<NodeIDType> {
 			return false;
 		}
 	}
-
+	
+	protected boolean isCongested() {
+		{
+			return PaxosManager.this.getNumOutstandingOrQueued() > MAX_OUTSTANDING_REQUESTS;
+		}
+	}
+	
 	class PaxosPacketDemultiplexerJSONSmart extends
 			edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexerJSONSmart {
 
@@ -519,6 +607,8 @@ public class PaxosManager<NodeIDType> {
 					"{0} packet demultiplexer received {1}",
 					new Object[] { PaxosManager.this, jsonMsg });
 			try {
+				assert (PaxosPacket.getPaxosPacketType(jsonMsg) != PaxosPacketType.ACCEPT || jsonMsg
+						.containsKey(RequestPacket.Keys.STRINGIFIED.toString()));
 				PaxosManager.this
 						.handleIncomingPacket(edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexerJSONSmart
 								.toPaxosPacket(fixNodeStringToInt(jsonMsg),
@@ -533,8 +623,32 @@ public class PaxosManager<NodeIDType> {
 
 		@Override
 		protected boolean matchesType(Object message) {
-			return message instanceof JSONObject;
+			return message instanceof net.minidev.json.JSONObject;
 		}
+		@Override
+		protected boolean isCongested(NIOHeader header) {
+			if(DISABLE_CC) return false;
+			if(PaxosManager.this.isServer(header.sndr.getAddress())) return false;
+			//if(!clientFacing) return false;
+			return PaxosManager.this.isCongested();
+		}
+
+		@Override
+		public boolean isOrderPreserving(net.minidev.json.JSONObject msg) {
+			if(!ORDER_PRESERVING_REQUESTS) return false;
+			try {
+				// only preserve order for REQUEST or PROPOSAL packets 
+				PaxosPacketType type = PaxosPacket.getPaxosPacketType(msg);
+				return (type.equals(PaxosPacket.PaxosPacketType.REQUEST) || type
+						.equals(PaxosPacket.PaxosPacketType.PROPOSAL));
+			} catch (JSONException e) {
+				log.severe(this + " incurred JSONException while parsing "
+						+ msg);
+				e.printStackTrace();
+			}
+			return false;
+		}
+
 	}
 
 	private static final boolean BATCHING_ENABLED = Config
@@ -549,7 +663,6 @@ public class PaxosManager<NodeIDType> {
 			this.handlePaxosPacket(pp);
 	}
 
-
 	/*
 	 * If RequestPacket, hand over to batcher that will then call
 	 * handleIncomingPacketInternal on batched requests.
@@ -559,7 +672,7 @@ public class PaxosManager<NodeIDType> {
 		if (type.equals(PaxosPacketType.REQUEST)
 				|| type.equals(PaxosPacketType.PROPOSAL)) {
 			assert (pp.getPaxosID() != null) : pp.getSummary();
-			this.batched.enqueue((RequestPacket) pp);
+			this.batched.enqueue(((RequestPacket) pp));
 		} else
 			this.handlePaxosPacket(pp);
 	}
@@ -581,7 +694,7 @@ public class PaxosManager<NodeIDType> {
 			paxosPacketType = request.getType();
 			switch (paxosPacketType) {
 			case FAILURE_DETECT:
-				FD.receive((FailureDetectionPacket<NodeIDType>) request);
+				processFailureDetection((FailureDetectionPacket<NodeIDType>) request);
 				break;
 			case FIND_REPLICA_GROUP:
 				processFindReplicaGroup((FindReplicaGroupPacket) request);
@@ -618,6 +731,14 @@ public class PaxosManager<NodeIDType> {
 
 	}
 
+	private void processFailureDetection(
+			FailureDetectionPacket<NodeIDType> request) {
+		if (request.getSender() != null) {
+			this.servers.add(request.getSender().getAddress());
+		}
+		FD.receive((FailureDetectionPacket<NodeIDType>) request);
+	}
+
 	private String propose(String paxosID, RequestPacket requestPacket)
 			throws JSONException {
 		if (this.isClosed())
@@ -645,7 +766,7 @@ public class PaxosManager<NodeIDType> {
 
 	// used (only) by RequestBatcher for already batched RequestPackets
 	protected void proposeBatched(RequestPacket requestPacket) {
-		this.handlePaxosPacket(requestPacket);
+		if(requestPacket!=null) this.handlePaxosPacket(requestPacket);
 	}
 
 	/**
@@ -861,6 +982,43 @@ public class PaxosManager<NodeIDType> {
 			return this.paxosLogger.getEpochFinalCheckpointVersion(paxosID);
 		}
 	}
+	
+	/**
+	 * @param myAddress
+	 * @return {@code this}
+	 */
+	public PaxosManager<NodeIDType> initClientMessenger(
+			InetSocketAddress myAddress) {
+		InterfaceMessenger<InetSocketAddress, JSONObject> cMsgr = null;
+
+		try {
+			int clientPortOffset = Config.getGlobalInt(PC.CLIENT_PORT_OFFSET);
+			if (clientPortOffset > 0) {
+				log.log(Level.INFO,
+						"Creating client messenger at {0}:{1}",
+						new Object[] { myAddress.getAddress(),
+								(myAddress.getPort() + clientPortOffset) });
+
+				cMsgr = new JSONMessenger<InetSocketAddress>(
+						new MessageNIOTransport<InetSocketAddress, JSONObject>(
+								myAddress.getAddress(),
+								(myAddress.getPort() + clientPortOffset),
+								/*
+								 * Client facing demultiplexer is single
+								 * threaded to keep clients from overwhelming
+								 * the system with request load.
+								 */
+								(new PaxosPacketDemultiplexerJSON(0, true)),
+								SSLDataProcessingWorker.SSL_MODES
+										.valueOf(Config.getGlobal(
+												PC.CLIENT_SSL_MODE).toString())));
+				this.messenger.setClientMessenger(cMsgr);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return this;
+	}
 
 	/**
 	 * Forces a checkpoint, but not guaranteed to happen immediately.
@@ -886,7 +1044,73 @@ public class PaxosManager<NodeIDType> {
 	protected int getOutOfOrderLimit() {
 		return this.outOfOrderLimit;
 	}
+	
+	private static final boolean COUNT_NUM_OUTSTANDING = Config.getGlobalBoolean(PC.COUNT_OUTSTANDING);
 
+	private static final boolean countNumOutstanding() {
+		return COUNT_NUM_OUTSTANDING;
+	}
+
+	protected void incrNumOutstanding(int n) {
+		if(!countNumOutstanding()) return;
+		if (Util.oneIn(10))
+			DelayProfiler.updateMovAvg("processing",
+					this.outstanding.numOutstanding);
+		synchronized (this.outstanding) 
+		{
+			this.outstanding.numOutstanding += n;
+		}
+	}
+
+	protected void decrNumOutstanding(int n) {
+		if(!countNumOutstanding()) return;
+		synchronized (this.outstanding) {
+			this.outstanding.numOutstanding -= n;
+		}
+	}
+	
+	protected int getNumOutstandingOrQueued() {
+		return (countNumOutstanding() ? this.outstanding.numOutstanding
+				: this.outstanding.requests.size())
+				+ this.batched.getQueueSize();
+	}
+	
+	// queue of outstanding requests
+	protected void incrNumOutstanding(RequestPacket request) {
+		if (countNumOutstanding())
+			return;
+		if (request.getEntryReplica() == getMyID())
+			this.outstanding.requests.put(request.requestID,
+					System.currentTimeMillis());
+		if (request.batchSize() > 0)
+			for (RequestPacket req : request.getBatched())
+				if (request.getEntryReplica() == getMyID())
+					this.outstanding.requests.put(req.requestID,
+							System.currentTimeMillis());
+		if (Util.oneIn(10))
+			DelayProfiler.updateMovAvg("outstanding",
+					this.outstanding.requests.size());
+	}
+
+	// FIXME: currently not used
+	protected int updateRequestSize(RequestPacket request) {
+		synchronized (this.outstanding) {
+			return (this.outstanding.avgRequestSize = (int) (Util
+					.movingAverage(request.lengthEstimate(),
+							this.outstanding.avgRequestSize)));
+		}
+	}
+
+	/*
+	 * FIXME: The current way of maintaining the outstanding count
+	 * is flawed an may be incorrect under losses. 
+	 */
+	protected void resetNumOutstanding() {
+		synchronized (this.outstanding) {
+			this.outstanding.numOutstanding = 0;
+		}
+	}
+	
 	/**
 	 * @param interval
 	 */
@@ -1040,24 +1264,27 @@ public class PaxosManager<NodeIDType> {
 
 	private final boolean emulateLazyPropagation(PaxosPacket request) {
 		if (!LAZY_PROPAGATION || !(request instanceof RequestPacket))
-			return false;
+			return false;		
+		
 		// else will finally return true
 		try {
 			// extract newly received requests
 			request = ((RequestPacket) request)
-					.getNoEntryReplicaRequestsAsBatch()[1];
+					.getEntryReplicaRequestsAsBatch(getMyID())[1];
+
 			if (request != null) {
-				// pretend-execute newly received requests
-				PaxosInstanceStateMachine.execute(null, this, myApp,
-						((RequestPacket) request).setEntryReplica(getMyID()),
-						false);
+				((RequestPacket) request).setEntryReplica(getMyID());
 				// broadcast newly received requests to others
 				PaxosInstanceStateMachine pism = this.getInstance(request
 						.getPaxosID());
 				MessagingTask mtask = pism != null ? new MessagingTask(
 						pism.otherGroupMembers(), request) : null;
-
 				this.send(mtask);
+				
+				// pretend-execute newly received requests
+				PaxosInstanceStateMachine.execute(null, this, myApp,
+						((RequestPacket) request).setEntryReplica(getMyID()),
+						false);
 			}
 		} catch (JSONException e) {
 			log.severe(this + " unable to parse " + request.getSummary());
@@ -1254,7 +1481,7 @@ public class PaxosManager<NodeIDType> {
 		MessagingTask local = MessagingTask.getLoopback(mtask, myID);
 		if(local!=null && !local.isEmptyMessaging())
 			for(PaxosPacket pp : local.msgs)
-				this.handlePaxosPacket(pp);
+				this.handlePaxosPacket((pp));
 		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}
 
@@ -1262,7 +1489,7 @@ public class PaxosManager<NodeIDType> {
 			throws JSONException, IOException {
 		this.messenger.send(sockAddr, request);
 	}
-
+	
 	/*
 	 * A clean kill completely removes all trace of the paxos instance (unlike
 	 * pause or hibernate or an unclean kill). The copy of the instance kept in
@@ -1908,6 +2135,7 @@ public class PaxosManager<NodeIDType> {
 	 */
 	private class Deactivator implements Runnable {
 		public void run() {
+			Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 			try {
 				deactivate();
 			} catch (Exception e) {

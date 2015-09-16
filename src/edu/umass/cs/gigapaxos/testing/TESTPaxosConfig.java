@@ -32,14 +32,12 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
 import edu.umass.cs.gigapaxos.PaxosConfig;
-import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.nioutils.SampleNodeConfig;
@@ -86,6 +84,7 @@ public class TESTPaxosConfig {
 		 * 
 		 */
 		SERVERS_FILENAME("testing_servers.conf"),
+		
 		/**
 		 * 
 		 */
@@ -129,6 +128,12 @@ public class TESTPaxosConfig {
 		 * 
 		 */
 		NUM_CLIENTS(9),
+		
+		/**
+		 * Whether a testing client should be pinned to send request to 
+		 * a single server.
+		 */
+		PIN_CLIENT(true),
 
 		/**
 		 * 
@@ -146,6 +151,14 @@ public class TESTPaxosConfig {
 		REQUEST_BAGGAGE_SIZE (10),
 		
 		/**
+		 * Whether the request is highly compressible. Otherwise, the request is
+		 * a bunch of random ascii characters from 0 to z. Non-ascii characters
+		 * result in inflated and unpredictable byte[] lengths, which screws up
+		 * testing.
+		 */
+		COMPRESSIBLE_REQUEST (false),
+		
+		/**
 		 * 
 		 */
 		OVERHEAD_TESTING (false),
@@ -153,7 +166,14 @@ public class TESTPaxosConfig {
 		/**
 		 * to disable some exceptions/logging while testing
 		 */
-		MEMORY_TESTING(true);
+		MEMORY_TESTING(true),
+		
+		/**
+		 * Make the test app an absolute noop.
+		 */
+		ABSOLUTE_NOOP (true), 
+
+		;
 
 		final Object defaultValue;
 
@@ -221,7 +241,10 @@ public class TESTPaxosConfig {
 	 * @param b
 	 */
 	public static final void setAssertRSMInvariant(boolean b) {
-			assertRSMInvariant = b && !Config.getGlobalBoolean(PC.EXECUTE_UPON_ACCEPT) && !Config.getGlobalBoolean(PC.DISABLE_LOGGING);
+		assertRSMInvariant = b
+				&& !Config.getGlobalBoolean(PC.EXECUTE_UPON_ACCEPT)
+				&& (!Config.getGlobalBoolean(PC.DISABLE_LOGGING) || Config
+						.getGlobalBoolean(PC.ENABLE_JOURNALING));
 	}
 
 	/**
@@ -259,7 +282,7 @@ public class TESTPaxosConfig {
 	private static boolean reply_to_client = false;//true;
 
 	private static boolean clean_db = Config
-			.getGlobalBoolean(PC.DISABLE_LOGGING);
+			.getGlobalBoolean(PC.DISABLE_LOGGING) && !Config.getGlobalBoolean(PC.ENABLE_JOURNALING);
 
 	private static ArrayList<Object> failedNodes = new ArrayList<Object>();
 
@@ -563,8 +586,10 @@ public class TESTPaxosConfig {
 		}
 		return found;
 	}
-	
 	protected static InterfaceNodeConfig<Integer> getFromPaxosConfig() {
+		return getFromPaxosConfig(false);
+	}
+	protected static InterfaceNodeConfig<Integer> getFromPaxosConfig(final boolean clientFacing) {
 		final InterfaceNodeConfig<String> defaultNC = PaxosConfig
 				.getDefaultNodeConfig();
 		return new InterfaceNodeConfig<Integer>() {
@@ -605,10 +630,12 @@ public class TESTPaxosConfig {
 
 			@Override
 			public int getNodePort(Integer id) {
-				return defaultNC.nodeExists(id.toString()) ? defaultNC
-						.getNodePort(id.toString()) :
-							nodeConfig.getNodePort(id);
-							//SampleNodeConfig.getPort(id);
+				return (defaultNC.nodeExists(id.toString()) ? defaultNC
+						.getNodePort(id.toString()) : nodeConfig
+						.getNodePort(id))
+						//+ (clientFacing ? Config
+							//	.getGlobalInt(PC.CLIENT_PORT_OFFSET) : 0)
+						;
 			}
 
 			@Override
@@ -620,6 +647,14 @@ public class TESTPaxosConfig {
 				for(int id : nodeConfig.getNodeIDs())
 					intIDs.add(id);
 				return intIDs;
+			}
+			
+			public String toString() {
+				String s="";
+				for(Integer id : this.getNodeIDs()) {
+					s = (s + id+":"+this.getNodeAddress(id)+":"+this.getNodePort(id) + " " );
+				}
+				return s;
 			}
 		};
 	}
@@ -670,14 +705,15 @@ public class TESTPaxosConfig {
 		}
 	}
 	
-	protected static void setConsoleHandler() {
-		 ConsoleHandler handler = new ConsoleHandler();
-		 handler.setLevel(Level.INFO);
-		 PaxosManager.getLogger().setLevel(Level.INFO);
-		 PaxosManager.getLogger().addHandler(handler);
-		 PaxosManager.getLogger().setUseParentHandlers(false);
+	/**
+	 * @param level
+	 */
+	public static void setConsoleHandler(Level level) {
+		PaxosConfig.setConsoleHandler(level);
 	}
-	
+	protected static void setConsoleHandler() {
+		setConsoleHandler(Level.INFO);
+	}
 	/**
 	 * @param args
 	 */

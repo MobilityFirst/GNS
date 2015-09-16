@@ -54,12 +54,16 @@ public class PValuePacket extends ProposalPacket {
 	private int medianCheckpointedSlot;
 	
 	private boolean noCoalesce = false;
+	
+	private final int batchSize;
 
 	public PValuePacket(Ballot b, ProposalPacket p) {
 		super(p);
 		this.ballot = b;
 		this.medianCheckpointedSlot = -1;
 		this.recovery = false; // true only when created from json
+		this.batchSize = p.batchSize();
+		// packet type needs to be explicitly assigned later
 	}
 
 	// Super-called by inheritors and by PaxosInstanceStateMachine
@@ -69,6 +73,7 @@ public class PValuePacket extends ProposalPacket {
 		this.medianCheckpointedSlot = pvalue.medianCheckpointedSlot;
 		this.packetType = pvalue.getType();
 		this.recovery = false; // true only when created from json
+		this.batchSize = pvalue.batchSize;
 	}
 
 	public PValuePacket(JSONObject json) throws JSONException {
@@ -80,6 +85,19 @@ public class PValuePacket extends ProposalPacket {
 		this.recovery = json.optBoolean(PaxosPacket.Keys.RCVRY.toString());
 		this.packetType = PaxosPacket.getPaxosPacketType(json);
 		this.noCoalesce = json.optBoolean(PaxosPacket.Keys.NO_COALESCE.toString());
+		this.batchSize = json.getInt(RequestPacket.Keys.BS.toString());
+	}
+
+	public PValuePacket(net.minidev.json.JSONObject json) throws JSONException {
+		super(json);
+		this.ballot = new Ballot((String)json.get(PaxosPacket.NodeIDKeys.B
+				.toString()));
+		this.medianCheckpointedSlot = (Integer)json
+				.get(PaxosPacket.Keys.GC_S.toString());
+		this.recovery = json.containsKey(PaxosPacket.Keys.RCVRY.toString()) ? (Boolean)json.get(PaxosPacket.Keys.RCVRY.toString()) : false;
+		this.packetType = PaxosPacket.getPaxosPacketType(json);
+		this.noCoalesce = json.containsKey(PaxosPacket.Keys.NO_COALESCE.toString()) ? (Boolean)json.get(PaxosPacket.Keys.NO_COALESCE.toString()) : false;
+		this.batchSize = (Integer)json.get(RequestPacket.Keys.BS.toString());
 	}
 
 	public PValuePacket makeDecision(int mcSlot) {
@@ -133,11 +151,32 @@ public class PValuePacket extends ProposalPacket {
 				this.medianCheckpointedSlot);
 		if(this.recovery) json.put(PaxosPacket.Keys.RCVRY.toString(), this.recovery);
 		if(this.noCoalesce) json.put(PaxosPacket.Keys.NO_COALESCE.toString(), this.noCoalesce);
+		json.put(RequestPacket.Keys.BS.toString(), this.batchSize);
+		return json;
+	}
+	
+	@Override
+	public net.minidev.json.JSONObject toJSONSmartImpl() throws JSONException {
+		net.minidev.json.JSONObject json = super.toJSONSmartImpl();
+		json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
+		json.put(PaxosPacket.Keys.GC_S.toString(),
+				this.medianCheckpointedSlot);
+		if(this.recovery) json.put(PaxosPacket.Keys.RCVRY.toString(), this.recovery);
+		if(this.noCoalesce) json.put(PaxosPacket.Keys.NO_COALESCE.toString(), this.noCoalesce);
+		json.put(RequestPacket.Keys.BS.toString(), this.batchSize);
 		return json;
 	}
 
 	public PValuePacket setNoCoalesce() {
 		this.noCoalesce = true;
 		return this;
+	}
+
+	public PValuePacket getMetaDecision() {
+		PValuePacket meta = new PValuePacket(this.ballot, new ProposalPacket(this.slot,
+				new RequestPacket(this.requestID,
+						RequestPacket.Keys.METAVAL.toString(), this.stop, this).getFirstOnly()));
+		meta.packetType = PaxosPacketType.DECISION;
+		return meta;
 	}
 }

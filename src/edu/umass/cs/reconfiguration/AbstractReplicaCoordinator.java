@@ -26,6 +26,7 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceMessenger;
@@ -123,7 +124,7 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	}
 
 	protected InterfaceMessenger<NodeIDType, ?> getMessenger(
-			InterfaceMessenger<NodeIDType, ?> messenger) {
+			) {
 		return this.messenger;
 	}
 
@@ -164,10 +165,10 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 		boolean handled = false;
 		if (needsCoordination(request)) {
 			try {
-				((InterfaceReplicableRequest) request)
+				if (request instanceof InterfaceReplicableRequest)
+					((InterfaceReplicableRequest) request)
 						.setNeedsCoordination(false);
 				handled = coordinateRequest(request);
-				//handled = false;
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
 			} catch (RequestParseException rpe) {
@@ -278,8 +279,14 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	private boolean needsCoordination(InterfaceRequest request) {
 		if (request instanceof InterfaceReplicableRequest
 				&& ((InterfaceReplicableRequest) request).needsCoordination()) {
-			return true; // this.coordinationTypes.containsKey(request.getRequestType());
+			return true; 
 		}
+		/* No need for setNeedsCoordination as a request will necessarily get 
+		 * converted to a proposal or accept when coordinated, so there is
+		 * no need to worry about inifinite looping.
+		 */
+		else if (request instanceof RequestPacket)
+			return true;
 		return false;
 	}
 

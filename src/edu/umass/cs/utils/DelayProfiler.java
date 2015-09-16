@@ -98,7 +98,7 @@ public class DelayProfiler {
 	 * @param field
 	 * @param sample
 	 */
-	public static void updateMovAvg(String field, int sample) {
+	public static void updateMovAvg(String field, double sample) {
 		double value;
 		synchronized (averages) {
 			register(field, averages); // register if not registered

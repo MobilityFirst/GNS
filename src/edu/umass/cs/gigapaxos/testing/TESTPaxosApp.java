@@ -20,6 +20,7 @@ package edu.umass.cs.gigapaxos.testing;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,6 +31,7 @@ import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
@@ -38,8 +40,10 @@ import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
 import edu.umass.cs.gigapaxos.paxosutil.RequestInstrumenter;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceNIOTransport;
+import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -50,7 +54,7 @@ import edu.umass.cs.utils.Util;
  *         instrumentations and asserts for testing.
  */
 @SuppressWarnings("javadoc")
-public class TESTPaxosApp implements InterfaceReplicable {
+public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMessenger {
 	public static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
 	private InterfaceNIOTransport<Integer, JSONObject> niot = null;
@@ -93,6 +97,10 @@ public class TESTPaxosApp implements InterfaceReplicable {
 		}
 	}
 
+	static {
+		TESTPaxosConfig.load();
+	}
+	private static final boolean ABSOLUTE_NOOP = Config.getGlobalBoolean(TESTPaxosConfig.TC.ABSOLUTE_NOOP);
 	/*
 	 * This is the main execution method. The app is supposed to be agnostic to
 	 * slot numbers, but this method takes as input a ProposalPacket as opposed
@@ -100,6 +108,7 @@ public class TESTPaxosApp implements InterfaceReplicable {
 	 */
 	public boolean handleDecision(ProposalPacket requestPacket,
 			boolean doNotReplyToClient) {
+		if(ABSOLUTE_NOOP) return true;
 		boolean executed = false;
 		try {
 			String paxosID = requestPacket.getPaxosID();
@@ -127,7 +136,8 @@ public class TESTPaxosApp implements InterfaceReplicable {
 			 * the current state value that two RSMs executed the exact same set
 			 * of state transitions to arrive at that state.
 			 */
-			state.value = requestPacket.requestValue + (digest(state.value));
+			if(TESTPaxosConfig.shouldAssertRSMInvariant())
+				state.value = requestPacket.requestValue + digest(state.value);
 
 			/*
 			 * Assert that the next slot is always the next expected seqnum.
@@ -419,7 +429,8 @@ public class TESTPaxosApp implements InterfaceReplicable {
 
 	@Override
 	public Set<IntegerPacketType> getRequestTypes() {
-		throw new RuntimeException("Method not yet implemented");
+		IntegerPacketType[] types = {PaxosPacket.PaxosPacketType.PAXOS_PACKET};
+		return new HashSet<IntegerPacketType>(Arrays.asList(types));
 	}
 
 	@Override
@@ -449,5 +460,11 @@ public class TESTPaxosApp implements InterfaceReplicable {
 			e.printStackTrace();
 		}
 		return true;
+	}
+
+	@Override
+	public void setClientMessenger(
+			InterfaceSSLMessenger<?, JSONObject> messenger) {
+		// do nothing
 	}
 }

@@ -132,6 +132,15 @@ public abstract class ProtocolPacket<NodeIDType, EventType> implements
 		json.putOpt(Keys.KEY.toString(), this.key);
 		return json;
 	}
+	
+	public String toString() {
+		try {
+			return this.toJSONObject().toString();
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		return super.toString();
+	}
 
 	@Override
 	public String getKey() {

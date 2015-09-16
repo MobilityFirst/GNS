@@ -175,6 +175,8 @@ public class Reconfigurator<NodeIDType> implements
 
 	@Override
 	public boolean handleMessage(JSONObject jsonObject) {
+		log.info(this + " received " + jsonObject);
+
 		try {
 			ReconfigurationPacket.PacketType rcType = ReconfigurationPacket
 					.getReconfigurationPacketType(jsonObject);

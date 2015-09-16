@@ -214,11 +214,8 @@ public class FailureDetection<NodeIDType> {
 			if (!this.futures.containsKey(id)) {
 				PingTask pingTask = new PingTask(id, getPingPacket(id),
 						this.nioTransport);
-				/*
-				 * Not sure how to remove the warnings below. The compiler
-				 * doesn't seem to like ScheduledFuture<PingTask> and spews a
-				 * cryptic message.
-				 */
+
+				pingTask.run(); // run once immediately
 				ScheduledFuture<?> future = execpool
 						.scheduleAtFixedRate(pingTask,
 								(long) (PING_PERTURBATION_FACTOR

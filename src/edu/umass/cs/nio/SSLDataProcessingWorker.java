@@ -85,7 +85,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	// to signal connection handshake completion to transport
 	private InterfaceHandshakeCallback callbackTransport = null;
 
-	private final SSLDataProcessingWorker.SSL_MODES sslMode;
+	protected final SSLDataProcessingWorker.SSL_MODES sslMode;
 
 	private String myID = null;
 	private static final Logger log = NIOTransport.getLogger();
@@ -328,9 +328,9 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	}
 
 	@Override
-	public void processMessage(InetSocketAddress sockAddr, String msg) {
+	public void processLocalMessage(InetSocketAddress sockAddr, String msg) {
 		if (this.decryptedWorker instanceof InterfaceMessageExtractor)
-			((InterfaceMessageExtractor) this.decryptedWorker).processMessage(
+			((InterfaceMessageExtractor) this.decryptedWorker).processLocalMessage(
 					sockAddr, msg);
 
 	}
@@ -353,7 +353,7 @@ public class SSLDataProcessingWorker implements InterfaceMessageExtractor {
 	// extracts a single message
 	private ByteBuffer extractMessage(SelectionKey key, ByteBuffer incoming)
 			throws IOException {
-		NIOTransport<?>.AlternatingByteBuffer abbuf = (NIOTransport<?>.AlternatingByteBuffer) key
+		NIOTransport.AlternatingByteBuffer abbuf = (NIOTransport.AlternatingByteBuffer) key
 				.attachment();
 		assert (abbuf != null);
 		if (abbuf.headerBuf.remaining() > 0) {

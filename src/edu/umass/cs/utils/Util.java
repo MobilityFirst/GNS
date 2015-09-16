@@ -311,6 +311,14 @@ public class Util {
 			}
 		};
 	}
+	
+	public static byte[] getAlphanumericAsBytes()  {
+		int low = '0', high = 'z';
+		byte[] bytes = new byte[high - low + 1];
+		for (int i = 0; i < bytes.length; i++)
+			bytes[i] = (byte) (low + i);
+		return bytes;
+	}
 
 	private static Collection<?> truncate(Collection<?> list, int size) {
 		if (list.size() <= size)

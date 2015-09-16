@@ -14,6 +14,7 @@ import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.InterfaceJSONNIOTransport;
 import edu.umass.cs.nio.InterfaceNodeConfig;
+import edu.umass.cs.nio.SSLDataProcessingWorker.SSL_MODES;
 
 import org.json.JSONObject;
 
@@ -562,6 +563,30 @@ public class NioServer<NodeIDType> implements Runnable, InterfaceJSONNIOTranspor
   public void addPacketDemultiplexer(AbstractPacketDemultiplexer pd) {
     throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
+
+@Override
+public InterfaceNodeConfig<NodeIDType> getNodeConfig() {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public SSL_MODES getSSLMode() {
+	// TODO Auto-generated method stub
+	return null;
+}
+
+@Override
+public int sendToID(NodeIDType id, byte[] msg) throws IOException {
+	// TODO Auto-generated method stub
+	return 0;
+}
+
+@Override
+public int sendToAddress(InetSocketAddress isa, byte[] msg) throws IOException {
+	// TODO Auto-generated method stub
+	return 0;
+}
 
 }
 

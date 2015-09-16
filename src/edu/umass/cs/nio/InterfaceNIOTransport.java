@@ -63,4 +63,33 @@ public interface InterfaceNIOTransport<NodeIDType,MessageType> {
 	 * Needs to be called to close NIO gracefully.
 	 */
 	public void stop();
+	
+	/**
+	 * @return Node config used by this NIO transport.
+	 */
+	public InterfaceNodeConfig<NodeIDType> getNodeConfig();
+	
+	/**
+	 * @return SSL mode used by this NIO transport.
+	 */
+	public SSLDataProcessingWorker.SSL_MODES getSSLMode();
+	
+	/**
+	 * @param id
+	 * @param msg
+	 * @return Number of bytes written.
+	 * @throws IOException
+	 */
+	public int sendToID(NodeIDType id, byte[] msg) throws IOException;
+
+	
+	/**
+	 * @param isa
+	 * @param msg
+	 * @return Number of bytes written.
+	 * @throws IOException
+	 */
+	public int sendToAddress(InetSocketAddress isa, byte[] msg)
+			throws IOException;
+
 }

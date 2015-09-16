@@ -30,6 +30,10 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gigapaxos.InterfaceClientRequest;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
+import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
+import edu.umass.cs.gigapaxos.paxosutil.OverloadException;
+import edu.umass.cs.gigapaxos.paxosutil.PaxosPacketDemultiplexer;
 import edu.umass.cs.gigapaxos.paxosutil.StringContainer;
 import edu.umass.cs.nio.AbstractPacketDemultiplexer;
 import edu.umass.cs.nio.GenericMessagingTask;
@@ -145,6 +149,8 @@ public class ActiveReplica<NodeIDType> implements
 		this.noReporting = noReporting;
 		if (this.messenger.getClientMessenger() == null) // exactly once
 			this.messenger.setClientMessenger(initClientMessenger());
+		assert(this.messenger.getClientMessenger()!=null);
+		assert(this.appCoordinator.getMessenger()==this.messenger);
 		this.recovering = false;
 	}
 
@@ -170,8 +176,7 @@ public class ActiveReplica<NodeIDType> implements
 			}
 			// else check if app request
 			else if (isAppRequest(jsonObject)) {
-				InterfaceRequest request = this.appCoordinator
-						.getRequest(jsonObject.toString());
+				InterfaceRequest request = this.getRequest(jsonObject);
 				// send to app via its coordinator
 				boolean handled = this.handRequestToApp(request);
 				// if handled, update demand stats (for reconfigurator) 
@@ -199,6 +204,15 @@ public class ActiveReplica<NodeIDType> implements
 			je.printStackTrace();
 		}
 		return false; // neither reconfiguration packet nor app request
+	}
+
+	// special case optimization for RequestPacket
+	private InterfaceRequest getRequest(JSONObject jsonObject)
+			throws RequestParseException, JSONException {
+		if (JSONPacket.getPacketType(jsonObject) == PaxosPacket.PaxosPacketType.REQUEST
+				.getInt())
+			return new RequestPacket(jsonObject);
+		return this.appCoordinator.getRequest(jsonObject.toString());
 	}
 
 	@Override
@@ -264,8 +278,12 @@ public class ActiveReplica<NodeIDType> implements
 	 */
 	public Set<IntegerPacketType> getPacketTypes() {
 		Set<IntegerPacketType> types = this.getAppPacketTypes();
+		
 		if (types == null)
 			types = new HashSet<IntegerPacketType>();
+		
+		types.remove(PaxosPacket.PaxosPacketType.PAXOS_PACKET);
+		
 		for (IntegerPacketType type : this.getActiveReplicaPacketTypes()) {
 			types.add(type);
 		}
@@ -498,8 +516,14 @@ public class ActiveReplica<NodeIDType> implements
 
 	private boolean handRequestToApp(InterfaceRequest request) {
 		long t1 = System.currentTimeMillis();
-		boolean handled = this.appCoordinator.handleIncoming(request);
-		DelayProfiler.updateDelay("appHandleIncoming@AR", t1);
+		boolean handled = false;
+		try {
+			handled = this.appCoordinator.handleIncoming(request);
+		} catch (OverloadException re) {
+			PaxosPacketDemultiplexer.throttleExcessiveLoad();
+		}
+		if (Util.oneIn(Integer.MAX_VALUE))
+			DelayProfiler.updateDelay("appHandleIncoming@AR", t1);
 		return handled;
 	}
 
@@ -708,12 +732,26 @@ public class ActiveReplica<NodeIDType> implements
 								this.nodeConfig.getBindAddress(getMyID()),
 								getClientFacingPort(myPort) });
 
-				cMsgr = new JSONMessenger<InetSocketAddress>(
-						new MessageNIOTransport<InetSocketAddress, JSONObject>(
-								this.nodeConfig.getBindAddress(getMyID()),
-								getClientFacingPort(myPort),
-								(pd = new ReconfigurationPacketDemultiplexer()),
-								ReconfigurationConfig.getClientSSLMode()));
+				if (this.messenger.getClientMessenger() == null
+						|| this.messenger.getClientMessenger() != this.messenger)
+					cMsgr = new JSONMessenger<InetSocketAddress>(
+							new MessageNIOTransport<InetSocketAddress, JSONObject>(
+									this.nodeConfig.getBindAddress(getMyID()),
+									getClientFacingPort(myPort),
+									/*
+									 * Client facing demultiplexer is single
+									 * threaded to keep clients from
+									 * overwhelming the system with request
+									 * load.
+									 */
+									(pd = new ReconfigurationPacketDemultiplexer(
+											0)), ReconfigurationConfig
+											.getClientSSLMode()));
+				else if (this.messenger.getClientMessenger() instanceof InterfaceMessenger)
+					((InterfaceMessenger<NodeIDType, ?>) this.messenger
+							.getClientMessenger())
+							.addPacketDemultiplexer(pd = new ReconfigurationPacketDemultiplexer(
+									0));
 				pd.register(this.appCoordinator.getAppRequestTypes(), this);
 			}
 		} catch (IOException e) {

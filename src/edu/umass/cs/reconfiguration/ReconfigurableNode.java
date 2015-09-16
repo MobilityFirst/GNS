@@ -92,8 +92,11 @@ public abstract class ReconfigurableNode<NodeIDType> {
 								+ InterfaceClientRequest.class.getSimpleName()
 								+ " or not expect to send "
 								+ " responses back to clients or rely on alternate means for messaging.");
-			return new PaxosReplicaCoordinator<NodeIDType>(app, myID,
+			PaxosReplicaCoordinator<NodeIDType> prc = new PaxosReplicaCoordinator<NodeIDType>(app, myID,
 					nodeConfig, messenger);
+			prc.createDefaultGroup(app.getClass().getSimpleName() + "0",
+					PaxosConfig.getActives().keySet(), nodeConfig);
+			return prc;
 		} else
 			return this.createAppCoordinator();
 	}
@@ -188,6 +191,7 @@ public abstract class ReconfigurableNode<NodeIDType> {
 			throw new RuntimeException(
 					"At least one node ID must be specified as a command-line argument for starting "
 							+ ReconfigurableNode.class);
+		ReconfigurationConfig.setConsoleHandler();
 		InterfaceReconfigurableNodeConfig<String> nodeConfig = new DefaultNodeConfig<String>(
 				PaxosConfig.getActives(),
 				ReconfigurationConfig.getReconfigurators());

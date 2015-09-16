@@ -309,8 +309,23 @@ public abstract class PaxosPacket extends JSONPacket {
 		return PaxosPacketType.getPaxosPacketType(json
 				.getInt(PaxosPacket.Keys.PT.toString()));
 	}
+	/**
+	 * @param json
+	 * @return PaxosPacketType type
+	 * @throws JSONException
+	 */
+	public static PaxosPacketType getPaxosPacketType(net.minidev.json.JSONObject json)
+			throws JSONException {
+		assert(json!=null);
+		return PaxosPacketType.getPaxosPacketType((Integer)json
+				.get(PaxosPacket.Keys.PT.toString()));
+	}
 
 	protected abstract JSONObject toJSONObjectImpl() throws JSONException;
+	protected net.minidev.json.JSONObject toJSONSmartImpl() throws JSONException {
+		return null;
+	}
+
 
 	/*
 	 * PaxosPacket has no no-arg constructor for a good reason. All classes
@@ -380,6 +395,32 @@ public abstract class PaxosPacket extends JSONPacket {
 		JSONObject child = toJSONObjectImpl();
 		for (String name : JSONObject.getNames(child))
 			json.put(name, child.get(name));
+
+		return json;
+	}
+	
+	/**
+	 * @return JSONObject representation for {@code this}.
+	 * @throws JSONException
+	 */
+	public net.minidev.json.JSONObject toJSONSmart() throws JSONException {
+		net.minidev.json.JSONObject json = new net.minidev.json.JSONObject();
+		// tells Packet that this is a PaxosPacket
+		json.put(PaxosPacket.PACKET_TYPE,
+				PaxosPacket.PaxosPacketType.PAXOS_PACKET.getInt());
+		// the specific type of PaxosPacket
+		json.put(PaxosPacket.Keys.PT.toString(), this.packetType.getInt());
+		json.put(PaxosPacket.Keys.ID.toString(), this.paxosID);
+		json.put(PaxosPacket.Keys.V.toString(), this.version);
+
+		// copy over child fields
+		net.minidev.json.JSONObject child = toJSONSmartImpl();
+		if(child != null) {
+			for (String name : (child).keySet())
+				json.put(name, child.get(name));
+		}
+		else 
+			return null;
 
 		return json;
 	}
@@ -454,6 +495,9 @@ public abstract class PaxosPacket extends JSONPacket {
 	@Override
 	public String toString() {
 		try {
+			// for the types below, we use json-smart
+			assert (this.packetType != PaxosPacketType.ACCEPT
+					&& this.packetType != PaxosPacketType.DECISION && this.packetType != PaxosPacketType.REQUEST);
 			return this.toJSONObject().toString();
 		} catch (JSONException e) {
 			e.printStackTrace();
