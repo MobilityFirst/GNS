@@ -8,7 +8,8 @@
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands;
 
 /**
- *
+ * All the command classes supported by the GNS server are listed here.
+ * 
  * @author westy
  */
 public class CommandDefs {

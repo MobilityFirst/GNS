@@ -26,10 +26,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * Processes incoming and outgoing incoming and outgoing lookup (DNS), updated
+ * and select packets. Basically, all command packets are converted into a 
+ * one or more of the above packet types and dispatched thru this class which
+ * invokes static methods from {@Link Lookup}, {@Link Update}, 
+ * {@Link CreateDelete}, {@Link AddRemove} and {@Link Select} classes.
+ * 
  * @author westy
  * @param <NodeIDType>
  */
+// FIXME: Do we even need a Demultiplexer here anymore?
 public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemultiplexer {
 
   private ClientRequestHandlerInterface handler;
@@ -122,10 +128,6 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
           case REMOVE_CONFIRM:
             AddRemove.handlePacketConfirmRemove(json, handler);
             return true;
-          // Others
-//          case REQUEST_ACTIVES:
-//            PendingTasks.handleActivesRequestReply(json, handler);
-//            return true;
           case SELECT_REQUEST:
             Select.handlePacketSelectRequest(json, handler);
             return true;
