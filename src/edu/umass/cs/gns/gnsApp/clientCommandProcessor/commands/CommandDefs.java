@@ -153,6 +153,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.Dump",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingTable",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingValue",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.Batch",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.RTT",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.RTTQuick",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ConnectionCheck"

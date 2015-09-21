@@ -14,6 +14,7 @@ import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
 import edu.umass.cs.gns.utils.ByteUtils;
 import edu.umass.cs.gns.utils.Email;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
+import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.gns.utils.ValuesMap;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
@@ -21,9 +22,14 @@ import java.security.NoSuchAlgorithmException;
 import org.json.JSONException;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -330,7 +336,7 @@ public class AccountAccess {
 
   /**
    * Reset the public key for a guid.
-   * 
+   *
    * @param guid
    * @param password
    * @param publicKey
@@ -514,8 +520,8 @@ public class AccountAccess {
    * @param handler
    * @return status result
    */
-  public static CommandResponse<String> addGuid(AccountInfo accountInfo, GuidInfo accountGuidInfo, String name, String guid, String publicKey,
-          ClientRequestHandlerInterface handler) {
+  public static CommandResponse<String> addGuid(AccountInfo accountInfo, GuidInfo accountGuidInfo, String name,
+          String guid, String publicKey, ClientRequestHandlerInterface handler) {
     try {
       // insure that the guid doesn't exist already
       if (lookupGuidInfo(guid, handler) != null) {
@@ -529,6 +535,7 @@ public class AccountAccess {
       JSONObject jsonHRN = new JSONObject();
       jsonHRN.put(HRN_GUID, guid);
       if (!(returnCode = handler.getIntercessor().sendFullAddRecord(name, jsonHRN)).isAnError()) {
+        // now we update the account info
         if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
           GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
           JSONObject json = new JSONObject();
@@ -553,6 +560,72 @@ public class AccountAccess {
     } catch (GnsRuntimeException e) {
       return new CommandResponse<String>(BADRESPONSE + " " + GENERICERROR + " " + e.getMessage());
     }
+  }
+
+  public static CommandResponse<String> addMultipleGuids(List<String> names,
+          List<String> publicKeys,
+          AccountInfo accountInfo, GuidInfo accountGuidInfo,
+          ClientRequestHandlerInterface handler) {
+    try {
+      //ArrayList<String> publicKeys = new ArrayList<>();
+      Set<String> guids = new HashSet<>();
+      Map<String, JSONObject> hrnMap = new HashMap<>();
+      Map<String, JSONObject> guidInfoMap = new HashMap<>();
+      for (int i = 0; i < names.size(); i++) {
+        String name = names.get(i);
+        String publicKey = publicKeys.get(i);
+        //publicKeys.add(publicKey);
+        String guid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
+        accountInfo.addGuid(guid);
+        // HRN records
+        JSONObject jsonHRN = new JSONObject();
+        jsonHRN.put(HRN_GUID, guid);
+        hrnMap.put(name, jsonHRN);
+        // guid info record 
+        GuidInfo guidInfo = new GuidInfo(name, guid, publicKey);
+        JSONObject jsonGuid = new JSONObject();
+        jsonGuid.put(GUID_INFO, guidInfo.toJSONObject());
+        jsonGuid.put(PRIMARY_GUID, accountInfo.getPrimaryGuid());
+        // set up ACL to look like this
+        //"_GNS_ACL": {
+        //  "READ_WHITELIST": {"+ALL+": {"MD": [<publickey>, "+ALL+"]}},
+        //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
+        JSONObject acl = createACL(ALLFIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
+                ALLFIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
+        jsonGuid.put("_GNS_ACL", acl);
+        guidInfoMap.put(guid, jsonGuid);
+      }
+      accountInfo.noteUpdate();
+
+      // first we create the HRN records as a batch
+      NSResponseCode returnCode;
+      // First try to create the HRNS to insure that that name does not already exist
+      if (!(returnCode = handler.getIntercessor().sendAddBatchRecord(new HashSet<String>(names), hrnMap)).isAnError()) {
+        // now we update the account info
+        if (updateAccountInfoNoAuthentication(accountInfo, handler, true)) {
+          handler.getIntercessor().sendAddBatchRecord(guids, guidInfoMap);
+          return new CommandResponse<String>(OKRESPONSE);
+        }
+      }
+      return new CommandResponse<String>(BADRESPONSE + " " + returnCode.getProtocolCode() + " " + names);
+    } catch (JSONException e) {
+      return new CommandResponse<String>(BADRESPONSE + " " + JSONPARSEERROR + " " + e.getMessage());
+    } catch (GnsRuntimeException e) {
+      return new CommandResponse<String>(BADRESPONSE + " " + GENERICERROR + " " + e.getMessage());
+    }
+  }
+
+  public static void testBatchCreateGuids(AccountInfo accountInfo, GuidInfo accountGuidInfo,
+          int count, ClientRequestHandlerInterface handler) {
+    List<String> names = new ArrayList<>();
+    List<String> publicKeys = new ArrayList<>();
+    for (int i = 0; i < count; i++) {
+      String name = "TEST-" + Util.randomString(6);
+      names.add(name);
+      String publicKey = name + "-KEY";
+      publicKeys.add(publicKey);
+    }
+    addMultipleGuids(names, publicKeys, accountInfo, accountGuidInfo, handler);
   }
 
   /**

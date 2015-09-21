@@ -65,6 +65,10 @@ public class Packet {
     ADD_CONFIRM(3, "edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket"),
 
     /**
+     * ADD_BATCH_RECORD - 9/15 NEW
+     */
+    ADD_BATCH_RECORD(4, "edu.umass.cs.gns.gnsApp.packet.AddBatchRecordPacket"),
+    /**
      * COMMAND
      */
     COMMAND(7, "edu.umass.cs.gns.gnsApp.packet.CommandPacket"),
