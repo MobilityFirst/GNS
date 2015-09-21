@@ -23,7 +23,6 @@ import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 import edu.umass.cs.gns.utils.Shutdownable;
 import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.JSONMessenger;
-import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 
 import java.net.BindException;
 import java.net.Inet4Address;

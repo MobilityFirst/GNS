@@ -736,7 +736,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * work-in-progress journaling logger.
 	 */
 	@Override
-	public boolean logBatch(LogMessagingTask[] packets) {
+	public boolean logBatch(final LogMessagingTask[] packets) {
 		if (isClosed())
 			return false;
 		if (!isLoggingEnabled() && !ENABLE_JOURNALING) 
