@@ -40,9 +40,12 @@ public class NIOBSTester {
 		final int numTestMessages = 1000000;
 		RateLimiter r = new RateLimiter(400000);
 
-		String gibberish = "|47343289u23094322|";
-		while (gibberish.length() < 300)
+		int size = 1000;
+		String gibberish = "|47343289u2309exi4322|";
+		while (gibberish.length() < size)
 			gibberish += gibberish;
+		gibberish = gibberish.substring(0, size);
+		
 		byte[] sendBytes = gibberish.getBytes();
 		final int msgSize = sendBytes.length;
 		final byte[] replyBytes = new byte[sendBytes.length / 1];
@@ -67,10 +70,10 @@ public class NIOBSTester {
 					sendReply = ((count / msgSize) % (batchSize * replyRatio) == 0);
 				}
 
-				if (sendReply || true) {
+				if (sendReply) {
 					try {
 						if (twoWay)
-							assert (niot2.send(isa1, buf, batchSize) > 0);
+							while(niot2.send(isa1, buf, batchSize) <= 0);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -122,6 +125,12 @@ public class NIOBSTester {
 							+ "/sec " + "; total_time = "
 							+ (System.currentTimeMillis() - t) / 1000
 							+ " secs; exiting");
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 					niot1.stop();
 					niot2.stop();
 				} else if (msgCount % printFreq == 0) {
@@ -149,7 +158,9 @@ public class NIOBSTester {
 			t = System.currentTimeMillis();
 			int numBytesSent = 0;
 			for (int i = 0; i < numTestMessages / batchSize; i++) {
-				numBytesSent += niot1.send(isa2, sendBytes, batchSize);
+				int curSent = 0;
+				 while((curSent = niot1.send(isa2, sendBytes, batchSize)) <= 0) Thread.yield();
+				 numBytesSent += curSent;
 				r.record();
 			}
 			System.out.println("Sent "
@@ -160,7 +171,6 @@ public class NIOBSTester {
 					+ Util.df(numTestMessages * 1000.0
 							/ (System.currentTimeMillis() - t)) + "/sec");
 
-			// if(false)
 			{
 				Thread.sleep(10000);
 				numBytesSent += niot1.send(isa2,

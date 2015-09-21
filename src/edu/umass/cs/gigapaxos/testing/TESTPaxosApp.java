@@ -100,7 +100,30 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	static {
 		TESTPaxosConfig.load();
 	}
-	private static final boolean ABSOLUTE_NOOP = Config.getGlobalBoolean(TESTPaxosConfig.TC.ABSOLUTE_NOOP);
+	private static final boolean ABSOLUTE_NOOP = Config.getGlobalBoolean(TESTPaxosConfig.TC.ABSOLUTE_NOOP_APP);
+	private static final long APP_DELAY = Config.getGlobalLong(TESTPaxosConfig.TC.TEST_APP_DELAY);
+	
+	private boolean wasteTime(long usDelay) {
+		long nanoT = System.nanoTime();
+		while (System.nanoTime() - nanoT < usDelay*1000) {
+			for (int i = 0; i < 100; i++)
+				Math.random();
+			try {
+				if (usDelay > 10000)
+					Thread.sleep(1);
+				else if (usDelay > 500)
+					Thread.sleep(0);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		log.info(this + " handled request in " + (System.nanoTime() - nanoT)/1000 + "us");
+		return true;
+	}
+	public String toString() {
+		return this.getClass().getSimpleName() + this.getMyID();
+	}
+
 	/*
 	 * This is the main execution method. The app is supposed to be agnostic to
 	 * slot numbers, but this method takes as input a ProposalPacket as opposed
@@ -108,7 +131,11 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	 */
 	public boolean handleDecision(ProposalPacket requestPacket,
 			boolean doNotReplyToClient) {
-		if(ABSOLUTE_NOOP) return true;
+		if(APP_DELAY > 0) return wasteTime(APP_DELAY);
+		else if(ABSOLUTE_NOOP) 
+			return true;
+		
+		// else the older testing code 
 		boolean executed = false;
 		try {
 			String paxosID = requestPacket.getPaxosID();

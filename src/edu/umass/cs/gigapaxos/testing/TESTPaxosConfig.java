@@ -171,8 +171,15 @@ public class TESTPaxosConfig {
 		/**
 		 * Make the test app an absolute noop.
 		 */
-		ABSOLUTE_NOOP (true), 
-
+		ABSOLUTE_NOOP_APP (true),
+		
+		/**
+		 * Testing parameter that makes the testing app heavier-weight by doing
+		 * operations that result in roughly the specified latency (in
+		 * microseconds) per request.
+		 */
+		TEST_APP_DELAY (0), 
+		
 		;
 
 		final Object defaultValue;

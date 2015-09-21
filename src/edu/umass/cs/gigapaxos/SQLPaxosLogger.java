@@ -48,10 +48,13 @@ import java.beans.PropertyVetoException;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.sql.Blob;
@@ -74,6 +77,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.DataFormatException;
@@ -192,14 +196,28 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	// FIXME: Replace field name string constants with enums
-	// private static enum Fields {PAXOS_ID, SLOT, BALLOTNUM, COORDINATOR,
-	// PACKET_TYPE, STATE, MESSAGE};
+	@SuppressWarnings("unused")
+	private static enum Columns {
+		PAXOS_ID,
+		VERSION,
+		SLOT,
+		BALLOTNUM,
+		COORDINATOR,
+		PACKET_TYPE,
+		STATE,
+		LOGFILE,
+		OFFSET,
+		LENGTH,
+		MESSAGE,
+	};
 
 	private static final ArrayList<SQLPaxosLogger> instances = new ArrayList<SQLPaxosLogger>();
 
 	private ComboPooledDataSource dataSource = null;
 	private Connection defaultConn = null;
 	private Connection cursorConn = null;
+	
+	private final Journaler journaler;
 
 	private boolean closed = true;
 
@@ -225,7 +243,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	private final String strID;
 	
 	private final Timer GC;
-
+	
 	private static Logger log = PaxosManager.getLogger();
 
 	SQLPaxosLogger(int id, String strID, String dbPath, Messenger<?> messenger) {
@@ -233,6 +251,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		this.strID = strID;
 		GC = new Timer(strID);
 		addDerbyLogger(this);
+		this.journaler = new Journaler(this.logDirectory, this.myID);
 		initialize(); // will set up db, connection, tables, etc. as needed
 	}
 
@@ -420,62 +439,110 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return null;
 	}
 
-	private static final int MAX_LOG_FILE_SIZE = 64 * 1024 * 1024;
-	private final String logFilePrefix = "log." + myID + ".";
-	private String curLogFile = generateLogFileName();
-	private FileOutputStream fos = createLogFile(curLogFile);
-	private int curLogFileSize = 0;
-	private Object fosLock = new Object();
+	static class Journaler {
+		private static final String PREFIX = "log.";
+		private static final String POSTPREFIX = ".";
+		private final int myID;
+		private final String logdir;
+		private final String logfilePrefix;
+		private String curLogfile=null;
+		private FileOutputStream fos;
+		private long curLogfileSize = 0;
+		private Object fosLock = new Object();
 
-	private String generateLogFileName() {
-		return this.logDirectory + logFilePrefix + System.currentTimeMillis();
-	}
-
-	private static FileOutputStream createLogFile(String filename) {
-		try {
-			new File(filename).getParentFile().mkdirs();
-			(new FileWriter(filename, false)).close();
-			return new FileOutputStream(new File(filename));
-		} catch (IOException e) {
-			if (ENABLE_JOURNALING) {
-				log.severe("Unable to create log file " + filename
-						+ "; exiting");
-				e.printStackTrace();
-				System.exit(1);
-			} // else ignore
+		Journaler(String logdir, int myID) {
+			this.myID = myID;
+			this.logdir = logdir;
+			this.logfilePrefix = PREFIX+myID+POSTPREFIX;
+			assert(this.logdir!=null && this.logfilePrefix!=null);
+			this.curLogfile = generateLogfileName();
+			this.fos = createLogfile(curLogfile, true);
 		}
-		return null;
-	}
-
-	private void rollLogFile() {
-		synchronized (fosLock) {
-			// check again here
-			if (curLogFileSize > MAX_LOG_FILE_SIZE) {
-				try {
-					fos.close();
-					fos = createLogFile(curLogFile = generateLogFileName());
-					curLogFileSize = 0;
-				} catch (IOException e) {
-					log.severe(this + " unable to close existing log file "
-							+ this.curLogFile);
+		private String getLogfilePrefix() {
+			return this.logdir + PREFIX + this.myID + POSTPREFIX;
+		}
+		private FileOutputStream createLogfile(String filename) {
+			return this.createLogfile(filename, false);
+		}
+		private String generateLogfileName() {
+			return this.logdir + this.logfilePrefix + System.currentTimeMillis();
+		}
+		private FileOutputStream createLogfile(String filename, boolean deleteEmpty) {
+			assert(this.logdir!=null && this.logfilePrefix!=null);
+			if(deleteEmpty) this.deleteEmptyLogfiles();
+			try {
+				new File(filename).getParentFile().mkdirs();
+				(new FileWriter(filename, false)).close();
+				this.fos =  new FileOutputStream(new File(filename));
+				this.curLogfileSize = 0;
+				log.info(this + " created new log file " + this.curLogfile);
+				return this.fos;
+			} catch (IOException e) {
+				if (ENABLE_JOURNALING) {
+					log.severe("Unable to create log file " + filename
+							+ "; exiting");
 					e.printStackTrace();
-				} finally {
-					if (fos == null) {
-						log.severe(this + " unable to open log file "
-								+ this.curLogFile);
-						System.exit(1); // can not proceed further
+					System.exit(1);
+				} // else ignore
+			}
+			return null;
+		}
+		public String toString() {
+			return this.getClass().getSimpleName()+this.myID;
+		}
+		private void deleteEmptyLogfiles() {
+			File[] emptyFiles = new File(this.logdir)
+					.listFiles(new FileFilter() {
+
+						@Override
+						public boolean accept(File pathname) {
+							return pathname.isFile()
+									&& pathname.length() == 0
+									&& pathname.toString().startsWith(
+											Journaler.this.getLogfilePrefix());
+						}
+
+					});
+			if(emptyFiles!=null) 
+				for (File f : emptyFiles)
+					f.delete();
+		}
+		
+		private void rollLogFile() {
+			synchronized (fosLock) {
+				// check again here
+				if (curLogfileSize > MAX_LOG_FILE_SIZE) {
+					try {
+						fos.close();
+						fos = createLogfile(curLogfile = generateLogfileName());
+						curLogfileSize = 0;
+					} catch (IOException e) {
+						log.severe(this + " unable to close existing log file "
+								+ this.curLogfile);
+						e.printStackTrace();
+					} finally {
+						if (fos == null) {
+							log.severe(this + " unable to open log file "
+									+ this.curLogfile);
+							System.exit(1); // can not proceed further
+						}
 					}
 				}
 			}
 		}
+		
+		private void appendToLogFile(byte[] bytes) throws IOException {
+			synchronized (fosLock) {
+				fos.write(JOURNAL_COMPRESSION ? deflate(bytes) : bytes);
+				curLogfileSize += bytes.length;
+			}
+		}
+
 	}
 	
-	private void appendToLogFile(byte[] bytes) throws IOException {
-		synchronized (fosLock) {
-			fos.write(JOURNAL_COMPRESSION ? deflate(bytes) : bytes);
-			curLogFileSize += bytes.length;
-		}
-	}
+	private static final int MAX_LOG_FILE_SIZE = 64 * 1024 * 1024;
+
+
 
 	/*
 	 * Deletes all but the most recent checkpoint for the RC group name. We
@@ -494,8 +561,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			}
 		});
 		if (foundFiles.length == 0)
-			log.info(" no file in " + cpDir + " starting with " + cpDir
-					+ rcGroupName);
+			log.fine(" no file in " + cpDir + " starting with " + rcGroupName);
 		
 		// delete all but the most recent
 		boolean allDeleted = true;
@@ -519,6 +585,19 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			return oldFiles;
 		Iterator<Filename> iter = allFiles.iterator();
 		for (int i = 0; i < allFiles.size() - keep; i++)
+			oldFiles.add(iter.next());
+
+		return oldFiles;
+	}
+	private static Set<Filename> getLatest(File[] files, int numLatest) {
+		TreeSet<Filename> allFiles = new TreeSet<Filename>();
+		TreeSet<Filename> oldFiles = new TreeSet<Filename>();
+		for (File file : files)
+			allFiles.add(new Filename(file));
+		if (allFiles.size() <= numLatest)
+			return oldFiles;
+		Iterator<Filename> iter = allFiles.descendingIterator();
+		for (int i = 0; i < numLatest; i++)
 			oldFiles.add(iter.next());
 
 		return oldFiles;
@@ -549,19 +628,23 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		for(int i=0; i<testBytes.length; i++) testBytes[i] = (byte)(-256 + (int)(Math.random()*256)); 
 	}
 
-	private boolean journal(LogMessagingTask[] packets) {
-		if(!ENABLE_JOURNALING) return true; // no error
-		if (fos == null)
-			return false; // error
+	private long[] journal(LogMessagingTask[] packets) {
+		if(!ENABLE_JOURNALING) return new long[0]; // no error
+		if (this.journaler.fos == null)
+			return new long[0]; // error
 		boolean amCoordinator = false, isAccept = false;
-		for (LogMessagingTask pkt : packets) {
-			amCoordinator = ((PValuePacket) pkt.logMsg).ballot.coordinatorID == myID;
+		long[] offsets = new long[packets.length];
+		for (int i=0; i<packets.length; i++) {
+			LogMessagingTask pkt = packets[i];
+			amCoordinator = pkt.logMsg instanceof PValuePacket ? ((PValuePacket) pkt.logMsg).ballot.coordinatorID == myID
+					: pkt.logMsg instanceof PreparePacket ? ((PreparePacket) pkt.logMsg).ballot.coordinatorID == myID : false;
 			isAccept = pkt.logMsg.getType() == PaxosPacketType.ACCEPT; // else decision
 			if(DONT_LOG_DECISIONS && !isAccept) continue;
 			if(NON_COORD_ONLY && amCoordinator && !COORD_STRINGIFIES_WO_JOURNALING) continue;
 			if (COORD_ONLY && !amCoordinator) continue;
 			if(NON_COORD_DONT_LOG_DECISIONS && !amCoordinator && !isAccept) continue;
 			if(COORD_DONT_LOG_DECISIONS && amCoordinator && !isAccept) continue;
+			
 			try {
 				{
 					byte[] bytes = !NO_STRINGIFY_JOURNALING
@@ -576,28 +659,49 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 					bbuf.putInt(bytes.length);
 					bbuf.put(bytes);
 					bytes = bbuf.array();
+					
+					offsets[i] = this.journaler.curLogfileSize;
 							
 					if (!STRINGIFY_WO_JOURNALING
 							&& !(COORD_STRINGIFIES_WO_JOURNALING && amCoordinator))
-						appendToLogFile(bytes);
+						SQLPaxosLogger.this.journaler.appendToLogFile(bytes);
 				}
 
 			} catch (IOException ioe) {
 				ioe.printStackTrace();
-				return false;
+				return null;
 			}
 		}
-		if (curLogFileSize > MAX_LOG_FILE_SIZE) {
+		if (this.journaler.curLogfileSize > MAX_LOG_FILE_SIZE) {
 			this.GC.schedule(new TimerTask() {
 				@Override
 				public void run() {
-					SQLPaxosLogger.deleteOldCheckpoints(logDirectory,
-							logFilePrefix, 4, this);
-					rollLogFile();
+					try {
+						// always commit pending before rolling log file
+						log.log(Level.FINE,
+								"{0} rolling log file {1}",
+								new Object[] {
+								SQLPaxosLogger.this.journaler,
+										SQLPaxosLogger.this.journaler.curLogfile });
+						SQLPaxosLogger.this.commitPendingLogMessages();
+						SQLPaxosLogger.this.journaler.rollLogFile();
+						if (!INDEX_JOURNAL && !SYNC_INDEX_JOURNAL)
+							// used only during testing
+							SQLPaxosLogger
+									.deleteOldCheckpoints(
+											logDirectory,
+											SQLPaxosLogger.this.journaler.logfilePrefix,
+											5, this);
+						if (Util.oneIn(10))
+							SQLPaxosLogger.this.garbageCollectJournal();
+					} catch(Exception e) {
+						log.severe(this + " incurred exception " + e.getMessage());
+						e.printStackTrace();
+					}
 				}
 			}, 0);
 		}
-		return true;
+		return offsets;
 	}
 
 	// kept around for performance testing of different stringification hacks
@@ -606,9 +710,6 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	private String toString(PaxosPacket packet) {
-		assert (packet.getType() != PaxosPacketType.ACCEPT
-				|| ((RequestPacket) packet).getStringifiedSelf() != null || ((AcceptPacket) packet).ballot.coordinatorID == myID);
-
 		return packet.toString();
 	}
 
@@ -626,6 +727,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	private static final boolean JOURNAL_COMPRESSION=Config.getGlobalBoolean(PC.JOURNAL_COMPRESSION);
 	private static final boolean SYNC_INDEX_JOURNAL=Config.getGlobalBoolean(PC.SYNC_INDEX_JOURNAL);
 	private static final boolean INDEX_JOURNAL=Config.getGlobalBoolean(PC.INDEX_JOURNAL);
+	private static final int LOG_INDEX_FREQUENCY=Config.getGlobalInt(PC.LOG_INDEX_FREQUENCY);
 	
 	private static final int MAX_BATCH_SIZE = 10000;
 
@@ -639,32 +741,84 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			return false;
 		if (!isLoggingEnabled() && !ENABLE_JOURNALING) 
 			return true;
-		if (isLoggingEnabled()) // no need to journal
-			return this.logBatchDB(packets, this.curLogFile);
+		if (isLoggingEnabled()) 
+			// no need to journal and the file, offset have no meaning here
+			return this.logBatchDB(packets);
 		
 		// else journaling but no DB logging
-		String journalFile = this.curLogFile;
-		boolean journaled = (ENABLE_JOURNALING && this.journal(packets));
+		String journalFile = this.journaler.curLogfile;
+		long[] offsets = null;
+		boolean journaled = (ENABLE_JOURNALING && (offsets = this
+				.journal(packets)) != null);
+		String[] journalFiles = new String[packets.length];
+		for(int i=0; i<packets.length; i++) journalFiles[i] = journalFile;
 		
 		// can asynchronously log to DB as already journaled synchronously
 		if (SYNC_INDEX_JOURNAL)
-			return journaled && logBatchDB(packets, journalFile);
-		else if(INDEX_JOURNAL) {
-			this.GC.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					logBatchDB(packets, journalFile);
-				}
-			}, 0);
+			return journaled && logBatchDB(packets, journalFiles, offsets);
+		else if(INDEX_JOURNAL && journaled) {
+			final long[] finalOffsets = offsets;
+			for (int i = 0; i < packets.length; i++)
+				SQLPaxosLogger.this.pendingLogMessages.add(new PendingLogTask(
+						packets[i], journalFile, finalOffsets[i]));
+			log.log(Level.FINER, "{0} has {1} pending log messages",
+					new Object[] { this, this.pendingLogMessages.size() });
+			// FIXME: needed given we index upon rolling anyway?
+			if (Util.oneIn(LOG_INDEX_FREQUENCY))
+				this.GC.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						try {
+							SQLPaxosLogger.this.commitPendingLogMessages();
+						} catch(Exception e) {
+							log.severe(this + " incurred exception " + e.getMessage());
+							e.printStackTrace();
+						}
+					}
+				}, 0);
 		}
 		// else no indexing of journal
 		return journaled;
 	}
+		
+	private LinkedBlockingQueue<PendingLogTask> pendingLogMessages = new LinkedBlockingQueue<PendingLogTask>();
 
-	private synchronized boolean logBatchDB(LogMessagingTask[] packets, String journalFile) {
+	private boolean logBatchDB(PendingLogTask[] packets) {
+
+		String[] journalFiles = new String[packets.length];
+		long[] journalFileOffsets = new long[packets.length];
+		LogMessagingTask[] lmTasks = new LogMessagingTask[packets.length];
+		for (int i = 0; i < packets.length; i++) {
+			lmTasks[i] = packets[i].lmTask;
+			journalFiles[i] = packets[i].logfile;
+			journalFileOffsets[i] = packets[i].logfileOffset;
+		}
+		log.log(Level.FINE, "{0} committing {1} pending log tasks from {2}",
+				new Object[] { this, packets.length,
+						this.journaler.curLogfile });
+		return this.logBatchDB(lmTasks, journalFiles, journalFileOffsets);
+	}
+
+	// latches meaningless journal files and offsets
+	private boolean logBatchDB(LogMessagingTask[] packets) {
+		String[] journalFiles = new String[packets.length];
+		long[] journalFileOffsets = new long[packets.length];
+		for(int i=0; i<packets.length; i++) {
+			journalFiles[i] =  this.journaler.curLogfile;
+			journalFileOffsets[i] = this.journaler.curLogfileSize;
+		}
+		return this.logBatchDB(packets, journalFiles, journalFileOffsets);
+	}
+
+	/* The main method to log to the DB. If journaling is enabled, this method is 
+	 * always called after journaling; in that case, this method performs indexing.
+	 */
+	private synchronized boolean logBatchDB(LogMessagingTask[] packets,
+			String[] journalFiles, long[] journalFileOffsets) {
+		assert(packets.length == journalFiles.length && journalFiles.length == journalFileOffsets.length);
 		if (isClosed())
 			return false;
-		boolean journaled = (ENABLE_JOURNALING && this.journal(packets));
+		long[] offsets = journalFileOffsets;
 		if (!isLoggingEnabled() && !ENABLE_JOURNALING) 
 			return true;
 			;
@@ -673,7 +827,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		PreparedStatement pstmt = null;
 		Connection conn = null;
 		String cmd = "insert into " + getMTable()
-				+ " values (?, ?, ?, ?, ?, ?, ?, ?)";
+				+ " values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		long t1 = System.currentTimeMillis();
 		int i = 0;
 		try {
@@ -685,7 +839,6 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				}
 				PaxosPacket packet = packets[i].logMsg;
 				// accept and decision use a faster implementation
-				String packetString = null;//toString(packet);
 				int[] sb = AbstractPaxosLogger.getSlotBallot(packet);
 
 				pstmt.setString(1, packet.getPaxosID());
@@ -694,16 +847,25 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				pstmt.setInt(4, sb[1]);
 				pstmt.setInt(5, sb[2]);
 				pstmt.setInt(6, packet.getType().getInt());
-				pstmt.setString(7, journalFile);
+				pstmt.setString(7, journalFiles[i]);
+				pstmt.setLong(8, offsets!=null ? offsets[i] : 0);
+
+				byte[] msgBytes = toBytes(packet);
+
 				if (getLogMessageClobOption()) {
-					// pstmt.setBlob(8, new StringReader(compressed));
-					byte[] compressed = isLoggingEnabled() ? deflate(toBytes(packet)) : new byte[0];
+					byte[] compressed = isLoggingEnabled() ? deflate(msgBytes)
+							: new byte[0];
+					pstmt.setInt(9, msgBytes.length);
 					Blob blob = conn.createBlob();
 					blob.setBytes(1, compressed);
-					pstmt.setBlob(8, blob);
-				} else
-					pstmt.setString(8, packetString);
-								
+					pstmt.setBlob(10, blob);
+				} else {
+					assert(false); // unused 
+					String packetString = packet.toString();
+					pstmt.setInt(9, packetString.length());
+					pstmt.setString(10, packetString);
+				}
+				
 				pstmt.addBatch();
 				if ((i + 1) % MAX_BATCH_SIZE == 0 || (i + 1) == packets.length) {
 					int[] executed = pstmt.executeBatch();
@@ -739,7 +901,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			cleanup(conn);
 		}
 
-		return logged && journaled;
+		return logged;// && journaled;
 	}
 
 	/**
@@ -885,11 +1047,17 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 
 				@Override
 				public void run() {
-					Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
-					long t = System.currentTimeMillis();
-					SQLPaxosLogger.this.deleteOutdatedMessages(paxosID, slot, ballot.ballotNumber,
-							ballot.coordinatorID, acceptedGCSlot);					
-					DelayProfiler.updateDelay("GC", t);
+					try {
+						Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+						long t = System.currentTimeMillis();
+						SQLPaxosLogger.this.deleteOutdatedMessages(paxosID,
+								slot, ballot.ballotNumber,
+								ballot.coordinatorID, acceptedGCSlot);
+						DelayProfiler.updateDelay("GC", t);
+					} catch(Exception e) {
+						log.severe(this + " incurred exception " + e.getMessage());
+						e.printStackTrace();
+					}
 				}
 			}, 0);
 		}
@@ -1008,6 +1176,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * Used to be the entry point for message logging. Replaced by batchLog and
 	 * log(PaxosPacket) now.
 	 */
+	@Deprecated
 	private boolean log(String paxosID, int version, int slot, int ballotnum,
 			int coordinator, PaxosPacketType type, String message) {
 		if (isClosed())
@@ -1423,6 +1592,10 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		return pri;
 	}
 
+	private File[] logfiles = null;
+	private int logfileIndex = 0;
+	RandomAccessFile curRAF = null;
+	
 	public synchronized boolean initiateReadMessages() {
 		if (isClosed() || this.cursorPstmt != null || this.cursorRset != null
 				|| this.cursorConn != null)
@@ -1431,32 +1604,115 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		log.log(Level.FINE, "{0} invoked initiatedReadMessages()",
 				new Object[] { this, });
 		boolean initiated = false;
-		try {
-			this.cursorPstmt = this.getPreparedStatement(this.getCursorConn(),
-					getMTable(), null, "message");
-			this.cursorRset = this.cursorPstmt.executeQuery();
-			initiated = true;
-		} catch (SQLException sqle) {
-			log.severe("SQLException while getting all paxos IDs " + " : "
-					+ sqle);
+		if(isLoggingEnabled()) 
+			try {
+				this.cursorPstmt = this.getPreparedStatement(
+						this.getCursorConn(), getMTable(), null, "message");
+				this.cursorRset = this.cursorPstmt.executeQuery();
+				initiated = true;
+			} catch (SQLException sqle) {
+				log.severe("SQLException while getting all paxos IDs " + " : "
+						+ sqle);
+			}
+		else if(ENABLE_JOURNALING) {
+			logfiles = (new File(this.logDirectory)).listFiles(new FileFilter() {
+				@Override
+				public boolean accept(File pathname) {
+							return pathname.isFile()
+									&& pathname.toString().startsWith(
+											SQLPaxosLogger.this.journaler
+													.getLogfilePrefix());
+				}
+			});
+			if (logfiles != null && logfiles.length > 0)
+				try {
+					curRAF = new RandomAccessFile(logfiles[0], "r");
+					log.log(Level.INFO,
+							"{0} rolling forward logged messages from file {1}",
+							new Object[] { this.journaler,
+									this.logfiles[this.logfileIndex] });
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
 		}
 		return initiated;
 	}
 
-	public synchronized PaxosPacket readNextMessage() {
-		PaxosPacket packet = null;
-		try {
-			if (cursorRset != null && cursorRset.next()) {
-				String msg = (!getLogMessageClobOption() ? cursorRset
-						.getString(1) : lobToString(cursorRset.getBlob(1)));
-				packet = PaxosPacket.getPaxosPacket(msg);
+	/* This method used to return PaxosPacket earlier. We now return 
+	 * a string because it may be necessary to fixNodeStringToInt on
+	 * the corresponding json before conversion to PaxosPacket. 
+	 */
+	@Override
+	public synchronized String readNextMessage() {
+		String packetStr = null;
+		if (isLoggingEnabled())
+			try {
+				if (cursorRset != null && cursorRset.next()) {
+					String msg = (!getLogMessageClobOption() ? cursorRset
+							.getString(1) : lobToString(cursorRset.getBlob(1)));
+					packetStr = msg;
+				}
+			} catch (SQLException | IOException e) {
+				log.severe(this + " got " + e.getClass().getSimpleName()
+						+ " in readNextMessage while reading: " + " : "
+						+ packetStr);
+				e.printStackTrace();
 			}
-		} catch (SQLException | JSONException | IOException e) {
-			log.severe(this + " got " + e.getClass().getSimpleName()
-					+ " in readNextMessage while reading: " + " : " + packet);
-			e.printStackTrace();
+		else if (ENABLE_JOURNALING) {
+			String latest = this.getLatestJournalFile();
+			try {
+				while (this.curRAF != null
+						&& this.curRAF.getFilePointer() == this.curRAF.length()) {
+					this.curRAF.close();
+					this.curRAF=null;
+					// move on to the next file
+					if (this.logfileIndex + 1 < this.logfiles.length) 
+						this.curRAF = new RandomAccessFile(
+								this.logfiles[++this.logfileIndex], "r");
+					if(this.curRAF!=null) 
+						log.log(Level.INFO,
+								"{0} rolling forward logged messages from file {1}",
+								new Object[] { this.journaler, this.logfiles[this.logfileIndex] });
+				}
+				if (this.curRAF == null)
+					return null;
+
+				log.log(Level.FINEST,
+						"{0} reading from offset {1} from file {2}",
+						new Object[] { this, this.curRAF.getFilePointer(),
+								this.logfiles[this.logfileIndex] });
+
+				long prevOffset = this.curRAF.getFilePointer();
+				int msgLength = this.curRAF.readInt();
+				byte[] msg = new byte[msgLength];
+				this.curRAF.read(msg);
+				packetStr = new String(msg, CHARSET);
+				
+				if (latest != null
+						&& this.logfiles[this.logfileIndex].toString().equals(
+								latest))
+					this.indexJournalEntryInDB(packetStr,
+							this.logfiles[this.logfileIndex].toString(),
+							prevOffset);
+					
+			} catch (IOException |JSONException e) {
+				e.printStackTrace();
+			}
 		}
-		return packet;
+		return packetStr;
+	}
+	
+	private void indexJournalEntryInDB(String packetStr, String journalFile,
+			long offset) throws JSONException {
+		PaxosPacket pp = this.packetizer != null ? packetizer
+				.stringToPaxosPacket(packetStr) : PaxosPacket
+				.getPaxosPacket(packetStr);
+		if (pp != null) {
+			LogMessagingTask[] lmTasks = { new LogMessagingTask(pp) };
+			String[] journalFiles = {journalFile};
+			long[] offsets = {offset};
+			this.logBatchDB(lmTasks, journalFiles, offsets);
+		}
 	}
 
 	public synchronized void closeReadAll() {
@@ -1509,6 +1765,53 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				slotballot[1], slotballot[2], packet.getType(),
 				packet.toString());
 	}
+	
+	class PendingLogTask {
+		final LogMessagingTask lmTask;
+		final String logfile;
+		final long logfileOffset;
+		PendingLogTask(LogMessagingTask lmTask, String logfile, long offset) {
+			this.lmTask = lmTask;
+			this.logfile = logfile;
+			this.logfileOffset = offset;
+		}
+	}
+
+	private boolean commitPendingLogMessages() {
+		return this.commitPendingLogMessages(null);
+	}
+	private boolean commitPendingLogMessages(String paxosID) {
+		int prevSize = this.pendingLogMessages.size();
+		if(prevSize==0) return true;
+		
+		ArrayList<PendingLogTask> pendingQ = new ArrayList<PendingLogTask>();
+		for(Iterator<PendingLogTask> lmIter = this.pendingLogMessages.iterator(); lmIter.hasNext(); ) {
+			PendingLogTask pending = lmIter.next();
+			if(!pending.lmTask.isEmpty() && (paxosID==null || pending.lmTask.logMsg.getPaxosID().equals(paxosID)))
+				pendingQ.add(pending);
+			lmIter.remove();
+		}
+		log.log(Level.FINE,
+				"{0} trimmed pending log message queue from {1} to {2}",
+				new Object[] { this, prevSize, this.pendingLogMessages.size() });
+		return this.logBatchDB(pendingQ.toArray(new PendingLogTask[0]));
+	}
+	
+	private String getLatestJournalFile() {
+		File[] journalFiles = this.getJournalFiles();
+		Set<Filename> latest = getLatest(journalFiles, 1);
+		assert(latest.size()<=1) : latest.size();
+		return latest.size()==1 ? latest.toArray(new Filename[0])[0].file.toString() : null;
+	}
+	
+	
+	/*
+	 * FIXME: Upon recovery, we need to commit pending log messages that were
+	 * not sync'd to the DB. For this, it suffices to find the list of all
+	 * logfiles that are equal to or more recent than the most recent logfile in
+	 * the DB or pick the most recent logfile if there are no such files, and
+	 * commit the messages in them to the DB.
+	 */
 
 	/**
 	 * Gets the list of logged messages for the paxosID. The static method
@@ -1520,23 +1823,41 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * @return A list of logged messages for {@code paxosID} meeting
 	 *         {@code fieldConstraints}.
 	 */
-	public synchronized ArrayList<PaxosPacket> getLoggedMessages(
+	private synchronized ArrayList<PaxosPacket> getLoggedMessages(
 			String paxosID, String fieldConstraints) {
+		
+		if (ENABLE_JOURNALING && !SYNC_INDEX_JOURNAL) 
+			this.commitPendingLogMessages(paxosID);
+		
 		ArrayList<PaxosPacket> messages = new ArrayList<PaxosPacket>();
+		
 		PreparedStatement pstmt = null;
 		ResultSet messagesRS = null;
 		Connection conn = null;
 		try {
 			conn = this.getDefaultConn();
 			pstmt = this.getPreparedStatement(conn, getMTable(), paxosID,
-					"message", fieldConstraints);
+					"packet_type, message" + (ENABLE_JOURNALING ? ", logfile, offset, length" :""), fieldConstraints);
 			messagesRS = pstmt.executeQuery();
 
 			assert (!messagesRS.isClosed());
 			while (messagesRS.next()) {
-				String msg = (!getLogMessageClobOption() ? messagesRS
-						.getString(1) : lobToString(messagesRS.getBlob(1)));
-				PaxosPacket packet = PaxosPacket.getPaxosPacket(msg);
+				assert(!ENABLE_JOURNALING || messagesRS.getString("logfile") != null);
+								
+				String logMsgStr = (!ENABLE_JOURNALING ? (!getLogMessageClobOption() ? messagesRS
+						.getString("message") : lobToString(messagesRS.getBlob("message")))
+
+						: this.getJournaledMessage(
+								messagesRS.getString("logfile"),
+								messagesRS.getLong("offset"),
+								messagesRS.getInt("length")));
+
+				PaxosPacket packet = this.packetizer != null ? packetizer
+						.stringToPaxosPacket(logMsgStr) : PaxosPacket
+						.getPaxosPacket(logMsgStr);
+				// sanity check for DB-journal consistency
+				assert (packet.getType().getInt() == messagesRS
+						.getInt("packet_type"));
 				messages.add(packet);
 			}
 		} catch (SQLException | JSONException | IOException e) {
@@ -1549,6 +1870,84 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		}
 		return messages;
 	}
+	
+	private String getJournaledMessage(String logfile, long offset, int length)
+			throws IOException {
+		assert (logfile != null);
+		RandomAccessFile raf = new RandomAccessFile(logfile, "r");
+		raf.seek(offset);
+		int readLength = raf.readInt();
+		assert (readLength == length) : this + " : " + readLength + " != "
+				+ length;
+		byte[] buf = new byte[readLength];
+		int nread = raf.read(buf);
+		assert (nread == buf.length) : nread + " != " + buf.length
+				+ " while reading from " + logfile + ":" + offset;
+		raf.close();
+		String msg = new String(buf, CHARSET);
+		log.log(Level.FINEST,
+				"{0} returning journaled message from {1}:{2}:{3} = [{4}]",
+				new Object[] { this, logfile, offset, length, msg });
+		return msg;
+	}
+
+	private void garbageCollectJournal() {
+		if(!INDEX_JOURNAL && !SYNC_INDEX_JOURNAL) return;
+		this.deleteJournalFiles(getIndexedLogfiles());
+	}
+	
+	private ArrayList<String> getIndexedLogfiles() {
+				
+		PreparedStatement pstmt = null;
+		ResultSet messagesRS = null;
+		Connection conn = null;
+		ArrayList<String> logfiles = new ArrayList<String>();
+		try {
+			conn = this.getDefaultConn();
+			pstmt = conn.prepareStatement("select distinct logfile from " + getMTable());
+			messagesRS = pstmt.executeQuery();
+
+			assert (!messagesRS.isClosed());
+			while (messagesRS.next()) {
+				logfiles.add(messagesRS.getString(1));
+			}
+		} catch (SQLException e) {
+			log.severe(e.getClass().getSimpleName()
+					+ " while getting logfile names");
+			e.printStackTrace();
+		} finally {
+			cleanup(pstmt, messagesRS);
+			cleanup(conn);
+		}
+		return logfiles;
+	}
+
+	private File[] getJournalFiles() {
+		File[] dirFiles = (new File(this.journaler.logdir))
+				.listFiles(new FileFilter() {
+					@Override
+					public boolean accept(File pathname) {
+						return pathname.toString().startsWith(
+								SQLPaxosLogger.this.journaler
+										.getLogfilePrefix());
+					}
+				});
+		return dirFiles;
+	}
+
+	private void deleteJournalFiles(ArrayList<String> logfiles) {
+
+		File[] dirFiles = this.getJournalFiles();
+		// delete files not in DB
+		for (File f : dirFiles)
+			if (!logfiles.contains(f)
+					&& f.toString().startsWith(
+							this.journaler.getLogfilePrefix())) {
+				log.log(Level.INFO, "{0} garbage collecting log file {1}",
+						new Object[] { this, f, logfiles });
+				f.delete();
+			}
+	}
 
 	public ArrayList<PaxosPacket> getLoggedMessages(String paxosID) {
 		return this.getLoggedMessages(paxosID, null);
@@ -1558,6 +1957,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	 * Acceptors remove decisions right after executing them. So they need to
 	 * fetch logged decisions from the disk to handle synchronization requests.
 	 */
+	@Override
 	public ArrayList<PValuePacket> getLoggedDecisions(String paxosID,
 			int version, int minSlot, int maxSlot) {
 		ArrayList<PValuePacket> decisions = new ArrayList<PValuePacket>();
@@ -1598,6 +1998,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		TreeMap<Integer, PValuePacket> accepted = new TreeMap<Integer, PValuePacket>();
 		for (PaxosPacket p : list) {
 			int slot = AbstractPaxosLogger.getSlotBallot(p)[0];
+			assert(p instanceof AcceptPacket) : p.getType() + ":"+p; 
 			AcceptPacket accept = (AcceptPacket) p;
 			if ((slot - firstSlot >= 0)
 					&& /* wraparound-arithmetic */
@@ -1667,6 +2068,11 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	}
 
 	public boolean removeAll() {
+		for (File f : this.getJournalFiles())
+			if (f.toString().startsWith(this.journaler.getLogfilePrefix()) && f.length()!=0) {
+				log.log(Level.INFO, "{0} removing log file {1}", new Object[]{this, f});
+				f.delete();
+			}
 		return this.remove(null, 0);
 	}
 
@@ -1813,7 +2219,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				+ ") not null, version int, slot int, ballotnum int, "
 				+ "coordinator int, packet_type int, logfile varchar ("
 				+ MAX_FILENAME_SIZE
-				+ "),  message "
+				+ "),  offset int, length bigint, message "
 				+ (getLogMessageClobOption() ? SQL.getClobString(
 						maxLogMessageSize, SQL_TYPE) : " varchar("
 						+ maxLogMessageSize + ")") + ")";

@@ -298,6 +298,11 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 				req.setEntryReplica(id); 
 		return this;
 	}
+	
+	public void setEntryTime() {
+		this.entryTime = System.currentTimeMillis();
+		if(this.batchSize()>0) for(RequestPacket req : this.batched) req.setEntryTime();
+	}
 
 	public int setEntryReplicaAndReturnCount(int id) {
 		int count = 0;
@@ -475,8 +480,8 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		// we remembered the original string for recalling here
 		this.stringifiedSelf = json.containsKey(Keys.STRINGIFIED.toString()) ? (String) json
 				.get(Keys.STRINGIFIED.toString()) : null;
-		assert (PaxosPacket.getPaxosPacketType(json) != PaxosPacketType.ACCEPT
-				&& PaxosPacket.getPaxosPacketType(json) != PaxosPacketType.DECISION || this.stringifiedSelf != null);
+		assert (PaxosPacket.getPaxosPacketType(json) != PaxosPacketType.ACCEPT || this.stringifiedSelf != null) : PaxosPacket
+				.getPaxosPacketType(json) + ":" + json;
 	}
 
 	@Override

@@ -50,7 +50,7 @@ public class RateLimiter {
 		double accumulatedTime = count * 1.0 / rate - totalTime;
 		if (accumulatedTime >= MIN_SLEEP_DELAY / 1000.0) {
 			try {
-				Thread.sleep(MIN_SLEEP_DELAY);
+				Thread.sleep((long)(accumulatedTime*1000*0.9));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -69,12 +69,10 @@ public class RateLimiter {
 		public static void main(String[] args) {
 			int million = 1000000;
 			int size = 1 * million;
-			RateLimiter rl = new RateLimiter(million / 10);
+			RateLimiter rl = new RateLimiter(size / 10);
 			long t1 = System.currentTimeMillis();
 			for (int i = 0; i < size; i++) {
-				if (Math.random() * Math.random() > 0) {
-				}
-				;
+				if (Math.random() * Math.random() > 0);
 				rl.record();
 			}
 			System.out.println("Finished " + size + " ops in "

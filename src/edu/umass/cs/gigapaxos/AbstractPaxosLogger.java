@@ -79,6 +79,8 @@ public abstract class AbstractPaxosLogger {
 	private final BatchedLogger batchLogger;
 	private final Messenger<?> messenger;
 	private final Checkpointer collapsingCheckpointer;
+	
+	protected AbstractPaxosLogger.PaxosPacketizer packetizer = null;
 
 	private static Logger log = Logger.getLogger(AbstractPaxosLogger.class
 			.getName());
@@ -102,6 +104,14 @@ public abstract class AbstractPaxosLogger {
 		this.collapsingCheckpointer = new Checkpointer(
 				new HashMap<String, CheckpointTask>());//.start(AbstractPaxosLogger.class.getSimpleName()+myID);
 		addLogger(this);
+	}
+
+	protected static abstract class PaxosPacketizer {
+		abstract protected PaxosPacket stringToPaxosPacket(String str) throws JSONException;
+	}
+	
+	protected void setPacketizer(AbstractPaxosLogger.PaxosPacketizer packetizer) {
+		this.packetizer = packetizer;
 	}
 
 	/* ************ Start of non-extensible methods ********************* */
@@ -412,10 +422,9 @@ public abstract class AbstractPaxosLogger {
 	/**
 	 * Reads the next log message after the cursor has been initialized by
 	 * {@link #initiateReadMessages()}.
-	 * 
 	 * @return Returns the next log message.
 	 */
-	public abstract PaxosPacket readNextMessage();
+	public abstract String readNextMessage();
 
 	// close and cleanup methods
 	/**

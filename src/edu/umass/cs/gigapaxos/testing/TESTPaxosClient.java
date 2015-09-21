@@ -569,7 +569,7 @@ public class TESTPaxosClient {
 
 			// begin warmup run
 			long t1 = System.currentTimeMillis();
-			sendTestRequests(10, clients, true);
+			sendTestRequests(Math.min(numReqs, 10), clients, true);
 			waitForResponses(clients, t1);
 			long t2 = System.currentTimeMillis();
 			System.out.println("[success]");

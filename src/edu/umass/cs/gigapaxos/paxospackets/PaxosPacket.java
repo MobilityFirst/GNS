@@ -569,8 +569,16 @@ public abstract class PaxosPacket extends JSONPacket {
 	 * @throws JSONException
 	 */
 	public static PaxosPacket getPaxosPacket(String msg) throws JSONException {
-		PaxosPacket paxosPacket = null;
 		JSONObject jsonMsg = new JSONObject(msg);
+		return getPaxosPacket(jsonMsg);
+	}
+	/**
+	 * @param jsonMsg
+	 * @return PaxosPacket from JSON.
+	 * @throws JSONException
+	 */
+	public static PaxosPacket getPaxosPacket(JSONObject jsonMsg) throws JSONException {
+		PaxosPacket paxosPacket = null;
 		PaxosPacketType type = PaxosPacket.getPaxosPacketType(jsonMsg);
 		switch (type) {
 		case PREPARE:
@@ -586,6 +594,7 @@ public abstract class PaxosPacket extends JSONPacket {
 			assert (false);
 		}
 		return paxosPacket;
+		
 	}
 	/************* End of type-specific methods *******************/
 }

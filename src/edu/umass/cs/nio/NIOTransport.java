@@ -390,11 +390,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		if (data.length > MAX_PAYLOAD_SIZE)
 			throw new IOException("Packet size of " + data.length
 					+ " exceeds maximum allowed payload size of "
-					+ MAX_PAYLOAD_SIZE);
+					+ MAX_PAYLOAD_SIZE);		
+		
 		testAndIntiateConnection(isa);
 		// we put length header in *all* messages
 		ByteBuffer bbuf = getHeaderedByteBuffer(data=this.deflate(data));
-		int written = this.enqueueSend(isa, bbuf);
+		int written = this.canEnqueueSend(isa) ? this.enqueueSend(isa, bbuf) : 0;
 		return written > 0 ? written - HEADER_SIZE : written;
 	}
 
@@ -432,7 +433,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		for (int i = 0; i < batchSize; i++)
 			putHeaderLength(bbuf, data.length).put(data);
 		bbuf.flip();
-		int written = this.enqueueSend(isa, bbuf);
+		int written = this.canEnqueueSend(isa) ? this.enqueueSend(isa, bbuf) : 0;
 		return written > 0 ? written - batchSize * HEADER_SIZE : written;
 	}
 
@@ -1083,6 +1084,11 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			this.wakeupSelector(isa);
 
 		return queuedBytes;
+	}
+	
+	private boolean canEnqueueSend(InetSocketAddress isa) {
+		LinkedBlockingQueue<ByteBuffer> sendQueue = null;
+		return ((sendQueue = this.sendQueues.get(isa))==null) || sendQueue.size()<MAX_QUEUED_SENDS;
 	}
 	
 	private void wakeupSelector(InetSocketAddress isa) {

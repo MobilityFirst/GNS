@@ -1384,14 +1384,44 @@ public class PaxosManager<NodeIDType> {
 				new Object[] { this });
 		while (this.paxosLogger.initiateReadMessages())
 			; // acquires lock
-		PaxosPacket packet = null;
-		while ((packet = this.paxosLogger.readNextMessage()) != null) {
-			log.log(Level.FINEST, "{0} rolling forward logged message {1}",
-					new Object[] { this, packet });
-			this.handlePaxosPacket(PaxosPacket.markRecovered(packet));
-			if ((++logCount) % freq == 0) {
-				freq *= 2;
+		String paxosPacketString = null;
+		/*
+		 * Set packetizer for logger. We need this in order to have the benefits
+		 * of caching the original string form of received accepts to reduce
+		 * serialization overhead. Without a packetizer, the logger doesn't
+		 * know how to convert string node IDs to integers.
+		 */
+		this.paxosLogger
+				.setPacketizer(new AbstractPaxosLogger.PaxosPacketizer() {
+
+					@Override
+					protected PaxosPacket stringToPaxosPacket(String str) {
+						try {
+							return PaxosPacket.getPaxosPacket(PaxosManager.this
+									.fixNodeStringToInt(new JSONObject(str)));
+						} catch (JSONException e) {
+							e.printStackTrace();
+						}
+						return null;
+					}
+				});
+	
+		try {
+			while ((paxosPacketString = this.paxosLogger.readNextMessage()) != null) {
+				PaxosPacket packet = PaxosPacket.markRecovered(PaxosPacket
+						.getPaxosPacket(this.fixNodeStringToInt(new JSONObject(
+								paxosPacketString))));
+				log.log(Level.FINEST, "{0} rolling forward logged message {1}",
+						new Object[] { this, packet });
+				this.handlePaxosPacket((packet));
+				if ((++logCount) % freq == 0) {
+					freq *= 2;
+				}
 			}
+		} catch (JSONException | NumberFormatException e) {
+			// FIXME: should be able to replay remaining messages still
+			log.severe(this + " recovery interrupted while parsing " + paxosPacketString);
+			e.printStackTrace();
 		}
 		this.paxosLogger.closeReadAll(); // releases lock
 		log.log(Level.INFO,
@@ -1682,8 +1712,8 @@ public class PaxosManager<NodeIDType> {
 	private PaxosInstanceStateMachine recover(String paxosID, int version,
 			int id, Set<NodeIDType> members, InterfaceReplicable app,
 			String state) {
-		log.log(Level.FINE, "{0} {1}:{2} recovering", new Object[] { this,
-				paxosID, version });
+		log.log(Level.INFO, "{0} {1}:{2} {3} recovering", new Object[] { this,
+				paxosID, version, members });
 		this.createPaxosInstance(paxosID, version, (members), app, null, null,
 				false);
 		PaxosInstanceStateMachine pism = (this
@@ -2180,12 +2210,13 @@ public class PaxosManager<NodeIDType> {
 			// fix ballot string
 			String ballotString = json.getString(PaxosPacket.NodeIDKeys.B
 					.toString());
-			int coordInt = this.integerMap.put(this.unstringer.valueOf(Ballot
-					.getBallotCoordString(ballotString)));
-			// assert (coordInt != null);
-			Ballot ballot = new Ballot(Ballot.getBallotNumString(ballotString),
-					coordInt);
-			json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
+			NodeIDType nodeID = this.unstringer.valueOf(Ballot
+					.getBallotCoordString(ballotString));
+			if (nodeID != null)
+				// assert (coordInt != null);
+				json.put(PaxosPacket.NodeIDKeys.B.toString(),
+						new Ballot(Ballot.getBallotNumString(ballotString),
+								this.integerMap.put(nodeID)).toString());
 		} else if (json.has(PaxosPacket.NodeIDKeys.GROUP.toString())) {
 			// fix group string (JSONArray)
 			JSONArray jsonArray = json
@@ -2224,12 +2255,9 @@ public class PaxosManager<NodeIDType> {
 			// fix ballot string
 			String ballotString = (String) json.get(PaxosPacket.NodeIDKeys.B
 					.toString());
-			int coordInt = this.integerMap.put(this.unstringer.valueOf(Ballot
-					.getBallotCoordString(ballotString)));
-			// assert (coordInt != null);
-			Ballot ballot = new Ballot(Ballot.getBallotNumString(ballotString),
-					coordInt);
-			json.put(PaxosPacket.NodeIDKeys.B.toString(), ballot.toString());
+			json.put(PaxosPacket.NodeIDKeys.B.toString(), new Ballot(Ballot.getBallotNumString(ballotString),
+					this.integerMap.put(this.unstringer.valueOf(Ballot
+							.getBallotCoordString(ballotString)))).toString());
 		} else if (json.containsKey(PaxosPacket.NodeIDKeys.GROUP.toString())) {
 			// fix group string (JSONArray)
 			Collection<?> jsonArray = (Collection<?>) json

@@ -103,6 +103,7 @@ public class PValuePacket extends ProposalPacket {
 	public PValuePacket makeDecision(int mcSlot) {
 		this.packetType = PaxosPacketType.DECISION;
 		this.medianCheckpointedSlot = mcSlot;
+		this.setStringifiedSelf(null);
 		/*
 		 * Only prepares, accepts, and decisions are replyed, so we should never
 		 * be making a decision out of a recovery packet, hence the assert.

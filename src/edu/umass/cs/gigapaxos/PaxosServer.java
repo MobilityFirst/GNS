@@ -57,7 +57,7 @@ public class PaxosServer {
 
 	private InterfaceReplicable createApp() {
 		InterfaceReplicable curApp = null;
-		if (PaxosConfig.application != null)
+		if (PaxosConfig.application != null) {
 			try {
 
 				curApp = (InterfaceReplicable) PaxosConfig.application
@@ -69,13 +69,14 @@ public class PaxosServer {
 						"App must support a constructor with no arguments");
 				System.exit(1);
 			}
-		if (curApp instanceof InterfaceClientMessenger) {
-			((InterfaceClientMessenger) curApp).setClientMessenger(messenger);
 		} else {
 			PaxosManager.getLogger().severe(
 					"Node" + messenger.getMyID()
 							+ " unable to create paxos application replica");
 		}
+		if (curApp instanceof InterfaceClientMessenger) {
+			((InterfaceClientMessenger) curApp).setClientMessenger(messenger);
+		} 
 		return curApp;
 	}
 

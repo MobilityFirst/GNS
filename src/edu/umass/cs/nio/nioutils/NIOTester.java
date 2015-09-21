@@ -38,11 +38,14 @@ public class NIOTester {
 		InetSocketAddress isa2 = new InetSocketAddress(snc.getNodeAddress(id2),
 				snc.getNodePort(id2));
 
-		final int numTestMessages = 1000000;
+		final int numTestMessages = 4000000;
 		RateLimiter r = new RateLimiter(400000);
 
-		while (gibberish.length() < 300)
+		int size = 1000;
+		String gibberish = "|47343289u2309exi4322|";
+		while (gibberish.length() < size)
 			gibberish += gibberish;
+		gibberish = gibberish.substring(0, size);
 		final int msgSize = gibberish.length();
 		final int batchSize = 1;
 		final byte[] replyBytes = new byte[gibberish.length() / 10];
@@ -74,7 +77,7 @@ public class NIOTester {
 				try {
 					if (sendReply) {
 						if (twoWay)
-							niot2.send(isa1, replyBytes, batchSize);
+							while(niot2.send(isa1, replyBytes, batchSize) <= 0) Thread.yield();;
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -134,7 +137,7 @@ public class NIOTester {
 					msgCount++;
 				}
 				if (count == numTestMessages/replyRatio * replySize) {
-					System.out.println("Response rate after "
+					System.out.println("Response rate after ALL "
 							+ count
 							/ replySize
 							+ " responses = "
@@ -194,7 +197,9 @@ public class NIOTester {
 
 			int totalSent = 0;
 			for (int i = 0; i < numTestMessages / batchSize; i++) {
-				totalSent += niot1.send(isa2, gibberish.getBytes("ISO-8859-1"), batchSize)+8;
+				int curSent = 0;
+				while((curSent = niot1.send(isa2, gibberish.getBytes("ISO-8859-1"), batchSize)) <= 0) Thread.yield();;
+				totalSent += curSent;
 				r.record();
 			}
 			System.out.println("Sent "

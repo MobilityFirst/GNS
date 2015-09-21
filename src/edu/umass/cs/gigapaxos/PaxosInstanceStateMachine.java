@@ -950,8 +950,14 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 
 		// have acceptor handle accept
 		Ballot ballot = null;
-		ballot = !EXECUTE_UPON_ACCEPT ? this.paxosState.acceptAndUpdateBallot(
-				accept, this.getMyID()) : this.paxosState.getBallot();
+		try {
+			ballot = !EXECUTE_UPON_ACCEPT ? this.paxosState
+					.acceptAndUpdateBallot(accept, this.getMyID())
+					: this.paxosState.getBallot();
+		} catch (Error e) {
+			log.severe(this + " : " + e.getMessage());
+			Util.suicide(e.getMessage());
+		}
 		if (ballot == null)
 			return null; // can happen only if acceptor is stopped.
 		
@@ -1403,8 +1409,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		if (inorderDecision.getEntryReplica() == getMyID()
 				&& !inorderDecision.isRecovery() && !handledCP) {
 			assert(inorderDecision.getEntryTime() <= System.currentTimeMillis()) : inorderDecision.getEntryTime();
-			RequestBatcher.updateSleepDuration(System.currentTimeMillis()
-					- inorderDecision.getEntryTime());
+			RequestBatcher.updateSleepDuration(inorderDecision.getEntryTime());
 		}
 	}
 
@@ -2081,12 +2086,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 				// only get decisions beyond checkpoint
 				minMissingSlot = ((StatePacket) (checkpoint.msgs[0])).slotNumber + 1;
 		}
-
+		
 		// try to get decisions from memory first
 		HashMap<Integer, PValuePacket> missingDecisionsMap = new HashMap<Integer, PValuePacket>();
 		for (PValuePacket pvalue : this.paxosState
 				.getCommitted(syncReply.missingSlotNumbers))
 			missingDecisionsMap.put(pvalue.slot, pvalue.setNoCoalesce());
+
 
 		// get decisions from database as unlikely to have all of them in memory
 		ArrayList<PValuePacket> missingDecisions = this.paxosManager
@@ -2132,8 +2138,13 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		// replace meta decisions with actual decisions
 		getActualDecisions(missingDecisionsMap);
 		
+		assert(missingDecisionsMap.isEmpty() || missingDecisionsMap.values()
+				.toArray(new PaxosPacket[0]).length > 0) : missingDecisions;
+		for (PValuePacket pvalue : missingDecisionsMap.values())
+			assert (!pvalue.requestValue.equals(RequestPacket.Keys.METAVAL
+					.toString()));
 		// the list of missing decisions to be sent
-		MessagingTask unicasts = missingDecisions.isEmpty() ? null
+		MessagingTask unicasts = missingDecisionsMap.isEmpty() ? null
 				: new MessagingTask(syncReply.nodeID,
 						(missingDecisionsMap.values()
 								.toArray(new PaxosPacket[0])));

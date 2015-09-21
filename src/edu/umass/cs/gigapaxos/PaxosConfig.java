@@ -246,6 +246,15 @@ public class PaxosConfig {
 		LOG_GC_FREQUENCY (10),
 		
 		/**
+		 * The number of log messages after which they are indexed into the DB.
+		 * Indexing every log message doubles the logging overhead and doesn't
+		 * have to be done (unless #SYNC_INDEX_JOURNAL is enabled). Upon 
+		 * recovery however, we need to do slightly more work to ensure that
+		 * all uncommitted log messages are indexed into the DB.
+		 */
+		LOG_INDEX_FREQUENCY (20),
+		
+		/**
 		 * 
 		 */
 		INDEX_LOG_TABLE (true),
@@ -274,7 +283,7 @@ public class PaxosConfig {
 		 * coordinator changes, and less frequent garbage collection, but it
 		 * also means less frequent IO or higher request throughput.
 		 */
-		CHECKPOINT_INTERVAL(100),
+		CHECKPOINT_INTERVAL(400),
 
 		/**
 		 * Number of threads in packet demultiplexer. More than 0 means that we

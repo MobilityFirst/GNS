@@ -80,11 +80,11 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 
 	private static final long MAX_BATCH_SLEEP_DURATION = 10;
 
-	protected synchronized static void updateSleepDuration(long sample) {
-		agreementLatency = Util.movingAverage(((double) sample),
+	protected synchronized static void updateSleepDuration(long entryTime) {
+		agreementLatency = Util.movingAverage(((double) (System.currentTimeMillis() - entryTime)),
 				agreementLatency);
 		if (Util.oneIn(10))
-			DelayProfiler.updateMovAvg("latency", agreementLatency);
+			DelayProfiler.updateDelay("latency", entryTime);
 	}
 
 	// just to name the thread, otherwise super suffices
@@ -98,8 +98,8 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	private static final int MAX_QUEUED_REQUESTS = Config.getGlobalInt(PC.MAX_OUTSTANDING_REQUESTS);
 	@Override
 	public void enqueueImpl(RequestPacket task) {
-		this.setSleepDuration(Math.max(MAX_BATCH_SLEEP_DURATION,
-				MIN_BATCH_SLEEP_DURATION + agreementLatency*BATCH_OVERHEAD));
+		this.setSleepDuration(Math.min(MAX_BATCH_SLEEP_DURATION,
+				MIN_BATCH_SLEEP_DURATION + agreementLatency*BATCH_OVERHEAD/this.batched.size()));
 		LinkedBlockingQueue<RequestPacket> taskList = this.batched.get(task
 				.getPaxosID());
 		if (taskList == null)

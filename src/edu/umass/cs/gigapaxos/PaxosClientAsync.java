@@ -24,6 +24,7 @@ public class PaxosClientAsync {
 	final MessageNIOTransport<String, JSONObject> niot;
 	final InetSocketAddress[] servers;
 	final ConcurrentHashMap<Long, RequestCallback> callbacks = new ConcurrentHashMap<Long, RequestCallback>();
+	private RequestCallback defaultCallback = null;
 
 	// FIXME: eventually garbage collect old requests
 
@@ -44,11 +45,12 @@ public class PaxosClientAsync {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-			if (response != null
-					&& callbacks.containsKey((long) response.requestID)) {
-				callbacks.remove((long) response.requestID).handleResponse(
-						response);
-			}
+			if (response != null)
+				if (callbacks.containsKey((long) response.requestID))
+					callbacks.remove((long) response.requestID).handleResponse(
+							response);
+				else if(PaxosClientAsync.this.defaultCallback  !=null)
+					PaxosClientAsync.this.defaultCallback.handleResponse(response);
 
 			return true;
 		}
@@ -89,6 +91,16 @@ public class PaxosClientAsync {
 			return message instanceof JSONObject;
 		}
 
+	}
+	
+	/**
+	 * @param callback
+	 * @return The previous value of the default callback if any.
+	 */
+	public RequestCallback setDefaultCallback(RequestCallback callback) {
+		RequestCallback old = this.defaultCallback;
+		this.defaultCallback = callback;
+		return old;
 	}
 
 	/**
