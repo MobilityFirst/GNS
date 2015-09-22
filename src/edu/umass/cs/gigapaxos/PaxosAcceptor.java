@@ -73,7 +73,7 @@ public class PaxosAcceptor {
 	 * memory so that we can easily disable and enable persistent logging.
 	 */
 	protected static final boolean GET_ACCEPTED_PVALUES_FROM_DISK = SQLPaxosLogger
-			.isLoggingEnabled();
+			.isLoggingEnabled() || SQLPaxosLogger.isJournalingEnabled();
 
 	protected static enum STATES {
 		RECOVERY, ACTIVE, STOPPED

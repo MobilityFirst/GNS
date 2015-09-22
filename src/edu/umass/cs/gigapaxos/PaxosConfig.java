@@ -513,7 +513,14 @@ public class PaxosConfig {
 		 * maintaining a memory log and only infrequently inserting the index
 		 * entries into the DB.
 		 */
-		INDEX_JOURNAL(false),
+		INDEX_JOURNAL(false), 
+		
+		/**
+		 * Failure detection timeout in seconds after which a node will be considered dead
+		 * if no keepalives have been received from it. Used to detect 
+		 * coordinator failures.
+		 */
+		FAILURE_DETECTION_TIMEOUT(6),
 		
 		;
 

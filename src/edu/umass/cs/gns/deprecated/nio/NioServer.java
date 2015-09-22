@@ -588,6 +588,12 @@ public int sendToAddress(InetSocketAddress isa, byte[] msg) throws IOException {
 	return 0;
 }
 
+@Override
+public boolean isDisconnected(NodeIDType node) {
+	// TODO Auto-generated method stub
+	return false;
+}
+
 }
 
 class WakeupSelectorTask extends TimerTask {

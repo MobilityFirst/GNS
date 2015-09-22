@@ -37,6 +37,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.paxospackets.FailureDetectionPacket;
 import edu.umass.cs.gigapaxos.testing.TESTPaxosConfig;
 import edu.umass.cs.nio.InterfaceNIOTransport;
+import edu.umass.cs.utils.Config;
 
 /**
  * @author V. Arun
@@ -67,7 +68,8 @@ public class FailureDetection<NodeIDType> {
 	private static final double PING_PERTURBATION_FACTOR = 0.25;
 
 	// static
-	private static long node_detection_timeout_millis = 6000; // ms
+	private static long node_detection_timeout_millis = Config
+			.getGlobalLong(PaxosConfig.PC.FAILURE_DETECTION_TIMEOUT) * 1000;
 	private static long inter_ping_period_millis = node_detection_timeout_millis / 2;
 	// run for coordinator even if not next-in-line
 	private static long coordinator_failure_detection_timeout = 3 * node_detection_timeout_millis;
@@ -253,12 +255,16 @@ public class FailureDetection<NodeIDType> {
 	protected boolean isNodeUp(NodeIDType id) {
 		if (id == this.myID)
 			return true;
+		if (this.nioTransport.isDisconnected(id))
+			return false;
 		return ((System.currentTimeMillis() - lastHeardTime(id)) < node_detection_timeout_millis);
 	}
 
 	// don't synchronize; invoked in log messages
 	protected boolean lastCoordinatorLongDead(NodeIDType id) {
-		return ((System.currentTimeMillis() - lastHeardTime(id)) > FailureDetection.coordinator_failure_detection_timeout);
+		return ((System.currentTimeMillis() - lastHeardTime(id)) > FailureDetection.coordinator_failure_detection_timeout)
+				|| this.nioTransport.isDisconnected(id)
+				;
 	}
 
 	// don't synchronize; invoked in log messages

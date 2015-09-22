@@ -131,6 +131,7 @@ public class PaxosManager<NodeIDType> {
 		static final long REQUEST_TIMEOUT = 10000;
 		int numOutstanding = 0;
 		int avgRequestSize = 0;
+		long lastIncremented = System.currentTimeMillis();
 		ConcurrentHashMap<Long, Long> requests = USE_GC_MAP ?
 				new GCConcurrentHashMap<Long, Long>(
 				new GCConcurrentHashMapCallback() {
@@ -142,6 +143,11 @@ public class PaxosManager<NodeIDType> {
 
 				}, REQUEST_TIMEOUT) :
 		new ConcurrentHashMap<Long,Long>();
+				
+		private void enqueue(RequestPacket request) {
+			this.requests.put(request.requestID, System.currentTimeMillis());
+			this.lastIncremented = System.currentTimeMillis();
+		}
 	}
 
 	protected boolean executed(RequestPacket request) {
@@ -587,10 +593,12 @@ public class PaxosManager<NodeIDType> {
 		}
 	}
 	
+	private static final long FADE_OUTSTANDING_TIMEOUT = 1000;
+
 	protected boolean isCongested() {
-		{
-			return PaxosManager.this.getNumOutstandingOrQueued() > MAX_OUTSTANDING_REQUESTS;
-		}
+		if (System.currentTimeMillis() - this.outstanding.lastIncremented > FADE_OUTSTANDING_TIMEOUT)
+			this.outstanding.requests.clear();
+		return PaxosManager.this.getNumOutstandingOrQueued() > MAX_OUTSTANDING_REQUESTS;
 	}
 	
 	class PaxosPacketDemultiplexerJSONSmart extends
@@ -1080,13 +1088,11 @@ public class PaxosManager<NodeIDType> {
 		if (countNumOutstanding())
 			return;
 		if (request.getEntryReplica() == getMyID())
-			this.outstanding.requests.put(request.requestID,
-					System.currentTimeMillis());
+			this.outstanding.enqueue(request);
 		if (request.batchSize() > 0)
 			for (RequestPacket req : request.getBatched())
 				if (request.getEntryReplica() == getMyID())
-					this.outstanding.requests.put(req.requestID,
-							System.currentTimeMillis());
+					this.outstanding.enqueue(req);
 		if (Util.oneIn(10))
 			DelayProfiler.updateMovAvg("outstanding",
 					this.outstanding.requests.size());
@@ -1510,7 +1516,7 @@ public class PaxosManager<NodeIDType> {
 	private void sendOrLoopback(MessagingTask mtask) throws JSONException, IOException {
 		MessagingTask local = MessagingTask.getLoopback(mtask, myID);
 		if(local!=null && !local.isEmptyMessaging())
-			for(PaxosPacket pp : local.msgs)
+			for(PaxosPacket pp : local.msgs) 
 				this.handlePaxosPacket((pp));
 		this.messenger.send(MessagingTask.getNonLoopback(mtask, myID));
 	}

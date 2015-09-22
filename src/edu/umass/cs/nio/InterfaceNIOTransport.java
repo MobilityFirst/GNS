@@ -92,4 +92,9 @@ public interface InterfaceNIOTransport<NodeIDType,MessageType> {
 	public int sendToAddress(InetSocketAddress isa, byte[] msg)
 			throws IOException;
 
+	/**
+	 * @param node
+	 * @return Whether {@code node} got disconnected.
+	 */
+	public boolean isDisconnected(NodeIDType node);
 }

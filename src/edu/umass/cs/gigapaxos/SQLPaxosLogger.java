@@ -228,6 +228,9 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 	protected static boolean disableLogging() {
 		return disableLogging && (disableLogging = true);
 	}
+	protected static boolean isJournalingEnabled() {
+		return ENABLE_JOURNALING;
+	}
 
 	/*
 	 * The global statements are not really need and can be replaced by local
