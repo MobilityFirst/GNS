@@ -37,7 +37,7 @@ public class RTTQuick extends GnsCommand {
 
   @Override
   public String getCommandName() {
-    return RTTTEST;
+    return RTT_TEST;
   }
 
   @Override

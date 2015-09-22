@@ -390,13 +390,13 @@ public class GnsProtocolDefs {
   /**
    *
    */
-  public final static String RTTTEST = "rttTest";
+  public final static String RTT_TEST = "rttTest";
   // Arguments for admin commands
 
   /**
    *
    */
-  public final static String BATCH = "batch";
+  public final static String BATCH_TEST = "batchTest";
   // Arguments for admin commands
 
   /**

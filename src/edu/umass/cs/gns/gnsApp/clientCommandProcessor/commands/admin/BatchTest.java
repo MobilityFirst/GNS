@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin;
 
-import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.BatchTest;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.BatchTests;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
@@ -20,32 +20,34 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class Batch extends GnsCommand {
+public class BatchTest extends GnsCommand {
 
   /**
    *
    * @param module
    */
-  public Batch(CommandModule module) {
+  public BatchTest(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUIDCNT};
+    return new String[]{NAME, PUBLIC_KEY, GUIDCNT};
   }
 
   @Override
   public String getCommandName() {
-    return BATCH;
+    return BATCH_TEST;
   }
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     if (module.isAdminMode()) {
+      String accountName = json.optString(NAME, BatchTests.DEFAULT_ACCOUNTNAME);
+      String publicKey = json.optString(PUBLIC_KEY, BatchTests.DEFAULT_PUBLICKEY);
       String guidCntString = json.getString(GUIDCNT);
       int guidCnt = Integer.parseInt(guidCntString);
-      BatchTest.runBatchTest(guidCnt, handler);
+      BatchTests.runBatchTest(accountName, publicKey, guidCnt, handler);
       return new CommandResponse<>(OKRESPONSE);
     } else {
       return new CommandResponse<>(BADRESPONSE + " " + OPERATIONNOTSUPPORTED + " Don't understand " + getCommandName());
@@ -55,6 +57,7 @@ public class Batch extends GnsCommand {
 
   @Override
   public String getCommandDescription() {
-    return "Creates N guids using batch create";
+    return "Creates N guids using batch create for the supplied account. The public key is used"
+            + "if we need to create the account.";
   }
 }

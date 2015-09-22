@@ -13,25 +13,38 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientReques
  *
  * @author westy
  */
-public class BatchTest {
+public class BatchTests {
 
-  private static final String ACCOUNTNAME = "BatchTest";
-  private static final String PUBLICKEY = "BATCH";
+  public static final String DEFAULT_ACCOUNTNAME = "BatchTest";
+  public static final String DEFAULT_PUBLICKEY = "BATCH";
 
   /**
-   * This method implements the Batch test. 
+   * This method implements the Batch test using the default account name and public key.
    * 
    * @param guidCnt
    * @param handler 
    */
   public static void runBatchTest(int guidCnt, ClientRequestHandlerInterface handler) {
+    runBatchTest(DEFAULT_ACCOUNTNAME, DEFAULT_PUBLICKEY, guidCnt, handler);
+  }
+  
+  /**
+   * This method implements the Batch test.
+   * 
+   * @param accountName
+   * @param publicKey
+   * @param guidCnt
+   * @param handler 
+   */
+  public static void runBatchTest(String accountName, String publicKey, int guidCnt,
+          ClientRequestHandlerInterface handler) {
     String accountGuid;
     // see if we already registered our GUID
-    if ((accountGuid = AccountAccess.lookupGuid(ACCOUNTNAME, handler)) == null) {
+    if ((accountGuid = AccountAccess.lookupGuid(accountName, handler)) == null) {
       // if not we use the method  below which bypasses the normal email verification requirement
       // but first we create a GUID from our public key
-      accountGuid = ClientUtils.createGuidStringFromPublicKey(PUBLICKEY.getBytes());
-      AccountAccess.addAccount(ACCOUNTNAME, accountGuid, PUBLICKEY, "", false, null, handler);
+      accountGuid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
+      AccountAccess.addAccount(accountName, accountGuid, publicKey, "", false, null, handler);
     }
     
     AccountAccess.testBatchCreateGuids(
