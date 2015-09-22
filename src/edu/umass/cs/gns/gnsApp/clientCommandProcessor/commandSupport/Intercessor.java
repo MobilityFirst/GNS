@@ -14,6 +14,7 @@ import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
 
+import edu.umass.cs.gns.gnsApp.packet.AddBatchRecordPacket;
 import edu.umass.cs.gns.utils.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -36,6 +37,8 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket
 import edu.umass.cs.utils.DelayProfiler;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * One of a number of class that implement client support in the GNS server.
@@ -393,6 +396,35 @@ public class Intercessor implements IntercessorInterface {
     }
     return result;
   }
+  
+  public NSResponseCode sendAddBatchRecord(Set<String> names, Map<String, JSONObject> values) {
+    int id = nextUpdateRequestID();
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Sending add: " + names + values);
+    }
+    AddBatchRecordPacket<String> pkt = new AddBatchRecordPacket<>(null, id, names, values, nodeAddress);
+    if (debuggingEnabled) {
+      GNS.getLogger().fine("#####PACKET: " + pkt.toString());
+    }
+    try {
+      JSONObject json = pkt.toJSONObject();
+      injectPacketIntoCCPQueue(json);
+
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    // need to wait for a confirmation packet because these requests will be sent out
+    // to a reconfigurator
+    waitForUpdateConfirmationPacket(id);
+    NSResponseCode result = updateSuccessResult.get(id);
+    updateSuccessResult.remove(id);
+    if (debuggingEnabled) {
+      GNS.getLogger().info("Add (" + id + "): " + names + "\n  Returning: " + result);
+    }
+    return result;
+  }
+  
+  
 
   /**
    * Sends an RemoveRecord packet to the CPP.

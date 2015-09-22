@@ -100,7 +100,17 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
   public ConfirmUpdatePacket(NSResponseCode code, AddRecordPacket<NodeIDType> packet) {
     this(Packet.PacketType.ADD_CONFIRM, packet.getSourceId(),
             packet.getRequestID(), packet.getCCPRequestID(), code);
-
+  }
+  
+  /**
+   * Create a ConfirmUpdatePacket instance.
+   * 
+   * @param code
+   * @param packet
+   */
+  public ConfirmUpdatePacket(NSResponseCode code, AddBatchRecordPacket<NodeIDType> packet) {
+    this(Packet.PacketType.ADD_CONFIRM, packet.getSourceId(),
+            packet.getRequestID(), packet.getCCPRequestID(), code);
   }
 
   /**

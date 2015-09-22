@@ -93,6 +93,7 @@ public class CommandDefs {
     // Account
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.AddAlias",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.AddGuid",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.AddMultipleGuids",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.LookupAccountRecord",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.LookupGuid",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.LookupPrimaryGuid",
@@ -138,6 +139,9 @@ public class CommandDefs {
 //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RevokeMemberships",
     //Admin
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.Admin",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTest",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTestName",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTestSimple",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.GetParameter",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.SetParameter",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ListParameters",
@@ -152,7 +156,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.GetTagged",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.Dump",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingTable",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingValue",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingValue",    
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.RTT",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.RTTQuick",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ConnectionCheck"

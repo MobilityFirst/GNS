@@ -13,6 +13,8 @@ import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.packet.AbstractAddRecordPacket;
+import edu.umass.cs.gns.gnsApp.packet.Packet;
 import edu.umass.cs.nio.GenericMessagingTask;
 import edu.umass.cs.protocoltask.ProtocolEvent;
 import edu.umass.cs.protocoltask.ProtocolTask;
@@ -108,9 +110,13 @@ public class CCPProtocolTask<NodeIDType> implements
                   + " in " + (System.currentTimeMillis() - info.getStartTime()) + "ms");
         }
         @SuppressWarnings("unchecked")
-        AddRecordPacket<String> originalPacket = (AddRecordPacket<String>) info.getUpdatePacket();
-        ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, originalPacket);
-
+        AbstractAddRecordPacket<String> originalPacket = (AbstractAddRecordPacket<String>) info.getUpdatePacket();
+        ConfirmUpdatePacket<String> confirmPacket = 
+                new ConfirmUpdatePacket<String>(Packet.PacketType.UPDATE_CONFIRM, 
+        originalPacket.getSourceId(),
+        originalPacket.getRequestID(), originalPacket.getCCPRequestID(), NSResponseCode.NO_ERROR);
+//        ConfirmUpdatePacket<String> confirmPacket = new ConfirmUpdatePacket<String>(NSResponseCode.NO_ERROR, 
+//                originalPacket);
         try {
           AddRemove.handlePacketConfirmAdd(confirmPacket.toJSONObject(), handler);
         } catch (JSONException | UnknownHostException e) {

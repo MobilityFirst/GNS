@@ -2,8 +2,6 @@ package edu.umass.cs.utils;
 
 import java.util.HashMap;
 
-import edu.umass.cs.utils.Util;
-
 /**
  * @author V. Arun
  */

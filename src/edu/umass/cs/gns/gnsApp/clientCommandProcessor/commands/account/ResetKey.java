@@ -37,7 +37,7 @@ public class ResetKey extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID, PUBLICKEY, PASSWORD};
+    return new String[]{GUID, PUBLIC_KEY, PASSWORD};
   }
 
   @Override
@@ -49,7 +49,7 @@ public class ResetKey extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException {
       String guid = json.getString(GUID);
-      String publicKey = json.getString(PUBLICKEY);
+      String publicKey = json.getString(PUBLIC_KEY);
       String password = json.getString(PASSWORD);
       return AccountAccess.resetPublicKey(guid, password, publicKey, handler);
   }

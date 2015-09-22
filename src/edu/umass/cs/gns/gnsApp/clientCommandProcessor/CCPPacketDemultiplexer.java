@@ -27,11 +27,11 @@ import org.json.JSONObject;
 
 /**
  * Processes incoming and outgoing incoming and outgoing lookup (DNS), updated
- * and select packets. Basically, all command packets are converted into a 
+ * and select packets. Basically, all command packets are converted into a
  * one or more of the above packet types and dispatched thru this class which
- * invokes static methods from {@Link Lookup}, {@Link Update}, 
+ * invokes static methods from {@Link Lookup}, {@Link Update},
  * {@Link CreateDelete}, {@Link AddRemove} and {@Link Select} classes.
- * 
+ *
  * @author westy
  * @param <NodeIDType>
  */
@@ -42,7 +42,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
 
   /**
    * Sets the handler.
-   * 
+   *
    * @param handler
    */
   public void setHandler(ClientRequestHandlerInterface handler) {
@@ -61,6 +61,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
     register(Packet.PacketType.DNS);
     register(Packet.PacketType.UPDATE);
     register(Packet.PacketType.ADD_RECORD);
+    register(Packet.PacketType.ADD_BATCH_RECORD);
     register(Packet.PacketType.REMOVE_RECORD);
     register(Packet.PacketType.ADD_CONFIRM);
     register(Packet.PacketType.REMOVE_CONFIRM);
@@ -74,7 +75,7 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   public boolean handleMessage(JSONObject json) {
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1], 
+      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1],
               new Object[]{"*****************************> CCP RECEIVED: ", json});
     }
     try {
@@ -117,6 +118,10 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
           case ADD_RECORD:
             // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
             CreateDelete.handleAddPacket(json, handler);
+            return true;
+          case ADD_BATCH_RECORD:
+            // New code which creates CreateServiceName packets and sends them to the Reconfigurator.
+            CreateDelete.handleAddBatchPacket(json, handler);
             return true;
           case REMOVE_RECORD:
             // New code which creates DeleteService packets and sends them to the Reconfigurator.

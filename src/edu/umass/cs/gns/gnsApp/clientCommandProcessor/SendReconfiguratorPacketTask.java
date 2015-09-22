@@ -59,7 +59,8 @@ public class SendReconfiguratorPacketTask extends TimerTask {
     try {
       sendCount++;
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() + " sent = " + sendCount + " retries = " + retries);
+        GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType() 
+                + " sent = " + sendCount + " retries = " + retries);
       }
 
       if (isResponseReceived() || isMaxWaitTimeExceeded()) {

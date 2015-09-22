@@ -157,7 +157,7 @@ public class Reconfigurator<NodeIDType> implements
 		
 		// if here, recovery must be complete
 		this.DB.setRecovering(this.recovering = false); 
-		log.log(Level.INFO,
+		log.log(Level.FINE,
 				"{0} finished recovery with NodeConfig = {1}",
 				new Object[] { this,
 						this.consistentNodeConfig.getReconfigurators() });
@@ -175,7 +175,7 @@ public class Reconfigurator<NodeIDType> implements
 
 	@Override
 	public boolean handleMessage(JSONObject jsonObject) {
-		log.info(this + " received " + jsonObject);
+		log.fine(this + " received " + jsonObject);
 
 		try {
 			ReconfigurationPacket.PacketType rcType = ReconfigurationPacket
@@ -307,7 +307,7 @@ public class Reconfigurator<NodeIDType> implements
 		 * nodeConfig is outdated at some node, that only affects the choice of
 		 * active replicas below, not their consistency.
 		 */
-		log.log(Level.INFO, "{0} processing {1} from creator {2} {3}",
+		log.log(Level.FINE, "{0} processing {1} from creator {2} {3}",
 				new Object[] {
 						this,
 						create.getSummary(),
@@ -410,7 +410,7 @@ public class Reconfigurator<NodeIDType> implements
 
 		if (this.processRedirection(delete))
 			return null;
-		log.log(Level.INFO,
+		log.log(Level.FINE,
 				"{0} processing delete request {1} from creator {2} {3}",
 				new Object[] {
 						this,
@@ -448,7 +448,7 @@ public class Reconfigurator<NodeIDType> implements
 						delete.getServiceName()
 								+ (record != null ? " is being reconfigured and can not be deleted just yet."
 										: " does not exist")));
-		log.log(Level.INFO,
+		log.log(Level.FINE,
 				"{0} discarded {1} because RC record is not reconfiguration ready.",
 				new Object[] { this, delete.getSummary() });
 		return null;
@@ -483,7 +483,7 @@ public class Reconfigurator<NodeIDType> implements
 				.getReconfigurationRecord(request.getServiceName());
 		if (record == null || record.getNewActives() == null
 				|| record.isDeletePending()) {
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} returning null active replicas for name {1}; record = {2}",
 					new Object[] { this, request.getServiceName(), record });
 			// I am responsible but can't find actives for the name
@@ -537,7 +537,7 @@ public class Reconfigurator<NodeIDType> implements
 		assert (changeRC.getServiceName()
 				.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString()));
-		log.log(Level.INFO,
+		log.log(Level.FINE,
 				"{0} received node config change request {1} from initiator {2}",
 				new Object[] { this, changeRC.toString(),
 						changeRC.getIssuer() });
@@ -855,7 +855,7 @@ public class Reconfigurator<NodeIDType> implements
 		 * responsible, otherwise there will be an infinite forwarding loop.
 		 */
 		if (clientRCPacket.isRedirectedResponse()) {
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} relaying response for forwarded request {1}",
 					new Object[] { this, clientRCPacket.getSummary() });
 			// just relay response to the client
@@ -1076,7 +1076,7 @@ public class Reconfigurator<NodeIDType> implements
 		boolean ready = recordGroupName != null && recordGroupName.isReady()
 				&& (recordServiceName == null || recordServiceName.isReady());
 		if (!ready)
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} not ready to reconfigure {1}; record={2} and rcGroupRecord={3}",
 					new Object[] {
 							this,
@@ -1252,7 +1252,7 @@ public class Reconfigurator<NodeIDType> implements
 			 * WaitAckStopEpoch task, i.e., the intent itself will not be
 			 * committed again (and indeed can not be by design).
 			 */
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} initiating pending reconfiguration for {1}",
 					new Object[] { this, name });
 			RCRecordRequest<NodeIDType> rcRecReq = new RCRecordRequest<NodeIDType>(
@@ -1280,7 +1280,7 @@ public class Reconfigurator<NodeIDType> implements
 					.toArray()[(int) (Math.random() * responsibleRCs.size())]);
 			request = request.setForwader(this.consistentNodeConfig
 					.getBindSocketAddress(getMyID()));
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} forwarding client request {1} to reconfigurator {2}",
 					new Object[] { this, request.getSummary(),
 							randomResponsibleRC });
@@ -1306,7 +1306,7 @@ public class Reconfigurator<NodeIDType> implements
 			InetSocketAddress querier = this.getQuerier(response);
 			if (querier.equals(response.getCreator())) {
 				// only response can go back to client
-				log.log(Level.INFO,
+				log.log(Level.FINE,
 						"{0} sending client response {1}:{2} to client {3}",
 						new Object[] { this, response,
 								response.getResponseMessage(), querier });
@@ -1314,7 +1314,7 @@ public class Reconfigurator<NodeIDType> implements
 						querier, response.toJSONObject());
 			} else {
 				// may be a request or response
-				log.log(Level.INFO,
+				log.log(Level.FINE,
 						"{0} sending client {1} {2} to reconfigurator {3}",
 						new Object[] {
 								this,
@@ -1385,14 +1385,14 @@ public class Reconfigurator<NodeIDType> implements
 					rcRecReq.startEpoch.getForwarder()).makeResponse();
 			// need to use different messengers for client and forwarder
 			if (querier.equals(rcRecReq.startEpoch.creator)) {
-				log.log(Level.INFO,
+				log.log(Level.FINE,
 						"{0} sending creation confirmation {1} to client {2}",
 						new Object[] { this, response.getSummary(), querier });
 				// this.getClientMessenger()
 				(this.getMessenger(rcRecReq.startEpoch.getMyReceiver()))
 						.sendToAddress(querier, response.toJSONObject());
 			} else {
-				log.log(Level.INFO,
+				log.log(Level.FINE,
 						"{0} sending creation confirmation {1} to forwarding reconfigurator {2}",
 						new Object[] { this, response.getSummary(), querier });
 				this.messenger.sendToAddress(querier, response.toJSONObject());
@@ -1431,7 +1431,7 @@ public class Reconfigurator<NodeIDType> implements
 					rcRecReq.startEpoch.getForwarder()).makeResponse();
 
 			if (querier.equals(rcRecReq.startEpoch.creator)) {
-				log.log(Level.INFO,
+				log.log(Level.FINE,
 						"{0} sending deletion confirmation {1} to client {2}",
 						new Object[] { this, response.getSummary(), querier });
 				// this.getClientMessenger()
@@ -1439,7 +1439,7 @@ public class Reconfigurator<NodeIDType> implements
 						.sendToAddress(this.getQuerier(rcRecReq),
 								response.toJSONObject());
 			} else {
-				log.log(Level.INFO,
+				log.log(Level.FINE,
 						"{0} sending deletion confirmation {1} to forwarding reconfigurator {2}",
 						new Object[] { this, response.getSummary(), querier });
 				this.messenger.sendToAddress(querier, response.toJSONObject());
@@ -1487,7 +1487,7 @@ public class Reconfigurator<NodeIDType> implements
 					this.DB.getMyID(), rcRecReq.startEpoch.newlyAddedNodes,
 					this.diff(rcRecReq.startEpoch.prevEpochGroup,
 							rcRecReq.startEpoch.curEpochGroup));
-			log.log(Level.INFO,
+			log.log(Level.FINE,
 					"{0} sending ReconfigureRCNodeConfig confirmation to {1}: {2}",
 					new Object[] { this, rcRecReq.startEpoch.creator,
 							response.getSummary() });
@@ -1507,7 +1507,7 @@ public class Reconfigurator<NodeIDType> implements
 	protected void sendRCReconfigurationErrorToInitiator(
 			ReconfigureRCNodeConfig<NodeIDType> changeRCReq) {
 		try {
-			log.log(Level.INFO, MyLogger.FORMAT[2],
+			log.log(Level.FINE, MyLogger.FORMAT[2],
 					new Object[] { this,
 							"sending ReconfigureRCNodeConfig error to",
 							changeRCReq.getIssuer() });
@@ -1611,7 +1611,7 @@ public class Reconfigurator<NodeIDType> implements
 	 */
 	private void postCompleteNodeConfigChange(
 			RCRecordRequest<NodeIDType> rcRecReq) {
-		log.log(Level.INFO,
+		log.log(Level.FINE,
 				"{0} completed node config change for epoch {1}; forcing checkpoint..",
 				new Object[] { this, rcRecReq.getEpochNumber() });
 		this.DB.forceCheckpoint(rcRecReq.getServiceName());
@@ -1639,7 +1639,7 @@ public class Reconfigurator<NodeIDType> implements
 					.entrySet()) {
 				this.consistentNodeConfig.addReconfigurator(entry.getKey(),
 						entry.getValue());
-				log.log(Level.INFO,
+				log.log(Level.FINE,
 						"{0} added new reconfigurator {1}={2} to node config",
 						new Object[] {
 								this,
@@ -1746,7 +1746,7 @@ public class Reconfigurator<NodeIDType> implements
 		String merged = this.mergeExistingGroups(curRCGroups, newRCGroups,
 				ncRecord);
 
-		log.log(Level.INFO, "{0} changed/split/merged = \n{1}{2}{3}",
+		log.log(Level.FINE, "{0} changed/split/merged = \n{1}{2}{3}",
 				new Object[] { this, changed, split, merged });
 		return !(changed + split + merged).isEmpty();
 	}

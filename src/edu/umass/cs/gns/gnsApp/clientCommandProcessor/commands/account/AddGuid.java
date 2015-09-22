@@ -17,7 +17,6 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GuidInfo;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
-import edu.umass.cs.gns.httpserver.Defs;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.utils.Base64;
 import java.io.UnsupportedEncodingException;
@@ -29,7 +28,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- *
+ * Command to add a guid.
+ * 
  * @author westy
  */
 public class AddGuid extends GnsCommand {
@@ -45,7 +45,7 @@ public class AddGuid extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, ACCOUNT_GUID, PUBLICKEY, SIGNATURE, SIGNATUREFULLMESSAGE};
+    return new String[]{NAME, ACCOUNT_GUID, PUBLIC_KEY, SIGNATURE, SIGNATUREFULLMESSAGE};
   }
 
   @Override
@@ -58,7 +58,7 @@ public class AddGuid extends GnsCommand {
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
       String name = json.getString(NAME);
       String accountGuid = json.getString(ACCOUNT_GUID);
-      String publicKey = json.getString(PUBLICKEY);
+      String publicKey = json.getString(PUBLIC_KEY);
       String signature = json.getString(SIGNATURE);
       String message = json.getString(SIGNATUREFULLMESSAGE);
       
