@@ -561,6 +561,12 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 	/* ********** Start of private methods ************************** */
 
+	private boolean isDisconnected(InetSocketAddress isa) {
+		NodeIDType node = this.getNodeID(isa);
+		return this.lastFailed.containsKey(node);
+	}
+
+
 	// Invoked only by the selector thread. Typical nio event handling code.
 	private void processSelectedKeys() {
 		// Iterate over the set of keys for which events are available
@@ -609,6 +615,9 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				.getRemoteSocketAddress();
 		if (remote == null)
 			remote = this.getSockAddrFromSockChannel(channel);
+		this.updateFailed(remote);
+	}
+	private void updateFailed(InetSocketAddress remote) {
 		NodeIDType node = null;
 		if ((node = this.getNodeID(remote)) != null)
 			this.lastFailed.put(node, System.currentTimeMillis());
@@ -1177,7 +1186,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				this.wrapWrite(channel, data);
 				return true;
 			} catch (IOException e) {
-				// exception means we have lost data?
+				if (!this.isDisconnected(isa)) {
+					this.updateFailed(isa);
+					e.printStackTrace();
+				}
 			}
 		}
 		return false;
