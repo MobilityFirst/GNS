@@ -567,16 +567,15 @@ public class AccountAccess {
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
           ClientRequestHandlerInterface handler) {
     try {
-      //ArrayList<String> publicKeys = new ArrayList<>();
       Set<String> guids = new HashSet<>();
       Map<String, JSONObject> hrnMap = new HashMap<>();
       Map<String, JSONObject> guidInfoMap = new HashMap<>();
       for (int i = 0; i < names.size(); i++) {
         String name = names.get(i);
         String publicKey = publicKeys.get(i);
-        //publicKeys.add(publicKey);
         String guid = ClientUtils.createGuidStringFromPublicKey(publicKey.getBytes());
         accountInfo.addGuid(guid);
+        guids.add(guid);
         // HRN records
         JSONObject jsonHRN = new JSONObject();
         jsonHRN.put(HRN_GUID, guid);

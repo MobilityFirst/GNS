@@ -1,13 +1,13 @@
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport;
 
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.BasicPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import static edu.umass.cs.gns.gnsApp.packet.Packet.PacketType.*;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import org.json.JSONException;
 import org.json.JSONObject;
 

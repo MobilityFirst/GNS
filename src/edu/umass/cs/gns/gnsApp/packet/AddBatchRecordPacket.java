@@ -8,6 +8,7 @@ package edu.umass.cs.gns.gnsApp.packet;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.utils.JSONUtils;
+import edu.umass.cs.gns.utils.Util;
 import edu.umass.cs.nio.Stringifiable;
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -21,8 +22,7 @@ import org.json.JSONObject;
  *
  * The packet contains request IDs which are used by local name server, and the client (end-user).
  *
- * A client sending this packet sets an initial key/fieldValue pair associated with the name or
- * the entire JSONObject associated with the name.
+ * A client sending this packet sets an initial values associated with the names.
  *
  * A client must set the <code>requestID</code> field correctly to received a response.
  *
@@ -35,25 +35,11 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class AddBatchRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
+public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements InterfaceRequest {
 
-  private final static String REQUESTID = "reqID";
-  private final static String LNSREQID = "lnreqID";
   private final static String NAMES = "names";
-  private final static String SOURCE_ID = "sourceId";
   private final static String VALUES = "values";
-  //private final static String TIME_TO_LIVE = "ttlAddress";
-  //private final static String ACTIVE_NAMESERVERS = "actives";
-
-  /**
-   * Unique identifier used by the entity making the initial request to confirm
-   */
-  private int requestID;
-
-  /**
-   * The ID the CCP uses to for bookkeeping
-   */
-  private int CCPRequestID;
+  private final static String SERVICE_NAME = "service_name";
 
   /**
    * Host/domain/device name *
@@ -63,19 +49,13 @@ public class AddBatchRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
   /**
    * A map of the values per name that should be set.
    */
-  private JSONObject values;
+  private final JSONObject values;
 
   /**
-   * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, null) that means go back the Intercessor otherwise
-   * it came from another server.
+   * The service name.
    */
-  private final NodeIDType sourceId;
+  private String serviceName; // computed at creation time from the names
 
-//  /**
-//   * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
-//   * replica set.
-//   */
-//  private Set<NodeIDType> activeNameServers = null;
   /**
    * Constructs a new AddBatchRecordPacket with the given names and values.
    * This constructor does not specify one fields in this packet: <code>CCPRequestID</code>.
@@ -92,12 +72,16 @@ public class AddBatchRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    */
   public AddBatchRecordPacket(NodeIDType sourceId, int requestID, Set<String> names, Map<String, JSONObject> values,
           InetSocketAddress lnsAddress) {
-    super(null, lnsAddress);
+    super(sourceId, requestID, lnsAddress);
     this.type = Packet.PacketType.ADD_BATCH_RECORD;
-    this.sourceId = sourceId != null ? sourceId : null;
-    this.requestID = requestID;
     this.names = new JSONArray(names);
     this.values = new JSONObject(values);
+    try {
+      this.serviceName = this.names.getString(0);
+    } catch (JSONException e) {
+      // nobody cares
+      this.serviceName = Util.randomString(6);
+    }
   }
 
   /**
@@ -108,17 +92,13 @@ public class AddBatchRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    * @throws org.json.JSONException
    */
   public AddBatchRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
+    super(json, unstringer);
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_BATCH_RECORD) {
       throw new JSONException("AddBatchRecordPacket: wrong packet type " + Packet.getPacketType(json));
     }
-    this.type = Packet.getPacketType(json);
-    this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
-    this.requestID = json.getInt(REQUESTID);
-    this.CCPRequestID = json.getInt(LNSREQID);
     this.names = json.getJSONArray(NAMES);
     this.values = json.getJSONObject(VALUES);
+    this.serviceName = json.getString(SERVICE_NAME);
   }
 
   /**
@@ -129,53 +109,11 @@ public class AddBatchRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
-    JSONObject json = new JSONObject();
-    Packet.putPacketType(json, getType());
-    super.addToJSONObject(json);
-    json.put(SOURCE_ID, sourceId);
-    json.put(REQUESTID, getRequestID());
-    json.put(LNSREQID, getCCPRequestID());
+    JSONObject json = super.toJSONObject();
     json.put(NAMES, names);
-    if (values != null) {
-      json.put(VALUES, values);
-    }
+    json.put(VALUES, values);
+    json.put(SERVICE_NAME, serviceName);
     return json;
-  }
-
-  /**
-   * Return the request id.
-   *
-   * @return the request id
-   */
-  public int getRequestID() {
-    return requestID;
-  }
-
-  /**
-   * Set the request id.
-   *
-   * @param requestID
-   */
-  public void setRequestID(int requestID) {
-    this.requestID = requestID;
-  }
-
-  /**
-   * Return the CCP request id.
-   *
-   * @return the CCP request id
-   */
-  public int getCCPRequestID() {
-    return CCPRequestID;
-  }
-
-  /**
-   * LNS uses this method to set the ID it will use for bookkeeping about this request.
-   *
-   * @param CCPRequestID
-   */
-  public void setCCPRequestID(int CCPRequestID) {
-    this.CCPRequestID = CCPRequestID;
   }
 
   /**
@@ -202,26 +140,10 @@ public class AddBatchRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
     return values;
   }
 
-  /**
-   * Return the source id.
-   *
-   * @return
-   */
-  public NodeIDType getSourceId() {
-    return sourceId;
-  }
-
   // For InterfaceRequest
   @Override
   public String getServiceName() {
-    try {
-      return names.getString(0);
-    } catch (JSONException e) {
-      // we're basically screwed here
-      GNS.getLogger().severe("Problem getting service name from AddBatchRecordPacket: " + e);
-      return null;
-    }
-
+    return serviceName;
   }
 
 }

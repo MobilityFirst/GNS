@@ -33,27 +33,12 @@ import org.json.JSONObject;
  *
  * @param <NodeIDType>
  */
-public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
+public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDType> implements InterfaceRequest {
 
-  private final static String REQUESTID = "reqID";
-  private final static String LNSREQID = "lnreqID";
   private final static String NAME = "name";
   private final static String FIELD = "field";
   private final static String FIELDVALUE = "fieldValue";
-  private final static String SOURCE_ID = "sourceId";
   private final static String VALUES = "values";
-  //private final static String TIME_TO_LIVE = "ttlAddress";
-  //private final static String ACTIVE_NAMESERVERS = "actives";
-
-  /**
-   * Unique identifier used by the entity making the initial request to confirm
-   */
-  private int requestID;
-
-  /**
-   * The ID the CCP uses to for bookkeeping
-   */
-  private int CCPRequestID;
 
   /**
    * Host/domain/device name *
@@ -74,18 +59,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    * A record value that should be set. Mutually exclusive with fieldValue. *
    */
   private final JSONObject values;
-  
-  /**
-   * The originator of this packet, if it is LOCAL_SOURCE_ID (ie, null) that means go back the Intercessor otherwise
-   * it came from another server.
-   */
-  private final NodeIDType sourceId;
 
-//  /**
-//   * Initial set of active replicas for this name. Used by RC's to inform an active replica of the initial active
-//   * replica set.
-//   */
-//  private Set<NodeIDType> activeNameServers = null;
   /**
    * Constructs a new AddRecordPacket with the given name, fieldValue.
    * This constructor does not specify one fields in this packet: <code>CCPRequestID</code>.
@@ -103,10 +77,8 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    */
   public AddRecordPacket(NodeIDType sourceId, int requestID, String name, String field,
           ResultValue fieldValue, InetSocketAddress lnsAddress) {
-    super(null, lnsAddress);
+    super(sourceId, requestID, lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
-    this.sourceId = sourceId != null ? sourceId : null;
-    this.requestID = requestID;
     this.name = name;
     this.values = null;
     this.field = field;
@@ -124,10 +96,8 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    */
   public AddRecordPacket(NodeIDType sourceId, int requestID, String name,
           JSONObject values, InetSocketAddress lnsAddress) {
-    super(null, lnsAddress);
+    super(sourceId, requestID, lnsAddress);
     this.type = Packet.PacketType.ADD_RECORD;
-    this.sourceId = sourceId != null ? sourceId : null;
-    this.requestID = requestID;
     this.name = name;
     this.values = values;
     this.field = null;
@@ -142,17 +112,12 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    * @throws org.json.JSONException
    */
   public AddRecordPacket(JSONObject json, Stringifiable<NodeIDType> unstringer) throws JSONException {
-    super(json.has(NAMESERVER_ID) ? unstringer.valueOf(json.getString(NAMESERVER_ID)) : null,
-            json.optString(CCP_ADDRESS, null), json.optInt(CCP_PORT, INVALID_PORT));
+    super(json, unstringer);
     if (Packet.getPacketType(json) != Packet.PacketType.ADD_RECORD //&& Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD
             //&& Packet.getPacketType(json) != Packet.PacketType.ACTIVE_ADD_CONFIRM
             ) {
       throw new JSONException("AddRecordPacket: wrong packet type " + Packet.getPacketType(json));
     }
-    this.type = Packet.getPacketType(json);
-    this.sourceId = json.has(SOURCE_ID) ? unstringer.valueOf(json.getString(SOURCE_ID)) : null;
-    this.requestID = json.getInt(REQUESTID);
-    this.CCPRequestID = json.getInt(LNSREQID);
     this.name = json.getString(NAME);
     this.field = json.optString(FIELD, null);
     if (json.has(FIELDVALUE)) {
@@ -171,12 +136,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
    */
   @Override
   public JSONObject toJSONObject() throws JSONException {
-    JSONObject json = new JSONObject();
-    Packet.putPacketType(json, getType());
-    super.addToJSONObject(json);
-    json.put(SOURCE_ID, sourceId);
-    json.put(REQUESTID, getRequestID());
-    json.put(LNSREQID, getCCPRequestID());
+    JSONObject json = super.toJSONObject();
     json.put(NAME, getName());
     if (field != null) {
       json.put(FIELD, field);
@@ -191,44 +151,8 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
   }
 
   /**
-   * Return the request id.
-   * 
-   * @return the request id
-   */
-  public int getRequestID() {
-    return requestID;
-  }
-
-  /**
-   * Set the request id.
-   * 
-   * @param requestID
-   */
-  public void setRequestID(int requestID) {
-    this.requestID = requestID;
-  }
-
-  /**
-   * Return the CCP request id.
-   * 
-   * @return the CCP request id
-   */
-  public int getCCPRequestID() {
-    return CCPRequestID;
-  }
-
-  /**
-   * LNS uses this method to set the ID it will use for bookkeeping about this request.
-   *
-   * @param CCPRequestID
-   */
-  public void setCCPRequestID(int CCPRequestID) {
-    this.CCPRequestID = CCPRequestID;
-  }
-
-  /**
    * Return the name.
-   * 
+   *
    * @return the name
    */
   public String getName() {
@@ -237,7 +161,7 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
 
   /**
    * Return the field.
-   * 
+   *
    * @return the field
    */
   public String getField() {
@@ -246,20 +170,11 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
 
   /**
    * Return the field value.
-   * 
+   *
    * @return the fieldValue
    */
   public ResultValue getFieldValue() {
     return fieldValue;
-  }
-  
-  /**
-   * Return the source id.
-   * 
-   * @return
-   */
-  public NodeIDType getSourceId() {
-    return sourceId;
   }
 
   // For InterfaceRequest
@@ -270,11 +185,11 @@ public class AddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDT
 
   /**
    * Return the values.
-   * 
+   *
    * @return
    */
   public JSONObject getValues() {
     return values;
-  } 
+  }
 
 }

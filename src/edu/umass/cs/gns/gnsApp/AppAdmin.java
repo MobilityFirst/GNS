@@ -132,7 +132,7 @@ public class AppAdmin extends Thread implements Shutdownable{
             Packet.sendTCPPacket(dumpRequestPacket.toJSONObject(), 
                     dumpRequestPacket.getCCPAddress());
             
-            GNS.getLogger().info("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
+            GNS.getLogger().fine("NSListenrAdmin: Response to id:" + dumpRequestPacket.getId() + " --> " + dumpRequestPacket.toString());
             break;
           case ADMIN_REQUEST:
             AdminRequestPacket adminRequestPacket = new AdminRequestPacket(incomingJSON);

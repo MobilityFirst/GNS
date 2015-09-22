@@ -42,7 +42,7 @@ public class GNS {
   /**
    * The maximum number of subguids allowed in an account guid.
    */
-  public static int MAXGUIDS = 500;
+  public static int MAXGUIDS = 12000;
 
   // This is designed so we can run multiple NSs on the same host if needed
   /**

@@ -392,7 +392,7 @@ public class GnsProtocolDefs {
    */
   public final static String RTTTEST = "rttTest";
   // Arguments for admin commands
-  
+
   /**
    *
    */
@@ -632,6 +632,11 @@ public class GnsProtocolDefs {
   /**
    *
    */
+  public final static String NAMES = "names";
+
+  /**
+   *
+   */
   public final static String GUID = "guid";
 
   /**
@@ -730,7 +735,12 @@ public class GnsProtocolDefs {
   /**
    *
    */
-  public final static String PUBLICKEY = "publickey";
+  public final static String PUBLIC_KEY = "publickey";
+  
+   /**
+   *
+   */
+  public final static String PUBLIC_KEYS = "publickeys";
 
   /**
    *

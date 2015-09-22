@@ -7,7 +7,6 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account;
 
-import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
@@ -42,7 +41,7 @@ public class RegisterAccount extends GnsCommand {
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{NAME, PUBLICKEY, PASSWORD};
+    return new String[]{NAME, PUBLIC_KEY, PASSWORD};
   }
 
   @Override
@@ -54,7 +53,7 @@ public class RegisterAccount extends GnsCommand {
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws InvalidKeyException, InvalidKeySpecException,
           JSONException, NoSuchAlgorithmException, SignatureException, UnsupportedEncodingException {
     String name = json.getString(NAME);
-    String publicKey = json.getString(PUBLICKEY);
+    String publicKey = json.getString(PUBLIC_KEY);
     String password = json.getString(PASSWORD);
     String signature = json.optString(SIGNATURE, null);
     String message = json.optString(SIGNATUREFULLMESSAGE, null);

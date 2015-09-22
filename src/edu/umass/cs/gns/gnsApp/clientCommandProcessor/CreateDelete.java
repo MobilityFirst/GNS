@@ -17,8 +17,8 @@ import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
 import edu.umass.cs.gns.gnsApp.packet.AddBatchRecordPacket;
+import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.utils.ValuesMap;
-import edu.umass.cs.reconfiguration.ReconfigurationConfig;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationPacket;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
@@ -116,11 +116,23 @@ public class CreateDelete {
   private static AddRecordPacket<String> registerPacketAddRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
     AddRecordPacket<String> addRecordPacket = new AddRecordPacket<>(json, handler.getGnsNodeConfig());
     int ccpReqId = handler.getUniqueRequestID();
-    UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, addRecordPacket.getName(), null, addRecordPacket, handler);
+    UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, addRecordPacket.getName(), null,
+            addRecordPacket, handler);
     handler.addRequestInfo(ccpReqId, info);
     // not sure why this isn't done like this above
     addRecordPacket.setCCPRequestID(ccpReqId);
     return addRecordPacket;
+  }
+
+  private static AddBatchRecordPacket<String> registerPacketAddBatchRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
+    AddBatchRecordPacket<String> addbatchRecordPacket = new AddBatchRecordPacket<>(json, handler.getGnsNodeConfig());
+    int ccpReqId = handler.getUniqueRequestID();
+    UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, addbatchRecordPacket.getServiceName(), null,
+            addbatchRecordPacket, handler);
+    handler.addRequestInfo(ccpReqId, info);
+    // not sure why this isn't done like this above
+    addbatchRecordPacket.setCCPRequestID(ccpReqId);
+    return addbatchRecordPacket;
   }
 
   private static RemoveRecordPacket<String> registerPacketRemoveRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
@@ -141,15 +153,17 @@ public class CreateDelete {
             TimeUnit.MILLISECONDS);
   }
 
-  public static void handleBatchAddPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
+  public static void handleAddBatchPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
-      // do normal add which actually involves converting this into a CreateServiceName packet
       AddBatchRecordPacket<String> packet = registerPacketAddBatchRecord(json, handler);
-      handler.addCreateRequestNameToIDMapping(packet.getServiceName(), 
+      handler.addCreateRequestNameToIDMapping(packet.getServiceName(),
               packet.getCCPRequestID());
-      
-      CreateServiceName[] creates = makeBatchedCreateNameRequest(packet.getNames(), packet.getValues());
+
+      CreateServiceName[] creates = makeBatchedCreateNameRequest(packet.getNames(), packet.getValues(), handler);
       for (CreateServiceName create : creates) {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().severe("??????????????????????????? Sending recon packet for batch NAME = " + packet.getServiceName());
+        }
         sendPacketWithRetransmission(packet.getServiceName(), create, handler);
       }
     } else {
@@ -170,23 +184,13 @@ public class CreateDelete {
 //      Update.sendConfirmUpdatePacketBackToSource(confirmPacket, handler);
     }
   }
-  
-  private static AddBatchRecordPacket<String> registerPacketAddBatchRecord(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-    AddBatchRecordPacket<String> addbatchRecordPacket = new AddBatchRecordPacket<>(json, handler.getGnsNodeConfig());
-    int ccpReqId = handler.getUniqueRequestID();
-    // USE THE FIRST NAME AS THE KEY FOR THE INFO
-    UpdateInfo<String> info = new UpdateInfo<String>(ccpReqId, addbatchRecordPacket.getServiceName(), null, 
-            addbatchRecordPacket, handler);
-    handler.addRequestInfo(ccpReqId, info);
-    // not sure why this isn't done like this above
-    addbatchRecordPacket.setCCPRequestID(ccpReqId);
-    return addbatchRecordPacket;
-  }
+
+  // based on edu.umass.cs.reconfiguration.testing.ReconfigurableClientCreateTester but this one
+  // handles multiple states
   private static CreateServiceName[] makeBatchedCreateNameRequest(Set<String> names,
-          JSONObject states) throws JSONException {
+          JSONObject states, ClientRequestHandlerInterface handler) throws JSONException {
     Collection<Set<String>> batches = ConsistentReconfigurableNodeConfig
-            .splitIntoRCGroups(names,
-                    ReconfigurationConfig.getReconfiguratorIDs());
+            .splitIntoRCGroups(names, handler.getGnsNodeConfig().getReconfigurators());
 
     Set<CreateServiceName> creates = new HashSet<CreateServiceName>();
     // each batched create corresponds to a different RC group

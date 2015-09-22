@@ -93,6 +93,7 @@ public class CommandDefs {
     // Account
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.AddAlias",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.AddGuid",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.AddMultipleGuids",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.LookupAccountRecord",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.LookupGuid",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account.LookupPrimaryGuid",
