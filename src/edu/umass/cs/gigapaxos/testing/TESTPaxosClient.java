@@ -40,6 +40,7 @@ import edu.umass.cs.nio.InterfaceNodeConfig;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.nio.NIOTransport;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -194,18 +195,30 @@ public class TESTPaxosClient {
 							- requestCreateTimes.get(request.requestID);
 					client.incrReplyCount();
 					//assert (requestCreateTimes.containsKey(request.requestID)) : request;
-					log.log(Level.FINE,
+					TESTPaxosClient.log.log(Level.FINE,
 							"Client {0} received response #{1} with latency {2} [{3}] : {4}",
 							new Object[] { client.myID,
 									client.getTotalReplyCount(), latency,
 									request.getDebugInfo(),
 									request.getSummary() });
+					
+					DelayProfiler.updateInterArrivalTime("response_rate1", 1, 100);
+					DelayProfiler.updateRate("response_rate2", 1000, 10);
+
+					if (Util.oneIn(NUM_REQUESTS/100))
+						System.out.println("Instantaneous response_rate1 = "
+								+ Util.df(DelayProfiler
+										.getThroughput("response_rate1"))
+								+ "/s; response_rate2 = "
+								+ Util.df(DelayProfiler
+										.getRate("response_rate2"))
+								+ "/s");
 					updateLatency(latency);
 					synchronized (client) {
 						client.notify();
 					}
 				} else {
-					log.log(Level.FINE,
+					TESTPaxosClient.log.log(Level.FINE,
 							"Client {0} received PHANTOM response #{1} [{2}] for request {3} : {4}",
 							new Object[] { client.myID,
 									client.getTotalReplyCount(),
@@ -552,6 +565,8 @@ public class TESTPaxosClient {
 				+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms"
 				+ "\n  noop_count = " + TESTPaxosClient.getTotalNoopCount();
 	}
+	
+	private static final int NUM_REQUESTS = Config.getGlobalInt(TC.NUM_REQUESTS);
 
 	/**
 	 * @param args
