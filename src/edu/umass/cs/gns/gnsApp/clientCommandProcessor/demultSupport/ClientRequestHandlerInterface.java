@@ -15,6 +15,7 @@ import edu.umass.cs.reconfiguration.reconfigurationpackets.BasicReconfigurationP
 import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurableNodeConfig;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Set;
 import org.json.JSONObject;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -280,6 +281,8 @@ public interface ClientRequestHandlerInterface {
    * @return the request id
    */
   public Integer getCreateRequestNameToIDMapping(String name);
+  
+  public List<String> getCreateRequestIdToNames(int id);
 
   /**
    * Removes the mapping between a ServiceName request and a CCPREquestID.

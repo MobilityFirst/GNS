@@ -9,7 +9,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
@@ -99,7 +98,12 @@ public class CCPProtocolTask<NodeIDType> implements
   private GenericMessagingTask<NodeIDType, ?> handleCreate(CreateServiceName packet) {
     Integer lnsRequestID = handler.removeCreateRequestNameToIDMapping(packet.getServiceName());
     if (lnsRequestID != null) {
-
+      // NEW - There can be multiple creates for one client request.
+      // check to see if there are more pending requests for this request
+      if (!handler.getCreateRequestIdToNames(lnsRequestID).isEmpty()) {
+        return null;
+      }
+        
       // Basically we gin up a confirmation packet for the original AddRecord packet and
       // send it back to the originator of the request.
       @SuppressWarnings("unchecked")

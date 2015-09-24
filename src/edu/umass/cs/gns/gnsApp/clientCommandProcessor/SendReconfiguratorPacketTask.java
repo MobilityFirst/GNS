@@ -168,7 +168,6 @@ public class SendReconfiguratorPacketTask extends TimerTask {
       GNS.getLogger().severe("Problem sending packet to " + nameServerID + ": " + e);
       e.printStackTrace();
     }
-
   }
   
   private Integer getRequestNameToIDMapping(String serviceName) {
