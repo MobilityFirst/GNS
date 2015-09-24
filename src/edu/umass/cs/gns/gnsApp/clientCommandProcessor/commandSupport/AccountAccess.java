@@ -592,6 +592,7 @@ public class AccountAccess {
         JSONObject acl = createACL(ALLFIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
                 ALLFIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
         jsonGuid.put("_GNS_ACL", acl);
+        jsonGuid.put("environment", 8675309); // test value
         guidInfoMap.put(guid, jsonGuid);
       }
       accountInfo.noteUpdate();
@@ -619,9 +620,9 @@ public class AccountAccess {
     List<String> names = new ArrayList<>();
     List<String> publicKeys = new ArrayList<>();
     for (int i = 0; i < count; i++) {
-      String name = "TEST-" + Util.randomString(6);
+      String name = "N" + Util.randomString(10);
       names.add(name);
-      String publicKey = name + "-KEY";
+      String publicKey = "P" + name;
       publicKeys.add(publicKey);
     }
     addMultipleGuids(names, publicKeys, accountInfo, accountGuidInfo, handler);

@@ -77,6 +77,8 @@ public class SendReconfiguratorPacketTask extends TimerTask {
         // this exception is only way to terminate this task from repeat execution
         throw new RuntimeException();
       }
+      // FIXME: This should actually return an error result back to the caller that invoked this
+      // otherwise it just results in a random timeout back at the client.
       GNS.getLogger().severe("Problem in SendReconfiguratorPacketTask: " + e);
       e.printStackTrace();
     }

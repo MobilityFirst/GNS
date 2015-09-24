@@ -201,7 +201,7 @@ public class Util {
     return result;
   }
 
-  private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  private static final String CHARACTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
   private static final Random rnd = new Random(System.currentTimeMillis());
 
   /**
