@@ -209,6 +209,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	/* Map to optimize connection attempts by the selector thread. */
 	private ConcurrentHashMap<InetSocketAddress, Long> connAttempts = null;
 	
+	private ConcurrentHashMap<NodeIDType,Long> lastFailed = null;
+	
 	private SenderTask senderTask;
 
 	private boolean started = false;
@@ -250,6 +252,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		this.sendQueues = new ConcurrentHashMap<InetSocketAddress, LinkedBlockingQueue<ByteBuffer>>();
 		this.sockAddrToSockChannel = new HashMap<InetSocketAddress, SocketChannel>();
 		this.connAttempts = new ConcurrentHashMap<InetSocketAddress, Long>();
+		this.lastFailed = new ConcurrentHashMap<NodeIDType, Long>();
 
 		if (start) {
 			Thread me = (new Thread(this));
@@ -547,8 +550,22 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			return this.nodeConfig.getNodePort(myID);
 		}
 	}
+	
+	/**
+	 * @param node
+	 * @return Whether {@code node} got disconnected.
+	 */
+	public boolean isDisconnected(NodeIDType node) {
+		return this.lastFailed.containsKey(node);
+	}
 
 	/* ********** Start of private methods ************************** */
+
+	private boolean isDisconnected(InetSocketAddress isa) {
+		NodeIDType node = this.getNodeID(isa);
+		return this.lastFailed.containsKey(node);
+	}
+
 
 	// Invoked only by the selector thread. Typical nio event handling code.
 	private void processSelectedKeys() {
@@ -580,6 +597,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				if (key.isValid() && key.isReadable()) 
 					this.read(key);
 			} catch (IOException | CancelledKeyException e) {
+				updateFailed(key);
 				log.info("Node" + myID
 						+ " incurred IOException on "
 						+ key.channel()
@@ -589,6 +607,40 @@ public class NIOTransport<NodeIDType> implements Runnable,
 			}
 		}
 		this.selector.selectedKeys().clear();
+	}
+	
+	private void updateFailed(SelectionKey key) {
+		SocketChannel channel = (SocketChannel) key.channel();
+		InetSocketAddress remote = (InetSocketAddress) channel.socket()
+				.getRemoteSocketAddress();
+		if (remote == null)
+			remote = this.getSockAddrFromSockChannel(channel);
+		this.updateFailed(remote);
+	}
+	private void updateFailed(InetSocketAddress remote) {
+		NodeIDType node = null;
+		if ((node = this.getNodeID(remote)) != null)
+			this.lastFailed.put(node, System.currentTimeMillis());
+	}
+	
+	private NodeIDType getNodeID(InetSocketAddress isa) {
+		if (isa != null)
+			for (NodeIDType node : this.nodeConfig.getNodeIDs())
+				if (this.nodeConfig.getNodeAddress(node).equals(
+						isa.getAddress())
+						&& this.nodeConfig.getNodePort(node) == isa.getPort())
+					return node;
+		return null;
+	}
+
+	private void updateAlive(SocketChannel channel) {
+		InetSocketAddress remote = (InetSocketAddress) (channel).socket()
+				.getRemoteSocketAddress();
+		if (remote == null)
+			remote = this.getSockAddrFromSockChannel(channel);
+		NodeIDType node = null;
+		if ((node = this.getNodeID(remote)) != null)
+			this.lastFailed.remove(node);
 	}
 
 	/*
@@ -617,6 +669,8 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		socketChannel.configureBlocking(false);
 		socketChannel.socket().setReceiveBufferSize(HINT_SOCK_BUFFER_SIZE);
 		socketChannel.socket().setSendBufferSize(HINT_SOCK_BUFFER_SIZE);
+		
+		this.updateAlive(socketChannel);
 
 		/*
 		 * Register the new SocketChannel with our Selector, indicating we'd
@@ -897,6 +951,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					try {
 						NIOTransport.this.write(key);
 					} catch (IOException e) {
+						NIOTransport.this.updateFailed(key);
 						log.info("Node"
 								+ myID
 								+ " incurred IOException on "
@@ -906,7 +961,6 @@ public class NIOTransport<NodeIDType> implements Runnable,
 						e.printStackTrace();
 					}
 				}
-
 			}
 		}
 	}
@@ -1132,7 +1186,10 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				this.wrapWrite(channel, data);
 				return true;
 			} catch (IOException e) {
-				// exception means we have lost data?
+				if (!this.isDisconnected(isa)) {
+					this.updateFailed(isa);
+					e.printStackTrace();
+				}
 			}
 		}
 		return false;
@@ -1598,6 +1655,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 									| SelectionKey.OP_READ), true);
 			// duplex connection => we may have to read replies
 			key.attach(new AlternatingByteBuffer());
+			if(connected) this.updateAlive((SocketChannel)key.channel());
 		} catch (IOException e) {
 			InetSocketAddress isa = new InetSocketAddress(socketChannel.socket()
 					.getInetAddress(), socketChannel.socket()

@@ -50,7 +50,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public final TreeMap<Integer, PValuePacket> accepted;
 
 	// first pvalue slot in accepted pvalues
-	private int firstSlot;
+	private final int firstSlot;
 
 	/*
 	 * Maximum pvalue slot in accepted pvalues. We store this explicitly even
@@ -58,12 +58,18 @@ public class PrepareReplyPacket extends PaxosPacket {
 	 * support fragmentation, wherein the accepted pvalues map may not contain
 	 * all of the pvalues needed for safety.
 	 */
-	private int maxSlot;
+	private final int maxSlot;
+	
+	/* Different from firstSlot in that firstSlot is gcSlot+1, but minSlot
+	 * is the minimum slot in accepted when this prepare reply was first
+	 * created.
+	 */
+	private final int minSlot;
 
 	private long createTime = System.currentTimeMillis();
 
 	public PrepareReplyPacket(int receiverID, Ballot ballot,
-			Map<Integer, PValuePacket> accepted, int gcSlot, int maxSlot) {
+			Map<Integer, PValuePacket> accepted, int gcSlot, int minSlot, int maxSlot) {
 		super(accepted == null || accepted.isEmpty() ? (PaxosPacket) null
 				: accepted.values().iterator().next());
 		this.acceptor = receiverID;
@@ -72,12 +78,13 @@ public class PrepareReplyPacket extends PaxosPacket {
 				: new TreeMap<Integer, PValuePacket>(accepted);
 		this.firstSlot = gcSlot + 1;
 		this.maxSlot = maxSlot;
+		this.minSlot = minSlot;
 		this.packetType = PaxosPacketType.PREPARE_REPLY;
 	}
 
 	public PrepareReplyPacket(int receiverID, Ballot ballot,
 			Map<Integer, PValuePacket> accepted, int gcSlot) {
-		this(receiverID, ballot, accepted, gcSlot, getMaxSlot(gcSlot + 1,
+		this(receiverID, ballot, accepted, gcSlot, getMinSlot(gcSlot+1, accepted), getMaxSlot(gcSlot + 1,
 				accepted));
 	}
 
@@ -91,7 +98,14 @@ public class PrepareReplyPacket extends PaxosPacket {
 		this.accepted = parseJsonForAccepted(json);
 		this.firstSlot = json.getInt(PaxosPacket.Keys.PREPLY_MIN.toString());
 		this.maxSlot = json.getInt(PaxosPacket.Keys.MAX_S.toString());
+		this.minSlot = json.getInt(PaxosPacket.Keys.MIN_S.toString());
 		this.createTime = json.getLong(RequestPacket.Keys.CT.toString());
+	}
+
+	// only for unit testing in PrepareReplyAssembler
+	public PrepareReplyPacket(int acceptor, Ballot ballot,
+			HashMap<Integer, PValuePacket> acceptedMap, int gcSlot, int max) {
+		this(acceptor, ballot, acceptedMap, gcSlot, gcSlot+1, max);
 	}
 
 	private TreeMap<Integer, PValuePacket> parseJsonForAccepted(JSONObject json)
@@ -118,6 +132,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 		addAcceptedToJSON(json);
 		json.put(PaxosPacket.Keys.PREPLY_MIN.toString(), this.firstSlot);
 		json.put(PaxosPacket.Keys.MAX_S.toString(), this.maxSlot);
+		json.put(PaxosPacket.Keys.MIN_S.toString(), this.minSlot);
 		json.put(RequestPacket.Keys.CT.toString(), this.createTime);
 		return json;
 	}
@@ -138,6 +153,19 @@ public class PrepareReplyPacket extends PaxosPacket {
 					minSlot = curSlot;
 			}
 		} 
+		return minSlot;
+	}
+
+	private static int getMinSlot(int firstSlot,
+			Map<Integer, PValuePacket> acceptedMap) {
+		Integer minSlot = null;
+		if(acceptedMap!=null && !acceptedMap.isEmpty()) {
+			for(Integer curSlot : acceptedMap.keySet()) {
+				if(minSlot == null) minSlot = curSlot;
+				else if(curSlot - minSlot < 0) minSlot = curSlot; 
+			}
+		}
+		if(minSlot==null) minSlot = firstSlot;
 		return minSlot;
 	}
 
@@ -174,7 +202,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 	}
 
 	public boolean isComplete() {
-		for (int i = this.firstSlot; i <= this.maxSlot; i++)
+		for (int i = this.minSlot; i <= this.maxSlot; i++)
 			if (!this.accepted.containsKey(i))
 				return false;
 		return true;
@@ -203,7 +231,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 	public PrepareReplyPacket fragment(int length) {
 		PrepareReplyPacket frag = new PrepareReplyPacket(this.acceptor,
 				this.ballot, new HashMap<Integer, PValuePacket>(),
-				this.firstSlot - 1, this.maxSlot);
+				this.firstSlot - 1, this.minSlot, this.maxSlot);
 		frag.putPaxosID(this.getPaxosID(), this.getVersion());
 		int curLength = 0;
 		//System.out.println("creating fragment of length "+ length);

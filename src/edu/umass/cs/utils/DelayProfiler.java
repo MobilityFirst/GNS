@@ -11,6 +11,12 @@ public class DelayProfiler {
 	private static HashMap<String, Double> averages = new HashMap<String, Double>();
 	private static HashMap<String, Double> stdDevs = new HashMap<String, Double>();
 	private static HashMap<String, Double> counters = new HashMap<String, Double>();
+	private static HashMap<String, Double> instarates = new HashMap<String, Double>();
+
+	private static HashMap<String, Double> lastArrivalNanos = new HashMap<String, Double>();
+
+	private static HashMap<String, Double> lastRecordedNanos = new HashMap<String, Double>();
+	private static HashMap<String, Double> lastCount = new HashMap<String, Double>();
 
 	/**
 	 * @param field
@@ -20,7 +26,8 @@ public class DelayProfiler {
 		synchronized (map) {
 			if (map.containsKey(field))
 				return;
-			map.put(field, 0.0);
+			if(map == lastRecordedNanos) map.put(field, (double)System.nanoTime());
+			else map.put(field, 0.0);
 		}
 		synchronized (stdDevs) {
 			stdDevs.put(field, 0.0);
@@ -97,6 +104,15 @@ public class DelayProfiler {
 	 * @param sample
 	 */
 	public static void updateMovAvg(String field, double sample) {
+		updateMovAvg(field, sample, Util.ALPHA);
+	}
+
+	/**
+	 * @param field
+	 * @param sample
+	 * @param alpha
+	 */
+	public static void updateMovAvg(String field, double sample, double alpha) {
 		double value;
 		synchronized (averages) {
 			register(field, averages); // register if not registered
@@ -127,6 +143,87 @@ public class DelayProfiler {
 	}
 
 	/**
+	 * @param field
+	 * @param numArrivals
+	 * @param samplingFactor 
+	 */
+	public static void updateInterArrivalTime(String field, int numArrivals, int samplingFactor) {
+		updateInterArrivalTime(field, numArrivals, samplingFactor, Util.ALPHA);
+	}
+	/**
+	 * @param field
+	 * @param numArrivals
+	 * @param samplingFactor 
+	 * @param alpha 
+	 */
+	public static void updateInterArrivalTime(String field, int numArrivals, int samplingFactor, double alpha) {
+		if(!Util.oneIn(samplingFactor)) return;
+		synchronized (lastArrivalNanos) {
+			register(field, lastArrivalNanos);
+			long curTime = System.nanoTime();
+			double value = lastArrivalNanos.containsKey(field) ? lastArrivalNanos
+					.get(field) : curTime;
+			if (value == 0)
+				value = curTime;
+			DelayProfiler.updateMovAvg(field, (curTime - (long) value)
+					/ (numArrivals*samplingFactor));
+			lastArrivalNanos.put(field, System.nanoTime() * 1.0);
+		}
+	}
+	/**
+	 * @param field
+	 * @param numArrivals
+	 */
+	public static void updateInterArrivalTime(String field, int numArrivals) {
+		updateInterArrivalTime(field, numArrivals, 1);
+	}
+	
+	/**
+	 * @param field
+	 * @param numArrivals
+	 * @param samplingFactor 
+	 */
+	public static void updateRate(String field, int numArrivals, int samplingFactor) {
+		if(!Util.oneIn(samplingFactor)) return;
+		register(field, lastCount);
+		register(field, lastRecordedNanos);
+		register(field, instarates);
+		synchronized (lastCount) {
+			double count = lastCount.get(field) + samplingFactor;
+			if (count == numArrivals) {
+				instarates.put(field, numArrivals*1000*1000*1000.0
+						/ (System.nanoTime() - lastRecordedNanos.get(field)));
+				lastCount.put(field, (double) 0);
+				lastRecordedNanos.put(field, (double) System.nanoTime());
+			} else
+				lastCount.put(field, count);
+		}
+	}
+	
+	/**
+	 * @param field
+	 * @param numArrivals
+	 */
+	public static void updateRate(String field, int numArrivals) {
+		updateRate(field, numArrivals, 1);
+	}
+
+	/**
+	 * @param field
+	 * @return Throughput calculated from interarrival time.
+	 */
+	public static double getThroughput(String field) {
+		return averages.containsKey(field) && averages.get(field) > 0 ? 1000 * 1000 * 1000.0 / (averages.get(field)) : 0;
+	}
+	/**
+	 * @param field
+	 * @return Moving average of instantaneous rate.
+	 */
+	public static double getRate(String field) {
+		return instarates.containsKey(field) ? (instarates.get(field)) : 0;
+	}
+
+	/**
 	 * @return Statistics as a string.
 	 */
 	public static String getStats() {
@@ -135,16 +232,25 @@ public class DelayProfiler {
 		s += statsHelper(averageNanos, "ns");
 		s += statsHelper(averages, "");
 		s += statsHelper(counters, "");
+		s += statsHelper(instarates, "/s");
+
 		return (s + "]").replace(" | ]", " ]");
 	}
 
 	private static String statsHelper(HashMap<String, Double> map, String units) {
 		String s = "";
-		synchronized(map) {
+		synchronized (map) {
 			for (String field : map.keySet()) {
-				s += (field + ":" + Util.df(map.get(field)) + "/"
+				boolean rateParam = lastArrivalNanos.containsKey(field);
+				s += (field
+						+ ":"
+						+ (!rateParam ? Util.df(map.get(field)) : Util
+								.df(getThroughput(field)))
+						+ "/"
 						+ (stdDevs.get(field) > 0 ? "+" : "")
-						+ Util.df(stdDevs.get(field)) + units + " | ");
+						+ (!rateParam ? Util.df(stdDevs.get(field)) : Util
+								.df(1000 * 1000 * 1000.0 / stdDevs.get(field)))
+						+ (!rateParam ? units : "/s") + " | ");
 			}
 		}
 		return s;

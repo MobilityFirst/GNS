@@ -871,7 +871,7 @@ public class PaxosCoordinatorState {
 		else
 			// actual noop (as opposed to RequestPacket converted noop)
 			proposalPacket = new ProposalPacket(curSlot, new RequestPacket(
-					0, NO_OP, false));
+					0, NO_OP, false).setEntryReplica(this.myBallotCoord));
 		PValuePacket noop = new PValuePacket(new Ballot(this.myBallotNum,
 				this.myBallotCoord), proposalPacket);
 		return noop.makeDecision(this.getMajorityCommittedSlot());

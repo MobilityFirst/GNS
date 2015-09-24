@@ -83,6 +83,10 @@ public abstract class PaxosPacket extends JSONPacket {
 		 */
 		MAX_S,
 		/**
+		 * max decision slot; used to sync missing decisions
+		 */
+		MIN_S,
+		/**
 		 * missing decisions
 		 */
 		MISS,

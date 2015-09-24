@@ -195,19 +195,10 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		if (firstEntry.getValue().isEmpty())// !reqPktIter.hasNext())
 			mapEntryIter.remove();
 
-		if (Util.oneIn(10)) {
-			//DelayProfiler.updateMovAvg("rb_batch", first.batchSize() + 1);
+		if (Util.oneIn(10)) 
 			DelayProfiler.updateMovAvg("queued", queueSize);
-		}
 		assert (first.batchSize() < MAX_BATCH_SIZE);
 		queueSize -= (first.batchSize()+1);
-		/*
-		assert(first.lengthEstimate() < (SQLPaxosLogger
-				.isLoggingEnabled() ? Math.min(
-				NIOTransport.MAX_PAYLOAD_SIZE,
-				SQLPaxosLogger.MAX_LOG_MESSAGE_SIZE)
-				: NIOTransport.MAX_PAYLOAD_SIZE)) : first.lengthEstimate() + " , " + totalByteLength;
-				*/
 		return first;
 	}
 }

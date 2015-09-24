@@ -416,6 +416,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		PaxosPacket pp = obj != null && obj instanceof PaxosPacket ? (PaxosPacket) obj
 				: null;
 		assert (obj != null || !mode.equals(SyncMode.DEFAULT_SYNC));
+		
 		/*
 		 * Note: Because incoming messages may be handled concurrently, some
 		 * messages may continue to get processed for a little while after a
@@ -812,12 +813,24 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 					"{0} is not the coordinator; forwarding to {1}: {2}",
 					new Object[] { this, this.paxosState.getBallotCoordLog(),
 							proposal.getSummary(log.isLoggable(Level.FINER)) });
-			mtask = new MessagingTask(this.paxosState.getBallotCoord(),
-					proposal.setForwarderID(this.getMyID())); // unicast
-			if (proposal.isPingPonging()) {
-				log.warning(this + " dropping ping-ponging proposal: "
-						+ proposal.getSummary() + " forwarded by "
-						+ proposal.getForwarderID());
+			int coordinator = this.paxosState.getBallotCoord();
+			
+			if(getMyID()==101 && !this.paxosManager.isNodeUp(coordinator) && proposal.getForwardCount()>0)
+				log.severe(this + " received forwarded proposal and finds current coordinator " + coordinator + " dead");
+			
+			mtask = new MessagingTask(
+					this.paxosManager.isNodeUp(coordinator) ? coordinator
+							// send to next coordinator if current seems dead
+							: (coordinator = this.getNextCoordinator(
+									this.paxosState.getBallot().ballotNumber + 1,
+									groupMembers)), proposal.setForwarderID(this
+							.getMyID())); // unicast
+			if (proposal.isPingPonging() || proposal.getForwardCount()>1 || coordinator==this.getMyID()) {
+				if (proposal.isPingPonging())
+					log.warning(this + " dropping ping-ponging proposal: "
+							+ proposal.getSummary() + " forwarded by "
+							+ proposal.getForwarderID());
+				log.log(Level.INFO, "{0} force running for coordinator", new Object[]{this});
 				mtask = this.checkRunForCoordinator(true);
 			} else  // forwarding
 				proposal.addDebugInfo("f");
@@ -868,7 +881,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 						this,
 						prepareReply.ballot.compareTo(prepare.ballot) > 0 ? "preempting"
 								: "acking", prepare.ballot,
-						prepareReply.getSummary(log.isLoggable(Level.FINE)) });
+						prepareReply.getSummary(log.isLoggable(Level.INFO)) });
 
 		MessagingTask mtask = prevBallot.compareTo(prepareReply.ballot) < 0 ?
 		// log only if not already logged (if my ballot got upgraded)
@@ -895,8 +908,9 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 	 */
 	private MessagingTask handlePrepareReply(PrepareReplyPacket prepareReply) {
 		// necessary to defragment first for safety
-		if ((prepareReply = PrepareReplyAssembler.processIncoming(prepareReply)) == null)
+		if ((prepareReply = PrepareReplyAssembler.processIncoming(prepareReply)) == null) {
 			return null;
+		}
 		this.paxosManager.heardFrom(prepareReply.acceptor); // FD optimization,
 		MessagingTask mtask = null;
 		ArrayList<ProposalPacket> preActiveProposals = null;
@@ -918,8 +932,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			log.log(Level.INFO, "{0} elected coordinator; sending {1}",
 					new Object[] { this, mtask });
 		} else
-			log.log(Level.FINE, "{0} received {1}", new Object[] { this,
-					prepareReply.getSummary(log.isLoggable(Level.FINE)) });
+			log.log(Level.FINE, "{0} received prepare reply {1}", new Object[] { this,
+					prepareReply.getSummary(log.isLoggable(Level.INFO)) });
 
 		return mtask; // Could be unicast or multicast
 	}
@@ -1745,6 +1759,8 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		MessagingTask multicastPrepare = null;
 		boolean lastCoordinatorLongDead = this.paxosManager
 				.lastCoordinatorLongDead(curBallot.coordinatorID);
+		
+		//if(Util.oneIn(20)) log.info(this + " node " + curBallot.coordinatorID + " lastCoordinatorLongDead = " + lastCoordinatorLongDead);
 
 		/*
 		 * curBallot is my acceptor's ballot; "my acceptor's coordinator" is
@@ -1879,13 +1895,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 			boolean recovery) {
 		for (int i = 1; i < members.length; i++)
 			assert (members[i - 1] < members[i]);
-		if (recovery)
-			return members[0];
-		for (int i = 0; i < members.length; i++) {
-			if (this.paxosManager != null
-					&& this.paxosManager.isNodeUp(members[i]))
-				return members[i];
-		}
+		assert(!recovery);
 		return roundRobinCoordinator(ballotnum);
 	}
 

@@ -382,4 +382,12 @@ public class JSONMessenger<NodeIDType> implements
 			throws IOException {
 		return this.nioTransport.sendToAddress(isa, msg);
 	}
+	@Override
+	public boolean isDisconnected(NodeIDType node) {
+		boolean disconnected = this.nioTransport.isDisconnected(node) ;
+		if(this.workers!=null)
+		for(InterfaceNIOTransport<NodeIDType,JSONObject> niot : this.workers)
+			disconnected = disconnected || (niot!=null && niot.isDisconnected(node));
+		return disconnected;
+	}
 }
