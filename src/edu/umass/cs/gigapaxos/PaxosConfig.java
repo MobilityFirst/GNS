@@ -225,7 +225,7 @@ public class PaxosConfig {
 		 * The maximum log message size. The higher the batching, the higher
 		 * this value needs to be.
 		 */
-		MAX_LOG_MESSAGE_SIZE(1024 * 1024),
+		MAX_LOG_MESSAGE_SIZE(1024 * 1024 * 5),
 
 		/**
 		 * The maximum checkpoint size. The default below is the maximum size of

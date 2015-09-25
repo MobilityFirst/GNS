@@ -14,6 +14,10 @@ import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsP
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -21,20 +25,20 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class LookupAccountRecord extends GnsCommand {
+public class LookupRandomGuids extends GnsCommand {
 
   /**
    * Creates a LookupAccountRecord instance.
-   * 
+   *
    * @param module
    */
-  public LookupAccountRecord(CommandModule module) {
+  public LookupRandomGuids(CommandModule module) {
     super(module);
   }
 
   @Override
   public String[] getCommandParameters() {
-    return new String[]{GUID};
+    return new String[]{GUID, GUIDCNT};
   }
 
   @Override
@@ -44,24 +48,28 @@ public class LookupAccountRecord extends GnsCommand {
 
   @Override
   public CommandResponse<String> execute(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException {
-//    if (CommandDefs.handleAcccountCommandsAtNameServer) {
-//      return LNSToNSCommandRequestHandler.sendCommandRequest(json);
-//    } else {
-      String guid = json.getString(GUID);
-      AccountInfo acccountInfo;
-      if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
-        return new CommandResponse<>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
-      }
-      if (acccountInfo != null) {
-        try {
-          return new CommandResponse<>(acccountInfo.toJSONObject().toString());
-        } catch (JSONException e) {
-          return new CommandResponse<>(BADRESPONSE + " " + JSONPARSEERROR);
-        }
+    String guid = json.getString(GUID);
+    int count = json.getInt(GUIDCNT);
+    AccountInfo acccountInfo;
+    if ((acccountInfo = AccountAccess.lookupAccountInfoFromGuid(guid, handler)) == null) {
+      return new CommandResponse<String>(BADRESPONSE + " " + BADACCOUNT + " " + guid);
+    }
+    if (acccountInfo != null) {
+      List<String> guids = acccountInfo.getGuids();
+      if (count >= guids.size()) {
+        return new CommandResponse<>(new JSONArray(guids).toString());
       } else {
-        return new CommandResponse<>(BADRESPONSE + " " + BADGUID + " " + guid);
+        Random rand = new Random();
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+          result.add(guids.get(rand.nextInt(guids.size())));
+        }
+        return new CommandResponse<>(new JSONArray(result).toString());
       }
-   // }
+    } else {
+      return new CommandResponse<>(BADRESPONSE + " " + BADGUID + " " + guid);
+    }
+    // }
   }
 
   @Override

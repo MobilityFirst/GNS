@@ -29,6 +29,8 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,9 +65,10 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   // For backward compatibility between old Add and Remove record code and new name service code.
   // Maps between service name and LNS Request ID (which is the key to the above maps).
   private final ConcurrentMap<String, Integer> createServiceNameMap;
+  private final ConcurrentMap<Integer, List<String>> createServiceIdToNamesMap;
   private final ConcurrentMap<String, Integer> deleteServiceNameMap;
   private final ConcurrentMap<String, Integer> activesServiceNameMap;
-  
+
   /**
    * GNS node config object used by LNS to toString node information, such as IP, Port, ping latency.
    */
@@ -92,7 +95,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
   /**
    * Creates an instance of the ClientRequestHandler.
-   * 
+   *
    * @param intercessor
    * @param admintercessor
    * @param nodeAddress
@@ -127,6 +130,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
     this.protocolTask = new CCPProtocolTask<>(this);
     this.protocolExecutor.register(this.protocolTask.getEventTypes(), this.protocolTask);
     this.createServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
+    this.createServiceIdToNamesMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.deleteServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
     this.activesServiceNameMap = new ConcurrentHashMap<>(10, 0.75f, 3);
   }
@@ -209,6 +213,10 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
    */
   public void addCreateRequestNameToIDMapping(String name, int id) {
     createServiceNameMap.put(name, id);
+    if (createServiceIdToNamesMap.get(id) == null) {
+      createServiceIdToNamesMap.put(id, new ArrayList<String>());
+    }
+    createServiceIdToNamesMap.get(id).add(name);
   }
 
   @Override
@@ -220,11 +228,23 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
+  public List<String> getCreateRequestIdToNames(int id) {
+    return createServiceIdToNamesMap.get(id);
+  }
+
+  @Override
   /**
-   * Looks up and removes the mapping between a CreateServiceName and the Add/RemoveRecord that triggered it.
+   * Looks up and removes the mappings between a CreateServiceName and the Add/RemoveRecord that triggered it.
    */
   public Integer removeCreateRequestNameToIDMapping(String name) {
-    return createServiceNameMap.remove(name);
+    Integer id = createServiceNameMap.remove(name);
+    if (id != null) {
+      if (createServiceIdToNamesMap.get(id) != null) {
+        createServiceIdToNamesMap.get(id).remove(name);
+      }
+    }
+    return id;
+
   }
 
   // These next four are for backward compatibility between old Add and Remove record 
@@ -319,7 +339,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   public SelectInfo getSelectInfo(int id) {
     return selectTransmittedMap.get(id);
   }
-  
+
   private boolean reallySendtoReplica = false;
 
   @Override
@@ -339,7 +359,6 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 //      return t1.compareTo(t2);
 //    }
 //  }
-
   /**
    **
    * Return a Set containing ids of primary replica for <i>name</i>
@@ -398,11 +417,16 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   public String getFirstReconfigurator() {
     return this.gnsNodeConfig.getReconfigurators().iterator().next();
   }
-  
+
   @Override
   public void sendRequestToReconfigurator(BasicReconfigurationPacket req, String id) throws JSONException, IOException {
     if (parameters.isDebugMode()) {
-      GNS.getLogger().info("Sending " + req.getSummary() + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":" + this.nodeConfig.getNodePort(id) + ": " + req);
+      GNS.getLogger().info("Sending " + req.getSummary()
+              + " to " + id + ":" + this.nodeConfig.getNodeAddress(id) + ":"
+              + this.nodeConfig.getNodePort(id)
+      //+ ": " + req // to long
+      );
+
     }
     this.messenger.send(new GenericMessagingTask<String, Object>(id, req.toJSONObject()));
   }

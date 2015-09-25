@@ -75,18 +75,24 @@ public class CCPPacketDemultiplexer<NodeIDType> extends AbstractJSONPacketDemult
   public boolean handleMessage(JSONObject json) {
     handler.updateRequestStatistics();
     if (handler.getParameters().isDebugMode()) {
-      GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1],
+      GNS.getLogger().log(Level.FINER, MyLogger.FORMAT[1],
               new Object[]{"*****************************> CCP RECEIVED: ", json});
     }
     try {
       if (ReconfigurationPacket.isReconfigurationPacket(json)) {
+        if (handler.getParameters().isDebugMode()) {
+          GNS.getLogger().log(Level.INFO, MyLogger.FORMAT[1],
+                  new Object[]{"*****************************> CCP RECEIVED PACKET TYPE: ",
+                    ReconfigurationPacket.getReconfigurationPacketType(json)});
+        }
         if (handler.handleEvent(json)) {
           return true;
         }
       }
       Packet.PacketType type = Packet.getPacketType(json);
       if (handler.getParameters().isDebugMode()) {
-        GNS.getLogger().info("MsgType " + type + " Msg " + json);
+        GNS.getLogger().finer("MsgType " + type + " Msg " + json);
+        GNS.getLogger().info("MsgType " + type);
       }
       if (type != null) {
         switch (type) {

@@ -77,10 +77,11 @@ public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<No
     this.names = new JSONArray(names);
     this.values = new JSONObject(values);
     try {
-      this.serviceName = this.names.getString(0);
+      this.serviceName = "BATCH" + this.names.getString(0);
+      GNS.getLogger().severe("??????????????????????????? AddBatchRecordPacket SERVICE NAME: " + this.serviceName);
     } catch (JSONException e) {
-      // nobody cares
-      this.serviceName = Util.randomString(6);
+      GNS.getLogger().severe("Problem getting names from AddBatchRecordPacket: " + e);
+      this.serviceName = "BAD" + Util.randomString(6);
     }
   }
 

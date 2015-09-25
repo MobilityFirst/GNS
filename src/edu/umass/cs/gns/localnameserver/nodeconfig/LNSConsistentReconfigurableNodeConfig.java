@@ -62,7 +62,8 @@ public class LNSConsistentReconfigurableNodeConfig extends
 
   @Override
   public Set<InetSocketAddress> getNodeIDs() {
-    throw new RuntimeException("The use of this method is not permitted");
+    return this.nodeConfig.getNodeIDs();
+    //throw new RuntimeException("The use of this method is not permitted");
   }
 
   @Override

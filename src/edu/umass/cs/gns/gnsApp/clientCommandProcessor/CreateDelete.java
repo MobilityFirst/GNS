@@ -156,15 +156,15 @@ public class CreateDelete {
   public static void handleAddBatchPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       AddBatchRecordPacket<String> packet = registerPacketAddBatchRecord(json, handler);
-      handler.addCreateRequestNameToIDMapping(packet.getServiceName(),
-              packet.getCCPRequestID());
-
+     
       CreateServiceName[] creates = makeBatchedCreateNameRequest(packet.getNames(), packet.getValues(), handler);
       for (CreateServiceName create : creates) {
         if (handler.getParameters().isDebugMode()) {
-          GNS.getLogger().severe("??????????????????????????? Sending recon packet for batch NAME = " + packet.getServiceName());
+          GNS.getLogger().severe("??????????????????????????? Sending recon packet for NAME = " 
+                  + create.getServiceName());
         }
-        sendPacketWithRetransmission(packet.getServiceName(), create, handler);
+        handler.addCreateRequestNameToIDMapping(create.getServiceName(), packet.getCCPRequestID());
+        sendPacketWithRetransmission(create.getServiceName(), create, handler);
       }
     } else {
       // LATER
