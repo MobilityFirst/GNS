@@ -763,7 +763,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 		assert (BATCHING_ENABLED || (request.getEntryReplica() == IntegerMap.NULL_INT_NODE && request
 				.batchSize() == 0));
 
-		if (!BATCHING_ENABLED) {
+		if (!BATCHING_ENABLED || request.getEntryReplica()==IntegerMap.NULL_INT_NODE) {
 			// returned count must be 1 here
 			this.paxosManager.incrNumOutstanding(request
 					.setEntryReplicaAndReturnCount(getMyID()));
@@ -1496,6 +1496,7 @@ public class PaxosInstanceStateMachine implements Keyable<String> {
 							paxosManager.send(clientRequest.getClientAddress(),
 									response);
 						}
+//						log.info(pism + " executed request in " + (System.currentTimeMillis() - requestPacket.getEntryTime()));
 					}
 					// don't try any more if stopped
 					if (pism != null && pism.isStopped())

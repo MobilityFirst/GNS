@@ -21,8 +21,13 @@ public class NoopPaxosApp implements InterfaceReplicable {
 		// execute request here
 
 		// set response if request instanceof InterfaceClientRequest
-		if (request instanceof RequestPacket)
+		if (request instanceof RequestPacket) {
+			RequestPacket req = ((RequestPacket) request);
+			if(req.requestValue.matches("hello world"+1))
+				req.setResponse("hello world response"+1);
+			else 
 			((RequestPacket) request).setResponse("appropriate_response_value");
+		}
 		if (request instanceof PaxosAppRequest)
 			((PaxosAppRequest) request)
 					.setResponse("appropriate_response_value");

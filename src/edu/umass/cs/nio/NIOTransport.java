@@ -563,7 +563,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 
 	private boolean isDisconnected(InetSocketAddress isa) {
 		NodeIDType node = this.getNodeID(isa);
-		return this.lastFailed.containsKey(node);
+		return node!=null ? this.lastFailed.containsKey(node) : false;
 	}
 
 
@@ -624,7 +624,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	}
 	
 	private NodeIDType getNodeID(InetSocketAddress isa) {
-		if (isa != null)
+		if (isa != null && this.nodeConfig != null)
 			for (NodeIDType node : this.nodeConfig.getNodeIDs())
 				if (this.nodeConfig.getNodeAddress(node).equals(
 						isa.getAddress())

@@ -116,7 +116,7 @@ public class PaxosManager<NodeIDType> {
 	private final HashMap<String, PaxosInstanceStateMachine> corpses;
 	private final IntegerMap<NodeIDType> integerMap = new IntegerMap<NodeIDType>();
 	private final Stringifiable<NodeIDType> unstringer;
-	private final RequestBatcher batched;
+	private final RequestBatcher requestBatcher;
 	private final PaxosPacketBatcher ppBatcher;
 
 	private int outOfOrderLimit = PaxosInstanceStateMachine.SYNC_THRESHOLD;
@@ -235,7 +235,7 @@ public class PaxosManager<NodeIDType> {
 		executor.scheduleWithFixedDelay(new Deactivator(), 0,
 				Config.getGlobalInt(PC.DEACTIVATION_PERIOD),
 				TimeUnit.MILLISECONDS);
-		(this.batched = new RequestBatcher(this)).start();
+		(this.requestBatcher = new RequestBatcher(this)).start();
 		(this.ppBatcher = new PaxosPacketBatcher(this)).start();
 		testingInitialization();
 		// needed to unclose when testing multiple runs of open and close
@@ -665,7 +665,7 @@ public class PaxosManager<NodeIDType> {
 
 	// Called by external entities, so we need to fix node IDs
 	private void handleIncomingPacket(PaxosPacket pp) {
-		if (BATCHING_ENABLED)
+		if (BATCHING_ENABLED && RequestBatcher.shouldEnqueue())
 			this.enqueueRequest(pp);
 		else
 			this.handlePaxosPacket(pp);
@@ -678,13 +678,18 @@ public class PaxosManager<NodeIDType> {
 	private void enqueueRequest(PaxosPacket pp) {
 		PaxosPacketType type = pp.getType();
 		if (type.equals(PaxosPacketType.REQUEST)
-				|| type.equals(PaxosPacketType.PROPOSAL)) {
-			assert (pp.getPaxosID() != null) : pp.getSummary();
-			this.batched.enqueue(((RequestPacket) pp));
-		} else
+				|| type.equals(PaxosPacketType.PROPOSAL))
+			if (pp.getPaxosID() != null)
+				this.requestBatcher.enqueue(((RequestPacket) pp));
+			else
+				error((RequestPacket) pp);
+		else
 			this.handlePaxosPacket(pp);
 	}
 
+	private void error(RequestPacket req) {
+		log.warning(this + " received request with no paxosID: " + req.getSummary());
+	}
 
 	@SuppressWarnings("unchecked")
 	private void handlePaxosPacket(PaxosPacket request) {
@@ -1080,7 +1085,7 @@ public class PaxosManager<NodeIDType> {
 	protected int getNumOutstandingOrQueued() {
 		return (countNumOutstanding() ? this.outstanding.numOutstanding
 				: this.outstanding.requests.size())
-				+ this.batched.getQueueSize();
+				+ this.requestBatcher.getQueueSize();
 	}
 	
 	// queue of outstanding requests
@@ -1228,7 +1233,7 @@ public class PaxosManager<NodeIDType> {
 		this.paxosLogger.close();
 		this.FD.close();
 		this.messenger.stop();
-		this.batched.stop();
+		this.requestBatcher.stop();
 		this.ppBatcher.stop();
 		this.executor.shutdownNow();
 	}

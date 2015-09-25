@@ -32,24 +32,29 @@ public class NoopPaxosClient extends PaxosClientAsync {
 	 * @param args
 	 * @throws IOException
 	 * @throws JSONException
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) throws IOException, JSONException {
+	public static void main(String[] args) throws IOException, JSONException, InterruptedException {
 		NoopPaxosClient noopClient = new NoopPaxosClient();
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 100; i++) {
 			final String requestValue = "hello world" + i;
 			noopClient.sendRequest(PaxosConfig.application.getSimpleName()+"0",
 					requestValue, new RequestCallback() {
-
-						@Override
-						public void handleResponse(InterfaceRequest response) {
-							System.out
-									.println("Response for request ["
-											+ requestValue
-											+ "] = "
-											+ (response instanceof InterfaceClientRequest ? ((InterfaceClientRequest) response)
-													.getResponse() : null));
-						}
+				long createTime = System.currentTimeMillis();
+				@Override
+				public void handleResponse(InterfaceRequest response) {
+					System.out
+							.println("Response for request ["
+									+ requestValue
+									+ "] = "
+									+ (response instanceof InterfaceClientRequest ? ((InterfaceClientRequest) response)
+											.getResponse() : null)
+									+ " received in "
+									+ (System.currentTimeMillis() - createTime)
+									+ "ms");
+				}
 					});
+			Thread.sleep(100);
 		}
 	}
 }

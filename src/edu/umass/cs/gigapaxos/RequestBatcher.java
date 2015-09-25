@@ -78,7 +78,6 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		this.paxosManager.proposeBatched(task);
 	}
 
-	private static final long MAX_BATCH_SLEEP_DURATION = 10;
 
 	protected synchronized static void updateSleepDuration(long entryTime) {
 		agreementLatency = Util.movingAverage(((double) (System.currentTimeMillis() - entryTime)),
@@ -95,11 +94,20 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		me.start();
 	}
 
+	// max time for which the dequeueing thread will wait 
+	private static final long MAX_BATCH_SLEEP_DURATION = 10;
+	// min delay for enqueue/dequeue to happen at all
+	private static final long MIN_AGREEMENT_LATENCY_FOR_BATCHING = 10;
+	// FIXME: currently not actually used in throttleExcessiveLoad
 	private static final int MAX_QUEUED_REQUESTS = Config.getGlobalInt(PC.MAX_OUTSTANDING_REQUESTS);
 	@Override
 	public void enqueueImpl(RequestPacket task) {
 		this.setSleepDuration(Math.min(MAX_BATCH_SLEEP_DURATION,
 				MIN_BATCH_SLEEP_DURATION + agreementLatency*BATCH_OVERHEAD/this.batched.size()));
+		// increase outstanding count by requests entering through me
+		this.paxosManager.incrNumOutstanding(task.setEntryReplicaAndReturnCount(this.paxosManager.getMyID()));
+		this.paxosManager.incrNumOutstanding(task);
+		
 		LinkedBlockingQueue<RequestPacket> taskList = this.batched.get(task
 				.getPaxosID());
 		if (taskList == null)
@@ -108,9 +116,6 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 		this.batched.put(task.getPaxosID(), taskList);
 		queueSize += task.batchSize()+1;
 		this.throttleExcessiveLoad();
-		// increase outstanding count by requests entering through me
-		this.paxosManager.incrNumOutstanding(task.setEntryReplicaAndReturnCount(this.paxosManager.getMyID()));
-		this.paxosManager.incrNumOutstanding(task);
 	}
 	
 	protected int getQueueSize() {
@@ -126,9 +131,14 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 	 * @param paxosID
 	 */
 	private void throttleExcessiveLoad() {
+		// FIXME: unused
 		if (this.queueSize > MAX_QUEUED_REQUESTS) {
 			//throw new OverloadException("Excessive client request load");
 		}
+	}
+	
+	protected static boolean shouldEnqueue() {
+		return agreementLatency > MIN_AGREEMENT_LATENCY_FOR_BATCHING;
 	}
 
 	/*

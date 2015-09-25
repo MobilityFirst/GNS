@@ -159,8 +159,9 @@ public class PaxosClientAsync {
 		assert (request.getPaxosID() != null);
 		try {
 			this.callbacks.putIfAbsent((long) request.requestID, callback);
-			if (this.callbacks.get((long) request.requestID) == callback)
+			if (this.callbacks.get((long) request.requestID) == callback) {
 				sent = this.niot.sendToAddress(server, request.toJSONObject());
+			}
 		} finally {
 			if (sent <= 0) {
 				this.callbacks.remove(request.requestID, callback);

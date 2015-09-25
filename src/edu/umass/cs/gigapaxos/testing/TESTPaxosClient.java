@@ -205,7 +205,7 @@ public class TESTPaxosClient {
 					DelayProfiler.updateInterArrivalTime("response_rate1", 1, 100);
 					DelayProfiler.updateRate("response_rate2", 1000, 10);
 
-					if (Util.oneIn(NUM_REQUESTS/100))
+					if (Util.oneIn(NUM_REQUESTS*1000)) // disabled
 						System.out.println("Instantaneous response_rate1 = "
 								+ Util.df(DelayProfiler
 										.getThroughput("response_rate1"))
