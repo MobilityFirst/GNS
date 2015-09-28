@@ -206,7 +206,7 @@ public class GnsHttpServer {
         String responsePreamble = "<html><head><title>GNS Server Status</title></head><body><p>";
         String responsePostamble = "</p></body></html>";
         String serverStartDateString = "Server start time: " + Format.formatDualDate(serverStartDate);
-        String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationHMS(new Date().getTime() - serverStartDate.getTime());
+        String serverUpTimeString = "Server uptime: " + DurationFormatUtils.formatDurationWords(new Date().getTime() - serverStartDate.getTime(), true, true);
         String serverSSLMode = "Server SSL mode: " + ReconfigurationConfig.getServerSSLMode().toString();
         String clientSSLMode = "Client SSL mode: " + ReconfigurationConfig.getClientSSLMode().toString();
         String serverLocalNameServerID = "Local CCP address: " + GnsHttpServer.requestHandler.getNodeAddress();
