@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp;
 
+import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
@@ -43,6 +44,7 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
@@ -61,7 +63,9 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author Westy
  */
-public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplicable, InterfaceReconfigurable {
+public class GnsApp extends AbstractReconfigurablePaxosApp<String> 
+implements GnsApplicationInterface<String>, InterfaceReplicable, InterfaceReconfigurable,
+        InterfaceClientMessenger {
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private final String nodeID;
@@ -204,6 +208,11 @@ public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplica
       e.printStackTrace();
     }
     return executed;
+  }
+
+  @Override
+  public void setClientMessenger(InterfaceSSLMessenger<?, JSONObject> messenger) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   class CommandQuery {
