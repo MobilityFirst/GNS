@@ -80,6 +80,7 @@ public class GNSInstaller {
   private static String keyFile = DEFAULT_KEYNAME;
   private static String installPath = DEFAULT_INSTALL_PATH;
   private static String javaCommand = DEFAULT_JAVA_COMMAND;
+  private static String javaCommandForLNS = DEFAULT_JAVA_COMMAND; // this one isn't changed by config
   // calculated from the Jar location
   private static String distFolderPath;
   private static String gnsJarFileLocation;
@@ -325,7 +326,7 @@ public class GNSInstaller {
               + "mv --backup=numbered LNSlogfile LNSlogfile.save\n"
               + "fi\n"
               //+ ((runAsRoot) ? "sudo " : "")
-              + "nohup " + javaCommand + " -cp " + gnsJarFileName
+              + "nohup " + javaCommandForLNS + " -cp " + gnsJarFileName
               //+ " " + SSL_DEBUG
               + " " + TRUST_STORE_OPTION
               + " " + KEY_STORE_OPTION
@@ -440,8 +441,11 @@ public class GNSInstaller {
             buildInstallFilePath("killAllServers.sh"),
             ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + javaCommand + " -cp " + gnsJarFileName + "\""
-            // catch this one as well just in case
             + "\n"
+            + ((runAsRoot) ? "sudo " : "")
+             + "pkill -f \"" + javaCommandForLNS + " -cp " + gnsJarFileName + "\""
+            + "\n"
+            // catch this one as well just in case
             + ((runAsRoot) ? "sudo " : "")
             + "pkill -f \"" + "java -ea -cp " + gnsJarFileName + "\""
     );
