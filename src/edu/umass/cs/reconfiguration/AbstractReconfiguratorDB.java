@@ -200,7 +200,11 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 						rcRecReq.getServiceName(), rcRecReq.startEpoch
 						.getEpochNumber() - 1,
 						rcRecReq.startEpoch.curEpochGroup));
-			else this.createReconfigurationRecords(rcRecReq.startEpoch.getNameStates(), rcRecReq.startEpoch.getCurEpochGroup()); 
+                        //MOB 504: Fix 1:
+                        else if(!this.createReconfigurationRecords(rcRecReq.startEpoch.getNameStates(),
+                                rcRecReq.startEpoch.getCurEpochGroup())) return false;
+			//else this.createReconfigurationRecords(rcRecReq.startEpoch.getNameStates(), 
+                        //rcRecReq.startEpoch.getCurEpochGroup()); 
 		
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(rcRecReq.getServiceName());

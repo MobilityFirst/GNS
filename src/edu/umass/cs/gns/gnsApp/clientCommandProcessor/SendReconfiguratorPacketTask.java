@@ -34,7 +34,8 @@ public class SendReconfiguratorPacketTask extends TimerTask {
   private final HashSet<String> reconfiguratorsQueried;
   private int sendCount = -1;
   private int retries = 0;
-  private static final int MAX_RETRIES = 3;
+  private final int maxRetries;
+  private final int maxWaitTime;
   private final long startTime;
   private final ClientRequestHandlerInterface handler;
 
@@ -46,12 +47,15 @@ public class SendReconfiguratorPacketTask extends TimerTask {
    * @param handler
    */
   public SendReconfiguratorPacketTask(String name, BasicReconfigurationPacket packet,
-          ClientRequestHandlerInterface handler) {
+          ClientRequestHandlerInterface handler, 
+          int maxWaitTime, int maxRetries) {
     this.name = name;
     this.handler = handler;
     this.packet = packet;
     this.reconfiguratorsQueried = new HashSet<String>();
     this.startTime = System.currentTimeMillis();
+    this.maxWaitTime = maxWaitTime;
+    this.maxRetries = maxRetries;
   }
 
   @Override
@@ -110,7 +114,7 @@ public class SendReconfiguratorPacketTask extends TimerTask {
   
 
   private boolean isMaxWaitTimeExceeded() {
-    if (sendCount > 0 && System.currentTimeMillis() - startTime > handler.getParameters().getMaxQueryWaitTime()) {
+    if (sendCount > 0 && System.currentTimeMillis() - startTime > maxWaitTime) {
       Integer ccpRequestID = removeRequestNameToIDMapping(name);
       if (ccpRequestID != null) {
         @SuppressWarnings("unchecked")
@@ -121,7 +125,7 @@ public class SendReconfiguratorPacketTask extends TimerTask {
         }
         if (handler.getParameters().isDebugMode()) {
           GNS.getLogger().info("??????????????????????????? Name = " + name + " packet type = " + packet.getType()
-                  + " Request FAILED no response until MAX-wait time: " + ccpRequestID);
+                  + " Request " + ccpRequestID + " FAILED; no response and MAX-wait exceeded ");
         }
         updateInfo.setSuccess(false);
         updateInfo.setFinishTime();
@@ -138,7 +142,7 @@ public class SendReconfiguratorPacketTask extends TimerTask {
   private String selectReconfigurator() {
     String server = handler.getClosestReplicaController(name, reconfiguratorsQueried);
     if (server == null) {
-      if (retries < MAX_RETRIES) {
+      if (retries < maxRetries) {
         reconfiguratorsQueried.clear();
         server = handler.getClosestReplicaController(name, reconfiguratorsQueried);
         retries++;

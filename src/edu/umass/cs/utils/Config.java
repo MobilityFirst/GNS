@@ -110,16 +110,16 @@ public class Config extends Properties {
 	 */
 	public static Config register(Class<?> type, String systemPropertyKey,
 			String defaultConfigFile) throws IOException {
+                String configFile = System.getProperty(systemPropertyKey) != null 
+                  ? System.getProperty(systemPropertyKey) :
+                  defaultConfigFile;
 		try {
-			return (System.getProperty(systemPropertyKey) != null) ? configMap
-					.put(type,
-							new Config(System.getProperty(systemPropertyKey)))
-					: configMap.put(type, new Config(defaultConfigFile));
+                  return configMap.put(type, new Config(configFile));
 		} catch (IOException ioe) {
 			// we still use defaults
 			configMap.put(type, new Config());
 			log.warning(Config.class.getSimpleName() + " unable to find file "
-					+ defaultConfigFile + "; using default values for type "
+					+ configFile + "; using default values for type "
 					+ type);
 			throw ioe;
 		}
