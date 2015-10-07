@@ -773,8 +773,8 @@ public class Reconfigurator<NodeIDType> implements
 		 * be true for a reconfiguration intent packet exactly once.
 		 */
                 //MOB-504: Fix 2: This is more of a hack for now. 
-                if(this.isTaskRunning(this.getTaskKey(WaitAckStopEpoch.class,
-				rcRecReq)) && !rcRecReq.isSplitIntent()) return;
+//                if(this.isTaskRunning(this.getTaskKey(WaitAckStopEpoch.class,
+//				rcRecReq)) && !rcRecReq.isSplitIntent()) return;
                 
 		assert (!this.isTaskRunning(this.getTaskKey(WaitAckStopEpoch.class,
 				rcRecReq)));

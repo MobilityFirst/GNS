@@ -1889,6 +1889,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 		boolean insertedAll = true;
 		try {
 			conn = this.getDefaultConn();
+                        // MOB-504
+                        //conn.setAutoCommit(false);
 			insertRC = conn.prepareStatement(insertCmd);
 			assert (nameStates != null && !nameStates.isEmpty());
 			String rcGroupName = this.getRCGroupName(nameStates.keySet()
@@ -1914,7 +1916,8 @@ public class SQLReconfiguratorDB<NodeIDType> extends
 				i++;
 				if ((i + 1) % 1000 == 0 || (i + 1) == nameStates.size()) {
 					int[] executed = insertRC.executeBatch();
-					// conn.commit();
+                                        // MOB-504
+					//conn.commit();
 					insertRC.clearBatch();
 					for (int j : executed)
 						insertedAll = insertedAll && (j > 0);
