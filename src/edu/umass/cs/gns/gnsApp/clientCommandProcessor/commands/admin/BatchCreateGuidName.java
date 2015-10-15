@@ -14,13 +14,13 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
  *
  * @author westy
  */
-public class BatchTestName extends BatchTest {
+public class BatchCreateGuidName extends BatchCreateGuid {
 
   /**
    *
    * @param module
    */
-  public BatchTestName(CommandModule module) {
+  public BatchCreateGuidName(CommandModule module) {
     super(module);
   }
 

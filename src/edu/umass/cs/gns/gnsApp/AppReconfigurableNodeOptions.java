@@ -172,6 +172,10 @@ public class AppReconfigurableNodeOptions {
    * DISABLE_SSL
    */
   public static final String DISABLE_SSL = "disableSSL";
+   /**
+   * DISABLE_EMAIL_VERIFICATION
+   */
+  public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
 
   /**
    * Returns all the options.
@@ -200,6 +204,7 @@ public class AppReconfigurableNodeOptions {
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
+    Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -223,6 +228,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(dnsOnly);
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
+    commandLineOptions.addOption(disableEmailVerification);
 
     return commandLineOptions;
 
@@ -262,6 +268,11 @@ public class AppReconfigurableNodeOptions {
       ReconfigurationConfig.setServerSSLMode(CLEAR);
       System.out.println("NS: SSL is disabled");
     }
+    
+     if (!allValues.containsKey(DISABLE_EMAIL_VERIFICATION)) {
+       GNS.enableEmailAccountVerification = false;
+     }
+    
 
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       debuggingEnabled = true;

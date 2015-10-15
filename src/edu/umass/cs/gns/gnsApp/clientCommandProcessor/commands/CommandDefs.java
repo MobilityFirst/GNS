@@ -140,9 +140,9 @@ public class CommandDefs {
 //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RevokeMemberships",
     //Admin
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.Admin",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTest",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTestName",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTestSimple",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuidSimple",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuidName",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuid",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.GetParameter",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.SetParameter",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ListParameters",
