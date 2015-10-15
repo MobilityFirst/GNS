@@ -269,7 +269,7 @@ public class AppReconfigurableNodeOptions {
       System.out.println("NS: SSL is disabled");
     }
     
-     if (!allValues.containsKey(DISABLE_EMAIL_VERIFICATION)) {
+     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
        System.out.println("******** Email Verification is OFF *********");
        GNS.enableEmailAccountVerification = false;
      }
