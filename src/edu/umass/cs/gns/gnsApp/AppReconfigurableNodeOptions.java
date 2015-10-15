@@ -270,6 +270,7 @@ public class AppReconfigurableNodeOptions {
     }
     
      if (!allValues.containsKey(DISABLE_EMAIL_VERIFICATION)) {
+       System.out.println("******** Email Verification is OFF *********");
        GNS.enableEmailAccountVerification = false;
      }
     
