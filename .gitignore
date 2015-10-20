@@ -18,3 +18,15 @@ build.number
 /scripts/newApp/derby.log
 /derby.log
 /reconfiguration_DB/
+/scripts/3nodeslocal/paxos_logs/
+/scripts/3nodeslocal/reconfiguration_DB/
+/scripts/noopTest/reconfiguration_DB/
+/scripts/noopTest/paxos_large_checkpoints/
+/scripts/noopTest/paxos_logs/
+/scripts/singlenodetests/paxos_logs/
+/scripts/singlenodetests/LNSlogfile.txt
+/scripts/singlenodetests/NSlogfile.txt
+/scripts/singlenodetests/reconfiguration_DB/
+/scripts/singlenodetests/LNSlogfile
+/scripts/singlenodetests/derby.log
+/scripts/singlenodetests/log/
