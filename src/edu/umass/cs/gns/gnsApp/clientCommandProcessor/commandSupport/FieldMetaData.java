@@ -104,10 +104,6 @@ public class FieldMetaData {
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
-  public static void set(MetaDataTypeName type, String guid, String key, String value, ClientRequestHandlerInterface handler) {
-	  
-  }
-
   /**
    *
    */

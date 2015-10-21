@@ -82,16 +82,8 @@ public class AddGuid extends GnsCommand {
         } else {
           CommandResponse<String> result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
           if (result.getReturnValue().equals(OKRESPONSE)) {
-//            // set up the default read access
-//           FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
-//            // give account guid read and write access to all fields in the new guid
-//            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
-//            //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);
-//            FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
-//            //FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);
-             // set up the active code fields
-            // FIXME: THIS NEEDS TO BE MOVED INTO THE RECORD INITIALIZATION
-            ActiveCode.initCodeFields(newGuid, handler);
+            // THIS HAS BEEN MOVED INTO AccountAccess.addGuid
+            //ActiveCode.initCodeFields(newGuid, handler);
             return new CommandResponse<String>(newGuid);
           } else {
             return result;

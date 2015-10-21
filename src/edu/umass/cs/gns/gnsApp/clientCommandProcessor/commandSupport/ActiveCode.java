@@ -29,19 +29,20 @@ public class ActiveCode {
 		}
 	}
 	
-	/**
-	 * Initializes the fields (called upon guid creation) to prevent undefined behavior
-	 * @param guid
-	 * @param handler
-	 */
-	public static void initCodeFields(String guid, 
-			ClientRequestHandlerInterface handler) {
-		String empty = null;
-		handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, ON_READ, empty, null, 
-				UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE);
-		handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, ON_WRITE, empty, null, 
-				UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE);
-	}
+        // THIS IS NOW DONE IN DIRECTLY IN AccountAccess.addGuid
+//	/**
+//	 * Initializes the fields (called upon guid creation) to prevent undefined behavior
+//	 * @param guid
+//	 * @param handler
+//	 */
+//	public static void initCodeFields(String guid, 
+//			ClientRequestHandlerInterface handler) {
+//		String empty = null;
+//		handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, ON_READ, empty, null, 
+//				UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE);
+//		handler.getIntercessor().sendUpdateRecordBypassingAuthentication(guid, ON_WRITE, empty, null, 
+//				UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE);
+//	}
 
 	/**
 	 * Sets active code for the guid and action
@@ -66,7 +67,6 @@ public class ActiveCode {
 	 * Clears the active code for the guid and action
 	 * @param guid
 	 * @param action
-	 * @param code
 	 * @param writer
 	 * @param signature
 	 * @param message
@@ -87,8 +87,7 @@ public class ActiveCode {
 	 * Gets the currently set active code for the guid and action
 	 * @param guid
 	 * @param action
-	 * @param code
-	 * @param writer
+         * @param reader
 	 * @param signature
 	 * @param message
 	 * @param handler

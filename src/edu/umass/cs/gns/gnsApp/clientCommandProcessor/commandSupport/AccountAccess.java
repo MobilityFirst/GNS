@@ -442,7 +442,11 @@ public class AccountAccess {
         //"_GNS_ACL": {
         //  "READ_WHITELIST": {"+ALL+": {"MD": "+ALL+"]}}}
         JSONObject acl = createACL(ALLFIELDS, Arrays.asList(EVERYONE), null, null);
-        json.put("_GNS_ACL", acl);
+        // prefix is the same for all acls so just pick one to use here
+        json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
+        // For active code
+        json.put(ActiveCode.ON_READ, new JSONArray());
+        json.put(ActiveCode.ON_WRITE, new JSONArray());
         // set up the default read access
         if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
           return new CommandResponse<String>(OKRESPONSE);
@@ -547,7 +551,11 @@ public class AccountAccess {
           //  "WRITE_WHITELIST": {"+ALL+": {"MD": [<publickey>]}}
           JSONObject acl = createACL(ALLFIELDS, Arrays.asList(EVERYONE, accountGuidInfo.getPublicKey()),
                   ALLFIELDS, Arrays.asList(accountGuidInfo.getPublicKey()));
-          json.put("_GNS_ACL", acl);
+          // prefix is the same for all acls so just pick one to use here
+          json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl); 
+          // For active code
+          json.put(ActiveCode.ON_READ, new JSONArray());
+          json.put(ActiveCode.ON_WRITE, new JSONArray());
           handler.getIntercessor().sendFullAddRecord(guid, json);
           return new CommandResponse<String>(OKRESPONSE);
         }
