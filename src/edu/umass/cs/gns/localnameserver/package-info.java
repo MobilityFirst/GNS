@@ -1,15 +1,15 @@
 /**
  *
  * Implements a local name server module for GNS.
+ * Essentially just forwards commands received from the client on to the appropriate active replica
+ * and forwards responses back to the client.
  * <p>
  * Module implements following functionality:
  * <ul>
  * <li>sending requests to appropriate name servers and retransmitting them if necessary.
  * <li>obtaining the active replicas a name from replica controllers and caching them
  * <li>maintaining a TTL-based cache of name records based on recent requests received
- * <li>forwarding replies received from name servers to the Intercessor module or to the socket
- * on which the request was received.
- * <li>logging statistics for each request: success/failure, latency, name servers contacted etc.
+ * <li>forwarding replies received from name servers to the socket on which the request was received.
  * </ul>
  * <p>
  * <b>Sending requests to name servers:</b> GNS designates some name servers as replica controllers for a name
@@ -40,11 +40,6 @@
  * Alternatively, if the request was sent via Intercessor, it forwards the reply containing the client-assigned request
  * ID to the Intercessor.
  * <p>
- * <b>Logging statistics:</b>For each request, local name server logs a single entry indicating the success/failure of
- * request and other statistics. These statistics are output in a different set of log files. The format of these logs
- * is described in a separate document TODO.
- * <p>
  *
- * Created by abhigyan on 3/5/14.
  */
 package edu.umass.cs.gns.localnameserver;

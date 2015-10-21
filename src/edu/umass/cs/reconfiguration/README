@@ -1,0 +1,74 @@
+By default, a GNS build keeps the jar in dist/GNS.jar in the top-level GNS directory.
+
+Here is how to do a local test run of the reconfiguration package with
+a "noop" application (examples.noopsimple.NoopApp) on a single machine.
+
+Start the noop server nodes as follows:
+
+$ java -ea -Xms4096M -cp path/to/GNS.jar edu.umass.cs.reconfiguration.ReconfigurableNode RC0 RC1... AR0 AR1...
+
+where the arguments are names of reconfigurator nodes and active replica nodes as specified in 
+gigapaxos.properties. In a single machine setting, all reconfigurators and active replicas should
+be started as above. In a distributed setting only the reconfigurators and active replicas 
+corresponding to that machine must be started. An example of a gigapaxos.properties file to 
+specify the above reconfigurator and active replica nodes may be found in the top-level 
+GNS directory and contains entries like below. The commented lines correspond to a 
+distributed setting while the uncommented ones correspond to a single machine setting. The names
+of the reconfigurators and active replicas (e.g., "AR100" or "101") can be arbitrary strings.
+
+active.AR0=127.0.0.1:2000
+active.AR1=127.0.0.1:2001
+active.AR2=127.0.0.1:2002
+#active.100=52.0.178.55:2100
+#active.101=52.1.250.181:2101
+#active.102=52.7.130.19:2102
+
+# format: reconfigurator.<active_server_name>=host:port
+
+reconfigurator.RC0=127.0.0.1:3100
+reconfigurator.RC1=127.0.0.1:3101
+reconfigurator.RC2=127.0.0.1:3102
+#reconfigurator.100=52.0.178.55:3100
+#reconfigurator.101=52.1.250.181:3101
+#reconfigurator.102=52.7.130.19:3102
+
+Start the reconfigurable app client as follows:
+
+$ java -ea -Xms4096M -cp path/to/GNS.jar edu.umass.cs.reconfiguration.examples.NoopAppClient
+
+This simple application creates a bunch of names and sends a bunch of requests to each name. The
+application shows also examples of how to use callbacks and how to delegate all client messaging
+to gigapaxos. The application developer just has to focus on app-specific request processing
+logic. 
+
+To test with a clean slate (i.e., without recovery), you need to
+remove paxos logs and the reconfigurator DB logs as follows:
+
+ $ rm -r paxos_logs/ (or whatever log directory was specified with
+ the key PAXOS_LOGS_DIR in gigapaxos.properties)
+
+ $ rm -r reconfiguratorDB (or whatever was specified in
+with the key RECONFIGURATION_DB_DIR in gigapaxos.properties)
+
+Implementing a new reconfiguration policy is as follows. The default
+reconfiguration policy is implemented in the class
+reconfiguration.reconfigurationutils.DemandProfile. Do NOT change this
+class to change the policy. To change the policy, 
+- create your own implementation of
+  reconfiguration.reconfigurationutils.AbstractDemandProfile
+- Specify the complete name of this class with the key DEMAND_PROFILE_TYPE
+in gigapaxos.properties.
+
+The complete list of reconfiguration parameters that can be specified using 
+gigapaxos.properties and their default calues can be found in the enum class
+ReconfigurationConfig.RC in ReconfigurationConfig.java.
+
+To disable trivial reconfiguration, i.e., reconfiguring from a set of 
+current active replicas to the same set in the next epoch, set the
+property RECONFIGURE_IN_PLACE=false in gigapaxos.properties. The
+default value of this property is true.
+
+To disable reconfiguration altogether, the simplest way is to write
+an AbstractDemandProfile class that just returns null as the set of new
+active replicas. The default DemandProfile reconfigures after every 
+request, so you probably want to use a different policy.

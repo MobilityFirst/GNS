@@ -1,10 +1,7 @@
 package edu.umass.cs.gns.activecode.worker;
 
+import edu.umass.cs.gns.utils.ValuesMap;
 import java.util.HashMap;
-import java.util.Map;
-
-import javax.script.Compilable;
-import javax.script.CompiledScript;
 import javax.script.Invocable;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
@@ -12,24 +9,7 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
 
-import org.luaj.vm2.Globals;
-import org.luaj.vm2.LuaFunction;
-import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.Varargs;
-import org.luaj.vm2.lib.jse.CoerceJavaToLua;
-import org.luaj.vm2.lib.jse.CoerceLuaToJava;
-import org.luaj.vm2.lib.jse.JsePlatform;
-import org.luaj.vm2.luajc.LuaJC;
-import org.luaj.vm2.script.LuajContext;
 
-import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.exceptions.FailedDBOperationException;
-import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.nsdesign.recordmap.BasicRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.MongoRecordMap;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
 
 public class ActiveCodeRunner {
 	private ScriptEngine engine;

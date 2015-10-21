@@ -1,7 +1,6 @@
 package edu.umass.cs.gns.activecode.worker;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.json.JSONException;
@@ -11,8 +10,7 @@ import edu.umass.cs.gns.activecode.ActiveCodeUtils;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeQueryResponse;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
 
 public class ActiveCodeGuidQuerier {
 	private PrintWriter out;

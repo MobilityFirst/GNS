@@ -88,6 +88,7 @@ import java.util.ResourceBundle;
  * @author JSON.org
  * @version 2011-01-31
  */
+@SuppressWarnings("rawtypes")
 public class JSONObject {
 
     /**

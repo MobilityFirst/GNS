@@ -5,43 +5,54 @@
  */
 package edu.umass.cs.gns.database;
 
-import com.datastax.driver.core.*;
+
+import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ColumnDefinitions.Definition;
+import com.datastax.driver.core.Host;
+import com.datastax.driver.core.Metadata;
+import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
+import com.datastax.driver.core.Session;
 import com.datastax.driver.core.exceptions.AlreadyExistsException;
 import com.datastax.driver.core.exceptions.InvalidQueryException;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.*;
+
 /**
- *
+ * An unfinished Cassandra implementation of NoSQLRecords.
+ * 
  * @author westy
  */
 public class CassandraRecords implements NoSQLRecords {
 
   private static final String DBROOTNAME = "GNS";
+
+  /**
+   * The name of the document where name records are stored.
+   */
   public static final String DBNAMERECORD = "NameRecord";
-  public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
+
   private String dbName;
   private Cluster cluster;
   private Session session;
   private static Map<String, CassandraRecords.CollectionSpec> collectionSpecMap = new HashMap<String, CassandraRecords.CollectionSpec>();
 
-//  public static CassandraRecords getInstance() {
-//    return CassandraRecordCollectionHolder.INSTANCE;
-//  }
-//
-//  private static class CassandraRecordCollectionHolder {
-//
-//    private static final CassandraRecords INSTANCE = new CassandraRecords();
-//  }
-
+  /**
+   *
+   * @param name
+   * @return
+   */
   public CassandraRecords.CollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
   }
@@ -54,25 +65,47 @@ public class CassandraRecords implements NoSQLRecords {
     private String name;
     private String primaryKey;
 
+    /**
+     * Create a CollectionSpec instance.
+     * 
+     * @param name
+     * @param primaryKey 
+     */
     public CollectionSpec(String name, String primaryKey) {
       this.name = name;
       this.primaryKey = primaryKey;
       collectionSpecMap.put(name, this);
     }
 
+    /**
+     * Return the name of a collection.
+     * 
+     * @return the name
+     */
     public String getName() {
       return name;
     }
 
+    /**
+     * Return the name of field that is the primary key of a collection.
+     * 
+     * @return field name of primary key
+     */
     public String getPrimaryKey() {
       return primaryKey;
     }
   }
   private static List<CassandraRecords.CollectionSpec> collectionSpecs =
           Arrays.asList(
-          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName()),
-          new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName()));
+          new CassandraRecords.CollectionSpec(DBNAMERECORD, NameRecord.NAME.getName())
+          //,new CassandraRecords.CollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME.getName())
+          );
 
+  /**
+   * Create a CassandraRecords instance.
+   * 
+   * @param nodeID
+   */
   public CassandraRecords(int nodeID) {
     dbName = DBROOTNAME + nodeID;
     GNS.getLogger().info("CASSANDRA: " + dbName + " INIT");
@@ -91,6 +124,9 @@ public class CassandraRecords implements NoSQLRecords {
     session = cluster.connect();
   }
 
+  /**
+   * Close the database.
+   */
   public void close() {
     cluster.shutdown();
   }
@@ -105,6 +141,9 @@ public class CassandraRecords implements NoSQLRecords {
     return "\"" + string + "\"";
   }
 
+  /**
+   * Create a keyspace.
+   */
   public void createKeyspace() {
     try {
       session.execute("CREATE KEYSPACE " + CSI(dbName) + " WITH replication "

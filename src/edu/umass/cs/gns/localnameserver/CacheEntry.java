@@ -5,259 +5,126 @@
  */
 package edu.umass.cs.gns.localnameserver;
 
-import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
-import edu.umass.cs.gns.nsdesign.packet.*;
-//import edu.umass.cs.gns.util.ConsistentHashing;
-import java.util.Iterator;
-import java.util.Map.Entry;
+import java.net.InetSocketAddress;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import org.json.JSONException;
 
 /**
- * Represents the cache entry used at the local name server to cache DNS records.
- * The cache store three key information:
- * (1) set of key-value pairs for a name record.
- * (2) ttl value for record.
- * (3) set of active replicas for a name.
- *
- * The TTL is used only to determine whether key value pairs are valid.
- * The set of active replicas is valid for an infinite period until
- * explicitly invalidated or updated by local name server. The TTL value is set based on TTL value
- * stored at name servers, and is not determined by the local name server.
- *
- * @author abhigyan
+ * Represents the cache entry used at the local name server to cache records.
  */
-public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
+public class CacheEntry implements Comparable<CacheEntry> {
 
   /**
-   * The GUID containing the key value pair.
+   * The GUID.
    */
   private String name;
   /**
-   * Time interval (in seconds) that the resource record may be cached before it should be discarded (default to zero)
-   * Notice that we have ONE TTL for the entire cache entry which means one TTL for the whole name record.
-   * But we keep individual timestamps for each key / value mapping.
+   * Time interval (in milliseconds) that the resource record may be cached before it should be discarded (default to zero)
+   * Notice that we have ONE TTL for the entire cache entry which means one TTL for the whole record.
    */
-  private int timeToLiveInSeconds = GNS.DEFAULT_TTL_SECONDS;
+  private int timeToLive = LocalNameServer.DEFAULT_VALUE_CACHE_TTL;
   /**
    * Time stamp (in milleseconds) when the value for each field was inserted into record.
    */
-  private ConcurrentHashMap<String, Long> timestampAddress = new ConcurrentHashMap<String, Long>();
+  private long valueTimestamp;
   /**
-   * The value of the key value pair.. NOTE: Value can be NULL meaning that the value is not valid.
+   * The value.
    */
-  private ValuesMap valuesMap = new ValuesMap();
-  /**
-   * A list of primary name servers for the name
-   */
-  private Set<NodeIDType> replicaControllers;
-  /**
-   * A list of Active Nameservers for the name.
-   */
-  private Set<NodeIDType> activeNameServers;
+  private String value = null;
+
+  private Set<InetSocketAddress> activeNameServers;
+
+  private long activeNameServersTimestamp;
 
   /**
-   * Constructs a cache entry for a name from a list of replica controllers and a list of active replicas.
+   * Constructs a cache entry for a name.
    *
    * @param name
-   * @param replicaControllers
-   * @param activeNameServers
+   * @param value
    */
-  public CacheEntry(String name, Set<NodeIDType> replicaControllers, Set<NodeIDType> activeNameServers) {
+  public CacheEntry(String name, String value) {
     this.name = name;
-    this.replicaControllers = replicaControllers;
-    this.activeNameServers = activeNameServers;
+    this.value = value;
+    this.valueTimestamp = System.currentTimeMillis();
+    this.activeNameServers = null;
+    this.activeNameServersTimestamp = 0;
   }
 
   /**
-   * Constructs a cache entry using data from a DNS packet
-   *
-   * @param packet DNS packet
-   */
-  public CacheEntry(DNSPacket<NodeIDType> packet, Set<NodeIDType> replicaControllers) {
-    this.name = packet.getGuid();
-    // this will depend on TTL sent by NS.
-    // UPDATE: NEVER LET IT BE -1 which means infinite
-    this.timeToLiveInSeconds = packet.getTTL() == -1 ? GNS.DEFAULT_TTL_SECONDS : packet.getTTL();
-    // ONLY CACHE DNSPackets where the key is +ALL-FIELDS+ or a top-level field
-    if (packet.keyIsAllFieldsOrTopLevel()) {
-      // pull all the keys and values out of the returned value and cache them
-      ValuesMap packetRecordValue = packet.getRecordValue();
-      Iterator<?> keyIter = packetRecordValue.keys();
-      while (keyIter.hasNext()) {
-        String fieldKey = (String) keyIter.next();
-        try {
-          Object fieldValue = packetRecordValue.get(fieldKey);
-          this.valuesMap.put(fieldKey, fieldValue);
-        } catch (JSONException e) {
-          GNS.getLogger().severe("Unabled to create cache entry for key " + fieldKey + ":" + e);
-        }
-//      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
-//      this.valuesMap.putAsArray(fieldKey, fieldValue);
-        // set the timestamp for that field
-        this.timestampAddress.put(fieldKey, System.currentTimeMillis());
-      }
-    }
-    this.replicaControllers = replicaControllers;
-    //this.replicaControllers = (HashSet<NodeIDType>) ConsistentHashing.getReplicaControllerSet(name);
-//    this.activeNameServer = packet.getActiveNameServers();
-  }
-
-  /**
-   * Constructs a cache entry in the case where active name servers will be the same as replica controllers.
-   * SHOULD NOT BE USED IN THE NEW APP.
+   * Constructs a cache entry for a name from a list of active replicas.
    * 
    * @param name
-   * @param primaryNameServers
+   * @param activeNameServers
    */
-  public CacheEntry(String name, Set<NodeIDType> primaryNameServers) {
-    this(name, primaryNameServers, primaryNameServers);
+  public CacheEntry(String name, Set<InetSocketAddress> activeNameServers) {
+    this.name = name;
+    this.activeNameServers = activeNameServers;
+    this.activeNameServersTimestamp = System.currentTimeMillis();
+    this.value = null;
+    this.valueTimestamp = 0;
   }
 
   /**
-   * Constructs a cache entry from a RequestActivesPacket response packet.
-   *
-   * @param packet
+   * Updates a cache entry with a new value.
+   * 
+   * @param value
    */
-  public CacheEntry(RequestActivesPacket<NodeIDType> packet, Set<NodeIDType> replicaControllers) {
-    this(packet.getName(), replicaControllers,
-            //(HashSet) ConsistentHashing.getReplicaControllerSet(packet.getName()),
-            packet.getActiveNameServers());
-  }
-
-  public synchronized void updateCacheEntry(DNSPacket<NodeIDType> packet) {
-
-    if (valuesMap == null) {
-      valuesMap = new ValuesMap();
-    }
-    ValuesMap packetRecordValue = packet.getRecordValue();
-    Iterator<?> keyIter = packetRecordValue.keys();
-    while (keyIter.hasNext()) {
-      String fieldKey = (String) keyIter.next();
-      try {
-        Object fieldValue = packetRecordValue.get(fieldKey);
-        this.valuesMap.put(fieldKey, fieldValue);
-      } catch (JSONException e) {
-        GNS.getLogger().severe("Unabled to update cache entry for key " + fieldKey + ":" + e);
-      }
-//      ResultValue fieldValue = packetRecordValue.getAsArray(fieldKey);
-//      valuesMap.putAsArray(fieldKey, fieldValue);
-      // set the timestamp for that field
-      this.timestampAddress.put(fieldKey, System.currentTimeMillis());
-    }
-    timeToLiveInSeconds = packet.getTTL();
-  }
-
-  public synchronized void updateCacheEntry(RequestActivesPacket<NodeIDType> packet) {
-    activeNameServers = packet.getActiveNameServers();
-  }
-
-  public synchronized void updateCacheEntry(ConfirmUpdatePacket<NodeIDType> packet) {
-    // invalidate the valuesMap part of the cache... best we can do since the packet has no info
-    // it will be refreshed on next read
-    valuesMap = null;
+  public synchronized void updateCacheEntry(String value) {
+    this.value = value;
+    this.valueTimestamp = System.currentTimeMillis();
   }
 
   /**
-   * @return the name
+   * Updates a cache entry with a new list of active replicas.
+   * 
+   * @param activeNameServers
    */
-  public synchronized String getName() {
-    return name;
-  }
-
-  /**
-   * @return the primaryNameServer
-   */
-  public synchronized Set<NodeIDType> getReplicaControllers() {
-    return replicaControllers;
-  }
-
-  /**
-   * @return the time to live of the cache entry
-   */
-  public synchronized int getTTL() {
-    return timeToLiveInSeconds;
-  }
-
-  public synchronized Set<NodeIDType> getActiveNameServers() {
-    return activeNameServers;
-  }
-
-  // FIXME: Handle returning cache values for non-array keys as well
-  // as the entire record.
-  /**
-   * Returns the value in the cache for this key as an array.
-   * If it's not an array an exception will be thrown and ignored, basically.
-   *
-   * @param key
-   * @return
-   */
-  public synchronized ResultValue getValueAsArray(String key) {
-    if (isValidValue(key)) {
-      return valuesMap.getAsArray(key);
-    }
-    return null;
+  public synchronized void updateCacheEntry(Set<InetSocketAddress> activeNameServers) {
+    this.activeNameServers = activeNameServers;
+    this.activeNameServersTimestamp = System.currentTimeMillis();
   }
 
   /**
    * Returns true if the contains the key and the ttl associated with key has not expired in the cache.
    *
-   * @param key
    * @return true or false value regarding cache being valid
    */
-  private synchronized boolean isValidValue(String key) {
-    // NULL MEANS THE VALUE IS INVALID
-    if (valuesMap == null || valuesMap.has(key) == false) {
+  public synchronized boolean isValidValue() {
+    if (value == null) {
       return false;
     }
-    int keyTimeToLiveInSeconds = getKeyTTL(key);
-    //-1 means infinite TTL
-    if (keyTimeToLiveInSeconds == -1) {
-      return true;
-    } // 0 means TTL == 0
-    else if (keyTimeToLiveInSeconds == 0) {
-      return false;
-    } // else TTL is the value of field timeToLive.
-    else {
-      Long timeStampInMillesconds = timestampAddress.get(key);
-      if (timeStampInMillesconds == null) {
-        return false;
-      }
-      return (System.currentTimeMillis() - timeStampInMillesconds) < (keyTimeToLiveInSeconds * 1000);
-    }
+    return (System.currentTimeMillis() - valueTimestamp) < timeToLive;
   }
 
   /**
-   * Allow special case handling of TTLs for certain keys
+   * Returns true if the contains the key and the ttl associated with key has not expired in the cache.
    *
+   * @return true or false value regarding cache being valid
+   */
+  public synchronized boolean isValidActives() {
+    if (activeNameServers == null) {
+      return false;
+    }
+    return (System.currentTimeMillis() - activeNameServersTimestamp) < timeToLive;
+  }
+
+  /**
+   * Returns the time since the cache value was updated.
+   * 
    * @param key
+   * @return
    */
-  private int getKeyTTL(String key) {
-    return timeToLiveInSeconds;
+  public synchronized long timeSinceValueCached(String key) {
+    return (int) (System.currentTimeMillis() - valueTimestamp);
   }
 
   /**
-   * Returns true if a non-empty set of active name servers is stored in cache.
-   *
-   * @return true if a non-empty set of active name servers is stored in cache
+   * Returns the time since the active replicas were updated.
+   * 
+   * @param key
+   * @return
    */
-  public synchronized boolean isValidNameserver() {
-    return activeNameServers != null && activeNameServers.size() != 0;
-  }
-
-  public synchronized int timeSinceAddressCached(String key) {
-    Long ts = timestampAddress.get(key);
-    if (ts == null) {
-      return -1;
-    }
-    return (int) (System.currentTimeMillis() - ts);
-  }
-
-  public synchronized void invalidateActiveNameServer() {
-    activeNameServers = null;
+  public synchronized long timeSinceActivesCached(String key) {
+    return (int) (System.currentTimeMillis() - activeNameServersTimestamp);
   }
 
   /**
@@ -267,56 +134,26 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    */
   @Override
   public synchronized String toString() {
-    StringBuilder entry = new StringBuilder();
-
-    entry.append("Name:" + getName());
-    //entry.append(" Key: " + getRecordKey().getName());
-    entry.append("\n    TTLAddress:" + timeToLiveInSeconds);
-    entry.append("\n    TimestampAddress: " + timeStampHashToString(timestampAddress, timeToLiveInSeconds * 1000));
-    entry.append("\n    PrimaryNS:[");
-    boolean first = true;
-    for (NodeIDType id : replicaControllers) {
-      if (first) {
-        entry.append(id.toString());
-        first = false;
-      } else {
-        entry.append(", " + id.toString());
-      }
-    }
-    entry.append("]");
-
-    entry.append("\n    ActiveNS:[");
-    if (activeNameServers != null) {
-      first = true;
-      for (NodeIDType id : activeNameServers) {
-        if (first) {
-          entry.append(id);
-          first = false;
-        } else {
-          entry.append(", " + id);
-        }
-      }
-    }
-    entry.append("]");
-    // NULL MEANS THE VALUE IS INVALID
-    entry.append("\n    Value:" + (valuesMap == null ? "INVALID" : valuesMap.toString()));
-    return entry.toString();
-  }
-
-  private String timeStampHashToString(ConcurrentHashMap<String, Long> map, long ttlInMilleseconds) {
-    long currentTime = System.currentTimeMillis();
     StringBuilder result = new StringBuilder();
-    String prefix = "";
-    for (Entry<String, Long> entry : map.entrySet()) {
-      result.append(prefix);
-      result.append(entry.getKey());
-      result.append("=");
-      result.append(entry.getValue());
-      if (currentTime - entry.getValue() >= ttlInMilleseconds) {
-        result.append("(*EXPIRED*)");
+    result.append("Name:" + name);
+    result.append("\nValue:" + value);
+    if (value != null) {
+      result.append(" (age: " + (System.currentTimeMillis() - valueTimestamp) + "ms)");
+      if (!isValidValue()) {
+        result.append("\n    ***Expired***");
       }
-      prefix = ", ";
     }
+    result.append("\nActives: " + activeNameServers);
+    if (activeNameServers != null) {
+      result.append("  (age: " + (System.currentTimeMillis() - activeNameServersTimestamp) + "ms)");
+      if (!isValidActives()) {
+        result.append("\n    ***Expired***");
+      }
+    }
+    result.append("\n    TTL:" + timeToLive + "ms");
+    result.append("\n    Value Timestamp: " + valueTimestamp);
+    result.append("\n    Actives Timestamp: " + activeNameServersTimestamp);
+
     return result.toString();
   }
 
@@ -328,7 +165,61 @@ public class CacheEntry<NodeIDType> implements Comparable<CacheEntry> {
    */
   @Override
   public int compareTo(CacheEntry d) {
-    return (this.getName()).compareTo(d.getName());
+    return (this.name).compareTo(d.name);
+  }
+
+  /**
+   * Returns the name.
+   * 
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
+
+  /**
+   * Returns the TTL.
+   * 
+   * @return the ttl
+   */
+  public int getTimeToLive() {
+    return timeToLive;
+  }
+
+  /**
+   * Returns the timestamp of the value.
+   * 
+   * @return the timestamp
+   */
+  public long getValueTimestamp() {
+    return valueTimestamp;
+  }
+
+  /**
+   * Returns the cached value.
+   * 
+   * @return the value
+   */
+  public String getValue() {
+    return value;
+  }
+
+  /**
+   * Returns the set of active replicas.
+   * 
+   * @return the set of active replicas
+   */
+  public Set<InetSocketAddress> getActiveNameServers() {
+    return activeNameServers;
+  }
+
+  /**
+   * Returns the active replicas timestamp.
+   * 
+   * @return the active replicas timestamp
+   */
+  public long getActiveNameServersTimestamp() {
+    return activeNameServersTimestamp;
   }
 
 }

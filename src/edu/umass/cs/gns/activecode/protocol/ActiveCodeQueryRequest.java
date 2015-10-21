@@ -2,7 +2,6 @@ package edu.umass.cs.gns.activecode.protocol;
 
 import java.io.Serializable;
 
-import edu.umass.cs.gns.util.ResultValue;
 
 public class ActiveCodeQueryRequest implements Serializable {
 	public String guid;

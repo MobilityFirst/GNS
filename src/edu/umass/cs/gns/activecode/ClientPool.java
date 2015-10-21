@@ -3,8 +3,7 @@ package edu.umass.cs.gns.activecode;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
+import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
 
 /**
  * This class represents a pool of active code clients. Each client is associated with a particular thread.

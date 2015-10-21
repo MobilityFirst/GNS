@@ -3,28 +3,22 @@ package edu.umass.cs.gns.activecode;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.codec.binary.Base64;
-import org.json.JSONException;
 
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gns.clientsupport.ActiveCode;
-import edu.umass.cs.gns.clientsupport.FieldMetaData;
-import edu.umass.cs.gns.clientsupport.MetaDataTypeName;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.ValuesMap;
 
 public class ActiveCodeHandler {	
 	GnsApplicationInterface gnsApp;

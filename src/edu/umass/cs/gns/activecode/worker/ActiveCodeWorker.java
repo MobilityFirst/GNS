@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-import edu.umass.cs.gns.database.MongoRecords;
-import edu.umass.cs.gns.nsdesign.Config;
 
 public class ActiveCodeWorker {
 	/**

@@ -2,9 +2,6 @@ package edu.umass.cs.gns.activecode.protocol;
 
 import java.io.Serializable;
 
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
-
 public class ActiveCodeQueryResponse implements Serializable {
 	public boolean success;
 	public String valuesMapString;

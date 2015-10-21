@@ -1,0 +1,5 @@
+userName=ec2-user
+keyFile=aws.pem
+hostType=linux
+dataStoreName=MONGO
+javaCommand=java -ea -Xms2048M

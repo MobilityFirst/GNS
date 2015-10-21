@@ -1,11 +1,10 @@
 package edu.umass.cs.gns.activecode;
 
-import java.io.IOException;
 import java.util.concurrent.Callable;
 
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
+
 
 public class ActiveCodeTask implements Callable<ValuesMap> {
 

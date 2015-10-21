@@ -1,7 +1,3 @@
 #
-java -Xmx2g -cp ../../dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id frank -nsfile servers.txt &
-java -Xmx2g -cp ../../dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id smith -nsfile servers.txt &
-java -Xmx2g -cp ../../dist/GNS.jar edu.umass.cs.gns.main.StartNameServer -id billy -nsfile servers.txt &
-java -Xmx2g -cp ../../dist/GNS.jar edu.umass.cs.gns.main.StartLocalNameServer -port 24398 -nsfile servers.txt &
-
-
+java -ea -cp ../../dist/GNS.jar -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=../../conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=../../conf/keyStore/node100.jks edu.umass.cs.gns.gnsApp.AppReconfigurableNode -test -configFile ns.properties &
+java -ea -cp ../../dist/GNS.jar -Djavax.net.ssl.trustStorePassword=qwerty -Djavax.net.ssl.trustStore=../../conf/trustStore/node100.jks -Djavax.net.ssl.keyStorePassword=qwerty -Djavax.net.ssl.keyStore=../../conf/keyStore/node100.jks edu.umass.cs.gns.localnameserver.LocalNameServer -configFile lns.properties &

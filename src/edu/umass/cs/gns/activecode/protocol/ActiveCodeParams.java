@@ -2,8 +2,6 @@ package edu.umass.cs.gns.activecode.protocol;
 
 import java.io.Serializable;
 
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
 
 public class ActiveCodeParams implements Serializable {
 	public String guid;

@@ -9,14 +9,26 @@ import java.util.Map;
  * @author westy
  */
 public class AMIRecord {
-  private String name;
-  private String description;
-  private String instanceType;
+  private final String name;
+  private final String description;
+  private final String instanceType;
+  private final String vpcSubnet;
+  private final String securityGroup;
 
   private AMIRecord(String name, String description, String instanceType) {
     this.name = name;
     this.description = description;
     this.instanceType = instanceType;
+    this.vpcSubnet = null;
+    this.securityGroup = AWSEC2.DEFAULT_SECURITY_GROUP_NAME;
+  }
+  
+  private AMIRecord(String name, String description, String instanceType, String vpcSubnet, String securityGroup) {
+    this.name = name;
+    this.description = description;
+    this.instanceType = instanceType;
+    this.vpcSubnet = vpcSubnet;
+    this.securityGroup = securityGroup;
   }
 
   public String getName() {
@@ -30,6 +42,15 @@ public class AMIRecord {
   public String getInstanceType() {
     return instanceType;
   }
+
+  public String getVpcSubnet() {
+    return vpcSubnet;
+  }
+
+  public String getSecurityGroup() {
+    return securityGroup;
+  }
+  
   public static Map<AMIRecordType, Map<RegionRecord, AMIRecord>> records = null;
 
   public static AMIRecord getAMI(AMIRecordType type, RegionRecord region) {
@@ -56,6 +77,27 @@ public class AMIRecord {
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.AP_SOUTHEAST_2, new AMIRecord("ami-e5a03bdf", "Mongo_2014_5_6", "t1.micro"));
     amiMap_Mongo_2014_5_6_micro.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-ab54f9b6", "Mongo_2014_5_6", "t1.micro"));
     records.put(AMIRecordType.Mongo_2014_5_6_micro, amiMap_Mongo_2014_5_6_micro);
+    
+    HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2015_6_25_vpc = new HashMap<RegionRecord, AMIRecord>();
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.US_EAST_1, new AMIRecord("ami-87916bec", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-69c40c1e", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.US_WEST_2, new AMIRecord("ami-17a2a627", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-bd79f7ca", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.US_WEST_1, new AMIRecord("ami-63b74127", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-2e0bf477", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.EU_WEST_1, new AMIRecord("ami-8a3f78fd", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-07215262", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.EU_CENTRAL_1, new AMIRecord("ami-aa5d66b7", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-f624c59f", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.AP_SOUTHEAST_1, new AMIRecord("ami-948d8ac6", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-064af263", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.AP_NORTHEAST_1, new AMIRecord("ami-62dd7c62", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-c63cf69f", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.AP_SOUTHEAST_2, new AMIRecord("ami-dd397ce7", "Mongo_2015_6_25_vpc", 
+            "t2.small", "subnet-5b40992c", "aws-vpc"));
+    amiMap_Mongo_2015_6_25_vpc.put(RegionRecord.SA_EAST_1, new AMIRecord("ami-cd1496d0", "Mongo_2015_6_25_vpc",
+            "t2.small", "subnet-9376eaf6", "aws-vpc"));
+    records.put(AMIRecordType.Mongo_2015_6_25_vpc, amiMap_Mongo_2015_6_25_vpc);
     // our new mongo AMI
     HashMap<RegionRecord, AMIRecord> amiMap_Mongo_2014_5_6 = new HashMap<RegionRecord, AMIRecord>();
     amiMap_Mongo_2014_5_6.put(RegionRecord.US_EAST_1, new AMIRecord("ami-0479996c", "Mongo_2014_5_6", "m1.small"));

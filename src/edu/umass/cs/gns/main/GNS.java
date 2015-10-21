@@ -1,8 +1,6 @@
 package edu.umass.cs.gns.main;
 
-import edu.umass.cs.gns.nsdesign.replicationframework.ReplicationFrameworkType;
-
-import edu.umass.cs.gns.util.Logging;
+import edu.umass.cs.gns.utils.Logging;
 import java.io.IOException;
 import java.net.URL;
 import java.util.jar.Attributes;
@@ -10,34 +8,84 @@ import java.util.jar.Manifest;
 import java.util.logging.Logger;
 
 /**
- * Contains config parameters common to name servers and local name servers, and logging functionality.
+ * Contains config parameters for the nameservers and logging functionality.
  */
 public class GNS {
 
+  /**
+   * The default TTL.
+   */
   public static final int DEFAULT_TTL_SECONDS = 0;
-  
-  public static final int STARTINGPORT = 24400;
-  // FIXME: clean this up and make config settable
-  public static final int DEFAULT_LNS_TCP_PORT = 24398;
-  public static final int DEFAULT_LNS_PING_PORT = 24397;
-  public static final int DEFAULT_LNS_ADMIN_PORT = 24396;
-  
+
+  /**
+   * The default starting port.
+   */
+  public static final int DEFAULT_STARTING_PORT = 24400;
+  /**
+   * The URL path used by the HTTP server.
+   */
   public static final String GNS_URL_PATH = "GNS";
-  
-  public static final int CLIENTPORT = 24399;
-  
+  // Useful for testing with resources in conf/testCodeResources if using 
+  // "import from build file in IDE". Better way to do this?
+  /**
+   * Hack.
+   */
+  public static final String ARUN_GNS_DIR_PATH = "/Users/arun/GNS/";
+  /**
+   * Hack.
+   */
+  public static final String WESTY_GNS_DIR_PATH = "/Users/westy/Documents/Code/GNS";
+  /**
+   * The maximum number of HRN aliases allowed for a guid.
+   */
+  public static int MAXALIASES = 100;
+  /**
+   * The maximum number of subguids allowed in an account guid.
+   */
+  public static int MAXGUIDS = 12000;
 
   // This is designed so we can run multiple NSs on the same host if needed
+  /**
+   * Master port types.
+   */
   public enum PortType {
 
+    /**
+     * Port used to send requests to a name server.
+     */
     NS_TCP_PORT(0), // TCP port at name servers
+
+    /**
+     * Port used to send admin requests to a name server.
+     */
     NS_ADMIN_PORT(1),
+    /**
+     * Port used to pings requests to a name server.
+     */
     NS_PING_PORT(2),
     // sub ports
+
+    /**
+     * Port used to requests to an active replica.
+     */
     ACTIVE_REPLICA_PORT(3),
-    RECONFIGURATOR_PORT(4)
-    ;
-    
+    /**
+     * Port used to requests to a reconfigurator replica.
+     */
+    RECONFIGURATOR_PORT(4),
+    /**
+     * Port used to requests to a command pre processor.
+     */
+    CCP_PORT(5),
+    /**
+     * Port used to admin requests to a command pre processor.
+     */
+    CCP_ADMIN_PORT(6),
+    /**
+     * Port used to send pings to a command pre processor.
+     */
+    CCP_PING_PORT(7);
+
     //
     int offset;
 
@@ -45,6 +93,11 @@ public class GNS {
       this.offset = offset;
     }
 
+    /**
+     * Returns the max port offset.
+     * 
+     * @return
+     */
     public static int maxOffset() {
       int result = 0;
       for (PortType p : values()) {
@@ -55,27 +108,43 @@ public class GNS {
       return result;
     }
 
+    /**
+     * Returns the offset for this port.
+     * 
+     * @return
+     */
     public int getOffset() {
       return offset;
     }
   }
-  public static boolean enableEmailAccountAuthentication = true;
-  public static boolean enableSignatureVerification = true;
+  /**
+   * Controls whether email verification is enabled.
+   */
+  public static boolean enableEmailAccountVerification = true;
+  /**
+   * Controls whether signature verification is enabled.
+   */
+  public static boolean enableSignatureAuthentication = true;
   /**
    * Number of primary nameservers. Default is 3 *
    */
   public static final int DEFAULT_NUM_PRIMARY_REPLICAS = 3;
+
+  /**
+   * The current number of primary replicas that should be created for a name.
+   */
   public static int numPrimaryReplicas = DEFAULT_NUM_PRIMARY_REPLICAS;
-  public static final ReplicationFrameworkType DEFAULT_REPLICATION_FRAMEWORK = ReplicationFrameworkType.LOCATION;
   /**
-   * default query timeout in ms.
+   * Default query timeout in ms. How long we wait before retransmitting a query.
    */
-  public static int DEFAULT_QUERY_TIMEOUT = 1000; // was 2
+  public static int DEFAULT_QUERY_TIMEOUT = 2000;
   /**
-   * maximum query wait time in milliseconds
+   * Maximum query wait time in milliseconds. After this amount of time
+   * a negative response will be sent back to a client indicating that a
+   * record could not be found.
    */
-  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 4000; // was 10
-  
+  public static int DEFAULT_MAX_QUERY_WAIT_TIME = 16000; // was 10
+
   // THINK CAREFULLY BEFORE CHANGING THESE... THEY CAN CLOG UP YOUR CONSOLE AND GENERATE HUGE LOG FILES
   // IF YOU WANT MORE FINE GRAINED USE OF THESE IT IS SUGGESTED THAT YOU OVERRIDE THEM ON THE COMMAND LINE
   // OR IN A CONFIG FILE
@@ -87,45 +156,32 @@ public class GNS {
    * Console output level for main logger
    */
   public static String consoleOutputLevel = "INFO"; //should be INFO for production use
-  /**
-   * Logging level for stat logger
-   */
-  public static String statFileLoggingLevel = "FINE"; // leave this at a more verbose level, but really should be INFO for production use
-  /**
-   * Console output level for stat logger
-   */
-  public static String statConsoleOutputLevel = "WARNING";  // don't send these to the console normally
-  //
-  //
-  private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
-  public static boolean initRun = false;
 
+  private final static Logger LOGGER = Logger.getLogger(GNS.class.getName());
+
+  /**
+   * True if the logger has been initialized.
+   */
+  private static boolean loggerInitRun = false;
+
+  /**
+   * Returns the master GNS logger.
+   *
+   * @return the master GNS logger
+   */
   public static Logger getLogger() {
-    if (!initRun) {
+    if (!loggerInitRun) {
       System.out.println("Setting Logger console level to " + consoleOutputLevel + " and file level to " + fileLoggingLevel);
       Logging.setupLogger(LOGGER, consoleOutputLevel, fileLoggingLevel, "log" + "/gns.xml");
-      initRun = true;
+      loggerInitRun = true;
     }
     return LOGGER;
-  }
-  private final static Logger STAT_LOGGER = Logger.getLogger("STAT_" + GNS.class.getName());
-  public static boolean initStatRun = false;
-
-  public static Logger getStatLogger() {
-
-    if (!initStatRun) {
-      // don't send these to the console normally
-      System.out.println("Setting STAT Logger console level to " + statConsoleOutputLevel + " and file level to " + statFileLoggingLevel);
-      Logging.setupLogger(STAT_LOGGER, statConsoleOutputLevel, statFileLoggingLevel, "log" + "/gns_stat.xml");
-      initStatRun = true;
-    }
-    return STAT_LOGGER;
   }
 
   /**
    * Attempts to look for a MANIFEST file in that contains the Build-Version attribute.
-   * 
-   * @return 
+   *
+   * @return a build version
    */
   public static String readBuildVersion() {
     String result = null;

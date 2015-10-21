@@ -1,25 +1,15 @@
 package edu.umass.cs.gns.activecode;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.ProcessBuilder.Redirect;
-import java.net.ConnectException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketAddress;
-import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,10 +19,8 @@ import edu.umass.cs.gns.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeQueryResponse;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gns.utils.ValuesMap;
 
 public class ActiveCodeClient {
 	private String hostname;
@@ -54,15 +42,15 @@ public class ActiveCodeClient {
 	}
 	
 	/**
-	 * @param app the gns app
-	 * @param hostname the hostname of the running worker
-	 * @param port the port of the running worker
-	 */
-	public ActiveCodeClient(GnsReconfigurable app, String hostname, int port) {
-		this.hostname = hostname;
-		this.port = port;
-		this.app = app;
-	}
+//	 * @param app the gns app
+//	 * @param hostname the hostname of the running worker
+//	 * @param port the port of the running worker
+//	 */
+//	public ActiveCodeClient(GnsReconfigurable app, String hostname, int port) {
+//		this.hostname = hostname;
+//		this.port = port;
+//		this.app = app;
+//	}
 	
 	/**
 	 * Grab an open port

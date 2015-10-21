@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="MacRoman"?>
+<!--
+Copyright (C) 2015
+University of Massachusetts
+All Rights Reserved 
+-->
+<root>
+  <ec2username name = "ec2-user"/>
+  <ami name="Mongo_2014_5_6"/>
+  <datastore name = "MONGO"/>
+  <region name="US_EAST_1"      cnt="1" ip="23.21.160.80"/>
+  <region name="US_WEST_1"      cnt="1" ip="54.241.15.214"/>
+  <region name="US_WEST_2"      cnt="1" ip="50.112.98.151"/>
+  <region name="EU_WEST_1"      cnt="1" ip="79.125.27.206"/>
+  <region name="SA_EAST_1"      cnt="1" ip="54.232.178.43"/>
+</root>

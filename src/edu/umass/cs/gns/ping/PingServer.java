@@ -8,15 +8,18 @@
 package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 /**
- * The PingServer class handles the client side of the GNS ping protocol.
+ * The PingServer class handles the server side of the GNS ping protocol.
+ * It bounces back the data it gets to the client.
  * The PingClient class handles the flip side of this protocol.
  * 
  * @author westy
@@ -25,13 +28,19 @@ import java.net.InetAddress;
 public class PingServer<NodeIDType> extends Thread{
 
   private final NodeIDType nodeID;
-  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  private final GNSInterfaceNodeConfig<NodeIDType> nodeConfig;
   private DatagramSocket serverSocket;
   private boolean shutdown = false;
 
-  public PingServer(final NodeIDType nodeID, final GNSNodeConfig<NodeIDType> gnsNodeConfig) {
+  /**
+   * Create a PingServer instance.
+   * 
+   * @param nodeID
+   * @param nodeConfig
+   */
+  public PingServer(final NodeIDType nodeID, final GNSInterfaceNodeConfig<NodeIDType> nodeConfig) {
     this.nodeID = nodeID;
-    this.gnsNodeConfig = gnsNodeConfig;
+    this.nodeConfig = nodeConfig;
   }
 
 
@@ -39,7 +48,7 @@ public class PingServer<NodeIDType> extends Thread{
   public void run() {
 
     try {
-      serverSocket = new DatagramSocket(nodeID == null ? GNS.DEFAULT_LNS_PING_PORT : gnsNodeConfig.getNSPingPort(nodeID));
+      serverSocket = new DatagramSocket(nodeID == null ? nodeConfig.getCcpPingPort(nodeID) : nodeConfig.getPingPort(nodeID));
       byte[] receiveData = new byte[1024];
       byte[] sendData;
       while (true) {
@@ -70,6 +79,9 @@ public class PingServer<NodeIDType> extends Thread{
     }
   }
 
+  /**
+   * Shutdown the ping server.
+   */
   public void shutdown() {
     setShutdown();
     serverSocket.close();
@@ -83,12 +95,19 @@ public class PingServer<NodeIDType> extends Thread{
     return shutdown;
   }
 
+  /**
+   * The main routine. For testing only.
+   * 
+   * @param args
+   * @throws Exception
+   */
   @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     String nodeID = "0";
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
-    PingServer pingServer = new PingServer(nodeID, gnsNodeConfig);
+    GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
+    PingServer pingServer = new PingServer(nodeID, nodeConfig);
     new Thread(pingServer).start();
 //    startServer();
   }

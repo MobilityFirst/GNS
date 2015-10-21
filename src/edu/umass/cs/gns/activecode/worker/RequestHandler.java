@@ -1,17 +1,10 @@
 package edu.umass.cs.gns.activecode.worker;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInput;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.Base64;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -19,8 +12,8 @@ import org.json.JSONObject;
 import edu.umass.cs.gns.activecode.ActiveCodeUtils;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeMessage;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeParams;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.utils.ValuesMap;
+
 
 public class RequestHandler {
 	private ActiveCodeRunner runner;

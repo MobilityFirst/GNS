@@ -8,8 +8,10 @@
 package edu.umass.cs.gns.ping;
 
 import edu.umass.cs.gns.main.GNS;
+import edu.umass.cs.gns.nodeconfig.GNSConsistentNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
 
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -22,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * The PingClient class handles the client side of the GNS ping protocol.
  * The PingServer class handles the flip side of this protocol.
- * 
+ *
  * @author westy
  * @param <NodeIDType>
  */
@@ -35,12 +37,17 @@ public class PingClient<NodeIDType> {
   // Records the send time of each request
   private final ConcurrentMap<Integer, Long> queryTimeStamp = new ConcurrentHashMap<Integer, Long>(10, 0.75f, 3);
   private final Random randomID = new Random();
-  private final GNSNodeConfig<NodeIDType> gnsNodeConfig;
+  private final GNSInterfaceNodeConfig<NodeIDType> nodeConfig;
   private Thread receiveThread;
   private boolean shutdown = false;
 
-  public PingClient(GNSNodeConfig<NodeIDType> gnsNodeConfig) {
-    this.gnsNodeConfig = gnsNodeConfig;
+  /**
+   * Create a PingClient instance.
+   * 
+   * @param nodeConfig
+   */
+  public PingClient(GNSInterfaceNodeConfig<NodeIDType> nodeConfig) {
+    this.nodeConfig = nodeConfig;
     try {
       clientSocket = new DatagramSocket();
       startReceiveThread();
@@ -51,33 +58,41 @@ public class PingClient<NodeIDType> {
 
   /**
    * Sends a ping request to the node.
-   * 
+   *
    * @param nodeId
    * @return the round trip time or INVALID_INTERVAL if the request times out
-   * @throws IOException 
+   * @throws IOException
+   * @throws java.lang.InterruptedException
    */
   public long sendPing(NodeIDType nodeId) throws IOException, InterruptedException {
-    InetAddress IPAddress = gnsNodeConfig.getNodeAddress(nodeId);
-    int port = gnsNodeConfig.getNSPingPort(nodeId);
-    byte[] sendData;
-    // make an id and turn it into a string for sending out
-    int id = nextRequestID();
-    String sendString = Integer.toString(id);
-    sendData = sendString.getBytes();
-    DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-    // record the send time
-    queryTimeStamp.put(id, System.currentTimeMillis());
-    clientSocket.send(sendPacket);
-    //GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
-    waitForResponsePacket(id);
-    long result = queryResultMap.get(id);
+    InetAddress IPAddress = nodeConfig.getNodeAddress(nodeId);
+    int port = nodeConfig.getPingPort(nodeId);
+    if (port != GNSNodeConfig.INVALID_PORT) { // sanity checking
+      byte[] sendData;
+      // make an id and turn it into a string for sending out
+      int id = nextRequestID();
+      String sendString = Integer.toString(id);
+      sendData = sendString.getBytes();
+      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+      // record the send time
+      queryTimeStamp.put(id, System.currentTimeMillis());
+      clientSocket.send(sendPacket);
+      //GNS.getLogger().fine("SENT to " + nodeId + " " + sendData.length + " bytes : |" + sendString + "|");
+      waitForResponsePacket(id);
+      long result = queryResultMap.get(id);
 //    if (result == INVALID_INTERVAL) {
 //      GNS.getLogger().fine("TIMEOUT for send to " + nodeId);
 //    }
-    queryResultMap.remove(id);
-    return result;
+      queryResultMap.remove(id);
+      return result;
+    } else {
+      return GNSNodeConfig.INVALID_PING_LATENCY;
+    }
   }
 
+  /**
+   * Shuts down this client.
+   */
   public void shutdown() {
     this.setShutdown();
     this.clientSocket.close();
@@ -104,13 +119,13 @@ public class PingClient<NodeIDType> {
           return;
         }
         GNS.getLogger().severe("Error waiting for response " + e);
-       Thread.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
+        Thread.sleep(2000); // sleep a bit so we don't grind to a halt on perpetual errors
       } catch (NumberFormatException e) {
         GNS.getLogger().severe("Error parsing response " + e);
       }
     }
   }
-  
+
   private static final int TIMEOUT = 10000;
 
   private void waitForResponsePacket(int id) throws InterruptedException {
@@ -121,17 +136,17 @@ public class PingClient<NodeIDType> {
 //          monitor.wait();
 //        }
 //      }
-      synchronized (monitor) {
-        long timeoutExpiredMs = System.currentTimeMillis() + TIMEOUT;
-        while (!queryResultMap.containsKey(id)) {
-          monitor.wait(timeoutExpiredMs - System.currentTimeMillis());
-          if (System.currentTimeMillis() >= timeoutExpiredMs) {
-            // we timed out... only got partial results{
-            queryResultMap.put(id, -1L);
-            break;
-          }
+    synchronized (monitor) {
+      long timeoutExpiredMs = System.currentTimeMillis() + TIMEOUT;
+      while (!queryResultMap.containsKey(id)) {
+        monitor.wait(timeoutExpiredMs - System.currentTimeMillis());
+        if (System.currentTimeMillis() >= timeoutExpiredMs) {
+          // we timed out... only got partial results{
+          queryResultMap.put(id, -1L);
+          break;
         }
       }
+    }
 //    } catch (InterruptedException x) {
 //      GNS.getLogger().severe("Wait for packet was interrupted " + x);
 //    }
@@ -180,12 +195,18 @@ public class PingClient<NodeIDType> {
     return shutdown;
   }
 
+  /**
+   * Main routine. For testing only.
+   * @param args
+   * @throws Exception
+   */
   @SuppressWarnings("unchecked")
   public static void main(String args[]) throws Exception {
     String configFile = args[0];
     String nodeID = "0";
-    GNSNodeConfig gnsNodeConfig1 = new GNSNodeConfig(configFile, nodeID);
-    PingClient pingClient = new PingClient(gnsNodeConfig1);
+    GNSNodeConfig gnsNodeConfig = new GNSNodeConfig(configFile, nodeID);
+    GNSConsistentNodeConfig nodeConfig = new GNSConsistentNodeConfig(gnsNodeConfig);
+    PingClient pingClient = new PingClient(nodeConfig);
     while (true) {
       GNS.getLogger().info("RTT = " + pingClient.sendPing("0"));
       Thread.sleep(1000);

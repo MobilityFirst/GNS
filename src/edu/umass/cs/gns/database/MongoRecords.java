@@ -16,18 +16,17 @@ import com.mongodb.MongoClient;
 import com.mongodb.MongoException;
 import com.mongodb.WriteResult;
 import com.mongodb.util.JSON;
-import edu.umass.cs.gns.clientsupport.Defs;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.RecordExistsException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
 import edu.umass.cs.gns.main.GNS;
-import edu.umass.cs.gns.nsdesign.Config;
-import edu.umass.cs.gns.nsdesign.nodeconfig.GNSNodeConfig;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.nsdesign.recordmap.ReplicaControllerRecord;
-//import edu.umass.cs.gns.util.ConsistentHashing;
-import edu.umass.cs.gns.util.JSONUtils;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
+import edu.umass.cs.gns.nodeconfig.GNSNodeConfig;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gns.utils.JSONUtils;
+import edu.umass.cs.gns.utils.ValuesMap;
+import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -40,8 +39,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for guid, key, record triples using JSONObjects as the intermediate
- * representation.
+ * Provides insert, update, removeEntireRecord and lookupEntireRecord operations for 
+ * guid, key, record triples using JSONObjects as the intermediate representation.
+ * All records are stored in a document called NameRecord.
  *
  * @author westy, Abhigyan
  * @param <NodeIDType>
@@ -49,8 +49,10 @@ import java.util.Set;
 public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   private static final String DBROOTNAME = "GNS";
+  /**
+   * The name of the document where name records are stored.
+   */
   public static final String DBNAMERECORD = "NameRecord";
-  public static final String DBREPLICACONTROLLER = "ReplicaControllerRecord";
 
   private DB db;
   private String dbName;
@@ -81,24 +83,21 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   private void init(NodeIDType nodeID, int mongoPort) {
     mongoCollectionSpecs = new MongoCollectionSpecs();
     mongoCollectionSpecs.addCollectionSpec(DBNAMERECORD, NameRecord.NAME);
-    mongoCollectionSpecs.addCollectionSpec(DBREPLICACONTROLLER, ReplicaControllerRecord.NAME);
     // add location as another index
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME, "2d"));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.LOCATION_FIELD_NAME, "2d"));
     // The good thing is that indexes are not required for 2dsphere fields, but they will make things faster
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
-//    mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-//            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "geoLocationHome", "2dsphere"));
-//    mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-//            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + "geoLocationWork", "2dsphere"));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.LOCATION_FIELD_NAME_2D_SPHERE, "2dsphere"));
     mongoCollectionSpecs.getCollectionSpec(DBNAMERECORD)
-            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + Defs.IPADDRESS_FIELD_NAME, 1));
+            .addOtherIndex(new BasicDBObject(NameRecord.VALUES_MAP.getName() + "." + GnsProtocolDefs.IPADDRESS_FIELD_NAME, 1));
     try {
       // use a unique name in case we have more than one on a machine (need to remove periods, btw)
       dbName = DBROOTNAME + "-" + nodeID.toString().replace('.', '-');
-//      MongoClient mongoClient;
+      //MongoClient mongoClient;
+      //MongoCredential credential = MongoCredential.createMongoCRCredential("admin", dbName, "changeit".toCharArray());
       if (mongoPort > 0) {
+        //mongoClient = new MongoClient(new ServerAddress("localhost", mongoPort), Arrays.asList(credential));
         mongoClient = new MongoClient("localhost", mongoPort);
       } else {
         mongoClient = new MongoClient("localhost");
@@ -123,7 +122,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     for (BasicDBObject index : spec.getOtherIndexes()) {
       db.getCollection(spec.getName()).createIndex(index);
     }
-    if (Config.debuggingEnabled) {
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().info("Indexes initialized");
     }
   }
@@ -138,7 +137,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         db.getCollection(collectionName).drop();
         GNS.getLogger().info("MONGO DB RESET. DBNAME: " + dbName + " Collection name: " + collectionName);
 
-        // IMPORTANT... recreate the index
+        // IMPORTANT... recreate the indices
         initializeIndex(collectionName);
       } catch (MongoException e) {
         throw new FailedDBOperationException(collectionName, "reset");
@@ -193,6 +192,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   }
 
   private JSONObject lookupEntireRecord(String collectionName, String guid, boolean explain) throws RecordNotFoundException, FailedDBOperationException {
+    long startTime = System.currentTimeMillis();
     db.requestStart();
     try {
       String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
@@ -205,7 +205,17 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       }
       if (cursor.hasNext()) {
         DBObject obj = cursor.next();
-        return new JSONObject(obj.toString());
+        JSONObject json = new JSONObject(obj.toString());
+        // instrumentation
+        DelayProfiler.updateDelay("lookupEntireRecord", startTime);
+        // older style
+        int lookupTime = (int) (System.currentTimeMillis() - startTime);
+        if (debuggingEnabled && lookupTime > 20) {
+          GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
+        }
+        // instrumentation
+        json.put(NameRecord.LOOKUP_TIME.getName(), lookupTime);
+        return json;
       } else {
         throw new RecordNotFoundException(guid);
       }
@@ -230,7 +240,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   public HashMap<ColumnField, Object> lookupMultipleSystemAndUserFields(String collectionName, String guid, ColumnField nameField,
           ArrayList<ColumnField> systemFields, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys)
           throws RecordNotFoundException, FailedDBOperationException {
-    long t0 = System.currentTimeMillis();
+    long startTime = System.currentTimeMillis();
     if (guid == null) {
       GNS.getLogger().fine("GUID is null: " + guid);
       throw new RecordNotFoundException(guid);
@@ -256,7 +266,11 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
       }
 
+      DelayProfiler.updateDelay("lookupMSAUFPreFind", startTime);
+      long findStartTime = System.currentTimeMillis();
       DBObject dbObject = collection.findOne(query, projection);
+      DelayProfiler.updateDelay("lookupMSAUFJustFind", findStartTime);
+      long postFindStartTime = System.currentTimeMillis();
       if (dbObject == null) {
         throw new RecordNotFoundException(guid);
       }
@@ -267,6 +281,7 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       // prepare to return the user values
       if (valuesMapField != null && valuesMapKeys != null) {
         // first we pull all the user values from the dbObject and put in a bson object
+        // FIXME: Why not convert this to a JSONObject right now? We know that's what it is.
         BasicDBObject bson = (BasicDBObject) dbObject.get(valuesMapField.getName());
         if (debuggingEnabled) {
           GNS.getLogger().info("@@@@@@@@ " + bson.toString());
@@ -306,10 +321,15 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         }
         hashMap.put(valuesMapField, valuesMap);
       }
-      long t1 = System.currentTimeMillis();
-      if (t1 - t0 > 20) {
-        GNS.getLogger().warning(" mongoLookup Long delay " + (t1 - t0));
+      DelayProfiler.updateDelay("lookupMSAUFPostFind", postFindStartTime);
+      // instrumentation
+      DelayProfiler.updateDelay("lookupMSAUF", startTime);
+      // older style
+      int lookupTime = (int) (System.currentTimeMillis() - startTime);
+      if (debuggingEnabled && lookupTime > 20) {
+        GNS.getLogger().warning(" mongoLookup Long delay " + lookupTime);
       }
+      hashMap.put(NameRecord.LOOKUP_TIME, lookupTime);
       return hashMap;
     } catch (MongoException e) {
       throw new FailedDBOperationException(collectionName, guid);
@@ -470,8 +490,9 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
       } catch (MongoException e) {
         throw new FailedDBOperationException(collectionName, updates.toString());
       }
+      DelayProfiler.updateDelay("updateJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
-      if (finishTime - startTime > 10) {
+      if (debuggingEnabled && finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
       }
     }
@@ -534,8 +555,9 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
         throw new FailedDBOperationException(collectionName, updates.toString());
       }
       actuallyUpdatedTheRecord = writeResult.isUpdateOfExisting();
+      DelayProfiler.updateDelay("updateConditionalJustThe$set", startTime);
       long finishTime = System.currentTimeMillis();
-      if (finishTime - startTime > 10) {
+      if (debuggingEnabled && finishTime - startTime > 10) {
         GNS.getLogger().warning("Long latency mongoUpdate " + (finishTime - startTime));
       }
     }
@@ -813,10 +835,18 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   //THIS ISN'T JUST TEST CODE - DO NOT REMOVE
   // the -clear option is currently used by the EC2 installer so keep it working
   // this use will probably go away at some point
+  /**
+   * Does a few things.
+   * 
+   * @param args
+   * @throws Exception
+   * @throws RecordNotFoundException 
+   */
   public static void main(String[] args) throws Exception, RecordNotFoundException {
     if (args.length > 0 && args[0].startsWith("-clear")) {
       dropAllDatabases();
     } else if (args.length == 3) {
+      //testlookupMultipleSystemAndUserFields(args[0], args[1], args[2]);
       queryTest(args[0], args[1], args[2], null);
     } else if (args.length == 4) {
       queryTest(args[0], args[1], args[2], args[3]);
@@ -826,6 +856,10 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
     System.exit(0);
   }
 
+  /**
+   * A utility to drop all the databases.
+   * 
+   */
   public static void dropAllDatabases() {
     MongoClient mongoClient;
     try {
@@ -845,6 +879,44 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   // ALL THE CODE BELOW IS TEST CODE
   //  //test code
+  
+//  private static final ArrayList<ColumnField> dnsSystemFields = new ArrayList<ColumnField>();
+//
+//  static {
+//    dnsSystemFields.add(NameRecord.ACTIVE_VERSION);
+//    dnsSystemFields.add(NameRecord.TIME_TO_LIVE);
+//  }
+//
+//  private static void testlookupMultipleSystemAndUserFields(String node, String guid, String field) {
+//    try {
+//      MongoRecords instance = new MongoRecords(node);
+//      ArrayList<ColumnField> userFields
+//              = new ArrayList<ColumnField>(Arrays.asList(new ColumnField(field,
+//                                      ColumnFieldType.USER_JSON)));
+//      int cnt = 0;
+//      long startTime = System.currentTimeMillis();
+//      do {
+//        Map<ColumnField, Object> map  
+//                = instance.lookupMultipleSystemAndUserFields(
+//                        DBNAMERECORD,
+//                        guid,
+//                        NameRecord.NAME,
+//                        dnsSystemFields,
+//                        NameRecord.VALUES_MAP,
+//                        userFields);
+//        if (cnt++ % 10000 == 0) {
+//          System.out.println(map);
+//          System.out.println(DelayProfiler.getStats());
+//          System.out.println("op/s = " + Format.formatTime(10000000.0 / (System.currentTimeMillis() - startTime)));
+//          startTime = System.currentTimeMillis();
+//        }
+//      } while (true);
+//    } catch (FailedDBOperationException | RecordNotFoundException e) {
+//      System.out.println("Lookup failed: " + e);
+//    }
+//  }
+
+  
   @SuppressWarnings("unchecked") /// because it's static
   private static void queryTest(Object nodeID, String key, String searchArg, String otherArg) throws RecordNotFoundException, Exception {
     GNSNodeConfig gnsNodeConfig = new GNSNodeConfig("ns1", nodeID);
@@ -900,12 +972,12 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
 
   /**
    * *
-   * Close mongo client before shutting down name server. As per mongo doc:
+   * Close mongo client before shutting down name server. 
+   * As per mongo doc:
    * "to dispose of an instance, make sure you call MongoClient.close() to clean up resources."
    */
   public void close() {
     mongoClient.close();
   }
-
-  public static String Version = "$Revision$";
+  
 }

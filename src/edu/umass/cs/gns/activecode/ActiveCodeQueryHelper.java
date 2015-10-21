@@ -7,19 +7,15 @@ import org.json.JSONObject;
 
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeQueryRequest;
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeQueryResponse;
-import edu.umass.cs.gns.clientsupport.UpdateOperation;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
-import edu.umass.cs.gns.nsdesign.GnsApplicationInterface;
-import edu.umass.cs.gns.nsdesign.clientsupport.NSFieldAccess;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurable;
-import edu.umass.cs.gns.nsdesign.gnsReconfigurable.GnsReconfigurableInterface;
-import edu.umass.cs.gns.nsdesign.recordmap.NameRecord;
-import edu.umass.cs.gns.util.ResultValue;
-import edu.umass.cs.gns.util.ValuesMap;
+import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.UpdateOperation;
+import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gns.utils.ValuesMap;
 
 public class ActiveCodeQueryHelper {
 	private static final ArrayList<ColumnField> empty = new ArrayList<ColumnField>();
