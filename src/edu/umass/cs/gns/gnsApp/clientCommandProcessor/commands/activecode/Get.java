@@ -40,7 +40,7 @@ public class Get extends GnsCommand {
 	}
 
 	@Override
-	public CommandResponse execute(JSONObject json,
+	public CommandResponse<String> execute(JSONObject json,
 			ClientRequestHandlerInterface handler) throws InvalidKeyException,
 			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
 			SignatureException {
@@ -50,7 +50,7 @@ public class Get extends GnsCommand {
 		String signature = json.getString(SIGNATURE);
 		String message = json.getString(SIGNATUREFULLMESSAGE);
 		
-		return new CommandResponse(
+		return new CommandResponse<String>(
 				new JSONArray(
 						ActiveCode.getCode(accountGuid, action, reader, signature, message, handler)).toString());
 	}

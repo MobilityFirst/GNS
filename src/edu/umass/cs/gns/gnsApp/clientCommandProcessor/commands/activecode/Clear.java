@@ -41,7 +41,7 @@ public class Clear extends GnsCommand {
 	}
 
 	@Override
-	public CommandResponse execute(JSONObject json, 
+	public CommandResponse<String> execute(JSONObject json, 
 			ClientRequestHandlerInterface handler) throws InvalidKeyException,
 			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
 			SignatureException {
@@ -54,9 +54,9 @@ public class Clear extends GnsCommand {
 		NSResponseCode response = ActiveCode.clearCode(accountGuid, action, writer, signature, message, handler);
 		
 		if(response.isAnError())
-			return new CommandResponse(BADRESPONSE + " " + response.getProtocolCode());
+			return new CommandResponse<String>(BADRESPONSE + " " + response.getProtocolCode());
 		else
-			return new CommandResponse(OKRESPONSE);
+			return new CommandResponse<String>(OKRESPONSE);
 	}
 
 	@Override

@@ -57,7 +57,7 @@ public class AppLookup {
    * @throws java.security.SignatureException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
-  public static void executeLookupLocal(DNSPacket dnsPacket, GnsApplicationInterface gnsApp,
+  public static void executeLookupLocal(DNSPacket<String> dnsPacket, GnsApplicationInterface<String> gnsApp,
           boolean doNotReplyToClient, ActiveCodeHandler activeCodeHandler)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {

@@ -41,7 +41,7 @@ public class Set extends GnsCommand {
 		return ACSET;
 	}
 	
-	public CommandResponse execute(JSONObject json, 
+	public CommandResponse<String> execute(JSONObject json, 
 			ClientRequestHandlerInterface handler) throws InvalidKeyException,
 			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
 			SignatureException {
@@ -55,9 +55,9 @@ public class Set extends GnsCommand {
 		NSResponseCode response = ActiveCode.setCode(accountGuid, action, code, writer, signature, message, handler);
 		
 		if(response.isAnError())
-			return new CommandResponse(BADRESPONSE + " " + response.getProtocolCode());
+			return new CommandResponse<String>(BADRESPONSE + " " + response.getProtocolCode());
 		else
-			return new CommandResponse(OKRESPONSE);
+			return new CommandResponse<String>(OKRESPONSE);
 	}
 
 	@Override
