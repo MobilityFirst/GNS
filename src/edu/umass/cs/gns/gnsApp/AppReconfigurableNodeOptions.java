@@ -43,16 +43,16 @@ public class AppReconfigurableNodeOptions {
   public static boolean allowGroupGuidIndirection = true;
 
   /**
-   * The minimum number of replicas. Used by {@link LocationBasesDemandProfile}.
+   * The minimum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
   public static int minReplica = 3;
   /**
-   * The maximum number of replicas. Used by {@link LocationBasesDemandProfile}.
+   * The maximum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
   public static int maxReplica = 100;
   /**
    * Determines the number of replicas based on ratio of lookups to writes.
-   * Used by {@link LocationBasesDemandProfile}.
+   * Used by {@link LocationBasedDemandProfile}.
    */
   public static double normalizingConstant = 0.5;
 

@@ -40,10 +40,10 @@ import org.json.JSONObject;
  * <p>
  * Some of the internal records used to maintain account information are as follows:
  * <p>
- * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
- * GUID: "GUID" -> GUID (primary) for secondary guid<br>
- * GUID: "GUID_INFO" -> {guid info}<br>
- * HRN: "GUID" -> GUID<br>
+ * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
+ * GUID: "GUID" -- GUID (primary) for secondary guid<br>
+ * GUID: "GUID_INFO" -- {guid info}<br>
+ * HRN: "GUID" -- GUID<br>
  * <p>
  * GUID = Globally Unique Identifier<br>
  * HRN = Human Readable Name<br>
@@ -86,10 +86,10 @@ public class AccountAccess {
    * Obtains the account info record for the given GUID if that GUID
    * was used to create an account.
    * <p>
-   * GUID: "ACCOUNT_INFO" -> {account} for primary guid<br>
-   * GUID: "GUID" -> GUID (primary) for secondary guid<br>
-   * GUID: "GUID_INFO" -> {guid info}<br>
-   * HRN: "GUID" -> GUID<br>
+   * GUID: "ACCOUNT_INFO" -- {account} for primary guid<br>
+   * GUID: "GUID" -- GUID (primary) for secondary guid<br>
+   * GUID: "GUID_INFO" -- {guid info}<br>
+   * HRN: "GUID" -- GUID<br>
    * <p>
    * GUID = Globally Unique Identifier<br>
    * HRN = Human Readable Name<br>
@@ -401,9 +401,9 @@ public class AccountAccess {
    *
    * <p>
    * This adds three records to the GNS for the account:<br>
-   * NAME: "_GNS_GUID" -> guid<br>
-   * GUID: "_GNS_ACCOUNT_INFO" -> {account record - an AccountInfo object stored as JSON}<br>
-   * GUID: "_GNS_GUID_INFO" -> {guid record - a GuidInfo object stored as JSON}<br>
+   * NAME: "_GNS_GUID" -- guid<br>
+   * GUID: "_GNS_ACCOUNT_INFO" -- {account record - an AccountInfo object stored as JSON}<br>
+   * GUID: "_GNS_GUID_INFO" -- {guid record - a GuidInfo object stored as JSON}<br>
    *
    * @param name
    * @param guid
@@ -512,9 +512,9 @@ public class AccountAccess {
    * Adds a new GUID associated with an existing account.
    * <p>
    * These records will be created:<br>
-   * GUID: "_GNS_PRIMARY_GUID" -> GUID (primary) for secondary guid<br>
-   * GUID: "_GNS_GUID_INFO" -> {guid info}<br>
-   * HRN: "_GNS_GUID" -> GUID<br>
+   * GUID: "_GNS_PRIMARY_GUID" -- GUID (primary) for secondary guid<br>
+   * GUID: "_GNS_GUID_INFO" -- {guid info}<br>
+   * HRN: "_GNS_GUID" -- GUID<br>
    *
    * @param accountInfo - the accountInfo of the account to add the GUID to
    * @param accountGuidInfo
@@ -738,7 +738,7 @@ public class AccountAccess {
    * Add a new human readable name (alias) to an account.
    * <p>
    * These records will be added:<br>
-   * HRN: "_GNS_GUID" -> GUID<br>
+   * HRN: "_GNS_GUID" -- GUID<br>
    *
    * @param accountInfo
    * @param alias
@@ -796,7 +796,7 @@ public class AccountAccess {
     if (!accountInfo.containsAlias(alias)) {
       return new CommandResponse<String>(BADRESPONSE + " " + BADALIAS);
     }
-    // remove the NAME -> GUID record
+    // remove the NAME -- GUID record
     NSResponseCode responseCode;
     if ((responseCode = handler.getIntercessor().sendRemoveRecord(alias)).isAnError()) {
       return new CommandResponse<String>(BADRESPONSE + " " + responseCode.getProtocolCode());

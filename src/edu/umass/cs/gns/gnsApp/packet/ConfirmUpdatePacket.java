@@ -14,7 +14,7 @@ import org.json.JSONObject;
 /**
  * This class implements the packet that confirms update, add and remove transactions. The packet is transmitted from an
  * active name server to a local name server that had originally sent the address update. Also used to send
- * confirmation back to the original client ({@link edu.umass.cs.gns.clientsupport.Intercessor} is one example).
+ * confirmation back to the original client ({@link edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.Intercessor} is one example).
  *
  * Name server sets the <code>requestID</code> and <code>LNSRequestID</code> field based on the original request,
  * which could be update, add and remove. If this fields are not set correctly, request will not be routed back to

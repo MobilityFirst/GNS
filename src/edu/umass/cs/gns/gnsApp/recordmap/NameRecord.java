@@ -454,39 +454,6 @@ public class NameRecord implements Comparable<NameRecord> {
   }
 
   /**
-   * ******************************************
-   * WRITE methods, these methods change one or more fields in database.
-   * *****************************************
-   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
-   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
-   */
-  public void incrementLookupRequest() throws FieldNotFoundException, FailedDBOperationException {
-    ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
-    incrementFields.add(TOTAL_LOOKUP_REQUEST);
-
-    ArrayList<Object> values = new ArrayList<Object>();
-    values.add(1);
-
-    recordMap.increment(getName(), incrementFields, values);
-    // TODO implement batching
-  }
-
-  /**
-   *
-   * @throws FieldNotFoundException
-   * @throws FailedDBOperationException
-   */
-  public void incrementUpdateRequest() throws FieldNotFoundException, FailedDBOperationException {
-    ArrayList<ColumnField> incrementFields = new ArrayList<ColumnField>();
-    incrementFields.add(TOTAL_UPDATE_REQUEST);
-
-    ArrayList<Object> values = new ArrayList<Object>();
-    values.add(1);
-
-    recordMap.increment(getName(), incrementFields, values);
-  }
-
-  /**
    * Updates the value of the field associated with the key.
    *
    * @param recordKey

@@ -97,7 +97,7 @@ public class ActiveCodeHandler {
 	 * @param guid the guid
 	 * @param field the field
 	 * @param action either 'read' or 'write'
-	 * @param value the value previously read or about to written
+         * @param valuesMap
 	 * @param activeCodeTTL the remaining active code TTL
 	 * @return
 	 */
@@ -107,7 +107,7 @@ public class ActiveCodeHandler {
 		ValuesMap result = null;
 		
 		ActiveCodeParams acp = new ActiveCodeParams(guid, field, action, code, values, activeCodeTTL);
-		FutureTask<ValuesMap> futureTask = new FutureTask<ValuesMap>(new ActiveCodeTask(acp, clientPool));
+		FutureTask<ValuesMap> futureTask = new FutureTask<>(new ActiveCodeTask(acp, clientPool));
 		
 		// If the guid is blacklisted, just return immediately
 		if(isBlacklisted(guid)) {

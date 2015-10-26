@@ -27,12 +27,12 @@ public class ActiveCodeClient {
 	private int port;
 	private boolean restartOnCrash;
 	private Process process;
-	private GnsApplicationInterface app;
+	private final GnsApplicationInterface app;
 	private boolean killed;
 	
 	/**
 	 * @param app the gns app
-	 * @param launchServer whether or not to launch the active code worker
+         * @param launchWorker
 	 */
 	public ActiveCodeClient(GnsApplicationInterface app, boolean launchWorker) {
 		if(launchWorker)
@@ -74,7 +74,7 @@ public class ActiveCodeClient {
 	 */
 	public boolean startServer() {
 		try {
-			List<String> command = new ArrayList<String>();
+			List<String> command = new ArrayList<>();
 			port = getOpenPort();
 			hostname = "0.0.0.0";
 			// Get the current classpath
@@ -114,7 +114,7 @@ public class ActiveCodeClient {
 	 * 
 	 * @param acp the parameters to send to the worker
 	 * @param useTimeout whether or not to use the timeout when waiting for a reply
-	 * @returnthe ValuesMap object returned by the active code
+	 * @return the ValuesMap object returned by the active code
 	 * @throws ActiveCodeException
 	 */
 	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout) throws ActiveCodeException {
