@@ -45,6 +45,8 @@ public class SendReconfiguratorPacketTask extends TimerTask {
    * @param name
    * @param packet
    * @param handler
+   * @param maxWaitTime
+   * @param maxRetries
    */
   public SendReconfiguratorPacketTask(String name, BasicReconfigurationPacket packet,
           ClientRequestHandlerInterface handler, 
@@ -110,8 +112,6 @@ public class SendReconfiguratorPacketTask extends TimerTask {
     }
     return false;
   }
-  
-  
 
   private boolean isMaxWaitTimeExceeded() {
     if (sendCount > 0 && System.currentTimeMillis() - startTime > maxWaitTime) {

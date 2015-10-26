@@ -49,6 +49,7 @@ public class AppLookup {
    * @param dnsPacket
    * @param gnsApp
    * @param doNotReplyToClient
+   * @param activeCodeHandler
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws java.security.InvalidKeyException

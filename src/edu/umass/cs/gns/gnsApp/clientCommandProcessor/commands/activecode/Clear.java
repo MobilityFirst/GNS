@@ -1,6 +1,5 @@
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode;
 
-
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
@@ -24,44 +23,54 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.CommandModule;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.GnsCommand;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 
+/**
+ * The command to clear the active code for the specified GUID and action.
+ *
+ */
 public class Clear extends GnsCommand {
 
-	public Clear(CommandModule module) {
-		super(module);
-	}
+  /**
+   * Creates a Clear instance.
+   * 
+   * @param module 
+   */
+  public Clear(CommandModule module) {
+    super(module);
+  }
 
-	@Override
-	public String[] getCommandParameters() {
-		return new String[]{GUID, WRITER, ACACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
-	}
+  @Override
+  public String[] getCommandParameters() {
+    return new String[]{GUID, WRITER, ACACTION, SIGNATURE, SIGNATUREFULLMESSAGE};
+  }
 
-	@Override
-	public String getCommandName() {
-		return ACCLEAR;
-	}
+  @Override
+  public String getCommandName() {
+    return ACCLEAR;
+  }
 
-	@Override
-	public CommandResponse<String> execute(JSONObject json, 
-			ClientRequestHandlerInterface handler) throws InvalidKeyException,
-			InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
-			SignatureException {
-		String accountGuid = json.getString(GUID);
-		String writer = json.getString(WRITER);
-		String action = json.getString(ACACTION);
-		String signature = json.getString(SIGNATURE);
-		String message = json.getString(SIGNATUREFULLMESSAGE);
-	  
-		NSResponseCode response = ActiveCode.clearCode(accountGuid, action, writer, signature, message, handler);
-		
-		if(response.isAnError())
-			return new CommandResponse<String>(BADRESPONSE + " " + response.getProtocolCode());
-		else
-			return new CommandResponse<String>(OKRESPONSE);
-	}
+  @Override
+  public CommandResponse<String> execute(JSONObject json,
+          ClientRequestHandlerInterface handler) throws InvalidKeyException,
+          InvalidKeySpecException, JSONException, NoSuchAlgorithmException,
+          SignatureException {
+    String accountGuid = json.getString(GUID);
+    String writer = json.getString(WRITER);
+    String action = json.getString(ACACTION);
+    String signature = json.getString(SIGNATURE);
+    String message = json.getString(SIGNATUREFULLMESSAGE);
 
-	@Override
-	public String getCommandDescription() {
-		return "Clears the active code for the specified GUID and action," +
-				"ensuring the writer has permission";
-	}
+    NSResponseCode response = ActiveCode.clearCode(accountGuid, action, writer, signature, message, handler);
+
+    if (response.isAnError()) {
+      return new CommandResponse<>(BADRESPONSE + " " + response.getProtocolCode());
+    } else {
+      return new CommandResponse<>(OKRESPONSE);
+    }
+  }
+
+  @Override
+  public String getCommandDescription() {
+    return "Clears the active code for the specified GUID and action,"
+            + "ensuring the writer has permission";
+  }
 }

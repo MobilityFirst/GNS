@@ -9,13 +9,16 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientReques
 
 /**
  * 
- * This class contains the code for the batch test.
+ * This class contains the code for the batch test which tests the code
+ * which creates multiple guids.
  *
  * @author westy
  */
 public class BatchTests {
 
+  /** */
   public static final String DEFAULT_ACCOUNTNAME = "BatchTest";
+  /** */
   public static final String DEFAULT_PUBLICKEY = "BATCH";
 
   /**

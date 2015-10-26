@@ -159,6 +159,16 @@ public class CreateDelete {
             handler.getParameters().getMaxQueryWaitTime(), 3);
   }
   
+  /**
+   * Handles packets from the client that are trying to created multiple records.
+   * 
+   * Similar to handleAddPacket.
+   * 
+   * @param json
+   * @param handler
+   * @throws JSONException
+   * @throws IOException 
+   */
   public static void handleAddBatchPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       AddBatchRecordPacket<String> packet = registerPacketAddBatchRecord(json, handler);

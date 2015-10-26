@@ -192,6 +192,7 @@ public class AppUpdate {
    * @param updatePacket
    * @param app
    * @param doNotReplyToClient
+   * @param activeCodeHandler
    * @throws NoSuchAlgorithmException
    * @throws InvalidKeySpecException
    * @throws InvalidKeyException

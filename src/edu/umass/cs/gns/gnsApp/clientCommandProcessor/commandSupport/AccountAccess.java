@@ -570,6 +570,16 @@ public class AccountAccess {
     }
   }
 
+  /**
+   * Add multiple guids to an account.
+   * 
+   * @param names - the list of names
+   * @param publicKeys - the list of public keys associated with the names
+   * @param accountInfo
+   * @param accountGuidInfo
+   * @param handler
+   * @return 
+   */
   public static CommandResponse<String> addMultipleGuids(List<String> names,
           List<String> publicKeys,
           AccountInfo accountInfo, GuidInfo accountGuidInfo,
@@ -623,6 +633,15 @@ public class AccountAccess {
     }
   }
 
+  /**
+   * Used by the batch test methods to create multiple guids.
+   * This creates bunch of randomly names guids.
+   * 
+   * @param accountInfo
+   * @param accountGuidInfo
+   * @param count
+   * @param handler 
+   */
   public static void testBatchCreateGuids(AccountInfo accountInfo, GuidInfo accountGuidInfo,
           int count, ClientRequestHandlerInterface handler) {
     List<String> names = new ArrayList<>();

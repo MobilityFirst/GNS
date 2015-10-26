@@ -282,8 +282,14 @@ public interface ClientRequestHandlerInterface {
    */
   public Integer getCreateRequestNameToIDMapping(String name);
   
-  public List<String> getCreateRequestIdToNames(int id);
-
+  /**
+   * Returns true if there are no more outstanding create requests for the given id.
+   * 
+   * @param id
+   * @return true if there are no more outstanding create requests
+   */
+  public boolean pendingCreatesIsEmpty(int id);
+  
   /**
    * Removes the mapping between a ServiceName request and a CCPREquestID.
    * Provides backward compatibility between old Add and Remove record code and new name service code.

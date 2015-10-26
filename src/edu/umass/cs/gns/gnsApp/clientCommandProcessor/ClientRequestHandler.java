@@ -228,10 +228,10 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   @Override
-  public List<String> getCreateRequestIdToNames(int id) {
-    return createServiceIdToNamesMap.get(id);
+  public boolean pendingCreatesIsEmpty(int id) {
+    return createServiceIdToNamesMap.get(id).isEmpty();
   }
-
+ 
   @Override
   /**
    * Looks up and removes the mappings between a CreateServiceName and the Add/RemoveRecord that triggered it.
