@@ -163,7 +163,7 @@ public class CommandDefs {
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ConnectionCheck",
     // Active code
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode.Set",
-    "eedu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode.Clear",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode.Clear",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode.Get"
 
   };

@@ -14,6 +14,7 @@ import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.Packet;
 import edu.umass.cs.gns.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
+import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
@@ -262,15 +263,33 @@ public class AppUpdate {
       }
     }
 
+    NameRecord codeRecord = null;
+
+    try {
+      codeRecord = NameRecord.getNameRecordMultiField(app.getDB(), guid, null,
+              ColumnFieldType.LIST_STRING, ActiveCode.ON_WRITE);
+    } catch (RecordNotFoundException e) {
+      GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
+    }
+
+    if (AppReconfigurableNodeOptions.debuggingEnabled) {
+      GNS.getLogger().info("AC--->>> " + codeRecord.toString());
+    }
+    
     // START ACTIVE CODE HANDLING
     ValuesMap newValue = null;
     int hopLimit = 1;
-
-    if (activeCodeHandler.hasCode(nameRecord, "write")) {
+    // FIXME: Using hasCode this way is redundant.
+    if (activeCodeHandler.hasCode(codeRecord, "write")) {
       try {
-        ValuesMap oldValue = updatePacket.getUserJSON();
-        String code64 = NSFieldAccess.lookupListFieldOnThisServer(guid, ActiveCode.ON_WRITE, app).get(0).toString();
-        newValue = activeCodeHandler.runCode(code64, guid, field, "write", oldValue, hopLimit);
+        ValuesMap packetValuesMap = updatePacket.getUserJSON();
+        ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_WRITE);
+        String code64 = codeResult.get(0).toString();
+        //String code64 = NSFieldAccess.lookupListFieldOnThisServer(guid, ActiveCode.ON_WRITE, app).get(0).toString();
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + packetValuesMap.toString());
+        }
+        newValue = activeCodeHandler.runCode(code64, guid, field, "write", packetValuesMap, hopLimit);
       } catch (Exception e) {
         GNS.getLogger().info("Active code error: " + e.getMessage());
       }

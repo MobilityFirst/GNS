@@ -161,10 +161,13 @@ public class AppLookup {
 
       if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
         try {
-          ValuesMap oldResult = nameRecord.getValuesMap();
+          ValuesMap originalValues = nameRecord.getValuesMap();
           ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
           String code64 = codeResult.get(0).toString();
-          newResult = activeCodeHandler.runCode(code64, guid, field, "read", oldResult, hopLimit);
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
+            GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+          }
+          newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
         } catch (Exception e) {
           GNS.getLogger().info("Active code error: " + e.getMessage());
         }
@@ -309,7 +312,13 @@ public class AppLookup {
             }
             // or we're supposed to return all the keys so return the entire record
           } else if (dnsPacket.getKeys() != null || GnsProtocolDefs.ALLFIELDS.equals(key)) {
-            dnsPacket.setRecordValue(nameRecord.getValuesMap());
+            // Changed for active code
+            if (newResult != null) {
+                dnsPacket.setRecordValue(newResult);
+              } else {
+                dnsPacket.setRecordValue(nameRecord.getValuesMap());
+              }
+            //dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
             }

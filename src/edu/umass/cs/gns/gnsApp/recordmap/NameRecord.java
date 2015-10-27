@@ -497,8 +497,10 @@ public class NameRecord implements Comparable<NameRecord> {
       valuesMap = getValuesMap(); // this will throw an exception if field is not read.
     }
     // FIXME: might want to handle this without a special case at some point
-    boolean updated = UpdateOperation.USER_JSON_REPLACE.equals(operation) || UpdateOperation.USER_JSON_REPLACE_OR_CREATE.equals(operation)
-            ? true : UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
+    boolean updated = UpdateOperation.USER_JSON_REPLACE.equals(operation) 
+            || UpdateOperation.USER_JSON_REPLACE_OR_CREATE.equals(operation)
+            ? true : 
+            UpdateOperation.updateValuesMap(valuesMap, recordKey, newValues, oldValues, argument, userJSON, operation);
     if (updated) {
       // commit update to database
       ArrayList<ColumnField> updatedFields = new ArrayList<ColumnField>();

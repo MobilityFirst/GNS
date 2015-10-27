@@ -87,7 +87,7 @@ public class AppReconfigurableNodeOptions {
   /**
    * Set this to true to enable additional debugging output.
    */
-  public static boolean debuggingEnabled = false;
+  public static boolean debuggingEnabled = true;
   /**
    * If this is true the app will handle all operations locally (ie., it won't send request to reconfigurators).
    */
