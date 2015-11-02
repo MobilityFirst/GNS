@@ -195,7 +195,7 @@ public class PaxosAcceptor {
 	protected PValuePacket getCommitted(int slot) {
 		return this.committedRequests.get(slot);
 	}
-
+	
 	protected Set<PValuePacket> getCommitted(Collection<Integer> slots) {
 		Set<PValuePacket> decisions = new HashSet<PValuePacket>();
 		for (Integer slot : slots)
@@ -342,8 +342,10 @@ public class PaxosAcceptor {
 				if (this.acceptedProposals.get(slot).ballot
 						.equals(reconstructedDecision.ballot))
 					return new PValuePacket(this.acceptedProposals.get(slot))
-							.makeDecision(this.committedRequests.get(slot)
-									.getMedianCheckpointedSlot());
+							.makeDecision(
+									this.committedRequests.get(slot)
+											.getMedianCheckpointedSlot())
+							.setRecovery(reconstructedDecision.isRecovery());
 			}
 		}
 		return null;
@@ -374,10 +376,14 @@ public class PaxosAcceptor {
 		// if(this.committedRequests.isEmpty()) return null;
 		ArrayList<Integer> missing = new ArrayList<Integer>();
 		int maxCommittedSlot = getMaxCommittedSlot();
+		int limitSlot = this.getSlot() + sizeLimit;
 		// comparator should be wraparound-aware
-		for (int i = this.getSlot(); i
-				- Math.min(maxCommittedSlot, this.getSlot() + sizeLimit) < 0; i++)
-			if (!this.committedRequests.containsKey(i))
+		for (int i = this.getSlot(); (i - maxCommittedSlot < 0)
+				&& (i - limitSlot < 0); i++)
+			// no commit or meta-commit without accept
+			if (!this.committedRequests.containsKey(i)
+					|| (!this.committedRequests.get(i).hasRequestValue() && !this.acceptedProposals
+							.containsKey(i)))
 				missing.add(i);
 		return missing; // in sorted order
 	}
@@ -388,7 +394,7 @@ public class PaxosAcceptor {
 
 		int maxSlot = this.getSlot() - 1;
 		for (int i : this.committedRequests.keySet()) {
-			maxSlot = Math.max(i, maxSlot);
+			if(i - maxSlot > 0) maxSlot = i;
 		}
 		return maxSlot;
 	}

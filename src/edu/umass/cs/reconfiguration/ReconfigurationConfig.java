@@ -56,6 +56,10 @@ public class ReconfigurationConfig {
 		PaxosConfig.load(ReconfigurationConfig.RC.class);
 	}
 	/**
+	 * 
+	 */
+	public static void noop() {}
+	/**
 	 * The default demand profile type is DemandProfile.class. This will
 	 * reconfigure once per request, so you probably want to use something else.
 	 */
@@ -74,8 +78,8 @@ public class ReconfigurationConfig {
 	/**
 	 * 
 	 */
-	public static final Class<?> application = null;
-                //getClassSuppressExceptions(Config.getGlobalString(RC.APPLICATION));
+	public static final Class<?> application = getClassSuppressExceptions(Config
+			.getGlobalString(RC.APPLICATION));
 
 	/**
 	 * Reconfiguration config parameters.
@@ -188,6 +192,35 @@ public class ReconfigurationConfig {
 		 */
 		COMBINE_DEMAND_STATS (false), 
 		
+		/**
+		 * If true, reconfiguration consists of committing an intent and then a
+		 * complete both via paxos. If false, reconfiguration for non-RC-group
+		 * names can proceed with just a single paxos round to commit an intent
+		 * while using a simple broadcast for the complete. Avoiding the second
+		 * paxos round is more efficient but has the downside that if the
+		 * complete message for a name gets lost, some replicas may not be able
+		 * to initiate further reconfigurations for the name. Using paxos does
+		 * not guarantee liveness either, but its in-built mechanisms allowing
+		 * laggard replicas to catch up combined with the CommitWorker
+		 * mechanism to try to commit the complete until successful ensures that
+		 * (1) the complete does indeed get eventually committed, and (2) all
+		 * replicas apply *all* state changes in the same order. The latter 
+		 * property may not hold if TWO_PAXOS_RC is false but is not necessary
+		 * for safety anyway.
+		 * 
+		 * We don't allow RC group name or NODE_CONFIG changes to proceed with
+		 * a single paxos round because reconfigurations can get stuck if
+		 * a complete arrives a replica before the creation of the new paxos
+		 * group. The inefficiency of two paxos rounds hardly matters given
+		 * the high inherent overhead of RC group reconfigurations.
+		 */
+		TWO_PAXOS_RC(true),
+		
+		/**
+		 * 
+		 */
+		USE_DISK_MAP_RCDB (true),
+				
 		;
 
 		final Object defaultValue;

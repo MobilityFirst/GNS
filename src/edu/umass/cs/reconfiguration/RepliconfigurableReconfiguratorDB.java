@@ -422,10 +422,12 @@ public class RepliconfigurableReconfiguratorDB<NodeIDType> extends
 		if (ncRecord != null && ncRecord.getEpoch() == epoch
 				&& ncRecord.isReady())
 			return true;
-		else
+		else {
+			String debug = this.app.isNodeConfigChangeCompleteDebug();
 			log.log(Level.INFO,
-					"{0} has *NOT* completed node config change {1}; state = {2}",
-					new Object[] { this, epoch, ncRecord.getSummary() });
+					"{0} has *NOT* completed node config change to epoch {1}; state = {2}; {3}",
+					new Object[] { this, epoch, ncRecord.getSummary(), debug });
+		}
 		assert (ncRecord == null || ncRecord.getEpoch() != epoch || !ncRecord
 				.isReady()) : ncRecord;
 		return false;

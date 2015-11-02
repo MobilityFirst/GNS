@@ -45,8 +45,10 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 	public abstract void process(TaskType task);
 
 	private TaskType dequeue() {
+		//if (Util.oneIn(10)) DelayProfiler.updateMovAvg("sleep", this.sleepDuration);
+
 		long millis = sleepDuration >= 1 ? (long) sleepDuration : (Math
-				.random() < sleepDuration ? 1 : 0);
+				.random() < sleepDuration ? 1 : 0);		
 		if(millis > 0)
 			try {
 				Thread.sleep(millis);
@@ -63,7 +65,7 @@ public abstract class ConsumerTask<TaskType> implements Runnable {
 			try {
 				this.enqueueImpl(task);
 			} finally {
-				this.lock.notify();
+				this.lockNotify();;
 			}
 		}
 	}

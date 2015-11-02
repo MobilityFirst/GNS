@@ -36,8 +36,14 @@ public class Util {
 		return decimalFormat.format(d);
 	}
 
+	public static final String ms(double d) {
+		return decimalFormat.format(d) + "ms";
+	} // milli to microseconds
 	public static final String mu(double d) {
 		return decimalFormat.format(d * 1000) + "us";
+	} // milli to microseconds
+	public static final String nmu(double d) {
+		return decimalFormat.format(d / 1000.0) + "us";
 	} // milli to microseconds
 
 	public static final double movingAverage(double sample,
@@ -66,7 +72,7 @@ public class Util {
 	}
 
 	public static boolean oneIn(int n) {
-		return Math.random() < 1.0 / n ? true : false;
+		return Math.random() < 1.0 / Math.max(1, n) ? true : false;
 	}
 
 	public static int roundToInt(double d) {
@@ -319,6 +325,14 @@ public class Util {
 			bytes[i] = (byte) (low + i);
 		return bytes;
 	}
+	public static byte[] getRandomAlphanumericBytes() {
+		byte[] an = Util.getAlphanumericAsBytes();
+		byte[] msg = new byte[1024];
+		for(int i=0; i<msg.length; i++) 
+			msg[i] = an[(int)(Math.random()*an.length)];
+		return msg;
+	}
+
 
 	private static Collection<?> truncate(Collection<?> list, int size) {
 		if (list.size() <= size)

@@ -152,7 +152,7 @@ public class PaxosConfig {
 		 * that is not yet implemented, so this log exists only for performance
 		 * instrumentation.
 		 */
-		ENABLE_JOURNALING(false),
+		ENABLE_JOURNALING(true),
 
 		/**
 		 * True means no checkpointing. If logging is enabled (as is the default), the
@@ -190,6 +190,13 @@ public class PaxosConfig {
 		 * Whether the pause option is enabled.
 		 */
 		PAUSE_OPTION(true),
+
+		/**
+		 * Fraction of capacity to be reached in order for pausing to get
+		 * enabled.
+		 */
+		PAUSE_SIZE_THRESHOLD(0),
+
 		/**
 		 * The time after which the deactivation thread will attempt to pause
 		 * idle paxos instances by making a pass over all currently unpaused
@@ -244,6 +251,16 @@ public class PaxosConfig {
 		 * unlikely as we maintain an index on the paxosID key.
 		 */
 		LOG_GC_FREQUENCY (10),
+
+		/**
+		 * Number of log files after which GC will be attempted.
+		 */
+		JOURNAL_GC_FREQUENCY (10),
+
+		/**
+		 * Number of log files after which compaction will be attempted.
+		 */
+		COMPACTION_FREQUENCY (10),
 		
 		/**
 		 * The number of log messages after which they are indexed into the DB.
@@ -252,10 +269,13 @@ public class PaxosConfig {
 		 * recovery however, we need to do slightly more work to ensure that
 		 * all uncommitted log messages are indexed into the DB.
 		 */
-		LOG_INDEX_FREQUENCY (20),
+		LOG_INDEX_FREQUENCY (100),
 		
 		/**
-		 * 
+		 * Whether fields in the log messages table in the DB should be indexed.
+		 * This index refers to the DB's internal index as opposed to
+		 * {@link #DB_INDEX_JOURNAL} that is an explicit index of log messages
+		 * journaled on the file system.
 		 */
 		INDEX_LOG_TABLE (true),
 
@@ -271,6 +291,11 @@ public class PaxosConfig {
 		 * {@value #BATCH_SLEEP_DURATION}.
 		 */
 		BATCH_OVERHEAD(0.01),
+		
+		/**
+		 * 
+		 */
+		DISABLE_SYNC_DECISIONS (false),
 
 		/**
 		 * Maximum number of batched requests. Setting it to infinity means
@@ -349,7 +374,7 @@ public class PaxosConfig {
 		/**
 		 * Default location for paxos logs when an embedded DB is used.
 		 */
-		PAXOS_LOGS_DIR("paxos_logs"),
+		PAXOS_LOGS_DIR("./paxos_logs"),
 		
 		/**
 		 * Prefix of the paxos DB's name. The whole name is obtained
@@ -422,7 +447,7 @@ public class PaxosConfig {
 		 * If true, we use a garbage collected map that has higher overhead than a
 		 * regular map, but is still not a bottleneck.
 		 */
-		USE_GC_MAP(false), 
+		USE_GC_MAP(true), 
 		
 		/**
 		 * Only log meta decisions if corresponding accept was previously received.
@@ -430,11 +455,13 @@ public class PaxosConfig {
 		LOG_META_DECISIONS (true),
 		
 		/** FIXME: The options below only exist for testing stringification overhead.
-		 * They should probably be moved to {@link TESTPaxosConfig}.
+		 * They should probably be moved to {@link TESTPaxosConfig}. Most of these
+		 * will compromise safety.
 		 */
 
+		/******************* Start of testing options *******************/
 		/**
-		 * Testing option.
+		 * Testing option. 
 		 */
 		JOURNAL_COMPRESSION(false), 
 
@@ -484,9 +511,21 @@ public class PaxosConfig {
 		COORD_DONT_LOG_DECISIONS(false),
 
 		/**
-		 * 
+		 * Testing option.
 		 */
 		COORD_JOURNALS_WO_STRINGIFYING(false), 
+
+		/**
+		 * Testing option
+		 */
+		ALL_BUT_APPEND(false),
+		
+		/**
+		 * Testing option. Implies no coordinator fault-tolerance.
+		 */
+		DISABLE_GET_LOGGED_MESSAGES (false), 
+
+		/*********** End of testing options *****************/
 		
 		/**
 		 * Whether journal entries should be synchronously indexed in the DB.
@@ -500,7 +539,7 @@ public class PaxosConfig {
 		 * the last message logged in the DB and put the rest in a pending queue
 		 * for logging into the DB.
 		 */
-		SYNC_INDEX_JOURNAL(false), 
+		PAUSABLE_INDEX_JOURNAL(true), 
 		
 		/**
 		 * Whether more than one thread is used to log messages.
@@ -513,15 +552,97 @@ public class PaxosConfig {
 		 * maintaining a memory log and only infrequently inserting the index
 		 * entries into the DB.
 		 */
-		INDEX_JOURNAL(false), 
+		DB_INDEX_JOURNAL(false), 
 		
 		/**
 		 * Failure detection timeout in seconds after which a node will be considered dead
 		 * if no keepalives have been received from it. Used to detect 
 		 * coordinator failures.
 		 */
-		FAILURE_DETECTION_TIMEOUT(6),
+		FAILURE_DETECTION_TIMEOUT(6), 
 		
+		/**
+		 * Request timeout in seconds after which the request will be deleted from the outstanding
+		 * queue. Currently, there is no effort to remove any other state for that request from
+		 * the system.
+		 */
+		REQUEST_TIMEOUT (10),
+		
+		/**
+		 * Whether the mapdb package should be used. It seems too slow for our
+		 * purposes, so we don
+		 */
+		USE_MAP_DB(false), 
+		
+		/**
+		 * If true, the checkpoints table will be used to also store paused 
+		 * state as opposed to storing paused state in its own table. The reason
+		 * to store paused state in the same table as checkpoints is that we can
+		 * easily compute FIXME:
+		 */
+		USE_CHECKPOINTS_AS_PAUSE_TABLE(true), 
+		
+		/**
+		 * 
+		 */
+		USE_DISK_MAP(true), 
+		
+		/**
+		 * 
+		 */
+		USE_HEX_TIMESTAMP(true), 
+		
+		/**
+		 * 
+		 */
+		LAZY_COMPACTION(true), 
+		
+		/**
+		 * 
+		 */
+		PAUSE_BATCH_SIZE(100), 
+		
+		/**
+		 * 
+		 */
+		SYNC(false),
+
+		/**
+		 * 
+		 */
+		FLUSH(true),
+
+		/**
+		 * 
+		 */
+		SYNC_FCLOSE(true),
+
+		/**
+		 * 
+		 */
+		FLUSH_FCLOSE(true), 
+		
+		/**
+		 * Minimum seconds after last modification when a compaction
+		 * attempt can be made.
+		 */
+		LOGFILE_AGE_THRESHOLD(10*60), 
+		
+		/**
+		 * Percentage variation around mean in checkpoint interval.
+		 */
+		CPI_NOISE(0), 
+		
+		/**
+		 * 
+		 */
+		BATCH_CHECKPOINTS(true), 
+
+		/**
+		 * 
+		 */
+		MAX_DB_BATCH_SIZE(10000),
+
 		;
 
 		final Object defaultValue;

@@ -135,11 +135,14 @@ public abstract class PaxosPacketDemultiplexerJSONSmart extends
 			NIOHeader header) {
 		net.minidev.json.JSONObject json = MessageExtractor.parseJSONSmart(message);
 		assert(json!=null) : message;
-		return MessageExtractor.stampAddressIntoJSONObject(
+		net.minidev.json.JSONObject x = 
+		 MessageExtractor.stampAddressIntoJSONObject(
 				header.sndr,
 				header.rcvr,
 				this.insertStringifiedSelf(
 						json, message));
+		assert(x!=null) :message + " " + header;
+		return x;
 	}
 
 	@Override

@@ -132,7 +132,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		STRINGIFIED,
 		
 		/**
-		 * Meta request value.
+		 * Meta request value. Unused.
 		 */
 		METAVAL,
 	}
@@ -334,7 +334,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	}
 
 	private static String makeDebugInfo(String str, long cTime) {
-		return " " + str + ":" + (System.currentTimeMillis() - cTime);
+		return str + ":" + (System.currentTimeMillis() - cTime) + " ";
 	}
 
 	public RequestPacket addDebugInfo(String str) {
@@ -344,9 +344,22 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 		return this;
 	}
 
+	public RequestPacket addDebugInfoDeep(String str) {
+		if (DEBUG)
+			if (this.addDebugInfo(str).batched != null)
+				for (RequestPacket req : this.batched)
+					req.addDebugInfo(str);
+		return this;
+	}
+
 	public RequestPacket addDebugInfo(String str, int nodeID) {
 		if (DEBUG)
 			this.addDebugInfo(str + nodeID);
+		return this;
+	}
+	public RequestPacket addDebugInfoDeep(String str, int nodeID) {
+		if (DEBUG)
+			this.addDebugInfoDeep(str + nodeID);
 		return this;
 	}
 
@@ -678,7 +691,7 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 	}
 
 	public boolean isMetaValue() {
-		return this.requestValue.equals(Keys.METAVAL.toString());
+		return this.requestValue==null;
 	}
 	private static int size(ArrayList<RequestPacket[]> reqArrayList) {
 		int size = 0;
@@ -822,10 +835,26 @@ public class RequestPacket extends PaxosPacket implements InterfaceRequest,
 
 	@Override
 	protected String getSummaryString() {
-		return requestID + ":" + "["
+		return requestID
+				+ ":"
+				+ "["
 				+ (NO_OP.equals(this.requestValue) ? NO_OP : "...")
-				+ "]" + (stop ? ":STOP" : "")
-				+ (isBatched() ? "+(" + batchSize() + " batched" + ")" : "");
+				+ "]"
+				+ (stop ? ":STOP" : "")
+				+ (isBatched() ? "+("
+						+ batchSize()
+						+ " batched "
+						+ (this.batchSize() <= 4 ? getBatchedIDs() : this
+								.batchSize()) + ")" : "");
+	}
+	
+	private String getBatchedIDs() {
+		String s = "[";
+		if(this.batched!=null) 
+			for(RequestPacket req : this.batched) {
+			s += req.requestID +" ";
+		}
+		return s+"]";
 	}
 
 	// testing

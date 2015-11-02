@@ -50,8 +50,8 @@ import java.util.logging.Logger;
  */
 public class MessageExtractor implements InterfaceMessageExtractor {
 
-	private final ArrayList<AbstractPacketDemultiplexer<?>> packetDemuxes;
-	private ScheduledExecutorService executor = Executors
+	private ArrayList<AbstractPacketDemultiplexer<?>> packetDemuxes;
+	private final ScheduledExecutorService executor = Executors
 			.newScheduledThreadPool(1); // only for delay emulation
 
 	private static final Logger log = NIOTransport.getLogger();
@@ -72,7 +72,11 @@ public class MessageExtractor implements InterfaceMessageExtractor {
 	 */
 	public synchronized void addPacketDemultiplexer(
 			AbstractPacketDemultiplexer<?> pd) {
-		packetDemuxes.add(pd);
+		// we update tmp to not have to lock this structure
+		ArrayList<AbstractPacketDemultiplexer<?>> tmp = new ArrayList<AbstractPacketDemultiplexer<?>>(
+				this.packetDemuxes);
+		tmp.add(pd);
+		this.packetDemuxes = tmp;
 	}
 
 	/**

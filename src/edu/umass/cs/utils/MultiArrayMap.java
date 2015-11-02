@@ -1,9 +1,13 @@
 package edu.umass.cs.utils;
 
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -33,7 +37,7 @@ import java.util.logging.Logger;
  *            "approximate" sweep over the entire map.
  */
 
-public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
+public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, ConcurrentMap<K,V> {
 	private static final float SHRINKAGE = 0.75F;
 	private static final int LEVELS = 6;
 	private final int arraySize;
@@ -73,13 +77,21 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 	}
 
 	/**
+	 * @return The size of the underlying array.
+	 */
+	public int capacity() {
+		return this.arraySize;
+	}
+	/**
 	 * @param key
 	 * @param value
 	 */
-	public synchronized void put(K key, V value) {
+	@SuppressWarnings("unchecked")
+	public synchronized V put(K key, V value) {
 		assert (key.equals(value.getKey())) : key + " != " + value.getKey();
 		boolean inserted = false;
 		int level = 0;
+		V prev = null;
 		for (Object[] array : this.aMap) {
 			int index = getHashIndex(key, array);
 			if (array[index] == null
@@ -90,6 +102,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 				else
 					log.log(Level.FINE, "{0} overwrote {1} in [{2},{3}]",
 							new Object[] { this, value, level, index });
+				prev = (V)(array[index]);
 				array[index] = value;
 				bitsets[level].set(index);
 				inserted = true;
@@ -99,9 +112,10 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 			level++;
 		}
 		if (!inserted) {
-			hMap.put(key, value);
+			prev = hMap.put(key, value);
 			inserted = true;
 		}
+		return prev;
 	}
 
 	/**
@@ -109,7 +123,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 	 * @return The value to which the key maps.
 	 */
 	@SuppressWarnings("unchecked")
-	public synchronized V get(K key) {
+	public synchronized V get(Object key) {
 		Object[] array = getArray(key);
 		int index = getIndex(key, array);
 		assert (index == -1 || array[index] != null);
@@ -127,30 +141,35 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 	 * @param key
 	 * @return True if key is present.
 	 */
-	public synchronized boolean containsKey(K key) {
+	public synchronized boolean containsKey(Object key) {
 		return (key != null && get(key) != null);
 	}
 	/**
 	 * @param value
 	 * @return True if value present.
 	 */
-	public synchronized boolean containsValue(V value) {
-		return (value != null && get(value.getKey()) != null);
+	public synchronized boolean containsValue(Object value) {
+		return (value != null && (value instanceof Keyable<?>) && get(((Keyable<?>) value)
+				.getKey()).equals(value));
 	}
 
 	/**
 	 * @param key
 	 * @return Previous value if any.
 	 */
-	public synchronized V remove(K key) {
+	public synchronized V remove(Object key) {
 
-		V value = (V) get(key);
+		V value = get(key);
 		if (value == null)
 			return null;
 
 		int level = this.getLevel(key);
-		Object[] array = this.aMap[level];
-		int index = getIndex(key, array);
+		int index = -1;
+		Object[] array = null;
+		if (level >= 0) {
+			array = this.getArray(key);
+			index = getIndex(key, array);
+		}
 		assert (index == -1 || array[index] != null);
 
 		if (index >= 0) {
@@ -184,14 +203,74 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 	public synchronized void clear() {
 		for (Object[] array : this.aMap)
 			for (int i = 0; i < array.length; i++)
-				array[i] = 0;
+				array[i] = null;
 		this.hMap.clear();
 		for (BitSet bitset : this.bitsets)
 			bitset.clear();
 		this.size = 0;
 	}
+	
+	@Override
+	public boolean isEmpty() {
+		return this.size()==0;
+	}
 
-	private synchronized Object[] getArray(K key) {
+	@Override
+	public synchronized void putAll(Map<? extends K, ? extends V> m) {
+		for(K key : m.keySet())
+			this.put(key, m.get(key));
+	}
+
+	@Override
+	public Set<K> keySet() {
+		throw new RuntimeException(
+				"Not implemented yet; use iterator() or concurrentIterator() to iterate over keys or values");
+	}
+
+	@Override
+	public Collection<V> values() {
+		throw new RuntimeException(
+				"Not implemented yet; use iterator() or concurrentIterator() to iterate over keys or values");
+	}
+
+	@Override
+	public Set<java.util.Map.Entry<K, V>> entrySet() {
+		throw new RuntimeException(
+				"Not implemented yet; use iterator() or concurrentIterator() to iterate over keys or values");
+	}
+
+	@Override
+	public synchronized boolean remove(Object key, Object value) {
+		if(this.get(key).equals(value)) return this.remove(key)!=null;
+		return false;
+	}
+
+	@Override
+	public boolean replace(K key, V oldValue, V newValue) {
+		if(this.get(key).equals(oldValue)) return this.put(key, newValue)!=null;		
+		return false;
+	}
+
+	@Override
+	public synchronized V replace(K key, V value) {
+		if(this.containsKey(key)) return this.put(key, value);
+		return null;
+	}
+	
+	/**
+	 * @param key
+	 * @param value
+	 * @return Previous value mapped to {@code key} if any.
+	 */
+	@Override
+	public synchronized V putIfAbsent(K key, V value) {
+		if(this.containsKey(key)) return this.get(key);
+		this.put(key, value);
+		return null;
+	}
+
+
+	private synchronized Object[] getArray(Object key) {
 		Object[] foundArray = null;
 		for (Object[] array : this.aMap) {
 			int index = getIndex(key, array);
@@ -203,7 +282,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 		return foundArray;
 	}
 
-	private synchronized int getLevel(K key) {
+	private synchronized int getLevel(Object key) {
 		for (int i = 0; i < aMap.length; i++) {
 			int index = getIndex(key, aMap[i]);
 			if (index >= 0) {
@@ -213,7 +292,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 		return -1;
 	}
 
-	private synchronized int getIndex(K key, Object[] array) {
+	private synchronized int getIndex(Object key, Object[] array) {
 		int foundIndex = -1;
 		if (array != null) {
 			int index = getHashIndex(key, array);
@@ -224,8 +303,9 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 		}
 		return foundIndex;
 	}
+	
 
-	private synchronized int getHashIndex(K key, Object[] array) {
+	private synchronized int getHashIndex(Object key, Object[] array) {
 		int hash = key.hashCode();
 		int index = hash % array.length;
 		if (index < 0)
@@ -246,7 +326,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 		/**
 		 * Note: next() may return null immediately after hasNext() returns
 		 * true. This behavior is unlike a traditional iterator wherein, if
-		 * hasNExt() returns true, next() necessarily returns a non-null value
+		 * hasNext() returns true, next() necessarily returns a non-null value
 		 * or throws a {@code ConcurrentModificationException}
 		 */
 		@Override
@@ -463,5 +543,4 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V> {
 				+ (System.currentTimeMillis() - t1) + "ms");
 
 	}
-
 }

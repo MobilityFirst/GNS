@@ -85,7 +85,7 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 
 		/**
 		 * This is a pending delete state, i.e., we expect a deletion to occur
-		 * in the near future, but we can not delet it yet because
+		 * in the near future, but we can not delete it yet because
 		 * WaitAckDropEpoch may not have yet completed.
 		 */
 		WAIT_DELETE
@@ -107,6 +107,8 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	private Long deleteTime = null;
 	// optimization to track whether quick final-deletion is safe
 	private int numPossiblyUncleanReconfigurations = 0;
+	
+	private String rcGroupName = null;
 
 	/**
 	 * @param name
@@ -430,29 +432,38 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	 * @param name
 	 * @param epoch
 	 * @param state
+	 * @return {@code this}
 	 */
-	public void setState(String name, int epoch, RCStates state) {
+	public ReconfigurationRecord<NodeIDType> setState(String name, int epoch, RCStates state) {
 		assert (this.name.equals(name) && (this.epoch == epoch
 				|| state.equals(RCStates.READY) // common case
 				|| state.equals(RCStates.READY_READY) // creation
 		|| state.equals(RCStates.WAIT_DELETE))) : this.epoch + "!=" + epoch;
 
+		/*
+		 * any lower epoch state to READY -> incr
+		 * one lower epoch READY_READY to READY -> decr
+		 */
 		// !READY to READY => unclean
-		if (!this.isReady() && state.equals(RCStates.READY))
-			this.numPossiblyUncleanReconfigurations++;
+		if (state.equals(RCStates.READY))
+			this.numPossiblyUncleanReconfigurations += (epoch - this.epoch);
 		// READY to READY_READY => clean
-		else if (this.isReady() && state.equals(RCStates.READY_READY))
+		else if (state.equals(RCStates.READY_READY)
+				&& ((epoch == this.epoch && !this.state
+						.equals(RCStates.READY_READY)) || (epoch - this.epoch == 1 && this.state
+						.equals(RCStates.READY_READY))))
 			this.numPossiblyUncleanReconfigurations--;
 
 		if (this.numPossiblyUncleanReconfigurations < 0)
 			this.numPossiblyUncleanReconfigurations = 0;
-		assert (!state.equals(RCStates.READY_READY) || this.numPossiblyUncleanReconfigurations == 0);
 
 		this.epoch = epoch;
 		this.state = state;
 
 		if (state.equals(RCStates.WAIT_DELETE))
 			this.deleteTime = System.currentTimeMillis();
+		
+		return this;
 	}
 
 	/**
@@ -585,6 +596,21 @@ public class ReconfigurationRecord<NodeIDType> extends JSONObject {
 	 */
 	public long getDeleteTime() {
 		return this.deleteTime;
+	}
+	
+	/**
+	 * @param groupName
+	 * @return {@code this}
+	 */
+	public ReconfigurationRecord<NodeIDType> setRCGroupName(String groupName) {
+		this.rcGroupName = groupName;
+		return this;
+	}
+	/**
+	 * @return RC group name to which this record currently belongs.
+	 */
+	public String getRCGroupName() {
+		return this.rcGroupName;
 	}
 
 	/**

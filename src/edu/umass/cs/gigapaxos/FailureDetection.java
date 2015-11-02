@@ -247,7 +247,7 @@ public class FailureDetection<NodeIDType> {
 	 * protected in order to allow paxos instances to provide useful liveliness
 	 * information through the paxos manager.
 	 */
-	protected synchronized void heardFrom(NodeIDType id) {
+	protected void heardFrom(NodeIDType id) {
 		this.lastHeardFrom.put(id, System.currentTimeMillis());
 	}
 

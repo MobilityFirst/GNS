@@ -93,20 +93,24 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 				+ this.paxosManager.getMyID());
 		me.start();
 	}
+	
+	private int avgNumQGroups = 1;
 
 	// max time for which the dequeueing thread will wait 
 	private static final long MAX_BATCH_SLEEP_DURATION = 10;
 	// min delay for enqueue/dequeue to happen at all
 	private static final long MIN_AGREEMENT_LATENCY_FOR_BATCHING = 10;
+	// max queued groups after which we stop any batch sleeps
+	private static final int MAX_GROUPS_FOR_BATCH_SLEEP = 5;
 	// FIXME: currently not actually used in throttleExcessiveLoad
 	private static final int MAX_QUEUED_REQUESTS = Config.getGlobalInt(PC.MAX_OUTSTANDING_REQUESTS);
 	@Override
 	public void enqueueImpl(RequestPacket task) {
-		this.setSleepDuration(Math.min(MAX_BATCH_SLEEP_DURATION,
-				MIN_BATCH_SLEEP_DURATION + agreementLatency*BATCH_OVERHEAD/this.batched.size()));
+		this.setSleepDuration(this.computeSleepDuration());
+
 		// increase outstanding count by requests entering through me
-		this.paxosManager.incrNumOutstanding(task.setEntryReplicaAndReturnCount(this.paxosManager.getMyID()));
-		this.paxosManager.incrNumOutstanding(task);
+		//this.paxosManager.incrNumOutstanding(task.setEntryReplicaAndReturnCount(this.paxosManager.getMyID()));
+		this.paxosManager.incrNumOutstanding(task.addDebugInfo("b", this.paxosManager.getMyID()));
 		
 		LinkedBlockingQueue<RequestPacket> taskList = this.batched.get(task
 				.getPaxosID());
@@ -114,8 +118,16 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 			taskList = new LinkedBlockingQueue<RequestPacket>();
 		taskList.add(task);
 		this.batched.put(task.getPaxosID(), taskList);
-		queueSize += task.batchSize()+1;
+		this.queueSize += task.batchSize()+1;
+		this.avgNumQGroups = (int)Util.movingAverage(this.batched.size(), this.avgNumQGroups);
 		this.throttleExcessiveLoad();
+	}
+	
+	private double computeSleepDuration() {
+		return (Math.max(this.avgNumQGroups, this.batched.size()) < MAX_GROUPS_FOR_BATCH_SLEEP ? Math
+				.min(MAX_BATCH_SLEEP_DURATION, MIN_BATCH_SLEEP_DURATION
+						+ agreementLatency * BATCH_OVERHEAD)
+				/ (Math.max(this.avgNumQGroups, this.batched.size())) : 0);
 	}
 	
 	protected int getQueueSize() {
@@ -206,7 +218,7 @@ public class RequestBatcher extends ConsumerTask<RequestPacket> {
 			mapEntryIter.remove();
 
 		if (Util.oneIn(10)) 
-			DelayProfiler.updateMovAvg("queued", queueSize);
+			DelayProfiler.updateMovAvg("#queued", queueSize);
 		assert (first.batchSize() < MAX_BATCH_SIZE);
 		queueSize -= (first.batchSize()+1);
 		return first;

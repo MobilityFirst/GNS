@@ -321,8 +321,11 @@ public abstract class PaxosPacket extends JSONPacket {
 	public static PaxosPacketType getPaxosPacketType(net.minidev.json.JSONObject json)
 			throws JSONException {
 		assert(json!=null);
+		if(json
+				.get(PaxosPacket.Keys.PT.toString()) != null) 
 		return PaxosPacketType.getPaxosPacketType((Integer)json
 				.get(PaxosPacket.Keys.PT.toString()));
+		else return null;
 	}
 
 	protected abstract JSONObject toJSONObjectImpl() throws JSONException;

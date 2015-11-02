@@ -66,8 +66,8 @@ public class TESTPaxosMain {
 		}
 	}
 
-	private static String getAggregateOutput(int numReqs, long t1, long t2) {
-		return TESTPaxosClient.getAggregateOutput(numReqs, t2 - t1) + "\n  "
+	private static String getAggregateOutput(long t1, long t2) {
+		return TESTPaxosClient.getAggregateOutput(t2 - t1) + "\n  "
 				+ DelayProfiler.getStats() + "\n  ";
 	}
 	
@@ -104,7 +104,7 @@ public class TESTPaxosMain {
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients(null);
 			TESTPaxosShutdownThread.register(clients);
-			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS) / Config.getGlobalInt(TC.NUM_CLIENTS);
+			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS);
 
 			Thread.sleep(2000);
 
@@ -114,7 +114,7 @@ public class TESTPaxosMain {
 			TESTPaxosClient.waitForResponses(clients, t1);
 			long t2 = System.currentTimeMillis();
 			System.out
-					.println("\n[run1]" + getAggregateOutput(numReqs, t1, t2));
+					.println("\n[run1]" + getAggregateOutput(t1, t2));
 			// end first run
 
 			assert (TESTPaxosClient.noOutstanding(clients));
@@ -127,7 +127,7 @@ public class TESTPaxosMain {
 			TESTPaxosClient.waitForResponses(clients, t1);
 			t2 = System.currentTimeMillis();
 			TESTPaxosClient.printOutput(clients);
-			System.out.println("[run2]" + getAggregateOutput(numReqs, t1, t2));
+			System.out.println("[run2]" + getAggregateOutput(t1, t2));
 			// end second run
 
 			// sleep for a bit to ensure all replicas get everything

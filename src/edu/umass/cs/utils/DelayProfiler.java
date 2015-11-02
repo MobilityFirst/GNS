@@ -37,22 +37,30 @@ public class DelayProfiler {
 	/**
 	 * @param field
 	 * @param time
+	 * @param alpha 
 	 */
-	public static void updateDelay(String field, double time) {
+	public static void updateDelay(String field, double time, double alpha) {
 		double delay;
 		long endTime = System.currentTimeMillis();
 		synchronized (averageMillis) {
 			register(field, averageMillis); // register if not registered
 			delay = averageMillis.get(field);
-			delay = Util.movingAverage(endTime - time, delay);
+			delay = Util.movingAverage(endTime - time, delay, alpha);
 			averageMillis.put(field, delay);
 		}
 		synchronized (stdDevs) {
 			// update deviation
 			double dev = stdDevs.get(field);
-			dev = Util.movingAverage(endTime - time - delay, dev);
+			dev = Util.movingAverage(endTime - time - delay, dev, alpha);
 			stdDevs.put(field, dev);
 		}
+	}
+	/**
+	 * @param field
+	 * @param time
+	 */
+	public static void updateDelay(String field, double time) {
+		updateDelay(field, time, Util.ALPHA);
 	}
 
 	/**
@@ -81,6 +89,18 @@ public class DelayProfiler {
 	 * @param time
 	 * @param n
 	 */
+	public static void updateDelayNano(String field, long time, int n) {
+		for (int i = 0; i < n; i++)
+			updateDelayNano(field,
+					System.nanoTime()
+							- (System.nanoTime() - time) * 1.0 / n);
+	}
+	
+	/**
+	 * @param field
+	 * @param time
+	 * @param n
+	 */
 	public static void updateDelay(String field, long time, int n) {
 		for (int i = 0; i < n; i++)
 			updateDelay(field,
@@ -95,7 +115,11 @@ public class DelayProfiler {
 	public static double get(String field) {
 		synchronized (averageMillis) {
 			return averageMillis.containsKey(field) ? averageMillis.get(field)
-					: 0.0;
+					: averageNanos.containsKey(field) ? averageNanos.get(field) :
+						averages.containsKey(field) ? averages.get(field) :
+							counters.containsKey(field) ? counters.get(field) :
+								instarates.containsKey(field) ? instarates.get(field) :
+									0.0;
 		}
 	}
 
@@ -138,6 +162,16 @@ public class DelayProfiler {
 			register(field, counters);
 			double value = counters.get(field);
 			value += incr;
+			counters.put(field, value);
+		}
+	}
+	/**
+	 * @param field
+	 * @param value
+	 */
+	public static void updateValue(String field, double value) {
+		synchronized (counters) {
+			register(field, counters);
 			counters.put(field, value);
 		}
 	}

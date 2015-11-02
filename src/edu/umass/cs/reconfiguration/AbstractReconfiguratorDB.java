@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.Stringifiable;
+import edu.umass.cs.reconfiguration.ReconfigurationConfig.RC;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfiguratorDB;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReplicableRequest;
@@ -45,6 +46,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurabl
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 
 /**
@@ -159,7 +161,6 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		if (recovering
 				&& rcPacket.getServiceName().equals(
 						RecordNames.NODE_CONFIG.toString())) {
-			assert(false) : " bad assert for testing; should be removed";
 			(new Thread(new Runnable() {
 				public void run() {
 					autoInvokeMethod(AbstractReconfiguratorDB.this, rcPacket,
@@ -192,7 +193,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		// create RC record upon a name creation request
 		if (rcRecReq.startEpoch.isInitEpoch()
 				// don't create if delete is being re-executed
-				&& !rcRecReq.isDeleteIntentOrComplete()
+				&& !rcRecReq.isDeleteIntentOrPrevDropComplete()
 				// record==null ensures it is not waiting delete
 				&& this.getReconfigurationRecord(rcRecReq.getServiceName()) == null)
 			if(!rcRecReq.startEpoch.isBatchedCreate())
@@ -200,7 +201,8 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 						rcRecReq.getServiceName(), rcRecReq.startEpoch
 						.getEpochNumber() - 1,
 						rcRecReq.startEpoch.curEpochGroup));
-			else this.createReconfigurationRecords(rcRecReq.startEpoch.getNameStates(), rcRecReq.startEpoch.getCurEpochGroup()); 
+			else if(!this.createReconfigurationRecords(rcRecReq.startEpoch.getNameStates(), rcRecReq.startEpoch.getCurEpochGroup()))
+				return false; 
 		
 		ReconfigurationRecord<NodeIDType> record = this
 				.getReconfigurationRecord(rcRecReq.getServiceName());
@@ -228,7 +230,10 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			// should not be here at node config creation time
 			assert (!rcRecReq.startEpoch.getPrevEpochGroup().isEmpty());
 			// wait for all local RC groups to be up to date
-			this.selfWait();
+			if(this.selfWait(rcRecReq)) {
+				log.info(this + " selfWaiting upon " + rcRecReq.getSummary() + " when record = " + record.getSummary());
+				return false;
+			}
 			// delete lower node config versions from node config table
 			this.garbageCollectOldReconfigurators(rcRecReq.getEpochNumber() - 1);
 			// garbage collect soft socket address mappings for deleted RC nodes
@@ -500,6 +505,8 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 				"Method not yet implemented and should never have been called"
 						+ "as AbstractReconfiguratorDB uses PaxosReplicaCoordinator");
 	}
+	
+	protected static final boolean TWO_PAXOS_RC = Config.getGlobalBoolean(RC.TWO_PAXOS_RC);
 
 	/*
 	 * A transition using an RCRecordRequest is legitimate iff if takes a record
@@ -526,16 +533,13 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 			// initiating reconfiguration to next epoch
 			return
 			// ready to reconfigure
-			/*
-			 * FIXME: do we need to check if merges are all done correctly using
-			 * the pending task queue here as opposed to just the record
-			 * information?
-			 */
 			(record.isReconfigurationReady() && rcRecReq
 					.isReconfigurationIntent())
 			// waitAckStop and reconfiguration/delete complete or delete intent
 					|| (record.getState().equals(RCStates.WAIT_ACK_STOP) && (rcRecReq
-							.isReconfigurationComplete() || rcRecReq.startEpoch.isBatchedCreate()));
+							.isReconfigurationComplete() || rcRecReq.startEpoch.isBatchedCreate()))
+							// higher epoch possible only if legitimate
+							|| !TWO_PAXOS_RC;
 			/*
 			 * If a reconfiguration intent is allowed only from READY, we have a
 			 * problem during recovery when reconfiguration completion is not
@@ -573,6 +577,9 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 	 * for the new NC group itself existing.
 	 */
 	private boolean isNodeConfigChangeComplete() {
+		return this.isNodeConfigChangeCompleteDebug().isEmpty();
+	}
+	protected String isNodeConfigChangeCompleteDebug() {
 		long t0 = System.currentTimeMillis();
 		Map<String, Set<NodeIDType>> newRCGroups = this.getNewRCGroups();
 		boolean complete = true;
@@ -619,7 +626,7 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 					"{0} does not have all RC group records ready yet for NODE_CONFIG epoch {1}, e.g.,: {2}",
 					new Object[] { this, ncRecord.getEpoch() + 1, debug });
 		DelayProfiler.updateDelay("isNodeConfigChangeComplete", t0);
-		return complete;
+		return debug;
 	}
 
 	protected Map<String, Set<NodeIDType>> getNewRCGroups() {
@@ -728,7 +735,13 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		return this.myID;
 	}
 
-	private synchronized void selfWait() {
+	private RCRecordRequest<NodeIDType> blockingRequest = null;
+	private synchronized boolean selfWait(RCRecordRequest<NodeIDType> rcRecReq) {
+		if(!this.isNodeConfigChangeComplete()) {
+			this.blockingRequest = rcRecReq;
+			return true;
+		}
+		else this.blockingRequest = null;
 		try {
 			while (!this.isNodeConfigChangeComplete()) {
 				this.wait(5000);
@@ -737,9 +750,13 @@ public abstract class AbstractReconfiguratorDB<NodeIDType> implements
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		return false;
 	}
 
 	private synchronized void selfNotify() {
+		if(this.blockingRequest!=null) {
+			this.handleRCRecordRequest(this.blockingRequest);
+		}
 		this.notifyAll();
 	}
 

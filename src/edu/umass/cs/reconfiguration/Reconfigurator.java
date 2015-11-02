@@ -69,6 +69,7 @@ import edu.umass.cs.reconfiguration.reconfigurationutils.ConsistentReconfigurabl
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationPacketDemultiplexer;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord;
 import edu.umass.cs.reconfiguration.reconfigurationutils.ReconfigurationRecord.RCStates;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.MyLogger;
 
@@ -344,6 +345,10 @@ public class Reconfigurator<NodeIDType> implements
 		return null;
 	}
 
+	static {
+		ReconfigurationConfig.noop();
+	}
+	private static final boolean TWO_PAXOS_RC = Config.getGlobalBoolean(ReconfigurationConfig.RC.TWO_PAXOS_RC);
 	/**
 	 * Simply hand over DB request to DB. The only type of RC record that can
 	 * come here is one announcing reconfiguration completion. Reconfiguration
@@ -366,20 +371,31 @@ public class Reconfigurator<NodeIDType> implements
 		log.log(Level.FINE, "{0} receievd {1}",
 				new Object[] { this, rcRecReq.getSummary() });
 
+		GenericMessagingTask<NodeIDType, ?> mtask = null;
 		// for NC changes, prev drop complete signifies everyone's on board
 		if (rcRecReq.isReconfigurationPrevDropComplete()
 				&& rcRecReq.getServiceName().equals(
 						AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 								.toString()))
 			this.sendRCReconfigurationConfirmationToInitiator(rcRecReq);
-		else
+		// single paxos reconfiguration allowed only for non-RC-group names
+		else if (!TWO_PAXOS_RC
+				&& !this.DB.isRCGroupName(rcRecReq.getServiceName())
+				&& !rcRecReq.isNodeConfigChange()) {
+			if (rcRecReq.isReconfigurationComplete()
+					|| rcRecReq.isReconfigurationPrevDropComplete()) {
+				if (rcRecReq.getInitiator().equals(getMyID()))
+					mtask = new GenericMessagingTask<NodeIDType, RCRecordRequest<NodeIDType>>(
+							getOthers(this.consistentNodeConfig.getReplicatedReconfigurators(rcRecReq
+									.getServiceName())), rcRecReq);
+				// no coordination
+				boolean handled = this.DB.handleRequest(rcRecReq);
+				if(handled) this.garbageCollectPendingTasks(rcRecReq);
+			}
+		} else
 			// commit until committed by default
 			this.repeatUntilObviated(rcRecReq);
 
-		// clean up as needed
-		// if (rcRecReq.isReconfigurationComplete())
-		// remove stop and start tasks known to be obviated
-		// garbageCollectStopAndStartTasks(rcRecReq);
 		if (rcRecReq.isReconfigurationMerge())
 			// stop mergee task obviated when reconfiguration merge proposed
 			this.protocolExecutor.remove(getTaskKey(WaitAckStopEpoch.class,
@@ -387,7 +403,14 @@ public class Reconfigurator<NodeIDType> implements
 					rcRecReq.startEpoch.getPrevGroupName(),
 					rcRecReq.startEpoch.getPrevEpochNumber()));
 
-		return null;
+		return mtask!=null ? mtask.toArray() : null;
+	}
+	
+	Object[] getOthers(Set<NodeIDType> nodes) {
+		Set<NodeIDType> others = new HashSet<NodeIDType>();
+		for(NodeIDType node : nodes)
+			if(!node.equals(getMyID())) others.add(node);
+		return others.toArray();
 	}
 
 	/**
@@ -481,7 +504,7 @@ public class Reconfigurator<NodeIDType> implements
 
 		ReconfigurationRecord<NodeIDType> record = this.DB
 				.getReconfigurationRecord(request.getServiceName());
-		if (record == null || record.getNewActives() == null
+		if (record == null || record.getActiveReplicas() == null
 				|| record.isDeletePending()) {
 			log.log(Level.FINE,
 					"{0} returning null active replicas for name {1}; record = {2}",
@@ -537,9 +560,9 @@ public class Reconfigurator<NodeIDType> implements
 		assert (changeRC.getServiceName()
 				.equals(AbstractReconfiguratorDB.RecordNames.NODE_CONFIG
 						.toString()));
-		log.log(Level.FINE,
+		log.log(Level.INFO,
 				"{0} received node config change request {1} from initiator {2}",
-				new Object[] { this, changeRC.toString(),
+				new Object[] { this, changeRC.getSummary(),
 						changeRC.getIssuer() });
 		if (!this.isPermitted(changeRC)) {
 			String errorMessage = " Impermissible node config change request";
@@ -577,7 +600,7 @@ public class Reconfigurator<NodeIDType> implements
 					changeRC.newlyAddedNodes);
 		return null;
 	}
-
+	
 	/**
 	 * Reconfiguration is initiated using a callback because the intent to
 	 * conduct a reconfiguration must be persistently committed before
@@ -618,8 +641,8 @@ public class Reconfigurator<NodeIDType> implements
 		// checked right above
 		RCRecordRequest<NodeIDType> rcRecReq = (RCRecordRequest<NodeIDType>) rcPacket;
 
-		// if (handled)
-		this.commitWorker.executedCallback(rcRecReq, handled);
+		if (this.isCommitWorkerCoordinated(rcRecReq))
+			this.commitWorker.executedCallback(rcRecReq, handled);
 
 		// handled is true when reconfiguration intent causes state change
 		if (handled && rcRecReq.isReconfigurationIntent()
@@ -636,7 +659,7 @@ public class Reconfigurator<NodeIDType> implements
 
 		} else if (handled
 				&& (rcRecReq.isReconfigurationComplete() || rcRecReq
-						.isDeleteIntentOrComplete())) {
+						.isDeleteIntentOrPrevDropComplete())) {
 			// send delete confirmation to deleting client
 			if (rcRecReq.isDeleteIntent()
 					&& rcRecReq.startEpoch.isDeleteRequest())
@@ -660,7 +683,6 @@ public class Reconfigurator<NodeIDType> implements
 			 * remove all tasks corresponding to the previous epoch at this
 			 * point.
 			 */
-			this.garbageCollectStopAndStartTasks(rcRecReq);
 			this.garbageCollectPendingTasks(rcRecReq);
 		} else if (handled && rcRecReq.isNodeConfigChange()) {
 			if (rcRecReq.isReconfigurationIntent()) {
@@ -703,6 +725,13 @@ public class Reconfigurator<NodeIDType> implements
 				;
 
 		}
+	}
+	
+	private boolean isCommitWorkerCoordinated(
+			RCRecordRequest<NodeIDType> rcRecReq) {
+		return (TWO_PAXOS_RC && (rcRecReq.isReconfigurationComplete() || rcRecReq
+				.isReconfigurationPrevDropComplete()))
+				|| rcRecReq.isReconfigurationMerge();
 	}
 	
 	private void ncAssert(RCRecordRequest<NodeIDType> rcRecReq, boolean handled) {
@@ -1162,6 +1191,7 @@ public class Reconfigurator<NodeIDType> implements
 	/************ End of key construction utility methods *************/
 
 	private void garbageCollectPendingTasks(RCRecordRequest<NodeIDType> rcRecReq) {
+		this.garbageCollectStopAndStartTasks(rcRecReq);
 		/*
 		 * Remove secondary task, primary will take care of itself.
 		 * 
@@ -1746,7 +1776,7 @@ public class Reconfigurator<NodeIDType> implements
 		String merged = this.mergeExistingGroups(curRCGroups, newRCGroups,
 				ncRecord);
 
-		log.log(Level.FINE, "{0} changed/split/merged = \n{1}{2}{3}",
+		log.log(Level.INFO, "{0} changed/split/merged = \n{1}{2}{3}",
 				new Object[] { this, changed, split, merged });
 		return !(changed + split + merged).isEmpty();
 	}
@@ -1770,8 +1800,9 @@ public class Reconfigurator<NodeIDType> implements
 		if (this.DB.isNCRecord(rcRecReq.getServiceName()))
 			this.commitWorker.enqueueForExecution(rcRecReq,
 					NODE_CONFIG_RESTART_PERIOD);
-		else
+		else {
 			this.commitWorker.enqueueForExecution(rcRecReq);
+		}
 	}
 
 	/*

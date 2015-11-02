@@ -53,7 +53,7 @@ public final class StatePacket extends PaxosPacket{
 	public StatePacket(Ballot b, int slotNumber, String state) {
 		this(b, slotNumber, state, false);
 	}
-	public StatePacket(Ballot b, int slotNumber, String state, boolean isLargeCheckpoint) {
+	private StatePacket(Ballot b, int slotNumber, String state, boolean isLargeCheckpoint) {
 		super((PaxosPacket)null);
 		this.ballot = b;
 		this.slotNumber = slotNumber;

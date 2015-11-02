@@ -57,6 +57,7 @@ public class TESTPaxosClient {
 
 	private static int totalNoopCount = 0;
 
+	private static int numSentRequests = 0; 
 	private static int numRequests = 0; // used only for latency
 	private static long totalLatency = 0;
 	private static double movingAvgLatency = 0;
@@ -64,6 +65,9 @@ public class TESTPaxosClient {
 	private static int numRtxReqs = 0;
 	private static int rtxCount = 0;
 
+	private static synchronized void incrTotalSent() {
+		numSentRequests++;
+	}
 	private static synchronized void incrTotalLatency(long ms) {
 		totalLatency += ms;
 		numRequests++;
@@ -202,8 +206,8 @@ public class TESTPaxosClient {
 									request.getDebugInfo(),
 									request.getSummary() });
 					
-					DelayProfiler.updateInterArrivalTime("response_rate1", 1, 100);
-					DelayProfiler.updateRate("response_rate2", 1000, 10);
+					DelayProfiler.updateInterArrivalTime("response_rate", 1, 100);
+					//DelayProfiler.updateRate("response_rate2", 1000, 10);
 
 					if (Util.oneIn(NUM_REQUESTS*1000)) // disabled
 						System.out.println("Instantaneous response_rate1 = "
@@ -294,9 +298,17 @@ public class TESTPaxosClient {
 		int index = !PIN_CLIENT ? (int) (req.requestID % group.length)
 				: (int) (myID % group.length);
 		while (index < 0 || index >= group.length
-				|| TESTPaxosConfig.isCrashed(group[index]))
+				|| TESTPaxosConfig.isCrashed(group[index])) {
+			assert(false);
 			index = (int) (Math.random() * group.length);
+		}
 		return this.sendRequest(group[index], req);
+	}
+	
+	static ConcurrentHashMap<Integer,Integer> reqCounts = new ConcurrentHashMap<Integer,Integer>();
+	synchronized static void urc(int id) {
+		reqCounts.putIfAbsent(id, 0);
+		reqCounts.put(id, reqCounts.get(id)+1);
 	}
 
 	private static final int CLIENT_PORT_OFFSET = Config.getGlobalInt(PC.CLIENT_PORT_OFFSET);
@@ -320,6 +332,8 @@ public class TESTPaxosClient {
 				e.printStackTrace();
 			}
 		}
+		incrTotalSent();
+		urc(id);
 		// retransmit if enabled
 		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
 			this.timer
@@ -428,40 +442,43 @@ public class TESTPaxosClient {
 			TESTPaxosClient[] clients) throws JSONException, IOException {
 		sendTestRequests(numReqsPerClient, clients, false);
 	}
+	private static final int NUM_CLIENTS = Config.getGlobalInt(TC.NUM_CLIENTS);
 	private static double mostRecentSentRate = 0;
-	protected static void sendTestRequests(int numReqsPerClient,
+	protected static void sendTestRequests(int numReqs,
 			TESTPaxosClient[] clients, boolean warmup) throws JSONException, IOException {
-		System.out.print((warmup ? "\nWarming up by sending "
-				: "\nInitiating test sending ")
-				+ numReqsPerClient
-				* clients.length
-				+ " "
+		System.out.print((warmup ? "\nWarming up " : "\nTesting ")
+				+ "[#requests="
+				+ numReqs
+				+ ", request_size="
 				+ gibberish.length()
-				+ "B requests using "
+				+ "B, #clients="
 				+ clients.length
-				+ " clients "
-				+ (!warmup ? "at an aggregate load of " + (TOTAL_LOAD)
-						+ " reqs/sec..." : ""));
+				+ ", #groups="
+				+ NUM_GROUPS
+				+ ", load=" + TOTAL_LOAD + "/s" + "]...");
 		RateLimiter r = new RateLimiter(TOTAL_LOAD);
 		long initTime = System.currentTimeMillis();
-		for (int i = 0; i < numReqsPerClient; i++) {
-			for (int j = 0; j < clients.length; j++) {
-				int curTotalReqs = j + i * clients.length;
-				while (!clients[j].makeAndSendRequest(TEST_GUID_PREFIX
-						+ ((RANDOM_REPLAY + curTotalReqs) % (NUM_GROUPS))))
-					;
-				r.record();
-			}
+		for (int i = 0; i < numReqs; i++) {
+			while (!clients[i%NUM_CLIENTS].makeAndSendRequest(TEST_GUID_PREFIX
+					+ ((RANDOM_REPLAY + i) % (NUM_GROUPS))))
+				;
+			r.record();
 		}
 		
-		mostRecentSentRate = numReqsPerClient * clients.length * 1000.0
+		mostRecentSentRate = numReqs * 1000.0
 				/ (System.currentTimeMillis() - initTime);
 
-		if(!warmup)
-			System.out.println("done sending requests in "
-				+ Util.df((System.currentTimeMillis() - initTime) / 1000.0)
-				+ " secs; actual sending rate = "
-				+ Util.df(mostRecentSentRate)+"/s");
+		System.out
+				.println("done "
+						+ (warmup ? ""
+								: "sending "
+										+ numSentRequests
+										+ " requests in "
+										+ Util.df((System.currentTimeMillis() - initTime) / 1000.0)
+										+ " secs; actual sending rate = "
+										+ Util.df(mostRecentSentRate) + "/s"
+						// + " \n " + reqCounts
+						));
 	}
 	protected static void waitForResponses(TESTPaxosClient[] clients,
 			long startTime) {
@@ -559,7 +576,7 @@ public class TESTPaxosClient {
 		}
 	}
 
-	protected static String getAggregateOutput(int numReqs, long delay) {
+	protected static String getAggregateOutput(long delay) {
 		return "\n  average_sent_rate = " + Util.df(mostRecentSentRate) +"/s"
 				+ "\n  average_response_time = "
 				+ Util.df(TESTPaxosClient.getAvgLatency()) + "ms"
@@ -579,12 +596,12 @@ public class TESTPaxosClient {
 
 			TESTPaxosClient[] clients = TESTPaxosClient.setupClients(TESTPaxosConfig.getFromPaxosConfig(true));
 			System.out.println(TESTPaxosConfig.getFromPaxosConfig(true));
-			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS)
-					/ Config.getGlobalInt(TC.NUM_CLIENTS);
+			int numReqs = Config.getGlobalInt(TC.NUM_REQUESTS);
 
+			
 			// begin warmup run
 			long t1 = System.currentTimeMillis();
-			sendTestRequests(Math.min(numReqs, 10), clients, true);
+			sendTestRequests(Math.min(numReqs, 10*NUM_CLIENTS), clients, true);
 			waitForResponses(clients, t1);
 			long t2 = System.currentTimeMillis();
 			System.out.println("[success]");
@@ -599,7 +616,7 @@ public class TESTPaxosClient {
 			waitForResponses(clients, t1);
 			t2 = System.currentTimeMillis();
 			System.out.println("\n[run1]"
-					+ getAggregateOutput(numReqs, t2 - t1));
+					+ getAggregateOutput(t2 - t1));
 			// end first run
 
 			resetLatencyComputation(clients);
@@ -612,7 +629,7 @@ public class TESTPaxosClient {
 			t2 = System.currentTimeMillis();
 			printOutput(clients); // printed only after second
 			System.out.println("\n[run2] "
-					+ getAggregateOutput(numReqs, t2 - t1));
+					+ getAggregateOutput(t2 - t1));
 			// end second run
 
 			for (TESTPaxosClient client : clients) {

@@ -19,6 +19,7 @@ package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -137,7 +138,7 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 	public boolean coordinateRequest(String paxosGroupID,
 			InterfaceRequest request) throws RequestParseException {
 		String proposee = this.propose(paxosGroupID, request);
-		log.log(Level.FINE,
+		log.log(Level.INFO,
 				"{0} {1} request {2}:{3} [{4}] {5} to {6}",
 				new Object[] {
 						this,
@@ -176,6 +177,12 @@ public class PaxosReplicaCoordinator<NodeIDType> extends
 					+ " with state [" + state + "] likely because epoch "
 					+ epoch + " or higher was previously created and stopped."));
 		return createdOrExistsOrHigher;
+	}
+	
+	@Override
+	public boolean createReplicaGroup(Map<String, String> nameStates,
+			Set<NodeIDType> nodes) {
+		return this.paxosManager.createPaxosInstance(nameStates, nodes);
 	}
 
 	public String toString() {

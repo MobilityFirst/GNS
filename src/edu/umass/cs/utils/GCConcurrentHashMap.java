@@ -2,8 +2,8 @@ package edu.umass.cs.utils;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -14,58 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class GCConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 
-	private static int GC_THRESHOLD_SIZE = 1024 * 128;
+	private static final int DEFAULT_GC_TIMEOUT = 10000;
+	private static final int DEFAULT_GC_THRESHOLD_SIZE = 1024 * 128;
+	private int gcThresholdSize = DEFAULT_GC_THRESHOLD_SIZE;
 
-	private final ConcurrentHashMap<K, Long> putTimes = new ConcurrentHashMap<K, Long>();
-	private final TreeSet<TimeKey> putKeys = new TreeSet<TimeKey>();
+	private final LinkedHashMap<K, Long> putTimes = new LinkedHashMap<K, Long>();
 	private final GCConcurrentHashMapCallback callback;
 	private final long gcTimeout;
-
-	class TimeKey implements Comparable<TimeKey> {
-		final long time;
-		final K key;
-
-		TimeKey(long time, K key) {
-			this.time = time;
-			this.key = key;
-		}
-
-		/*
-		 * The spec says compareTo must return 0 iff equals returns true for the
-		 * Set interface to work correctly. However, we have no straightforward
-		 * way of consistently assigning one object as greater than the other if
-		 * they are not equal (as per equals) but their hashCodes are equal, so
-		 * we just treat them as equal in rank if their hashCodes are equal.
-		 * This means that the Set interface may not work correctly here.
-		 */
-		@Override
-		public int compareTo(GCConcurrentHashMap<K, V>.TimeKey o) {
-			if (this.time == o.time)
-				if (this.key.hashCode() > o.hashCode())
-					return 1;
-				else if (this.key.hashCode() < o.hashCode())
-					return -1;
-				else if (this.key.equals(o.key))
-					return 0;
-				else
-					// what to do here?
-					return 0;
-
-			return this.time > o.time ? 1 : -1;
-		}
-
-		public boolean equals(TimeKey tk) {
-			return this.key.equals(tk) && this.time == tk.time;
-		}
-
-		public int hashCode() {
-			return this.key.hashCode() + (int) this.time;
-		}
-
-		public String toString() {
-			return this.key.toString() + ":" + this.time;
-		}
-	}
 
 	/**
 	 * @param callback
@@ -76,90 +31,90 @@ public class GCConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 		super();
 		this.callback = callback;
 		this.gcTimeout = gcTimeout;
+		this.minGCInterval = this.gcTimeout;
 	}
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 183021919212L;
 
-	public V put(K key, V value) {
+	public synchronized V put(K key, V value) {
 		this.putGC(key);
 		V old = super.put(key, value);
 		return old;
 	}
 
-	public V putIfAbsent(K key, V value) {
+	public synchronized V putIfAbsent(K key, V value) {
 		this.putGC(key);
 		return super.putIfAbsent(key, value);
 	}
 
-	public void putAll(Map<? extends K, ? extends V> map) {
+	public synchronized void putAll(Map<? extends K, ? extends V> map) {
 		for (K key : map.keySet())
 			this.putGC(key);
 		super.putAll(map);
 	}
 
-	public V remove(Object key) {
-		return this.remove(key, false);
-	}
-
-	@SuppressWarnings("unchecked")
-	private V remove(Object key, boolean fromGC) {
+	public synchronized V remove(Object key) {
 		V value = super.remove(key);
-		Long time = this.putTimes.remove(key);
-
-		if (!fromGC)
-			return value;
-
-		try {
-			if (time != null)
-				this.putKeys.remove(new TimeKey(time, (K) key));
-		} catch (Exception e) {
-			// do nothing, likely a class cast exception
-		}
+		this.putTimes.remove(key);
 		return value;
 	}
 
-	@SuppressWarnings("unchecked")
-	public boolean remove(Object key, Object value) {
-		boolean removed = super.remove(key, value);
-		Long time = removed ? this.putTimes.remove(key) : null;
-		try {
-			if (time != null)
-				this.putKeys.remove(new TimeKey(time, (K) key));
-		} catch (Exception e) {
-			// do nothing, likely a class cast exception
+	/**
+	 * @param size
+	 */
+	public void setGCThresholdSize(int size) {
+		this.gcThresholdSize = size;
+	}
+
+	public synchronized boolean remove(Object key, Object value) {
+		if (super.remove(key, value)) {
+			this.putTimes.remove(key);
+			return true;
 		}
-		return removed;
+		return false;
 	}
 
 	private synchronized void putGC(K key) {
 		this.putTimes.put(key, System.currentTimeMillis());
-		TimeKey tk = new TimeKey(System.currentTimeMillis(), key);
-		/* Remove first because add only adds if not present and
-		 * we need the new timekey (with the new time) to get
-		 * inserted, otherwise keys previously inserted and deleted
-		 * and then reinserted may get garbage collected needlessly.
-		 */
-		this.putKeys.remove(tk);
-		this.putKeys.add(tk);
-		if (this.putKeys.size() > GC_THRESHOLD_SIZE || Util.oneIn(1000))
+		if (this.size() > gcThresholdSize || Util.oneIn(1000))
 			GC();
 	}
 
-	private static int numGC = 0;
+	private int numGC = 0;
+	private int numGCAttempts = 0;
+	private long lastGCTime = 0;
+	private long minGCInterval = DEFAULT_GC_TIMEOUT;
 
+	/**
+	 * @param timeout 
+	 */
+	public synchronized void tryGC(long timeout) {
+		this.GC(timeout);
+	}
 	private synchronized void GC() {
+		this.GC(this.gcTimeout);
+	}
+	private synchronized void GC(long timeout) {
+		if (System.currentTimeMillis() - this.lastGCTime < this.minGCInterval)
+			return;
+		else
+			this.lastGCTime = System.currentTimeMillis();
 		boolean removed = false;
-		for (Iterator<TimeKey> tkIter = this.putKeys.iterator(); tkIter
+		numGCAttempts++;
+		for (Iterator<K> iterK = this.putTimes.keySet().iterator(); iterK
 				.hasNext();) {
-			TimeKey tk = tkIter.next();
-			if (System.currentTimeMillis() - tk.time > gcTimeout) {
-				V value = this.remove(tk.key, true);
-				tkIter.remove();
+			K key = iterK.next();
+			Long time = this.putTimes.get(key);
+			if (time != null
+					&& (System.currentTimeMillis() - time > timeout)) {
+				iterK.remove();
+				V value = this.remove(key);
+				if (value != null)
+					this.callback.callbackGC(key, value);
 				removed = true;
-				this.callback.callbackGC(tk.key, value);
 			} else
 				break;
 		}
@@ -173,7 +128,6 @@ public class GCConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 	 */
 	public static void main(String[] args) throws InterruptedException {
 		Util.assertAssertionsEnabled();
-		// GC_THRESHOLD_SIZE = 5;
 		GCConcurrentHashMap<String, Integer> map1 = new GCConcurrentHashMap<String, Integer>(
 				new GCConcurrentHashMapCallback() {
 
@@ -182,9 +136,10 @@ public class GCConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 						// System.out.println("GC: " + key + ", " + value);
 					}
 
-				}, 1000);
+				}, 100);
+		map1.setGCThresholdSize(1000);
 		ConcurrentHashMap<String, Integer> map2 = new ConcurrentHashMap<String, Integer>();
-		ConcurrentHashMap<String, Integer> map = map2;
+		Map<String, Integer> map = map1;
 		HashMap<String, Integer> hmap = new HashMap<String, Integer>();
 		int n = 1000 * 1000;
 		String prefix = "random";
@@ -192,20 +147,23 @@ public class GCConcurrentHashMap<K, V> extends ConcurrentHashMap<K, V> {
 		for (int i = 0; i < n; i++) {
 			(map != null ? map : hmap).put(prefix + i, i);
 			assert ((map != null ? map : hmap).containsKey(prefix + i));
-			if (i >= 5000)
-				map.remove(prefix + (i - 5000));
+			int sizeThreshold = 8000;
+			if (i >= sizeThreshold)
+				map.remove(prefix + (i - sizeThreshold));
 		}
-		System.out.println("delay = " + (System.currentTimeMillis() - t)
-				+ "; rate = " + (n / (System.currentTimeMillis() - t) + "K/s")
-				+ "; numGC = " + numGC);
+		long t2 = System.currentTimeMillis();
+		System.out.println("delay = " + (t2 - t) + "; rate = "
+				+ (n / (t2 - t) + "K/s") + "; numGC = " + map1.numGC
+				+ "; numGCAttempts = " + map1.numGCAttempts);
 		System.out.println("size = " + map.size());
 		Thread.sleep(1500);
 		(map != null ? map : hmap).put(prefix + (n + 1),
 				(int) (Math.random() * Integer.MAX_VALUE));
 		for (int i = 0; i < n; i++)
-			assert (GC_THRESHOLD_SIZE > n / 100 || !(map != null ? map : hmap)
-					.containsKey(prefix + i)) : prefix + i;
-
+			assert (!map1.containsKey(prefix + i)
+					|| !map1.putTimes.containsKey(prefix + i) || (t2
+					- map1.putTimes.get(prefix + i) < map1.gcTimeout)) : prefix
+					+ i;
 		assert (map1 != null && map2 != null);
 	}
 }

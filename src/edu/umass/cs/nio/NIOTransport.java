@@ -610,6 +610,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 	}
 	
 	private void updateFailed(SelectionKey key) {
+		if(!(key.channel() instanceof SocketChannel)) return;
 		SocketChannel channel = (SocketChannel) key.channel();
 		InetSocketAddress remote = (InetSocketAddress) channel.socket()
 				.getRemoteSocketAddress();
@@ -667,6 +668,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 		NIOInstrumenter.incrAccepted();
 		socketChannel.socket().setKeepAlive(true);
 		socketChannel.configureBlocking(false);
+		socketChannel.socket().setTcpNoDelay(true);
 		socketChannel.socket().setReceiveBufferSize(HINT_SOCK_BUFFER_SIZE);
 		socketChannel.socket().setSendBufferSize(HINT_SOCK_BUFFER_SIZE);
 		
@@ -1564,7 +1566,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 				new Object[] { this, isa });
 
 		socketChannel.socket().setSoLinger(false, -1);
-		// socketChannel.socket().setTcpNoDelay(true);
+		socketChannel.socket().setTcpNoDelay(true);
 		socketChannel.connect(isa);
 		NIOInstrumenter.incrInitiated();
 		putSockAddrToSockChannel(isa, socketChannel); // synchronized
@@ -1881,7 +1883,7 @@ public class NIOTransport<NodeIDType> implements Runnable,
 					.println("\n\n\nBeginning test of random, concurrent, any-to-any communication pattern");
 			Thread.sleep(1000);
 
-			int load = nNodes * 60;
+			int load = nNodes * 50;
 			ScheduledFuture<?>[] futures = new ScheduledFuture[load];
 			for (int i = 0; i < load; i++) {
 				int k = (int) (Math.random() * nNodes);

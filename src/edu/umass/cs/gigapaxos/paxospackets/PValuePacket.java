@@ -135,13 +135,18 @@ public class PValuePacket extends ProposalPacket {
 		return this.recovery;
 	}
 
-	public void setRecovery() {
-		this.recovery = true;
+	public PValuePacket setRecovery() {
+		return this.setRecovery(true);
+	}
+	public PValuePacket setRecovery(boolean b) {
+		this.recovery = b;
+		return this;
 	}
 	
 	@Override
 	protected String getSummaryString() {
-		return ballot + ", " + super.getSummaryString();
+		return ballot + ", " + super.getSummaryString()
+				+ (this.isRecovery() ? "(recovery)" : "");
 	}
 
 	@Override
@@ -176,7 +181,7 @@ public class PValuePacket extends ProposalPacket {
 	public PValuePacket getMetaDecision() {
 		PValuePacket meta = new PValuePacket(this.ballot, new ProposalPacket(this.slot,
 				new RequestPacket(this.requestID,
-						RequestPacket.Keys.METAVAL.toString(), this.stop, this).getFirstOnly()));
+						null, this.stop, this).getFirstOnly()));
 		meta.packetType = PaxosPacketType.DECISION;
 		return meta;
 	}
