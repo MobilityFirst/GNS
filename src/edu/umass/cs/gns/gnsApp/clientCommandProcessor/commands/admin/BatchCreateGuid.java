@@ -3,7 +3,6 @@
  * University of Massachusetts
  * All Rights Reserved 
  *
- * Initial developer(s): Westy.
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin;
 
@@ -20,13 +19,13 @@ import org.json.JSONObject;
  *
  * @author westy
  */
-public class BatchTest extends GnsCommand {
+public class BatchCreateGuid extends GnsCommand {
 
   /**
    *
    * @param module
    */
-  public BatchTest(CommandModule module) {
+  public BatchCreateGuid(CommandModule module) {
     super(module);
   }
 

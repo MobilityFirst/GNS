@@ -180,17 +180,6 @@ public interface RecordMapInterface {
           throws FailedDBOperationException;
 
   /**
-   * Increments system fields in a record.
-   * 
-   * @param name - the name of the record
-   * @param fields - the system fields to update
-   * @param values - the values to increment the system fields by
-   * @throws FailedDBOperationException
-   */
-  public abstract void increment(String name, ArrayList<ColumnField> fields, ArrayList<Object> values)
-          throws FailedDBOperationException;
-
-  /**
    * Remove keys from a field.
    * 
    * @param name - the name of the record

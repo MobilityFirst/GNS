@@ -100,7 +100,7 @@ public class CCPProtocolTask<NodeIDType> implements
     if (lnsRequestID != null) {
       // NEW - There can be multiple creates for one client request.
       // check to see if there are more pending requests for this request
-      if (!handler.getCreateRequestIdToNames(lnsRequestID).isEmpty()) {
+      if (!handler.pendingCreatesIsEmpty(lnsRequestID)) {
         return null;
       }
         

@@ -801,8 +801,13 @@ public class Reconfigurator<NodeIDType> implements
 		 * This assert follows from the fact that the return value handled can
 		 * be true for a reconfiguration intent packet exactly once.
 		 */
+                //MOB-504: Fix 2: This is more of a hack for now. 
+//                if(this.isTaskRunning(this.getTaskKey(WaitAckStopEpoch.class,
+//				rcRecReq)) && !rcRecReq.isSplitIntent()) return;
+                
 		assert (!this.isTaskRunning(this.getTaskKey(WaitAckStopEpoch.class,
 				rcRecReq)));
+                
 		log.log(Level.FINE,
 				MyLogger.FORMAT[8],
 				new Object[] { this, "spawning WaitAckStopEpoch for",
@@ -829,8 +834,16 @@ public class Reconfigurator<NodeIDType> implements
 		 * This assert follows from the fact that the return value handled can
 		 * be true for a reconfiguration intent packet exactly once.
 		 */
+          if (this.isTaskRunning(this.getTaskKey(WaitPrimaryExecution.class,
+				rcRecReq))) {
+            log.log(Level.INFO, MyLogger.FORMAT[3], 
+                    new Object[] { this, 
+              " TASK IS ALREADY RUNNING: ", rcRecReq.getSummary()});
+          }
+                // disable
 		assert (!this.isTaskRunning(this.getTaskKey(WaitPrimaryExecution.class,
 				rcRecReq)));
+                // 
 
 		log.log(Level.FINE, MyLogger.FORMAT[3],
 				new Object[] { this, " spawning WaitPrimaryExecution for ",

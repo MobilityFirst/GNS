@@ -21,7 +21,7 @@ public interface RecordCursorInterface {
    * Returns the next row as a JSONObject.
    * 
    * @return the next row as a JSONObject
-   * @throws FailedDBOperationException 
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException 
    */
   public JSONObject nextJSONObject() throws FailedDBOperationException;
   
@@ -29,14 +29,14 @@ public interface RecordCursorInterface {
    * Returns the next row as a HashMap.
    * 
    * @return the next row as a HashMap
-   * @throws FailedDBOperationException 
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public HashMap<ColumnField, Object> nextHashMap() throws FailedDBOperationException;
 
   /**
    * Returns true if the collection has more records. 
-   * @return
-   * @throws FailedDBOperationException 
+   * @return true if the collection has more records
+   * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public boolean hasNext() throws FailedDBOperationException;
   

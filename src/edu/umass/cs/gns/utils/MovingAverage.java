@@ -125,7 +125,7 @@ public class MovingAverage {
   }
 
   /**
-   * Returns the moving average.<br/>
+   * Returns the moving average.<br>
    * Returns 0 if the window is empty.
    * @return the moving average
    */
@@ -134,7 +134,7 @@ public class MovingAverage {
   }
 
   /**
-   * Returns the median value in window.<br/>
+   * Returns the median value in window.<br>
    * Returns 0 if the window is empty.
    * @return the median value
    */

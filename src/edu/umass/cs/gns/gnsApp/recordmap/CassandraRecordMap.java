@@ -94,12 +94,7 @@ public class CassandraRecordMap extends BasicRecordMap {
   public boolean updateConditional(String name, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
-
-  @Override
-  public void increment(String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
+  
   @Override
   public void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys) {
     throw new UnsupportedOperationException("Not supported yet.");

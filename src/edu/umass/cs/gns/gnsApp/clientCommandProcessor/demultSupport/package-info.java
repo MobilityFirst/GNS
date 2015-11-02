@@ -2,7 +2,7 @@
  *
  * Contains all the functionality which the CCP uses to execute lookup, update and select commands.
  * 
- * @See ClientRequestHandlerInterface where all of the bookkeeping and communication mechanisms are 
+ * @see ClientRequestHandlerInterface where all of the bookkeeping and communication mechanisms are 
  * encapsulated.
  *
  */

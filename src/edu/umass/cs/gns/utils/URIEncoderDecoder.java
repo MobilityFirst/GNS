@@ -35,13 +35,11 @@ public class URIEncoderDecoder {
 
     /**
      * Validate a string by checking if it contains any characters other than:
-     * <p/>
+     * <br>
      * 1. letters ('a'..'z', 'A'..'Z') 2. numbers ('0'..'9') 3. characters in
      * the legalset parameter 4. others (Unicode characters that are not in
      * US-ASCII set, and are not ISO Control or are not ISO Space characters)
-     * <p/>
      * called from URI.Helper.parseURI() to validate each component
-     * <p/>
      *
      * @param s     java.lang.String the string to be validated
      * @param legal java.lang.String the characters allowed in the String s
@@ -93,14 +91,14 @@ public class URIEncoderDecoder {
      * All characters except letters ('a'..'z', 'A'..'Z') and numbers ('0'..'9')
      * and legal characters are converted into their hexidecimal value prepended
      * by '%'.
-     * <p/>
-     * For example: '#' -> %23
-     * <p/>
+     * <br>
+     * For example: '#' -- %23
+     * <br>
      * Other characters, which are Unicode chars that are not US-ASCII, and are
      * not ISO Control or are not ISO Space chars, are preserved.
-     * <p/>
+     * <br>
      * Called from URI.quoteComponent() (for multiple argument constructors)
-     * <p/>
+     * <br>
      *
      * @param s     java.lang.String the string to be converted
      * @param legal java.lang.String the characters allowed to be preserved in the
@@ -134,11 +132,11 @@ public class URIEncoderDecoder {
      * Other characters, which are Unicode chars that are not US-ASCII, and are
      * not ISO Control or are not ISO Space chars are not preserved. They are
      * converted into their hexidecimal value prepended by '%'.
-     * <p/>
-     * For example: Euro currency symbol -> "%E2%82%AC".
-     * <p/>
+     * <br>
+     * For example: Euro currency symbol - "%E2%82%AC".
+     * <br>
      * Called from URI.toASCIIString()
-     * <p/>
+     * <br>
      *
      * @param s java.lang.String the string to be converted
      * @return java.lang.String the converted string
@@ -165,16 +163,16 @@ public class URIEncoderDecoder {
      * Decodes the string argument which is assumed to be encoded in the
      * <code>x-www-form-urlencoded</code> MIME content type using the UTF-8
      * encoding scheme.
-     * <p/>
+     * <br>
      * '%' and two following hex digit characters are converted to the
      * equivalent byte value. All other characters are passed through
      * unmodified.
-     * <p/>
-     * <p/>
-     * e.g. "A%20B%20C %24%25" -> "A B C $%"
-     * <p/>
+     * <br>
+     * <br>
+     * e.g. "A%20B%20C %24%25" - "A B C $%"
+     * <br>
      * Called from URI.getXYZ() methods
-     * <p/>
+     * <br>
      *
      * @param s java.lang.String The encoded string.
      * @return java.lang.String The decoded version.

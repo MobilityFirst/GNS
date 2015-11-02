@@ -91,12 +91,6 @@ public class MongoRecordMap<NodeIDType> extends BasicRecordMap {
   }
 
   @Override
-  public void increment(String name, ArrayList<ColumnField> systemFields, ArrayList<Object> systemValues)
-          throws FailedDBOperationException {
-    mongoRecords.increment(collectionName, name, systemFields, systemValues);
-  }
-
-  @Override
   public void removeMapKeys(String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException {
     mongoRecords.removeMapKeys(collectionName, name, mapField, mapKeys);

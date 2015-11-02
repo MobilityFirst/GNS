@@ -5,8 +5,10 @@
  */
 package edu.umass.cs.gns.gnsApp;
 
+import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gns.activecode.ActiveCodeHandler;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandHandler;
 import edu.umass.cs.gns.database.ColumnField;
 import edu.umass.cs.gns.database.MongoRecords;
@@ -43,6 +45,7 @@ import edu.umass.cs.gns.ping.PingManager;
 import edu.umass.cs.nio.IntegerPacketType;
 import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONMessenger;
+import edu.umass.cs.reconfiguration.examples.AbstractReconfigurablePaxosApp;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurable;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableNodeConfig;
 import edu.umass.cs.reconfiguration.interfaces.InterfaceReconfigurableRequest;
@@ -61,7 +64,9 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author Westy
  */
-public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplicable, InterfaceReconfigurable {
+public class GnsApp extends AbstractReconfigurablePaxosApp<String>
+        implements GnsApplicationInterface<String>, InterfaceReplicable, InterfaceReconfigurable,
+        InterfaceClientMessenger {
 
   private final static int INITIAL_RECORD_VERSION = 0;
   private final String nodeID;
@@ -83,6 +88,11 @@ public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplica
    */
   public final ConcurrentMap<Integer, CommandHandler.CommandRequestInfo> outStandingQueries
           = new ConcurrentHashMap<>(10, 0.75f, 3);
+
+  /**
+   * Active code handler
+   */
+  private ActiveCodeHandler activeCodeHandler;
 
   /**
    * Creates the application.
@@ -115,6 +125,10 @@ public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplica
     // start the NSListenerAdmin thread
     new AppAdmin(this, (GNSNodeConfig<String>) nodeConfig).start();
     GNS.getLogger().info(nodeID.toString() + " Admin thread initialized");
+    this.activeCodeHandler = new ActiveCodeHandler(this,
+            AppReconfigurableNodeOptions.activeCodeWorkerCount,
+            AppReconfigurableNodeOptions.activeCodeBlacklistSeconds);
+
   }
 
   private static PacketType[] types = {
@@ -149,11 +163,11 @@ public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplica
             LNSQueryHandler.handleDNSResponsePacket(dnsPacket, this);
           } else {
             // otherwise it's a query
-            AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient);
+            AppLookup.executeLookupLocal(dnsPacket, this, doNotReplyToClient, activeCodeHandler);
           }
           break;
         case UPDATE:
-          AppUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this, doNotReplyToClient);
+          AppUpdate.executeUpdateLocal(new UpdatePacket<String>(json, nodeConfig), this, doNotReplyToClient, activeCodeHandler);
           break;
         case SELECT_REQUEST:
           Select.handleSelectRequest(json, this);
@@ -204,6 +218,11 @@ public class GnsApp implements GnsApplicationInterface<String>, InterfaceReplica
       e.printStackTrace();
     }
     return executed;
+  }
+
+  @Override
+  public void setClientMessenger(InterfaceSSLMessenger<?, JSONObject> messenger) {
+    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
   }
 
   class CommandQuery {

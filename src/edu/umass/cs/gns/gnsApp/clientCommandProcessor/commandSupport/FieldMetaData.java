@@ -104,7 +104,6 @@ public class FieldMetaData {
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
-  //
   /**
    *
    */

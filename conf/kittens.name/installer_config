@@ -2,4 +2,4 @@ userName=ec2-user
 keyFile=aws.pem
 hostType=linux
 dataStoreName=MONGO
-#installPath=/home/westy
+javaCommand=java -ea -Xms2048M

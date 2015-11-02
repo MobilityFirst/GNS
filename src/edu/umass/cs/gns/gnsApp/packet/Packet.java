@@ -312,7 +312,7 @@ public class Packet {
   }
 
   private static final String JSON_OBJECT_CLASS = "org.json.JSONObject";
-  private static final String STRINGIFIABLE_OBJECT_CLASS = "edu.umass.cs.gns.util.Stringifiable";
+  private static final String STRINGIFIABLE_OBJECT_CLASS = "edu.umass.cs.gns.utils.Stringifiable";
 
   /**
    * Create an packet instance from a JSON Object that contains a packet plus

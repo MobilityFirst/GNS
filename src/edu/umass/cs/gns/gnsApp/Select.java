@@ -53,7 +53,7 @@ import java.util.HashSet;
  *
  * On the request side when we receive a GROUP_LOOKUP request we need to
  * 1) Check to see if enough time has passed since the last update
- * (current time > last_refreshed_time + min_refresh_interval). If it has we
+ * (current time greater than last_refreshed_time + min_refresh_interval). If it has we
  * do the usual query broadcast.
  * If not enough time has elapsed we send back the response with the current value of the group guid.
  *

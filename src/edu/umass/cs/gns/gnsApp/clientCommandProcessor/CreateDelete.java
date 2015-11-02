@@ -145,14 +145,30 @@ public class CreateDelete {
     return removeRecordPacket;
   }
 
-  private static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, ClientRequestHandlerInterface handler) {
-    SendReconfiguratorPacketTask task = new SendReconfiguratorPacketTask(name, packet, handler);
-    handler.getExecutorService().scheduleAtFixedRate(task, 0,
-            //AppReconfigurableNodeOptions.queryTimeout,
-            5000,
-            TimeUnit.MILLISECONDS);
+  private static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, 
+          ClientRequestHandlerInterface handler, int delay, TimeUnit delayUnit, 
+          int maxWaitTime, int maxRetries) {
+    SendReconfiguratorPacketTask task = new SendReconfiguratorPacketTask(name, packet, handler, 
+            maxWaitTime, maxRetries);
+    handler.getExecutorService().scheduleAtFixedRate(task, 0, delay, delayUnit);
   }
-
+  
+  private static void sendPacketWithRetransmission(String name, BasicReconfigurationPacket packet, 
+          ClientRequestHandlerInterface handler) {
+    sendPacketWithRetransmission(name, packet, handler, 5000, TimeUnit.MILLISECONDS, 
+            handler.getParameters().getMaxQueryWaitTime(), 3);
+  }
+  
+  /**
+   * Handles packets from the client that are trying to created multiple records.
+   * 
+   * Similar to handleAddPacket.
+   * 
+   * @param json
+   * @param handler
+   * @throws JSONException
+   * @throws IOException 
+   */
   public static void handleAddBatchPacket(JSONObject json, ClientRequestHandlerInterface handler) throws JSONException, IOException {
     if (!AppReconfigurableNodeOptions.standAloneApp) {
       AddBatchRecordPacket<String> packet = registerPacketAddBatchRecord(json, handler);
@@ -164,7 +180,9 @@ public class CreateDelete {
                   + create.getServiceName());
         }
         handler.addCreateRequestNameToIDMapping(create.getServiceName(), packet.getCCPRequestID());
-        sendPacketWithRetransmission(create.getServiceName(), create, handler);
+        // Batch create can be slow, defaults are 5 and 16 seconds
+        sendPacketWithRetransmission(create.getServiceName(), create, handler, 
+                20000, TimeUnit.MILLISECONDS, 60000, 2);
       }
     } else {
       // LATER

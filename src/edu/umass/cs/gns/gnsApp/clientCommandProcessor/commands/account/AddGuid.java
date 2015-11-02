@@ -10,6 +10,7 @@ package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.account;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccessSupport;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccountAccess;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccountInfo;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.ClientUtils;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
@@ -81,13 +82,8 @@ public class AddGuid extends GnsCommand {
         } else {
           CommandResponse<String> result = AccountAccess.addGuid(accountInfo, accountGuidInfo, name, newGuid, publicKey, handler);
           if (result.getReturnValue().equals(OKRESPONSE)) {
-//            // set up the default read access
-//           FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, EVERYONE, handler);
-//            // give account guid read and write access to all fields in the new guid
-//            FieldMetaData.add(MetaDataTypeName.READ_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
-//            //FieldMetaData.add(MetaDataTypeName.READ_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);
-//            FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST, newGuid, ALLFIELDS, accountGuidInfo.getPublicKey(), handler);
-//            //FieldMetaData.add(MetaDataTypeName.WRITE_WHITELIST_GUID, newGuid, ALLFIELDS, accountGuid, handler);            
+            // THIS HAS BEEN MOVED INTO AccountAccess.addGuid
+            //ActiveCode.initCodeFields(newGuid, handler);
             return new CommandResponse<String>(newGuid);
           } else {
             return result;

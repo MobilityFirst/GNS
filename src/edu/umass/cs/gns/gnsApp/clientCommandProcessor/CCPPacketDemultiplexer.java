@@ -29,8 +29,8 @@ import org.json.JSONObject;
  * Processes incoming and outgoing incoming and outgoing lookup (DNS), updated
  * and select packets. Basically, all command packets are converted into a
  * one or more of the above packet types and dispatched thru this class which
- * invokes static methods from {@Link Lookup}, {@Link Update},
- * {@Link CreateDelete}, {@Link AddRemove} and {@Link Select} classes.
+ * invokes static methods from {@link Lookup}, {@link Update},
+ * {@link CreateDelete}, {@link AddRemove} and {@link Select} classes.
  *
  * @author westy
  * @param <NodeIDType>

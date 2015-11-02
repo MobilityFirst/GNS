@@ -1,5 +1,7 @@
 package edu.umass.cs.gns.gnsApp;
 
+import edu.umass.cs.gns.activecode.ActiveCodeHandler;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.MetaDataTypeName;
 import edu.umass.cs.gns.database.ColumnField;
@@ -14,10 +16,10 @@ import edu.umass.cs.gns.gnsApp.clientSupport.NSGroupAccess;
 import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gns.gnsApp.packet.DNSRecordType;
 import edu.umass.cs.gns.gnsApp.recordmap.BasicRecordMap;
+import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.utils.DelayProfiler;
 import org.json.JSONException;
-
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -47,6 +49,7 @@ public class AppLookup {
    * @param dnsPacket
    * @param gnsApp
    * @param doNotReplyToClient
+   * @param activeCodeHandler
    * @throws java.io.IOException
    * @throws org.json.JSONException
    * @throws java.security.InvalidKeyException
@@ -56,7 +59,7 @@ public class AppLookup {
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static void executeLookupLocal(DNSPacket<String> dnsPacket, GnsApplicationInterface<String> gnsApp,
-          boolean doNotReplyToClient)
+          boolean doNotReplyToClient, ActiveCodeHandler activeCodeHandler)
           throws IOException, JSONException, InvalidKeyException,
           InvalidKeySpecException, NoSuchAlgorithmException, SignatureException, FailedDBOperationException {
     Long receiptTime = System.currentTimeMillis(); // instrumentation
@@ -77,7 +80,7 @@ public class AppLookup {
       return;
     }
 
-      // NOW WE DO THE ACTUAL LOOKUP
+    // NOW WE DO THE ACTUAL LOOKUP
     // But first we do signature and ACL checks
     String guid = dnsPacket.getGuid();
     String field = dnsPacket.getKey();
@@ -123,7 +126,7 @@ public class AppLookup {
       //Otherwise we do a standard lookup
       NameRecord nameRecord = lookupNameRecordLocally(dnsPacket, guid, field, fields, gnsApp.getDB());
       try {
-          // But before we continue handle the group guid indirection case, but only
+        // But before we continue handle the group guid indirection case, but only
         // if the name record doesn't contain the field we are looking for
         // and only for single field lookups.
         if (AppReconfigurableNodeOptions.allowGroupGuidIndirection && field != null && !GnsProtocolDefs.ALLFIELDS.equals(field)
@@ -133,18 +136,47 @@ public class AppLookup {
             return;
           }
         }
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().info("Name record read is: " + nameRecord);
+        }
       } catch (FieldNotFoundException e) {
         if (AppReconfigurableNodeOptions.debuggingEnabled) {
           GNS.getLogger().info("Field not found: " + field + " fields: " + fields);
         }
       }
 
-      if (AppReconfigurableNodeOptions.debuggingEnabled) {
-        GNS.getLogger().info("Name record read is: " + nameRecord);
+      ValuesMap newResult = null;
+      int hopLimit = 1;
+
+      // Grab the code because it is of a different type
+      //FIXME: Maybe change this to not use LIST_STRING?
+      NameRecord codeRecord = null;
+
+      try {
+        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+                ColumnFieldType.LIST_STRING, ActiveCode.ON_READ);
+      } catch (RecordNotFoundException e) {
+        GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
       }
-        // Now we either have a name record with stuff it in or a null one
+
+      if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
+        try {
+          ValuesMap originalValues = nameRecord.getValuesMap();
+          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
+          String code64 = codeResult.get(0).toString();
+          if (AppReconfigurableNodeOptions.debuggingEnabled) {
+            GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+          }
+          newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
+        } catch (Exception e) {
+          GNS.getLogger().info("Active code error: " + e.getMessage());
+        }
+      }
+
+      // Now we either have a name record with stuff it in or a null one
       // Time to send something back to the client
-      dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp);
+      // Changed for active code
+      dnsPacket = checkAndMakeResponsePacket(dnsPacket, nameRecord, gnsApp, newResult);
       if (!doNotReplyToClient) {
         gnsApp.getClientCommandProcessor().injectPacketIntoCCPQueue(dnsPacket.toJSONObject());
         //gnsApp.getMessenger().sendToAddress(dnsPacket.getCCPAddress(), dnsPacket.toJSONObject());
@@ -240,11 +272,11 @@ public class AppLookup {
    *
    * @param dnsPacket
    * @param nameRecord
+   * @param newResult
    * @return
    */
   private static DNSPacket<String> checkAndMakeResponsePacket(DNSPacket<String> dnsPacket, NameRecord nameRecord,
-          GnsApplicationInterface<String> gnsApp) {
-    // change it to a response packet
+          GnsApplicationInterface<String> gnsApp, ValuesMap newResult) {
     dnsPacket.getHeader().setQueryResponseCode(DNSRecordType.RESPONSE);
     dnsPacket.setResponder(gnsApp.getNodeID());
     String guid = dnsPacket.getGuid();
@@ -265,7 +297,12 @@ public class AppLookup {
           if (key != null && nameRecord.containsKey(key)) {
             // if it's a USER JSON (new return format) access just return the entire map
             if (ColumnFieldType.USER_JSON.equals(dnsPacket.getReturnFormat())) {
-              dnsPacket.setRecordValue(nameRecord.getValuesMap());
+              // Changed for active code
+              if (newResult != null) {
+                dnsPacket.setRecordValue(newResult);
+              } else {
+                dnsPacket.setRecordValue(nameRecord.getValuesMap());
+              }
             } else {
               // we return the single value of the key (old array-based return format)
               dnsPacket.setSingleReturnValue(nameRecord.getKeyAsArray(key));
@@ -275,7 +312,13 @@ public class AppLookup {
             }
             // or we're supposed to return all the keys so return the entire record
           } else if (dnsPacket.getKeys() != null || GnsProtocolDefs.ALLFIELDS.equals(key)) {
-            dnsPacket.setRecordValue(nameRecord.getValuesMap());
+            // Changed for active code
+            if (newResult != null) {
+                dnsPacket.setRecordValue(newResult);
+              } else {
+                dnsPacket.setRecordValue(nameRecord.getValuesMap());
+              }
+            //dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
             }

@@ -49,9 +49,10 @@ public class CassandraRecords implements NoSQLRecords {
   private static Map<String, CassandraRecords.CollectionSpec> collectionSpecMap = new HashMap<String, CassandraRecords.CollectionSpec>();
 
   /**
-   *
-   * @param name
-   * @return
+   * Returns the CassandraRecords.CollectionSpec for the given name.
+   * 
+   * @param name the name
+   * @return a CassandraRecords.CollectionSpec object
    */
   public CassandraRecords.CollectionSpec getCollectionSpec(String name) {
     return collectionSpecMap.get(name);
@@ -62,8 +63,8 @@ public class CassandraRecords implements NoSQLRecords {
    */
   static class CollectionSpec {
 
-    private String name;
-    private String primaryKey;
+    private final String name;
+    private final String primaryKey;
 
     /**
      * Create a CollectionSpec instance.
@@ -321,16 +322,6 @@ public class CassandraRecords implements NoSQLRecords {
 
   @Override
   public boolean updateConditional(String collectionName, String guid, ColumnField nameField, ColumnField conditionField, Object conditionValue, ArrayList<ColumnField> fields, ArrayList<Object> values, ColumnField valuesMapField, ArrayList<ColumnField> valuesMapKeys, ArrayList<Object> valuesMapValues) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void increment(String collection, String name, ArrayList<ColumnField> fields1, ArrayList<Object> values1) {
-    throw new UnsupportedOperationException("Not supported yet.");
-  }
-
-  @Override
-  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields1, ArrayList<Object> values1, ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues) {
     throw new UnsupportedOperationException("Not supported yet.");
   }
 

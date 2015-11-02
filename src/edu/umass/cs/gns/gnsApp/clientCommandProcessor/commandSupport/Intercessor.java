@@ -397,6 +397,13 @@ public class Intercessor implements IntercessorInterface {
     return result;
   }
   
+  /**
+   * Sends an AddBatchRecordPacket to the CCP.
+   * 
+   * @param names
+   * @param values
+   * @return an {@link NSResponseCode}
+   */
   public NSResponseCode sendAddBatchRecord(Set<String> names, Map<String, JSONObject> values) {
     int id = nextUpdateRequestID();
     if (debuggingEnabled) {

@@ -19,13 +19,9 @@ import java.net.UnknownHostException;
  * is implemented in <code>SendAddRemoveTask</code>. So also refer to its documentation.
  * <p>
  * The addition and removal of a name in GNS is handled by replica controllers, therefore we send ADD and REMOVE
- * to a replica controller. The replica controllers for a name are fixed and a local name server can compute the set of
- * replica controllers locally (see method {@link edu.umass.cs.gns.util.ConsistentHashing#getReplicaControllerSet(String)}).
- * Like other requests, add/removes are also retransmitted to a different name server if no confirmation is received
- * until a timeout value.
+ * to a replica controller. 
  * <p>
  *
- * @author abhigyan
  */
 public class AddRemove {
 

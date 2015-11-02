@@ -568,54 +568,6 @@ public class MongoRecords<NodeIDType> implements NoSQLRecords {
   }
 
   @Override
-  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values)
-          throws FailedDBOperationException {
-    increment(collectionName, guid, fields, values, null, null, null);
-  }
-
-  @Override
-  public void increment(String collectionName, String guid, ArrayList<ColumnField> fields, ArrayList<Object> values,
-          ColumnField votesMapField, ArrayList<ColumnField> votesMapKeys, ArrayList<Object> votesMapValues)
-          throws FailedDBOperationException {
-    String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();
-    DBCollection collection = db.getCollection(collectionName);
-    // The query part is the "name" field in our document
-    BasicDBObject query = new BasicDBObject(primaryKey, guid);
-    // Build the updates part
-    BasicDBObject updates = new BasicDBObject();
-    if (fields != null) {
-      for (int i = 0; i < fields.size(); i++) {
-        Object newValue;
-        // NOT SURE IN WHAT SITUATION WE'RE GOING TO BE INCREMENTING THE WHOLE VALUES MAP PART OF THIS
-        // BUT THIS IS WHAT WAS WRITTEN SO WE'LL GO WITH IT - Westy
-        // Special case for the VALUES_MAP field which is all the user values in a JSONObject format
-        if (fields.get(i).type().equals(ColumnFieldType.VALUES_MAP)) {
-          // convert the JSONObject value of the ValuesMap into a string that we then parse into
-          // a BSON object (ugly, but necessary)
-          newValue = (DBObject) JSON.parse(((ValuesMap) values.get(i)).toString());
-        } else {
-          newValue = values.get(i);
-        }
-        updates.append(fields.get(i).getName(), newValue);
-      }
-    }
-    if (votesMapField != null && votesMapKeys != null) {
-      for (int i = 0; i < votesMapKeys.size(); i++) {
-        String fieldName = votesMapField.getName() + "." + votesMapKeys.get(i).getName();
-        updates.append(fieldName, votesMapValues.get(i));
-      }
-    }
-    // only execute the call if we have some actual updates
-    if (updates.keySet().size() > 0) {
-      try {
-        collection.update(query, new BasicDBObject("$inc", updates));
-      } catch (MongoException e) {
-        throw new FailedDBOperationException(collectionName, updates.toString());
-      }
-    }
-  }
-
-  @Override
   public void removeMapKeys(String collectionName, String name, ColumnField mapField, ArrayList<ColumnField> mapKeys)
           throws FailedDBOperationException {
     String primaryKey = mongoCollectionSpecs.getCollectionSpec(collectionName).getPrimaryKey().getName();

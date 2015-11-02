@@ -32,8 +32,13 @@ import org.json.JSONObject;
  */
 public abstract class AbstractAddRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<NodeIDType> implements InterfaceRequest {
 
+  /** The request id from the client. */
   protected final static String REQUESTID = "reqID";
+
+  /** The id maintained by the LNS. */
   protected final static String LNSREQID = "lnreqID";
+
+  /** The source node. */
   protected final static String SOURCE_ID = "sourceId";
 
   /**

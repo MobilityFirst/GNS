@@ -43,16 +43,16 @@ public class AppReconfigurableNodeOptions {
   public static boolean allowGroupGuidIndirection = true;
 
   /**
-   * The minimum number of replicas. Used by {@link LocationBasesDemandProfile}.
+   * The minimum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
   public static int minReplica = 3;
   /**
-   * The maximum number of replicas. Used by {@link LocationBasesDemandProfile}.
+   * The maximum number of replicas. Used by {@link LocationBasedDemandProfile}.
    */
   public static int maxReplica = 100;
   /**
    * Determines the number of replicas based on ratio of lookups to writes.
-   * Used by {@link LocationBasesDemandProfile}.
+   * Used by {@link LocationBasedDemandProfile}.
    */
   public static double normalizingConstant = 0.5;
 
@@ -96,6 +96,14 @@ public class AppReconfigurableNodeOptions {
    * If this is true SSL will not be used for communications between servers.
    */
   public static boolean disableSSL = false;
+  /**
+   * Number of active code worker.
+   */
+  public static int activeCodeWorkerCount = 1;
+  /**
+   * How long (in seconds) to blacklist active code.
+   */
+  public static long activeCodeBlacklistSeconds = 10;
 
   // Command line and config file options
   // If you change this list, change it below in getAllOptions as well.
@@ -172,6 +180,12 @@ public class AppReconfigurableNodeOptions {
    * DISABLE_SSL
    */
   public static final String DISABLE_SSL = "disableSSL";
+   /**
+   * DISABLE_EMAIL_VERIFICATION
+   */
+  public static final String DISABLE_EMAIL_VERIFICATION = "disableEmailVerification";
+  
+  private static final String ACTIVE_CODE_WORKER_COUNT = "activeCodeWorkerCount";
 
   /**
    * Returns all the options.
@@ -200,6 +214,7 @@ public class AppReconfigurableNodeOptions {
     Option dnsOnly = new Option(DNS_ONLY, "With this option name server forwards requests to DNS and GNS servers.");
     Option gnsServerIP = new Option(GNS_SERVER_IP, "gns server to use");
     Option disableSSL = new Option(DISABLE_SSL, "disables SSL authentication of client to server commands");
+    Option disableEmailVerification = new Option(DISABLE_EMAIL_VERIFICATION, "disables email verification of new account guids");
 
     Options commandLineOptions = new Options();
     commandLineOptions.addOption(configFile);
@@ -223,6 +238,7 @@ public class AppReconfigurableNodeOptions {
     commandLineOptions.addOption(dnsOnly);
     commandLineOptions.addOption(gnsServerIP);
     commandLineOptions.addOption(disableSSL);
+    commandLineOptions.addOption(disableEmailVerification);
 
     return commandLineOptions;
 
@@ -262,6 +278,12 @@ public class AppReconfigurableNodeOptions {
       ReconfigurationConfig.setServerSSLMode(CLEAR);
       System.out.println("NS: SSL is disabled");
     }
+    
+     if (isOptionTrue(DISABLE_EMAIL_VERIFICATION, allValues)) {
+       System.out.println("******** Email Verification is OFF *********");
+       GNS.enableEmailAccountVerification = false;
+     }
+    
 
     if (isOptionTrue(DEBUG, allValues) || isOptionTrue(DEBUG_APP, allValues)) {
       debuggingEnabled = true;
@@ -360,6 +382,10 @@ public class AppReconfigurableNodeOptions {
     }
     if (allValues.containsKey(GNS_SERVER_IP)) {
       gnsServerIP = allValues.get(GNS_SERVER_IP);
+    }
+    
+    if (allValues.containsKey(ACTIVE_CODE_WORKER_COUNT)) {
+    	activeCodeWorkerCount = Integer.parseInt(allValues.get(ACTIVE_CODE_WORKER_COUNT));
     }
 
   }

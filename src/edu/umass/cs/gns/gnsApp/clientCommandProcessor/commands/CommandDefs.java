@@ -9,11 +9,11 @@ package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands;
 
 /**
  * All the command classes supported by the GNS server are listed here.
- * 
+ *
  * @author westy
  */
 public class CommandDefs {
-  
+
   private static String[] commands = new String[]{
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.data.Append",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.data.AppendList",
@@ -130,19 +130,19 @@ public class CommandDefs {
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RemoveFromGroupSelf",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RemoveMembersFromGroup",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RemoveMembersFromGroupSelf",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.GrantMembership",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.GrantMemberships",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RequestJoinGroup",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RequestLeaveGroup",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RetrieveGroupJoinRequests",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RetrieveGroupLeaveRequests",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RevokeMembership",
-//    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RevokeMemberships",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.GrantMembership",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.GrantMemberships",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RequestJoinGroup",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RequestLeaveGroup",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RetrieveGroupJoinRequests",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RetrieveGroupLeaveRequests",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RevokeMembership",
+    //    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.group.RevokeMemberships",
     //Admin
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.Admin",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTest",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTestName",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchTestSimple",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuidSimple",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuidName",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.BatchCreateGuid",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.GetParameter",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.SetParameter",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ListParameters",
@@ -157,11 +157,15 @@ public class CommandDefs {
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.GetTagged",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.Dump",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingTable",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingValue",    
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.PingValue",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.RTT",
     "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.RTTQuick",
-    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ConnectionCheck"
-          
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.admin.ConnectionCheck",
+    // Active code
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode.Set",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode.Clear",
+    "edu.umass.cs.gns.gnsApp.clientCommandProcessor.commands.activecode.Get"
+
   };
 
   /**

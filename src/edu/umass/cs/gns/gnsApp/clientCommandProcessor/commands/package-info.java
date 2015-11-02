@@ -5,10 +5,10 @@
  * a listing of all the commands and methods for instantiating and looking up 
  * all the command classes. Also provides methods for generating command documentation.
  *<p> 
- * {@Link GnsCommand} is the superclass for all commands.
- * {@Link CommandDefs} list all the supported commands.
- * {@Link CommandModule} instantiates all the commands from CommandDefs which are
- * all subclasses of {@Link GnsCommand} as well as command search and documentation.
+ * {@link GnsCommand} is the superclass for all commands.
+ * {@link CommandDefs} list all the supported commands.
+ * {@link CommandModule} instantiates all the commands from CommandDefs which are
+ * all subclasses of {@link GnsCommand} as well as command search and documentation.
  *<p>
  * The commands are group into sub packages based on the type of the command:
  * account (record creation, deletion and lookup), acl (access control), admin (server control), 

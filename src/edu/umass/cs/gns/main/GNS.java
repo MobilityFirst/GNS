@@ -120,7 +120,7 @@ public class GNS {
   /**
    * Controls whether email verification is enabled.
    */
-  public static boolean enableEmailAccountVerification = false;
+  public static boolean enableEmailAccountVerification = true;
   /**
    * Controls whether signature verification is enabled.
    */
