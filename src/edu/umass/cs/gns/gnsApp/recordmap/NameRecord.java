@@ -19,13 +19,10 @@ import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.utils.ValuesMap;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
-
-// PLEASE DO NOT DELETE THE implements Comparable BELOW. IT IS NECESSARY!!!! - Westy
 
 /**
  * The name record. 
@@ -88,9 +85,11 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * This HashMap stores all the (field,value) tuples that are read from the database for this name record.
    */
-  private HashMap<ColumnField, Object> hashMap;
-
-  private BasicRecordMap recordMap;
+  private final HashMap<ColumnField, Object> hashMap;
+  /**
+   * This is the interface into the underlying database (see for example {@link MongoRecordMap}).
+   */
+  private final BasicRecordMap recordMap;
 
   /**
    * Creates a <code>NameRecord</code> object initialized with given fields. The record is in memory and not written to DB.
@@ -396,61 +395,6 @@ public class NameRecord implements Comparable<NameRecord> {
       }
     }
     throw new FieldNotFoundException(VALUES_MAP);
-  }
-
-  /**
-   * The version status.
-   */
-  public enum VersionStatus {
-
-    /**
-     *
-     */
-    ActiveVersionEqualsVersion,
-
-    /**
-     *
-     */
-    OldActiveVersionEqualsVersion,
-
-    /**
-     *
-     */
-    SomethingElse
-  }
-
-  /**
-   * ACTIVE: checks whether version is current active version/oldactive version/neither. .
-   *
-   * @param version
-   * @return
-   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
-   */
-  public VersionStatus getVersionStatus(int version) throws FieldNotFoundException {
-    int activeVersion = getActiveVersion();
-    int oldActiveVersion = getOldActiveVersion();
-    if (activeVersion == version) {
-      return VersionStatus.ActiveVersionEqualsVersion;
-    }
-    if (oldActiveVersion == version) {
-      return VersionStatus.OldActiveVersionEqualsVersion;
-    }
-    return VersionStatus.SomethingElse;
-
-  }
-
-  /**
-   *
-   * @param oldVersion
-   * @return
-   * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
-   */
-  public ValuesMap getOldValuesOnVersionMatch(int oldVersion) throws FieldNotFoundException {
-    if (oldVersion == getOldActiveVersion()) {
-      //return oldValuesList;
-      return getOldValuesMap();
-    }
-    return null;
   }
 
   /**

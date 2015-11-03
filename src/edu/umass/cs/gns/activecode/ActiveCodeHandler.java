@@ -9,15 +9,12 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.codec.binary.Base64;
-
 import edu.umass.cs.gns.activecode.protocol.ActiveCodeParams;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
 import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
-import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.utils.ValuesMap;
 
 public class ActiveCodeHandler {	
@@ -54,8 +51,9 @@ public class ActiveCodeHandler {
 	 */
 	public boolean hasCode(NameRecord nameRecord, String action) {
 		try {
-			ResultValue code = nameRecord.getKeyAsArray(ActiveCode.codeField(action));
-			return code != null && !code.isEmpty();
+                        return nameRecord.getValuesMap().has(ActiveCode.codeField(action));
+			//ResultValue code = nameRecord.getKeyAsArray(ActiveCode.codeField(action));
+			//return code != null && !code.isEmpty();
 		} catch (FieldNotFoundException e) {
 			return false;
 		}

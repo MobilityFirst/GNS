@@ -9,6 +9,7 @@ import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;
 import edu.umass.cs.gns.exceptions.RecordNotFoundException;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.InternalField;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.recordmap.NameRecord;
 import edu.umass.cs.gns.gnsApp.clientSupport.NSAuthentication;
@@ -145,33 +146,44 @@ public class AppLookup {
         }
       }
 
+      // START ACTIVE CODE HANDLING
       ValuesMap newResult = null;
-      int hopLimit = 1;
+      // Only do this for user fields.
+      if (field == null || !InternalField.isInternalField(field)) {
+        int hopLimit = 1;
 
       // Grab the code because it is of a different type
-      //FIXME: Maybe change this to not use LIST_STRING?
-      NameRecord codeRecord = null;
+        //FIXME: Maybe change this to not use LIST_STRING?
+        NameRecord codeRecord = null;
 
-      try {
-        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
-                ColumnFieldType.LIST_STRING, ActiveCode.ON_READ);
-      } catch (RecordNotFoundException e) {
-        GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
-      }
-
-      if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
         try {
-          ValuesMap originalValues = nameRecord.getValuesMap();
-          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
-          String code64 = codeResult.get(0).toString();
-          if (AppReconfigurableNodeOptions.debuggingEnabled) {
-            GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+          codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+                  ColumnFieldType.USER_JSON, ActiveCode.ON_READ);
+//        codeRecord = NameRecord.getNameRecordMultiField(gnsApp.getDB(), guid, null,
+//                ColumnFieldType.LIST_STRING, ActiveCode.ON_READ);
+        } catch (RecordNotFoundException e) {
+          //GNS.getLogger().severe("Active code read record not found: " + e.getMessage());
+        }
+
+        if (codeRecord != null && nameRecord != null && activeCodeHandler.hasCode(codeRecord, "read")) {
+          try {
+            String code64 = codeRecord.getValuesMap().getString(ActiveCode.ON_READ);
+            ValuesMap originalValues = nameRecord.getValuesMap();
+//          ResultValue codeResult = codeRecord.getKeyAsArray(ActiveCode.ON_READ);
+//          String code64 = codeResult.get(0).toString();
+            if (AppReconfigurableNodeOptions.debuggingEnabled) {
+              GNS.getLogger().info("AC--->>> " + guid + " " + field + " " + originalValues.toString());
+            }
+            newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
+            if (AppReconfigurableNodeOptions.debuggingEnabled) {
+              GNS.getLogger().info("AC--->>> " + newResult.toString());
+            }
+          } catch (Exception e) {
+            GNS.getLogger().info("Active code error: " + e.getMessage());
           }
-          newResult = activeCodeHandler.runCode(code64, guid, field, "read", originalValues, hopLimit);
-        } catch (Exception e) {
-          GNS.getLogger().info("Active code error: " + e.getMessage());
         }
       }
+      // END ACTIVE CODE HANDLING
 
       // Now we either have a name record with stuff it in or a null one
       // Time to send something back to the client
@@ -314,10 +326,10 @@ public class AppLookup {
           } else if (dnsPacket.getKeys() != null || GnsProtocolDefs.ALLFIELDS.equals(key)) {
             // Changed for active code
             if (newResult != null) {
-                dnsPacket.setRecordValue(newResult);
-              } else {
-                dnsPacket.setRecordValue(nameRecord.getValuesMap());
-              }
+              dnsPacket.setRecordValue(newResult);
+            } else {
+              dnsPacket.setRecordValue(nameRecord.getValuesMap());
+            }
             //dnsPacket.setRecordValue(nameRecord.getValuesMap());
             if (AppReconfigurableNodeOptions.debuggingEnabled) {
               GNS.getLogger().info("NS sending multiple value DNS lookup response: Name = " + guid);
