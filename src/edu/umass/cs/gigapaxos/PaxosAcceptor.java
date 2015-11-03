@@ -85,7 +85,7 @@ public class PaxosAcceptor {
 	private int ballotCoord = -1;
 	private int acceptedGCSlot = -1; // slot up to which accepted pvalues are
 										// garbage-collected
-	private byte state = (byte) STATES.RECOVERY.ordinal(); // initial state is
+	protected byte state = (byte) STATES.RECOVERY.ordinal(); // initial state is
 															// recovery
 
 	/*
@@ -195,7 +195,7 @@ public class PaxosAcceptor {
 	protected PValuePacket getCommitted(int slot) {
 		return this.committedRequests.get(slot);
 	}
-
+	
 	protected Set<PValuePacket> getCommitted(Collection<Integer> slots) {
 		Set<PValuePacket> decisions = new HashSet<PValuePacket>();
 		for (Integer slot : slots)
@@ -342,8 +342,10 @@ public class PaxosAcceptor {
 				if (this.acceptedProposals.get(slot).ballot
 						.equals(reconstructedDecision.ballot))
 					return new PValuePacket(this.acceptedProposals.get(slot))
-							.makeDecision(this.committedRequests.get(slot)
-									.getMedianCheckpointedSlot());
+							.makeDecision(
+									this.committedRequests.get(slot)
+											.getMedianCheckpointedSlot())
+							.setRecovery(reconstructedDecision.isRecovery());
 			}
 		}
 		return null;
@@ -374,10 +376,14 @@ public class PaxosAcceptor {
 		// if(this.committedRequests.isEmpty()) return null;
 		ArrayList<Integer> missing = new ArrayList<Integer>();
 		int maxCommittedSlot = getMaxCommittedSlot();
+		int limitSlot = this.getSlot() + sizeLimit;
 		// comparator should be wraparound-aware
-		for (int i = this.getSlot(); i
-				- Math.min(maxCommittedSlot, this.getSlot() + sizeLimit) < 0; i++)
-			if (!this.committedRequests.containsKey(i))
+		for (int i = this.getSlot(); (i - maxCommittedSlot < 0)
+				&& (i - limitSlot < 0); i++)
+			// no commit or meta-commit without accept
+			if (!this.committedRequests.containsKey(i)
+					|| (!this.committedRequests.get(i).hasRequestValue() && !this.acceptedProposals
+							.containsKey(i)))
 				missing.add(i);
 		return missing; // in sorted order
 	}
@@ -388,7 +394,19 @@ public class PaxosAcceptor {
 
 		int maxSlot = this.getSlot() - 1;
 		for (int i : this.committedRequests.keySet()) {
-			maxSlot = Math.max(i, maxSlot);
+			if(i - maxSlot > 0) maxSlot = i;
+		}
+		return maxSlot;
+	}
+
+	protected synchronized int getMaxAcceptedSlot() {
+		if (this.isStopped() || this.acceptedProposals.isEmpty())
+			return this.getSlot() - 1;
+
+		int maxSlot = this.getSlot() - 1;
+		for (int i : this.acceptedProposals.keySet()) {
+			if (i - maxSlot > 0)
+				maxSlot = i;
 		}
 		return maxSlot;
 	}
@@ -578,11 +596,11 @@ public class PaxosAcceptor {
 		FULL, ACCEPTOR
 	};
 
-	private static int testingCreateAcceptor(int size, int id,
+	private static int testingCreateInstance(int size, int id,
 			Set<Integer> group, InstanceType testMode) {
 		PaxosInstanceStateMachine[] pismarray = null;
-		MultiArrayMap<String, PaxosInstanceStateMachine> pismMap = new MultiArrayMap<String, PaxosInstanceStateMachine>(
-				size);
+		//LinkedHashMap<String, PaxosInstanceStateMachine> pismMap = new LinkedHashMap<String, PaxosInstanceStateMachine>(size);
+		MultiArrayMap<String, PaxosInstanceStateMachine> pismMap = new MultiArrayMap<String, PaxosInstanceStateMachine>(size);
 		PaxosAcceptor[] pasarray = null;
 		int j = 1;
 		System.out.print("Number of created instances: ");
@@ -596,8 +614,7 @@ public class PaxosAcceptor {
 						pismarray = new PaxosInstanceStateMachine[size];
 					pismarray[i] = new PaxosInstanceStateMachine(ID + i, i,
 							(i % 3 == 0 ? coord : id), group, null, null, null,
-							null, false);
-					pismMap.put(pismarray[i].getKey(), pismarray[i]);
+							null, false);					pismMap.put(pismarray[i].getKey(), pismarray[i]);
 					pismarray[i].testingInit(0);
 				} else if (testMode.equals(InstanceType.ACCEPTOR)) {
 					if (pasarray == null)
@@ -659,7 +676,7 @@ public class PaxosAcceptor {
 			}
 			System.out.println("verified. \nTesting in progress...");
 
-			int numCreated = testingCreateAcceptor(size, 24, group,
+			int numCreated = testingCreateInstance(size, 24, group,
 					InstanceType.FULL);
 			System.out.println("\nSuccessfully created "
 					+ ((numCreated / 100000) / 10.0) + " million *inactive* "

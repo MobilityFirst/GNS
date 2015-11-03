@@ -184,8 +184,8 @@ public class PaxosCoordinator {
 			committedPValue = pcs.handleAcceptReplyMyBallot(members,
 					acceptReply);
 		} else
-			log.log(Level.INFO,
-					"{0}:{1} acceptor {1} is replying to a lower ballot proposal: {2} < {3} : {4}",
+			log.log(Level.FINE,
+					"{0}:{1} acceptor {2} is replying to a lower ballot proposal: {3} < {4} : {5}",
 					new Object[] { acceptReply.getPaxosID(),
 							acceptReply.getVersion(), acceptReply.acceptor,
 							acceptReply.ballot, this.pcs.getBallotStr(),

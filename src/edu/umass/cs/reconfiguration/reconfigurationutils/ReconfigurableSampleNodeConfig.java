@@ -104,7 +104,7 @@ public class ReconfigurableSampleNodeConfig extends SampleNodeConfig<Integer>
 	 * @param numActives
 	 * @param numRCs
 	 */
-	public void localSetup(int numActives, int numRCs) {
+	protected void localSetupARRC(int numActives, int numRCs) {
 		super.localSetup(Math.max(numActives, numRCs));
 		this.numActives = numActives;
 		this.numRCs = numRCs;

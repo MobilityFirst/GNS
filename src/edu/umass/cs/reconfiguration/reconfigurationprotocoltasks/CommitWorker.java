@@ -193,24 +193,27 @@ public class CommitWorker<NodeIDType> implements Runnable {
 	private boolean shouldEnqueueEarlyExecutedNotification(
 			RCRecordRequest<NodeIDType> request) {
 		return this.isRCGroupName(request)
+
 		/*
-		 * Split intents are not coordinated but will get here nevertheless via
-		 * the executed callback that is called even for uncoordinated requests.
+		 * Split intents are not coordinated at all.
 		 */
-				&& !request.isSplitIntent()
+		// && !request.isSplitIntent()
+
+		/*
+		 * Merges are tricky coz although they are idempotent, they can be
+		 * multiply successful, i.e., return handled=true (e.g., when merging
+		 * multiple RC groups sequentially). This means that merge execution
+		 * notifications may never be garbage collected if enqueued. If not
+		 * enqueued however, we may keep trying the merge forever here and be
+		 * unsuccessful even though the merge has been obviated (say because the
+		 * RC record has actually moved on). The only way to be certain of
+		 * obviation is to check the DB. We just enqueue for now to ensure
+		 * progress coz merges are rare operations anyway, so some uncollected
+		 * garbage is okay.
+		 */
+
 		// && !request.isReconfigurationMerge()
 		;
-		/*
-		 * Merges are tricky coz they are idempotent but can be multiply
-		 * successful, i.e., return handled=true. This means that merge
-		 * execution notifications may never be garbage collected if enqueued.
-		 * If not enqueued however, we may keep trying the merge forever here
-		 * and be unsuccessful even though the merge has been obviated (say
-		 * because the RC record has actually moved on). The only way to be
-		 * certain of obviation is to check the DB. We just enqueue for now to
-		 * ensure progress coz merges are rare operations anyway, so some
-		 * uncollected garbage is okay.
-		 */
 	}
 
 	private void waitUntilNotified(long timeout) {

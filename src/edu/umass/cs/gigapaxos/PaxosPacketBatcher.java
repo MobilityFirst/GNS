@@ -248,8 +248,18 @@ public class PaxosPacketBatcher extends ConsumerTask<PaxosPacket[]> {
 					(PValuePacket) mtask.msgs[0],
 					Util.arrayToIntSet(mtask.recipients));
 			// add rest into first, so index starts from 1
-			for (int i = 1; i < mtask.msgs.length; i++)
-				batchedCommit.addCommit((PValuePacket) mtask.msgs[i]);
+			for (int i = 1; i < mtask.msgs.length; i++) {
+				if (batchedCommit.ballot
+						.compareTo(((PValuePacket) mtask.msgs[i]).ballot) == 0)
+					batchedCommit.addCommit((PValuePacket) mtask.msgs[i]);
+				else {
+					// can only add same ballot decisions
+					this.enqueue(batchedCommit.toSingletonArray());
+					batchedCommit = new BatchedCommit(
+							(PValuePacket) mtask.msgs[i],
+							Util.arrayToIntSet(mtask.recipients));
+				}
+			}
 			this.enqueue(batchedCommit.toSingletonArray());
 		}
 		return SHORT_CIRCUIT_LOCAL ? local : null;  //local could still be null

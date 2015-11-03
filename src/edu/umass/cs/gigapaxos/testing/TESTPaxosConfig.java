@@ -275,6 +275,7 @@ public class TESTPaxosConfig {
 
 	private static void setupGroups() {
 		defaultGroup = new int[Math.min(3,  Config.getGlobalInt(TC.NUM_NODES))];
+		assert(defaultGroup.length>0) : Config.getGlobalInt(TC.NUM_NODES);
 		for (int i = 0; i < defaultGroup.length; i++)
 			defaultGroup[i] = Config.getGlobalInt(TC.TEST_START_NODE_ID) + i;
 		
@@ -324,6 +325,11 @@ public class TESTPaxosConfig {
 	public static void setSendReplyToClient(boolean b) {
 		reply_to_client = b;
 	}
+	
+	/**
+	 * 
+	 */
+	public static final boolean PAXOS_MANAGER_UNIT_TEST = false;
 
 	/**
 	 * @return True means send reply to client.
@@ -437,7 +443,8 @@ public class TESTPaxosConfig {
 	 */
 	public static int[] getGroup(String groupID) {
 		int[] members = groups.get(groupID);
-		return members != null ? members : defaultGroup;
+		assert(defaultGroup.length>0);
+		return members != null && members.length>0 ? members : defaultGroup;
 	}
 
 	/**
@@ -700,8 +707,8 @@ public class TESTPaxosConfig {
 						InetAddress.getByName(tokens[1].trim()));
 			}
 			// re-make default groups
-			Config.getConfig(TC.class).put(TC.NUM_NODES.toString(),
-					TESTPaxosConfig.getNodeConfig().getNodeIDs().size());
+			Config.getConfig(TC.class).put(TC.NUM_NODES,
+					TESTPaxosConfig.getFromPaxosConfig().getNodeIDs().size());
 			setupGroups();
 			reader.close();
 		} catch (IOException e) {

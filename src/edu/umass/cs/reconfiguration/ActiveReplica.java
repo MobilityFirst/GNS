@@ -362,17 +362,25 @@ public class ActiveReplica<NodeIDType> implements
 		return null; // no messaging if asynchronously fetching state
 	}
 
+	private static final boolean BATCH_CREATION = true;
+	/* This could be optimized further by supporting batch creation in 
+	 * PaxosManager.
+	 */
 	private boolean batchedCreate(StartEpoch<NodeIDType> startEpoch) {
 		boolean created = true;
-		for (String name : startEpoch.getNameStates().keySet()) {
-			assert (startEpoch.getEpochNumber() == 0);
-			created = created
-					&& this.appCoordinator.createReplicaGroup(
-							name,
-							startEpoch.getEpochNumber(), // 0
-							startEpoch.getNameStates().get(name),
-							startEpoch.getCurEpochGroup());
-		}
+		if (BATCH_CREATION)
+			return this.appCoordinator.createReplicaGroup(startEpoch.getNameStates(),
+					startEpoch.getCurEpochGroup());
+		else
+			for (String name : startEpoch.getNameStates().keySet()) {
+				assert (startEpoch.getEpochNumber() == 0);
+				created = created
+						&& this.appCoordinator.createReplicaGroup(
+								name,
+								startEpoch.getEpochNumber(), // 0
+								startEpoch.getNameStates().get(name),
+								startEpoch.getCurEpochGroup());
+			}
 		return created;
 	}
 

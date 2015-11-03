@@ -118,6 +118,20 @@ public class HotRestoreInfo {
 				+ (nodeSlots != null ? Util.arrayOfIntToString(nodeSlots)
 						: "null");
 	}
+	
+	public boolean isCreateHRI() {
+		return this.accSlot == 1 && this.version == 0 && this.accGCSlot == -1
+				&& this.coordBallot.ballotNumber == 0
+				&& this.nextProposalSlot == 1;
+	}
+
+	public static HotRestoreInfo createHRI(String paxosID, int[] members,
+			int coordinator) {
+		assert(Util.contains(coordinator, members));
+		return new HotRestoreInfo(paxosID, 0, members, 1, new Ballot(0,
+				coordinator), -1, new Ballot(0, coordinator), 1,
+				new int[members.length]);
+	}
 
 	public static void main(String[] args) {
 		int[] members = { 1, 4, 67 };

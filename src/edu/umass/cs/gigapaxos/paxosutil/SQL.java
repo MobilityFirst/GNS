@@ -51,7 +51,12 @@ public class SQL {
 		/**
 		 * 
 		 */
-		MYSQL
+		MYSQL,
+		
+		/**
+		 * 
+		 */
+		EMBEDDED_H2,
 	};
 
 	/**
@@ -63,7 +68,7 @@ public class SQL {
 	 * 
 	 */
 	public static final List<String> DUPLICATE_TABLE = new ArrayList<String>(
-			Arrays.asList("X0Y32", "42S01", "42000"));
+			Arrays.asList("X0Y32", "42S01", "42000", "42S11"));
 	/**
 	 * 
 	 */
@@ -75,9 +80,10 @@ public class SQL {
 	 * @param type
 	 * @return The string to use in create table statements.
 	 */
-	public static String getClobString(int size, SQLType type) {
+	public static String getBlobString(int size, SQLType type) {
 		switch (type) {
 		case EMBEDDED_DERBY:
+		case EMBEDDED_H2:
 			//return " clob(" + size + ")";
 			return " blob(" + size + ")";
 		case MYSQL:
@@ -98,6 +104,7 @@ public class SQL {
 	public static int getVarcharSize(SQLType type) {
 		switch (type) {
 		case EMBEDDED_DERBY:
+		case EMBEDDED_H2:
 			return 32672;
 		case MYSQL:
 			// 65535 in 5.1 onwards
@@ -117,6 +124,8 @@ public class SQL {
 			return "org.apache.derby.jdbc.EmbeddedDriver";
 		case MYSQL:
 			return "com.mysql.jdbc.Driver";
+		case EMBEDDED_H2:
+			return "org.h2.Driver";
 		}
 		Util.suicide("SQL type not recognized");
 		return null;
@@ -132,6 +141,8 @@ public class SQL {
 			return "jdbc:derby:";
 		case MYSQL:
 			return "jdbc:mysql://localhost/";
+		case EMBEDDED_H2:
+			return "jdbc:h2:";
 		}
 		Util.suicide("SQL type not recognized");
 		return null;

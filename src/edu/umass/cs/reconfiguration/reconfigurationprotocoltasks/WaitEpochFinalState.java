@@ -121,13 +121,14 @@ public class WaitEpochFinalState<NodeIDType>
 	}
 
 	private NodeIDType positionIterator() {
+		// firstTry is me or first prev epoch candidate
 		NodeIDType firstTry = this.startEpoch.getFirstPrevEpochCandidate() != null ? this.startEpoch
 				.getFirstPrevEpochCandidate() : this.appCoordinator.getMyID();
-		// if not contains me or not first time
+		// if not contains firstTry or not first time
 		if (!this.startEpoch.getPrevEpochGroup().contains(firstTry)
 				|| !this.first || (this.first = false))
 			return this.prevGroupIterator.next();
-		// else if contains me and first time
+		// else contains firstTry and first time
 		while (this.prevGroupIterator.hasNext()
 				&& !this.prevGroupIterator.next().equals(firstTry))
 			;

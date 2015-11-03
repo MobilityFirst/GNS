@@ -97,7 +97,7 @@ public class PrepareReplyAssembler {
 	private static PrepareReplyPacket[] fragment(PrepareReplyPacket preply,
 			int fragmentSize) {
 		Set<PrepareReplyPacket> fragments = new HashSet<PrepareReplyPacket>();
-		if (preply.getByteLength() <= fragmentSize) {
+		if (preply.getLengthEstimate() <= fragmentSize) {
 			fragments.add(preply);
 			return fragments.toArray(new PrepareReplyPacket[0]);
 		}

@@ -23,8 +23,9 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,6 +35,8 @@ import org.json.JSONObject;
 import edu.umass.cs.gigapaxos.InterfaceClientMessenger;
 import edu.umass.cs.gigapaxos.InterfaceReplicable;
 import edu.umass.cs.gigapaxos.InterfaceRequest;
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
+import edu.umass.cs.gigapaxos.PaxosManager;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket;
 import edu.umass.cs.gigapaxos.paxospackets.ProposalPacket;
 import edu.umass.cs.gigapaxos.paxospackets.RequestPacket;
@@ -44,6 +47,8 @@ import edu.umass.cs.nio.InterfaceSSLMessenger;
 import edu.umass.cs.nio.JSONNIOTransport;
 import edu.umass.cs.reconfiguration.reconfigurationutils.RequestParseException;
 import edu.umass.cs.utils.Config;
+import edu.umass.cs.utils.Keyable;
+import edu.umass.cs.utils.MultiArrayMap;
 import edu.umass.cs.utils.Util;
 
 /**
@@ -53,26 +58,37 @@ import edu.umass.cs.utils.Util;
  *         back the request to the client. But it does a number of other
  *         instrumentations and asserts for testing.
  */
-@SuppressWarnings("javadoc")
-public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMessenger {
-	public static final int MAX_STORED_REQUESTS = 1000;
+public class TESTPaxosApp implements InterfaceReplicable,
+		InterfaceClientMessenger {
+	private static final int MAX_STORED_REQUESTS = 1000;
 	private MessageDigest md = null;
 	private InterfaceNIOTransport<Integer, JSONObject> niot = null;
 
-	private ConcurrentHashMap<String, PaxosState> allState = new ConcurrentHashMap<String, PaxosState>();
+	private final MultiArrayMap<String, PaxosState> allState = ABSOLUTE_NOOP ? null
+			: new MultiArrayMap<String, PaxosState>(
+					Config.getGlobalInt(PC.PINSTANCES_CAPACITY));
 
-	private class PaxosState {
+	private class PaxosState implements Keyable<String> {
+		PaxosState(String paxosID) {
+			this.paxosID = paxosID;
+		}
+
+		public String getKey() {
+			return this.paxosID;
+		}
+
+		private final String paxosID;
 		private int seqnum = -1;
-		private String value = null;// "Initial state";
+		private String value = null;
 		private int numExecuted = 0;
-		private HashMap<Integer, String> committed = new HashMap<Integer, String>();
+		private HashMap<Integer, String> committed = null;
 	}
 
-	private static Logger log = Logger.getLogger(TESTPaxosApp.class
-			.getName());
+	private static Logger log = PaxosManager.getLogger();
 
-	// PaxosManager.getLogger();
-
+	/**
+	 * @param nio
+	 */
 	public TESTPaxosApp(JSONNIOTransport<Integer> nio) {
 		this();
 		try {
@@ -88,7 +104,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	}
 
 	// private because nio is necessary for testing
-	public TESTPaxosApp() {
+	private TESTPaxosApp() {
 		// app uses nio only to send, not receive, so no PacketDemultiplexer
 		try {
 			md = MessageDigest.getInstance("SHA");
@@ -100,12 +116,14 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	static {
 		TESTPaxosConfig.load();
 	}
-	private static final boolean ABSOLUTE_NOOP = Config.getGlobalBoolean(TESTPaxosConfig.TC.ABSOLUTE_NOOP_APP);
-	private static final long APP_DELAY = Config.getGlobalLong(TESTPaxosConfig.TC.TEST_APP_DELAY);
-	
+	private static final boolean ABSOLUTE_NOOP = Config
+			.getGlobalBoolean(TESTPaxosConfig.TC.ABSOLUTE_NOOP_APP);
+	private static final long APP_DELAY = Config
+			.getGlobalLong(TESTPaxosConfig.TC.TEST_APP_DELAY);
+
 	private boolean wasteTime(long usDelay) {
 		long nanoT = System.nanoTime();
-		while (System.nanoTime() - nanoT < usDelay*1000) {
+		while (System.nanoTime() - nanoT < usDelay * 1000) {
 			for (int i = 0; i < 100; i++)
 				Math.random();
 			try {
@@ -117,9 +135,11 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 				e.printStackTrace();
 			}
 		}
-		log.info(this + " handled request in " + (System.nanoTime() - nanoT)/1000 + "us");
+		log.info(this + " handled request in " + (System.nanoTime() - nanoT)
+				/ 1000 + "us");
 		return true;
 	}
+
 	public String toString() {
 		return this.getClass().getSimpleName() + this.getMyID();
 	}
@@ -129,18 +149,18 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	 * slot numbers, but this method takes as input a ProposalPacket as opposed
 	 * to a RequestPacket only for tetsing purposes.
 	 */
-	public boolean handleDecision(ProposalPacket requestPacket,
+	private boolean handleDecision(ProposalPacket requestPacket,
 			boolean doNotReplyToClient) {
-		if(APP_DELAY > 0) return wasteTime(APP_DELAY);
-		else if(ABSOLUTE_NOOP) 
+		if (APP_DELAY > 0)
+			return wasteTime(APP_DELAY);
+		else if (ABSOLUTE_NOOP)
 			return true;
-		
-		// else the older testing code 
-		boolean executed = false;
+
+		// else the older testing code
 		try {
 			String paxosID = requestPacket.getPaxosID();
 			PaxosState state = this.allState.putIfAbsent(paxosID,
-					state = new PaxosState());
+					state = new PaxosState(paxosID));
 
 			/*
 			 * Initialize seqnum upon first decision. We know it is the first
@@ -150,6 +170,8 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 			 */
 			if (state.seqnum == -1)
 				state.seqnum = requestPacket.slot;
+			else
+				state.seqnum++;
 
 			log.log(Level.FINE,
 					"Node{0} executing {1}; seqnum={2}, prev_state={3}",
@@ -163,7 +185,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 			 * the current state value that two RSMs executed the exact same set
 			 * of state transitions to arrive at that state.
 			 */
-			if(TESTPaxosConfig.shouldAssertRSMInvariant())
+			if (TESTPaxosConfig.shouldAssertRSMInvariant())
 				state.value = requestPacket.requestValue + digest(state.value);
 
 			/*
@@ -174,16 +196,25 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 			 * is then just incremented by one below for every executed
 			 * decision.
 			 */
-			//assert (state.seqnum == requestPacket.slot) : "state.seqnum = "
-				//	+ state.seqnum + " , requestPacket.slot = "
-					//+ requestPacket.slot;
-			/*
-			 * increment seqnum (to the next expected seqnum and
-			 * requestPacket.slot)
-			 */
-			state.committed.put(state.seqnum++, state.value);
-			allState.put(paxosID, state); // needed if state initialized above
-			executed = true;
+			assert (state.seqnum == requestPacket.slot) : "state.seqnum = "
+					+ state.seqnum + " , requestPacket.slot = "
+					+ requestPacket.slot;
+			// maintain executed sequence if shouldAssertRSMInvariant
+			if (TESTPaxosConfig.shouldAssertRSMInvariant()) {
+				if (state.committed == null)
+					state.committed = new LinkedHashMap<Integer, String>() {
+						private static final long serialVersionUID = 1L;
+						private static final int MAX_ENTRIES = 1000;
+
+						protected boolean removeEldestEntry(
+								Map.Entry<Integer, String> eldest) {
+							if (this.size() > MAX_ENTRIES)
+								return true;
+							return false;
+						}
+					};
+				state.committed.put(state.seqnum, state.value);
+			}
 			state.numExecuted++;
 
 			if (TESTPaxosConfig.shouldAssertRSMInvariant())
@@ -191,10 +222,10 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 						requestPacket.slot)) : requestPacket;
 			state.committed.remove(state.seqnum - MAX_STORED_REQUESTS); // GC
 
-			//synchronized (this) {
-			// needed only for paxos manager's unit-test
-				//this.notify(); 
-			//}
+			if (TESTPaxosConfig.PAXOS_MANAGER_UNIT_TEST)
+				synchronized (this) {
+					this.notify();
+				}
 			assert (requestPacket.requestID >= 0) : requestPacket.toString();
 			if (!doNotReplyToClient && niot != null) {
 				this.sendResponseToClient(requestPacket);
@@ -206,7 +237,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
 		}
-		return executed;
+		return true;
 	}
 
 	private void sendResponseToClient(ProposalPacket requestPacket)
@@ -236,6 +267,10 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 
 	@Override
 	public synchronized String getState(String paxosID) {
+		if (ABSOLUTE_NOOP)
+			return paxosID
+					+ ":"
+					+ Long.toHexString(((long) (Math.random() * Long.MAX_VALUE)));
 		PaxosState state = this.allState.get(paxosID);
 		if (state != null)
 			return state.value;
@@ -244,16 +279,16 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 
 	@Override
 	public synchronized boolean updateState(String paxosID, String value) {
-		PaxosState state = this.allState.get(paxosID);
-		if (state == null)
-			state = new PaxosState();
+		if(ABSOLUTE_NOOP) return true;
+		if (!allState.containsKey(paxosID))
+			allState.putIfAbsent(paxosID, new PaxosState(paxosID));
+		PaxosState state = allState.get(paxosID);
 		state.value = value;
 		state.seqnum = -1; // reset seqnum upon state transfer
-		allState.put(paxosID, state);
 		return true;
 	}
 
-	public synchronized int digest(String s) {
+	synchronized int digest(String s) {
 		// null check needed if null checkpoints are enabled
 		if (s == null)
 			return 0;
@@ -266,7 +301,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 		return dig;
 	}
 
-	public void shutdown() {
+	void shutdown() {
 		this.allState.clear();
 	}
 
@@ -283,6 +318,10 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	/*
 	 * Testing methods below.
 	 */
+	/**
+	 * @param paxosID
+	 * @return Number committed.
+	 */
 	public synchronized int getNumCommitted(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if (state != null)
@@ -290,6 +329,11 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 		return 0;
 	}
 
+	/**
+	 * @param paxosID
+	 * @return Number executed that in general may be different from number
+	 *         committed in case of checkpoint transfers.
+	 */
 	public synchronized int getNumExecuted(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if (state != null)
@@ -297,13 +341,17 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 		return 0;
 	}
 
-	public synchronized String getRequest(String paxosID, int reqnum) {
+	synchronized String getRequest(String paxosID, int reqnum) {
 		PaxosState state = this.allState.get(paxosID);
 		if (state != null)
 			return state.committed.get(reqnum);
 		return null;
 	}
 
+	/**
+	 * @param paxosID
+	 * @return Hash of current state.
+	 */
 	public synchronized int getHash(String paxosID) {
 		PaxosState state = this.allState.get(paxosID);
 		if (state != null)
@@ -311,10 +359,18 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 		return 0;
 	}
 
+	/**
+	 * @throws InterruptedException
+	 */
 	public synchronized void waitToFinish() throws InterruptedException {
 		this.wait();
 	}
 
+	/**
+	 * @param paxosID
+	 * @param slot
+	 * @throws InterruptedException
+	 */
 	public synchronized void waitToFinish(String paxosID, int slot)
 			throws InterruptedException {
 		PaxosState state = null;
@@ -323,7 +379,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 			this.wait();
 	}
 
-	public synchronized String toString(String paxosID) {
+	synchronized String toString(String paxosID) {
 		String s = "";
 		PaxosState state = this.allState.get(paxosID);
 		s += "[App" + this.niot.getMyID() + ":" + paxosID + ": " + "seqnum="
@@ -332,8 +388,8 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 		return s;
 	}
 
-	public boolean RSMInvariant(TESTPaxosApp app1,
-			TESTPaxosApp app2, String paxosID, int seqnum) {
+	boolean RSMInvariant(TESTPaxosApp app1, TESTPaxosApp app2, String paxosID,
+			int seqnum) {
 		// invariant makes sense only when not recovery
 		if (!TESTPaxosConfig.getCleanDB())
 			return true;
@@ -349,8 +405,8 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	}
 
 	// legitimate holes can be caused because of checkpoint transfers
-	private boolean hasHoles(TESTPaxosApp app1,
-			TESTPaxosApp app2, String paxosID, int seqnum) {
+	private boolean hasHoles(TESTPaxosApp app1, TESTPaxosApp app2,
+			String paxosID, int seqnum) {
 		for (int i = seqnum; i >= 0; i--)
 			if (app1.allState.get(paxosID).committed.get(i) == null
 					&& app2.allState.get(paxosID).committed.get(i) != null
@@ -373,7 +429,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	}
 
 	// check invariant at seqnum
-	public boolean RSMInvariant(String paxosID, int seqnum) {
+	boolean RSMInvariant(String paxosID, int seqnum) {
 		boolean invariant = true;
 		TESTPaxosApp[] replicas = AllApps.getReplicas(paxosID).toArray(
 				new TESTPaxosApp[0]);
@@ -388,7 +444,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	}
 
 	// check invariant at current frontier
-	public boolean RSMInvariant(String paxosID) {
+	boolean RSMInvariant(String paxosID) {
 		boolean invariant = true;
 		TESTPaxosApp[] replicas = AllApps.getReplicas(paxosID).toArray(
 				new TESTPaxosApp[0]);
@@ -403,7 +459,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 	}
 
 	// AllApps below is for testing
-	public static class AllApps {
+	static class AllApps {
 		// private static Set<TESTPaxosReplicable> appMap = new
 		// HashSet<TESTPaxosReplicable>();
 		private static HashMap<Integer, TESTPaxosApp> appMap = new HashMap<Integer, TESTPaxosApp>();
@@ -413,8 +469,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 			appMap.put(app.getMyID(), app);
 		}
 
-		private synchronized static Set<TESTPaxosApp> getReplicas(
-				String paxosID) {
+		private synchronized static Set<TESTPaxosApp> getReplicas(String paxosID) {
 			Set<TESTPaxosApp> replicas = new HashSet<TESTPaxosApp>();
 			for (TESTPaxosApp app : appMap.values()) {
 				if (app.allState.containsKey(paxosID))
@@ -456,7 +511,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 
 	@Override
 	public Set<IntegerPacketType> getRequestTypes() {
-		IntegerPacketType[] types = {PaxosPacket.PaxosPacketType.PAXOS_PACKET};
+		IntegerPacketType[] types = { PaxosPacket.PaxosPacketType.PAXOS_PACKET };
 		return new HashSet<IntegerPacketType>(Arrays.asList(types));
 	}
 
@@ -475,7 +530,7 @@ public class TESTPaxosApp implements InterfaceReplicable, InterfaceClientMesseng
 							+ request);
 	}
 
-	public boolean sendEchoResponse(RequestPacket request) {
+	boolean sendEchoResponse(RequestPacket request) {
 		try {
 			// arbitrary slot number of 0
 			ProposalPacket proposal = new ProposalPacket(0, request);

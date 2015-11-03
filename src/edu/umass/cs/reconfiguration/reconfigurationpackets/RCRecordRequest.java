@@ -151,7 +151,7 @@ public class RCRecordRequest<NodeIDType> extends
 				&& this.reqType.equals(RequestTypes.RECONFIGURATION_COMPLETE);
 	}
 
-	public boolean isDeleteIntentOrComplete() {
+	public boolean isDeleteIntentOrPrevDropComplete() {
 		return this.isDeleteIntent()
 				|| this.reqType
 						.equals(RequestTypes.RECONFIGURATION_PREV_DROPPED);

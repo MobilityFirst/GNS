@@ -220,7 +220,7 @@ public class PrepareReplyPacket extends PaxosPacket {
 		return this.createTime;
 	}
 
-	public int getByteLength() {
+	public int getLengthEstimate() {
 		int size = 0;
 		for (PValuePacket pvalue : this.accepted.values())
 			size += pvalue.lengthEstimate();

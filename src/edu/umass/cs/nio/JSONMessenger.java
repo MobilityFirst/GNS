@@ -187,7 +187,12 @@ public class JSONMessenger<NodeIDType> implements
 		if (this.clientMessenger != null
 				&& this.clientMessenger instanceof InterfaceNIOTransport)
 			((InterfaceNIOTransport<?, ?>) this.clientMessenger).stop();
-		for(int i=0; i<this.workers.length;i++) if(this.workers[i]!=null) this.workers[i].stop();
+		int stopped = 0;
+		for(int i=0; i<this.workers.length;i++) if(this.workers[i]!=null) {
+			this.workers[i].stop();
+			stopped++;
+		}
+		log.info(this + " stoppped self + " + stopped + " workers");
 	}
 
 	@SuppressWarnings("unchecked")

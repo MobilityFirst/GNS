@@ -18,6 +18,7 @@
 package edu.umass.cs.reconfiguration;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -313,6 +314,28 @@ public abstract class AbstractReplicaCoordinator<NodeIDType> implements
 	 */
 	public void setLargeCheckpoints() {
 		this.largeCheckpoints = true;
+	}
+	
+	/**
+	 * Default implementation that can be overridden for more
+	 * batching optimization.
+	 * 
+	 * @param nameStates
+	 * @param nodes
+	 * @return True if all groups successfully created.
+	 */
+	public boolean createReplicaGroup(Map<String,String> nameStates,
+			Set<NodeIDType> nodes) {
+		boolean created = true;
+		for (String name : nameStates.keySet()) {
+			created = created
+					&& this.createReplicaGroup(
+							name,
+							0,
+							nameStates.get(name),
+							nodes);
+		}
+		return created;
 	}
 
 	/*********************** End of private helper methods ************************/

@@ -134,8 +134,8 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 			throws JSONException {
 		MessageType message = null;
 		try {
-		message = processHeader(msg, header);
-		} catch(Exception e) {System.out.println(msg);}
+			message = processHeader(msg, header);
+		} catch(Exception e) {e.printStackTrace(); return false;}
 		Integer type = getPacketType(message);
 		if (type == null || !this.demuxMap.containsKey(type)) {
 			/*
@@ -150,8 +150,14 @@ public abstract class AbstractPacketDemultiplexer<MessageType> implements
 			// task better be lightning quick
 			tasker.run();
 		else
-			// task should still be non-blocking
-			executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
+			try {
+				// task should still be non-blocking
+				executor.schedule(tasker, 0, TimeUnit.MILLISECONDS);
+			} catch (RejectedExecutionException ree) {
+				if (!executor.isShutdown())
+					ree.printStackTrace();
+				return false;
+			}
 		/*
 		 * Note: executor.submit() consistently yields poorer performance than
 		 * scheduling at 0 as above even though they are equivalent. Probably
