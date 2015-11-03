@@ -445,8 +445,8 @@ public class AccountAccess {
         // prefix is the same for all acls so just pick one to use here
         json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl);
         // For active code
-        json.put(ActiveCode.ON_READ, new JSONArray());
-        json.put(ActiveCode.ON_WRITE, new JSONArray());
+        //json.put(ActiveCode.ON_READ, new JSONArray());
+        //json.put(ActiveCode.ON_WRITE, new JSONArray());
         // set up the default read access
         if (!(returnCode = handler.getIntercessor().sendFullAddRecord(guid, json)).isAnError()) {
           return new CommandResponse<String>(OKRESPONSE);
@@ -554,8 +554,8 @@ public class AccountAccess {
           // prefix is the same for all acls so just pick one to use here
           json.put(MetaDataTypeName.READ_WHITELIST.getPrefix(), acl); 
           // For active code
-          json.put(ActiveCode.ON_READ, new JSONArray());
-          json.put(ActiveCode.ON_WRITE, new JSONArray());
+          //json.put(ActiveCode.ON_READ, new JSONArray());
+          //json.put(ActiveCode.ON_WRITE, new JSONArray());
           handler.getIntercessor().sendFullAddRecord(guid, json);
           return new CommandResponse<String>(OKRESPONSE);
         }

@@ -4,11 +4,8 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.ActiveCode;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.CommandResponse;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.ACACTION;
@@ -27,9 +24,10 @@ import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientReques
  */
 public class Get extends GnsCommand {
 
-  /** Creates a Get instance.
-   * 
-   * @param module 
+  /**
+   * Creates a Get instance.
+   *
+   * @param module
    */
   public Get(CommandModule module) {
     super(module);
@@ -55,10 +53,9 @@ public class Get extends GnsCommand {
     String action = json.getString(ACACTION);
     String signature = json.getString(SIGNATURE);
     String message = json.getString(SIGNATUREFULLMESSAGE);
-
-    return new CommandResponse<>(
-            new JSONArray(
-                    ActiveCode.getCode(accountGuid, action, reader, signature, message, handler)).toString());
+    
+    return new CommandResponse<>(ActiveCode.getCode(accountGuid, action, reader, signature, message, handler));
+    //return new CommandResponse<>(new JSONArray(ActiveCode.getCode(accountGuid, action, reader, signature, message, handler)).toString());
   }
 
   @Override

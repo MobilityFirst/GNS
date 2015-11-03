@@ -3,7 +3,9 @@ package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-import edu.umass.cs.gns.utils.ResultValue;
+import edu.umass.cs.gns.utils.ValuesMap;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * Contains static fields and methods that implement activecode.
@@ -39,7 +41,7 @@ public class ActiveCode {
     }
   }
 
-        // THIS IS NOW DONE IN DIRECTLY IN AccountAccess.addGuid
+  // THIS IS NOW DONE IN DIRECTLY IN AccountAccess.addGuid
 //	/**
 //	 * Initializes the fields (called upon guid creation) to prevent undefined behavior
 //	 * @param guid
@@ -65,11 +67,22 @@ public class ActiveCode {
    * @param handler
    * @return
    */
-  public static NSResponseCode setCode(String guid, String action, String code, String writer, String signature, String message,
+  public static NSResponseCode setCode(String guid, String action, String code, String writer,
+          String signature, String message,
           ClientRequestHandlerInterface handler) {
-    String field = codeField(action);
-    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, code, null, 1,
-            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, writer, signature, message);
+    JSONObject json;
+    try {
+      json = new JSONObject();
+      json.put(codeField(action), code);
+    } catch (JSONException e) {
+      return NSResponseCode.ERROR;
+    }
+    NSResponseCode response = handler.getIntercessor().sendUpdateUserJSON(guid,
+            new ValuesMap(json), UpdateOperation.USER_JSON_REPLACE,
+            writer, signature, message);
+//    String field = codeField(action);
+//    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, code, null, 1,
+//            UpdateOperation.SINGLE_FIELD_REPLACE_ALL_OR_CREATE, writer, signature, message);
     return response;
   }
 
@@ -87,9 +100,12 @@ public class ActiveCode {
   public static NSResponseCode clearCode(String guid, String action, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
     String field = codeField(action);
-    String clear = null;
-    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, clear, null, 0,
-            UpdateOperation.SINGLE_FIELD_CLEAR, writer, signature, message);
+
+    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, "", null, 0,
+            UpdateOperation.SINGLE_FIELD_REMOVE_FIELD, writer, signature, message);
+    //String clear = null;
+//    NSResponseCode response = handler.getIntercessor().sendUpdateRecord(guid, field, clear, null, 0,
+//            UpdateOperation.SINGLE_FIELD_CLEAR, writer, signature, message);
     return response;
   }
 
@@ -104,14 +120,23 @@ public class ActiveCode {
    * @param handler
    * @return
    */
-  public static ResultValue getCode(String guid, String action, String reader, String signature, String message,
+  public static String getCode(String guid, String action, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {
     String field = codeField(action);
-    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
-    if (!result.isError()) {
-      return new ResultValue(result.getArray(field));
-    } else {
-      return new ResultValue();
+    QueryResult<String> guidResult = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader,
+            signature, message, ColumnFieldType.USER_JSON);
+    try {
+      if (!guidResult.isError()) {
+        return guidResult.getValuesMap().getString(field);
+      }
+    } catch (JSONException e) {
     }
+    return GnsProtocolDefs.NULLRESPONSE;
+//    QueryResult result = handler.getIntercessor().sendSingleFieldQuery(guid, field, reader, signature, message, ColumnFieldType.LIST_STRING);
+//    if (!result.isError()) {
+//      return new ResultValue(result.getArray(field));
+//    } else {
+//      return new ResultValue();
+//    }
   }
 }

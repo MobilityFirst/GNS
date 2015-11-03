@@ -22,7 +22,8 @@ import java.util.Set;
 public enum UpdateOperation {
   //  Args:         singleField, skipread, upsert
   /**
-   * Updates the value of field using the JSON Object. Fields already in the record not in the JSON Object are not touched.
+   * Updates the value of field using the JSON Object. 
+   * Fields already in the record not in the JSON Object are not touched.
    */
   USER_JSON_REPLACE(false, true, false), // doesn't require a read
   /**

@@ -152,7 +152,7 @@ public class ValuesMap extends JSONObject {
    * index subfields in the destination.
    *
    * @param destination
-   * @return
+   * @return true if the destination was updated
    */
   public boolean writeToValuesMap(ValuesMap destination) {
     boolean somethingChanged = false;
