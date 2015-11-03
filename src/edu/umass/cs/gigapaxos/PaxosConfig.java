@@ -221,6 +221,11 @@ public class PaxosConfig {
 		 * Whether request batching is enabled.
 		 */
 		BATCHING_ENABLED(true),
+		
+		/**
+		 * 
+		 */
+		MAX_LOG_FILE_SIZE (64*1024*1024),
 
 		/**
 		 * Wait period for forcibly killing a lower paxos instance version in

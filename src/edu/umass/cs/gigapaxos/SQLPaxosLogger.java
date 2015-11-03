@@ -770,7 +770,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		}
 	}
 
-	private static final int MAX_LOG_FILE_SIZE = 64 * 1024 * 1024;
+	private static final int MAX_LOG_FILE_SIZE = Config.getGlobalInt(PC.MAX_LOG_FILE_SIZE);
 
 	/*
 	 * Deletes all but the most recent checkpoint for the RC group name. We
