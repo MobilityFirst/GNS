@@ -206,6 +206,14 @@ public class PaxosConfig {
 		DEACTIVATION_PERIOD(60000), // 30s default
 
 		/**
+		 * Limits the rate of pausing to not interfere with request processing. But
+		 * it has the downside of increasing the total pause time as well as limiting
+		 * the paxos instance creation rate. For example, pausing a million instances
+		 * will take 1000s with the default rate limit of 1000/s.
+		 */
+		PAUSE_RATE_LIMIT(1000), // /s
+
+		/**
 		 * Refer to documentation in {@link AbstractReconfiguratorDB}.
 		 */
 		MAX_FINAL_STATE_AGE(3600 * 1000),

@@ -17,7 +17,6 @@
  */
 package edu.umass.cs.gigapaxos.paxosutil;
 
-import edu.umass.cs.gigapaxos.PaxosInstanceStateMachine;
 import edu.umass.cs.utils.Util;
 
 /**

@@ -188,7 +188,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 
 	PaxosInstanceStateMachine(String groupId, int version, int id,
 			Set<Integer> gms, InterfaceReplicable app, String initialState,
-			PaxosManager<?> pm, HotRestoreInfo hri, boolean missedBirthing) {
+			PaxosManager<?> pm, final HotRestoreInfo hri, boolean missedBirthing) {
 
 		/*
 		 * Final assignments: A paxos instance is born with a paxosID, version
@@ -208,12 +208,12 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 		 * in PaxosCoordinatorState (for coordinators) that inherits from
 		 * PaxosInstanceState.
 		 */
-		if (pm != null && hri == null) {
+		if (pm != null && hri == null)
 			initiateRecovery(initialState, missedBirthing);
-		} else if (hri != null && hotRestore(hri) && initialState != null)
-			// batched creation
-			this.putInitialState(initialState);
-		else
+		else if ((hri != null) && hotRestore(hri)) {
+			if (initialState != null) // batched creation
+				this.putInitialState(initialState);
+		} else if (pm == null)
 			testingNoRecovery(); // used only for testing size
 		assert (hri == null || initialState == null || hri.isCreateHRI()) : "Can not specify initial state for existing, paused paxos instance";
 		incrInstanceCount(); // for instrumentation
@@ -441,7 +441,7 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 			log.log(Level.INFO, "{0} stopped; dropping {1}", new Object[] {
 					this, (pp != null ? pp.getSummary() : json) });
 			return;
-		}
+		} 
 
 		// recovery means we won't send any replies
 		boolean recovery = json != null ? PaxosPacket.isRecovery(json)
@@ -887,14 +887,14 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 						this,
 						prepareReply.ballot.compareTo(prepare.ballot) > 0 ? "preempting"
 								: "acking", prepare.ballot,
-						prepareReply.getSummary(log.isLoggable(Level.INFO)) });
+						prepareReply.getSummary(log.isLoggable(Level.FINE)) });
 
 		MessagingTask mtask = prevBallot.compareTo(prepareReply.ballot) < 0 ?
 		// log only if not already logged (if my ballot got upgraded)
 		new LogMessagingTask(prepare.ballot.coordinatorID,
 		// ensures large prepare replies are fragmented
 				PrepareReplyAssembler.fragment(prepareReply), prepare)
-				// else just send preempting prepareReply; no need to fragment
+				// else just send prepareReply
 				: new MessagingTask(prepare.ballot.coordinatorID, PrepareReplyAssembler.fragment(prepareReply));
 		for (PaxosPacket pp : mtask.msgs)
 			assert (((PrepareReplyPacket) pp).getLengthEstimate() < NIOTransport.MAX_PAYLOAD_SIZE) : Util
@@ -2246,7 +2246,11 @@ public class PaxosInstanceStateMachine implements Keyable<String>, Pausable {
 				if(slot - maxSlot > 0) maxSlot = slot;
 			}
 		}
-		if(minSlot==null) return; // nothing to do
+		
+		if (minSlot == null
+				|| (minSlot - this.paxosState.getMaxAcceptedSlot() > 0))
+			return; // nothing to do
+
 		// get logged accepts for meta commit slots
 		Map<Integer, PValuePacket> accepts = this.paxosManager.getPaxosLogger()
 				.getLoggedAccepts(this.getPaxosID(), this.getVersion(),

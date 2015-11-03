@@ -176,8 +176,6 @@ public class Reconfigurator<NodeIDType> implements
 
 	@Override
 	public boolean handleMessage(JSONObject jsonObject) {
-		log.fine(this + " received " + jsonObject);
-
 		try {
 			ReconfigurationPacket.PacketType rcType = ReconfigurationPacket
 					.getReconfigurationPacketType(jsonObject);
@@ -345,9 +343,6 @@ public class Reconfigurator<NodeIDType> implements
 		return null;
 	}
 
-	static {
-		ReconfigurationConfig.noop();
-	}
 	private static final boolean TWO_PAXOS_RC = Config.getGlobalBoolean(ReconfigurationConfig.RC.TWO_PAXOS_RC);
 	/**
 	 * Simply hand over DB request to DB. The only type of RC record that can

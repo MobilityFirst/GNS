@@ -327,8 +327,8 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		final Diskable<String,LogIndex> disk;
 
 		MessageLogDiskMap(Diskable<String,LogIndex> disk) {
-			super(new MultiArrayMap<String, LogIndex>(
-					Config.getGlobalInt(PC.PINSTANCES_CAPACITY)));
+			//super(new MultiArrayMap<String, LogIndex>(Config.getGlobalInt(PC.PINSTANCES_CAPACITY)));
+			super(128*1024);
 			this.disk = disk;
 		}
 		
@@ -1510,7 +1510,7 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				batch.add(i);
 				incrTotalCheckpoints();
 				log.log(shouldLogCheckpoint() ? Level.INFO : Level.FINE,
-						"{0} checkpointed[] ({1}:{2}, {3}{4}, {5}, ({6}, {7}) [{8}]) {9}",
+						"{0} checkpointed> ({1}:{2}, {3}{4}, {5}, ({6}, {7}) [{8}]) {9}",
 						new Object[] {
 								this,
 								task.paxosID,
@@ -2850,36 +2850,50 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 			DelayProfiler.updateDelay("getLoggedMessages", t);
 		return messages;
 	}
-	private String getJournaledMessage(String logfile, long offset, int length, RandomAccessFile raf)
-			throws IOException {
+
+	private String getJournaledMessage(String logfile, long offset, int length,
+			RandomAccessFile raf) throws IOException {
 		assert (logfile != null);
 		if (!new File(logfile).exists())
 			return null;
 		boolean locallyOpened = false;
-		if(raf==null) {
+		if (raf == null) {
 			locallyOpened = true;
 			raf = new RandomAccessFile(logfile, "r");
 		}
-		raf.seek(offset);
-		int readLength = raf.readInt();
 		boolean error = false;
+		String msg = null;
 		try {
-			assert (readLength == length) : this + " : " + readLength + " != "
-					+ length;
-		} catch (Error e) {
-			error = true;
-			log.severe(this + ": " + e);
+			raf.seek(offset);
+			assert (raf.length() > offset) : this + " " + raf.length() + " <= " + offset
+					+ " while reading logfile " + logfile;
+			int readLength = raf.readInt();
+			try {
+				assert (readLength == length) : this + " : " + readLength
+						+ " != " + length;
+			} catch (Error e) {
+				error = true;
+				log.severe(this + ": " + e);
+				e.printStackTrace();
+			}
+			int bufLength = length;
+			byte[] buf = new byte[bufLength];
+			raf.readFully(buf);
+			if (JOURNAL_COMPRESSION)
+				buf = inflate(buf);
+			msg = new String(buf, CHARSET);
+		} catch (IOException | Error e) {
+			log.log(Level.INFO,
+					"{0} incurred IOException while retrieving journaled message {1}:{2}",
+					new Object[] { this, logfile, offset +":"+length });
 			e.printStackTrace();
+			if (locallyOpened)
+				raf.close();
+			throw e;
 		}
-		int bufLength = length;
-		byte[] buf = new byte[bufLength];
-		raf.readFully(buf);
-		if(JOURNAL_COMPRESSION) buf = inflate(buf);
-		if(locallyOpened) raf.close();
-		String msg = new String(buf, CHARSET);
 		log.log(error ? Level.INFO : Level.FINEST,
-				"{0} returning journaled message from {1}:{2}:{3} = [{4}]",
-				new Object[] { this, logfile, offset, length, msg });
+				"{0} returning journaled message from {1}:{2} = [{3}]",
+				new Object[] { this, logfile, offset+":"+length, msg });
 		return msg;
 	}
 	
@@ -2900,19 +2914,21 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 		RandomAccessFile raf = null;
 		String filename = null;
 		for (FileOffsetLength fol : fols) {
-			if (raf == null) {
-				raf = new RandomAccessFile(fol.file, "r");
-				filename = fol.file;
+			try {
+				if (raf == null) {
+					raf = new RandomAccessFile(filename = fol.file, "r");
+				} else if (!filename.equals(fol.file)) {
+					raf.close();
+					raf = new RandomAccessFile(filename = fol.file, "r");
+				}
+				logStrings.add(this.getJournaledMessage(fol.file, fol.offset,
+						fol.length, raf));
+			} catch(IOException e) {
+				if (raf != null)
+					raf.close();
+				raf = null;
 			}
-			else if(!filename.equals(fol.file)) {
-				raf.close();
-				raf =  new RandomAccessFile(fol.file, "r");
-			}
-			logStrings.add(this.getJournaledMessage(fol.file, fol.offset,
-					fol.length, raf));
-
 		}
-		if(raf!=null) raf.close();
 		return logStrings.toArray(new String[0]);
 	}
 
@@ -3369,11 +3385,16 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 						maxSlot) : logIndex.getLoggedDecisions(firstSlot,
 						maxSlot)));
 			if (logEntries == null || logEntries.isEmpty()) {
-				log.log(Level.INFO,
-						"{0} found no {1} for {2}:[{3},{4}]; logIndex = {5}",
-						new Object[] { this,
+				log.log(Level.FINE,
+						"{0} found no {1} for {2}:[{3},{4}]",
+						new Object[] {
+								this,
 								(PaxosPacketType.getPaxosPacketType(type)),
-								paxosID, firstSlot, maxSlot, logIndex });
+								paxosID,
+								firstSlot,
+								maxSlot,
+								logIndex != null ? logIndex.getSummary(log
+										.isLoggable(Level.FINE)) : null });
 				return accepts;
 			}
 
@@ -3386,15 +3407,18 @@ public class SQLPaxosLogger extends AbstractPaxosLogger {
 				logMsgStrings = this.getJournaledMessage(fols
 						.toArray(new FileOffsetLength[0]));
 			} catch (IOException e) {
-				log.severe(this
-						+ " incurred IOException while getting logged accepts for "
+				log.severe(this + " incurred IOException while getting logged "
+						+ PaxosPacketType.getPaxosPacketType(type) + "s for "
 						+ paxosID);
 				e.printStackTrace();
 			}
 			if (logMsgStrings == null || logMsgStrings.length == 0) {
-				log.severe(this + " found no "
-						+ (PaxosPacketType.getPaxosPacketType(type)) + " for ["
-						+ firstSlot + ", " + maxSlot + "]");
+				log.log(Level.SEVERE,
+						"{0} found no journaled {1} for {2}:[{3},{4}] despite logIndex = {5}",
+						new Object[] { this,
+								(PaxosPacketType.getPaxosPacketType(type)),
+								paxosID, firstSlot, maxSlot,
+								logIndex.getSummary(true) });
 				return accepts;
 			}
 		}

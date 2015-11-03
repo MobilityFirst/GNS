@@ -10,17 +10,20 @@ import java.util.Set;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import edu.umass.cs.gigapaxos.PaxosConfig.PC;
 import edu.umass.cs.gigapaxos.SQLPaxosLogger;
 import edu.umass.cs.gigapaxos.paxospackets.PaxosPacket.PaxosPacketType;
+import edu.umass.cs.utils.Config;
 import edu.umass.cs.utils.DelayProfiler;
 import edu.umass.cs.utils.Keyable;
+import edu.umass.cs.utils.Pausable;
 import edu.umass.cs.utils.Util;
 
 /**
  * @author arun
  *
  */
-public class LogIndex implements Keyable<String>, Serializable {
+public class LogIndex implements Keyable<String>, Serializable, Pausable {
 
 	/**
 	 * 
@@ -330,8 +333,7 @@ public class LogIndex implements Keyable<String>, Serializable {
 			int type) {
 		if (slot - this.gcSlot <= 0) {
 			return false;
-		}
-		else if (type == PaxosPacketType.PREPARE.getInt()) {
+		} else if (type == PaxosPacketType.PREPARE.getInt()) {
 			// we only need the highest prepare
 			for (LogIndexEntry entry : this.log) {
 				if (entry.ballotNum - ballotNum > 0
@@ -341,6 +343,31 @@ public class LogIndex implements Keyable<String>, Serializable {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * @param makeObject
+	 * @return Summary string.
+	 */
+	public Object getSummary(boolean makeObject) {
+		if (!makeObject)
+			return null;
+		return new Object() {
+			public String toString() {
+				String s = "";
+				s += LogIndex.this.paxosID + ":" + LogIndex.this.version + ":"
+						+ LogIndex.this.minLogfile + ":" + LogIndex.this.gcSlot;
+				if (LogIndex.this.log != null && !LogIndex.this.log.isEmpty()) {
+					s += ":[";
+					for (LogIndexEntry entry : LogIndex.this.log) {
+						s += (PaxosPacketType.getPaxosPacketType(entry.type)
+								.toString().substring(0, 1) + entry.slot);
+					}
+					s += "]";
+				}
+				return s;
+			}
+		};
 	}
 
 	/**
@@ -361,4 +388,11 @@ public class LogIndex implements Keyable<String>, Serializable {
 				"ISO-8859-1"));
 	}
 
+	private static final long DEACTIVATION_PERIOD = Config
+			.getGlobalLong(PC.DEACTIVATION_PERIOD);
+
+	@Override
+	public boolean isPausable() {
+		return System.currentTimeMillis() - this.lastActive > DEACTIVATION_PERIOD;
+	}
 }

@@ -57,7 +57,6 @@ public class TESTPaxosClient {
 
 	private static int totalNoopCount = 0;
 
-	private static int numSentRequests = 0; 
 	private static int numRequests = 0; // used only for latency
 	private static long totalLatency = 0;
 	private static double movingAvgLatency = 0;
@@ -65,9 +64,6 @@ public class TESTPaxosClient {
 	private static int numRtxReqs = 0;
 	private static int rtxCount = 0;
 
-	private static synchronized void incrTotalSent() {
-		numSentRequests++;
-	}
 	private static synchronized void incrTotalLatency(long ms) {
 		totalLatency += ms;
 		numRequests++;
@@ -332,7 +328,6 @@ public class TESTPaxosClient {
 				e.printStackTrace();
 			}
 		}
-		incrTotalSent();
 		urc(id);
 		// retransmit if enabled
 		if (TESTPaxosConfig.ENABLE_CLIENT_REQ_RTX)
@@ -472,12 +467,12 @@ public class TESTPaxosClient {
 				.println("done "
 						+ (warmup ? ""
 								: "sending "
-										+ numSentRequests
+										+ numReqs
 										+ " requests in "
 										+ Util.df((System.currentTimeMillis() - initTime) / 1000.0)
 										+ " secs; actual sending rate = "
 										+ Util.df(mostRecentSentRate) + "/s"
-						// + " \n " + reqCounts
+						 + " \n " + reqCounts
 						));
 	}
 	protected static void waitForResponses(TESTPaxosClient[] clients,

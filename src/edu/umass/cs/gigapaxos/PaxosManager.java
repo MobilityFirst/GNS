@@ -277,12 +277,12 @@ public class PaxosManager<NodeIDType> {
 						instances.put(request.requestID, request.getPaxosID() + ":"
 								+ request.getSummary());
 					log.log(Level.INFO,
-							"{0} |outstanding|={1}; {2}",
+							"{0} |outstanding|={1}; {2}; |unpaused|={3}",
 							new Object[] {
 									PaxosManager.this,
 									PaxosManager.this.outstanding.requests
 											.size(),
-									Util.truncatedLog(instances.entrySet(), 10) });
+									Util.truncatedLog(instances.entrySet(), 10), PaxosManager.this.pinstances.size() });
 					if (!PaxosManager.this.outstanding.requests.isEmpty()
 							&& PaxosManager.this.outstanding.requests instanceof GCConcurrentHashMap)
 						((GCConcurrentHashMap<Long, RequestPacket>) PaxosManager.this.outstanding.requests)
@@ -527,7 +527,7 @@ public class PaxosManager<NodeIDType> {
 		pism = new PaxosInstanceStateMachine(paxosID, version, myID,
 				this.integerMap.put(gms), app != null ? app : this.myApp,
 				initialState, this, hri, missedBirthing);
-
+		
 		pinstances.put(paxosID, pism);
 		this.notifyUponCreation();
 		assert (this.getInstance(paxosID, false, false) != null);
@@ -795,15 +795,14 @@ public class PaxosManager<NodeIDType> {
 
 				PaxosInstanceStateMachine pism = this.getInstance(request
 						.getPaxosID());
-								
+						
 				log.log(Level.FINEST,
 						"{0} received paxos message for retrieved instance {1} : {2}",
 						new Object[] {
 								this,
 								pism,
 								request.getSummary(log.isLoggable(Level.FINEST)) });
-				if (pism != null && pism.getVersion()==request.getVersion() && !pism.isStopped())
-					// version checked internally
+				if ((pism != null) && (pism.getVersion()==request.getVersion()) && (!pism.isStopped())) 
 					pism.handlePaxosMessage(request);
 				else
 					// for recovering group created while crashed
@@ -817,7 +816,6 @@ public class PaxosManager<NodeIDType> {
 		} finally {
 			setProcessing(false);
 		}
-
 	}
 
 	private void processFailureDetection(
@@ -1535,10 +1533,11 @@ public class PaxosManager<NodeIDType> {
 			found = true;
 			assert (pri.getPaxosID() != null);
 			PaxosInstanceStateMachine pism = getInstance(pri.getPaxosID());
-			if (pism != null)
+			if (pism != null) 
 				pism.setActive();
-			log.log(Level.INFO, "{0} recovered paxos instance {1}",
-					new Object[] { this, pism.toStringLong() });
+			Boolean isActive = pism!=null ? pism.isActive() : null;
+			log.log(Level.INFO, "{0} recovered paxos instance {1}; isActive = {2} ",
+					new Object[] { this, pism.toStringLong(), isActive });
 		}
 		this.paxosLogger.closeReadAll(); // releases lock
 
@@ -1891,6 +1890,7 @@ public class PaxosManager<NodeIDType> {
 		}
 		this.stringLocker.remove(paxosID);
 
+		if(restored!=null) assert(restored.isActive());
 		if(restored!=null) DelayProfiler.updateDelay("unpause", unpauseInitTime);
 		return restored;
 	}
@@ -2264,13 +2264,30 @@ public class PaxosManager<NodeIDType> {
 	}
 
 	private static final int FORCE_PAUSE_FACTOR = 20;
-	private void deactivate() {
+	private static final double PAUSE_RATE_LIMIT = Config.getGlobalDouble(PC.PAUSE_RATE_LIMIT);
+
+	/*
+	 * We currently make a periodic pass over all active instances to sync and
+	 * check for deactivation. However, deactivation can be delegated to a
+	 * general-purpose DiskMap like structure and can be done more efficiently
+	 * in *expectation* than a full active sweep (at a ~2x higher memory cost)
+	 * every iteration. The sync also does not need a sweep if we maintain a
+	 * separate set of paxosIDs (with a commensurate memory cost) that are not
+	 * caught up and we sync just those. A sweep thread (like below or in
+	 * DiskMap) is needed in order to have the benefit of reducing the memory
+	 * footprint down to as small as necessary in steady-state without slowing
+	 * down the critical path. The bad case for a sweep is when most of the
+	 * mapped instances are active, so the sweeps end up being redundant; it is
+	 * unclear if this actually affects performance much given the low priority
+	 * hint for the thread and the explict rate limit. 
+	 */
+	private void syncAndDeactivate() {
 		if (isClosed() || this.pinstances.size() == 0)
 			return;
 		if(!this.shouldTryDeactivation()) return;
 		
 		long t0 = System.currentTimeMillis();
-		RateLimiter rateLimiter = new RateLimiter(1000);
+		RateLimiter rateLimiter = new RateLimiter(PAUSE_RATE_LIMIT);
 		log.log(Level.FINE,
 				"{0} initiating deactivation attempt, |activePaxii| = {1}",
 				new Object[] { this, this.pinstances.size() });
@@ -2299,12 +2316,9 @@ public class PaxosManager<NodeIDType> {
 				 * happening, then it has no reason to do anything but will
 				 * remain unnecessarily active; the sync here allows it to
 				 * potentially catch up and possibly be paused in the next
-				 * deactivation round if there is still no action by then.
-				 * 
-				 * The sync is also useful irrespective of whether or not the
-				 * instance is caught up for pausability as it simply allows all
-				 * active paxos instances to infrequently check for missing
-				 * decisions even if no new decisions are being generated.
+				 * deactivation round if there is still no action by then. The
+				 * sync is useful irrespective of whether or not the instance is
+				 * caught up for pausability
 				 * 
 				 * Overhead: This sync imposes a message overhead of up to A
 				 * messages A is the number of active paxos instances. For
@@ -2344,7 +2358,9 @@ public class PaxosManager<NodeIDType> {
 				 * number of paxos instances in the first place.
 				 */
 				this.syncPaxosInstance(pism, false);
-				rateLimiter.record();
+				// rate limit if well under capacity
+				if (this.pinstances.size() < this.pinstances.capacity() / 2)
+					rateLimiter.record();
 				// if (pause(pism)!=null) paused.add(paxosID);
 				batch.put(pism.getPaxosID(), pism);
 				if (batch.size() >= PAUSE_BATCH_SIZE) {
@@ -2398,7 +2414,7 @@ public class PaxosManager<NodeIDType> {
 		public void run() {
 			Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
 			try {
-				deactivate();
+				syncAndDeactivate();
 			} catch (Exception e) {
 				// must continue running despite any exceptions
 				e.printStackTrace();

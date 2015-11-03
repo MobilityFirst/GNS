@@ -85,7 +85,7 @@ public class PaxosAcceptor {
 	private int ballotCoord = -1;
 	private int acceptedGCSlot = -1; // slot up to which accepted pvalues are
 										// garbage-collected
-	private byte state = (byte) STATES.RECOVERY.ordinal(); // initial state is
+	protected byte state = (byte) STATES.RECOVERY.ordinal(); // initial state is
 															// recovery
 
 	/*
@@ -399,6 +399,18 @@ public class PaxosAcceptor {
 		return maxSlot;
 	}
 
+	protected synchronized int getMaxAcceptedSlot() {
+		if (this.isStopped() || this.acceptedProposals.isEmpty())
+			return this.getSlot() - 1;
+
+		int maxSlot = this.getSlot() - 1;
+		for (int i : this.acceptedProposals.keySet()) {
+			if (i - maxSlot > 0)
+				maxSlot = i;
+		}
+		return maxSlot;
+	}
+
 	protected synchronized boolean caughtUp() {
 		return this.committedRequests.isEmpty()
 		/*
@@ -584,11 +596,11 @@ public class PaxosAcceptor {
 		FULL, ACCEPTOR
 	};
 
-	private static int testingCreateAcceptor(int size, int id,
+	private static int testingCreateInstance(int size, int id,
 			Set<Integer> group, InstanceType testMode) {
 		PaxosInstanceStateMachine[] pismarray = null;
-		MultiArrayMap<String, PaxosInstanceStateMachine> pismMap = new MultiArrayMap<String, PaxosInstanceStateMachine>(
-				size);
+		//LinkedHashMap<String, PaxosInstanceStateMachine> pismMap = new LinkedHashMap<String, PaxosInstanceStateMachine>(size);
+		MultiArrayMap<String, PaxosInstanceStateMachine> pismMap = new MultiArrayMap<String, PaxosInstanceStateMachine>(size);
 		PaxosAcceptor[] pasarray = null;
 		int j = 1;
 		System.out.print("Number of created instances: ");
@@ -602,8 +614,7 @@ public class PaxosAcceptor {
 						pismarray = new PaxosInstanceStateMachine[size];
 					pismarray[i] = new PaxosInstanceStateMachine(ID + i, i,
 							(i % 3 == 0 ? coord : id), group, null, null, null,
-							null, false);
-					pismMap.put(pismarray[i].getKey(), pismarray[i]);
+							null, false);					pismMap.put(pismarray[i].getKey(), pismarray[i]);
 					pismarray[i].testingInit(0);
 				} else if (testMode.equals(InstanceType.ACCEPTOR)) {
 					if (pasarray == null)
@@ -665,7 +676,7 @@ public class PaxosAcceptor {
 			}
 			System.out.println("verified. \nTesting in progress...");
 
-			int numCreated = testingCreateAcceptor(size, 24, group,
+			int numCreated = testingCreateInstance(size, 24, group,
 					InstanceType.FULL);
 			System.out.println("\nSuccessfully created "
 					+ ((numCreated / 100000) / 10.0) + " million *inactive* "

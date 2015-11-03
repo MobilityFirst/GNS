@@ -4,6 +4,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -19,16 +20,12 @@ import java.util.logging.Logger;
  *            This class implements a cuckoo hashmap for storing objects
  *            implementing the Keyable<K> interface. It's main benefit is that
  *            it adds ~5 bytes of extra overhead per object (compared to
- *            {@code util.java.HashMap} that uses hundreds of bytes of
- *            additional overhead).
+ *            {@code util.java.HashMap} or other that can use up to hundreds of
+ *            bytes of additional overhead).
  *            <p>
  * 
- *            This map does not support the Map<K,V> interface, in particular,
- *            the keySet() and values() methods because using a Set
- *            representation defeats the memory-efficiency goal. It does support
- *            the more common get, put, remove, containsKey, containsValue
- *            methods, and supports two ways of iterating over the values in
- *            the map.  The first is a more traditional iterator. The second is a
+ *            It supports two ways of iterating over the values in the map. The
+ *            first is a more traditional iterator. The second is a
  *            non-fail-fast iterator that allows iteration as well as
  *            {@code remove} concurrently with other put/remove operations. The
  *            iteration may miss concurrently added elements (but will not
@@ -37,7 +34,8 @@ import java.util.logging.Logger;
  *            "approximate" sweep over the entire map.
  */
 
-public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, ConcurrentMap<K,V> {
+public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>,
+		ConcurrentMap<K, V> {
 	private static final float SHRINKAGE = 0.75F;
 	private static final int LEVELS = 6;
 	private final int arraySize;
@@ -82,6 +80,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 	public int capacity() {
 		return this.arraySize;
 	}
+
 	/**
 	 * @param key
 	 * @param value
@@ -102,7 +101,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 				else
 					log.log(Level.FINE, "{0} overwrote {1} in [{2},{3}]",
 							new Object[] { this, value, level, index });
-				prev = (V)(array[index]);
+				prev = (V) (array[index]);
 				array[index] = value;
 				bitsets[level].set(index);
 				inserted = true;
@@ -144,13 +143,14 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 	public synchronized boolean containsKey(Object key) {
 		return (key != null && get(key) != null);
 	}
+
 	/**
 	 * @param value
 	 * @return True if value present.
 	 */
 	public synchronized boolean containsValue(Object value) {
-		return (value != null && (value instanceof Keyable<?>) && get(((Keyable<?>) value)
-				.getKey()).equals(value));
+		return (value != null && (value instanceof Keyable<?>) && get(
+				((Keyable<?>) value).getKey()).equals(value));
 	}
 
 	/**
@@ -209,54 +209,417 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 			bitset.clear();
 		this.size = 0;
 	}
-	
+
 	@Override
 	public boolean isEmpty() {
-		return this.size()==0;
+		return this.size() == 0;
 	}
 
 	@Override
 	public synchronized void putAll(Map<? extends K, ? extends V> m) {
-		for(K key : m.keySet())
+		for (K key : m.keySet())
 			this.put(key, m.get(key));
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Set<K> keySet() {
-		throw new RuntimeException(
-				"Not implemented yet; use iterator() or concurrentIterator() to iterate over keys or values");
+		return new Set<K>() {
+
+			@Override
+			public int size() {
+				return MultiArrayMap.this.size();
+			}
+
+			@Override
+			public boolean isEmpty() {
+				return MultiArrayMap.this.isEmpty();
+			}
+
+			@Override
+			public boolean contains(Object o) {
+				return MultiArrayMap.this.containsKey(o);
+			}
+
+			@Override
+			public Iterator<K> iterator() {
+				final Iterator<V> iterV = MultiArrayMap.this.iterator();
+				return new Iterator<K>() {
+
+					@Override
+					public boolean hasNext() {
+						return iterV.hasNext();
+					}
+
+					@Override
+					public K next() {
+						return iterV.next().getKey();
+					}
+				};
+			}
+
+			@Override
+			public Object[] toArray() {
+				Set<K> keys = new HashSet<K>();
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					if (value != null)
+						keys.add(value.getKey());
+				}
+				return keys.toArray();
+			}
+
+			@Override
+			public Object[] toArray(Object[] a) {
+				Set<K> keys = new HashSet<K>();
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					if (value != null)
+						keys.add(value.getKey());
+				}
+				return keys.toArray(a);
+			}
+
+			@Override
+			public boolean add(Object e) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean remove(Object o) {
+				return MultiArrayMap.this.remove(o) != null;
+			}
+
+			@Override
+			public boolean containsAll(
+					@SuppressWarnings("rawtypes") Collection c) {
+				boolean contains = true;
+				for (Object o : c)
+					contains = contains && MultiArrayMap.this.containsKey(o);
+				return contains;
+			}
+
+			@Override
+			public boolean addAll(@SuppressWarnings("rawtypes") Collection c) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean retainAll(@SuppressWarnings("rawtypes") Collection c) {
+				boolean removed = false;
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					if (value != null && !c.contains(value.getKey()))
+						removed = removed
+								|| (MultiArrayMap.this.remove(value.getKey()) != null);
+				}
+				return removed;
+			}
+
+			@Override
+			public boolean removeAll(@SuppressWarnings("rawtypes") Collection c) {
+				boolean removed = false;
+				for (Object o : c)
+					removed = removed || (MultiArrayMap.this.remove(o) != null);
+				return removed;
+			}
+
+			@Override
+			public void clear() {
+				MultiArrayMap.this.clear();
+			}
+		};
 	}
 
 	@Override
 	public Collection<V> values() {
-		throw new RuntimeException(
-				"Not implemented yet; use iterator() or concurrentIterator() to iterate over keys or values");
+		return new Set<V>() {
+
+			@Override
+			public int size() {
+				return MultiArrayMap.this.size;
+			}
+
+			@Override
+			public boolean isEmpty() {
+				return MultiArrayMap.this.isEmpty();
+			}
+
+			@Override
+			public boolean contains(Object o) {
+				return MultiArrayMap.this.containsValue(o);
+			}
+
+			@Override
+			public Iterator<V> iterator() {
+				return MultiArrayMap.this.iterator();
+			}
+
+			@Override
+			public Object[] toArray() {
+				Set<V> values = new HashSet<V>();
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					if (value != null)
+						values.add(value);
+				}
+				return values.toArray();
+			}
+
+			@Override
+			public <T> T[] toArray(T[] a) {
+				Set<V> values = new HashSet<V>();
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					if (value != null)
+						values.add(value);
+				}
+				return values.toArray(a);
+			}
+
+			@Override
+			public boolean add(V e) {
+				throw new UnsupportedOperationException();
+			}
+
+			@SuppressWarnings("unchecked")
+			@Override
+			public boolean remove(Object o) {
+				return MultiArrayMap.this.remove(((Keyable<K>) o).getKey()) != null;
+			}
+
+			@Override
+			public boolean containsAll(Collection<?> c) {
+				boolean contains = true;
+				for (Object o : c)
+					contains = contains && MultiArrayMap.this.containsValue(o);
+				return contains;
+			}
+
+			@Override
+			public boolean addAll(Collection<? extends V> c) {
+				throw new UnsupportedOperationException();
+			}
+
+			@Override
+			public boolean retainAll(Collection<?> c) {
+				boolean removed = false;
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					if (value != null && !c.contains(value))
+						removed = removed
+								|| (MultiArrayMap.this.remove(value.getKey()) != null);
+				}
+				return removed;
+			}
+
+			@Override
+			public boolean removeAll(Collection<?> c) {
+				boolean removed = false;
+				for (Object o : c)
+					removed = removed
+							|| (o instanceof Keyable<?> && MultiArrayMap.this
+									.remove(((Keyable<?>) o).getKey()) != null);
+				return removed;
+			}
+
+			@Override
+			public void clear() {
+				MultiArrayMap.this.clear();
+			}
+		};
 	}
 
 	@Override
 	public Set<java.util.Map.Entry<K, V>> entrySet() {
-		throw new RuntimeException(
-				"Not implemented yet; use iterator() or concurrentIterator() to iterate over keys or values");
+		return new Set<Map.Entry<K, V>>() {
+
+			@Override
+			public int size() {
+				return MultiArrayMap.this.size();
+			}
+
+			@Override
+			public boolean isEmpty() {
+				return MultiArrayMap.this.isEmpty();
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public boolean contains(Object o) {
+				return (o instanceof Map.Entry)
+						&& MultiArrayMap.this.containsKey(((Map.Entry) o)
+								.getKey());
+			}
+
+			@Override
+			public Iterator<java.util.Map.Entry<K, V>> iterator() {
+				final Iterator<V> iterV = MultiArrayMap.this.iterator();
+				return new Iterator<Map.Entry<K, V>>() {
+
+					@Override
+					public boolean hasNext() {
+						return iterV.hasNext();
+					}
+
+					@Override
+					public java.util.Map.Entry<K, V> next() {
+						V value = iterV.next();
+						return new Map.Entry<K, V>() {
+
+							@Override
+							public K getKey() {
+								return value != null ? value.getKey() : null;
+							}
+
+							@Override
+							public V getValue() {
+								return value;
+							}
+
+							@Override
+							public V setValue(V newValue) {
+								return value != null ? MultiArrayMap.this.put(
+										value.getKey(), newValue) : null;
+							}
+						};
+					}
+
+				};
+			}
+
+			@Override
+			public Object[] toArray() {
+				return this.getEntrySet().toArray();
+			}
+
+			private Set<Map.Entry<K, V>> getEntrySet() {
+				Set<Map.Entry<K, V>> entries = new HashSet<Map.Entry<K, V>>();
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					if (value != null)
+						entries.add(new Map.Entry<K, V>() {
+
+							@Override
+							public K getKey() {
+								return value.getKey();
+							}
+
+							@Override
+							public V getValue() {
+								return value;
+							}
+
+							@Override
+							public V setValue(V newValue) {
+								return MultiArrayMap.this.put(value.getKey(),
+										newValue);
+							}
+						});
+				}
+				return entries;
+			}
+
+			@Override
+			public <T> T[] toArray(T[] a) {
+				return this.getEntrySet().toArray(a);
+			}
+
+			@Override
+			public boolean add(java.util.Map.Entry<K, V> e) {
+				throw new UnsupportedOperationException();
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public boolean remove(Object o) {
+				return (o instanceof Map.Entry)
+						&& MultiArrayMap.this.remove(((Map.Entry) o).getKey()) != null;
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public boolean containsAll(Collection<?> c) {
+				boolean contains = true;
+				for (Object o : c)
+					contains = contains
+							&& (o instanceof Map.Entry)
+							&& (MultiArrayMap.this.containsKey(((Map.Entry) o)
+									.getKey()));
+				return contains;
+			}
+
+			@Override
+			public boolean addAll(
+					Collection<? extends java.util.Map.Entry<K, V>> c) {
+				throw new UnsupportedOperationException();
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public boolean retainAll(Collection<?> c) {
+				boolean removed = false;
+				for (Iterator<V> iterV = MultiArrayMap.this
+						.concurrentIterator(); iterV.hasNext();) {
+					V value = iterV.next();
+					K key = value != null ? value.getKey() : null;
+					for (Object o : c)
+						if (key != null && value != null
+								&& (o instanceof Map.Entry)
+								&& (((Map.Entry) o).getKey().equals(key))
+								&& (((Map.Entry) o).getValue().equals(value)))
+							removed = removed
+									|| MultiArrayMap.this.remove(key) != null;
+				}
+				return removed;
+			}
+
+			@SuppressWarnings("rawtypes")
+			@Override
+			public boolean removeAll(Collection<?> c) {
+				boolean removed = false;
+				for (Object o : c)
+					removed = removed
+							|| ((c instanceof Map.Entry) && MultiArrayMap.this
+									.remove(((Map.Entry) o).getKey()) != null);
+				return removed;
+			}
+
+			@Override
+			public void clear() {
+				MultiArrayMap.this.clear();
+			}
+		};
 	}
 
 	@Override
 	public synchronized boolean remove(Object key, Object value) {
-		if(this.get(key).equals(value)) return this.remove(key)!=null;
+		if (this.get(key).equals(value))
+			return this.remove(key) != null;
 		return false;
 	}
 
 	@Override
 	public boolean replace(K key, V oldValue, V newValue) {
-		if(this.get(key).equals(oldValue)) return this.put(key, newValue)!=null;		
+		if (this.get(key).equals(oldValue))
+			return this.put(key, newValue) != null;
 		return false;
 	}
 
 	@Override
 	public synchronized V replace(K key, V value) {
-		if(this.containsKey(key)) return this.put(key, value);
+		if (this.containsKey(key))
+			return this.put(key, value);
 		return null;
 	}
-	
+
 	/**
 	 * @param key
 	 * @param value
@@ -264,11 +627,11 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 	 */
 	@Override
 	public synchronized V putIfAbsent(K key, V value) {
-		if(this.containsKey(key)) return this.get(key);
+		if (this.containsKey(key))
+			return this.get(key);
 		this.put(key, value);
 		return null;
 	}
-
 
 	private synchronized Object[] getArray(Object key) {
 		Object[] foundArray = null;
@@ -303,7 +666,6 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 		}
 		return foundIndex;
 	}
-	
 
 	private synchronized int getHashIndex(Object key, Object[] array) {
 		int hash = key.hashCode();
@@ -312,7 +674,6 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 			index += array.length;
 		return index;
 	}
-
 
 	// read-only iterator allows concurrency
 	class ConcurrentMAMIterator implements Iterator<V> {
@@ -462,7 +823,8 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 		StringValue<Integer>[] svarray = null;
 		svarray = new StringValue[size]; // SuppressWarnings
 		for (int i = 0; i < size; i++) {
-			svarray[i] = new StringValue<Integer>("someRandomString" + i, i + 23);
+			svarray[i] = new StringValue<Integer>("someRandomString" + i,
+					i + 23);
 		}
 	}
 
@@ -470,11 +832,13 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 
 	private static MultiArrayMap<String, StringValue<Integer>> createRandomMAM(
 			int size) {
-		System.out.print("Inserting " + size/(1000*1000) + " million values");
+		System.out.print("Inserting " + size / (1000 * 1000)
+				+ " million values");
 		MultiArrayMap<String, StringValue<Integer>> map = new MultiArrayMap<String, StringValue<Integer>>(
 				(int) (size), 6);
 		assert (map.get("hello") == null);
-		map.put("someRandomString0", new StringValue<Integer>("someRandomString0", Integer.MAX_VALUE));
+		map.put("someRandomString0", new StringValue<Integer>(
+				"someRandomString0", Integer.MAX_VALUE));
 		assert (((StringValue<Integer>) map.get("someRandomString0")).value == Integer.MAX_VALUE);
 		for (int i = 0; i < size; i++) {
 			String key = "someRandomString" + i;
@@ -503,14 +867,15 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 
 		boolean simpleArray = false;
 		MultiArrayMap<String, StringValue<Integer>> map = null;
-		
+
 		long t1 = System.currentTimeMillis();
 		System.out.println("Initiating test...");
 		if (simpleArray)
 			createSimpleArray(size);
 		map = createRandomMAM(size);
-		System.out.println("succeeded (cop-out hashmap size = " + map.hashmapSize() + "); time = "
-				+ (System.currentTimeMillis() - t1)+"ms");
+		System.out.println("succeeded (cop-out hashmap size = "
+				+ map.hashmapSize() + "); time = "
+				+ (System.currentTimeMillis() - t1) + "ms");
 
 		System.out.print("Iterating(1)");
 		int count = 0;
@@ -526,7 +891,7 @@ public class MultiArrayMap<K, V extends Keyable<K>> implements Iterable<V>, Conc
 		assert (count == map.size() && sum == testSum) : count + " != "
 				+ map.size();
 		System.out.println("succeeded; time = "
-				+ (System.currentTimeMillis() - t1)+"ms");
+				+ (System.currentTimeMillis() - t1) + "ms");
 
 		System.out.print("Iterating(2)");
 		t1 = System.currentTimeMillis();
