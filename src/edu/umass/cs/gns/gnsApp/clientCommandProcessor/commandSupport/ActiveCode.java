@@ -1,5 +1,6 @@
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
@@ -29,7 +30,7 @@ public class ActiveCode {
    * Returns the internal field corresponding to the given action.
    *
    * @param action
-   * @return
+   * @return a string
    */
   public static String codeField(String action) {
     if (action.equals("read")) {
@@ -65,7 +66,7 @@ public class ActiveCode {
    * @param signature
    * @param message
    * @param handler
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public static NSResponseCode setCode(String guid, String action, String code, String writer,
           String signature, String message,
@@ -95,7 +96,7 @@ public class ActiveCode {
    * @param signature
    * @param message
    * @param handler
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public static NSResponseCode clearCode(String guid, String action, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -118,7 +119,7 @@ public class ActiveCode {
    * @param signature
    * @param message
    * @param handler
-   * @return
+   * @return a string
    */
   public static String getCode(String guid, String action, String reader, String signature, String message,
           ClientRequestHandlerInterface handler) {

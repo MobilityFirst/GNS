@@ -101,7 +101,7 @@ implements PacketInterface, ExtensiblePacketInterface {
   /**
    * Return the accessor.
    * 
-   * @return
+   * @return a string
    */
   public String getAccessor() {
     return accessor;
@@ -110,7 +110,7 @@ implements PacketInterface, ExtensiblePacketInterface {
   /**
    * Return the signature.
    * 
-   * @return
+   * @return a string
    */
   public String getSignature() {
     return signature;
@@ -119,7 +119,7 @@ implements PacketInterface, ExtensiblePacketInterface {
   /**
    * Return the message.
    * 
-   * @return
+   * @return a string
    */
   public String getMessage() {
     return message;

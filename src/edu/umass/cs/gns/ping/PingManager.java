@@ -174,7 +174,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
    * Returns 9999L if value can't be determined.
    *
    * @param node
-   * @return
+   * @return a long
    */
   public long nodeAverage(NodeIDType node) {
     // calculate the average ignoring bad samples
@@ -200,7 +200,7 @@ public class PingManager<NodeIDType> implements Shutdownable {
    * Outputs the sampled rtt values in a pretty format.
    *
    * @param node
-   * @return
+   * @return a string
    */
   public String tableToString(NodeIDType node) {
     StringBuilder result = new StringBuilder();

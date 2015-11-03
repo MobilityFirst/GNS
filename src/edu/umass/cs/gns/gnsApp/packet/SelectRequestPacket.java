@@ -154,7 +154,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param id
    * @param ccpAddress
    * @param query
-   * @return
+   * @return a SelectRequestPacket
    */
   public static SelectRequestPacket MakeQueryRequest(int id, InetSocketAddress ccpAddress, String query) {
     return new SelectRequestPacket(id, ccpAddress, SelectOperation.QUERY, GroupBehavior.NONE, query, null, -1);
@@ -169,7 +169,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param query
    * @param guid
    * @param refreshInterval
-   * @return
+   * @return a SelectRequestPacket
    */
   public static SelectRequestPacket MakeGroupSetupRequest(int id, InetSocketAddress ccpAddress, String query, String guid, int refreshInterval) {
     return new SelectRequestPacket(id, ccpAddress, SelectOperation.QUERY, GroupBehavior.GROUP_SETUP, query, guid, refreshInterval);
@@ -182,7 +182,7 @@ public class SelectRequestPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Nod
    * @param id
    * @param ccpAddress
    * @param guid
-   * @return
+   * @return a SelectRequestPacket
    */
   public static SelectRequestPacket MakeGroupLookupRequest(int id, InetSocketAddress ccpAddress, String guid) {
     return new SelectRequestPacket(id, ccpAddress, SelectOperation.QUERY, GroupBehavior.GROUP_LOOKUP, null, guid, -1);

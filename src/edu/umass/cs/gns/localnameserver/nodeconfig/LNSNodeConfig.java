@@ -99,7 +99,7 @@ public class LNSNodeConfig implements
   /**
    * Returns the set of active replica addresses.
    *
-   * @return
+   * @return a set of addresses
    */
   @Override
   public Set<InetSocketAddress> getActiveReplicas() {
@@ -114,7 +114,7 @@ public class LNSNodeConfig implements
   /**
    * Returns the set of reconfigurator addresses.
    *
-   * @return
+   * @return a set of addresses
    */
   @Override
   public Set<InetSocketAddress> getReconfigurators() {
@@ -130,7 +130,7 @@ public class LNSNodeConfig implements
    * Returns the "top-level" host ID for any given nodeID.
    *
    * @param id
-   * @return
+   * @return the node info
    */
   private LNSNodeInfo getNodeInfoForAnyNode(InetSocketAddress address) {
     for (LNSNodeInfo hostInfo : hostInfoMapping.values()) {
@@ -155,7 +155,7 @@ public class LNSNodeConfig implements
    * Will return INVALID_PING_LATENCY if the node doesn't exist.
    *
    * @param address
-   * @return
+   * @return a long
    */
   @Override
   public long getPingLatency(InetSocketAddress address) {
@@ -195,7 +195,7 @@ public class LNSNodeConfig implements
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param address
-   * @return
+   * @return true if the node exists
    */
   @Override
   public boolean nodeExists(InetSocketAddress address) {
@@ -342,7 +342,7 @@ public class LNSNodeConfig implements
    * Returns true if the file is the old style (has lots of fields).
    *
    * @param file
-   * @return
+   * @return true if the file is the old style
    */
   private boolean isOldStyleFile(String file) throws IOException {
     try {

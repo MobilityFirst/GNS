@@ -76,7 +76,7 @@ public class Update {
    * @param handler
    * @param updatePacket
    * @param nameServerID
-   * @return
+   * @return an UpdatePacket
    */
   public static UpdatePacket<String> makeNewUpdatePacket(int ccpReqID, ClientRequestHandlerInterface handler,
           UpdatePacket<String> updatePacket, String nameServerID) {

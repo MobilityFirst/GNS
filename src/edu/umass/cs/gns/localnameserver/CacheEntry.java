@@ -111,7 +111,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * Returns the time since the cache value was updated.
    * 
    * @param key
-   * @return
+   * @return a long
    */
   public synchronized long timeSinceValueCached(String key) {
     return (int) (System.currentTimeMillis() - valueTimestamp);
@@ -121,7 +121,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * Returns the time since the active replicas were updated.
    * 
    * @param key
-   * @return
+   * @return a long
    */
   public synchronized long timeSinceActivesCached(String key) {
     return (int) (System.currentTimeMillis() - activeNameServersTimestamp);
@@ -161,7 +161,7 @@ public class CacheEntry implements Comparable<CacheEntry> {
    * So we can sort them when we display them.
    *
    * @param d CacheEntry
-   * @return
+   * @return a positive if this record follows the argument; zero if the are equal
    */
   @Override
   public int compareTo(CacheEntry d) {

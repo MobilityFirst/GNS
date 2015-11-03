@@ -28,4 +28,54 @@ public class ActiveCodeParams implements Serializable {
 		this.valuesMapString = null;
 		this.hopLimit = 0;
 	}
+
+  public String getGuid() {
+    return guid;
+  }
+
+  public void setGuid(String guid) {
+    this.guid = guid;
+  }
+
+  public String getField() {
+    return field;
+  }
+
+  public void setField(String field) {
+    this.field = field;
+  }
+
+  public String getAction() {
+    return action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
+  }
+
+  public String getValuesMapString() {
+    return valuesMapString;
+  }
+
+  public void setValuesMapString(String valuesMapString) {
+    this.valuesMapString = valuesMapString;
+  }
+
+  public int getHopLimit() {
+    return hopLimit;
+  }
+
+  public void setHopLimit(int hopLimit) {
+    this.hopLimit = hopLimit;
+  }
+        
+        
 }

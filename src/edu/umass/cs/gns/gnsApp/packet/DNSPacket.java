@@ -229,7 +229,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
    * Converts this packet's query section to a JSONObject and removes all the
    * signature information as well.
    *
-   * @return
+   * @return a JSONObject
    * @throws org.json.JSONException
    */
   public JSONObject toJSONObjectForErrorResponse() throws JSONException {
@@ -297,7 +297,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
    *
    * Returns true if the packet is a query, false otherwise
    *
-   * @return
+   * @return true if the packet is a query
    */
   public boolean isQuery() {
     return getHeader().isQuery();
@@ -306,7 +306,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   /**
    * Returns true if the packet is a response, false otherwise
    *
-   * @return
+   * @return true if the packet is a response
    */
   public boolean isResponse() {
     return getHeader().isResponse();
@@ -316,7 +316,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
    **
    * Returns true if the packet contains a response error, false otherwise
    *
-   * @return
+   * @return true if the packet contains a response error
    */
   public boolean containsAnyError() {
     return getHeader().isAnyKindOfError();
@@ -501,7 +501,7 @@ public class DNSPacket<NodeIDType> extends BasicPacketWithSignatureInfoAndCCPAdd
   /**
    * Return the return format.
    * 
-   * @return
+   * @return a {@link ColumnFieldType}
    */
   public ColumnFieldType getReturnFormat() {
     return returnFormat;

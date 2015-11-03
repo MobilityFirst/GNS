@@ -152,7 +152,7 @@ public class RemoveRecordPacket<NodeIDType> extends BasicPacketWithNSAndCCP<Node
   /**
    * Return the source id.
    * 
-   * @return
+   * @return the node id
    */
   public NodeIDType getSourceId() {
     return sourceId;

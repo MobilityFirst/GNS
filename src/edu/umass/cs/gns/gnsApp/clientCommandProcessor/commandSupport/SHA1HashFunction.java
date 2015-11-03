@@ -28,7 +28,7 @@ public class SHA1HashFunction extends AbstractHashFunction {
    * Hash the string.
    * 
    * @param key
-   * @return
+   * @return a byte array
    */
   @Override
   public synchronized byte[] hash(String key) {
@@ -41,7 +41,7 @@ public class SHA1HashFunction extends AbstractHashFunction {
    * Hash the byte array.
    * 
    * @param bytes
-   * @return
+   * @return a byte array
    */
   public synchronized byte[] hash(byte[] bytes) {
     messageDigest.update(bytes);
@@ -51,7 +51,7 @@ public class SHA1HashFunction extends AbstractHashFunction {
   /**
    * Returns the single instance of the SHA1HashFunction.
    * 
-   * @return
+   * @return a SHA1HashFunction instance
    */
   public static SHA1HashFunction getInstance() {
     return SHA1HashFunctionHolder.INSTANCE;

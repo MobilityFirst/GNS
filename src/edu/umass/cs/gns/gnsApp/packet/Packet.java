@@ -552,10 +552,11 @@ public class Packet {
   }
 
   /**
-   *
+   * Send a TCP packet.
+   * 
    * @param json
    * @param addr
-   * @return
+   * @return a Socket
    * @throws IOException
    */
   public static Socket sendTCPPacket(JSONObject json, InetSocketAddress addr) throws IOException {
@@ -629,7 +630,7 @@ public class Packet {
    * A debugging aid that returns true if the packet is not a Paxos packet or another "chatty" packet.
    *
    * @param jsonData
-   * @return
+   * @return returns true if the packet is not chatty
    */
   public static boolean filterOutChattyPackets(JSONObject jsonData) {
     try {
@@ -659,7 +660,7 @@ public class Packet {
    * A debugging aid that returns a string identifying the packet type or "Unknown" if it cannot be determined.
    *
    * @param json
-   * @return
+   * @return a string
    */
   public static String getPacketTypeStringSafe(JSONObject json) {
     try {

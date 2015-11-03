@@ -159,7 +159,7 @@ public class CommandHandler {
    * @param command
    * @param json
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse<String> executeCommand(GnsCommand command, JSONObject json, ClientRequestHandlerInterface handler) {
     try {
@@ -218,7 +218,7 @@ public class CommandHandler {
     /**
      * Returns the host.
      * 
-     * @return
+     * @return a string
      */
     public String getHost() {
       return host;
@@ -227,7 +227,7 @@ public class CommandHandler {
     /**
      * Returns the port.
      * 
-     * @return
+     * @return an int
      */
     public int getPort() {
       return port;
@@ -236,7 +236,7 @@ public class CommandHandler {
     /**
      * Returns the command.
      * 
-     * @return
+     * @return a string
      */
     public String getCommand() {
       return command;
@@ -245,7 +245,7 @@ public class CommandHandler {
     /**
      * Returns the guid.
      * 
-     * @return
+     * @return a string
      */
     public String getGuid() {
       return guid;

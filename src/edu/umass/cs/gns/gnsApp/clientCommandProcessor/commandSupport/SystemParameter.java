@@ -84,7 +84,8 @@ public enum SystemParameter {
   }
 
   /**
-   *
+   * Sets the field value.
+   * 
    * @param value
    * @throws Exception
    */
@@ -97,8 +98,9 @@ public enum SystemParameter {
   }
 
   /**
-   *
-   * @return
+   * Returns the field value.
+   * 
+   * @return an object
    * @throws Exception
    */
   public Object getFieldValue() throws Exception {
@@ -109,8 +111,9 @@ public enum SystemParameter {
   }
 
   /**
-   *
-   * @return
+   * List all of the parameters.
+   * 
+   * @return a descriptive string
    */
   public static String listParameters() {
     StringBuilder result = new StringBuilder();
@@ -132,39 +135,40 @@ public enum SystemParameter {
   }
 
   /**
-   *
-   * @return
+   * Return the type.
+   * 
+   * @return a ParameterType
    */
   public ParameterType getType() {
     return type;
   }
 
   /**
-   *
-   * @return
+   * Return the class name.
+   * 
+   * @return a string
    */
   public String getClassName() {
     return className;
   }
 
   /**
-   *
-   * @return
+   * Return the field name.
+   * 
+   * @return a string
    */
   public String getFieldName() {
     return fieldName;
   }
 
   /**
-   *
-   * @return
+   * Return the description.
+   * 
+   * @return a string
    */
   public String getDescription() {
     return description;
   }
 
-  /**
-   *
-   */
-  public final static String NEWLINE = System.getProperty("line.separator");
+  private final static String NEWLINE = System.getProperty("line.separator");
 }

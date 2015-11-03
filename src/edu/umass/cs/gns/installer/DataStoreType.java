@@ -37,7 +37,7 @@ public enum DataStoreType {
   /**
    * Returns the associated classname.
    * 
-   * @return
+   * @return the class name
    */
   public String getClassName() {
     return className;

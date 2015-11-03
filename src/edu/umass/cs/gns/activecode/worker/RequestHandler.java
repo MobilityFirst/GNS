@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode.worker;
 
 import java.io.BufferedReader;
@@ -32,19 +38,19 @@ public class RequestHandler {
 			// Get the ActiveCodeMessage from the GNS
 		    ActiveCodeMessage acm = ActiveCodeUtils.getMessage(in);
 		    
-		    if(acm.shutdown) {
+		    if( acm.isShutdown()) {
 		    	out.println("OK");
 		    	System.out.println("Shutting down...");
 		    	ret = false;
 		    } else {
 		    	// Run the active code
-			    ActiveCodeParams params = acm.acp;
-			    ValuesMap vm = new ValuesMap(new JSONObject(params.valuesMapString));
-			    ValuesMap result = runner.runCode(params.guid, params.action, params.field, params.code, vm, querier);
+			    ActiveCodeParams params = acm.getAcp();
+			    ValuesMap vm = new ValuesMap(new JSONObject(params.getValuesMapString()));
+			    ValuesMap result = runner.runCode(params.getGuid(), params.getAction(), params.getField(), params.getCode(), vm, querier);
 			    // Send the results back
 			    ActiveCodeMessage acmResp = new ActiveCodeMessage();
-			    acmResp.finished = true;
-			    acmResp.valuesMapString = result == null ? null : result.toString();
+			    acmResp.setFinished(true);
+			    acmResp.setValuesMapString(result == null ? null : result.toString());
 			    ActiveCodeUtils.sendMessage(out, acmResp);
 		    }
 		    

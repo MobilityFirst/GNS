@@ -144,7 +144,7 @@ public class ByteUtils {
    * Converts a hexidecimal string to a byte array.
    * 
    * @param s
-   * @return
+   * @return a byte array
    */
   public static byte[] hexStringToByteArray(String s) {
     int len = s.length();

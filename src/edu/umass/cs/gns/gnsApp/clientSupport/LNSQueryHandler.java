@@ -5,7 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp.clientSupport;
 
-import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.QueryResult;
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.GnsApplicationInterface;
@@ -39,7 +39,7 @@ public class LNSQueryHandler {
    * @param key
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return a {@link QueryResult}
    */
   public static QueryResult<String> sendQuery(String name, String key, 
           GnsApplicationInterface<String> activeReplica,
@@ -55,7 +55,7 @@ public class LNSQueryHandler {
    * @param key
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return a {@link QueryResult}
    */
   public static QueryResult<String> sendListFieldQuery(String name, String key, 
           GnsApplicationInterface<String> activeReplica,

@@ -136,7 +136,7 @@ public class CassandraRecords implements NoSQLRecords {
    * CREATE A C_ase S_ensitive I_dentifier
    *
    * @param string
-   * @return
+   * @return an identifier
    */
   private String CSI(String string) {
     return "\"" + string + "\"";

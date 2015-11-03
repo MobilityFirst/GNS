@@ -90,7 +90,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
 
   /**
    * Convert the RequestActivesPacket to a JSON Object.
-   * @return
+   * @return a JSONObject
    * @throws JSONException
    */
   @Override
@@ -119,7 +119,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
   /**
    * Return the name.
    * 
-   * @return
+   * @return a string
    */
   public String getName() {
     return name;
@@ -128,7 +128,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
   /**
    * Return the active name servers.
    * 
-   * @return
+   * @return a set of node ids
    */
   public Set<NodeIDType> getActiveNameServers() {
     return activeNameServers;
@@ -137,7 +137,7 @@ public class RequestActivesPacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
   /**
    * Return the LNS request ID.
    * 
-   * @return
+   * @return an int
    */
   public int getLnsRequestID() {
     return lnsRequestID;

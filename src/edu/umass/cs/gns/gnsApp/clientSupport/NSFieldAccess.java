@@ -7,7 +7,7 @@
  */
 package edu.umass.cs.gns.gnsApp.clientSupport;
 
-import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.QueryResult;
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.exceptions.FailedDBOperationException;
 import edu.umass.cs.gns.exceptions.FieldNotFoundException;

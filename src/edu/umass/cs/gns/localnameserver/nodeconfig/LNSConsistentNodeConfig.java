@@ -47,7 +47,7 @@ public abstract class LNSConsistentNodeConfig implements
    * Returns the list of replicated servers.
    * 
    * @param name
-   * @return
+   * @return a set of addresses
    */
   public Set<InetSocketAddress> getReplicatedServers(String name) {
     refresh();

@@ -6,6 +6,7 @@
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
 //import edu.umass.cs.gns.packet.QueryResultValue;
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
@@ -24,7 +25,7 @@ public class FieldMetaData {
    *
    * @param metaDataType
    * @param key
-   * @return
+   * @return a string
    */
   public static String makeFieldMetaDataKey(MetaDataTypeName metaDataType, String key) {
     return metaDataType.getFieldPath() + "." + key + ".MD";
@@ -41,7 +42,7 @@ public class FieldMetaData {
    * @param signature
    * @param message
    * @param handler
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public static NSResponseCode add(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, ClientRequestHandlerInterface handler) {
@@ -56,11 +57,11 @@ public class FieldMetaData {
    * @param type
    * @param guid
    * @param key
-   * @param reader * @param key
+   * @param reader
    * @param signature
    * @param message
    * @param handler
-   * @return
+   * @return a set of strings
    */
   public static Set<String> lookup(MetaDataTypeName type, String guid, String key, String reader, String signature,
           String message, ClientRequestHandlerInterface handler) {
@@ -96,7 +97,7 @@ public class FieldMetaData {
    * @param signature
    * @param message
    * @param handler
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public static NSResponseCode remove(MetaDataTypeName type, String guid, String key, String value, String writer, String signature,
           String message, ClientRequestHandlerInterface handler) {
@@ -104,8 +105,4 @@ public class FieldMetaData {
             UpdateOperation.SINGLE_FIELD_REMOVE, writer, signature, message);
   }
 
-  /**
-   *
-   */
-  public static String Version = "$Revision$";
 }

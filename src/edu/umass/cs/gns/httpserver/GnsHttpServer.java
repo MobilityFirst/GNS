@@ -79,9 +79,9 @@ public class GnsHttpServer {
   }
 
   /**
-   *
+   * Try to start the http server at the port.
    * @param port
-   * @return
+   * @return true if it was started
    */
   public static boolean tryPort(int port) {
     try {
@@ -300,8 +300,9 @@ public class GnsHttpServer {
   }
 
   /**
-   *
-   * @return
+   * Return the port.
+   * 
+   * @return an int
    */
   public static int getPort() {
     return port;

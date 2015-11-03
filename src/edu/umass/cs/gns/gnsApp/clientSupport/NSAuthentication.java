@@ -46,7 +46,7 @@ public class NSAuthentication {
    * @param access - the type of access
    * @param gnsApp
    * @param lnsAddress - used in case we need to do a query for more records
-   * @return
+   * @return an {@link NSResponseCode}
    * @throws InvalidKeyException
    * @throws InvalidKeySpecException
    * @throws SignatureException
@@ -143,7 +143,7 @@ public class NSAuthentication {
    * @param access
    * @param gnsApp
    * @param lnsAddress
-   * @return
+   * @return the public key
    * @throws FailedDBOperationException
    */
   private static String lookupPublicKeyInAcl(String guid, String field, String accessorGuid,

@@ -26,8 +26,9 @@ public class RemoveFieldUnsigned extends AbstractUpdate {
   }
 
   /**
-   *
-   * @return
+   * Return the update operation.
+   * 
+   * @return an {@link UpdateOperation}
    */
   @Override
   public UpdateOperation getUpdateOperation() {

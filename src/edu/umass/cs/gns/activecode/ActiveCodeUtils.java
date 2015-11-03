@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode;
 
 import java.io.BufferedReader;
@@ -59,8 +65,8 @@ public class ActiveCodeUtils {
 		if(res64 == null) {
 			// We crashed, but still mark the request as finished
 			ActiveCodeMessage acm = new ActiveCodeMessage();
-			acm.finished = true;
-			acm.crashed = true;
+			acm.setFinished(true);
+			acm.setCrashed(true);
 			return acm;
 		}
 		

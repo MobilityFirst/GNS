@@ -210,7 +210,7 @@ public class AppLookup {
    * @param field
    * @param nameRecord
    * @param gnsApp
-   * @return
+   * @return true if we found the record
    * @throws FailedDBOperationException
    * @throws IOException
    * @throws JSONException
@@ -234,13 +234,14 @@ public class AppLookup {
 
   /**
    * Does the actual lookup of the field or fields in the database.
+   * Returns a {@link NameRecord}.
    *
    * @param dnsPacket
    * @param guid
    * @param field
    * @param fields
    * @param database
-   * @return
+   * @return a NameRecord
    * @throws FailedDBOperationException
    */
   private static NameRecord lookupNameRecordLocally(DNSPacket<String> dnsPacket, String guid, String field, List<String> fields,
@@ -281,11 +282,12 @@ public class AppLookup {
   /**
    * Handles the normal case of returning a valid record plus
    * a few different cases of the record not being found.
+   * Returns a {@link DNSPacket}.
    *
    * @param dnsPacket
    * @param nameRecord
    * @param newResult
-   * @return
+   * @return a DNSPacket
    */
   private static DNSPacket<String> checkAndMakeResponsePacket(DNSPacket<String> dnsPacket, NameRecord nameRecord,
           GnsApplicationInterface<String> gnsApp, ValuesMap newResult) {

@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode;
 
 import java.util.ArrayList;
@@ -82,16 +88,16 @@ public class ActiveCodeQueryHelper {
 	 */
 	public ActiveCodeQueryResponse handleQuery(String currentGuid, ActiveCodeQueryRequest acqreq) {		
 		// Do a local read/write
-		if(acqreq.guid == null || acqreq.guid.equals(currentGuid)) {
-			if(acqreq.action.equals("read")) {
-				return readLocalGuid(currentGuid, acqreq.field);
-			} else if(acqreq.action.equals("write")) {
-				return writeLocalGuid(currentGuid, acqreq.field, acqreq.valuesMapString);
+		if(acqreq.getGuid() == null || acqreq.getGuid().equals(currentGuid)) {
+			if(acqreq.getAction().equals("read")) {
+				return readLocalGuid(currentGuid, acqreq.getField());
+			} else if(acqreq.getAction().equals("write")) {
+				return writeLocalGuid(currentGuid, acqreq.getField(), acqreq.getValuesMapString());
 			}
 		}
 		// Otherwise, we need to do an external read
 		else {
-			if(acqreq.action.equals("read")) {
+			if(acqreq.getAction().equals("read")) {
 				// TODO
 			}
 		}

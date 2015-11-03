@@ -73,7 +73,7 @@ public interface RequestHandlerInterface {
   /**
    * Is debug mode on?
    * 
-   * @return
+   * @return true if debug mode is on
    */
   public boolean isDebugMode();
   
@@ -81,7 +81,7 @@ public interface RequestHandlerInterface {
    * Returns the closest active replica.
    * 
    * @param servers
-   * @return
+   * @return an address
    */
   public InetSocketAddress getClosestReplica(Set<InetSocketAddress> servers);
   
@@ -90,7 +90,7 @@ public interface RequestHandlerInterface {
    * 
    * @param serverIds
    * @param excludeServers
-   * @return
+   * @return an address
    */
   public InetSocketAddress getClosestReplica(Set<InetSocketAddress> serverIds, Set<InetSocketAddress> excludeServers);
   
@@ -103,7 +103,7 @@ public interface RequestHandlerInterface {
    * Returns true if the name is in the cache.
    * 
    * @param name
-   * @return
+   * @return true if the name is in the cache
    */
   public boolean containsCacheEntry(String name);
   
@@ -119,7 +119,7 @@ public interface RequestHandlerInterface {
    * Retrieves the value in the cache if it has not timed out.
    * 
    * @param name
-   * @return
+   * @return a string
    */
   public String getValueIfValid(String name);
   
@@ -135,7 +135,7 @@ public interface RequestHandlerInterface {
    * Retrieves the active replicas associated with the name if they have not timed out.
    * 
    * @param name
-   * @return
+   * @return a set of addresses
    */
   public Set<InetSocketAddress> getActivesIfValid(String name);
   
@@ -150,7 +150,7 @@ public interface RequestHandlerInterface {
    * Handles an event.
    * 
    * @param json
-   * @return
+   * @return true if the event was handled
    * @throws JSONException
    */
   public boolean handleEvent(JSONObject json) throws JSONException;
@@ -184,7 +184,7 @@ public interface RequestHandlerInterface {
    * Returns the active replicas.
    * 
    * @param name
-   * @return
+   * @return a set of addresses
    */
   public Set<InetSocketAddress> getReplicatedActives(String name);
  

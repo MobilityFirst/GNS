@@ -44,7 +44,7 @@ public class LNSUpdateHandler {
    * @param operation
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue, UpdateOperation operation,
           GnsApplicationInterface<String> activeReplica, InetSocketAddress lnsAddress) {
@@ -62,7 +62,7 @@ public class LNSUpdateHandler {
    * @param operation
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public static NSResponseCode sendUpdate(String name, String key, ResultValue newValue,
           ResultValue oldValue, int argument, UpdateOperation operation, 

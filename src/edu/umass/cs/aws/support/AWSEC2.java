@@ -124,7 +124,7 @@ public class AWSEC2 {
    * Returns a list of strings of all the availability zones in the current region.
    *
    * @param ec2
-   * @return
+   * @return a list of zone strings
    */
   public static List<String> getAvailabilityZones(AmazonEC2 ec2) {
     ArrayList<String> result = new ArrayList<String>();
@@ -203,7 +203,7 @@ public class AWSEC2 {
    * Create a New Security Group with our standard permissions
    *
    * @param ec2
-   * @return
+   * @return the name of the new group
    */
   public static String createSecurityGroup(AmazonEC2 ec2, String name) {
     CreateSecurityGroupRequest securityGroupRequest = new CreateSecurityGroupRequest(name, name + " security group");
@@ -343,7 +343,7 @@ public class AWSEC2 {
    *
    * @param ec2
    * @param name
-   * @return
+   * @return the name of the keypair or null
    */
   public static String findKeyPairInfo(AmazonEC2 ec2, String name) {
     DescribeKeyPairsResult dkr = ec2.describeKeyPairs();
@@ -361,7 +361,7 @@ public class AWSEC2 {
    *
    * @param ec2
    * @param name
-   * @return
+   * @return the name of the keypair or null
    */
   public static String findOrCreateKeyPair(AmazonEC2 ec2, String name) {
     String result = findKeyPairInfo(ec2, name);
@@ -499,7 +499,7 @@ public class AWSEC2 {
    *
    * @param ec2
    * @param instanceId
-   * @return
+   * @return the id of the volume
    */
   public static String createAndAttachVolume(AmazonEC2 ec2, String instanceId) {
     return createAndAttachVolume(ec2, instanceId, DEFAULTSECONDMOUNTPOINT);
@@ -511,7 +511,7 @@ public class AWSEC2 {
    * @param ec2
    * @param instanceId
    * @param mountPoint
-   * @return
+   * @return the id of the volume
    */
   public static String createAndAttachVolume(AmazonEC2 ec2, String instanceId, String mountPoint) {
     // ATTACH A VOLUME
@@ -539,7 +539,7 @@ public class AWSEC2 {
    *
    * @param ec2
    * @param createdInstanceId
-   * @return
+   * @return the name of the instance or null
    */
   public static Instance findInstance(AmazonEC2 ec2, String createdInstanceId) {
     DescribeInstancesResult describeInstancesResult = ec2.describeInstances();
@@ -561,7 +561,7 @@ public class AWSEC2 {
    * Returns all the instances in this region.
    *
    * @param ec2
-   * @return
+   * @return a set of instance instances
    */
   public static Set<Instance> getInstances(AmazonEC2 ec2) {
     Set<Instance> instances = new HashSet<Instance>();
@@ -702,7 +702,7 @@ public class AWSEC2 {
    * @param script
    * @param tags
    * @param elasticIP - an IP string or null to indicate that we're just using the address assigned by AWS
-   * @return
+   * @return a new instance instance
    */
   public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord ami, String instanceName,
           String keyName, String securityGroupName, String script, Map<String, String> tags, String elasticIP) {
@@ -721,7 +721,7 @@ public class AWSEC2 {
    * @param tags
    * @param elasticIP
    * @param timeout
-   * @return
+   * @return a new instance instance
    */
   public static Instance createAndInitInstance(AmazonEC2 ec2, RegionRecord region, AMIRecord amiRecord, String instanceName,
           String keyName, String securityGroupName, String script, Map<String, String> tags, String elasticIP, int timeout) {

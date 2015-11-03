@@ -97,7 +97,7 @@ public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPac
   /**
    * Return the accessor.
    * 
-   * @return
+   * @return a string
    */
   public String getAccessor() {
     return accessor;
@@ -106,7 +106,7 @@ public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPac
   /**
    * Return the signature.
    * 
-   * @return
+   * @return a string
    */
   public String getSignature() {
     return signature;
@@ -115,7 +115,7 @@ public abstract class BasicPacketWithSignatureInfoAndCCPAddress extends BasicPac
   /**
    * Return the message.
    * 
-   * @return
+   * @return a string
    */
   public String getMessage() {
     return message;

@@ -15,5 +15,23 @@ public class ActiveCodeQueryResponse implements Serializable {
 		this.success = false;
 		this.valuesMapString = null;
 	}
+
+  public boolean isSuccess() {
+    return success;
+  }
+
+  public void setSuccess(boolean success) {
+    this.success = success;
+  }
+
+  public String getValuesMapString() {
+    return valuesMapString;
+  }
+
+  public void setValuesMapString(String valuesMapString) {
+    this.valuesMapString = valuesMapString;
+  }
+        
+        
 	
 }

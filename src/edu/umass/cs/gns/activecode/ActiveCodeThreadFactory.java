@@ -1,7 +1,12 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode;
 
 import java.util.concurrent.ThreadFactory;
-
 
 /**
  * This ThreadFactory allocates an ActiveCodeClient for every new worker thread.
@@ -18,6 +23,7 @@ public class ActiveCodeThreadFactory implements ThreadFactory {
 	/**
 	 * Creates a new thread and also spawns a new worker associated with the thread
 	 */
+        @Override
 	public Thread newThread(Runnable r) {
 		Thread t = new Thread(r);
 		clientPool.addClient(t);

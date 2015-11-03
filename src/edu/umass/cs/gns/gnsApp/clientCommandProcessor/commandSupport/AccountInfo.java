@@ -83,7 +83,7 @@ public class AccountInfo {
   /**
    * Returns the primary name.
    * 
-   * @return
+   * @return a string
    */
   public String getPrimaryName() {
     return primaryName;
@@ -92,7 +92,7 @@ public class AccountInfo {
   /**
    * Returns the guid.
    * 
-   * @return
+   * @return a string
    */
   public String getPrimaryGuid() {
     return primaryGuid;
@@ -101,7 +101,7 @@ public class AccountInfo {
   /**
    * Returns the password.
    *
-   * @return
+   * @return a string
    */
   public String getPassword() {
     return password;
@@ -119,7 +119,7 @@ public class AccountInfo {
   /**
    * Gets the type. Currently unused.
    * 
-   * @return
+   * @return a string
    */
   public String getType() {
     return type;
@@ -128,7 +128,7 @@ public class AccountInfo {
   /**
    * Returns the aliases.
    *
-   * @return
+   * @return a list of strings
    */
   public ArrayList<String> getAliases() {
     return new ArrayList<String>(aliases);
@@ -138,7 +138,7 @@ public class AccountInfo {
    * Returns true if the alias is present.
    *
    * @param alias
-   * @return
+   * @return true or false
    */
   public boolean containsAlias(String alias) {
     return aliases.contains(alias);
@@ -157,7 +157,7 @@ public class AccountInfo {
    * Removes the alias from the list of aliases.
    *
    * @param alias
-   * @return
+   * @return true if the alias was found
    */
   public boolean removeAlias(String alias) {
     return aliases.remove(alias);
@@ -166,7 +166,7 @@ public class AccountInfo {
   /**
    * Returns the guids associated with this account.
    *
-   * @return
+   * @return a list of strings
    */
   public ArrayList<String> getGuids() {
     return new ArrayList<String>(guids);
@@ -185,7 +185,7 @@ public class AccountInfo {
    * Removes a guid from this account.
    *
    * @param guid
-   * @return
+   * @return true if the guid was found
    */
   public boolean removeGuid(String guid) {
     return guids.remove(guid);
@@ -194,7 +194,7 @@ public class AccountInfo {
   /**
    * Returns the creation date of the guid.
    *
-   * @return
+   * @return the date
    */
   public Date getCreated() {
     return created;
@@ -203,7 +203,7 @@ public class AccountInfo {
   /**
    * Returns the update date of the guid.
    *
-   * @return
+   * @return the date
    */
   public Date getUpdated() {
     return updated;
@@ -229,7 +229,7 @@ public class AccountInfo {
   /**
    * Returns true is this account has been verified.
    *
-   * @return
+   * @return true is this account has been verified
    */
   public boolean isVerified() {
     return verified;
@@ -247,7 +247,7 @@ public class AccountInfo {
   /**
    * Returns the verification code for this account.
    *
-   * @return
+   * @return a string
    */
   public String getVerificationCode() {
     return verificationCode;
@@ -309,7 +309,7 @@ public class AccountInfo {
 
   /**
    * Converts this instance into a JSONObject.
-   * @return
+   * @return a JSONObject
    * @throws JSONException
    */
   public JSONObject toJSONObject() throws JSONException {
@@ -333,7 +333,7 @@ public class AccountInfo {
 
   /**
    * Returns a informational string version of the instance.
-   * @return
+   * @return a string
    */
   @Override
   public String toString() {

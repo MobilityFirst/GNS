@@ -40,8 +40,9 @@ public abstract class AbstractUpdate extends GnsCommand {
   }
 
   /**
-   *
-   * @return
+   * Return the update operation.
+   * 
+   * @return an {@link UpdateOperation}
    */
   public abstract UpdateOperation getUpdateOperation();
 

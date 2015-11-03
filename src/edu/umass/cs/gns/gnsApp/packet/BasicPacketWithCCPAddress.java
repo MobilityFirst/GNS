@@ -63,7 +63,7 @@ public abstract class BasicPacketWithCCPAddress extends BasicPacket implements P
   /**
    * Get the address to which LNS to send the packet back to.
    *
-   * @return
+   * @return an address
    */
   public InetSocketAddress getCCPAddress() {
     return ccpAddress;

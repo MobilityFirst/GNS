@@ -75,7 +75,7 @@ public class Email {
    * @param subject
    * @param recipient
    * @param text
-   * @return
+   * @return true if the message was sent
    */
   public static boolean emailSSL(String subject, String recipient, String text) {
     return emailSSL(subject, recipient, text, false);
@@ -89,7 +89,7 @@ public class Email {
    * @param recipient
    * @param text
    * @param suppressWarning
-   * @return
+   * @return true if the message was sent
    */
   public static boolean emailSSL(String subject, String recipient, String text, boolean suppressWarning) {
     if (AppReconfigurableNodeOptions.noEmail) {
@@ -139,7 +139,7 @@ public class Email {
    * @param subject
    * @param recipient
    * @param text
-   * @return
+   * @return true if the message was sent
    */
   public static boolean emailTLS(String subject, String recipient, String text) {
     return emailTLS(subject, recipient, text, false);
@@ -153,7 +153,7 @@ public class Email {
    * @param recipient
    * @param text
    * @param suppressWarning
-   * @return
+   * @return true if the message was sent
    */
   // TLS doesn't work with Dreamhost
   public static boolean emailTLS(String subject, String recipient, String text, boolean suppressWarning) {
@@ -202,7 +202,7 @@ public class Email {
    * @param subject
    * @param recipient
    * @param text
-   * @return
+   * @return true if the message was sent
    */
   public static boolean emailLocal(String subject, String recipient, String text) {
     return emailLocal(subject, recipient, text, false);
@@ -216,7 +216,7 @@ public class Email {
    * @param recipient
    * @param text
    * @param suppressWarning
-   * @return
+   * @return true if the message was sent
    */
   public static boolean emailLocal(String subject, String recipient, String text, boolean suppressWarning) {
     // Get system properties

@@ -82,6 +82,8 @@ public class HostFileLoader {
   }
 
   /**
+   * Parses a line from a host file.
+   * 
    * Handles these cases:
    *
    * hostname
@@ -91,7 +93,7 @@ public class HostFileLoader {
    * id hostname port ipAddressInDotNotation
    *
    * @param line
-   * @return
+   * @return a {@link HostSpec}
    * @throws IOException
    */
   private static HostSpec parseHostline(String line) throws IOException {
@@ -153,7 +155,7 @@ public class HostFileLoader {
    * Returns null if it doesn't exist.
    *
    * @param hostsFile
-   * @return
+   * @return a long
    * @throws FileNotFoundException
    * @throws IOException
    */
@@ -165,10 +167,10 @@ public class HostFileLoader {
   }
 
   /**
-   * Returns true if the node file change versions.
+   * Returns true if the node file changed versions.
    * 
    * @param hostsFile
-   * @return
+   * @return true if the node file changed versions
    * @throws IOException
    */
   public static boolean isChangedFileVersion(String hostsFile) throws IOException {
@@ -199,7 +201,7 @@ public class HostFileLoader {
   /**
    * Returns the file version.
    * 
-   * @return
+   * @return a long
    */
   public static Long getFileVersion() {
     return fileVersion;

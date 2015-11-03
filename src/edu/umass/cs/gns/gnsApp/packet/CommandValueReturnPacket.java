@@ -140,7 +140,7 @@ public class CommandValueReturnPacket extends BasicPacket implements InterfaceRe
   /**
    * Converts the command object into a JSONObject.
    *
-   * @return
+   * @return a JSONObject
    * @throws org.json.JSONException
    */
   @Override

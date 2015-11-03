@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode;
 
 
@@ -39,7 +45,7 @@ public class ActiveCodeHandler {
 	    // Start the processes
 	    executorPool.prestartAllCoreThreads();
 	    // Blacklist init
-		blacklist = new HashMap<String, Long>();
+		blacklist = new HashMap<>();
 		this.blacklistSeconds = blacklistSeconds;
 	}
 	
@@ -60,8 +66,8 @@ public class ActiveCodeHandler {
 	}
 	
 	/**
-	 * Checks to see if all of the workers are busy
-	 * @return
+	 * Checks to see if all of the workers are busy.
+	 * @return true if all workers are busy
 	 */
 	public boolean isPoolBusy() {
 		return executorPool.getActiveCount() == executorPool.getMaximumPoolSize();
@@ -70,7 +76,7 @@ public class ActiveCodeHandler {
 	/**
 	 * Checks to see if the guid is currently blacklisted.
 	 * @param guid
-	 * @return
+	 * @return true if the guid is blacklisted
 	 */
 	public boolean isBlacklisted(String guid) {
 		if(!blacklist.containsKey(guid))
@@ -90,14 +96,15 @@ public class ActiveCodeHandler {
 	}
 	
 	/**
-	 * Runs the active code
+	 * Runs the active code. Returns a {@link ValuesMap}.
+         * 
 	 * @param code64 base64 encoded active code, as stored in the db
 	 * @param guid the guid
 	 * @param field the field
 	 * @param action either 'read' or 'write'
          * @param valuesMap
 	 * @param activeCodeTTL the remaining active code TTL
-	 * @return
+	 * @return a Valuesmap
 	 */
 	public ValuesMap runCode(String code64, String guid, String field, String action, ValuesMap valuesMap, int activeCodeTTL) {		
 		String code = new String(Base64.decodeBase64(code64));

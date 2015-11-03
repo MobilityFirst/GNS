@@ -84,7 +84,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    * @param nsQueryId
    * @param nameServerID
    * @param records
-   * @return
+   * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
   public static SelectResponsePacket makeSuccessPacketForRecordsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId,
@@ -101,7 +101,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    * @param nsQueryId
    * @param nameServerID
    * @param guids
-   * @return
+   * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
   public static SelectResponsePacket makeSuccessPacketForGuidsOnly(int id, InetSocketAddress lnsAddress, int lnsQueryId,
@@ -118,7 +118,7 @@ public class SelectResponsePacket<NodeIDType> extends BasicPacketWithNSAndCCP<No
    * @param nsQueryId
    * @param nameServer
    * @param errorMessage
-   * @return
+   * @return a SelectResponsePacket
    */
   @SuppressWarnings("unchecked")
   public static SelectResponsePacket makeFailPacket(int id, InetSocketAddress lnsAddress,

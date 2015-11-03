@@ -132,7 +132,7 @@ public enum UpdateOperation {
   /**
    * Indicates that this operation will attempt to create a field that does not already exist.
    *
-   * @return
+   * @return a boolean if this is an upsert operation
    */
   public boolean isUpsert() {
     return upsert;
@@ -141,7 +141,7 @@ public enum UpdateOperation {
   /**
    * Returns the operation similar to an upsert operation that is not an upsert operation.
    *
-   * @return
+   * @return the equivalent non-upsert operation
    */
   public UpdateOperation getNonUpsertEquivalent() {
     return nonUpsertEquivalent;

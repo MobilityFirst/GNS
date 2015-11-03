@@ -30,7 +30,7 @@ public class DistributedNoopReconfigurableNode extends ReconfigurableNode<String
   /**
    * Creates the app coordinator.
    * 
-   * @return
+   * @return the coordinator
    */
   @Override
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {

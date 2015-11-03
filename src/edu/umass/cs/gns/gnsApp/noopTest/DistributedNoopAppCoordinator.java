@@ -159,7 +159,7 @@ public class DistributedNoopAppCoordinator extends PaxosReplicaCoordinator<Strin
    *
    * @param name
    * @param epoch
-   * @return
+   * @return true if the group exists
    */
   protected boolean existsGroup(String name, int epoch) {
     CoordData data = this.groups.get(name);

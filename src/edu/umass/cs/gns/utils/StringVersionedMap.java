@@ -62,7 +62,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param keyPrefix
-   * @return
+   * @return a {@link ValueType}
    */
   public synchronized ValueType match(KeyType keyPrefix) {
     ValueType value = null;
@@ -86,7 +86,7 @@ public class StringVersionedMap<KeyType, ValueType> {
    *
    * @param id
    * @param version
-   * @return
+   * @return a string
    */
   public static String combineIDVersion(String id, int version) {
     return id + StringVersionedMap.SEPARATOR + version;
@@ -95,7 +95,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param paxosID
-   * @return
+   * @return a string
    */
   public static String getIDNoVersion(String paxosID) {
     if (paxosID == null) {
@@ -109,7 +109,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param paxosID
-   * @return
+   * @return an int
    */
   public static int getVersion(String paxosID) {
     if (paxosID == null) {
@@ -126,7 +126,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param key
-   * @return
+   * @return a {@link ValueType}
    */
   public synchronized ValueType get(String key) {
     return this.map.get(key);
@@ -143,7 +143,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
   /**
    *
-   * @return
+   * @return a collection of {@link KeyType}
    */
   public synchronized Collection<KeyType> keyPrefixSet() {
     return this.keyVersions.keySet();
@@ -151,7 +151,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
   /**
    *
-   * @return
+   * @return a collection of {@link KeyType}
    */
   public synchronized Collection<ValueType> values() {
     return this.map.values();
@@ -160,7 +160,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param key
-   * @return
+   * @return true if it contains key
    */
   public synchronized boolean containsKey(String key) {
     return this.map.containsKey(key);
@@ -169,7 +169,7 @@ public class StringVersionedMap<KeyType, ValueType> {
   /**
    *
    * @param value
-   * @return
+   * @return true if it contains value
    */
   public synchronized boolean containsValue(ValueType value) {
     return this.map.containsValue(value);
@@ -177,7 +177,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
   /**
    *
-   * @return
+   * @return an int
    */
   public synchronized int size() {
     return this.map.size();
@@ -185,7 +185,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
   /**
    *
-   * @return
+   * @return an int
    */
   public synchronized int numKeyPrefixes() {
     return this.keyVersions.size();
@@ -193,7 +193,7 @@ public class StringVersionedMap<KeyType, ValueType> {
 
   /**
    *
-   * @return
+   * @return true if it is empty
    */
   public synchronized boolean isEmpty() {
     return this.map.isEmpty();

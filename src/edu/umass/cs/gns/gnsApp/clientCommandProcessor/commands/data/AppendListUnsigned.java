@@ -25,9 +25,10 @@ public class AppendListUnsigned extends AbstractUpdateList {
     super(module);
   }
 
-  /**
-   *
-   * @return
+ /**
+   * Return the update operation.
+   * 
+   * @return an {@link UpdateOperation}
    */
   @Override
   public UpdateOperation getUpdateOperation() {

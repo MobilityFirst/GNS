@@ -60,7 +60,7 @@ public class CommandResponse<NodeIDType> {
   /**
    * Gets the return value.
    * 
-   * @return
+   * @return a string
    */
   public String getReturnValue() {
     return returnValue;
@@ -69,7 +69,7 @@ public class CommandResponse<NodeIDType> {
   /**
    * Gets the error code.
    * 
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode getErrorCode() {
     return errorCode;
@@ -86,16 +86,17 @@ public class CommandResponse<NodeIDType> {
 
   /**
    * Gets the LNS round trip time (computed from LNS to NS and back).
-   * @return
+   * 
+   * @return a long
    */
   public long getCCPRoundTripTime() {
     return CCPRoundTripTime;
   }
 
   /**
-   * Gets the is id fd the name server that responded (could be -1 if not known).
+   * Gets the id of the name server that responded (could be -1 if not known).
    * 
-   * @return
+   * @return an id
    */
   public NodeIDType getResponder() {
     return responder;

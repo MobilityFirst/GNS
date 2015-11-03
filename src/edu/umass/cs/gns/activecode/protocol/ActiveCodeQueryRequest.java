@@ -22,4 +22,38 @@ public class ActiveCodeQueryRequest implements Serializable {
 		this.valuesMapString = null;
 		this.action = null;
 	}
+
+  public String getGuid() {
+    return guid;
+  }
+
+  public void setGuid(String guid) {
+    this.guid = guid;
+  }
+
+  public String getField() {
+    return field;
+  }
+
+  public void setField(String field) {
+    this.field = field;
+  }
+
+  public String getValuesMapString() {
+    return valuesMapString;
+  }
+
+  public void setValuesMapString(String valuesMapString) {
+    this.valuesMapString = valuesMapString;
+  }
+
+  public String getAction() {
+    return action;
+  }
+
+  public void setAction(String action) {
+    this.action = action;
+  }
+        
+        
 }

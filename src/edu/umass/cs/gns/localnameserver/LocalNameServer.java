@@ -213,7 +213,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
   /**
    * Are we in debug mode?
    * 
-   * @return
+   * @return true if we are in debug mode
    */
   @Override
   public boolean isDebugMode() {
@@ -409,7 +409,7 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
    * Returns true if the name is in the cache.
    * 
    * @param name
-   * @return
+   * @return true if the name is in the cache
    */
   @Override
   public boolean containsCacheEntry(String name) {
@@ -418,9 +418,10 @@ public class LocalNameServer implements RequestHandlerInterface, Shutdownable {
 
   /**
    * Invokes the protocolExecutor to handle an event.
+   * Returns true if the event was handled.
    * 
    * @param json
-   * @return
+   * @return true if the event was handled
    * @throws JSONException
    */
   @SuppressWarnings("unchecked")

@@ -635,7 +635,7 @@ public class GNSInstaller {
   /**
    * Returns the location of the key file (probably in the users .ssh home).
    *
-   * @return
+   * @return a File
    */
   private static File getKeyFile() {
     // check using full path

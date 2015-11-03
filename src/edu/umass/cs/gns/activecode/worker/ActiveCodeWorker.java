@@ -1,9 +1,14 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode.worker;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 
 public class ActiveCodeWorker {
 	/**

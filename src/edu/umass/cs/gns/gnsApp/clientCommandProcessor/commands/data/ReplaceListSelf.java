@@ -26,8 +26,9 @@ public class ReplaceListSelf extends AbstractUpdateList {
   }
 
   /**
-   *
-   * @return
+   * Return the update operation.
+   * 
+   * @return an {@link UpdateOperation}
    */
   @Override
   public UpdateOperation getUpdateOperation() {

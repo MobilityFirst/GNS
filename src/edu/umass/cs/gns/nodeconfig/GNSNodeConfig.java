@@ -147,7 +147,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
   /**
    * Returns the set of active replica ids.
    *
-   * @return
+   * @return a set of node ids
    */
   @Override
   public Set<NodeIDType> getActiveReplicas() {
@@ -172,48 +172,16 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Returns true if this node is an active replica, otherwise false.
    * 
    * @param id
-   * @return
+   * @return true if this node is an active replica
    */
   public boolean isActiveReplica(NodeIDType id) {
     return getActiveReplicaInfo(id) != null;
   }
 
-//  // a hack for the transition
-//  /**
-//   * Returns the host id of the ActiveReplica corresponding to the given InetSocketAddress
-//   *
-//   * @param host
-//   * @return the host id
-//   */
-//  public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host) {
-//    return getActiveReplicaWhoseHostIs(host, false);
-//  }
-//
-//  public NodeIDType getActiveReplicaWhoseHostIs(InetSocketAddress host, boolean ignorePorts) {
-//    if (host != null) { // should not happen but just in case
-//      GNS.getLogger().info("********** HOST ADDRESS IS " + host.getAddress().getHostAddress());
-//      for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
-//        GNS.getLogger().info("********** CHECK " + hostInfo.toString());
-//        if (// Either the hosts address are the same
-//                (hostInfo.getIpAddress().equals(host.getAddress())
-//                // Or the the IP address are the same (handles the case where the above is
-//                // is a LAN address)
-//                || (hostInfo.getExternalIPString() != null
-//                && hostInfo.getExternalIPString().equals(host.getAddress().getHostAddress())))
-//                // and the ports are the same
-//                && (ignorePorts
-//                || hostInfo.getStartingPortNumber() + GNS.PortType.ACTIVE_REPLICA_PORT.getOffset() == host.getPort())) {
-//          GNS.getLogger().info("********** ID IS " + hostInfo.getActiveReplicaID());
-//          return hostInfo.getActiveReplicaID();
-//        }
-//      }
-//    }
-//    return null;
-//  }
   /**
    * Returns the set of reconfigurator ids.
    *
-   * @return
+   * @return a set of node ids
    */
   @Override
   public Set<NodeIDType> getReconfigurators() {
@@ -237,7 +205,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Returns the "top-level" host ID for any given nodeID.
    *
    * @param id
-   * @return
+   * @return a {@link NodeInfo}
    */
   private NodeInfo<NodeIDType> getNodeInfoForAnyNode(NodeIDType id) {
     for (NodeInfo<NodeIDType> hostInfo : hostInfoMapping.values()) {
@@ -263,7 +231,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Returns the active replica associated with this node id.
    * 
    * @param id
-   * @return
+   * @return a node id
    */
   public NodeIDType getReplicaNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
@@ -277,7 +245,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Returns the reconfigurator associated with this node id.
    * 
    * @param id
-   * @return
+   * @return a node id
    */
   public NodeIDType getReconfiguratorNodeIdForTopLevelNode(NodeIDType id) {
     NodeInfo<NodeIDType> nodeInfo;
@@ -302,7 +270,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id
-   * @return
+   * @return an int
    */
   @Override
   public int getNodePort(NodeIDType id) {
@@ -439,7 +407,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Will return INVALID_PING_LATENCY if the node doesn't exist.
    *
    * @param id Server id
-   * @return
+   * @return a long
    */
   @Override
   public long getPingLatency(NodeIDType id) {
@@ -469,7 +437,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Works for "top-level" node ids and active-replica and reconfigurator nodes ids.
    *
    * @param id
-   * @return
+   * @return true if the node exists
    */
   @Override
   public boolean nodeExists(NodeIDType id) {
@@ -745,7 +713,7 @@ public class GNSNodeConfig<NodeIDType> implements GNSInterfaceNodeConfig<NodeIDT
    * Returns true if the file is the old style (has lots of fields).
    *
    * @param file
-   * @return
+   * @return true if the file is the old style
    */
   private boolean isOldStyleFile(String file) throws IOException {
     try {

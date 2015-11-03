@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.AccountAccess.lookupGuidInfo;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADACCOUNT;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.BADGUID;
@@ -44,7 +45,7 @@ public class FieldAccess {
    * Returns true if the field is specified using dot notation.
    *
    * @param field
-   * @return
+   * @return true if the field is specified using dot notation
    */
   public static boolean isKeyDotNotation(String field) {
     return field.indexOf('.') != -1;
@@ -54,7 +55,7 @@ public class FieldAccess {
    * Returns true if the field doesn't use dot notation or is the all-fields indicator.
    *
    * @param field
-   * @return
+   * @return true if the field doesn't use dot notation or is the all-fields indicator
    */
   public static boolean isKeyAllFieldsOrTopLevel(String field) {
     return GnsProtocolDefs.ALLFIELDS.equals(field) || !isKeyDotNotation(field);
@@ -316,7 +317,7 @@ public class FieldAccess {
    * @param message - the message that was signed. Used for authentication at the server. Can be null for globally
    * readable or writable fields or for internal operations done without a signature.
    * @param handler
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public static NSResponseCode create(String guid, String key, ResultValue value, String writer, String signature, String message,
           ClientRequestHandlerInterface handler) {
@@ -330,7 +331,7 @@ public class FieldAccess {
    * @param key - the key to match
    * @param value - the value to match
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse<String> select(String key, Object value, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.EQUALS, key, value, null, handler);
@@ -347,7 +348,7 @@ public class FieldAccess {
    * @param key - the field to match - should be a location field
    * @param value - a bounding box
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse<String> selectWithin(String key, String value, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.WITHIN, key, value, null, handler);
@@ -365,7 +366,7 @@ public class FieldAccess {
    * @param value - the position
    * @param maxDistance - the maximum distance from position
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse<String> selectNear(String key, String value, String maxDistance, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectRequest(SelectRequestPacket.SelectOperation.NEAR, key, value, maxDistance, handler);
@@ -381,7 +382,7 @@ public class FieldAccess {
    *
    * @param query
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse<String> selectQuery(String query, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendSelectQuery(query, handler);
@@ -400,7 +401,7 @@ public class FieldAccess {
    * @param publicKey
    * @param interval - the refresh interval (queries made more quickly than this will get a cached value)
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse<String> selectGroupSetupQuery(String accountGuid, String query, String publicKey, 
           int interval,
@@ -446,7 +447,7 @@ public class FieldAccess {
    *
    * @param guid - the guid (which should have been previously initialized using <code>selectGroupSetupQuery</code>
    * @param handler
-   * @return
+   * @return a command response
    */
   public static CommandResponse<String> selectGroupLookupQuery(String guid, ClientRequestHandlerInterface handler) {
     String result = SelectHandler.sendGroupGuidLookupSelectQuery(guid, handler);

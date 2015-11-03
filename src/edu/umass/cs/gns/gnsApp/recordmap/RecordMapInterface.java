@@ -36,7 +36,7 @@ public interface RecordMapInterface {
    * Retrieve a name record from the database.
    * 
    * @param name
-   * @return
+   * @return a NameRecord
    * @throws RecordNotFoundException
    * @throws FailedDBOperationException
    */
@@ -80,7 +80,7 @@ public interface RecordMapInterface {
    * Returns true if the database contains a name record with the given name.
    * 
    * @param name
-   * @return
+   * @return true if the database contains a name record with the given name
    * @throws FailedDBOperationException
    */
   public boolean containsName(String name) throws FailedDBOperationException;
@@ -89,7 +89,7 @@ public interface RecordMapInterface {
    * Return all the column keys from a name record in the database.
    * 
    * @param key
-   * @return
+   * @return a set of strings
    * @throws RecordNotFoundException
    * @throws FailedDBOperationException
    */
@@ -108,7 +108,7 @@ public interface RecordMapInterface {
    * @param name - the name of the record
    * @param nameField - the field that contains the name of the record
    * @param fields - the system fields to retrieve
-   * @return
+   * @return a map of {@link ColumnField} to objects
    * @throws FailedDBOperationException
    * @throws RecordNotFoundException
    */
@@ -122,7 +122,7 @@ public interface RecordMapInterface {
    * @param fields - the system fields to retrieve
    * @param valuesMapField - the field that contains all the user fields
    * @param valuesMapKeys - the user fields to return
-   * @return
+   * @return a map of {@link ColumnField} to objects
    * @throws FailedDBOperationException
    * @throws RecordNotFoundException
    */
@@ -196,7 +196,7 @@ public interface RecordMapInterface {
    *
    * @param nameField - the field in the row that contains the name field
    * @param fields
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public abstract AbstractRecordCursor getIterator(ColumnField nameField, ArrayList<ColumnField> fields) throws FailedDBOperationException;

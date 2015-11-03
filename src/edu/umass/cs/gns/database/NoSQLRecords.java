@@ -71,7 +71,7 @@ public interface NoSQLRecords {
    * @param name the name of the record
    * @param nameField
    * @param fields the fields
-   * @return
+   * @return a hashmap of ColumnField to Objects
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
@@ -90,7 +90,7 @@ public interface NoSQLRecords {
    * @param fields the fields
    * @param valuesMapField
    * @param valuesMapKeys
-   * @return
+   * @return a hashmap of ColumnField to Objects
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    */
@@ -105,7 +105,7 @@ public interface NoSQLRecords {
    *
    * @param collection the name of the collection
    * @param name the name of the record
-   * @return
+   * @return true if the record exists
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public boolean contains(String collection, String name) throws
@@ -265,14 +265,14 @@ public interface NoSQLRecords {
 
   /**
    * If key is a GeoSpatial field returns all guids that are near value which is a point specified as a JSONArray string tuple:
-   * [LONG, LAT]. maxDistance is in meters. The returned value is a AbstractRecordCursor.
+   * [LONG, LAT]. maxDistance is in meters. The returned value is a {@link AbstractRecordCursor}.
    *
    * @param collectionName
    * @param valuesMapField
    * @param key
    * @param value
    * @param maxDistance
-   * @return
+   * @return an AbstractRecordCursor
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecordsNear(String collectionName, ColumnField valuesMapField, String key, String value, Double maxDistance)
@@ -280,11 +280,12 @@ public interface NoSQLRecords {
 
   /**
    * Performs a query on the database and returns all guids that satisfy the query.
+   * The returned value is a {@link AbstractRecordCursor}.
    *
    * @param collection the name of the collection
    * @param valuesMapField the field that contains the ValuesMap
    * @param query the query to execute
-   * @return
+   * @return an AbstractRecordCursor
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public AbstractRecordCursor selectRecordsQuery(String collection, ColumnField valuesMapField, String query) 
@@ -301,7 +302,7 @@ public interface NoSQLRecords {
   /**
    * Return a string representation of the record set.
    *
-   * @return
+   * @return a string
    */
   @Override
   public String toString();

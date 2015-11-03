@@ -188,7 +188,7 @@ public class JSONUtils {
    * Converts a JSONObject to a map of strings to {@link ResultValue}.
    *
    * @param json
-   * @return
+   * @return map of string to {@link ResultValue}
    * @throws JSONException
    */
   public static Map<String, ResultValue> JSONObjectToMap(JSONObject json) throws JSONException {
@@ -296,7 +296,7 @@ public class JSONUtils {
   /**
    *
    * @param set
-   * @return
+   * @return a set of strings
    */
   public static Set<String> nodeIdSetToStringSet(Set set) {
     Set<String> result = new HashSet<String>();

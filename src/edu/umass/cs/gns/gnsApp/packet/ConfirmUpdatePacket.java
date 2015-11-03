@@ -68,7 +68,7 @@ public class ConfirmUpdatePacket<NodeIDType> extends BasicPacket implements Inte
    *
    * @param updatePacket
    * @param code
-   * @return
+   * @return a ConfirmUpdatePacket
    */
   @SuppressWarnings("unchecked")
   public static ConfirmUpdatePacket<String> createFailPacket(UpdatePacket<String>updatePacket, NSResponseCode code) {

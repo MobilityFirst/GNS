@@ -319,22 +319,31 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   }
 
   /**
-   **
-   * Removes and returns QueryInfo entry from the map for a query Id..
+   * Removes and returns QueryInfo entry from the map for a query Id.
    *
    * @param id Query Id
-   * @return
+   * @return the entry or null if it was not found
    */
   @Override
   public RequestInfo removeRequestInfo(int id) {
     return requestInfoMap.remove(id);
   }
 
+  /**
+   * Removes and returns SelectInfo entry from the map for a query Id.
+   * @param id
+   * @return the entry or null if it was not found
+   */
   @Override
   public SelectInfo removeSelectInfo(int id) {
     return selectTransmittedMap.remove(id);
   }
 
+  /**
+   * Returns SelectInfo entry from the map for a query Id.
+   * @param id
+   * @return the entry or null if it was not found
+   */
   @Override
   public SelectInfo getSelectInfo(int id) {
     return selectTransmittedMap.get(id);
@@ -342,29 +351,31 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
 
   private boolean reallySendtoReplica = false;
 
+  /**
+   * Returns the value of reallySendtoReplica.
+   * 
+   * @return true if we're sending to the Replica
+   */
   @Override
   public boolean reallySendUpdateToReplica() {
     return reallySendtoReplica;
   }
 
+  /**
+   * Sets the value of reallySendtoReplica.
+   * 
+   * @param reallySend 
+   */
   @Override
   public void setReallySendUpdateToReplica(boolean reallySend) {
     reallySendtoReplica = reallySend;
   }
 
-//  static class CacheComparator implements Comparator<CacheEntry> {
-//
-//    @Override
-//    public int compare(CacheEntry t1, CacheEntry t2) {
-//      return t1.compareTo(t2);
-//    }
-//  }
   /**
-   **
    * Return a Set containing ids of primary replica for <i>name</i>
    *
    * @param name
-   * @return
+   * @return a set of strings
    */
   @Override
   public Set<String> getReplicaControllers(String name) {
@@ -489,7 +500,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   /**
    * Instrumentation.
    *
-   * @return
+   * @return the number of requests received
    */
   @Override
   public long getReceivedRequests() {
@@ -499,7 +510,7 @@ public class ClientRequestHandler implements ClientRequestHandlerInterface {
   /**
    * Instrumentation.
    *
-   * @return
+   * @return the request per second
    */
   @Override
   public int getRequestsPerSecond() {

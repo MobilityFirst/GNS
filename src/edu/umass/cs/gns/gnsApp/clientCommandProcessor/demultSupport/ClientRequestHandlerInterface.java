@@ -57,14 +57,14 @@ public interface ClientRequestHandlerInterface {
   /**
    * Returns that set of parameters used to control the handlers behavior.
    *
-   * @return
+   * @return the parameters
    */
   public RequestHandlerParameters getParameters();
 
   /**
    * Returns the address of this node.
    *
-   * @return
+   * @return the address
    */
   public InetSocketAddress getNodeAddress();
 
@@ -118,7 +118,7 @@ public interface ClientRequestHandlerInterface {
    * Returns the update info for id.
    *
    * @param id
-   * @return
+   * @return the requestinfo
    */
   public RequestInfo getRequestInfo(int id);
 
@@ -127,13 +127,13 @@ public interface ClientRequestHandlerInterface {
    *
    * @param recordKey
    * @param incomingPacket
-   * @return
+   * @return the id
    */
   public int addSelectInfo(String recordKey, SelectRequestPacket<String> incomingPacket);
 
   /**
    * @param id
-   * @return
+   * @return the id
    */
   public SelectInfo removeSelectInfo(int id);
 
@@ -141,7 +141,7 @@ public interface ClientRequestHandlerInterface {
    * Returns the select info for id.
    *
    * @param id
-   * @return
+   * @return the id
    */
   public SelectInfo getSelectInfo(int id);
 
@@ -151,7 +151,7 @@ public interface ClientRequestHandlerInterface {
    * Return a Set containing ids of primary replica for <i>name</i>
    *
    * @param name
-   * @return
+   * @return a set of ids
    */
   public Set<String> getReplicaControllers(String name);
 
@@ -191,14 +191,14 @@ public interface ClientRequestHandlerInterface {
   /**
    * Instrumentation - Return the request counter.
    *
-   * @return
+   * @return a long
    */
   public long getReceivedRequests();
 
   /**
    * Instrumentation - Return the requests per second measure.
    *
-   * @return
+   * @return an int
    */
   public int getRequestsPerSecond();
 

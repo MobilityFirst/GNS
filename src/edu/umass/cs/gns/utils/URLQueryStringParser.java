@@ -66,7 +66,7 @@ public class URLQueryStringParser {
      * considered.
      * 
      * @param names
-     * @return
+     * @return true if the parameter is found
      */
     public boolean search(Collection<String> names) {
         while (next()) {

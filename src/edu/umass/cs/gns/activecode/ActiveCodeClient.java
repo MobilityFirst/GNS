@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode;
 
 import java.io.BufferedReader;
@@ -42,19 +48,8 @@ public class ActiveCodeClient {
 	}
 	
 	/**
-//	 * @param app the gns app
-//	 * @param hostname the hostname of the running worker
-//	 * @param port the port of the running worker
-//	 */
-//	public ActiveCodeClient(GnsReconfigurable app, String hostname, int port) {
-//		this.hostname = hostname;
-//		this.port = port;
-//		this.app = app;
-//	}
-	
-	/**
 	 * Grab an open port
-	 * @return
+	 * @return the port number
 	 */
 	public static int getOpenPort() {
 		int port = 0;
@@ -70,7 +65,7 @@ public class ActiveCodeClient {
 	
 	/**
 	 * Starts an active code worker and waits for it to accept requests
-	 * @return
+	 * @return true if successful
 	 */
 	public boolean startServer() {
 		try {
@@ -119,7 +114,7 @@ public class ActiveCodeClient {
 	 */
 	public ValuesMap runActiveCode(ActiveCodeParams acp, boolean useTimeout) throws ActiveCodeException {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
-		acm.acp = acp;
+		acm.setAcp(acp);
 		ValuesMap vm = null;
 		
 		// Send the request to the worker
@@ -137,8 +132,8 @@ public class ActiveCodeClient {
 	}
 	
 	/**
-	 * Checks to see if the worker is still running
-	 * @return
+	 * Checks to see if the worker is still running.
+	 * @return true if the worker is still running
 	 */
 	private boolean isRunning() {
 		try {
@@ -187,22 +182,22 @@ public class ActiveCodeClient {
 		while(!codeFinished) {
 		    ActiveCodeMessage acmResp = ActiveCodeUtils.getMessage(in);
 		    
-		    if(acmResp.finished) {
+		    if(acmResp.isFinished()) {
 		    	// We are done!
 		    	codeFinished = true;
-		    	valuesMapString = acmResp.valuesMapString;
-		    	crashed = acmResp.crashed;
+		    	valuesMapString = acmResp.getValuesMapString();
+		    	crashed = acmResp.isCrashed();
 		    }
 		    else {
 		    	// We aren't finished, which means that the response asked us to query a guid
 		    	// Can be read or write query (writes are only supported locally)
-		    	String currentGuid = acmReq.acp.guid;
-		    	ActiveCodeQueryRequest acqreq = acmResp.acqreq;
+		    	String currentGuid = acmReq.getAcp().getGuid();
+		    	ActiveCodeQueryRequest acqreq = acmResp.getAcqreq();
 		    	// Perform the query
 		    	ActiveCodeQueryResponse acqresp = acqh.handleQuery(currentGuid, acqreq);
 		    	// Send the results back
 		    	ActiveCodeMessage acmres = new ActiveCodeMessage();
-		    	acmres.acqresp = acqresp;
+		    	acmres.setAcqresp(acqresp);
 		    	ActiveCodeUtils.sendMessage(out, acmres);
 		    }
 		}
@@ -236,7 +231,7 @@ public class ActiveCodeClient {
 	 */
 	public void shutdownServer() {
 		ActiveCodeMessage acm = new ActiveCodeMessage();
-		acm.shutdown = true;
+		acm.setShutdown(true);
 		try {
 			submitRequest(acm, 0);
 		} catch (ActiveCodeException e) {

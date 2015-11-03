@@ -169,8 +169,9 @@ public class CommandDefs {
   };
 
   /**
-   *
-   * @return
+   * Return all the command definitions.
+   * 
+   * @return an array of strings
    */
   public static String[] getCommandDefs() {
     return commands;

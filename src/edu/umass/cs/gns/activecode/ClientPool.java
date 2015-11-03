@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode;
 
 import java.util.HashMap;
@@ -16,7 +22,7 @@ public class ClientPool {
 	GnsApplicationInterface app;
 	
 	public ClientPool(GnsApplicationInterface app) {
-		clients = new HashMap<Long, ActiveCodeClient>();
+		clients = new HashMap<>();
 		this.app = app;
 	}
 	

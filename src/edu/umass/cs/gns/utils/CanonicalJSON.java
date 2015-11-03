@@ -27,22 +27,22 @@ public class CanonicalJSON {
   /**
    * Main function to generate canonical strings for JSON objects.
    *
-   * @param x
-   * @return
+   * @param json
+   * @return a string
    */
-  public static String getCanonicalForm(JSONObject x) {
-    return renderSimpleCanonicalJSON(x);
+  public static String getCanonicalForm(JSONObject json) {
+    return renderSimpleCanonicalJSON(json);
   }
 
   /**
    * Helper function to generate canonical strings for JSON strings.
    *
-   * @param x
-   * @return
+   * @param json
+   * @return a string
    */
-  public static String getCanonicalForm(String x) {
+  public static String getCanonicalForm(String json) {
     try {
-      return getCanonicalForm(new JSONObject(x));
+      return getCanonicalForm(new JSONObject(json));
     } catch (JSONException e) {
       return null;
     }

@@ -186,7 +186,7 @@ public class AddRecordPacket<NodeIDType> extends AbstractAddRecordPacket<NodeIDT
   /**
    * Return the values.
    *
-   * @return
+   * @return a JSONObject
    */
   public JSONObject getValues() {
     return values;

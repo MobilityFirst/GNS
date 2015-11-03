@@ -144,9 +144,10 @@ public class CommandModule {
 "! scope=\"col\" | Description";
 
   /**
-   *
+   * Return all the command descriptions.
+   * 
    * @param format
-   * @return
+   * @return a string
    */
   public String allCommandDescriptions(CommandDescriptionFormat format) {
     StringBuilder result = new StringBuilder();
@@ -187,15 +188,16 @@ public class CommandModule {
   }
 
   /**
-   *
-   * @return
+   * Return the HTTPHost.
+   * 
+   * @return a string
    */
   public String getHTTPHost() {
     return httpHost;
   }
 
   /**
-   *
+   * Set the HTTPHost.
    * @param host
    */
   public void setHTTPHost(String host) {
@@ -203,25 +205,24 @@ public class CommandModule {
   }
 
   /**
-   *
-   * @return
+   * Return true if we are in admin mode.
+   * 
+   * @return true if we are in admin mode
    */
   public boolean isAdminMode() {
     return adminMode;
   }
 
   /**
-   *
+   * Set admin mode.
+   * 
    * @param adminMode
    */
   public void setAdminMode(boolean adminMode) {
     this.adminMode = adminMode;
   }
 
-  /**
-   *
-   */
-  public static Comparator<GnsCommand> CommandPackageComparator
+  private static Comparator<GnsCommand> CommandPackageComparator
           = new Comparator<GnsCommand>() {
 
             @Override

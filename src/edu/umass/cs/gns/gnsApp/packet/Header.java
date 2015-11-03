@@ -82,7 +82,7 @@ public class Header {
   /**
    * Returns a string representing the packet header.
    *
-   * @return
+   * @return a string
    */
   @Override
   public String toString() {
@@ -150,7 +150,7 @@ public class Header {
   /**
    * Return true if the request is a query.
    *
-   * @return
+   * @return true if the request is a query
    */
   public boolean isQuery() {
     return queryResponseCode == DNSRecordType.QUERY;
@@ -159,7 +159,7 @@ public class Header {
   /**
    * Returns true if the packet is a response, false otherwise.
    *
-   * @return
+   * @return true if the packet is a response
    */
   public boolean isResponse() {
     return queryResponseCode == DNSRecordType.RESPONSE;
@@ -168,7 +168,7 @@ public class Header {
   /**
    * Returns true if the packet contains any kind of response error, false otherwise
    *
-   * @return
+   * @return true if the packet contains any kind of response error
    */
   public boolean isAnyKindOfError() {
     return responseCode.isAnError();
@@ -177,7 +177,7 @@ public class Header {
   /**
    * Return true if the result is Invalid Active NSError.
    *
-   * @return
+   * @return true if the result is Invalid Active NSError
    */
   public boolean isInvalidActiveNSError() {
     return responseCode == NSResponseCode.ERROR_INVALID_ACTIVE_NAMESERVER;

@@ -244,13 +244,15 @@ public class NameResolution {
   }
 
   /**
-   * Lookup the field or fields in the guid.
+   * Lookup the field or fields in the guid. 
+   * Returns a JSONObject containing the fields and values
+   * or null if the domainName doesn't exist.
    * 
    * @param domainName - the HRN of the guid
    * @param fieldName - the field to lookup (mutually exclusive with fieldNames)
    * @param fieldNames - the fields to lookup (mutually exclusive with fieldNames)
    * @param handler
-   * @return
+   * @return a JSONObject containing the fields and values or null
    */
   public static JSONObject lookupGuidField(String domainName, String fieldName, ArrayList<String> fieldNames, ClientRequestHandlerInterface handler) {
     long startTime = System.currentTimeMillis();
@@ -310,11 +312,12 @@ public class NameResolution {
   }
 
   /**
-   * Looking up the local dns server cache
+   * Look up the local dns server cache. 
+   * Returns a {@link Message}.
    *
    * @param query
    * @param dnsCache
-   * @return
+   * @return a Message
    */
   public static Message lookupDnsCache(Message query, Cache dnsCache) {
     // check for queries we can't handle
@@ -382,10 +385,10 @@ public class NameResolution {
   }
 
   /**
-   * Returns a Message with and error in it if the query is not good.
+   * Returns a {@link Message} with an error in it if the query is not good.
    *
    * @param query
-   * @return
+   * @return a Message
    */
   public static Message checkForErroneousQueries(Message query) {
     Header header = query.getHeader();
@@ -405,7 +408,7 @@ public class NameResolution {
    * Checks for errors and also 0 length answers.
    *
    * @param dnsResponse
-   * @return
+   * @return true if the response is OK
    */
   public static boolean isReasonableResponse(Message dnsResponse) {
     Integer dnsRcode = null;
@@ -479,7 +482,7 @@ public class NameResolution {
    *
    * @param query
    * @param response
-   * @return
+   * @return a string
    */
   public static String queryAndResponseToString(Message query, Message response) {
     StringBuilder result = new StringBuilder();

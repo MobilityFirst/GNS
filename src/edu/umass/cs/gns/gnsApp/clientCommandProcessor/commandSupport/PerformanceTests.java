@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.ClientRequestHandlerInterface;
 import edu.umass.cs.gns.utils.ResultValue;

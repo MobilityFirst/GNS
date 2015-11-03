@@ -95,7 +95,7 @@ public class NodeInfo<NodeIDType> {
   /**
    * Returns the top-level node id of this node;
    *
-   * @return
+   * @return a node id
    */
   public NodeIDType getId() {
     return id;
@@ -104,7 +104,7 @@ public class NodeInfo<NodeIDType> {
   /**
    * Returns the ActiveReplica id for this node.
    *
-   * @return
+   * @return a node id
    */
   public NodeIDType getActiveReplicaID() {
     return activeReplicaID;
@@ -113,7 +113,7 @@ public class NodeInfo<NodeIDType> {
   /**
    * Returns the Reconfigurator id for this node.
    *
-   * @return
+   * @return a node id
    */
   public NodeIDType getReconfiguratorID() {
     return reconfiguratorID;

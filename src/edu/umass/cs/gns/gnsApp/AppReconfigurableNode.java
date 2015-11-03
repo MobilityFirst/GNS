@@ -46,7 +46,7 @@ public class AppReconfigurableNode extends ReconfigurableNode<String> {
   /**
    * Create and returns an app coordinator.
    * 
-   * @return
+   * @return a coordinator or null if one can't be created
    */
   @Override
   protected AbstractReplicaCoordinator<String> createAppCoordinator() {

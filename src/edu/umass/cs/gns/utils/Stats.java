@@ -28,16 +28,18 @@ public class Stats {
   }
   
   /**
-   *
-   * @return
+   * Return the size.
+   * 
+   * @return an int
    */
   public int getN() {
     return (int) size;
   }
 
   /**
-   *
-   * @return
+   * Return the mean.
+   * 
+   * @return a double
    */
   public double getMean() {
     double sum = 0.0;
@@ -48,8 +50,9 @@ public class Stats {
   }
 
   /**
-   *
-   * @return
+   * Return the variance.
+   * 
+   * @return a double
    */
   public double getVariance() {
     double mean = getMean();
@@ -61,16 +64,18 @@ public class Stats {
   }
 
   /**
-   *
-   * @return
+   * Return the standard deviation.
+   * 
+   * @return a double
    */
   public double getStdDev() {
     return Math.sqrt(getVariance());
   }
 
   /**
-   *
-   * @return
+   * Return the median.
+   * 
+   * @return a double
    */
   public double median() {
     ArrayList<Double> copy = new ArrayList<Double>(data);

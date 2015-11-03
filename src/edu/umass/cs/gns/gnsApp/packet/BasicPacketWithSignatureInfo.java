@@ -65,7 +65,7 @@ public abstract class BasicPacketWithSignatureInfo extends BasicPacket implement
   /**
    * Return the accessor.
    * 
-   * @return
+   * @return a string
    */
   public String getAccessor() {
     return accessor;
@@ -74,7 +74,7 @@ public abstract class BasicPacketWithSignatureInfo extends BasicPacket implement
   /**
    * Return the signature.
    * 
-   * @return
+   * @return a string
    */
   public String getSignature() {
     return signature;
@@ -83,7 +83,7 @@ public abstract class BasicPacketWithSignatureInfo extends BasicPacket implement
   /**
    * Return the message.
    * 
-   * @return
+   * @return a string
    */
   public String getMessage() {
     return message;

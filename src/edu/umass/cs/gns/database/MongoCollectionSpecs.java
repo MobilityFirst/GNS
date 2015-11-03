@@ -45,7 +45,7 @@ public class MongoCollectionSpecs {
   /**
    * Retrieve all the collection specs.
    * 
-   * @return
+   * @return a list of collection specifications
    */
   public List<MongoCollectionSpec> allCollectionSpecs() {
     return collectionSpecs;

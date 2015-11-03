@@ -14,7 +14,7 @@ public interface HashFunction {
    * Hashes a string to a byte array.
    * 
    * @param key
-   * @return
+   * @return a byte array
    */
   public byte[] hash(String key);
    
@@ -24,7 +24,7 @@ public interface HashFunction {
    * Hashes a string to a long value.
    * 
    * @param key
-   * @return
+   * @return a long
    */
      
    public long hashToLong(String key);

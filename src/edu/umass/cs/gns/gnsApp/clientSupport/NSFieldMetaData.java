@@ -33,7 +33,7 @@ public class NSFieldMetaData {
    * @param guidInfo
    * @param key
    * @param activeReplica
-   * @return
+   * @return a set of objects
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
@@ -50,7 +50,7 @@ public class NSFieldMetaData {
    * @param guid
    * @param key
    * @param activeReplica
-   * @return
+   * @return a set of objects
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException

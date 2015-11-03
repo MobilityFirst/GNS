@@ -208,7 +208,7 @@ public class NameRecord implements Comparable<NameRecord> {
   /**
    * Convert the name record to a JSON Object.
    * 
-   * @return
+   * @return a JSONObject
    * @throws JSONException
    */
   public JSONObject toJSONObject() throws JSONException {
@@ -365,7 +365,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Call this method after reading this key from the database. If the key is not found, then name record does not exist.
    *
    * @param key
-   * @return
+   * @return true if the key exists in the values map
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
   public boolean containsKey(String key) throws FieldNotFoundException {
@@ -384,7 +384,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Call this method only if <code>has</code> returns true, otherwise return false.
    *
    * @param key
-   * @return
+   * @return the list of values as a {@link ResultValue}
    * @throws edu.umass.cs.gns.exceptions.FieldNotFoundException
    */
   public ResultValue getKeyAsArray(String key) throws FieldNotFoundException {
@@ -674,7 +674,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param recordMap
    * @param name
-   * @return
+   * @return a NameRecord
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
@@ -688,7 +688,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param recordMap
    * @param name
    * @param systemFields - a list of Field structures representing "system" fields to retrieve
-   * @return
+   * @return a NameRecord
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
@@ -704,7 +704,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param name
    * @param systemFields - a list of Field structures representing "system" fields to retrieve
    * @param userFields - a list of Field structures representing user fields to retrieve
-   * @return
+   * @return a NameRecord
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
@@ -721,7 +721,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param systemFields
    * @param returnType - the format which the returned data should be in
    * @param userFieldNames - strings which name the user fields to return
-   * @return
+   * @return a NameRecord
    * @throws edu.umass.cs.gns.exceptions.RecordNotFoundException
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
@@ -778,7 +778,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * Returns an iterator for all the rows in the collection with all fields filled in.
    *
    * @param recordMap
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor getAllRowsIterator(BasicRecordMap recordMap) throws FailedDBOperationException {
@@ -791,7 +791,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param recordMap
    * @param key
    * @param value
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecords(BasicRecordMap recordMap, String key, Object value) throws FailedDBOperationException {
@@ -805,7 +805,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param recordMap
    * @param key
    * @param value - a string that looks like this: [[LONG_UL, LAT_UL],[LONG_BR, LAT_BR]]
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsWithin(BasicRecordMap recordMap, String key, String value) throws FailedDBOperationException {
@@ -820,7 +820,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * @param key
    * @param value - a string that looks like this: [LONG, LAT]
    * @param maxDistance - the distance in meters
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsNear(BasicRecordMap recordMap, String key, String value, Double maxDistance) throws FailedDBOperationException {
@@ -832,7 +832,7 @@ public class NameRecord implements Comparable<NameRecord> {
    *
    * @param recordMap
    * @param query
-   * @return
+   * @return an {@link AbstractRecordCursor}
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static AbstractRecordCursor selectRecordsQuery(BasicRecordMap recordMap, String query) throws FailedDBOperationException {
@@ -843,7 +843,7 @@ public class NameRecord implements Comparable<NameRecord> {
    * PLEASE DO NOT DELETE THE THIS. IT IS NECESSARY!!!! - Westy
    *
    * @param d
-   * @return
+   * @return a positive integer if this record follows the argument record; zero if the strings are equal
    */
   @Override
   public int compareTo(NameRecord d) {

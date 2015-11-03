@@ -5,18 +5,20 @@
  *
  * Initial developer(s): Westy.
  */
-package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
+package edu.umass.cs.gns.gnsApp;
 
 
 import edu.umass.cs.gns.utils.ResultValue;
 import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
+import edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.InternalField;
 import java.io.Serializable;
 import java.util.Iterator;
 
 /**
  * Either a ValuesMap or an Error. Used to represent values returned
- * from a DNS query.
+ * from a DNS query. See also {@link NSResponseCode} which is used to
+ * represent errors in this class.
  * 
  * Also has some instrumentation for round trip times and what server responded.
  * 
@@ -41,10 +43,7 @@ public class QueryResult<NodeIDType> implements Serializable{
    * Instrumentation - what nameserver responded to this query
    */
   private final NodeIDType responder;
-//  /**
-//   * Database lookup time instrumentation
-//   */
-//  private final int lookupTime;
+
   /**
    * Creates a "normal" (non-error) QueryResult.
    * 
@@ -54,7 +53,6 @@ public class QueryResult<NodeIDType> implements Serializable{
   public QueryResult(ValuesMap valuesMap, NodeIDType responder) {
     this.valuesMap = valuesMap;
     this.responder = responder;
-    //this.lookupTime = lookupTime;
   }
 
   /**
@@ -66,7 +64,6 @@ public class QueryResult<NodeIDType> implements Serializable{
   public QueryResult(NSResponseCode errorCode, NodeIDType responder) {
     this.errorCode = errorCode;
     this.responder = responder;
-    //this.lookupTime = lookupTime;
   }
 
   /**
@@ -110,22 +107,19 @@ public class QueryResult<NodeIDType> implements Serializable{
    */
   private static ValuesMap removeInternalFields(ValuesMap valuesMap) {
     Iterator<?> keyIter = valuesMap.keys();
-    //Iterator<String> keyIter = newContent.keys();
     while (keyIter.hasNext()) {
       String key = (String) keyIter.next();
       if (InternalField.isInternalField(key)) {
         keyIter.remove();
-        //valuesMap.remove(key);
       }
     }
-
     return valuesMap;
   }
 
   /**
    * Returns the error code. Can be null.
    * 
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode getErrorCode() {
     return errorCode;
@@ -134,7 +128,7 @@ public class QueryResult<NodeIDType> implements Serializable{
   /**
    * Does this QueryResult represent an error result.
    * 
-   * @return 
+   * @return true if it is an error
    */
   public boolean isError() {
     return this.errorCode != null;
@@ -161,15 +155,11 @@ public class QueryResult<NodeIDType> implements Serializable{
   /**
    * Returns the responder. Might be -1 if missing.
    * 
-   * @return
+   * @return a node id
    */
   public NodeIDType getResponder() {
     return responder;
   }
-
-//  public int getLookupTime() {
-//    return lookupTime;
-//  }
 
   @Override
   public String toString() {

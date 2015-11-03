@@ -122,18 +122,20 @@ public class NetworkUtils {
   }
 
   /**
-   *
+   * Returns true if the address is an IP4 style address.
+   * 
    * @param ipAddress
-   * @return
+   * @return true if the address is an IP4 style address
    */
   public static boolean isIp4Address(String ipAddress) {
     return VALID_IPV4_PATTERN.matcher(ipAddress).matches();
   }
 
   /**
-   *
+   * Returns true if the address is an IP6 style address.
+   * 
    * @param ipAddress
-   * @return
+   * @return true if the address is an IP6 style address
    */
   public static boolean isIp6Address(String ipAddress) {
     return VALID_IPV6_PATTERN.matcher(ipAddress).matches();

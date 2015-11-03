@@ -19,7 +19,7 @@ public class InternalField {
    * Creates a GNS field that is hidden from the user.
    *
    * @param string
-   * @return
+   * @return a string
    */
   public static String makeInternalFieldString(String string) {
     return INTERNAL_PREFIX + string;
@@ -29,7 +29,7 @@ public class InternalField {
    * Returns true if field is a GNS field that is hidden from the user.
    *
    * @param key
-   * @return
+   * @return true if field is a GNS field that is hidden from the user
    */
   public static boolean isInternalField(String key) {
     return key.startsWith(INTERNAL_PREFIX);
@@ -38,12 +38,9 @@ public class InternalField {
   /**
    * Returns the length of the prefix used with internal fields.
    * 
-   * @return
+   * @return an int
    */
   public static int getPrefixLength() {
     return INTERNAL_PREFIX.length();
   }
-  
-  
-  
 }

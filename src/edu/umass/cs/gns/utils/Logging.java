@@ -36,8 +36,9 @@ public class Logging {
   private static ConsoleHandler consoleHandler;
 
   /**
-   *
-   * @return
+   * Return the ConsoleHandler.
+   * 
+   * @return a ConsoleHandler
    */
   public static ConsoleHandler getConsoleHandler() {
     return consoleHandler;

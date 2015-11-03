@@ -65,7 +65,7 @@ public class NullDemandProfile extends AbstractDemandProfile {
    * Creates an empty NullDemandProfile.
    * 
    * @param name
-   * @return
+   * @return a NullDemandProfile
    */
   public static NullDemandProfile createDemandProfile(String name) {
     return new NullDemandProfile(name);

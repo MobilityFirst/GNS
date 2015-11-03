@@ -68,7 +68,7 @@ public class HostConfigParser {
   /**
    * Returns the username.
    * 
-   * @return
+   * @return a string
    */
   public String getUsername() {
     return username;

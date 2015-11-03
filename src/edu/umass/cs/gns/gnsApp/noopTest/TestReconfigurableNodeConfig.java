@@ -125,7 +125,7 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
   /**
    *
    * @param activeID
-   * @return
+   * @return a string
    */
   public String activeToRC(String activeID) {
     return activeID + "_" + RC_SUFFIX;
@@ -134,7 +134,7 @@ public class TestReconfigurableNodeConfig extends TestNodeConfig<String>
   /**
    *
    * @param rcID
-   * @return
+   * @return a string
    */
   public String RCToActive(String rcID) {
     int index;

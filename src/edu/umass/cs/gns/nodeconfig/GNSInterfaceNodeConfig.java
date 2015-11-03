@@ -26,7 +26,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
    * Returns the administrator port for the given node.
    *
    * @param id
-   * @return
+   * @return an int
    */
   public abstract int getAdminPort(NodeIDType id);
 
@@ -34,7 +34,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
    * Returns the ping port for the given node.
    *
    * @param id
-   * @return
+   * @return an int
    */
   public abstract int getPingPort(NodeIDType id);
   
@@ -42,7 +42,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
    * Returns the Ccp for the given node.
    *
    * @param id
-   * @return
+   * @return an int
    */
   public abstract int getCcpPort(NodeIDType id);
   
@@ -50,7 +50,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
    * Returns the Ccp ping port for the given node.
    *
    * @param id
-   * @return
+   * @return an int
    */
   public abstract int getCcpPingPort(NodeIDType id);
   
@@ -58,7 +58,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
    * Returns the Ccp admin port for the given node.
    *
    * @param id
-   * @return
+   * @return and id
    */
   public abstract int getCcpAdminPort(NodeIDType id);
 
@@ -67,7 +67,7 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
    * Returns GNSNodeConfig.INVALID_PING_LATENCY if the value cannot be determined.
    *
    * @param id
-   * @return
+   * @return an int
    */
   public long getPingLatency(NodeIDType id);
 
@@ -82,9 +82,8 @@ public interface GNSInterfaceNodeConfig<NodeIDType> extends Stringifiable<NodeID
   /**
    * Returns the version number of the NodeConfig.
    *
-   * @return
+   * @return a long
    */
   public abstract long getVersion();
 
-    //public abstract void register(Runnable callback);
 }

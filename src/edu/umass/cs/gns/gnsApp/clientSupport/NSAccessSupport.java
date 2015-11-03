@@ -63,7 +63,7 @@ public class NSAccessSupport {
    * @param accessorPublicKey
    * @param signature
    * @param message
-   * @return
+   * @return true if the signature verifies successfully
    * @throws InvalidKeyException
    * @throws SignatureException
    * @throws UnsupportedEncodingException
@@ -116,7 +116,7 @@ public class NSAccessSupport {
    * @param accessorGuid
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return true if the the reader has access
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static boolean verifyAccess(MetaDataTypeName access, String guid, String field,
@@ -151,7 +151,7 @@ public class NSAccessSupport {
    * @param field
    * @param accessorInfo
    * @param accessorPublicKey
-   * @return
+   * @return true if the accessor has access
    * @throws FailedDBOperationException
    */
   private static boolean hierarchicalAccessCheck(MetaDataTypeName access, String guid, 
@@ -228,7 +228,7 @@ public class NSAccessSupport {
    * @param guid
    * @param field
    * @param activeReplica
-   * @return
+   * @return true if the field can be accessed
    * @throws FailedDBOperationException
    */
   public static boolean fieldAccessibleByEveryone(MetaDataTypeName access, String guid, String field,
@@ -252,7 +252,7 @@ public class NSAccessSupport {
    * @param guid
    * @param field
    * @param activeReplica
-   * @return
+   * @return a set of public keys
    * @throws FailedDBOperationException
    */
   @SuppressWarnings("unchecked")

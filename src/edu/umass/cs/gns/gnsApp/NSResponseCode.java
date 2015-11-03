@@ -13,13 +13,16 @@ import java.io.Serializable;
 
 /**
  * This class describes the error codes for Name Server packets that
- * get sent back to the LNS and the client.
+ * get sent back to the server and the client.
  *
  * These codes are used by the Nameserver to communicate via response packets why a value
  * could not be returned from the Nameserver to the client.
  *
  * To save space in packets, ahem, we also provide the ability to convert back and forth between
  * each code and an integer version of it.
+ * 
+ * This class is a sibling to {@link QueryResult} which is used when we're returning a value
+ * and not just whether the request was successful. 
  *
  * @author Westy
  *
@@ -88,7 +91,7 @@ public enum NSResponseCode implements Serializable{
   /**
    * Returns the integer equivalent of the code.
    *
-   * @return
+   * @return an int
    */
   public int getCodeValue() {
     return codeValue;
@@ -97,7 +100,7 @@ public enum NSResponseCode implements Serializable{
   /**
    * Returns the string that corresponds to this error in the client protocol.
    *
-   * @return
+   * @return a string
    */
   public String getProtocolCode() {
     return protocolCode;
@@ -106,7 +109,7 @@ public enum NSResponseCode implements Serializable{
   /**
    * Is this an error code. Some aren't, some are.
    *
-   * @return
+   * @return true if this is an error
    */
   public boolean isAnError() {
     return isAnError;

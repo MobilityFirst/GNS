@@ -96,55 +96,53 @@ public class NSSelectInfo<NodeIDType> {
 
   /**
    * Returns that responses that have been see for this query.
-   * @return 
+   * 
+   * @return a set of JSONObjects
    */
   public Set<JSONObject> getResponsesAsSet() {
     return new HashSet<JSONObject>(responses.values());
   }
 
   /**
-   *
-   * @return
-   */
-  public Map<String, JSONObject> getResponsesAsMap() {
-    return new HashMap<String, JSONObject>(responses);
-  }
-
-  /**
-   *
-   * @return
+   * Return the operation.
+   * 
+   * @return a {@link SelectOperation}
    */
   public SelectOperation getSelectOperation() {
     return selectOperation;
   }
 
   /**
-   *
-   * @return
+   * Return the behavior.
+   * 
+   * @return a {@link GroupBehavior}
    */
   public GroupBehavior getGroupBehavior() {
     return groupBehavior;
   }
   
   /**
-   *
-   * @return
+   * Return the query.
+   * 
+   * @return a string
    */
   public String getQuery() {
     return query;
   }
   
   /**
-   *
-   * @return
+   * Return the guid.
+   * 
+   * @return a string
    */
   public String getGuid() {
     return guid;
   }
 
   /**
-   *
-   * @return
+   * Return the minimum refresh interval.
+   * 
+   * @return an int
    */
   public int getMinRefreshInterval() {
     return minRefreshInterval;

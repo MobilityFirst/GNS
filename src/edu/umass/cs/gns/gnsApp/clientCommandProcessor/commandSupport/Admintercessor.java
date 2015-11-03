@@ -89,7 +89,7 @@ public class Admintercessor {
    * Clears the database and reinitializes all indices.
    *
    * @param handler
-   * @return
+   * @return true if we were successful
    */
   public boolean sendResetDB(ClientRequestHandlerInterface handler) {
     try {
@@ -105,7 +105,7 @@ public class Admintercessor {
    * Sends the delete all records command.
    *
    * @param handler
-   * @return
+   * @return true if we were successful
    */
   public boolean sendDeleteAllRecords(ClientRequestHandlerInterface handler) {
     try {
@@ -121,7 +121,7 @@ public class Admintercessor {
    * Sends the clear cache command.
    *
    * @param handler
-   * @return
+   * @return true if we were successful
    */
   public boolean sendClearCache(ClientRequestHandlerInterface handler) {
     try {
@@ -137,7 +137,7 @@ public class Admintercessor {
    * Sends the dump cache command.
    *
    * @param handler
-   * @return
+   * @return a string containing the cache
    */
   public String sendDumpCache(ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
@@ -203,7 +203,7 @@ public class Admintercessor {
    * @param node1
    * @param node2
    * @param handler
-   * @return
+   * @return a string containing the ping value
    */
   public String sendPingValue(String node1, String node2, ClientRequestHandlerInterface handler) {
     int id = nextAdminRequestID();
@@ -231,7 +231,7 @@ public class Admintercessor {
    *
    * @param level
    * @param handler
-   * @return
+   * @return true if we were successful 
    */
   public boolean sendChangeLogLevel(Level level, ClientRequestHandlerInterface handler) {
     try {
@@ -293,7 +293,7 @@ public class Admintercessor {
    * Sends the dump command to the LNS.
    *
    * @param handler
-   * @return
+   * @return a string containing the contents of the GNS
    */
   public CommandResponse<String> sendDump(ClientRequestHandlerInterface handler) {
     int id;
@@ -442,9 +442,9 @@ public class Admintercessor {
    *
    * @param tagName
    * @param handler
-   * @return
+   * @return a set of strings
    */
-  public HashSet<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {
+  public Set<String> collectTaggedGuids(String tagName, ClientRequestHandlerInterface handler) {
     int id;
     if ((id = sendDumpOutputHelper(tagName, handler)) == -1) {
       return null;
@@ -454,7 +454,7 @@ public class Admintercessor {
     dumpResult.remove(id);
 
     if (result != null) {
-      HashSet<String> allGuids = new HashSet<String>();
+      Set<String> allGuids = new HashSet<String>();
       for (TreeSet<NameRecord> records : result.values()) {
         try {
           for (NameRecord record : records) {

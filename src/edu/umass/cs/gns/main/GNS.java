@@ -96,7 +96,7 @@ public class GNS {
     /**
      * Returns the max port offset.
      * 
-     * @return
+     * @return an int
      */
     public static int maxOffset() {
       int result = 0;
@@ -111,7 +111,7 @@ public class GNS {
     /**
      * Returns the offset for this port.
      * 
-     * @return
+     * @return an int
      */
     public int getOffset() {
       return offset;

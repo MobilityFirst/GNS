@@ -48,13 +48,14 @@ public class SelectHandler {
 
   /**
    * Sends the basic Select query which returns a list of guids that have contain the given key / value pair.
+   * The returned value is encoded as a JSON Array string.
    *
    * @param operation
    * @param key
    * @param value
    * @param otherValue
    * @param handler
-   * @return
+   * @return the list of guids in a string encoded as a JSON Array
    */
   public static String sendSelectRequest(SelectOperation operation, String key, Object value, Object otherValue, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
@@ -64,10 +65,11 @@ public class SelectHandler {
 
   /**
    * Sends the a Select query which returns a list of guids match the given query.
+   * The returned value is encoded as a JSON Array string.
    *
    * @param query
    * @param handler
-   * @return
+   * @return the list of guids in a string encoded as a JSON Array
    */
   public static String sendSelectQuery(String query, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
@@ -82,7 +84,7 @@ public class SelectHandler {
    * @param guid
    * @param interval
    * @param handler
-   * @return
+   * @return the list of guids in a string encoded as a JSON Array
    */
   public static String sendGroupGuidSetupSelectQuery(String query, String guid, int interval, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();
@@ -95,11 +97,12 @@ public class SelectHandler {
 
   /**
    * Sends the Select query which sets up a group guid whose members match the given query.
-   *
+   * The returned value is encoded as a JSON Array string.
+   * 
    * @param query
    * @param guid
    * @param handler
-   * @return
+   * @return the list of guids in a string encoded as a JSON Array
    */
   public static String sendGroupGuidSetupSelectQuery(String query, String guid, ClientRequestHandlerInterface handler) {
     return sendGroupGuidSetupSelectQuery(query, guid, DEFAULT_MIN_REFRESH_INTERVAL, handler);
@@ -107,10 +110,11 @@ public class SelectHandler {
 
   /**
    * Sends the Select query which returns the members of a previously created group guid.
+   * The returned value is encoded as a JSON Array string.
    *
    * @param guid
    * @param handler
-   * @return
+   * @return the list of guids in a string encoded as a JSON Array
    */
   public static String sendGroupGuidLookupSelectQuery(String guid, ClientRequestHandlerInterface handler) {
     int id = nextRequestID();

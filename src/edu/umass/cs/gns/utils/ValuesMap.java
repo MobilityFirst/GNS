@@ -99,7 +99,7 @@ public class ValuesMap extends JSONObject {
    * Supports dot notation.
    *
    * @param key
-   * @return
+   * @return a {@link ResultValue}
    */
   public ResultValue getAsArray(String key) {
     try {

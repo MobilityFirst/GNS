@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2015
+ * University of Massachusetts
+ * All Rights Reserved 
+ *
+ */
 package edu.umass.cs.gns.activecode.worker;
 
 import java.io.BufferedReader;
@@ -29,13 +35,13 @@ public class ActiveCodeGuidQuerier {
 	private ActiveCodeQueryResponse queryGuid(ActiveCodeQueryRequest acqreq) {
 		try {
 			ActiveCodeMessage acm = new ActiveCodeMessage();
-			acm.acqreq = acqreq;
+			acm.setAcqreq(acqreq);
 			// Send off the query request
 			ActiveCodeUtils.sendMessage(out, acm);
 			
 			// Wait for a response
 		    ActiveCodeMessage acmqr = ActiveCodeUtils.getMessage(in);
-		    return acmqr.acqresp;
+		    return acmqr.getAcqresp();
 		    
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -57,7 +63,7 @@ public class ActiveCodeGuidQuerier {
 		ValuesMap vm = null;
 		
 		try {
-			vm = new ValuesMap(new JSONObject(acqresp.valuesMapString));
+			vm = new ValuesMap(new JSONObject(acqresp.getValuesMapString()));
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -76,6 +82,6 @@ public class ActiveCodeGuidQuerier {
 	public boolean writeGuid(String guid, String field, ValuesMap newValue) {
 		ActiveCodeQueryRequest acqreq = new ActiveCodeQueryRequest(guid, field, newValue.toString(), "write");
 		ActiveCodeQueryResponse acqresp = queryGuid(acqreq);
-		return acqresp.success;  
+		return acqresp.isSuccess();  
 	}
 }

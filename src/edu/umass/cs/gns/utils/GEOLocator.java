@@ -49,9 +49,10 @@ public class GEOLocator {
    */
 
   /**
-   *
+   * Lookup the lat,long based on the ip address.
+   * 
    * @param ipAddress
-   * @return
+   * @return a Point2D
    */
   public static Point2D lookupIPLocation(String ipAddress) {
     String query = IPServiceURL + Defs.QUERYPREFIX + "ip" + Defs.VALSEP + ipAddress;
@@ -74,9 +75,10 @@ public class GEOLocator {
   //  http://maps.googleapis.com/maps/api/geocode/json?address=Palo+Alto,+CA&sensor=false
   
   /**
-   *
+   * Lookup the lat,long based on the street address.
+   * 
    * @param address
-   * @return
+   * @return a Point2D
    */
     
   public static Point2D lookupCityLocation(String address) {

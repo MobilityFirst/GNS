@@ -24,7 +24,7 @@ public class SparseMatrix<U, V, T> {
   T defaultValue;
 
   /**
-   * * Creates a SparseMatrix with a default item value of null.
+   * Creates a SparseMatrix with a default item value of null.
    */
   public SparseMatrix() {
     this(null);
@@ -40,10 +40,11 @@ public class SparseMatrix<U, V, T> {
   }
 
   /**
-   *
-   * @param i
-   * @param j
-   * @param t
+   * Puts an element into the sparse matrix.
+   * 
+   * @param i the first index
+   * @param j the second index
+   * @param t the element to add
    */
   public void put(U i, V j, T t) {
     if (rows.get(i) == null) {
@@ -53,10 +54,11 @@ public class SparseMatrix<U, V, T> {
   }
 
   /**
-   *
-   * @param i
-   * @param j
-   * @return
+   * Retrieves an element from the sparse matrix.
+   * 
+   * @param i the first index
+   * @param j the second index
+   * @return the element
    */
   public T get(U i, V j) {
     if (rows.get(i) == null) {

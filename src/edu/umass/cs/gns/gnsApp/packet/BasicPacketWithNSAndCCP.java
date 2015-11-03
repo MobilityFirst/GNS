@@ -80,7 +80,7 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket im
   /**
    * Get the id of the name server (usually the one that is handling this packet).
    *
-   * @return
+   * @return a node id
    */
   public NodeIDType getNameServerID() {
     return nameServerID;
@@ -98,7 +98,7 @@ public abstract class BasicPacketWithNSAndCCP<NodeIDType> extends BasicPacket im
   /**
    * Get the address to which LNS to send the packet back to.
    *
-   * @return
+   * @return an address
    */
   public InetSocketAddress getCppAddress() {
     return ccpAddress;

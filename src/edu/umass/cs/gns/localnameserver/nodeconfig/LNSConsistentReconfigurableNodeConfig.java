@@ -80,7 +80,7 @@ public class LNSConsistentReconfigurableNodeConfig extends
    * Returns the set of reconfigurators.
    *
    * @param name
-   * @return
+   * @return a set of addresses
    */
   public Set<InetSocketAddress> getReplicatedReconfigurators(String name) {
     // refresh before returning
@@ -93,7 +93,7 @@ public class LNSConsistentReconfigurableNodeConfig extends
    * Returns the set of active replicas.
    * 
    * @param name
-   * @return
+   * @return a set of addresses
    */
   public Set<InetSocketAddress> getReplicatedActives(String name) {
     // refresh before returning

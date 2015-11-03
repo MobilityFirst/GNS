@@ -73,7 +73,7 @@ public class GuidInfo {
   /**
    Convert GuidInfo to and from the format which is used to store it in the DB. 
    Use a JSON Object which is put as the first element of an ArrayList
-   @return
+   @return a {@link ResultValue}
    @throws JSONException 
    */
   public ResultValue toDBFormat() throws JSONException {
@@ -121,7 +121,7 @@ public class GuidInfo {
   /**
    * Converts this instance into a JSONObject.
    *
-   * @return
+   * @return a JSONObject
    * @throws JSONException 
    */
   public JSONObject toJSONObject() throws JSONException {
@@ -139,7 +139,7 @@ public class GuidInfo {
   /**
    * Returns the human readable name.
    *
-   * @return
+   * @return a string
    */
   public String getName() {
     return name;
@@ -148,7 +148,7 @@ public class GuidInfo {
   /**
    * Returns the guid.
    *
-   * @return
+   * @return a string
    */
   public String getGuid() {
     return guid;
@@ -157,7 +157,7 @@ public class GuidInfo {
   /**
    * Returns the public key.
    *
-   * @return
+   * @return a string
    */
   public String getPublicKey() {
     return publicKey;
@@ -175,7 +175,7 @@ public class GuidInfo {
   /**
    * Returns the type. Currently an unused feature.
    *
-   * @return
+   * @return a string
    */
   public String getType() {
     return type;
@@ -184,7 +184,7 @@ public class GuidInfo {
   /**
    * Returns the creation date of the guid.
    *
-   * @return
+   * @return a date
    */
   public Date getCreated() {
     return created;
@@ -193,7 +193,7 @@ public class GuidInfo {
   /**
    * Returns the update date of the guid.
    *
-   * @return
+   * @return a date
    */
   public Date getUpdated() {
     return updated;
@@ -211,7 +211,7 @@ public class GuidInfo {
    * Returns true if this guid contains the tag.
    *
    * @param tag
-   * @return
+   * @return true if the tag was found
    */
   public boolean containsTag(String tag) {
     return tags.contains(tag);

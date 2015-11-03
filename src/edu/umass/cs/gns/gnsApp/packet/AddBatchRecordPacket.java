@@ -135,7 +135,7 @@ public class AddBatchRecordPacket<NodeIDType> extends AbstractAddRecordPacket<No
   /**
    * Return the values.
    *
-   * @return
+   * @return a JSONObject
    */
   public JSONObject getValues() {
     return values;

@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import edu.umass.cs.gns.utils.Base64;
 import static edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport.GnsProtocolDefs.*;
 import edu.umass.cs.gns.exceptions.GnsRuntimeException;
@@ -96,7 +97,7 @@ public class AccountAccess {
    *
    * @param guid
    * @param handler
-   * @return
+   * @return the account info record or null if it could not be found
    */
   public static AccountInfo lookupAccountInfoFromGuid(String guid,
           //boolean allowSubGuids, 
@@ -106,16 +107,6 @@ public class AccountAccess {
     if (AppReconfigurableNodeOptions.debuggingEnabled) {
       GNS.getLogger().fine("###QUERY RESULT:" + accountResult);
     }
-//    if (accountResult.isError()) {
-//      if (allowSubGuids) {
-//        // if allowSubGuids is true assume this is a guid that is "owned" by an account guid so
-//        // we look  up the owning account guid
-//        guid = lookupPrimaryGuid(guid, handler);
-//        if (guid != null) {
-//          accountResult = handler.getIntercessor().sendSingleFieldQueryBypassingAuthentication(guid, ACCOUNT_INFO);
-//        }
-//      }
-//    }
     if (!accountResult.isError()) {
       try {
         return new AccountInfo(accountResult.getValuesMap().getJSONObject(ACCOUNT_INFO));
@@ -244,7 +235,7 @@ public class AccountAccess {
    * @param publicKey
    * @param password
    * @param handler
-   * @return
+   * @return the command response
    */
   public static CommandResponse<String> addAccountWithVerification(final String host, final String name, final String guid,
           String publicKey, String password,
@@ -305,7 +296,7 @@ public class AccountAccess {
    * @param guid
    * @param code
    * @param handler
-   * @return
+   * @return the command response
    */
   public static CommandResponse<String> verifyAccount(String guid, String code, ClientRequestHandlerInterface handler) {
     AccountInfo accountInfo;
@@ -341,7 +332,7 @@ public class AccountAccess {
    * @param password
    * @param publicKey
    * @param handler
-   * @return
+   * @return the command response
    */
   public static CommandResponse<String> resetPublicKey(String guid, String password, String publicKey,
           ClientRequestHandlerInterface handler) {
@@ -660,7 +651,7 @@ public class AccountAccess {
    *
    * @param guid
    * @param handler
-   * @return
+   * @return the command response
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, ClientRequestHandlerInterface handler) {
     return removeGuid(guid, null, false, handler);
@@ -688,7 +679,7 @@ public class AccountAccess {
    * @param accountInfo - can be null in which case we look it up
    * @param ignoreAccountGuid
    * @param handler
-   * @return
+   * @return the command response
    */
   public static CommandResponse<String> removeGuid(GuidInfo guid, AccountInfo accountInfo, boolean ignoreAccountGuid,
           ClientRequestHandlerInterface handler) {
@@ -954,7 +945,7 @@ public class AccountAccess {
    * @param readAcessors
    * @param writeField
    * @param writeAcessors
-   * @return
+   * @return a JSONObject
    * @throws JSONException
    */
   private static JSONObject createACL(String readField, List<String> readAcessors,

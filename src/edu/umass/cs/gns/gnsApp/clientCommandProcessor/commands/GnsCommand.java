@@ -85,7 +85,7 @@ public abstract class GnsCommand implements Comparable<GnsCommand> {
    * 
    * @param json
    * @param handler
-   * @return
+   * @return the command response of the commands
    * @throws InvalidKeyException
    * @throws InvalidKeySpecException
    * @throws JSONException

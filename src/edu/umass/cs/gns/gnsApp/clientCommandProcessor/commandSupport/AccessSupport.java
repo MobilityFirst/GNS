@@ -46,7 +46,7 @@ public class AccessSupport {
    * @param publicKey
    * @param signature
    * @param message
-   * @return
+   * @return true if the verification passes
    * @throws InvalidKeySpecException
    * @throws InvalidKeyException
    * @throws java.io.UnsupportedEncodingException

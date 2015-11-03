@@ -5,6 +5,7 @@
  */
 package edu.umass.cs.gns.gnsApp.clientCommandProcessor.commandSupport;
 
+import edu.umass.cs.gns.gnsApp.QueryResult;
 import edu.umass.cs.gns.database.ColumnFieldType;
 import edu.umass.cs.gns.gnsApp.clientCommandProcessor.demultSupport.IntercessorInterface;
 import edu.umass.cs.gns.main.GNS;
@@ -13,24 +14,20 @@ import edu.umass.cs.gns.gnsApp.packet.AddRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.ConfirmUpdatePacket;
 import edu.umass.cs.gns.gnsApp.packet.DNSPacket;
 import edu.umass.cs.gns.gnsApp.NSResponseCode;
-
 import edu.umass.cs.gns.gnsApp.packet.AddBatchRecordPacket;
 import edu.umass.cs.gns.utils.ResultValue;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
 import static edu.umass.cs.gns.gnsApp.packet.Packet.getPacketType;
 import edu.umass.cs.gns.gnsApp.packet.RemoveRecordPacket;
 import edu.umass.cs.gns.gnsApp.packet.UpdatePacket;
 import edu.umass.cs.gns.nodeconfig.GNSInterfaceNodeConfig;
 import edu.umass.cs.gns.utils.ValuesMap;
 import edu.umass.cs.nio.AbstractJSONPacketDemultiplexer;
-
 import edu.umass.cs.reconfiguration.reconfigurationpackets.CreateServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.DeleteServiceName;
 import edu.umass.cs.reconfiguration.reconfigurationpackets.ReconfigurationPacket;
@@ -41,14 +38,14 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * One of a number of class that implement client support in the GNS server.
+ * One of a number of classes that implement client support in the GNS server.
  *
  * The intercessor is the primary liason class between the servers (HTTP and new
  * TCP) and the Command Module which handles incoming requests from the clients
  * and the the Local Name Server.
  *
- * Provides support for the AccountAccess, Field Access,
- * FieldMetaData, GroupAccess, and SelectHandler classes.
+ * Provides support for the {@link AccountAccess}, {@link FieldAccess},
+ * {@link FieldMetaData}, {@link GroupAccess}, and {@link SelectHandler} classes.
  *
  * Provides basic methods for reading and writing fields in the GNS. Used
  * by the various classes in the client package to implement writing of fields
@@ -56,7 +53,8 @@ import java.util.Set;
  * sophisticated queries (the select queries).
  *
  * The Intercessor maintains maps of all the read and write queries coming in to the
- * Local Name Server in order to direct incoming responses back to the appropriate sender.
+ * server in order to direct incoming responses back to the appropriate sender.
+ * 
  * Intstrumentation of query response times is also done here.
  *
  * @author westy
@@ -70,13 +68,12 @@ public class Intercessor implements IntercessorInterface {
   private final Object monitorCreate = new Object();
   private final Object monitorDelete = new Object();
   /**
-   * We use a ValuesMap for return values even when returning a single value. This lets us use the same structure for single and
+   * We use a {@link QueryResult} for return values even when returning a single value. 
+   * This lets us use the same structure for single and
    * multiple value returns.
    */
   private final ConcurrentMap<Integer, QueryResult<String>> queryResultMap;
-  private final Random randomID;
-
-  //public Transport transport;
+  
   private final ConcurrentMap<Integer, NSResponseCode> updateSuccessResult;
   // Instrumentation
   private final ConcurrentMap<Integer, Long> queryTimeStamp;
@@ -84,6 +81,8 @@ public class Intercessor implements IntercessorInterface {
   private final ConcurrentMap<String, NSResponseCode> createSuccessResult;
   private final ConcurrentMap<String, NSResponseCode> deleteSuccessResult;
 
+  private final Random randomID;
+  
   /**
    * True if debugging is enabled.
    */
@@ -167,7 +166,7 @@ public class Intercessor implements IntercessorInterface {
             }
             break;
           case DNS:
-            DNSPacket<String> dnsResponsePacket = new DNSPacket<String>(json, nodeConfig);
+            DNSPacket<String> dnsResponsePacket = new DNSPacket<>(json, nodeConfig);
             id = dnsResponsePacket.getQueryId();
             if (dnsResponsePacket.isResponse() && !dnsResponsePacket.containsAnyError()) {
               //Packet is a response and does not have a response error
@@ -178,7 +177,7 @@ public class Intercessor implements IntercessorInterface {
               }
               synchronized (monitor) {
                 queryResultMap.put(id,
-                        new QueryResult<String>(dnsResponsePacket.getRecordValue(),
+                        new QueryResult<>(dnsResponsePacket.getRecordValue(),
                                 dnsResponsePacket.getResponder()
                                 //,dnsResponsePacket.getLookupTime()
                         ));
@@ -192,7 +191,7 @@ public class Intercessor implements IntercessorInterface {
               }
               synchronized (monitor) {
                 queryResultMap.put(id,
-                        new QueryResult<String>(dnsResponsePacket.getHeader().getResponseCode(),
+                        new QueryResult<>(dnsResponsePacket.getHeader().getResponseCode(),
                                 dnsResponsePacket.getResponder()
                                 //,dnsResponsePacket.getLookupTime()
                         ));
@@ -219,13 +218,13 @@ public class Intercessor implements IntercessorInterface {
    *
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    *
-   * @param name
+   * @param name the record name
    * @param field
    * @param reader
    * @param signature
    * @param message
    * @param returnFormat
-   * @return
+   * @return a {@link QueryResult}
    */
   public QueryResult<String> sendSingleFieldQuery(String name, String field, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, field, null, reader, signature, message, returnFormat);
@@ -239,13 +238,13 @@ public class Intercessor implements IntercessorInterface {
    *
    * This one performs signature and acl checks at the NS unless you set reader (and sig, message) to null).
    *
-   * @param name
+   * @param name the record name
    * @param fields
    * @param reader
    * @param signature
    * @param message
    * @param returnFormat
-   * @return
+   * @return a {@link QueryResult}
    */
   public QueryResult<String> sendMultiFieldQuery(String name, ArrayList<String> fields, String reader, String signature, String message, ColumnFieldType returnFormat) {
     return sendQueryInternal(name, null, fields, reader, signature, message, returnFormat);
@@ -258,7 +257,7 @@ public class Intercessor implements IntercessorInterface {
     }
     int id = nextQueryRequestID();
 
-    DNSPacket<String> queryrecord = new DNSPacket<String>(null, id, name, field, fields,
+    DNSPacket<String> queryrecord = new DNSPacket<>(null, id, name, field, fields,
             returnFormat, reader, signature, message);
     JSONObject json;
     try {
@@ -271,28 +270,8 @@ public class Intercessor implements IntercessorInterface {
       return null;
     }
 
-    // now we wait until the correct packet comes back
-//    try {
-//      if (debuggingEnabled) {
-//        GNS.getLogger().fine("Waiting for query id: " + id);
-//      }
-//      final Long waitStart = System.currentTimeMillis(); // instrumentation
-//      synchronized (monitor) {
-//        while (!queryResultMap.containsKey(id)) {
-//          monitor.wait();
-//        }
-//      }
-//      DelayProfiler.update("IntercessorWait", waitStart);
-//      if (debuggingEnabled) {
-//        GNS.getLogger().fine("Query id response received: " + id);
-//      }
-//    } catch (InterruptedException x) {
-//      GNS.getLogger().severe("Wait for return packet was interrupted " + x);
-//
-//    }
     Long receiptTime = System.currentTimeMillis(); // instrumentation
     QueryResult<String> result = queryResultMap.remove(id);
-    //queryResultMap.remove(id);
     Long sentTime = queryTimeStamp.get(id); // instrumentation
     queryTimeStamp.remove(id); // instrumentation
     long rtt = receiptTime - sentTime;
@@ -309,9 +288,9 @@ public class Intercessor implements IntercessorInterface {
   /**
    * This version bypasses any signature checks and is meant for "system" use.
    *
-   * @param name
+   * @param name the record name
    * @param field
-   * @return
+   * @return a {@link QueryResult}
    */
   public QueryResult<String> sendSingleFieldQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, field, null, null, null, ColumnFieldType.LIST_STRING);
@@ -320,9 +299,9 @@ public class Intercessor implements IntercessorInterface {
   /**
    * Sends a query to the Nameserver for all of the fields in a guid.
    * 
-   * @param name
+   * @param name the record name
    * @param field
-   * @return
+   * @return a {@link QueryResult}
    */
   public QueryResult<String> sendFullQueryBypassingAuthentication(String name, String field) {
     return sendSingleFieldQuery(name, GnsProtocolDefs.ALLFIELDS, null, null, null, ColumnFieldType.USER_JSON);
@@ -331,10 +310,10 @@ public class Intercessor implements IntercessorInterface {
   /**
    * Sends an AddRecord packet to the CCP with an initial value using a single field.
    *
-   * @param name
+   * @param name the record name
    * @param field
    * @param value
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendAddRecordWithSingleField(String name, String field, ResultValue value) {
     int id = nextUpdateRequestID();
@@ -366,9 +345,9 @@ public class Intercessor implements IntercessorInterface {
   /**
    * Sends an add record to the Nameserver for all the fields in a JSONObject.
    * 
-   * @param name
+   * @param name the record name
    * @param value
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendFullAddRecord(String name, JSONObject value) {
     int id = nextUpdateRequestID();
@@ -434,10 +413,10 @@ public class Intercessor implements IntercessorInterface {
   
 
   /**
-   * Sends an RemoveRecord packet to the CPP.
+   * Sends an RemoveRecord packet to the server.
    *
-   * @param name
-   * @return
+   * @param name the record name
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendRemoveRecord(String name) {
     int id = nextUpdateRequestID();
@@ -464,18 +443,18 @@ public class Intercessor implements IntercessorInterface {
   }
 
   /**
-   * Sends an update request for a single value.
+   * Sends an update request for a single value to the server.
    *
-   * @param name
-   * @param key
-   * @param newValue - the new value to update with
-   * @param oldValue - the old value to update with for substitute
-   * @param argument - the index for the set operation
-   * @param operation
-   * @param writer
+   * @param name the record name
+   * @param key the field name
+   * @param newValue the new value to update with
+   * @param oldValue the old value to update with for substitute
+   * @param argument the index for the set operation
+   * @param operation the {@link UpdateOperation} to perform
+   * @param writer the record doing the update
    * @param signature
    * @param message
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendUpdateRecord(String name, String key, String newValue, String oldValue,
           int argument, UpdateOperation operation,
@@ -489,18 +468,18 @@ public class Intercessor implements IntercessorInterface {
   }
 
   /**
-   * Sends an update request for a list.
+   * Sends an update request for a list to the server and waits for a response.
    *
-   * @param name
-   * @param key
-   * @param newValue - the new value to update with
-   * @param oldValue - the old value to update with for substitute
-   * @param argument - the index for the set operation
-   * @param operation
-   * @param writer
+   * @param name the record name
+   * @param key the field name
+   * @param newValue the new value to update with
+   * @param oldValue the old value to update with for substitute
+   * @param argument the index for the set operation
+   * @param operation the {@link UpdateOperation} to perform
+   * @param writer the record doing the update
    * @param signature
    * @param message
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
@@ -509,18 +488,19 @@ public class Intercessor implements IntercessorInterface {
   }
 
   /**
-   *
-   * @param name
-   * @param key
-   * @param newValue
-   * @param oldValue
-   * @param argument
-   * @param operation
-   * @param writer
+   * Sends an update request for a list to the server.
+   * 
+   * @param name the record name
+   * @param key the field name
+   * @param newValue the new value to update with
+   * @param oldValue the old value to update with for substitute
+   * @param argument the index for the set operation
+   * @param operation the {@link UpdateOperation} to perform
+   * @param writer the record doing the writing
    * @param signature
    * @param message
-   * @param wait
-   * @return
+   * @param wait determines whether we wait for a response
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendUpdateRecord(String name, String key, ResultValue newValue, ResultValue oldValue,
           int argument, UpdateOperation operation,
@@ -543,13 +523,13 @@ public class Intercessor implements IntercessorInterface {
   /**
    * Sends an update request for an entire JSON Object.
    *
-   * @param name
-   * @param userJSON
-   * @param operation
-   * @param writer
+   * @param name the record name
+   * @param userJSON we're replacing multiple fields
+   * @param operation the {@link UpdateOperation} to perform
+   * @param writer the record doing the update
    * @param signature
    * @param message
-   * @return
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message) {
@@ -559,14 +539,14 @@ public class Intercessor implements IntercessorInterface {
   /**
    * Sends an update request for an entire JSON Object.
    * 
-   * @param name
-   * @param userJSON
-   * @param operation
-   * @param writer
+   * @param name the record name
+   * @param userJSON we're replacing multiple fields
+   * @param operation the {@link UpdateOperation} to perform
+   * @param writer the record doing the update
    * @param signature
    * @param message
-   * @param wait - indicates if we wait for a confirmation packet
-   * @return
+   * @param wait indicates if we wait for a confirmation packet
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendUpdateUserJSON(String name, ValuesMap userJSON, UpdateOperation operation,
           String writer, String signature, String message, boolean wait) {
@@ -588,12 +568,12 @@ public class Intercessor implements IntercessorInterface {
   /**
    * Used internally by the system to send update requests for lists. Ignores signatures and access.
    *
-   * @param name
-   * @param key
-   * @param newValue
-   * @param oldValue
-   * @param operation
-   * @return
+   * @param name the record name
+   * @param key the field name
+   * @param newValue the new value to update with
+   * @param oldValue the old value to update with for substitute
+   * @param operation the {@link UpdateOperation} to perform
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, ResultValue newValue,
           ResultValue oldValue, UpdateOperation operation) {
@@ -604,12 +584,12 @@ public class Intercessor implements IntercessorInterface {
   /**
    * Used internally by the system to send update requests. Ignores signatures and access.
    *
-   * @param name
-   * @param key
-   * @param newValue
-   * @param oldValue
-   * @param operation
-   * @return
+   * @param name the record name
+   * @param key the field name
+   * @param newValue the new value to update with
+   * @param oldValue the old value to update with for substitute
+   * @param operation the {@link UpdateOperation} to perform
+   * @return a {@link NSResponseCode}
    */
   public NSResponseCode sendUpdateRecordBypassingAuthentication(String name, String key, String newValue,
           String oldValue, UpdateOperation operation) {
@@ -624,14 +604,14 @@ public class Intercessor implements IntercessorInterface {
    * in normal use.
    *
    * @param id
-   * @param name
-   * @param key
-   * @param newValue
-   * @param oldValue
-   * @param argument
-   * @param userJSON
-   * @param operation
-   * @param writer
+   * @param name the record name
+   * @param key the field name
+   * @param newValue the new value to update with
+   * @param oldValue the old value to update with for substitute
+   * @param argument the index for the set operation
+   * @param userJSON used instead of newValue, oldValue and argument when we're replacing multiple fields
+   * @param operation the {@link UpdateOperation} to perform
+   * @param writer the record doing the update
    * @param signature
    * @param message
    */

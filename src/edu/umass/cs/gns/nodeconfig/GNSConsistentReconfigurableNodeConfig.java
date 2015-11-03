@@ -83,7 +83,7 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
    * Returns the inet addresses of the nodes.
    *
    * @param nodeIDs
-   * @return
+   * @return a set of addresses
    */
   public ArrayList<InetAddress> getNodeIPs(Set<NodeIDType> nodeIDs) {
     ArrayList<InetAddress> addresses = new ArrayList<InetAddress>();
@@ -99,7 +99,7 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
    * Returns the reconfigurators.
    * 
    * @param name
-   * @return
+   * @return a set of node ids
    */
   public Set<NodeIDType> getReplicatedReconfigurators(String name) {
     this.refreshReconfigurators();
@@ -111,7 +111,7 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
    * Return the active replicas.
    * 
    * @param name
-   * @return
+   * @return a set of node ids
    */
   public Set<NodeIDType> getReplicatedActives(String name) {
     this.refreshActives();
@@ -121,7 +121,7 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
   /**
    * Return the inet address of the active replicas.
    * @param name
-   * @return
+   * @return an array of addresses
    */
   public ArrayList<InetAddress> getReplicatedActivesIPs(String name) {
     return this.getNodeIPs(this.getReplicatedActives(name));
@@ -135,7 +135,7 @@ public class GNSConsistentReconfigurableNodeConfig<NodeIDType> extends
    * from nodes to addresses, so a simple reverse lookup is not meaningful.
    * @param newAddresses
    * @param oldNodes
-   * @return
+   * @return a set of node ids
    */
   public Set<NodeIDType> getIPToActiveReplicaIDs(ArrayList<InetAddress> newAddresses,
           Set<NodeIDType> oldNodes) {

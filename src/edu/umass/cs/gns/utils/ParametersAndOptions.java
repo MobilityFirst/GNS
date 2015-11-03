@@ -121,7 +121,7 @@ public class ParametersAndOptions {
    * 
    * @param key
    * @param options
-   * @return
+   * @return true if the option is true
    */
   public static boolean isOptionTrue(String key, Map<String, String> options) {
     String value;

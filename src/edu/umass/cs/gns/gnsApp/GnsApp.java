@@ -308,10 +308,11 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   /**
-   *
+   * Updates the state for the given named record.
+   * 
    * @param name
    * @param state
-   * @return
+   * @return true if we were able to update the state
    */
   @Override
   public boolean updateState(String name, String state) {
@@ -360,10 +361,11 @@ public class GnsApp extends AbstractReconfigurablePaxosApp<String>
   }
 
   /**
-   *
+   * Returns a stop request packet.
+   * 
    * @param name
    * @param epoch
-   * @return
+   * @return the stop request packet
    */
   @Override
   public InterfaceReconfigurableRequest getStopRequest(String name, int epoch) {

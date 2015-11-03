@@ -332,7 +332,7 @@ public class UpdatePacket<NodeIDType> extends BasicPacketWithSignatureInfoAndNSA
   /**
    * Return the id used the client support for bookkeeping.
    *
-   * @return
+   * @return an int
    */
   public int getRequestID() {
     return requestID;

@@ -60,7 +60,7 @@ public class GNSConsistentNodeConfig<NodeIDType> implements
    * Returns replicated servers.
    * 
    * @param name
-   * @return
+   * @return a set of node ids
    */
   public Set<NodeIDType> getReplicatedServers(String name) {
     refresh();

@@ -66,7 +66,7 @@ public class NSGroupAccess {
    * @param allowQueryToOtherNSs
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return the members as a {@link ResultValue}
    * @throws FailedDBOperationException
    */
   public static ResultValue lookupMembers(String guid, boolean allowQueryToOtherNSs, 
@@ -80,7 +80,7 @@ public class NSGroupAccess {
    * 
    * @param guid
    * @param activeReplica
-   * @return
+   * @return true if the guid is a group guid
    * @throws FailedDBOperationException
    */
   public static boolean isGroupGuid(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -93,7 +93,7 @@ public class NSGroupAccess {
    * @param guid
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return a set of strings
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<String> lookupGroups(String guid, GnsApplicationInterface<String> activeReplica,
@@ -108,7 +108,7 @@ public class NSGroupAccess {
    *
    * @param guid
    * @param activeReplica
-   * @return
+   * @return a set of strings
    * @throws edu.umass.cs.gns.exceptions.FailedDBOperationException
    */
   public static Set<String> lookupGroupsOnThisServer(String guid, GnsApplicationInterface<String> activeReplica) throws FailedDBOperationException {
@@ -123,7 +123,7 @@ public class NSGroupAccess {
    * @param memberGuid
    * @param activeReplica
    * @param lnsAddress
-   * @return
+   * @return an {@link NSResponseCode}
    */
   public static NSResponseCode removeFromGroup(String groupGuid, String memberGuid, 
           GnsApplicationInterface<String> activeReplica,

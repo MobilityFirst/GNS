@@ -88,12 +88,14 @@ public class StopPacket extends BasicPacket implements InterfaceReconfigurableRe
   }
 
   /**
+   * Returns true if the packet needs coordination.
+   * 
    * If your app is using PaxosReplicaCoordinator, its stop request
    * (as returned by getStopRequest) must implement InterfaceReplicableRequest
    * and the stop requests needsCoordination method must return true by default
    * (overwriteable by setNeedsCoordination).
    *
-   * @return
+   * @return true if the packet needs coordination
    */
   @Override
   public boolean needsCoordination() {

@@ -18,7 +18,7 @@ public interface PacketInterface {
   /**
    * Convert this to a JSON Object.
    * 
-   * @return
+   * @return JSONObject
    * @throws JSONException
    */
   public JSONObject toJSONObject() throws JSONException;

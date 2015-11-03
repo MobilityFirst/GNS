@@ -89,7 +89,7 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
   /**
    * Converts the command object into a JSONObject.
    *
-   * @return
+   * @return a JSONObject
    * @throws org.json.JSONException
    */
   @Override
@@ -136,7 +136,7 @@ public class CommandPacket extends BasicPacket implements InterfaceReplicableReq
   /**
    * Return the sender address.
    * 
-   * @return
+   * @return a string
    */
   public String getSenderAddress() {
     return senderAddress;

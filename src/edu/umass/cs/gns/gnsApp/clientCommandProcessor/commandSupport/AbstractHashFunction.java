@@ -16,7 +16,7 @@ public abstract class AbstractHashFunction implements HashFunction {
    *  Hashes a string to a long.
    * 
    * @param key
-   * @return
+   * @return a long
    */
   @Override
   public long hashToLong(String key) {
