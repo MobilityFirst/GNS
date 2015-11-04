@@ -5,8 +5,12 @@
  */
 package edu.umass.cs.gns.utils;
 
+import com.sun.mail.smtp.SMTPTransport;
+import com.sun.mail.util.MailSSLSocketFactory;
 import edu.umass.cs.gns.main.GNS;
 import edu.umass.cs.gns.gnsApp.AppReconfigurableNodeOptions;
+import java.security.GeneralSecurityException;
+import java.util.Date;
 import javax.mail.Message;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
@@ -14,10 +18,11 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.util.Properties;
+import javax.mail.MessagingException;
 
 /**
  * Contains a few different methods to send email to the recipient.
- * 
+ *
  * @author westy
  */
 public class Email {
@@ -31,13 +36,17 @@ public class Email {
    * @return true if successful
    */
   public static boolean email(String subject, String recipient, String text) {
-    if (emailSSL(subject, recipient, text, true)) {
+    if (simpleMail(subject, recipient, text, true)) {
+      return true;
+    } else if (emailSSL(subject, recipient, text, true)) {
       return true;
     } else if (emailLocal(subject, recipient, text, true)) {
       return true;
     } else if (emailTLS(subject, recipient, text, true)) {
       return true;
-      // no run it again with error messages turned on
+      // now run it again with error messages turned on
+    } else if (simpleMail(subject, recipient, text, false)) {
+      return true;
     } else if (emailSSL(subject, recipient, text, false)) {
       return true;
     } else if (emailLocal(subject, recipient, text, false)) {
@@ -64,10 +73,53 @@ public class Email {
   /**
    *
    */
-  
   public static final String ACCOUNT_CONTACT_EMAIL = "admin@gns.name";
   private static final String password = "deadDOG8";
   private static final String smtpHost = "smtp.gmail.com";
+
+  public static boolean simpleMail(String subject, String recipient, String text) {
+    return simpleMail(subject, recipient, text, true);
+  }
+
+  public static boolean simpleMail(String subject, String recipient, String text, boolean suppressWarning) {
+    try {
+      MailSSLSocketFactory sf = new MailSSLSocketFactory();
+      sf.setTrustAllHosts(true);
+      Properties props = new Properties();
+
+      props.setProperty("mail.smtp.ssl.enable", "true");
+      //props.put("mail.smtp.host", smtpHost);
+      props.put("mail.smtp.auth", "true");
+      props.put("mail.smtp.ssl.socketFactory", sf);
+      Session session = Session.getInstance(props);
+
+      Message message = new MimeMessage(session);
+      message.setFrom(new InternetAddress(ACCOUNT_CONTACT_EMAIL));
+      message.setRecipients(Message.RecipientType.TO,
+              InternetAddress.parse(recipient));
+      message.setSubject(subject);
+      message.setText(text);
+      SMTPTransport t = (SMTPTransport) session.getTransport("smtp");
+      try {
+        t.connect(smtpHost, ACCOUNT_CONTACT_EMAIL, password);
+        t.sendMessage(message, message.getAllRecipients());
+        if (AppReconfigurableNodeOptions.debuggingEnabled) {
+          GNS.getLogger().info("Email response: " + t.getLastServerResponse());
+        }
+      } finally {
+        t.close();
+      }
+      if (AppReconfigurableNodeOptions.debuggingEnabled) {
+        GNS.getLogger().info("Successfully sent email to " + recipient + " with message: " + text);
+      }
+      return true;
+    } catch (GeneralSecurityException | MessagingException e) {
+      if (!suppressWarning) {
+        GNS.getLogger().warning("Unable to send email: " + e);
+      }
+      return false;
+    }
+  }
 
   /**
    * Attempts to use SSL to send a message to the recipient.
@@ -258,6 +310,9 @@ public class Email {
       }
       return false;
     }
+  }
 
+  public static void main(String[] args) {
+    simpleMail("hello", "david@westy.org", "this is another test on " + Format.formatPrettyDateUTC(new Date()));
   }
 }

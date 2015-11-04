@@ -1,2 +1,2 @@
 #
-java -ea -cp ../../dist/GNS.jar edu.umass.cs.gns.gnsApp.AppReconfigurableNode -standalone -nsfile ../../conf/single-server-info -consoleOutputLevel WARNING -demandProfileClass edu.umass.cs.gns.gnsApp.NullDemandProfile &
+java -ea -DgigapaxosConfig=../../conf/gigapaxos.gnsApp.properties -cp ../../dist/GNS.jar edu.umass.cs.gns.gnsApp.AppReconfigurableNode -standalone -configFile ns.properties &
