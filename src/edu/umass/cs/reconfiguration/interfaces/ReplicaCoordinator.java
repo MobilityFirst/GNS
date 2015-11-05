@@ -36,7 +36,7 @@ public interface ReplicaCoordinator<NodeIDType> {
 	 * 
 	 * @param request
 	 * @return False if coordinated, else the result of local
-	 *         {@link Application#handleRequest} invocation.
+	 *         {@link Application#execute} invocation.
 	 * @throws IOException
 	 * @throws RequestParseException
 	 */

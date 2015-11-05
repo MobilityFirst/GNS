@@ -661,14 +661,14 @@ public class PaxosConfig {
 
 		/**
 		 * Number of milliseconds after which
-		 * {@link edu.umass.cs.gigapaxos.interfaces.Replicable#handleRequest(edu.umass.cs.gigapaxos.interfaces.Request)}
+		 * {@link edu.umass.cs.gigapaxos.interfaces.Replicable#execute(edu.umass.cs.gigapaxos.interfaces.Request)}
 		 * will be re-attempted until it returns true.
 		 */
 		HANDLE_REQUEST_RETRY_INTERVAL(100),
 
 		/**
 		 * Maximum number of retry attempts for
-		 * {@link edu.umass.cs.gigapaxos.interfaces.Replicable#handleRequest(edu.umass.cs.gigapaxos.interfaces.Request)}
+		 * {@link edu.umass.cs.gigapaxos.interfaces.Replicable#execute(edu.umass.cs.gigapaxos.interfaces.Request)}
 		 * . After these many unsuccessful attempts, the paxos instance will be
 		 * killed.
 		 */
